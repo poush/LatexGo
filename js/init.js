@@ -1,3 +1,7 @@
+var editor;
+var session;
+
+
 function init() {
 
   var config = {
@@ -16,9 +20,9 @@ function init() {
 
 
   //// Create ACE
-  var editor = ace.edit("editor");
+  editor = ace.edit("editor");
   editor.setTheme("ace/theme/material");
-  var session = editor.getSession();
+  session = editor.getSession();
   session.setUseWrapMode(true);
   session.setUseWorker(false);
   session.setMode("ace/mode/latex");
@@ -26,15 +30,16 @@ function init() {
 
   //// Create Firepad.
   var firepad = Firepad.fromACE(firepadRef, editor, {
-    defaultText: '% Hello World'
+    defaultText: defaultLatex
   });
+
 }
 
 
 function showLogin() {
   
   var uiConfig = {
-    // signInSuccessUrl: '<url-to-redirect-to-on-success>',
+    signInSuccessUrl: window.location.href,
     signInOptions: [
       // Leave the lines as is for the providers you want to offer your users.
       firebase.auth.GoogleAuthProvider.PROVIDER_ID,
@@ -53,6 +58,7 @@ function showLogin() {
   var ui = new firebaseui.auth.AuthUI(firebase.auth());
 
   ui.start('#logincontainer', uiConfig);
+  $("#login").animate({top: "0"}, 400)
 }
 
 function initAuth(){
@@ -65,6 +71,8 @@ function initAuth(){
       window.photoURL = user.photoURL;
       window.uid = user.uid;
 
+      $("#login").animate({top: "100vh"}, 450)
+
     } else {
       // User is signed out.
       showLogin()
@@ -72,9 +80,37 @@ function initAuth(){
   }, function(error) {
     console.log(error);
   });
+
+  // handles logout
+  $("#logout").click(function(){
+    firebase.auth().signOut()
+      .then(function() {
+        window.location.reload();
+      })
+      .catch(function(error) {
+        // An error happened
+      });
+  })
+}
+
+
+function registerEvents(){
+  jQuery(document).keydown(function(event) {
+        // If Control or Command key is pressed and the S key is pressed
+        // run save function. 83 is the key code for S.
+        if((event.ctrlKey || event.metaKey) && event.which == 83) {
+            // Save Function
+            event.preventDefault();
+            var code = editor.getValue();
+            compile(code)
+            return false;
+        }
+    }
+  );
 }
 
 $(function(){
   init()
   initAuth()
+  registerEvents()
 })

@@ -71,14 +71,18 @@ function getExampleRef() {
 // })
 
 
+
+function preview(datauri){
+    $("#pdf").html("<iframe src="+ datauri +"></iframe>")
+}
+
+
 function compile(source_code) {
-    document.getElementById("output").textContent = "";
-    showLoadingIndicator(true);
 
     var texlive = new TeXLive();
     var pdftex = texlive.pdftex;
-    pdftex.on_stdout = appendOutput;
-    pdftex.on_stderr = appendOutput;
+    pdftex.on_stdout = function(m){console.log(m)};
+    pdftex.on_stderr = function(m){console.log(m)};
 
     var start_time = new Date().getTime();
 
@@ -86,12 +90,45 @@ function compile(source_code) {
         var end_time = new Date().getTime();
         console.info("Execution time: " + (end_time - start_time) / 1000 + ' sec');
 
-        showLoadingIndicator(false);
-
         if (pdf_dataurl === false)
-        return;
-        showOpenButton(true);
-        document.getElementById("open_pdf_btn").focus();
+            return;
+
+        preview(pdf_dataurl);
         texlive.terminate();
     });
 }
+
+var defaultLatex = `\\documentclass[12pt]{article}
+\\usepackage{amsmath}
+\\usepackage{graphicx}
+
+\\title{\\TeX live.js}
+\\author{Created by Manuel Sch\\"olling}
+\\date{\\today}
+\\begin{document}
+  \\maketitle
+  \\TeX{}live.js is a compiler for the \\TeX{}
+  typesetting program created using Mozilla's Emscripten
+  Compiler. It offers programmable desktop
+  publishing features and extensive facilities for
+  automating most aspects of typesetting and desktop
+  publishing, including numbering and cross-referencing,
+  tables and figures, page layout, bibliographies, and
+  much more. It supports \\LaTeX{} which was originally written 
+  in 1984 by Leslie Lamport and has becomsds
+  de the dominant method for
+  using \\TeX;
+ 
+  % This is a comment, not shown in final output.
+  % The following shows typesetting power of LaTeX:
+  \\begin{align}
+    E_0 &= mc^2                              \\\\
+    E &= \\frac{mc^2}{\\sqrt{1-\\frac{v^2}{c^2}}}
+  \\end{align}
+
+
+  \\TeX{}live.js even supports images! This photo was taken by Laura Poitras/Praxis Films
+
+  \\includegraphics[height=5cm, keepaspectratio]{snowden}
+\\end{document}
+        `

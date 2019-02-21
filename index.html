@@ -1,147 +1,31 @@
 <html>
     <head>
-        <title> Code Coffee</title>
+        <title> LatexGo </title>
         <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
         <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
         <link rel="stylesheet" href="main.css">
-        <style type="text/css" media="screen">
-            body {
-                overflow: hidden;
-            }
-
-            #editor {
-                margin: 0;
-                position: absolute;
-                top: 0;
-                bottom: 155px;
-                left: 0;
-                right: 0;
-            }
-            ::-webkit-scrollbar{
-                display: none;
-            }
-            #footer{
-               background-color: #253238;
-                border-top:1px solid #555555;
-                position: absolute;
-                bottom: 0;
-                height:25px;
-                left:0;
-                right: 0;
-                font-size: 12px;
-                font-weight:400;
-                color: #AFBDC4;
-            }
-            #footer ul {
-                list-style: none;
-            }
-            #footer ul>li{
-                float: left;
-                margin-right:20px;
-                padding: 4px;
-                cursor: pointer;
-            }
-            #footer ul>li:hover, #footer ul>li:focus{
-                background-color: #1D2529;
-            }
-            #bd:-webkit-full-screen {
-                width: 100%;
-                height: 100%;
-            }
-            #terminal{
-                position: fixed;
-                bottom: 25px;
-                left:0;
-                right:0;
-                height: 130px;
-                background-color: #253238 ;
-            }
-            #terminal .header{
-                background-color: #304359;
-                width: 100%;
-                height:25px;
-                font-size:13px;
-                color: #f9f2f4;
-                padding: 4px 4px 3px 20px;
-                margin-bottom:10px;
-            }
-            #terminal .text{
-                margin:20px;
-                line-height: 15px;
-                font-size:13px;
-                color:#fff;
-                font-weight: normal;
-            }
-
-            #terminal .text .input-group-addon{
-                background: transparent;
-                border:none;
-                color:#fff;
-            }
-
-            #terminal td{
-                width: auto;
-            }
-            #terminal > ul {
-                list-style: none;
-            }
-
-            #terminal ul>li {
-
-            }
-
-            #terminal .text .input-group-addon .keyword {
-                color: #24CCCD;
-            }
-
-            #terminal .text .input-group-addon .arrow{
-                color:red;
-            }
-            #terminal .text .input-group-addon .branch{
-                color:#4F92EF;
-            }
-
-            #terminal .text input {
-                background: transparent;
-                border:none;
-                outline:none;
-                color:#f5f5f5;
-                font-weight: 200;
-            }
-
-            #terminal .text input:hover, #terminal .text input:focus{
-                -webkit-box-shadow: none;
-                -moz-box-shadow: none;
-                box-shadow: none;
-            }
-
-            #terminal .tex .input{
-                outline:none;
-                font-weight: 400;
-                width:100%;
-                float:left;
-                background: transparent;
-                border:none;
-            }
-
-            #quickmenu {
-                position:absolute;
-                background-color: rgba(69, 77, 81,0.5);
-                z-index: 100;
-                color: #fff;
-                top:70px;
-                right:20px;
-                height:30px;
-                width:100px;
-                padding:7px 7px 5px 10px;
-                cursor: pointer;
-            }
-        </style>
+        <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.css" />
+        <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
     </head>
     <body id="bd">
 
-    <div id="editor"></div>
-    <div id="terminal">
+    <!-- Login Container -->
+    <div id="login">
+        <div id="logincontainer" class="container">
+            
+        </div>
+    </div>
+
+    <div class="pyaaz">
+        <div id="editor"></div>
+        <div id="pdf">
+            <div id="preview"></div>
+            <div class="placeholder">
+                <h1 class="text-center">Ctrl/Cmd+S to preview</h1>
+            </div>
+        </div>
+    </div>
+    <div id="terminal" style="display: none">
         <div class="header">Terminal</div>
         <div class="text">
                 <div class="input-group">
@@ -160,17 +44,29 @@
     </div>
     <div id="footer">
         <ul>
-            <li type="button"> <i class="fa fa-terminal"></i> Terminal </li>
-            <li type="button" id="fullscreen"> <i class="fa fa-expand"></i> Go full screen </li>
+            <!-- <li type="button"> <i class="fa fa-terminal"></i> Terminal </li> -->
+            <!-- <li type="button" id="fullscreen"> <i class="fa fa-expand"></i> Go full screen </li> -->
+            <li type="button" id="togetherjs"> <i class="fa fa-share"></i> Start Collaboration mode </li>
             <li class="pull-right"> Last Saved : A minute ago | All changes pushed to server</li>
         </ul>
     </div>
 
     <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
-    <script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="js/ace-editor-builds/src-min-noconflict/ace.js"></script>
     <script src="js/ace-editor-builds/src-noconflict/ext-language_tools.js"></script>
-    <script type="text/javascript"  src="js/main.js"></script>
+    <script src="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.min.js"></script>
+    
+    <!-- firebase -->
+    <script src="https://www.gstatic.com/firebasejs/5.8.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.8.2/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.8.2/firebase-database.js"></script>
+
+    <!-- firebase auth ui -->
+    <script src="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.js"></script>
+
+    <script src="pdftex.js"></script>
+    <script type="text/javascript"  src="js/init.js"></script>
+    <script type="text/javascript"  src="js/utils.js"></script>
     </body>
 
 </html>

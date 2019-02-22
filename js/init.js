@@ -40,11 +40,15 @@ function showLogin() {
   
   var uiConfig = {
     signInSuccessUrl: window.location.href,
-    signInOptions: [
-      // Leave the lines as is for the providers you want to offer your users.
-      firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-      firebase.auth.EmailAuthProvider.PROVIDER_ID
-    ],
+    signInOptions: [{
+      provider: firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+      scopes: [
+        "email",
+        "profile",
+        "https://www.googleapis.com/auth/drive.file"
+      ]
+    }],
+
     // tosUrl and privacyPolicyUrl accept either url string or a callback
     // function.
     // Terms of service url/callback.

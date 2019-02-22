@@ -1,7 +1,6 @@
 var editor;
 var session;
 
-
 function init() {
 
   var config = {
@@ -62,7 +61,10 @@ function showLogin() {
   var ui = new firebaseui.auth.AuthUI(firebase.auth());
 
   ui.start('#logincontainer', uiConfig);
-  $("#login").animate({top: "0"}, 400)
+  $("#login").animate({top: "70vh"}, 400, function(){
+    $(this).animate({top: "0"}, 300)
+    $('.pyaaz').addClass("blur")
+  })
 }
 
 function initAuth(){
@@ -74,8 +76,11 @@ function initAuth(){
       window.emailVerified = user.emailVerified;
       window.photoURL = user.photoURL;
       window.uid = user.uid;
+      window.enable = true
 
-      $("#login").animate({top: "100vh"}, 450)
+      $("#login").animate({top: "100vh"}, 450, function(){
+        $('.pyaaz').removeClass("blur")
+      })
 
     } else {
       // User is signed out.

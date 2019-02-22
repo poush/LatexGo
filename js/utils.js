@@ -79,6 +79,9 @@ function preview(datauri){
 
 function compile(source_code) {
 
+    if(!window.enable)
+       return
+   
     var texlive = new TeXLive();
     var pdftex = texlive.pdftex;
     pdftex.on_stdout = function(m){console.log(m)};

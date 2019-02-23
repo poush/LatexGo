@@ -32,6 +32,8 @@ function init() {
     defaultText: defaultLatex
   });
 
+
+
 }
 
 

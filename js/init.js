@@ -23,7 +23,7 @@ function init() {
 
 }
 
-function initializeFirepad(uid) {
+function initFirepad(uid, displayName) {
 
   //// Get Firebase Database reference.
   var firepadRef = getExampleRef();
@@ -36,19 +36,29 @@ function initializeFirepad(uid) {
 
   //// set events listeners
   firepad.on('ready', function() {
+    console.log('firepad ready');
     // enable editing for user
   })
 
   firepad.on('synced', function() {
+    console.log('firepad synced');
     // update sync time
   })
 
-  var firepadUsersRef = firepadRef.child('users'); // ref for active editors
-  firepadUsersRef.on('child_added', function() {
+  var editorsRef = firepadRef.child('editors'); // ref for active editors
+
+  // add self to active editors
+  var newEditorRef = editorsRef.push();
+  newEditorRef.set({
+    uid: uid,
+    displayName: displayName
+  })
+
+  editorsRef.on('child_added', function() {
     // add to list of active editors
   });
 
-  firepadUsersRef.on('child_removed', function() {
+  editorsRef.on('child_removed', function() {
     // remove from list of active editors
   });
 }
@@ -100,7 +110,7 @@ function initAuth(){
         $('.pyaaz').removeClass("blur")
       })
 
-      initializeFirepad(user.uid);
+      initFirepad(user.uid, user.displayName);
 
     } else {
       // User is signed out.

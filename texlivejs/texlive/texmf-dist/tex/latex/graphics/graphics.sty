@@ -7,12 +7,12 @@
 %% graphics.dtx  (with options: `package')
 %% 
 %% The source is maintained by the LaTeX Project team and bug
-%% reports for it can be opened at http://latex-project.org/bugs.html
+%% reports for it can be opened at https://latex-project.org/bugs/
 %% (but please observe conditions on bug reports sent to that address!)
 %% 
 %% 
 %% graphics.dtx Copyright (C) 1994      David Carlisle Sebastian Rahtz
-%%              Copyright (C) 1995--2016 David Carlisle, LaTeX3 Project
+%%              Copyright (C) 1995--2017 David Carlisle, LaTeX3 Project
 %%
 %% This file is part of the Standard LaTeX `Graphics Bundle'.
 %% It may be distributed under the terms of the LaTeX Project Public
@@ -23,7 +23,7 @@
 %%
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
 \ProvidesPackage{graphics}
-          [2016/10/09 v1.0u  Standard LaTeX Graphics (DPC,SPQR)]
+          [2017/06/25 v1.2c  Standard LaTeX Graphics (DPC,SPQR)]
 \edef\Gin@codes{%
  \catcode`\noexpand\^^A\the\catcode`\^^A\relax
  \catcode`\noexpand\"\the\catcode`\"\relax
@@ -60,7 +60,7 @@
 \DeclareOption{dvips}{\def\Gin@driver{dvips.def}}
 \DeclareOption{xdvi}{\ExecuteOptions{dvips}}
 \DeclareOption{dvipdf}{\def\Gin@driver{dvipdf.def}}
-\DeclareOption{dvipdfm}{\def\Gin@driver{dvipdfm.def}}
+\DeclareOption{dvipdfm}{\def\Gin@driver{dvipdfmx.def}}
 \DeclareOption{dvipdfmx}{\def\Gin@driver{dvipdfmx.def}}
 \DeclareOption{xetex}{\def\Gin@driver{xetex.def}}
 \DeclareOption{pdftex}{\def\Gin@driver{pdftex.def}}
@@ -110,6 +110,7 @@
   \edef\Gin@extensions{\zap@space#1 \@empty}}
 \providecommand\Gin@extensions{}
 \def\includegraphics{%
+  \leavevmode
   \@ifstar
     {\Gin@cliptrue\Gin@i}%
     {\Gin@clipfalse\Gin@i}}
@@ -241,7 +242,12 @@
     \wd\z@\Gin@req@width
   \box\z@
   \fi}
+\let\Gin@decode\@empty
 \def\Gin@exclamation{!}
+\let\Gin@page\@empty
+\def\Gin@pagebox{cropbox}
+\newif\ifGin@interpolate
+\let\Gin@log\wlog
 \let\Gin@req@sizes\relax
 \def\Gin@scalex{1}%
 \let\Gin@scaley\Gin@exclamation
@@ -253,7 +259,24 @@
       {Cannot determine size of graphic in #1 (no size specified)}%
       \@ehc}
 \newif\ifGin@bbox
-\def\Gread@eps#1{%
+\def\Gread@generic#1#2{%
+  \edef\Gread@attr@hash{%
+    \ifx\Gin@pagebox\@empty\else
+      :\Gin@pagebox
+    \fi
+    \ifx\Gin@page\@empty\else
+      :P\Gin@page
+    \fi
+  }%
+  \@ifundefined{#1 bbox\Gread@attr@hash}%
+    {\Gread@generic@aux{#1}{#2}}
+    {%
+      \expandafter\global\expandafter\let\expandafter\@gtempa
+        \csname #1 bbox\Gread@attr@hash\endcsname
+    }%
+  \expandafter\Gread@parse@bb\@gtempa\\%
+}
+\def\Gread@generic@aux#1#2{%
   \begingroup
   \@tempcnta\z@
   \loop\ifnum\@tempcnta<\@xxxii
@@ -268,7 +291,22 @@
   \catcode\endlinechar5 %
   \@makeother\:%
   \@makeother\-%
-  \immediate\openin\@inputcheck#1 %
+  \immediate\openin\@inputcheck"#1" %
+  #2{#1}%
+  \ifGin@bbox
+    \expandafter\xdef\csname #1 bbox\Gread@attr@hash\endcsname{\@gtempa}%
+  \else
+    \@latex@error
+      {Cannot determine size of graphic in #1 (no BoundingBox)}%
+      \@ehc
+    \gdef\@gtempa{0 0 72 72 }%
+  \fi
+  \endgroup
+}
+\def\Gread@eps#1{%
+  \Gread@generic{#1}\Gread@eps@aux
+}
+\def\Gread@eps@aux#1{%
   \ifeof\@inputcheck
     \@latex@error{File `#1' not found}\@ehc
   \else
@@ -285,14 +323,7 @@
      \repeat
     \immediate\closein\@inputcheck
   \fi
-  \ifGin@bbox\else
-    \@latex@error
-      {Cannot determine size of graphic in #1 (no BoundingBox)}%
-      \@ehc
-    \gdef\@gtempa{0 0 72 72 }%
-  \fi
-  \endgroup
-  \expandafter\Gread@parse@bb\@gtempa\\}
+}
 \long\def\Gread@find@bb#1:#2#3\\{%
   \def\@tempa{#1}%
   \ifx\@tempa\Gread@BBox
@@ -410,8 +441,7 @@
   \ifdim#1\p@<\z@
     \hb@xt@-#1\wd\z@{\kern-#1\wd\z@\box\tw@\hss}%
   \else
-    \wd\tw@#1\wd\z@
-    \box\tw@
+    \hb@xt@#1\wd\z@{\box\tw@\kern#1\wd\z@\hss}%
   \fi}
 \def\reflectbox{\Gscale@box-1[1]}
 \def\resizebox{%

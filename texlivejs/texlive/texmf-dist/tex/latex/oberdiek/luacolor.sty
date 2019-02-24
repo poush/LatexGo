@@ -9,7 +9,7 @@
 %% This is a generated file.
 %% 
 %% Project: luacolor
-%% Version: 2016/05/16 v1.10
+%% Version: 2018/11/22 v1.11
 %% 
 %% Copyright (C) 2007, 2009-2011 by
 %%    Heiko Oberdiek <heiko.oberdiek at googlemail.com>
@@ -32,8 +32,7 @@
 %% and the derived files
 %%    luacolor.sty, luacolor.pdf, luacolor.ins, luacolor.drv,
 %%    luacolor-test1.tex, luacolor-test2.tex, luacolor-test3.tex,
-%%    oberdiek.luacolor.lua, luacolor.lua,
-%%    oberdiek.luacolor-pre065.lua, luacolor-pre065.lua.
+%%    luacolor.lua,
 %% 
 \begingroup\catcode61\catcode48\catcode32=10\relax%
   \catcode13=5 % ^^M
@@ -87,7 +86,7 @@
 \edef\LuaCol@AtEnd{\LuaCol@AtEnd\noexpand\endinput}
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{luacolor}%
-  [2016/05/16 v1.10 Color support via LuaTeX's attributes (HO)]
+  [2018/11/22 v1.11 Color support via LuaTeX's attributes (HO)]
 \RequirePackage{infwarerr}[2010/04/08]%
 \RequirePackage{ifluatex}[2010/03/01]%
 \RequirePackage{ifpdf}[2011/01/30]%
@@ -95,10 +94,7 @@
 \RequirePackage{color}
 \ifluatex
   \ifx\newattribute\@undefined
-  \ltx@ifpackageloaded{luatexbase-attr}{%
-  }{%
-    \RequirePackage{luatex}[2010/03/09]%
-  }%
+    \RequirePackage{ltluatex}%
  \fi
 \else
   \@PackageError{luacolor}{%
@@ -106,11 +102,7 @@
   }\@ehc
   \expandafter\LuaCol@AtEnd
 \fi%
-\ifnum\luatexversion<36 %
-  \def\LuaCol@directlua{\directlua0 }%
-\else
   \let\LuaCol@directlua\directlua
-\fi
 \ifcolors@
 \else
   \@PackageWarningNoLine{luacolor}{%
@@ -123,10 +115,10 @@
   \expandafter\LuaCol@AtEnd
 \fi%
 \LuaCol@directlua{%
-  require("oberdiek.luacolor\ifnum\luatexversion<65 -pre065\fi")%
+  require("luacolor")%
 }
 \begingroup
-  \edef\x{\LuaCol@directlua{tex.write("2016/05/16 v1.10")}}%
+  \edef\x{\LuaCol@directlua{tex.write("2018/11/22 v1.11")}}%
   \edef\y{%
     \LuaCol@directlua{%
       if oberdiek.luacolor.getversion then %
@@ -208,18 +200,14 @@
     \let\pdfxform\saveboxresource
   \fi
   \ltx@IfUndefined{pdfxform}{%
-    \ifnum\luatexversion>36 %
       \directlua{%
         tex.enableprimitives('',{%
           'pdfxform','pdflastxform','pdfrefxform'%
         })%
       }%
-    \fi
   }{}%
   \ltx@IfUndefined{protected}{%
-    \ifnum\luatexversion>36 %
       \directlua{tex.enableprimitives('',{'protected'})}%
-    \fi
   }{}%
   \ltx@IfUndefined{pdfxform}{%
     \@PackageWarning{luacolor}{\string\pdfxform\space not found}%

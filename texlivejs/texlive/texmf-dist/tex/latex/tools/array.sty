@@ -9,11 +9,11 @@
 %% This is a generated file.
 %% 
 %% The source is maintained by the LaTeX Project team and bug
-%% reports for it can be opened at http://latex-project.org/bugs.html
+%% reports for it can be opened at https://latex-project.org/bugs/
 %% (but please observe conditions on bug reports sent to that address!)
 %% 
 %% 
-%% Copyright 1993-2016
+%% Copyright 1993-2017
 %% The LaTeX3 Project and any individual authors listed elsewhere
 %% in this file.
 %% 
@@ -24,7 +24,7 @@
 %% conditions of the LaTeX Project Public License, either version 1.3c
 %% of this license or (at your option) any later version.
 %% The latest version of this license is in
-%%    http://www.latex-project.org/lppl.txt
+%%    https://www.latex-project.org/lppl.txt
 %% and version 1.3c or later is part of all distributions of LaTeX
 %% version 2005/12/01 or later.
 %% 
@@ -38,8 +38,14 @@
 %% Package `array' to use with LaTeX 2e
 %% Copyright (C) 1989-1998 Frank Mittelbach, all rights reserved.
 \NeedsTeXFormat{LaTeX2e}[1995/06/01]
+\providecommand\DeclareRelease[3]{}
+\providecommand\DeclareCurrentRelease[2]{}
+
+\DeclareRelease{}{2016-10-06}{array-2016-10-06.sty}
+\DeclareCurrentRelease{}{2018-04-30}
+
 \ProvidesPackage{array}
-         [2016/10/06 v2.4d Tabular extension package (FMi)]
+         [2018/12/30 v2.4k Tabular extension package (FMi)]
 %%
 
 \def\@addtopreamble#1{\xdef\@preamble{\@preamble #1}}
@@ -89,29 +95,6 @@
    \the@toks \the \count@ \relax}
 \newdimen\col@sep
 \def\@acol{\@addtopreamble{\hskip\col@sep}}
-\def\@mkpream#1{\gdef\@preamble{}\@lastchclass 4 \@firstamptrue
-   \let\@sharp\relax \let\@startpbox\relax \let\@endpbox\relax
-   \@xexpast #1*0x\@@
-   \count@\m@ne
-   \let\the@toks\relax
-   \prepnext@tok
-   \expandafter \@tfor \expandafter \@nextchar
-    \expandafter :\expandafter =\@tempa \do
-   {\@testpach
-   \ifcase \@chclass \@classz \or \@classi \or \@classii
-     \or \save@decl \or \or \@classv \or \@classvi
-     \or \@classvii \or \@classviii  \or \@classix
-     \or \@classx \fi
-   \@lastchclass\@chclass}%
-   \ifcase\@lastchclass
-   \@acol \or
-   \or
-   \@acol \or
-   \@preamerr \thr@@ \or
-   \@preamerr \tw@ \@addtopreamble\@sharp \or
-   \or
-   \else  \@preamerr \@ne \fi
-   \def\the@toks{\the\toks}}
 \def\@classx{%
   \ifcase \@lastchclass
   \@acolampacol \or
@@ -126,21 +109,33 @@
    \prepnext@tok
    \@addtopreamble{\ifcase \@chnum
       \hfil
+      \hskip1sp%
       \d@llarbegin
       \insert@column
-      \d@llarend \hfil \or
-      \hskip1sp\d@llarbegin \insert@column \d@llarend \hfil \or
-      \hfil\hskip1sp\d@llarbegin \insert@column \d@llarend \or
-   $\vcenter
-   \@startpbox{\@nextchar}\insert@column \@endpbox $\or
-   \vtop \@startpbox{\@nextchar}\insert@column \@endpbox \or
-   \vbox \@startpbox{\@nextchar}\insert@column \@endpbox
+      \d@llarend \do@row@strut \hfil \or
+      \hskip1sp\d@llarbegin \insert@column \d@llarend \do@row@strut \hfil \or
+      \hfil\hskip1sp\d@llarbegin \insert@column \d@llarend \do@row@strut \or
+    \setbox\ar@mcellbox\vbox
+    \@startpbox{\@nextchar}\insert@column \@endpbox
+    \ar@align@mcell
+    \do@row@strut \or
+   \vtop \@startpbox{\@nextchar}\insert@column \@endpbox\do@row@strut \or
+   \vbox \@startpbox{\@nextchar}\insert@column \@endpbox\do@row@strut
   \fi}\prepnext@tok}
-\def\@classix{\ifnum \@lastchclass = \thr@@
-       \@preamerr \thr@@ \fi
-       \@classx}
-\def\@classviii{\ifnum \@lastchclass >\z@
-      \@preamerr 4\@chclass 6 \@classvi \fi}
+
+\newbox\ar@mcellbox
+\def\ar@align@mcell{%
+  \ifdim \ht\ar@mcellbox > \ht\@arstrutbox
+    \begingroup
+     \dimen@\ht\ar@mcellbox
+     \advance\dimen@-\ht\@arstrutbox
+     \advance\dimen@\baselineskip
+     \lower.5\dimen@\box\ar@mcellbox
+    \endgroup
+  \else % assume one line and align at baseline
+    \box\ar@mcellbox
+  \fi}
+
 \def\@arrayrule{\@addtopreamble \vline}
 \def\@classvii{\ifnum \@lastchclass = \thr@@
    \@preamerr \thr@@ \fi}
@@ -152,19 +147,17 @@
       \fi}
 \def\@classii{\advance \count@ \m@ne
    \save@decl\prepnext@tok}
-\def\@classv{\save@decl
-   \@addtopreamble{\d@llarbegin\the@toks\the\count@\relax\d@llarend}%
-   \prepnext@tok}
 \def\@classi{\@classvi
    \ifcase \@chnum \@arrayrule \or
       \@classv \fi}
 \def\@startpbox#1{\bgroup
+  \color@begingroup
   \setlength\hsize{#1}\@arrayparboxrestore
    \everypar{%
       \vrule \@height \ht\@arstrutbox \@width \z@
       \everypar{}}%
    }
-\def\@endpbox{\@finalstrut\@arstrutbox \egroup\hfil}
+\def\@endpbox{\@finalstrut\@arstrutbox \color@endgroup \egroup\hfil}
 \def\@array[#1]#2{%
   \@tempdima \ht \strutbox
   \advance \@tempdima by\extrarowheight
@@ -197,9 +190,13 @@
 \def\@argarraycr[#1]{\ifnum0=`{}\fi\ifdim #1>\z@
   \expandafter\@xargarraycr\else
   \expandafter\@yargarraycr\fi{#1}}
-\def\@xargarraycr#1{\unskip
-  \@tempdima #1\advance\@tempdima \dp\@arstrutbox
-  \vrule \@depth\@tempdima \@width\z@ \cr}
+\def\@xargarraycr#1{\unskip\gdef\do@row@strut
+ {\@tempdima #1\advance\@tempdima \dp\@arstrutbox
+   \vrule \@depth\@tempdima \@width\z@\global\let\do@row@strut\relax}%
+ %    \begin{macrocode}
+   \ifnum\@multicnt >\z@ \do@row@strut \fi
+   \cr}
+\let\do@row@strut\relax
 \def\@yargarraycr#1{\cr\noalign{\vskip #1}}
 \long\def\multicolumn#1#2#3{%
    \multispan{#1}\begingroup
@@ -216,7 +213,6 @@
 \def\array{\col@sep\arraycolsep
   \def\d@llarbegin{$}\let\d@llarend\d@llarbegin\def\@halignto{}%
   \@tabarray}
-\def\@tabarray{\@ifnextchar[{\@array}{\@array[c]}}
 \def\tabular{\def\@halignto{}\@tabular}
 \expandafter\def\csname tabular*\endcsname#1{%
        \setlength\dimen@{#1}%
@@ -226,7 +222,6 @@
   \hbox \bgroup $\col@sep\tabcolsep \let\d@llarbegin\begingroup
                                     \let\d@llarend\endgroup
   \@tabarray}
-\def\endarray{\crcr \egroup \egroup \gdef\@preamble{}}
 \def\endtabular{\endarray $\egroup}
 \expandafter\let\csname endtabular*\endcsname=\endtabular
 \let\@ampacol=\relax        \let\@expast=\relax
@@ -287,7 +282,11 @@
 \def\save@decl{\toks \count@ = \expandafter\expandafter\expandafter
                   {\expandafter\@nextchar\the\toks\count@}}
 \def\@mkpream#1{\gdef\@preamble{}\@lastchclass 4 \@firstamptrue
-   \let\@sharp\relax \let\@startpbox\relax \let\@endpbox\relax
+   \let\@sharp\relax
+   \def\@startpbox##1{\unexpanded\expandafter{\expandafter
+                      \@startpbox\expandafter{##1}}}\let\@endpbox\relax
+   \let\do@row@strut\relax
+   \let\ar@align@mcell\relax
    \@temptokena{#1}\@tempswatrue
    \@whilesw\if@tempswa\fi{\@tempswafalse\the\NC@list}%
    \count@\m@ne
@@ -354,6 +353,20 @@
                \vskip\doublerulesep
              \fi
       \ifnum0=`{\fi}}
+
+\newsavebox\ar@cellbox
+\newcolumntype{w}[2]{%
+  >{\begin{lrbox}\ar@cellbox}%
+  c%
+  <{\end{lrbox}%
+    \makebox[#2][#1]{\usebox\ar@cellbox}}}
+
+\newcolumntype{W}[2]
+  {>{\begin{lrbox}\ar@cellbox}%
+   c%
+   <{\end{lrbox}%
+   \let\hss\hfil
+   \makebox[#2][#1]{\unhbox\ar@cellbox}}}
 \endinput
 %%
 %% End of file `array.sty'.

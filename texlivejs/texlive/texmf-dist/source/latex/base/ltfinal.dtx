@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% Copyright 1993-2016
+% Copyright 1993-2018
 % The LaTeX3 Project and any individual authors listed elsewhere
 % in this file.
 %
@@ -11,7 +11,7 @@
 % conditions of the LaTeX Project Public License, either version 1.3c
 % of this license or (at your option) any later version.
 % The latest version of this license is in
-%    http://www.latex-project.org/lppl.txt
+%    https://www.latex-project.org/lppl.txt
 % and version 1.3c or later is part of all distributions of LaTeX
 % version 2005/12/01 or later.
 %
@@ -33,7 +33,7 @@
 %<*driver>
 % \fi
 \ProvidesFile{ltfinal.dtx}
-             [2016/10/15 v2.0s LaTeX Kernel (Final Settings)]
+             [2018/08/24 v2.1f LaTeX Kernel (Final Settings)]
 % \iffalse
 \documentclass{ltxdoc}
 \GetFileInfo{ltfinal.dtx}
@@ -495,6 +495,36 @@
 \let\@addtofilelist\@gobble
 %    \end{macrocode}
 %
+% \begin{macro}{\l@nohyphenation}
+% \changes{v2.0t}{2017/03/09}{ensure \cs{l@nohyphenation} is defined.}
+%    \begin{macrocode}
+\ifx\l@nohyphenation \@undefined
+  \newlanguage\l@nohyphenation
+\fi
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\document@default@language}
+% Default document language. -1 acts as language 0, but used as a flag in |\document|
+% to see if it has been set in the preamble.
+% \changes{v2.1f}{2018/08/24}{Add to latexrelease (github/68)}
+%    \begin{macrocode}
+%</2ekernel>
+%<*2ekernel|latexrelease>
+%<latexrelease>\IncludeInRelease{2017/04/15}%
+%<latexrelease>                 {\document@default@language}{Save language for hyphenation}%
+\let\document@default@language\m@ne
+%</2ekernel|latexrelease>
+%<latexrelease>\EndIncludeInRelease
+%<latexrelease>\IncludeInRelease{0000/00/00}%
+%<latexrelease>                 {\document@default@language}{Save language for hyphenation}%
+%<latexrelease>\let\document@default@language\@undefined
+%<latexrelease>\EndIncludeInRelease
+%<*2ekernel>
+%    \end{macrocode}
+% \end{macro}
+%
 %
 %
 % \subsection{Font loading}
@@ -502,8 +532,8 @@
 %    changed the |\font@submax| from |0pt| to something higher.
 %    If so, we put out a bold warning.
 % \changes{v0.1l}{1994/05/20}{Use new font warning commands}
-%    \begin{macrocode}
 % \changes{v1.1c}{2000/08/23}{Fix typo in warning}
+%    \begin{macrocode}
 \ifdim \font@submax >\z@
    \@font@warning{Size substitutions with differences\MessageBreak
                  up to \font@submax\space have occurred.\MessageBreak
@@ -524,6 +554,211 @@
 %    \end{macrocode}
 %
 % \subsection{Input encoding}
+%
+% \changes{v2.1a}{2018/03/25}{default to UTF-8}
+% Starting with the 2018 \LaTeX\ release default the inputencoding
+% to UTF-8. Unless the format is being used with luatex, xetex, enctex or mltex.
+%
+% This is done in a way largely compatible with older releases: |utf8.def| is input just as if\\
+% |\usepackage[utf8]{inputenc}|\\
+% had been used, however rather than input the whole package a minimal core part just enough to support
+% loading the UTF-8 encoding files is defined here.
+%
+% If a document re-specifies UTF-8 this is silently ignored.
+%
+%    \begin{macrocode}
+%</2ekernel>
+%<*2ekernel|latexrelease>
+%    \end{macrocode}
+%
+% Check that a classic 8-bit tex engine is being used (LaTeX or PDFLaTeX).
+%
+%    \begin{macrocode}
+%<latexrelease>\IncludeInRelease{2018/04/01}%
+%<latexrelease>                 {\UTFviii@invalid}{UTF-8 default}%
+%    \end{macrocode}
+%
+%
+% Skip this section in Unicode TeX, or if  MLTeX and EncTeX are enabled.
+%    \begin{macrocode}
+\ifnum0%
+  \ifx\Umathchar\@undefined\else 1\fi
+  \ifx\mubyte\@undefined\else 1\fi
+  \ifx\charsubdef\@undefined\else 1\fi
+  =\z@
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\def\saved@space@catcode{10}
+\let\@inpenc@test\relax
+\def\IeC{%
+  \ifx\protect\@typeset@protect
+    \expandafter\@firstofone
+  \else
+    \noexpand\IeC
+  \fi
+}
+%    \end{macrocode}
+%
+% Make characters active for UTF-8 input formats
+%    \begin{macrocode}
+\@tempcnta=1
+\loop
+  \catcode\@tempcnta=13  %
+  \advance\@tempcnta\@ne %
+\ifnum\@tempcnta<32      %
+\repeat                  %
+\catcode0=15  % null
+\catcode9=10  % tab
+\catcode10=12 % ctrl J
+\catcode12=13 % ctrl L
+\catcode13=5  % newline
+\@tempcnta=128
+\loop
+  \catcode\@tempcnta=13
+  \advance\@tempcnta\@ne
+\ifnum\@tempcnta<256
+\repeat
+%    \end{macrocode}
+%
+% \begin{macro}{\UseRawInputEncoding}
+% \changes{v2.1a}{2018/03/25}{Macro added}
+% Reset 8 bit characters to catcode 12 so the input endcoing matches the ``Raw''
+% font encoding.
+% Useful for special behaviours, or for compatibility with older \LaTeX\ formats.
+% \changes{v2.1b}{2018/04/06}{Undo changes to \cs{DeclareFontEncoding@} and
+%                             definition of \cs{DeclareUnicodeCharacter}}
+% \changes{v2.1c}{2018/04/07}{Undefine \cs{inputencodingname}}
+%    \begin{macrocode}
+\def\UseRawInputEncoding{%
+\let\inputencodingname\@undefined                     % revert
+\let\DeclareFontEncoding@\DeclareFontEncoding@saved   % revert
+\let\DeclareUnicodeCharacter\@undefined               % revert
+\@tempcnta=1
+\loop
+  \catcode\@tempcnta=15  %
+  \advance\@tempcnta\@ne %
+\ifnum\@tempcnta<32      %
+\repeat                  %
+\catcode0=15  % null
+\catcode9=10  % tab
+\catcode10=12 % ctrl J
+\catcode12=13 % ctrl L
+\catcode13=5  % newline
+\@tempcnta=128
+\loop
+  \catcode\@tempcnta=12
+  \advance\@tempcnta\@ne
+\ifnum\@tempcnta<256
+\repeat
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%  \begin{macro}{\DeclareFontEncoding@saved}
+%    Saved version of |\DeclareFontEncoding@| before \texttt{utf8.def}
+%    modifies it for use in |\UseRawInputEncoding| above.
+%    \begin{macrocode}
+\let\DeclareFontEncoding@saved\DeclareFontEncoding@
+%    \end{macrocode}
+%  \end{macro}
+%
+% \changes{v2.1d}{2018/04/08}{Delay full UTF-8 handling to \cs{everyjob}}
+% \changes{v2.18}{2018/05/11}{Make invalit UTF-8 also safe, for legacy filesystem encodings}
+%    \begin{macrocode}
+\edef\inputencodingname{utf8}%
+\input{utf8.def}
+\let\UTFviii@undefined@err@@\UTFviii@undefined@err
+\let\UTFviii@invalid@err@@\UTFviii@invalid@err
+\let\UTFviii@two@octets@@\UTFviii@two@octets
+\let\UTFviii@three@octets@@\UTFviii@three@octets
+\let\UTFviii@four@octets@@\UTFviii@four@octets
+%<2ekernel>\def\UTFviii@undefined@err#1{\@gobble#1}%
+%<2ekernel>\let\UTFviii@invalid@err\string
+%<2ekernel>\let\UTFviii@two@octets\string
+%<2ekernel>\let\UTFviii@three@octets\string
+%<2ekernel>\let\UTFviii@four@octets\string
+%<2ekernel>\everyjob\expandafter{\the\everyjob
+%<2ekernel>\let\UTFviii@undefined@err\UTFviii@undefined@err@@
+%<2ekernel>\let\UTFviii@invalid@err\UTFviii@invalid@err@@
+%<2ekernel>\let\UTFviii@two@octets\UTFviii@two@octets@@
+%<2ekernel>\let\UTFviii@three@octets\UTFviii@three@octets@@
+%<2ekernel>\let\UTFviii@four@octets\UTFviii@four@octets@@
+%<2ekernel>}
+\let\@inpenc@test\@undefined
+\let\saved@space@catcode\@undefined
+%    \end{macrocode}
+%
+% For formats not set up for UTF-8 default, set the C0 controls to catcode 15.
+%    \begin{macrocode}
+\else
+\@tempcnta=0
+\loop
+  \catcode\@tempcnta=15  %
+  \advance\@tempcnta\@ne %
+\ifnum\@tempcnta<32      %
+\repeat                  %
+\catcode0=15  % null
+\catcode9=10  % tab
+\catcode10=12 % ctrl J
+\catcode12=13 % ctrl L
+\catcode13=5  % newline
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\let\UseRawInputEncoding\relax
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\fi
+%</2ekernel|latexrelease>
+%<latexrelease>\EndIncludeInRelease
+%<latexrelease>\IncludeInRelease{0000/00/00}%
+%<latexrelease>                 {\UTFviii@invalid}{UTF-8 default}%
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%<latexrelease>\@tempcnta=0
+%<latexrelease>\loop
+%<latexrelease>  \catcode\@tempcnta=15
+%<latexrelease>  \advance\@tempcnta\@ne
+%<latexrelease>\ifnum\@tempcnta<32
+%<latexrelease>\repeat       % 
+%<latexrelease>\catcode9=10  % tab
+%<latexrelease>\catcode10=12 % ctrl J
+%<latexrelease>\catcode12=13 % ctrl L
+%<latexrelease>\catcode13=5  % newline
+%<latexrelease>\@tempcnta=128
+%<latexrelease>\loop
+%<latexrelease>\catcode\@tempcnta=12
+%<latexrelease>\advance\@tempcnta\@ne
+%<latexrelease>\ifnum\@tempcnta<256
+%<latexrelease>\repeat
+%<latexrelease>\let\IeC\@undefined
+%<latexrelease>\def\DeclareFontEncoding@#1#2#3{%
+%<latexrelease>  \expandafter
+%<latexrelease>  \ifx\csname T@#1\endcsname\relax
+%<latexrelease>     \def\cdp@elt{\noexpand\cdp@elt}%
+%<latexrelease>     \xdef\cdp@list{\cdp@list\cdp@elt{#1}%
+%<latexrelease>                    {\default@family}{\default@series}%
+%<latexrelease>                    {\default@shape}}%
+%<latexrelease>     \expandafter\let\csname#1-cmd\endcsname\@changed@cmd
+%<latexrelease>  \else
+%<latexrelease>     \@font@info{Redeclaring font encoding #1}%
+%<latexrelease>  \fi
+%<latexrelease>  \global\@namedef{T@#1}{#2}%
+%<latexrelease>  \global\@namedef{M@#1}{\default@M#3}%
+%<latexrelease>  \xdef\LastDeclaredEncoding{#1}%
+%<latexrelease>  }
+%<latexrelease>  \let\UseRawInputEncoding\@undefined
+%<latexrelease>  \let\DeclareFontEncoding@saved\@undefined
+%<latexrelease>  \let\inputencodingname\@undefined
+%<latexrelease>\EndIncludeInRelease
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%<*2ekernel>
+%    \begin{macrocode}
 %
 % We temporarily define |\reserved@a| to apply |\reserved@c| to all the
 % numbers in the range of its arguments.
@@ -589,15 +824,6 @@
 % All the characters in the range 0--31 and 127--255 are illegal,
 % \emph{except} tab (|^^I|), nl (|^^J|), ff (|^^L|) and cr (|^^M|).
 %
-% Now allow 8-bit characters, although their use in this way is
-% strongly discouraged. See |inputenc.dtx| for a supported mechanism
-% for 8-bit input.
-%    \begin{macrocode}
-\def\reserved@c#1{\catcode#1=15\relax}
-\reserved@a{0}{`\^^H}
-\reserved@c{`\^^K}
-\reserved@a{`\^^N}{31}
-%    \end{macrocode}
 %
 % \subsection{Lccodes and uccodes}
 %

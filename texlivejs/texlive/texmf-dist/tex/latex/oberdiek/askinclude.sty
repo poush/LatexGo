@@ -9,7 +9,7 @@
 %% This is a generated file.
 %% 
 %% Project: askinclude
-%% Version: 2016/05/14 v2.3
+%% Version: 2018/11/01 v2.4
 %% 
 %% Copyright (C) 1991-1994 by Pablo A. Straub
 %% Copyright (C) 2007, 2008, 2011 by
@@ -98,9 +98,12 @@
 \TMP@EnsureCode{96}{12}% `
 \edef\AskInc@AtEnd{\AskInc@AtEnd\noexpand\endinput}
 \ProvidesPackage{askinclude}%
-  [2016/05/14 v2.3 Interactive asking of included files]%
+  [2018/11/01 v2.4 Interactive asking of included files]%
 \ifx\pdfextension\@undefined\else
-  \RequirePackage{luatex85}
+    \protected\def\pdflastobj {\numexpr\pdffeedback lastobj\relax}
+    \protected\def\pdfnames   {\pdfextension names }
+    \protected\def\pdfobj     {\pdfextension obj }
+    \let\pdfoutput            \outputmode
 \fi
 \AtBeginDocument{%
   \let\AskInc@AtBeginDocument\@firstofone
@@ -690,6 +693,7 @@
 }
 \AtBeginDocument{\AskInc@MainQuestion}
 \AskInc@AtEnd%
+
 \endinput
 %%
 %% End of file `askinclude.sty'.

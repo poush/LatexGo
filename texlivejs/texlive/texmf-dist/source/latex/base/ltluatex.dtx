@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% Copyright 2015 2017
+% Copyright 2015 2017 2018
 % The LaTeX3 Project and any individual authors listed elsewhere
 % in this file.
 %
@@ -9,7 +9,7 @@
 % this license or (at your option) any later version.  The latest
 % version of this license is in the file:
 %
-%   http://www.latex-project.org/lppl.txt
+%   https://www.latex-project.org/lppl.txt
 %
 %
 %
@@ -24,7 +24,7 @@
 \ProvidesFile{ltluatex.dtx}
 %</driver>
 %<*tex>
-[2017/02/18 v1.1c
+[2018/10/21 v1.1i
 %</tex>
 %<plain>  LuaTeX support for plain TeX (core)
 %<*tex>
@@ -170,7 +170,7 @@
 %
 % \subsection{Allocators in Lua}
 %
-% \DescribeMacro{new\_attribute}
+% \DescribeMacro{new_attribute}
 % |luatexbase.new_attribute(|\meta{attribute}|)|\\
 % Returns an allocation number for the \meta{attribute}, indexed from~$1$.
 % The attribute will be initialised with the marker value |-"7FFFFFFF|
@@ -182,23 +182,31 @@
 % consistently for attributes declared in \TeX\ or Lua.
 %
 % \noindent
-% \DescribeMacro{new\_whatsit}
+% \DescribeMacro{new_whatsit}
 % |luatexbase.new_whatsit(|\meta{whatsit}|)|\\
 % Returns an allocation number for the custom \meta{whatsit}, indexed from~$1$.
 %
 % \noindent
-% \DescribeMacro{new\_bytecode}
+% \DescribeMacro{new_bytecode}
 % |luatexbase.new_bytecode(|\meta{bytecode}|)|\\
 % Returns an allocation number for a bytecode register, indexed from~$1$.
 % The optional \meta{name} argument is just used for logging.
 %
 % \noindent
-% \DescribeMacro{new\_chunkname}
+% \DescribeMacro{new_chunkname}
 % |luatexbase.new_chunkname(|\meta{chunkname}|)|\\
 % Returns an allocation number for a Lua chunk name for use with 
 % |\directlua| and |\latelua|, indexed from~$1$.
 % The number is returned and also \meta{name} argument is added to the
 % |lua.name| array at that index.
+%
+% \noindent
+% \DescribeMacro{new_luafunction}
+% |luatexbase.new_luafunction(|\meta{functionname}|)|\\
+% Returns an allocation number for a lua function for use
+% with |\luafunction|, |\lateluafunction|, and |\luadef|,
+% indexed from~$1$. The optional \meta{functionname} argument
+% is just used for logging.
 %
 % These functions all require access to a named \TeX{} count register
 % to manage their allocations. The standard names are those defined
@@ -287,7 +295,7 @@
 %
 % \subsection{Module utilities}
 %
-% \DescribeMacro{provides\_module}
+% \DescribeMacro{provides_module}
 % |luatexbase.provides_module(|\meta{info}|)|\\
 % This function is used by modules to identify themselves; the |info| should be
 % a table containing information about the module. The required field
@@ -297,9 +305,9 @@
 % information will be recorded in the log. Other fields are ignored.
 %
 % \noindent
-% \DescribeMacro{module\_info}
-% \DescribeMacro{module\_warning}
-% \DescribeMacro{module\_error}
+% \DescribeMacro{module_info}
+% \DescribeMacro{module_warning}
+% \DescribeMacro{module_error}
 % |luatexbase.module_info(|\meta{module}, \meta{text}|)|\\
 % |luatexbase.module_warning(|\meta{module}, \meta{text}|)|\\
 % |luatexbase.module_error(|\meta{module}, \meta{text}|)|\\
@@ -316,7 +324,7 @@
 % \subsection{Callback management}
 %
 % \noindent
-% \DescribeMacro{add\_to\_callback}
+% \DescribeMacro{add_to_callback}
 % |luatexbase.add_to_callback(|^^A
 % \meta{callback}, \meta{function}, \meta{description}|)|
 % Registers the \meta{function} into the \meta{callback} with a textual
@@ -324,20 +332,20 @@
 % in the order loaded.
 %
 % \noindent
-% \DescribeMacro{remove\_from\_callback}
+% \DescribeMacro{remove_from_callback}
 % |luatexbase.remove_from_callback(|\meta{callback}, \meta{description}|)|
 % Removes the callback function with \meta{description} from the \meta{callback}.
 % The removed function and its description 
 % are returned as the results of this function.
 %
 % \noindent
-% \DescribeMacro{in\_callback}
+% \DescribeMacro{in_callback}
 % |luatexbase.in_callback(|\meta{callback}, \meta{description}|)|
 % Checks if the \meta{description} matches one of the functions added
 % to the list for the \meta{callback}, returning a boolean value.
 %
 % \noindent
-% \DescribeMacro{disable\_callback}
+% \DescribeMacro{disable_callback}
 % |luatexbase.disable_callback(|\meta{callback}|)|
 % Sets the \meta{callback} to \texttt{false} as described in the Lua\TeX{}
 % manual for the underlying \texttt{callback.register} built-in. Callbacks
@@ -345,18 +353,18 @@
 % no functions registered using the callback.
 %
 % \noindent
-% \DescribeMacro{callback\_descriptions}
+% \DescribeMacro{callback_descriptions}
 % A list of the descriptions of functions registered to the specified
 % callback is returned. |{}| is returned if there are no functions registered.
 %
 % \noindent
-% \DescribeMacro{create\_callback}
+% \DescribeMacro{create_callback}
 % |luatexbase.create_callback(|\meta{name},meta{type},\meta{default}|)|
 % Defines a user defined callback. The last argument is a default
 % function or |false|.
 %
 % \noindent
-% \DescribeMacro{call\_callback}
+% \DescribeMacro{call_callback}
 % |luatexbase.call_callback(|\meta{name},\ldots|)|
 % Calls a user defined callback with the supplied arguments.
 %
@@ -433,10 +441,12 @@
 % update to |etex.src| which already has some Lua\TeX-specific
 % code, but does not define the correct range for Lua\TeX.
 %
+% 2015-07-13 higher range in luatex.
 %    \begin{macrocode}
-% 2015-07-13 higher range in luatex
 \edef \et@xmaxregs {\ifx\directlua\@undefined 32768\else 65536\fi}
-% luatex/xetex also allow more math fam
+%    \end{macrocode}
+% luatex/xetex also allow more math fam.
+%    \begin{macrocode}
 \edef \et@xmaxfam {\ifx\Umathchar\@undefined\sixt@@n\else\@cclvi\fi}
 %    \end{macrocode}
 %
@@ -513,9 +523,7 @@
 \long\def\@firstofone#1{#1}
 %    \end{macrocode}
 %
-%    \begin{macrocode}
 % Fix up allocations not to clash with |etex.src|.
-%    \end{macrocode}
 %
 %    \begin{macrocode}
 \expandafter\csname newcount\endcsname\e@alloc@attribute@count
@@ -785,9 +793,9 @@
 %<latexrelease>\EndIncludeInRelease
 %    \end{macrocode}
 %
-%    \begin{macrocode}
 % \changes{v1.0b}{2015/10/02}{Fix backing out of \TeX{} code}
 % \changes{v1.0c}{2015/10/02}{Allow backing out of Lua code}
+%    \begin{macrocode}
 %<latexrelease>\IncludeInRelease{0000/00/00}
 %<latexrelease>                 {\newluafunction}{LuaTeX}%
 %<latexrelease>\let\e@alloc@attribute@count\@undefined
@@ -823,14 +831,6 @@
 %<2ekernel>  \the\everyjob
 %<*2ekernel,latexrelease>
   \directlua{%
-%% Horrible hack, locally reset the luatex version number
-%% This is not required for the source version of luaotfload
-%% but is required due to an error in the version check in the
-%% public version (January 2017)
-%% https://github.com/lualatex/luaotfload/issues/387
-%% It is expected that this will be removed before TeXLive 2017
-  local tmp_version=tex.luatexversion %
-  tex.luatexversion=199 %
   if xpcall(function ()%
              require('luaotfload-main')%
             end,texio.write_nl) then %
@@ -839,7 +839,6 @@
   texio.write_nl('Error in luaotfload: reverting to OT1')%
   tex.print('\string\\def\string\\encodingdefault{OT1}')%
   end %
-  tex.luatexversion=tmp_version%
   }%
   \let\f@encoding\encodingdefault
   \expandafter\let\csname ver@luaotfload.sty\endcsname\fmtversion
@@ -910,7 +909,7 @@ local modules = modules or { }
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{provides\_module}
+% \begin{macro}{provides_module}
 % \changes{v1.0a}{2015/09/24}{Function added}
 % \changes{v1.0f}{2015/10/03}{use luatexbase\_log}
 % Local function to write to the log.
@@ -983,11 +982,11 @@ local function msg_format(mod, msg_type, text)
 end
 %    \end{macrocode}
 %
-% \begin{macro}{module\_info}
+% \begin{macro}{module_info}
 % \changes{v1.0a}{2015/09/24}{Function added}
-% \begin{macro}{module\_warning}
+% \begin{macro}{module_warning}
 % \changes{v1.0a}{2015/09/24}{Function added}
-% \begin{macro}{module\_error}
+% \begin{macro}{module_error}
 % \changes{v1.0a}{2015/09/24}{Function added}
 %   Write messages.
 %    \begin{macrocode}
@@ -1089,7 +1088,7 @@ luatexbase.registernumber = registernumber
 %
 % \subsection{Attribute allocation}
 %
-% \begin{macro}{new\_attribute}
+% \begin{macro}{new_attribute}
 % \changes{v1.0a}{2015/09/24}{Function added}
 % \changes{v1.1c}{2017/02/18}{Parameterise count used in tracking}
 %   As attributes are used for Lua manipulations its useful to be able
@@ -1106,7 +1105,8 @@ luatexbase.attributes = attributes
 %    \end{macrocode}
 %
 %    \begin{macrocode}
-local attribute_count_name = attribute_count_name or "e@alloc@attribute@count"
+local attribute_count_name =
+                     attribute_count_name or "e@alloc@attribute@count"
 local function new_attribute(name)
   tex_setcount("global", attribute_count_name,
                           tex_count[attribute_count_name] + 1)
@@ -1124,7 +1124,7 @@ luatexbase.new_attribute = new_attribute
 %
 % \subsection{Custom whatsit allocation}
 %
-% \begin{macro}{new\_whatsit}
+% \begin{macro}{new_whatsit}
 % \changes{v1.1c}{2017/02/18}{Parameterise count used in tracking}
 % Much the same as for attribute allocation in Lua.
 %    \begin{macrocode}
@@ -1145,12 +1145,13 @@ luatexbase.new_whatsit = new_whatsit
 %
 % \subsection{Bytecode register allocation}
 %
-% \begin{macro}{new\_bytecode}
+% \begin{macro}{new_bytecode}
 % \changes{v1.1c}{2017/02/18}{Parameterise count used in tracking}
 % Much the same as for attribute allocation in Lua.
 % The optional \meta{name} argument is used in the log if given.
 %    \begin{macrocode}
-local bytecode_count_name = bytecode_count_name or "e@alloc@bytecode@count"
+local bytecode_count_name =
+                         bytecode_count_name or "e@alloc@bytecode@count"
 local function new_bytecode(name)
   tex_setcount("global", bytecode_count_name, 
                          tex_count[bytecode_count_name] + 1)
@@ -1167,12 +1168,13 @@ luatexbase.new_bytecode = new_bytecode
 %
 % \subsection{Lua chunk name allocation}
 %
-% \begin{macro}{new\_chunkname}
+% \begin{macro}{new_chunkname}
 % \changes{v1.1c}{2017/02/18}{Parameterise count used in tracking}
 % As for bytecode registers but also store the name in the
 % |lua.name| table.
 %    \begin{macrocode}
-local chunkname_count_name = chunkname_count_name or "e@alloc@luachunk@count"
+local chunkname_count_name =
+                        chunkname_count_name or "e@alloc@luachunk@count"
 local function new_chunkname(name)
   tex_setcount("global", chunkname_count_name, 
                          tex_count[chunkname_count_name] + 1)
@@ -1187,6 +1189,29 @@ local function new_chunkname(name)
   return chunkname_count
 end
 luatexbase.new_chunkname = new_chunkname
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Lua function allocation}
+%
+% \begin{macro}{new_luafunction}
+% \changes{v1.1i}{2018/10/21}{Function added}
+% Much the same as for attribute allocation in Lua.
+% The optional \meta{name} argument is used in the log if given.
+%    \begin{macrocode}
+local luafunction_count_name =
+                         luafunction_count_name or "e@alloc@luafunction@count"
+local function new_luafunction(name)
+  tex_setcount("global", luafunction_count_name,
+                         tex_count[luafunction_count_name] + 1)
+  if tex_count[luafunction_count_name] > 65534 then
+    luatexbase_error("No room for a new luafunction register")
+  end
+  luatexbase_log("Lua function " .. (name or "") .. " = " ..
+                 tex_count[luafunction_count_name])
+  return tex_count[luafunction_count_name]
+end
+luatexbase.new_luafunction = new_luafunction
 %    \end{macrocode}
 % \end{macro}
 %
@@ -1236,6 +1261,7 @@ local types = {
 local callbacktypes = callbacktypes or {
 %    \end{macrocode}
 %   Section 8.2: file discovery callbacks.
+% \changes{v1.1g}{2018/05/02}{find\_sfd\_file removed}
 %    \begin{macrocode}
   find_read_file     = exclusive,
   find_write_file    = exclusive,
@@ -1245,7 +1271,6 @@ local callbacktypes = callbacktypes or {
   find_vf_file       = data,
   find_map_file      = data,
   find_enc_file      = data,
-  find_sfd_file      = data,
   find_pk_file       = data,
   find_data_file     = data,
   find_opentype_file = data,
@@ -1253,14 +1278,13 @@ local callbacktypes = callbacktypes or {
   find_type1_file    = data,
   find_image_file    = data,
 %    \end{macrocode}
-%
+% \changes{v1.1g}{2018/05/02}{read\_sfd\_file removed}
 %    \begin{macrocode}
   open_read_file     = exclusive,
   read_font_file     = exclusive,
   read_vf_file       = exclusive,
   read_map_file      = exclusive,
   read_enc_file      = exclusive,
-  read_sfd_file      = exclusive,
   read_pk_file       = exclusive,
   read_data_file     = exclusive,
   read_truetype_file = exclusive,
@@ -1286,13 +1310,14 @@ local callbacktypes = callbacktypes or {
 % {process\_rule, [hv]pack\_quality  append\_to\_vlist\_filter added}
 % \changes{v1.0n}{2016/03/13}{insert\_local\_par added}
 % \changes{v1.0n}{2016/03/13}{contribute\_filter added}
+% \changes{v1.1h}{2018/08/18}{append\_to\_vlist\_filter is \texttt{exclusive}}
 %    \begin{macrocode}
   contribute_filter      = simple,
   buildpage_filter       = simple,
   build_page_insert      = exclusive,
   pre_linebreak_filter   = list,
   linebreak_filter       = list,
-  append_to_vlist_filter = list,
+  append_to_vlist_filter = exclusive,
   post_linebreak_filter  = list,
   hpack_filter           = list,
   vpack_filter           = list,
@@ -1309,19 +1334,21 @@ local callbacktypes = callbacktypes or {
 % Section 8.5: information reporting callbacks.
 % \changes{v1.0m}{2016/02/11}{show\_warning\_message added}
 % \changes{v1.0p}{2016/11/17}{call\_edit added}
+% \changes{v1.1g}{2018/05/02}{finish\_synctex\_callback added}
 %    \begin{macrocode}
-  pre_dump             = simple,
-  start_run            = simple,
-  stop_run             = simple,
-  start_page_number    = simple,
-  stop_page_number     = simple,
-  show_error_hook      = simple,
-  show_warning_message = simple,
-  show_error_message   = simple,
-  show_lua_error_hook  = simple,
-  start_file           = simple,
-  stop_file            = simple,
-  call_edit            = simple,
+  pre_dump                = simple,
+  start_run               = simple,
+  stop_run                = simple,
+  start_page_number       = simple,
+  stop_page_number        = simple,
+  show_error_hook         = simple,
+  show_warning_message    = simple,
+  show_error_message      = simple,
+  show_lua_error_hook     = simple,
+  start_file              = simple,
+  stop_file               = simple,
+  call_edit               = simple,
+  finish_synctex_callback = simple,
 %    \end{macrocode}
 % Section 8.6: PDF-related callbacks.
 %    \begin{macrocode}
@@ -1329,8 +1356,12 @@ local callbacktypes = callbacktypes or {
   finish_pdfpage = data,
 %    \end{macrocode}
 % Section 8.7: font-related callbacks.
+% \changes{v1.1e}{2017/03/28}{glyph\_stream\_provider added}
+% \changes{v1.1g}{2018/05/02}{glyph\_not\_found added}
 %    \begin{macrocode}
-  define_font = exclusive,
+  define_font           = exclusive,
+  glyph_not_found       = exclusive, 
+  glyph_stream_provider = exclusive,
 %    \end{macrocode}
 % \changes{v1.0m}{2016/02/11}{pdf\_stream\_filter\_callback removed}
 %    \begin{macrocode}
@@ -1467,7 +1498,7 @@ local handlers = {
 local user_callbacks_defaults = { }
 %    \end{macrocode}
 %
-% \begin{macro}{create\_callback}
+% \begin{macro}{create_callback}
 % \changes{v1.0a}{2015/09/24}{Function added}
 % \changes{v1.0i}{2015/11/29}{Check name is not nil in error message (PHG)}
 % \changes{v1.0k}{2015/12/02}{Give more specific error messages (PHG)}
@@ -1495,7 +1526,7 @@ luatexbase.create_callback = create_callback
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{call\_callback}
+% \begin{macro}{call_callback}
 % \changes{v1.0a}{2015/09/24}{Function added}
 % \changes{v1.0i}{2015/11/29}{Check name is not nil in error message (PHG)}
 % \changes{v1.0k}{2015/12/02}{Give more specific error messages (PHG)}
@@ -1526,7 +1557,7 @@ luatexbase.call_callback=call_callback
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{add\_to\_callback}
+% \begin{macro}{add_to_callback}
 % \changes{v1.0a}{2015/09/24}{Function added}
 %   Add a function to a callback. First check arguments.
 % \changes{v1.0k}{2015/12/02}{Give more specific error messages (PHG)}
@@ -1590,7 +1621,7 @@ luatexbase.add_to_callback = add_to_callback
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{remove\_from\_callback}
+% \begin{macro}{remove_from_callback}
 % \changes{v1.0a}{2015/09/24}{Function added}
 % \changes{v1.0k}{2015/12/02}{adjust initialisation of cb local (PHG)}
 % \changes{v1.0k}{2015/12/02}{Give more specific error messages (PHG)}
@@ -1647,7 +1678,7 @@ luatexbase.remove_from_callback = remove_from_callback
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{in\_callback}
+% \begin{macro}{in_callback}
 % \changes{v1.0a}{2015/09/24}{Function added}
 % \changes{v1.0h}{2015/11/27}{Guard against undefined list latex/4445}
 %   Look for a function description in a callback.
@@ -1671,7 +1702,7 @@ luatexbase.in_callback = in_callback
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{disable\_callback}
+% \begin{macro}{disable_callback}
 % \changes{v1.0a}{2015/09/24}{Function added}
 %   As we subvert the engine interface we need to provide a way to access
 %   this functionality.
@@ -1687,7 +1718,7 @@ luatexbase.disable_callback = disable_callback
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{callback\_descriptions}
+% \begin{macro}{callback_descriptions}
 % \changes{v1.0a}{2015/09/24}{Function added}
 % \changes{v1.0h}{2015/11/27}{Match test in in-callback latex/4445}
 %   List the descriptions of functions registered for the given callback.

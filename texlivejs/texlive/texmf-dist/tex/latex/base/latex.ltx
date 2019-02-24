@@ -38,18 +38,18 @@
 %% ltbibl.dtx  (with options: `2ekernel')
 %% ltpage.dtx  (with options: `2ekernel')
 %% ltoutput.dtx  (with options: `2ekernel')
-%% ltclass.dtx  (with options: `2ekernel')
+%% ltclass.dtx  (with options: `2ekernel,tracerollback')
 %% ltluatex.dtx  (with options: `2ekernel')
 %% ltfinal.dtx  (with options: `2ekernel')
 %% 
 %% This is a generated file.
 %% 
 %% The source is maintained by the LaTeX Project team and bug
-%% reports for it can be opened at http://latex-project.org/bugs.html
+%% reports for it can be opened at https://latex-project.org/bugs.html
 %% (but please observe conditions on bug reports sent to that address!)
 %% 
 %% 
-%% Copyright 1993-2016
+%% Copyright 1993-2018
 %% The LaTeX3 Project and any individual authors listed elsewhere
 %% in this file.
 %% 
@@ -60,7 +60,7 @@
 %% conditions of the LaTeX Project Public License, either version 1.3c
 %% of this license or (at your option) any later version.
 %% The latest version of this license is in
-%%    http://www.latex-project.org/lppl.txt
+%%    https://www.latex-project.org/lppl.txt
 %% and version 1.3c or later is part of all distributions of LaTeX
 %% version 2005/12/01 or later.
 %% 
@@ -342,8 +342,11 @@
   \def\newwrite   {\e@alloc\write \chardef{\count17}\m@ne\sixt@@n}
 \else
   \def\newwrite   {\e@alloc\write
-                   {\ifnum\allocationnumber=18 \allocationnumber19\fi
-                     \global\chardef}%
+                   {\ifnum\allocationnumber=18
+                     \advance\count17\@ne
+                     \allocationnumber\count17 %
+                    \fi
+                    \global\chardef}%
                    {\count17}%
                    \m@ne
                    {128}}
@@ -421,7 +424,7 @@
 \fi}%
 \fi
 \def\alloc@#1#2#3#4#5{\global\advance\count1#1\@ne
-  \ch@ck#1#4#2% make sure there's still room
+  \ch@ck#1#4#2%
   \allocationnumber\count1#1%
   \global#3#5\allocationnumber
   \wlog{\string#5=\string#2\the\allocationnumber}}
@@ -697,8 +700,8 @@
 %%% From File: ltvers.dtx
 \def\fmtname{LaTeX2e}
 \edef\fmtversion
-   {2017/01/01}
-\def\patch@level{3}
+   {2018-12-01}
+\def\patch@level{0}
 \iffalse
 \def\reserved@a#1/#2/#3\@nil{%
   \count@\year
@@ -741,7 +744,12 @@
     \fi
   \fi
 \let\@currname\@empty
-\def\IncludeInRelease#1{\kernel@ifnextchar[%
+\def\IncludeInRelease#1{%
+ \if@includeinrelease
+  \PackageError{latexrelease}{mis-matched IncludeInRelease}{}%
+  \@includeinreleasefalse
+  \fi
+  \kernel@ifnextchar[%
   {\@IncludeInRelease{#1}}
   {\@IncludeInRelease{#1}[#1]}}
 \def\@IncludeInRelease#1[#2]{\@IncludeInRele@se{#2}}
@@ -754,6 +762,7 @@
      \expandafter\expandafter\expandafter\@gobble@IncludeInRelease
     \else
       \GenericInfo{}{Applying: \the\toks@}%
+      \@includeinreleasetrue
       \expandafter\let\csname\string#2+\@currname+IIR\endcsname\@empty
     \fi
   \else
@@ -761,17 +770,28 @@
     \expandafter\@gobble@IncludeInRelease
   \fi
 }
-\long\def\@gobble@IncludeInRelease#1\EndIncludeInRelease{}
-\let\EndIncludeInRelease\relax
+\def\EndIncludeInRelease{%
+\if@includeinrelease
+  \@includeinreleasefalse
+\else
+  \PackageError{latexrelease}{mis-matched EndIncludeInRelease}{}%
+\fi}
+\long\def\@gobble@IncludeInRelease#1\EndIncludeInRelease{%
+  \@includeinreleasefalse
+  \@check@IncludeInRelease#1\IncludeInRelease\@check@IncludeInRelease
+  \@end@check@IncludeInRelease}
+\long\def\@check@IncludeInRelease#1\IncludeInRelease
+                                   #2#3\@end@check@IncludeInRelease{%
+  \ifx\@check@IncludeInRelease#2\else
+    \PackageError{latexrelease}{skipped IncludeInRelease}{}%
+  \fi}
 %%% From File: ltdefns.dtx
 \def\two@digits#1{\ifnum#1<10 0\fi\number#1}
 \def\typeout#1{\begingroup\set@display@protect
     \immediate\write\@unused{#1}\endgroup}
 \newlinechar`\^^J
 \let\@@par=\par
-\let\@@hyph=\-        % Save original primitive definition
-\def\-{\discretionary{-}{}{}}
-\let\@dischyph=\-
+\let\@@hyph=\-
 \let\@@italiccorr=\/
 \def\@height{height} \def\@depth{depth} \def\@width{width}
 \def\@minus{minus}
@@ -839,7 +859,7 @@
            {#4}}}
 \long\def\@testopt#1#2{%
   \kernel@ifnextchar[{#1}{#1[{#2}]}}
-\def\@protected@testopt#1{%%
+\def\@protected@testopt#1{%
   \ifx\protect\@typeset@protect
     \expandafter\@testopt
   \else
@@ -866,7 +886,7 @@
 \def\renew@command#1{%
   \begingroup \escapechar\m@ne\xdef\@gtempa{{\string#1}}\endgroup
   \expandafter\@ifundefined\@gtempa
-     {\@latex@error{\noexpand#1undefined}\@ehc}%
+     {\@latex@error{Command \string#1 undefined}\@ehc}%
      \relax
   \let\@ifdefinable\@rc@ifdefinable
   \new@command#1}
@@ -1033,11 +1053,30 @@
    }%
 }%
 \def\@ifundefined#1{%
+  \ifcsname#1\endcsname\@ifundefin@d@i\else\@ifundefin@d@ii\fi{#1}}
+\long\def\@ifundefin@d@i#1\fi#2{\fi
+  \expandafter\ifx\csname #2\endcsname\relax
+    \@ifundefin@d@ii
+  \fi
+  \@secondoftwo}
+\long\def\@ifundefin@d@ii\fi#1#2#3{\fi #2}
+\ifx\numexpr\@undefined
+\def\@ifundefined#1{%
   \expandafter\ifx\csname#1\endcsname\relax
     \expandafter\@firstoftwo
   \else
     \expandafter\@secondoftwo
   \fi}
+\else\ifx\directlua\@undefined
+\else
+\def\@ifundefined#1{%
+  \ifcsname#1\endcsname
+    \expandafter\ifx\lastnamedcs\relax\else\@ifundefin@d@i\fi
+  \fi
+  \@firstoftwo}
+\long\def\@ifundefin@d@i#1#2#3#4#5{#1#2#5}
+\fi
+\fi
 \edef\@qend{\expandafter\@cdr\string\end\@nil}
 \edef\@qrelax{\expandafter\@cdr\string\relax\@nil}
 \long\def\@ifnextchar#1#2#3{%
@@ -1071,6 +1110,19 @@
   \edef #1{\expandafter\strip@prefix
            \meaning #1}%
 }
+\def\@latex@info#1{}
+\DeclareRobustCommand{\-}{%
+  \discretionary{%
+    \char \ifnum\hyphenchar\font<\z@
+            \defaulthyphenchar
+          \else
+            \hyphenchar\font
+          \fi
+               }{}{}%
+}
+\let\@dischyph=\-
+\newif\if@includeinrelease
+\@includeinreleasefalse
 %%% From File: ltalloc.dtx
 \chardef\@xxxii=32
 \mathchardef\@Mi=10001
@@ -1436,6 +1488,10 @@ Type  H <return>  for immediate help.}%
       \fi
       \ignorespaces
     \fi
+  \else
+    \ifvmode
+      \if@nobreak\nobreak\else\if@noskipsec\nobreak\fi\fi
+    \fi
   \fi}%
 \def\@Esphack{%
   \relax
@@ -1571,9 +1627,10 @@ Type  H <return>  for immediate help.}%
 \newskip\fill
 \fill = 0pt plus 1fill
 \def\stretch#1{\z@ \@plus #1fill\relax}
-\def\thinspace{\kern .16667em }
-\def\negthinspace{\kern-.16667em }
-\def\enspace{\kern.5em }
+\def\thinspace{\leavevmode@ifvmode\kern .16667em }
+\def\negthinspace{\leavevmode@ifvmode\kern-.16667em }
+\def\enspace{\leavevmode@ifvmode\kern.5em }
+\protected\def\leavevmode@ifvmode{\ifvmode\expandafter\indent\fi}
 \def\enskip{\hskip.5em\relax}
 \def\quad{\hskip1em\relax}
 \def\qquad{\hskip2em\relax}
@@ -1640,6 +1697,9 @@ Type  H <return>  for immediate help.}%
     \else
       \let\normalsfcodes\nonfrenchspacing
     \fi
+  \fi
+  \ifx\document@default@language\m@ne
+    \chardef\document@default@language\language
   \fi
   \@noskipsecfalse
   \let \@refundefined \relax
@@ -1895,6 +1955,12 @@ Type  H <return>  for immediate help.}%
 \def\hmode@bgroup{\leavevmode\bgroup}
 \def\DeclareTextCompositeCommand#1#2#3#4{%
   \expandafter\let\expandafter\reserved@a\csname#2\string#1\endcsname
+  \ifx\reserved@a\relax
+   \DeclareTextCommand#1{#2}{%
+     \@latex@error{\string#1 undeclared in encoding #2}\@eha}%
+   \@latex@info{Composite with undeclared \string#1 in encoding #2}%
+   \expandafter\let\expandafter\reserved@a\csname#2\string#1\endcsname
+  \fi
   \expandafter\expandafter\expandafter\ifx
   \expandafter\@car\reserved@a\relax\relax\@nil \@text@composite \else
       \edef\reserved@b##1{%
@@ -1907,7 +1973,8 @@ Type  H <return>  for immediate help.}%
       \expandafter\reserved@b\expandafter{\reserved@a{##1}}%
    \fi
    \expandafter\def\csname\expandafter\string\csname
-      #2\endcsname\string#1-\string#3\@empty\endcsname{#4}}
+      #2\endcsname\string#1-\string#3\@empty\endcsname{#4}%
+  }
 \@onlypreamble\DeclareTextCompositeCommand
 \def\@text@composite#1#2#3\@text@composite{%
    \expandafter\@text@composite@x
@@ -2083,6 +2150,7 @@ Type  H <return>  for immediate help.}%
   \egroup
 }
 %%% From File: ltcounts.dtx
+
 \def\setcounter#1#2{%
   \@ifundefined{c@#1}%
     {\@nocounterr{#1}}%
@@ -2115,6 +2183,49 @@ Type  H <return>  for immediate help.}%
      \gdef\csname the#1\expandafter\endcsname\expandafter
           {\expandafter\@arabic\csname c@#1\endcsname}}
 \def\@addtoreset#1#2{\expandafter\@cons\csname cl@#2\endcsname {{#1}}}
+\def\@removefromreset#1#2{%
+  \@ifundefined{c@#2}\relax
+  {\begingroup
+     \expandafter\let\csname c@#1\endcsname\@removefromreset
+     \def\@elt##1{%
+       \expandafter\ifx\csname c@##1\endcsname\@removefromreset
+       \else
+         \noexpand\@elt{##1}%
+       \fi}%
+     \expandafter\xdef\csname cl@#2\endcsname
+      {\csname cl@#2\endcsname}%
+    \endgroup}}
+
+\def\@ifbothcounters#1#2#3{%
+  \@ifundefined{c@#1}{\@nocounterr{#1}}%
+    {% else counter is defined
+     \@ifundefined{c@#2}{\@nocounterr{#2}}%
+       {% else both counter and within  are defined
+        #3}}}
+
+\def\counterwithout {\@ifstar\counterwithout@s\counterwithout@x}
+\def\counterwithout@s#1#2{%
+  \@ifbothcounters{#1}{#2}{\@removefromreset{#1}{#2}}}
+\def\counterwithout@x#1#2{%
+  \@ifbothcounters{#1}{#2}%
+      {\@removefromreset{#1}{#2}%
+       \expandafter
+       \gdef\csname the#1\expandafter\endcsname\expandafter
+            {\expandafter
+             \@arabic\csname c@#1\endcsname}}}
+
+\def\counterwithin{\@ifstar\counterwithin@s\counterwithin@x}
+\def\counterwithin@s#1#2{%
+  \@ifbothcounters{#1}{#2}{\@addtoreset{#1}{#2}}}
+\def\counterwithin@x#1#2{%
+  \@ifbothcounters{#1}{#2}%
+      {\@addtoreset{#1}{#2}%
+       \expandafter
+       \gdef\csname the#1\expandafter\endcsname\expandafter
+            {\csname the#2\expandafter\endcsname\expandafter
+             .\expandafter
+             \@arabic\csname c@#1\endcsname}}}
+
 \def\arabic#1{\expandafter\@arabic\csname c@#1\endcsname}
 \def\roman#1{\expandafter\@roman\csname c@#1\endcsname}
 \def\Roman#1{\expandafter\@Roman\csname c@#1\endcsname}
@@ -4137,9 +4248,23 @@ Type  H <return>  for immediate help.}%
 \def\@testdef #1#2#3{%
   \def\reserved@a{#3}\expandafter \ifx \csname #1@#2\endcsname
  \reserved@a  \else \@tempswatrue \fi}
+\protected\def\protected@file@percent{}
+
+\begingroup
+\catcode`\%=12
+\catcode`\^^A=9
+\long\gdef\add@percent@to@temptokena
+    #1\protected@file@percent#2\add@percent@to@temptokena
+    {\ifx!#2!\@temptokena\expandafter{#1}\else
+             \@temptokena\expandafter{#1%^^A
+      }\fi}
+\endgroup
 \long\def\@writefile#1#2{%
   \@ifundefined{tf@#1}\relax
-    {\@temptokena{#2}%
+    {%
+      \add@percent@to@temptokena
+        \@empty#2\protected@file@percent
+        \add@percent@to@temptokena
      \immediate\write\csname tf@#1\endcsname{\the\@temptokena}%
     }%
 }
@@ -4199,6 +4324,7 @@ Type  H <return>  for immediate help.}%
   \leftskip\@totalleftmargin\rightskip\z@skip
   \parindent\z@\parfillskip\@flushglue\parskip\z@skip
   \@@par
+  \language\l@nohyphenation
   \@tempswafalse
   \def\par{%
     \if@tempswa
@@ -4209,13 +4335,43 @@ Type  H <return>  for immediate help.}%
     \fi}%
   \let\do\@makeother \dospecials
   \obeylines \verbatim@font \@noligs
-  \hyphenchar\font\m@ne
   \everypar \expandafter{\the\everypar \unpenalty}%
 }
 \def\verbatim{\@verbatim \frenchspacing\@vobeyspaces \@xverbatim}
 \def\endverbatim{\if@newlist \leavevmode\fi\endtrivlist}
 \def\verbatim@font{\normalfont\ttfamily}
-\@namedef{verbatim*}{\@verbatim\@sxverbatim}
+\DeclareRobustCommand\asciispace{\char 32 }
+\ifx\Umathcode\@undefined
+  \let\verbvisiblespace\asciispace                                % Pdftex version
+\else
+  \DeclareRobustCommand\verbvisiblespace
+           {\leavevmode{\usefont{OT1}{cmtt}{m}{n}\asciispace}}    % xetex/luatex version
+\fi
+
+\def\@setupverbvisiblespace{%
+  \ifx\verbvisiblespace\asciispace
+    \let\@xobeysp\asciispace
+  \else
+    \setbox\z@\hbox{x}%
+    \setbox\@verbvisiblespacebox\hbox to\wd\z@{\hss\verbvisiblespace\hss}%
+    \def\@xobeysp{\leavevmode\copy\@verbvisiblespacebox}%
+  \fi
+}
+
+\newbox\@verbvisiblespacebox
+\def\@sverb#1{%
+  \catcode`#1\active
+  \lccode`\~`#1%
+  \gdef\verb@balance@group{\verb@egroup
+     \@latex@error{\noexpand\verb illegal in command argument}\@ehc}%
+  \aftergroup\verb@balance@group
+  \lowercase{\let~\verb@egroup}%
+  \ifnum\catcode`\ =\active
+  \else  \@setupverbvisiblespace \@vobeyspaces \fi
+}
+\@namedef{verbatim*}{\@verbatim
+  \@setupverbvisiblespace
+  \frenchspacing\@vobeyspaces\@sxverbatim}
 \expandafter\let\csname endverbatim*\endcsname =\endverbatim
 \def\@makeother#1{\catcode`#112\relax}
 \let\verb@balance@group\@empty
@@ -4230,14 +4386,8 @@ Type  H <return>  for immediate help.}%
   \bgroup
     \verb@eol@error \let\do\@makeother \dospecials
     \verbatim@font\@noligs
+    \language\l@nohyphenation
     \@ifstar\@sverb\@verb}
-\def\@sverb#1{%
-  \catcode`#1\active
-  \lccode`\~`#1%
-  \gdef\verb@balance@group{\verb@egroup
-     \@latex@error{\noexpand\verb illegal in command argument}\@ehc}%
-  \aftergroup\verb@balance@group
-  \lowercase{\let~\verb@egroup}}%
 \def\@verb{\@vobeyspaces \frenchspacing \@sverb}
 \def\verbatim@nolig@list{\do\`\do\<\do\>\do\,\do\'\do\-}
 \def\do@noligs#1{%
@@ -4338,7 +4488,8 @@ Type  H <return>  for immediate help.}%
 \def\finph@nt{%
   \setbox\tw@\null
   \ifv@ \ht\tw@\ht\z@ \dp\tw@\dp\z@\fi
-  \ifh@ \wd\tw@\wd\z@\fi \box\tw@}
+  \ifh@ \wd\tw@\wd\z@\fi
+  \leavevmode@ifvmode\box\tw@}
 \def\mathstrut{\vphantom(}
 \def\smash{%
   \relax % \relax, in case this comes first in \halign
@@ -4351,7 +4502,7 @@ Type  H <return>  for immediate help.}%
   \setbox\z@\hbox{\color@begingroup#1\color@endgroup}\finsm@sh}
 \def\mathsm@sh#1#2{%
   \setbox\z@\hbox{$\m@th#1{#2}$}\finsm@sh}
-\def\finsm@sh{\ht\z@\z@ \dp\z@\z@ \box\z@}
+\def\finsm@sh{\ht\z@\z@ \dp\z@\z@ \leavevmode@ifvmode\box\z@}
 \def\buildrel#1\over#2{\mathrel{\mathop{\kern\z@#2}\limits^{#1}}}
 \def\cases#1{\left\{\,\vcenter{\normalbaselines\m@th
     \ialign{$##\hfil$&\quad{##}\hfil\crcr#1\crcr}}\right.}
@@ -4943,7 +5094,9 @@ Type  H <return>  for immediate help.}%
   \linewidth\hsize
   \@totalleftmargin\z@
   \leftskip\z@skip \rightskip\z@skip \@rightskip\z@skip
-  \parfillskip\@flushglue \lineskip\normallineskip
+  \parfillskip\@flushglue
+  \lineskip\normallineskip
+  \lineskiplimit\normallineskiplimit
   \baselineskip\normalbaselineskip
   \sloppy}
 \def\@parboxrestore{\@arrayparboxrestore\let\\\@normalcr}
@@ -5948,7 +6101,8 @@ Type  H <return>  for immediate help.}%
     \@nobreakfalse
   \endgroup}
 \def\addcontentsline#1#2#3{%
-  \addtocontents{#1}{\protect\contentsline{#2}{#3}{\thepage}}}
+  \addtocontents{#1}{\protect\contentsline{#2}{#3}{\thepage}%
+                     \protected@file@percent}}
 \long\def\addtocontents#1#2{%
   \protected@write\@auxout
       {\let\label\@gobble \let\index\@gobble \let\glossary\@gobble}%
@@ -5968,9 +6122,12 @@ Type  H <return>  for immediate help.}%
         \mkern \@dotsep mu\hbox{.}\mkern \@dotsep
         mu$}\hfill
      \nobreak
-     \hb@xt@\@pnumwidth{\hfil\normalfont \normalcolor #5}%
+     \hb@xt@\@pnumwidth{\hfil\normalfont \normalcolor #5%
+                        \kern-\p@\kern\p@}%
      \par}%
   \fi}
+
+\DeclareRobustCommand\noprotrusion{\leavevmode\kern-\p@\kern\p@}
 \def\numberline#1{\hb@xt@\@tempdima{#1\hfil}}
 %%% From File: ltfloat.dtx
 \message{floats,}
@@ -6231,8 +6388,6 @@ Type  H <return>  for immediate help.}%
 \DeclareRobustCommand*\textsubscript[1]{%
   \@textsubscript{\selectfont#1}}%
 \def\@textsubscript#1{%
-  {\m@th\ensuremath{_{\mbox{\fontsize\sf@size\z@#1}}}}}%
-\def\@textsubscript#1{%
   {\m@th\ensuremath{_{\mbox{\fontsize\sf@size\z@#1}}}}}
 \newdimen\footnotesep
 \def\footnote{\@ifnextchar[\@xfootnote{\stepcounter\@mpfn
@@ -6349,7 +6504,7 @@ Type  H <return>  for immediate help.}%
 \let\bibstyle=\@gobble
 \def\bibliography#1{%
   \if@filesw
-    \immediate\write\@auxout{\string\bibdata{#1}}%
+    \immediate\write\@auxout{\string\bibdata{\zap@space#1 \@empty}}%
   \fi
   \@input@{\jobname.bbl}}
 \def\bibliographystyle#1{%
@@ -6569,6 +6724,14 @@ Type  H <return>  for immediate help.}%
   \fi
   \if@nobreak \@nobreakfalse \everypar{}\fi
   \par
+  \ifdim\prevdepth>\z@
+     \vskip -%
+       \ifdim\prevdepth>\maxdepth
+         \maxdepth
+       \else
+         \prevdepth
+       \fi
+  \fi
   \vfil
   \penalty -\@M}
 \def \@emptycol {\vbox{}\penalty -\@M}
@@ -6837,8 +7000,9 @@ Type  H <return>  for immediate help.}%
 \let'\active@math@prime}%
 \endgroup
 \def\@outputpage{%
-\begingroup           % the \endgroup is put in by \aftergroup
+\begingroup
   \let \protect \noexpand
+  \language\document@default@language
   \@resetactivechars
   \global\let\@@if@newlist\if@newlist
   \global\@newlistfalse
@@ -6847,8 +7011,6 @@ Type  H <return>  for immediate help.}%
     \set@typeset@protect
     \aftergroup \endgroup
     \aftergroup \set@typeset@protect
-                                % correct? or just restore by ending
-                                % the group?
   \if@specialpage
     \global\@specialpagefalse\@nameuse{ps@\@specialstyle}%
   \fi
@@ -6875,7 +7037,7 @@ Type  H <return>  for immediate help.}%
           \normalcolor
           \hb@xt@\textwidth{\@thehead}%
         \color@endbox
-        }%                        %% 22 Feb 87
+        }%
       \dp\@tempboxa \z@
       \box\@tempboxa
       \vskip \headsep
@@ -6951,7 +7113,7 @@ Type  H <return>  for immediate help.}%
          \dblfigrule
        \fi
        \vskip \dbltextfloatsep
-       \box\@outputbox
+       \unvbox\@outputbox
        }%
   \fi
 }
@@ -7548,14 +7710,19 @@ Type  H <return>  for immediate help.}%
     \csname ver@#2.#1\endcsname}
 \@onlypreamble\@ifl@ter
 \def\@ifl@t@r#1#2{%
-  \ifnum\expandafter\@parse@version#1//00\@nil<%
-        \expandafter\@parse@version#2//00\@nil
+  \ifnum\expandafter\@parse@version@#1//00\@nil<%
+        \expandafter\@parse@version@#2//00\@nil
     \expandafter\@secondoftwo
   \else
     \expandafter\@firstoftwo
   \fi}
+\def\@parse@version@#1{\@parse@version0#1}
 \@onlypreamble\@ifl@t@r
-\def\@parse@version#1/#2/#3#4#5\@nil{#1#2#3#4 }
+\def\@parse@version#1/#2/#3#4#5\@nil{%
+\@parse@version@dash#1-#2-#3#4\@nil
+}
+\def\@parse@version@dash#1-#2-#3#4#5\@nil{%
+  \if\relax#2\relax\else#1\fi#2#3#4 }
 \def\@ifpackagewith{\@if@ptions\@pkgextension}
 \def\@ifclasswith{\@if@ptions\@clsextension}
 \@onlypreamble\@ifpackagewith
@@ -7836,7 +8003,7 @@ Type  H <return>  for immediate help.}%
     \csname\@currname.\@currext-h@@k\endcsname
     \expandafter\let\csname\@currname.\@currext-h@@k\endcsname
               \@undefined
-    \@unprocessedoptions}
+    \@unprocessedoptions}%
     \@ifl@ter\@currext{#1}{#3}{}%
       {\@latex@warning@no@line
          {You have requested,\on@line,
@@ -7922,6 +8089,12 @@ Type  H <return>  for immediate help.}%
 \@onlypreamble\@twoclasseserror
 \def\two@digits#1{\ifnum#1<10 0\fi\number#1}
 \begingroup%
+\@tempcnta=1
+\loop
+  \catcode\@tempcnta=12  %
+  \advance\@tempcnta\@ne %
+\ifnum\@tempcnta<32      %
+\repeat                  %
 \catcode`\*=11 %
 \catcode`\^^M\active%
 \catcode`\^^L\active\let^^L\relax%
@@ -7955,6 +8128,12 @@ Type  H <return>  for immediate help.}%
       \@percentchar\@percentchar}%
   \fi%
   \let\do\@makeother\dospecials%
+  \count@ 128\relax%
+  \loop%
+    \catcode\count@ 11\relax%
+    \advance\count@ \@ne%
+    \ifnum\count@<\@cclvi%
+  \repeat%
   \edef\E{\@backslashchar end\string{\@currenvir\string}}%
   \edef\reserved@b{%
     \def\noexpand\reserved@b%
@@ -7979,10 +8158,10 @@ Type  H <return>  for immediate help.}%
     ^^M}%
   \catcode`\^^L\active%
   \let\L\@undefined%
-  \def^^L{\@ifundefined L^^J^^J^^J}%
+  \def^^L{\expandafter\ifx\csname L\endcsname\relax\fi ^^J^^J}%
   \catcode`\^^I\active%
   \let\I\@undefined%
-  \def^^I{\@ifundefined I\space\space}%
+  \def^^I{\expandafter\ifx\csname I\endcsname\relax\fi\space}%
   \catcode`\^^M\active%
   \edef^^M##1^^M{%
     \noexpand\reserved@b##1\E\E\relax}}%
@@ -8008,6 +8187,201 @@ Type  H <return>  for immediate help.}%
 \@onlypreamble\endfilecontents*
 \endgroup
 \@onlypreamble\filec@ntents
+\let\pkgcls@debug\@gobble
+\def\requestedLaTeXdate{0}
+\ifx\pkgcls@targetdate\@undefined
+  \newcount\pkgcls@targetdate
+\fi
+\let\pkgcls@targetlabel\@empty
+\def\pkgcls@innerdate{\maxdimen}
+
+\let\pkgcls@candidate\@empty
+\let\pkgcls@releasedate\@empty
+\ifx\load@onefilewithoptions\@undefined
+ \let\load@onefilewithoptions\@onefilewithoptions
+ \def\@onefilewithoptions#1[#2][#3]#4{%
+  \pkgcls@debug{--- File loaded request (\noexpand\usepackage or ...)}%
+  \pkgcls@debug{\@spaces 1: #1}%
+  \pkgcls@debug{\@spaces 2: #2}%
+  \pkgcls@debug{\@spaces 3: #3}%
+  \pkgcls@debug{\@spaces 4: #4}%
+  \def\pkgcls@name{#1}%                  % for info message
+  \def\pkgcls@arg {#3}%                  % for info message
+  \pkgcls@parse@date@arg{#3}%
+  \let\pkgcls@candidate\@empty
+  \begingroup
+  \edef\reserved@a{%
+    \endgroup
+    \unexpanded{\load@onefilewithoptions#1[#2]}%
+    [\pkgcls@mindate]%
+    \unexpanded{#4}}%
+   \reserved@a
+ }
+\fi
+\def\pkgcls@parse@date@arg #1{%
+   \ifx\@nil#1\@nil
+     \pkgcls@targetdate\requestedLaTeXdate\relax
+     \let\pkgcls@targetlabel\@empty
+     \let\pkgcls@mindate\@empty
+   \else
+     \pkgcls@parse@date@arg@#1=\@nil\relax
+   \fi
+ }
+\def\pkgcls@parse@date@arg@#1=#2\@nil{%
+  \pkgcls@targetdate
+    \ifx\@nil#1\@nil
+      \@parse@version0#2//00\@nil\relax
+      \ifnum \pkgcls@targetdate=\z@
+        \pkgcls@targetdate\@ne
+        \def\pkgcls@innerdate{\maxdimen}%
+        \pkgcls@parse@date@arg@version#2%
+      \else
+        \edef\pkgcls@innerdate{\the\pkgcls@targetdate}%
+      \fi
+      \let\pkgcls@mindate\@empty
+    \else
+      \requestedLaTeXdate\relax
+      \let\pkgcls@targetlabel\@empty
+      \def\pkgcls@innerdate{\maxdimen}%
+      \def\pkgcls@mindate{#1}%
+      \ifnum \pkgcls@targetdate > \z@
+        \ifnum \@parse@version0#1//00\@nil > \pkgcls@targetdate
+          \@latex@warning@no@line{Suspicious rollback/min-date date given\MessageBreak
+            A minimal date of #1 has been specified for
+             \@cls@pkg\MessageBreak '\pkgcls@name'.\MessageBreak
+             But this is in conflict
+             with a rollback request to \requestedpatchdate}
+        \fi
+      \fi
+    \fi
+}
+\def\pkgcls@parse@date@arg@version#1={%
+  \def\pkgcls@targetlabel{#1}}
+
+\def\DeclareRelease#1#2#3{%
+  \ifnum\pkgcls@targetdate>\z@  % some sort of rollback request
+    \pkgcls@debug{---\string\DeclareRelease:}%
+    \pkgcls@debug{\@spaces 1: #1}%
+    \pkgcls@debug{\@spaces 2: #2}%
+    \pkgcls@debug{\@spaces 3: #3}%
+    \ifx\@nil#2\@nil
+      \ifnum\pkgcls@targetdate=\@ne  % named request
+        \def\reserved@a{#1}%
+        \ifx\pkgcls@targetlabel\reserved@a
+          \pkgcls@use@this@release{#3}{}%
+        \else
+          \pkgcls@debug{Label doesn't match}%
+        \fi
+      \else
+        \pkgcls@debug{Date request: ignored}%
+      \fi
+    \else
+      \ifnum\pkgcls@targetdate>\@ne  % a real request
+        \ifnum\@parse@version#2//00\@nil
+             >\pkgcls@targetdate
+          \ifx\pkgcls@candidate\@empty
+            \pkgcls@rollbackdate@error{#2}%
+            \pkgcls@use@this@release{#3}{#2}%
+          \else
+            \pkgcls@use@this@release\pkgcls@candidate
+                                    \pkgcls@releasedate
+          \fi
+        \else
+          \def\pkgcls@candidate{#3}%
+          \def\pkgcls@releasedate{#2}%
+          \pkgcls@debug{New candidate: #3}%
+        \fi
+      \else
+        \def\reserved@a{#1}%
+        \ifx\pkgcls@targetlabel\reserved@a
+          \pkgcls@use@this@release{#3}{#2}%
+        \else
+          \pkgcls@debug{Label doesn't match}%
+        \fi
+      \fi
+    \fi
+  \fi
+}
+
+\def\pkgcls@use@this@release#1#2{%
+   \pkgcls@show@selection{#1}{#2}%
+   \pkgcls@targetdate\z@
+   \@@input #1\relax
+   \endinput
+}
+
+\def\pkgcls@show@selection#1#2{%
+  \pkgcls@debug{Result: use  #1}%
+  \GenericInfo
+   {\@spaces\@spaces\space}{Rollback for
+    \@cls@pkg\space'\@currname' requested ->
+    \ifnum\pkgcls@targetdate>\@ne
+       date
+       \ifnum\requestedLaTeXdate=\pkgcls@targetdate
+          \requestedpatchdate
+       \else
+          \expandafter\@gobble\pkgcls@arg
+       \fi.\MessageBreak
+       Best approximation is
+    \else
+       version '\pkgcls@targetlabel'.\MessageBreak
+       This corresponds to
+    \fi
+    \ifx\@nil#2\@nil
+       a special release%
+    \else
+       the release introduced on #2%
+    \fi
+    \@gobble}%
+}
+
+\def\pkgcls@rollbackdate@error#1{%
+  \@latex@error{Suspicious rollback date given}%
+     {The \@cls@pkg\space'\@currname'  claims that it
+      came into existence on #1 which\MessageBreak
+      is after your requested rollback date --- so
+      something is wrong here.\MessageBreak
+      Continue and we use the earliest known release.}}
+\def\DeclareCurrentRelease#1#2{%
+  \ifnum\pkgcls@targetdate>\z@  % some sort of rollback request
+    \pkgcls@debug{---DeclareCurrentRelease}%
+    \pkgcls@debug{   1: #1}%
+    \pkgcls@debug{   2: #2}%
+    \ifnum\pkgcls@targetdate>\@ne  % a date request
+      \ifnum\@parse@version#2//00\@nil
+           >\pkgcls@targetdate
+
+        \ifx\pkgcls@candidate\@empty
+          \pkgcls@rollbackdate@error{#2}%
+        \else
+          \pkgcls@use@this@release\pkgcls@candidate
+                                  \pkgcls@releasedate
+        \fi
+      \else
+        \pkgcls@show@selection{current version}{#2}%
+      \fi
+    \else % a label request
+      \def\reserved@a{#1}%
+      \ifx\pkgcls@targetlabel\reserved@a
+        \pkgcls@show@selection{current version}{#2}%
+      \else
+        \@latex@error{Requested version '\pkgcls@targetlabel' for
+          \@cls@pkg\space'\@currname' is unknown}\@ehc
+      \fi
+    \fi
+  \fi
+}
+
+\long\def\IfTargetDateBefore#1{%
+  \ifnum\pkgcls@innerdate <%
+        \expandafter\@parse@version\expandafter0#1//00\@nil
+    \typeout{Exclude code introduced on #1}%
+    \expandafter\@firstoftwo
+  \else
+    \typeout{Include code introduced on #1}%
+    \expandafter\@secondoftwo
+  \fi
+}
 %%% From File: ltluatex.dtx
 \ifx\directlua\@undefined\else
 \ifnum\luatexversion<60 %
@@ -8167,14 +8541,6 @@ Type  H <return>  for immediate help.}%
 \everyjob\expandafter{%
   \the\everyjob
   \directlua{%
-%% Horrible hack, locally reset the luatex version number
-%% This is not required for the source version of luaotfload
-%% but is required due to an error in the version check in the
-%% public version (January 2017)
-%% https://github.com/lualatex/luaotfload/issues/387
-%% It is expected that this will be removed before TeXLive 2017
-  local tmp_version=tex.luatexversion %
-  tex.luatexversion=199 %
   if xpcall(function ()%
              require('luaotfload-main')%
             end,texio.write_nl) then %
@@ -8183,7 +8549,6 @@ Type  H <return>  for immediate help.}%
   texio.write_nl('Error in luaotfload: reverting to OT1')%
   tex.print('\string\\def\string\\encodingdefault{OT1}')%
   end %
-  tex.luatexversion=tmp_version%
   }%
   \let\f@encoding\encodingdefault
   \expandafter\let\csname ver@luaotfload.sty\endcsname\fmtversion
@@ -8287,6 +8652,10 @@ Type  H <return>  for immediate help.}%
            }
            {\input{hyphen.ltx}}
 \let\@addtofilelist\@gobble
+\ifx\l@nohyphenation \@undefined
+  \newlanguage\l@nohyphenation
+\fi
+\let\document@default@language\m@ne
 \ifdim \font@submax >\z@
    \@font@warning{Size substitutions with differences\MessageBreak
                  up to \font@submax\space have occurred.\MessageBreak
@@ -8299,6 +8668,95 @@ Type  H <return>  for immediate help.}%
             read the above message.}
    \errmessage{}
 \def\font@submax{0pt}
+\fi
+\ifnum0%
+  \ifx\Umathchar\@undefined\else 1\fi
+  \ifx\mubyte\@undefined\else 1\fi
+  \ifx\charsubdef\@undefined\else 1\fi
+  =\z@
+\def\saved@space@catcode{10}
+\let\@inpenc@test\relax
+\def\IeC{%
+  \ifx\protect\@typeset@protect
+    \expandafter\@firstofone
+  \else
+    \noexpand\IeC
+  \fi
+}
+\@tempcnta=1
+\loop
+  \catcode\@tempcnta=13  %
+  \advance\@tempcnta\@ne %
+\ifnum\@tempcnta<32      %
+\repeat                  %
+\catcode0=15  % null
+\catcode9=10  % tab
+\catcode10=12 % ctrl J
+\catcode12=13 % ctrl L
+\catcode13=5  % newline
+\@tempcnta=128
+\loop
+  \catcode\@tempcnta=13
+  \advance\@tempcnta\@ne
+\ifnum\@tempcnta<256
+\repeat
+\def\UseRawInputEncoding{%
+\let\inputencodingname\@undefined                     % revert
+\let\DeclareFontEncoding@\DeclareFontEncoding@saved   % revert
+\let\DeclareUnicodeCharacter\@undefined               % revert
+\@tempcnta=1
+\loop
+  \catcode\@tempcnta=15  %
+  \advance\@tempcnta\@ne %
+\ifnum\@tempcnta<32      %
+\repeat                  %
+\catcode0=15  % null
+\catcode9=10  % tab
+\catcode10=12 % ctrl J
+\catcode12=13 % ctrl L
+\catcode13=5  % newline
+\@tempcnta=128
+\loop
+  \catcode\@tempcnta=12
+  \advance\@tempcnta\@ne
+\ifnum\@tempcnta<256
+\repeat
+}
+\let\DeclareFontEncoding@saved\DeclareFontEncoding@
+\edef\inputencodingname{utf8}%
+\input{utf8.def}
+\let\UTFviii@undefined@err@@\UTFviii@undefined@err
+\let\UTFviii@invalid@err@@\UTFviii@invalid@err
+\let\UTFviii@two@octets@@\UTFviii@two@octets
+\let\UTFviii@three@octets@@\UTFviii@three@octets
+\let\UTFviii@four@octets@@\UTFviii@four@octets
+\def\UTFviii@undefined@err#1{\@gobble#1}%
+\let\UTFviii@invalid@err\string
+\let\UTFviii@two@octets\string
+\let\UTFviii@three@octets\string
+\let\UTFviii@four@octets\string
+\everyjob\expandafter{\the\everyjob
+\let\UTFviii@undefined@err\UTFviii@undefined@err@@
+\let\UTFviii@invalid@err\UTFviii@invalid@err@@
+\let\UTFviii@two@octets\UTFviii@two@octets@@
+\let\UTFviii@three@octets\UTFviii@three@octets@@
+\let\UTFviii@four@octets\UTFviii@four@octets@@
+}
+\let\@inpenc@test\@undefined
+\let\saved@space@catcode\@undefined
+\else
+\@tempcnta=0
+\loop
+  \catcode\@tempcnta=15  %
+  \advance\@tempcnta\@ne %
+\ifnum\@tempcnta<32      %
+\repeat                  %
+\catcode0=15  % null
+\catcode9=10  % tab
+\catcode10=12 % ctrl J
+\catcode12=13 % ctrl L
+\catcode13=5  % newline
+\let\UseRawInputEncoding\relax
 \fi
 \def\reserved@a#1#2{%
    \@tempcnta#1\relax
@@ -8339,10 +8797,6 @@ Type  H <return>  for immediate help.}%
 \def\reserved@c#1{\catcode#1=11\relax}
 \reserved@a{`\A}{`\Z}
 \reserved@a{`\a}{`\z}
-\def\reserved@c#1{\catcode#1=15\relax}
-\reserved@a{0}{`\^^H}
-\reserved@c{`\^^K}
-\reserved@a{`\^^N}{31}
 \ifnum 0%
   \ifx\Umathcode\@undefined\else 1\fi
   \ifx\XeTeXmathcode\@undefined\else 1\fi

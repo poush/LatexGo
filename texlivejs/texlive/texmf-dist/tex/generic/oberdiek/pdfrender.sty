@@ -9,7 +9,7 @@
 %% This is a generated file.
 %% 
 %% Project: pdfrender
-%% Version: 2016/05/17 v1.4
+%% Version: 2018/11/01 v1.5
 %% 
 %% Copyright (C) 2010 by
 %%    Heiko Oberdiek <heiko.oberdiek at googlemail.com>
@@ -104,7 +104,7 @@
   \fi
 \expandafter\x\csname ver@pdfrender.sty\endcsname
 \ProvidesPackage{pdfrender}%
-  [2016/05/17 v1.4 Access to some PDF graphics parameters (HO)]%
+  [2018/11/01 v1.5 Access to some PDF graphics parameters (HO)]%
 \begingroup\catcode61\catcode48\catcode32=10\relax%
   \catcode13=5 % ^^M
   \endlinechar=13 %
@@ -200,7 +200,9 @@
   \let\PdfRender@RequirePackage\RequirePackage
 \fi
 \ifx\pdfextension\@undefined\else
-  \PdfRender@RequirePackage{luatex85}[2016/01/01]
+  \def\pdfcolorstackinit {\pdffeedback colorstackinit}
+  \protected\def\pdfcolorstack     {\pdfextension colorstack}
+  \protected\def\pdfliteral        {\pdfextension literal}
 \fi
 \PdfRender@RequirePackage{ifpdf}[2010/01/28]
 \PdfRender@RequirePackage{infwarerr}[2007/09/09]

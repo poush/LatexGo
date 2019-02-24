@@ -87,8 +87,8 @@ pdftex.bc: binary/tangle binary/tie binary/web2c  build/texk/web2c/Makefile kpat
 
 pdftex-worker.js: pdftex-pre.js pdftex-post.js pdftex.bc
 	@echo "create pdftex worker"
-	#OBJFILES=$$(for i in `find build/texk/web2c/lib build/texk/kpathsea -name '*.o'` ; do llvm-nm $$i | grep main >/dev/null || echo $$i ; done) && \
-		emcc  --memory-init-file 0 -v --closure 1 -s TOTAL_MEMORY=$$((128*1024*1024)) -O3  pdftex.bc -s INVOKE_RUN=0 --pre-js pdftex-pre.js --post-js pdftex-post.js -o pdftex-worker.js
+	#OBJFILES=$$(for i in `find build/texk/web2c/lib build/texk/kpathsea -name '*.o'` ; do llvm-nm $$i | grep main >/dev/null || echo $$i ; done) && 
+	emcc  --memory-init-file 0 -v --closure 0 -s TOTAL_MEMORY=$$((128*1024*1024)) -O3  pdftex.bc -s INVOKE_RUN=0 --pre-js pdftex-pre.js --post-js pdftex-post.js -o pdftex-worker.js -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s FORCE_FILESYSTEM=1 -s WASM=0
 .PHONY: pdftex
 pdftex: pdftex-worker.js
 
@@ -100,7 +100,7 @@ bibtex.bc:  binary/tangle binary/tie binary/web2c  build/texk/web2c/Makefile kpa
 
 
 bibtex-worker.js: bibtex-pre.js bibtex-post.js bibtex.bc
-	emcc  --memory-init-file 0 --closure 1 -v -O3 --pre-js bibtex-pre.js --post-js bibtex-post.js -s INVOKE_RUN=0 bibtex.bc -o bibtex-worker.js
+	emcc  --memory-init-file 0 --closure 0 -v -O3 --pre-js bibtex-pre.js --post-js bibtex-post.js -s INVOKE_RUN=0 bibtex.bc -o bibtex-worker.js -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s FORCE_FILESYSTEM=1 -s WASM=0
 
 .PHONY: bibtex
 bibtex: bibtex-worker.js
@@ -147,4 +147,3 @@ dist:
 	rm -f install-tl-unx.tar.gz
 	rm -f pdftex.bc
 	rm -f bibtex.bc
-

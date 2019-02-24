@@ -8,7 +8,7 @@
 % conditions of the LaTeX Project Public License, either version 1.3c
 % of this license or (at your option) any later version.
 % The latest version of this license is in
-%    http://www.latex-project.org/lppl.txt
+%    https://www.latex-project.org/lppl.txt
 % and version 1.3c or later is part of all distributions of LaTeX
 % version 2005/12/01 or later.
 %
@@ -20,7 +20,7 @@
 % \iffalse    This is a METACOMMENT
 %
 %% Package `multicol' to use with LaTeX2e
-%% Copyright 1989-2016 Frank Mittelbach
+%% Copyright 1989-2018 Frank Mittelbach
 %%
 %%  In addition to the terms of LPPL any distributed version
 %%  (unchanged or modified) of multicol has to keep the statement
@@ -86,12 +86,19 @@
 %<*dtx>
           \ProvidesFile{multicol.dtx}
 %</dtx>
-%<package>\NeedsTeXFormat{LaTeX2e}[1997/12/01]
+%<package>\NeedsTeXFormat{LaTeX2e}[2018-04-01]
+%<package>
+%<package>\providecommand\DeclareRelease[3]{}
+%<package>\providecommand\DeclareCurrentRelease[2]{}
+%<package>
+%<package>\DeclareRelease{}{2017-04-11}{multicol-2017-04-11.sty}
+%<package>\DeclareCurrentRelease{}{2018-04-01}
+%<package>
 %<package>\ProvidesPackage{multicol}
 %<driver> \ProvidesFile{multicol.drv}
 % \fi
 %         \ProvidesFile{multicol.dtx}
-          [2016/04/07 v1.8p  multicolumn formatting (FMi)]
+          [2018/12/27 v1.8v  multicolumn formatting (FMi)]
 %
 %
 %%
@@ -1479,6 +1486,25 @@
 %    \begin{macrocode}
     \reinsert@footnotes
 %    \end{macrocode}
+%    Inside \mc{} a |\clearpage| is fairly useless as we aren't supporting
+%    floats. In fact, it can cause harm as it doesn't know about the
+%    |\partial@page| and may therefore result in making columns too long.
+%    So we change that to bahve like |\newpage| but also check if there
+%    are any deferred floats. If so, perhaps the user tried to place them through
+%    that |\clearpage| (but that needs to be done before starting the \mc{}
+%    environment.
+% \changes{v1.8q}{2017/04/11}{Make \cs{clearpage} behave like \cs{newpage} (pr/4511)}
+%    \begin{macrocode}
+   \def\clearpage{%
+     \ifx\@deferlist\@empty\else
+       \PackageError{multicol}%
+          {Deferred floats not cleared}%
+          {A \string\clearpage\space inside multicols acts like
+           \string\newpage\space and doesn't clear floats.\MessageBreak
+           Move it before the multicols environment if you need it.}%
+     \fi
+    \newpage}%
+%    \end{macrocode}
 %    All the code above was only necessary for the unrestricted \mc{}
 %    version, i.e.\ the one that allows page breaks. If we are within
 %    a box there is no point in setting up special output routines or
@@ -1648,6 +1674,24 @@
 %    \end{macrocode}
 %  \end{macro}
 %
+%
+%  \begin{macro}{\@Mvi}
+%    In versions prior to 1.8r the balancing at the end of the
+%   environment was done by changing the output routine from
+%   |\multi@column@out| to |\balance@column@out|. As it turned out
+%   that this has a couple of issues when the last columns should not
+%   be balanced after all (for example because they contained several
+%   |\columnbreak| commands we now stay with one output routine for
+%   the environment and only signal that we reached the end of the
+%   environment by marking it with a special penalty that we can check
+%   for later.
+% \changes{v1.8r}{2018/01/28}{Macro added}
+%    \begin{macrocode}
+\mathchardef\@Mvi=10006  % 10005 is \columnbreak
+%    \end{macrocode}
+%  \end{macro}
+%
+%
 % \begin{macro}{\endmulticols}
 %    When the end of the \mc{} environment is sensed we have to
 %    balance the gathered material. Depending on whether or not we are
@@ -1744,13 +1788,13 @@
 %    the very last item on the main vertical list is a valid break
 %    point so that \TeX{} breaks the page in case it is overfull.
 %    \begin{macrocode}
-   \penalty\z@
+    \penalty\z@
 %    \end{macrocode}
-%    Now it's safe to change the output routine in order to balance
-%    the columns.
+%    Now it's safe to call the output routine in order to balance
+%    the columns. We do this by calling it with a special penalty.
+% \changes{v1.8r}{2018/01/28}{Use special penalty to signal end of environment}
 %    \begin{macrocode}
-   \output{\balance@columns@out}%
-   \eject
+    \penalty-\@Mvi
 %    \end{macrocode}
 %    If the \mc{} environment body was completely empty or if a
 %    multi-page \mc{} just ends at a page boundary we have the unusual
@@ -1801,9 +1845,15 @@
   \global\c@unbalance\z@
 %    \end{macrocode}
 %    Now it's time to return any footnotes if we are in unrestricted
-%    mode:
+%    mode. In boxed mode footnotes are kept inside, but in that case
+%    we have to write another column status into the \texttt{.aux}
+%    file to support \cs{docolaction} in case we have nested
+%    environments.
+% \changes{v1.8s}{2018/04/20}{Support for \cs{docolaction} (issue/39)}
 %    \begin{macrocode}
-  \if@boxedmulticols\else
+  \if@boxedmulticols
+    \mc@col@status@write
+  \else
     \reinsert@footnotes
 %    \end{macrocode}
 %    We also take a look at the amount of free space on the current
@@ -2215,13 +2265,18 @@
 %    user has issue a |\enlargethispage| command then the height the
 %    |\@kludgeins| box will be the negation of the size by which the
 %    page should be enlarged. If the star form of this command has
-%    been used then we also need to shrink the resulting column. As we
-%    don't know whether or not shrinking is already generally
-%    requested with save the current value of |\ifshr@king| and
-%    restore it afterwards.
+%    been used then we also need to shrink the resulting column.
+
+%    That local change will be reverted at the end of the output
+%   routine So for the next page the original state will be
+%   reestablished. However, in theorey there is a possibility to sneak
+%   in a whoe multicols environment into the running header
+%   definition. If that happens then it will also be affected by this
+%   change---too bad I think.   
 % \changes{v1.8a}{2011/12/20}{Support for \cs{enlargethispage}}
+% \changes{v1.8v}{2018/12/27}{Removed dead code, the case where this
+%   can go wrong is too obscure to worry about it (gh/101)}
 %    \begin{macrocode}
-   \let\ifshr@kingsaved\ifshr@king
    \ifvbox \@kludgeins
      \advance \dimen@ -\ht\@kludgeins
 %    \end{macrocode}
@@ -2281,11 +2336,6 @@
    \setbox\mult@rightbox\vbox to\dimen@
           {\unvbox\mult@rightbox
            \ifshr@nking\vfilmaxdepth\fi}%
-%    \end{macrocode}
-%    Now that we are done with the boxes, we restored the current
-%    setting for shrinking in case it got changed:
-%    \begin{macrocode}
-   \let\ifshr@king\ifshr@kingsaved
 %    \end{macrocode}
 %    Having done this we hope that box 255 is emptied. If not, we
 %    reinsert its contents.
@@ -2544,6 +2594,26 @@
          \reinsert@footnotes
      \else
 %    \end{macrocode}
+%    Another special case is reaching the end of the \mc{}
+%    environment which is signalled by |-\@Mvi|.
+% \changes{v1.8r}{2018/01/28}{Handling end of env through special penalty}
+%    \begin{macrocode}
+       \ifnum\outputpenalty = -\@Mvi
+         \mult@info\@ne{End penalty of multicols seen}%
+%    \end{macrocode}
+%    If we are at this point then have have to run the balancing code
+%    (which was previously its own output routine). First we pretend
+%    that we had a normal forced breakpoint and then call
+%    |\balance@column@out|. The latter may be let to |\multi@column@out|
+%    if we are inside \texttt{multicols*} in which case we would get a loop
+%    if the |\outputpenalty| is not changed---this could be cleaned up
+%    in a better way; basically it is like this, because of the older
+%    code was using different ORs and I simply reused most of it.
+%    \begin{macrocode}
+         \outputpenalty\@M   % pretend we had a natural forced break
+         \balance@columns@out
+       \else
+%    \end{macrocode}
 %    If we encounter a float or a marginpar in the current
 %    implementation we simply warn the user that this is not allowed.
 %    Then we reinsert the page and its footnotes.
@@ -2561,9 +2631,10 @@
 %    this is possible with |\xdef|.)
 % \changes{v1.2a}{1990/02/05}{Float boxes freed.}
 %    \begin{macrocode}
-       \xdef\@freelist{\@freelist\@currlist}%
-       \gdef\@currlist{}%
-     \fi
+        \xdef\@freelist{\@freelist\@currlist}%
+        \gdef\@currlist{}%
+      \fi
+    \fi
   \fi
 %    \end{macrocode}
 %    If the penalty is $-10001$ it will come from a |\clearpage| and
@@ -2693,7 +2764,14 @@
      \setbox\@cclv\vbox
          {\vskip\topskip
           \vskip-\splittopskip
-          \unvbox\mult@box}%
+          \unvbox\mult@box
+%    \end{macrocode}
+%    We also have to re-add the end of environment penalty since after
+%    this page we may want  balance the remaining material.
+% \changes{v1.8r}{2018/01/28}{Re-add the final penalty}
+%    \begin{macrocode}
+          \penalty-\@Mvi
+         }%
 %    \end{macrocode}
 %    We then call the standard multicol output routine which will
 %    produce a normal page for us (remember we are still within the
@@ -3821,8 +3899,24 @@
         not make sense.\MessageBreak
         Going to balance anyway}%
    \else
-     \let\balance@columns@out
-         \multi@column@out
+%    \end{macrocode}
+%    If we aren't balancing we change the |\balance@columns@out| to
+%    work like the normal output routine that cuts normal
+%    pages. However, there is a catch: In case the last page we cut
+%    (after seeing the end of the environment) is actually larger than
+%    a page (for example, if it contains more |\columnbreak| commands
+%    than columns) we end up with some leftover material that is
+%    returned to the main galley, but now the environment end penalty
+%    is missing. So we add another one here too. Of course that
+%    shouldn't be done if there is really only a single final page,
+%    but fortunately in that case we have just finished a page and any
+%    penalty on the recent contributions will be discarded, thus the
+%    extra one is harmless---puh.
+% \changes{v1.8t}{2018/06/26}{Re-add end penalty for
+%    \texttt{multicols*} environment to guard against leftovers (git/53)}
+%    \begin{macrocode}
+     \def\balance@columns@out
+         {\multi@column@out \penalty-\@Mvi }%
    \fi
    \begin{multicols}
 }
@@ -4139,8 +4233,16 @@
 
 %  \begin{macro}{\docolaction}
 %
+%    The \verb=\docolaction= scans for a star and optional argument
+%    and 3 mandatory ones, but we do this in chunks (not having xparse
+%    available).
+%
+% \changes{v1.8u}{2018/11/09}{Support star with \cs{docolaction}}
 %    \begin{macrocode}
-\newcommand\docolaction[4][1]{%
+\newcommand\docolaction{%
+%    \end{macrocode}
+%    First check is the support is enabled.
+%    \begin{macrocode}
  \ifx\mc@col@status@write\relax
      \PackageError{multicol}%
       {Option 'colaction' not selected}%
@@ -4148,6 +4250,9 @@
        requires the use of the 'colaction'
        option on the package}%
  \fi
+%    \end{macrocode}
+%    Then prepare \verb=\mc@col@type=.
+%    \begin{macrocode}
  \global\advance\mc@col@check@num\@ne
  \edef\mc@col@type{\expandafter\ifx
    \csname mc@col-\the\mc@col@check@num
@@ -4155,7 +4260,36 @@
                    0\else
    \csname mc@col-\the\mc@col@check@num
    \endcsname
-                    \fi}%
+   \fi}%
+%    \end{macrocode}
+%    Finally check for a star, record this information and then call
+%    \verb=\@docolaction= to do the rest.
+%    \begin{macrocode}
+ \@ifstar
+   {\@docolactionstartrue \@docolaction}%
+   {\@docolactionstarfalse\@docolaction}%
+}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\newcommand\@docolaction[4][1]{%
+%    \end{macrocode}
+%    
+%   How does the column number get associated with our label? We
+%   do do this by writing another line into the aux file. Here are the
+%    preparations.
+%    \begin{macrocode}
+ \edef\@docolactioncheck{\write\@auxout
+   {\string\mc@set@col@status
+     {mc@col-\the\mc@col@check@num}%
+     {\mc@col@type}}}%
+%    \end{macrocode}
+%    Where we do the actual \verb=\write= depends on the whether or
+%    not we gave seen a \texttt{*}. If yes, we do it first and then
+%    execute the code argument, otherwise we execute that code first
+%    and check at the point after that.
+%    \begin{macrocode}
+ \if@docolactionstar \@docolactioncheck \fi
 %    \end{macrocode}
 %    We prefix with 0 so that an unknown label (that returns
 %   \verb=\relax=) will result in case 0
@@ -4178,21 +4312,20 @@
   \or
      #4%  % 3 last col
   \else
-    \ERROR
+    \ERRORwrongdefaultgiven
   \fi
 %    \end{macrocode}
-%    But how does the column number get associated with our label? We
-%   do do this by writing another line into the aux file at this point:
 %    \begin{macrocode}
-  \edef\next{\write\@auxout
-     {\string\mc@set@col@status
-      {mc@col-\the\mc@col@check@num}%
-      {\mc@col@type}}}%
-  \next
+ \if@docolactionstar \else \@docolactioncheck \fi
 }
 %    \end{macrocode}
 %  \end{macro}
 %
+%    Here is the if used above:
+%    \begin{macrocode}
+\newif\if@docolactionstar
+%    \end{macrocode}
+%    
 %   Because of extra data writing to the aux file the aux file will
 %   now contain something like the following after the document is
 %   processed the first time:

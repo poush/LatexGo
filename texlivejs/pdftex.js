@@ -2,7 +2,7 @@ var TeXLive = function(opt_workerPath) {
   //var self=this;
   var chunksize= determineChunkSize();
   if (!opt_workerPath) {
-    opt_workerPath = 'texlivejs/';
+    opt_workerPath = '';
   }
 
 

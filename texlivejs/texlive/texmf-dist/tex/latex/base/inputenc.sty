@@ -9,11 +9,11 @@
 %% This is a generated file.
 %% 
 %% The source is maintained by the LaTeX Project team and bug
-%% reports for it can be opened at http://latex-project.org/bugs.html
+%% reports for it can be opened at https://latex-project.org/bugs.html
 %% (but please observe conditions on bug reports sent to that address!)
 %% 
 %% 
-%% Copyright 1993-2016
+%% Copyright 1993-2017
 %% The LaTeX3 Project and any individual authors listed elsewhere
 %% in this file.
 %% 
@@ -24,7 +24,7 @@
 %% conditions of the LaTeX Project Public License, either version 1.3c
 %% of this license or (at your option) any later version.
 %% The latest version of this license is in
-%%    http://www.latex-project.org/lppl.txt
+%%    https://www.latex-project.org/lppl.txt
 %% and version 1.3c or later is part of all distributions of LaTeX
 %% version 2005/12/01 or later.
 %% 
@@ -43,10 +43,9 @@
 %% extension .ins) which are part of the distribution.
 
 
-
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
 \ProvidesPackage{inputenc}
-   [2015/03/17 v1.2c Input encoding file]
+   [2018/08/11 v1.3c Input encoding file]
 \def\DeclareInputMath#1{%
    \@inpenc@test
    \bgroup
@@ -74,6 +73,9 @@
 }
 \ifx\Umathchar\@undefined
 \def\inputencoding#1{%
+  \edef\reserved@a{#1}%
+  \ifx\reserved@a\inputencodingname
+  \else
   \the\inpenc@prehook
   \gdef\@inpenc@test{\global\let\@inpenc@test\relax}%
   \edef\@inpenc@undefined{\noexpand\protect\noexpand\@inpenc@undefined@{#1}}%
@@ -101,6 +103,7 @@
               by input encoding change to `#1'\MessageBreak}%
   \fi
   \the\inpenc@posthook
+  \fi
 }
 \else
 \def\inputencoding#1{%
@@ -132,8 +135,8 @@
 \fi
 }
 \fi
-\newtoks\inpenc@prehook
-\newtoks\inpenc@posthook
+\ifx\inpenc@prehook\@undefined\newtoks\inpenc@prehook\fi
+\ifx\inpenc@posthook\@undefined\newtoks\inpenc@posthook\fi
 \def\@inpenc@undefined@#1{\PackageError{inputenc}%
         {Keyboard character used is undefined\MessageBreak
          in inputencoding `#1'}%
@@ -153,6 +156,10 @@
   \ifnum\@tempcnta<`#2\relax
      \advance\@tempcnta\@ne
   \repeat}
+\DeclareOption{utf8x}{\ifdefined\UseRawInputEncoding
+                        \UseRawInputEncoding
+                      \fi
+                      \inputencoding{\CurrentOption}}
 \DeclareOption*{\inputencoding{\CurrentOption}}
 \ProcessOptions
 \endinput

@@ -77,14 +77,30 @@ function preview(datauri){
 }
 
 
+function stdout(message) {
+    // console.log(message)
+    message = "<p class='logline'>" + message + "</p>"
+    var pdf = $("#pdf")
+    pdf.find('iframe').remove()
+    pdf.find('.placeholder').remove()
+    pdf.append(message)
+    pdf[0].scrollTop = pdf[0].scrollHeight
+}
+
+
+function stderr(message) {
+
+}
+
+
 function compile(source_code) {
 
     if(!window.enable)
        return
-   
-    var texlive = new TeXLive();
+
+    var texlive = new TeXLive('texlivejs/');
     var pdftex = texlive.pdftex;
-    pdftex.on_stdout = function(m){console.log(m)};
+    pdftex.on_stdout = stdout;
     pdftex.on_stderr = function(m){console.log(m)};
 
     var start_time = new Date().getTime();
@@ -100,6 +116,7 @@ function compile(source_code) {
         texlive.terminate();
     });
 }
+
 
 var defaultLatex = `\\documentclass[12pt]{article}
 \\usepackage{amsmath}

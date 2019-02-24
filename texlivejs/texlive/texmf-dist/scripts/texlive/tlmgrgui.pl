@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
-# $Id: tlmgrgui.pl 41232 2016-05-18 06:04:47Z preining $
+# $Id: tlmgrgui.pl 44719 2017-06-28 23:40:26Z preining $
 #
-# Copyright 2009-2016 Norbert Preining
+# Copyright 2009-2017 Norbert Preining
 # This file is licensed under the GNU General Public License version 2
 # or any later version.
 #
@@ -13,8 +13,8 @@
 $^W = 1;
 use strict;
 
-my $guisvnrev = '$Revision: 41232 $';
-my $guidatrev = '$Date: 2016-05-18 08:04:47 +0200 (Wed, 18 May 2016) $';
+my $guisvnrev = '$Revision: 44719 $';
+my $guidatrev = '$Date: 2017-06-29 01:40:26 +0200 (Thu, 29 Jun 2017) $';
 my $tlmgrguirevision;
 if ($guisvnrev =~ m/: ([0-9]+) /) {
   $tlmgrguirevision = $1;
@@ -655,7 +655,7 @@ sub setup_menu_system {
 
 tlmgrgui revision $tlmgrguirevision
 $tlmgrrev
-Copyright 2009-2014 Norbert Preining
+Copyright 2009-2017 Norbert Preining
 
 Licensed under the GNU General Public License version 2 or higher
 In case of problems, please contact: texlive\@tug.org"
@@ -1327,12 +1327,17 @@ sub init_paper_psutils {
 
 sub init_all_papers {
   for my $p (keys %init_paper_subs) {
-    &{$init_paper_subs{$p}}();
+    my $pkg = $TeXLive::TLPaper::paper{$p}{'pkg'};
+    if ($localtlpdb->get_package($pkg)) {
+      &{$init_paper_subs{$p}}();
+    }
   }
 }
 
 
 sub do_paper_settings {
+  # empty paper array
+  %papers = ();
   init_all_papers();
   my $sw = $mw->Toplevel(-title => __("Paper options"));
   $sw->transient($mw);
@@ -2641,8 +2646,10 @@ sub run_update_functions {
 sub check_location_on_ctan {
   # we want to check that if mirror.ctan.org
   # is used that we select a mirror once
-  if ($location =~ m/$TeXLive::TLConfig::TeXLiveServerURL/) {
-    $location = TeXLive::TLUtils::give_ctan_mirror();
+  for my $k (keys %repos) {
+    if ($repos{$k} =~ m/$TeXLive::TLConfig::TeXLiveServerURL/) {
+      $repos{$k} = TeXLive::TLUtils::give_ctan_mirror();
+    }
   }
 }
 

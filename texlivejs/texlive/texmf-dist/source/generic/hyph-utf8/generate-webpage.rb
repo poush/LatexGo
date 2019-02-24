@@ -1,11 +1,13 @@
 #!/usr/bin/env ruby
 
-load 'languages.rb'
+require_relative 'languages.rb'
+
+include TeXLive
+include Language::TeXLive
 
 # this file auto-generates loaders for hyphenation patterns - to be improved
 
 $package_name="hyph-utf8"
-$ctan_url = "http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8"
 
 # TODO - make this a bit less hard-coded
 $path_tex_generic="../../../tex/generic"
@@ -20,13 +22,13 @@ language_default = Language.new({
 	"licence"   => "",
 })
 
-$l = Languages.new
-# add english to the list
-$l["default"] = language_default
-# TODO: should be singleton
-languages = $l.list.sort{|a,b| a.name <=> b.name}
 
-$a = Authors.new
+# add english to the list
+# $l["default"] = language_default
+# TODO: should be singleton
+languages = Language.all.sort{|a,b| a.name <=> b.name}
+
+$a = Author
 
 language_grouping = {
 	'english' => ['default', 'en-gb', 'en-us'],
@@ -42,44 +44,18 @@ language_grouping = {
 	'serbian' => ['sh-latn', 'sh-cyrl'],
 }
 
-language_used_in_group = Hash.new
-language_grouping.each_value do |group|
-	group.each do |code|
-		language_used_in_group[code] = true
-	end
-end
-
 space_leading = "            "
 space_tr      = "  "
 
-# a hash with language name as key and array of languages as the value
-language_groups = Hash.new
-# single languages first
-languages.each do |language|
-	# temporary remove cyrilic serbian until someone explains what is needed
-	if language.code == 'sr-cyrl' then
-		languages.delete(language)
-	elsif language_used_in_group[language.code] == nil then
-		language_groups[language.name] = [language]
-	end
-end
-# then groups of languages
-language_grouping.each do |name,group|
-	language_groups[name] = []
-	group.each do |code|
-		language_groups[name].push($l[code])
-	end
-end
-
-language_groups.sort.each do |language_name,language_list|
+Package.all.sort.each do |package|
 	first_line_printed = false
-	language_list.each do |language|
+	package.languages.each do |language|
 		if language != nil then
 			puts "#{space_leading}<tr>"
 
 			line_content = ""
 			if not first_line_printed then
-				line_content = "<b>#{language_name.capitalize}</b>"
+				line_content = "<b>#{package.name.capitalize}</b>"
 				first_line_printed = true;
 			else
 				line_content = "&nbsp;"
@@ -95,12 +71,12 @@ language_groups.sort.each do |language_name,language_list|
 			puts "#{space_leading}#{space_tr}<td>#{language.name}#{synonyms}</td>"
 	
 	#		if language.use_old_patterns == false then
-			if language.use_new_loader == true then
-				url_patterns = "#{$ctan_url}/patterns/tex/hyph-#{language.code}.tex"
-				code = "<a href=\"#{url_patterns}\">#{language.code}</a>"
-			else
+			if language.use_old_loader then
 				url_patterns = ""
 				code = language.code
+			else
+				url_patterns = "#{$ctan_url}/patterns/tex/hyph-#{language.code}.tex"
+				code = "<a href=\"#{url_patterns}\">#{language.code}</a>"
 			end
 			
 			puts "#{space_leading}#{space_tr}<td>#{code}</td>"
@@ -118,10 +94,10 @@ language_groups.sort.each do |language_name,language_list|
 			end
 			puts "#{space_leading}#{space_tr}<td>(#{lmin},#{rmin})</td>"
 			# which file to use
-			if language.use_new_loader then
-				file = "loadhyph-#{language.code}.tex"
-			else
+			if language.use_old_loader then
 				file = "#{language.filename_old_patterns}"
+			else
+				file = "loadhyph-#{language.code}.tex"
 			end
 			#puts "\t<td>#{file}</td>"
 			if language.encoding == nil then

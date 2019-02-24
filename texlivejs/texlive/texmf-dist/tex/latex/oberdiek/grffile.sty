@@ -9,7 +9,7 @@
 %% This is a generated file.
 %% 
 %% Project: grffile
-%% Version: 2016/05/16 v1.17
+%% Version: 2017/06/30 v1.18
 %% 
 %% Copyright (C) 2006-2012 by
 %%    Heiko Oberdiek <heiko.oberdiek at googlemail.com>
@@ -35,7 +35,7 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{grffile}%
-  [2016/05/16 v1.17 Extended file name support for graphics (HO)]%
+  [2017/06/30 v1.18 Extended file name support for graphics (HO)]%
 \edef\grffile@RestoreCatcodes{%
   \catcode`\noexpand\=\the\catcode`\=\relax
   \catcode`\noexpand\:\the\catcode`\:\relax
@@ -254,9 +254,13 @@
     \else
       \begingroup\expandafter\expandafter\expandafter\endgroup
       \expandafter\ifx\csname Gread@QTm\endcsname\relax
-        \PackageWarning{grffile}{%
-          \string\Gread@QTm\space of xetex.def not found%
-        }%
+        \@ifpackagelater{graphics}{2017/06/01}
+          {}
+          {%
+            \PackageWarning{grffile}{%
+              \string\Gread@QTm\space of xetex.def not found%
+            }%
+          }%
       \else
         \let\grffile@org@Gread@QTm\Gread@QTm
         \def\Gread@QTm#1{%
@@ -293,9 +297,13 @@
           \string\Gread@eps\space patched%
         }%
       }{%
-        \PackageWarning{grffile}{%
-          Unsupported \string\Gread@eps\space not patched%
-        }%
+        \@ifpackagelater{graphics}{2017/06/01}
+          {}
+          {%
+            \PackageWarning{grffile}{%
+              Unsupported \string\Gread@eps\space not patched%
+            }%
+          }%
         \endgroup
       }%
     }%

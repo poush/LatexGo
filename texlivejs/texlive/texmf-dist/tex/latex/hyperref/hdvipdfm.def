@@ -9,7 +9,7 @@
 %% File: hyperref.dtx Copyright 1995-2001 Sebastian Rahtz,
 %% with portions written by David Carlisle and Heiko Oberdiek,
 %% 2001-2012 Heiko Oberdiek.
-%% 2016-2017 Oberdiek Package Suport Group
+%% 2016-2018 Oberdiek Package Suport Group
 %%      https://github.com/ho-tex/hyperref/issues
 %%
 %% This file is part of the `Hyperref Bundle'.
@@ -31,7 +31,7 @@
 %% given in the file `manifest.txt'.
 %%
 \ProvidesFile{hdvipdfm.def}
-  [2017/03/14 v6.85a %
+  [2018/11/30 v6.88e %
   Hyperref driver for dvipdfm]
 \Hy@VersionCheck{hdvipdfm.def}
 \def\Hy@PutCatalog#1{\@pdfm@mark{docview <<#1>>}}
@@ -347,6 +347,7 @@
         /Subtype/Link%
         \ifHy@pdfa /F 4\fi
         \Hy@setpdfborder
+        \Hy@setpdfhighlight
         \expandafter\ifx\csname @#1bordercolor\endcsname\relax
         \else
           /C[\csname @#1bordercolor\endcsname]%
@@ -379,6 +380,7 @@
         /Subtype/Link%
         \ifHy@pdfa /F 4\fi
         \Hy@setpdfborder
+        \Hy@setpdfhighlight
         \ifx\@filebordercolor\relax
         \else
           /C[\@filebordercolor]%
@@ -413,6 +415,7 @@
         /Subtype/Link%
         \ifHy@pdfa /F 4\fi
         \Hy@setpdfborder
+        \Hy@setpdfhighlight
         \ifx\@runbordercolor\relax
         \else
           /C[\@runbordercolor]%
@@ -444,6 +447,7 @@
         /Subtype/Link%
         \ifHy@pdfa /F 4\fi
         \Hy@setpdfborder
+        \Hy@setpdfhighlight
         \ifx\@urlbordercolor\relax
         \else
           /C[\@urlbordercolor]%
@@ -473,6 +477,7 @@
           /Subtype/Link%
           \ifHy@pdfa /F 4\fi
           \Hy@setpdfborder
+          \Hy@setpdfhighlight
           \ifx\@menubordercolor\relax
           \else
             /C[\@menubordercolor]%
@@ -531,6 +536,8 @@
   \Hy@DisableOption{pdftitle}%
   \Hy@DisableOption{pdfsubject}%
   \Hy@DisableOption{pdfcreator}%
+  \Hy@DisableOption{addtopdfcreator}%
+  \Hy@DisableOption{pdfcreationdate}%
   \Hy@DisableOption{pdfcreationdate}%
   \Hy@DisableOption{pdfmoddate}%
   \Hy@DisableOption{pdfproducer}%

@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% Copyright 1993-2016
+% Copyright 1993-2018
 % The LaTeX3 Project and any individual authors listed elsewhere
 % in this file.
 %
@@ -11,7 +11,7 @@
 % conditions of the LaTeX Project Public License, either version 1.3c
 % of this license or (at your option) any later version.
 % The latest version of this license is in
-%    http://www.latex-project.org/lppl.txt
+%    https://www.latex-project.org/lppl.txt
 % and version 1.3c or later is part of all distributions of LaTeX
 % version 2005/12/01 or later.
 %
@@ -33,7 +33,7 @@
 %<*driver>
 % \fi
 \ProvidesFile{ltcounts.dtx}
-             [2015/06/05 v1.1j LaTeX Kernel (Counters)]
+             [2018/04/22 v1.1l LaTeX Kernel (Counters)]
 % \iffalse
 \documentclass{ltxdoc}
 \GetFileInfo{ltcounts.dtx}
@@ -105,6 +105,23 @@
 % |\fnsymbol|\marg{counter}:  $*$, $\dagger$, $\ddagger$, \ldots
 %
 %
+% \DescribeMacro\counterwithin
+% |\counterwithin|\marg{counter}\marg{within-counter}:
+% Resets \meta{counter} whenever
+% \meta{within-counter} is stepped. Also
+% redefines |\the|\meta{counter} command to produce
+% |\the|\meta{within-counter}|.\arabic|\marg{counter}.
+% Star form omits redefining the print representation.
+
+%
+% \DescribeMacro\counterwithout
+% |\counterwithout|\marg{counter}\marg{within-counter}:
+% Removes \meta{counter} from the reset list of \meta{within-counter}.
+% Also
+% redefines |\the|\meta{counter} command to produce
+% |\arabic|\marg{counter}.
+% Star form omits redefining the print representation.
+%
 % \StopEventually{}
 %
 %    \begin{macrocode}
@@ -165,6 +182,10 @@
 %
 %    |\@addtoreset|\marg{foo}\marg{bar} :
 %          Adds counter \meta{foo} to the list of counters
+%         |\cl@bar| to be reset  when counter \meta{bar} is stepped.
+%
+%    |\@removefromreset|\marg{foo}\marg{bar} :
+%          Removes counter \meta{foo} to the list of counters
 %         |\cl@bar| to be reset  when counter \meta{bar} is stepped.
 %
 %
@@ -300,6 +321,126 @@
 \def\@addtoreset#1#2{\expandafter\@cons\csname cl@#2\endcsname {{#1}}}
 %    \end{macrocode}
 %  \end{macro}
+%
+%    
+%    \begin{macrocode}
+%</2ekernel>
+%    \end{macrocode}
+%
+%
+% \begin{macro}{\@removefromreset}
+%    \changes{v1.1k}{2018/03/08}{Interface added}
+%    \begin{macrocode}
+%<latexrelease>\IncludeInRelease{2018-04-01}
+%<latexrelease>                 {\@removefromreset}{Add interfaces}%
+%<*2ekernel|latexrelease>
+%    \end{macrocode}
+%    
+%    \begin{macrocode}
+\def\@removefromreset#1#2{%
+%    \end{macrocode}
+%    Even through this is internal and the programmer should know what
+%    he/she is doing we test here if counter |#2| is defined. If not,
+%    the execution would run into a tight loop.
+%    \begin{macrocode}
+  \@ifundefined{c@#2}\relax
+  {\begingroup
+     \expandafter\let\csname c@#1\endcsname\@removefromreset
+     \def\@elt##1{%
+       \expandafter\ifx\csname c@##1\endcsname\@removefromreset
+       \else
+         \noexpand\@elt{##1}%
+       \fi}%
+     \expandafter\xdef\csname cl@#2\endcsname
+      {\csname cl@#2\endcsname}%
+    \endgroup}}
+%    \end{macrocode}
+%  \end{macro}
+
+
+
+%  \begin{macro}{\@ifbothcounters}
+%    \changes{v1.1k}{2018/03/08}{Interface added}
+%    Test if arg |#1| and |#2| are counters and if so execute |#3|.
+%    \begin{macrocode}
+\def\@ifbothcounters#1#2#3{%
+  \@ifundefined{c@#1}{\@nocounterr{#1}}%
+    {% else counter is defined
+     \@ifundefined{c@#2}{\@nocounterr{#2}}%
+       {% else both counter and within  are defined
+        #3}}}
+%    \end{macrocode}
+%  \end{macro}
+
+
+%  \begin{macro}{\counterwithout}
+%    
+%    \changes{v1.1k}{2018/03/08}{Interface added}
+%    \begin{macrocode}
+\def\counterwithout {\@ifstar\counterwithout@s\counterwithout@x}
+%    \end{macrocode}
+%    
+%    \begin{macrocode}
+\def\counterwithout@s#1#2{%
+  \@ifbothcounters{#1}{#2}{\@removefromreset{#1}{#2}}}
+%    \end{macrocode}
+%    
+%    \begin{macrocode}
+\def\counterwithout@x#1#2{%
+  \@ifbothcounters{#1}{#2}%
+      {\@removefromreset{#1}{#2}%
+       \expandafter
+       \gdef\csname the#1\expandafter\endcsname\expandafter
+            {\expandafter
+             \@arabic\csname c@#1\endcsname}}}
+%    \end{macrocode}
+%  \end{macro}
+
+
+
+%  \begin{macro}{\counterwithin}
+%    
+%    \changes{v1.1k}{2018/03/08}{Interface added}
+%    \begin{macrocode}
+\def\counterwithin{\@ifstar\counterwithin@s\counterwithin@x}
+%    \end{macrocode}
+%    
+%    \begin{macrocode}
+\def\counterwithin@s#1#2{%
+  \@ifbothcounters{#1}{#2}{\@addtoreset{#1}{#2}}}
+%    \end{macrocode}
+%    
+%    \changes{v1.1l}{2018/04/11}{Correct default (issue/38)}
+%    \begin{macrocode}
+\def\counterwithin@x#1#2{%
+  \@ifbothcounters{#1}{#2}%
+      {\@addtoreset{#1}{#2}%
+       \expandafter
+       \gdef\csname the#1\expandafter\endcsname\expandafter
+            {\csname the#2\expandafter\endcsname\expandafter
+             .\expandafter
+             \@arabic\csname c@#1\endcsname}}}
+%    \end{macrocode}
+%  \end{macro}
+
+
+%    
+%    \begin{macrocode}
+%</2ekernel|latexrelease>
+%<latexrelease>\EndIncludeInRelease
+%<latexrelease>\IncludeInRelease{0000-00-00}
+%<latexrelease>                 {\@removefromreset}{Add interfaces}%
+%<latexrelease>\let \@removefromreset \undefined
+%<latexrelease>\let \@ifbothcounters  \undefined
+%<latexrelease>\let \counterwithout   \undefined
+%<latexrelease>\let \counterwithout@s \undefined
+%<latexrelease>\let \counterwithout@x \undefined
+%<latexrelease>\let \counterwithin    \undefined
+%<latexrelease>\let \counterwithin@s  \undefined
+%<latexrelease>\let \counterwithin@x  \undefined
+%<latexrelease>\EndIncludeInRelease
+%<*2ekernel>
+%    \end{macrocode}
 %
 %
 %    Numbering commands for definitions of |\theCOUNTER| and |\list|

@@ -173,18 +173,21 @@
     pdftex.on_stderr = appendOutput;
 
     var start_time = new Date().getTime();
+    
+    pdftex.FS_createLazyFile('.', 'IEEEtran.cls', 'texlive/texmf-dist/ieee/IEEEtran.cls', true, false).then(function() {
+      console.log("here")
+      pdftex.compile(source_code).then(function(pdf_dataurl) {
+        var end_time = new Date().getTime();
+        console.info("Execution time: " + (end_time - start_time) / 1000 + ' sec');
 
-    pdftex.compile(source_code).then(function(pdf_dataurl) {
-      var end_time = new Date().getTime();
-      console.info("Execution time: " + (end_time - start_time) / 1000 + ' sec');
+        showLoadingIndicator(false);
 
-      showLoadingIndicator(false);
-
-      if (pdf_dataurl === false)
-        return;
-      showOpenButton(true);
-      document.getElementById("open_pdf_btn").focus();
-      texlive.terminate();
+        if (pdf_dataurl === false)
+          return;
+        showOpenButton(true);
+        document.getElementById("open_pdf_btn").focus();
+        texlive.terminate();
+      });
     });
   }
 

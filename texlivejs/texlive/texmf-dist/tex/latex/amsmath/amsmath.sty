@@ -13,7 +13,7 @@
 %% conditions of the LaTeX Project Public License, either version 1.3c
 %% of this license or (at your option) any later version.
 %% The latest version of this license is in
-%%   http://www.latex-project.org/lppl.txt
+%%   https://www.latex-project.org/lppl.txt
 %% and version 1.3c or later is part of all distributions of LaTeX
 %% version 2005/12/01 or later.
 %% 
@@ -23,7 +23,7 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}% LaTeX 2.09 can't be used (nor non-LaTeX)
 [1994/12/01]% LaTeX date must be December 1994 or later
-\ProvidesPackage{amsmath}[2016/11/05 v2.16a AMS math features]
+\ProvidesPackage{amsmath}[2018/12/01 v2.17b AMS math features]
 \edef\@temp{\catcode 96=\number\catcode 96 }
 \catcode\string `\`=12
 \def\do#1{\catcode\number`#1=\number\catcode`#1}
@@ -93,7 +93,7 @@
 Documentation for the amsmath package is found in amsldoc.dvi^^J%
 (or .pdf or .tex).^^J%
 ^^J%
-See also http://www.ams.org/tex/amslatex.html.^^J%
+See also https://www.ams.org/tex/amslatex.html.^^J%
 ^^J%
 Note: Using the first edition of The LaTeX Companion (1994) without^^J%
 errata as a guide for amsmath use is not recommended.^^J%
@@ -139,13 +139,23 @@ For additional information on amsmath, use the \lq ?\rq\space option.%
   A\kern-.1667em\lower.5ex\hbox{M}\kern-.125emS}}
 \newcommand{\AmSfont}{%
   \usefont{OMS}{cmsy}{\if\@xp\@car\f@series\@nil bb\else m\fi}{n}}
+\ifx\leavevmode@ifvmode\@undefined  % kernel is < 2018/12
 \def\@mathmeasure#1#2#3{\setbox#1\hbox{\frozen@everymath\@emptytoks
+    \m@th$#2#3$}}
+\else
+\def\@mathmeasure#1#2#3{\setbox#1\hbox{%
   \m@th$#2#3$}}
+\fi
 \@ifundefined{inf@bad}{%
   \newcount\inf@bad \inf@bad=1000000 \relax
 }{}
+\ifx\leavevmode@ifvmode\@undefined
 \DeclareRobustCommand{\tmspace}[3]{%
   \ifmmode\mskip#1#2\else\kern#1#3\fi\relax}
+\else
+\DeclareRobustCommand{\tmspace}[3]{%
+  \ifmmode\mskip#1#2\else\leavevmode@ifvmode\kern#1#3\fi\relax}
+\fi
 \renewcommand{\,}{\tmspace+\thinmuskip{.1667em}}
 \let\thinspace\,
 \renewcommand{\!}{\tmspace-\thinmuskip{.1667em}}
@@ -236,9 +246,9 @@ Foreign command \@backslashchar#1;\MessageBreak
                       }\right.$}}
 \def\genfrac@choice#1#2{%
 \ifx @#2@\else
+\ifx c#1\kern-\nulldelimiterspace\fi
 {\delimitershortfall\z@\delimiterfactor\@m
  \mathsurround\z@\nulldelimiterspace\z@
-\ifx c#1\kern-\nulldelimiterspace\fi
 \mathchoice
 {\genfrac@rule{#2}{20}\textfont{2.39}}%
 {\genfrac@rule{#2}{21}\textfont{1}}%
@@ -267,9 +277,9 @@ Foreign command \@backslashchar#1;\MessageBreak
                       }\right.$}}
 \def\genfrac@choice#1#2{%
 \ifx @#2@\else
+\ifx c#1\kern-\nulldelimiterspace\fi
 {\delimitershortfall\z@\delimiterfactor\@m
  \mathsurround\z@\nulldelimiterspace\z@
-\ifx c#1\kern-\nulldelimiterspace\fi
 \mathchoice
 {\genfrac@rule{#2}\displaystyle{2.39}}%
 {\genfrac@rule{#2}\textstyle{1}}%
@@ -699,10 +709,17 @@ Foreign command \@backslashchar#1;\MessageBreak
 \renewcommand{\Big}{\bBigg@{1.5}}
 \renewcommand{\bigg}{\bBigg@\tw@}
 \renewcommand{\Bigg}{\bBigg@{2.5}}
+\ifx\leavevmode@ifvmode\@undefined
 \def\bBigg@#1#2{%
   {\@mathmeasure\z@{\nulldelimiterspace\z@}%
      {\left#2\vcenter to#1\big@size{}\right.}%
    \box\z@}}
+\else
+\def\bBigg@#1#2{\leavevmode@ifvmode
+  {\@mathmeasure\z@{\nulldelimiterspace\z@}%
+     {\left#2\vcenter to#1\big@size{}\right.}%
+   \box\z@}}
+\fi
 \addto@hook\every@math@size{%
   \global\big@size 1.2\ht\Mathstrutbox@
   \global\advance\big@size 1.2\dp\Mathstrutbox@ }
@@ -883,13 +900,23 @@ Foreign command \@backslashchar#1;\MessageBreak
   \dimen@-\wd6 \advance\dimen@\wd4 \advance\dimen@\wd\z@
   \hbox to\dimen@{}\mathop{\kern-\dimen@\box4\box6}%
 }
+\ifx\leavevmode@ifvmode\@undefined
 \renewcommand{\smash}[1][tb]{%
   \def\mb@t{\ht}\def\mb@b{\dp}\def\mb@tb{\ht\z@\z@\dp}%
-  \edef\finsm@sh{\csname mb@#1\endcsname\z@\z@ \box\z@}%
+  \edef\finsm@sh{\csname mb@#1\endcsname\z@\z@\box\z@}%
   \ifmmode \@xp\mathpalette\@xp\mathsm@sh
   \else \@xp\makesm@sh
   \fi
 }
+\else
+\renewcommand{\smash}[1][tb]{%
+  \def\mb@t{\ht}\def\mb@b{\dp}\def\mb@tb{\ht\z@\z@\dp}%
+  \edef\finsm@sh{\csname mb@#1\endcsname\z@\z@ \leavevmode@ifvmode\box\z@}%
+  \ifmmode \@xp\mathpalette\@xp\mathsm@sh
+  \else \@xp\makesm@sh
+  \fi
+}
+\fi
 \mathchardef\std@minus\mathcode`\-\relax
 \mathchardef\std@equal\mathcode`\=\relax
 \AtBeginDocument{%
@@ -1268,7 +1295,7 @@ and fix things up.}
             \nointerlineskip
             \vskip-\ht\strutbox@
             \vskip-\dp\strutbox@
-            \vbox{\noindent\hbox to#1{\strut@\hfill}}%
+            \vbox{\noindent\hbox to\displaywidth{\hbox to#1{\strut@\hfill}}}%
             \prevdepth\dimen@
         \fi
     }%

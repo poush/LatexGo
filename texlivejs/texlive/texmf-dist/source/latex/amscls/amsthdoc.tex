@@ -1,8 +1,8 @@
 %% filename: amsthdoc.tex
-%% version: 2.20.2
-%% date: 2015/03/20
+%% version: 2.20.3
+%% date: 2017/06/01
 %% 
-%% Copyright 1999, 2004, 2010, 2015 American Mathematical Society.
+%% Copyright 1999, 2004, 2010, 2015, 2017 American Mathematical Society.
 %%
 %% American Mathematical Society
 %% Technical Support
@@ -34,8 +34,8 @@
 \pagestyle{myheadings}
 
 % Use the same version number as for the public amsthm release.
-\def\instrversion{2.20.2}
-\def\instrdate{April 2015}
+\def\instrversion{2.20.3}
+\def\instrdate{September 2017}
 
 \title{Using the \pkg{amsthm} Package}
 \author{Version \instrversion, \instrdate\\[.5ex]
@@ -292,7 +292,7 @@ with 2 (or whatever is appropriate).
   \item ...
   \item ...
   \end{enumerate}
-  \end{theorem}
+  \end{thm}
 \end{verbatim}
 The style shown here for the item identifier matches the default for
 AMS document classes.  It may be different for other document classes;
@@ -718,6 +718,11 @@ of \pkg{amsthm}.
     structure, the final line is not numbered.  (This is relevant only
     when numbers are on the left; \cn{qedhere} is inappropriate for
     use with displays numbered on the right.)
+  \item When \cn{qedhere} is within a \env{split} environment, that
+    part of the display is not numbered and \cn{label} is suppressed.
+    If \cn{qedhere} is moved outside of \env{split} the number appears
+    but the content of the \env{split} is shifted left, and the QED
+    symbol may be absent.
   \item In an alignment, if no \verb+&+ is present, the box does not
     go flush to the right margin.
   \item For a one-line equation, both the number and the box appear,

@@ -9,7 +9,7 @@
 --  This is a generated file.
 --  
 --  Project: pdftexcmds
---  Version: 2017/03/19 v0.25
+--  Version: 2018/09/10 v0.29
 --  
 --  Copyright (C) 2007, 2009-2011 by
 --     Heiko Oberdiek <heiko.oberdiek at googlemail.com>
@@ -41,7 +41,7 @@
 module("oberdiek.pdftexcmds", package.seeall)
 local systemexitstatus
 function getversion()
-  tex.write("2017/03/19 v0.25")
+  tex.write("2018/09/10 v0.29")
 end
 function strcmp(A, B)
   if A == B then
@@ -246,7 +246,7 @@ function filedump(offset, length, filename)
       if not offset then
         offset = 0
       end
-      local filehandle = io.open(foundfile, "r")
+      local filehandle = io.open(foundfile, "rb")
       if filehandle then
         if offset > 0 then
           filehandle:seek("set", offset)
@@ -267,7 +267,7 @@ end
 function filemdfivesum(filename)
   local foundfile = kpse.find_file(filename, "tex", true)
   if foundfile then
-    local filehandle = io.open(foundfile, "r")
+    local filehandle = io.open(foundfile, "rb")
     if filehandle then
       local contents = filehandle:read("*a")
       escapehex(md5.sum(contents))

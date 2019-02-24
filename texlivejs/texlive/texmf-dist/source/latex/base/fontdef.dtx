@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% Copyright 1993-2016
+% Copyright 1993-2018
 % The LaTeX3 Project and any individual authors listed elsewhere
 % in this file.
 %
@@ -11,7 +11,7 @@
 % conditions of the LaTeX Project Public License, either version 1.3c
 % of this license or (at your option) any later version.
 % The latest version of this license is in
-%    http://www.latex-project.org/lppl.txt
+%    https://www.latex-project.org/lppl.txt
 % and version 1.3c or later is part of all distributions of LaTeX
 % version 2005/12/01 or later.
 %
@@ -39,7 +39,7 @@
 %<driver, >\ProvidesFile{fontdef.drv}
 % \fi
 %          \ProvidesFile{fontdef.dtx}
-           [2016/12/03 v3.0a LaTeX Kernel
+%<-latexrelease>           [2018/09/24 v3.0b LaTeX Kernel
 % \iftrue  (\else
 %<text,   >(Text
 %<math,   >(Math
@@ -47,7 +47,7 @@
 %<+cfgmath>(Uncustomised math
 %<+cfgprel>(Uncustomised preload
 % \fi
-           font setup)]
+%<-latexrelease>           font setup)]
 %
 %
 %\iffalse        This is a META comment
@@ -239,7 +239,7 @@
 %
 % \changes{v2.1d}{1994/01/05}{Removed nf prefix from file names.}
 % \changes{v2.1f}{1994/05/14}{Removed .def files.}
-% \changes{v2.1g}{1994/05/1g}{Removed \cs{DeclareFontEncoding} for ot1
+% \changes{v2.1g}{1994/05/16}{Removed \cs{DeclareFontEncoding} for ot1
 %                             and t1 and input .def files instead}
 % \changes{v2.2c}{1994/10/25}{Added OMSenc.def}
 % \changes{v2.2d}{1994/10/31}{Added OMLenc.def ...}
@@ -391,8 +391,6 @@
 %    The following three definitions set up the meaning for
 %    |\rmfamily|, |\sffamily|, and |\ttfamily|.
 %    \begin{macrocode}
-%</text>
-%<*text|latexrelease>
 \ifx\Umathchar\@undefined
 \newcommand\encodingdefault{OT1}
 \newcommand\rmdefault{cmr}
@@ -400,31 +398,40 @@
 \newcommand\ttdefault{cmtt}
 \else
 \newcommand\encodingdefault{TU}
-\newcommand\rmdefault{lmr}\fontfamily{\rmdefault}
+\newcommand\rmdefault{lmr}
+\fontfamily{\rmdefault}
 \newcommand\sfdefault{lmss}
 \newcommand\ttdefault{lmtt}
 \fi
+%</text>
 %<latexrelease>\IncludeInRelease{2017/01/01}%
 %<latexrelease>                 {\encodingdefault}{TU encoding default}%
 %<latexrelease>\ifx\Umathchar\@undefined
 %<latexrelease>\renewcommand\encodingdefault{OT1}
+%<latexrelease>\fontencoding{\encodingdefault}
 %<latexrelease>\renewcommand\rmdefault{cmr}
+%<latexrelease>\fontfamily{\rmdefault}
 %<latexrelease>\renewcommand\sfdefault{cmss}
 %<latexrelease>\renewcommand\ttdefault{cmtt}
 %<latexrelease>\else
 %<latexrelease>\renewcommand\encodingdefault{TU}
+%<latexrelease>%done in everyjob\fontencoding{\encodingdefault}
 %<latexrelease>\renewcommand\rmdefault{lmr}
+%<latexrelease>\fontfamily{\rmdefault}
 %<latexrelease>\renewcommand\sfdefault{lmss}
 %<latexrelease>\renewcommand\ttdefault{lmtt}
 %<latexrelease>\fi
 %<latexrelease>\EndIncludeInRelease
 %<latexrelease>\IncludeInRelease{0000/00/00}%
 %<latexrelease>                 {\encodingdefault}{TU encoding default}%
+%<latexrelease>\fontencoding{OT1}
 %<latexrelease>\renewcommand\encodingdefault{OT1}
+%<latexrelease>\fontencoding{\encodingdefault}
 %<latexrelease>\renewcommand\rmdefault{cmr}
+%<latexrelease>\fontfamily{\rmdefault}
 %<latexrelease>\renewcommand\sfdefault{cmss}
 %<latexrelease>\renewcommand\ttdefault{cmtt}
-%</text|latexrelease>
+%<latexrelease>\EndIncludeInRelease
 %<*text>
 %    \end{macrocode}
 % \end{macro}
@@ -1308,11 +1315,33 @@
 %
 % \subsubsection{Biggggg}
 %
+% \changes{v3.0b}{2018/09/24}{Start LR-mode if necessary (git/49)}   
 %    \begin{macrocode}
-\def\big#1{{\hbox{$\left#1\vbox to8.5\p@{}\right.\n@space$}}}
-\def\Big#1{{\hbox{$\left#1\vbox to11.5\p@{}\right.\n@space$}}}
-\def\bigg#1{{\hbox{$\left#1\vbox to14.5\p@{}\right.\n@space$}}}
-\def\Bigg#1{{\hbox{$\left#1\vbox to17.5\p@{}\right.\n@space$}}}
+%</math>
+%<*math|latexrelease>
+%<latexrelease>\IncludeInRelease{2018/12/01}%
+%<latexrelease>                 {\Big}{Start LR-mode}%
+\def\big#1{\leavevmode@ifvmode
+   {\hbox{$\left#1\vbox to8.5\p@{}\right.\n@space$}}}
+\def\Big#1{\leavevmode@ifvmode
+   {\hbox{$\left#1\vbox to11.5\p@{}\right.\n@space$}}}
+\def\bigg#1{\leavevmode@ifvmode
+   {\hbox{$\left#1\vbox to14.5\p@{}\right.\n@space$}}}
+\def\Bigg#1{\leavevmode@ifvmode
+   {\hbox{$\left#1\vbox to17.5\p@{}\right.\n@space$}}}
+%</math|latexrelease>
+%<latexrelease>\EndIncludeInRelease
+%<latexrelease>\IncludeInRelease{0000/00/00}%
+%<latexrelease>                 {\Big}{Start LR-mode}%
+%<latexrelease>\def\big#1{{\hbox{$\left#1\vbox to8.5\p@{}\right.\n@space$}}}
+%<latexrelease>\def\Big#1{{\hbox{$\left#1\vbox to11.5\p@{}\right.\n@space$}}}
+%<latexrelease>\def\bigg#1{{\hbox{$\left#1\vbox to14.5\p@{}\right.\n@space$}}}
+%<latexrelease>\def\Bigg#1{{\hbox{$\left#1\vbox to17.5\p@{}\right.\n@space$}}}
+%<latexrelease>\EndIncludeInRelease
+%<*math>
+%    \end{macrocode}
+%    
+%    \begin{macrocode}
 \def\n@space{\nulldelimiterspace\z@ \m@th}
 %    \end{macrocode}
 %

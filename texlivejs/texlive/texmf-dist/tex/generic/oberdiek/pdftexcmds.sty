@@ -9,7 +9,7 @@
 %% This is a generated file.
 %% 
 %% Project: pdftexcmds
-%% Version: 2017/03/19 v0.25
+%% Version: 2018/09/10 v0.29
 %% 
 %% Copyright (C) 2007, 2009-2011 by
 %%    Heiko Oberdiek <heiko.oberdiek at googlemail.com>
@@ -104,7 +104,7 @@
   \fi
 \expandafter\x\csname ver@pdftexcmds.sty\endcsname
 \ProvidesPackage{pdftexcmds}%
-  [2017/03/19 v0.25 Utility functions of pdfTeX for LuaTeX (HO)]%
+  [2018/09/10 v0.29 Utility functions of pdfTeX for LuaTeX (HO)]%
 \begingroup\catcode61\catcode48\catcode32=10\relax%
   \catcode13=5 % ^^M
   \endlinechar=13 %
@@ -241,7 +241,14 @@
   \fi
   \begingroup\expandafter\expandafter\expandafter\endgroup
   \expandafter\ifx\csname pdfmdfivesum\endcsname\relax
-    \pdftexcmds@nopdftex
+    \begingroup\expandafter\expandafter\expandafter\endgroup
+    \expandafter\ifx\csname mdfivesum\endcsname\relax
+      \pdftexcmds@nopdftex
+    \else
+      \def\pdf@mdfivesum#{\mdfivesum}%
+      \let\pdf@mdfivesumnative\pdf@mdfivesum
+      \def\pdf@filemdfivesum#{\mdfivesum file}%
+    \fi
   \else
     \def\pdf@mdfivesum#{\pdfmdfivesum}%
     \let\pdf@mdfivesumnative\pdf@mdfivesum
@@ -512,7 +519,7 @@
   \fi
 \fi
 \begingroup
-  \def\x{2017/03/19 v0.25}%
+  \def\x{2018/09/10 v0.29}%
   \ltx@onelevel@sanitize\x
   \edef\y{%
     \pdftexcmds@directlua{%
@@ -710,7 +717,8 @@
 \ifnum\luatexversion<68 %
 \else
   \protected\edef\pdf@shellescape{%
-   \numexpr\directlua{tex.sprint(status.shell_escape)}\relax}
+   \numexpr\directlua{tex.sprint(%
+         \number\catcodetable@string,status.shell_escape)}\relax}
 \fi
 \def\pdf@system#1{%
   \directlua0{%

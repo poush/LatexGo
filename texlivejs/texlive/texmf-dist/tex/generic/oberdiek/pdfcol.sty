@@ -9,7 +9,7 @@
 %% This is a generated file.
 %% 
 %% Project: pdfcol
-%% Version: 2016/05/17 v1.4
+%% Version: 2018/11/01 v1.5
 %% 
 %% Copyright (C) 2007 by
 %%    Heiko Oberdiek <heiko.oberdiek at googlemail.com>
@@ -102,7 +102,7 @@
   \fi
 \expandafter\x\csname ver@pdfcol.sty\endcsname
 \ProvidesPackage{pdfcol}%
-  [2016/05/17 v1.4 Handle new color stacks for pdfTeX (HO)]%
+  [2018/11/01 v1.5 Handle new color stacks for pdfTeX (HO)]%
 \begingroup\catcode61\catcode48\catcode32=10\relax%
   \catcode13=5 % ^^M
   \endlinechar=13 %
@@ -155,7 +155,8 @@
   }%
 \fi
 \ifx\pdfextension\@undefined\else
-  \PDFCOL@RequirePackage{luatex85}[2016/01/01]
+ \def\pdfcolorstackinit {\pdffeedback colorstackinit}
+ \protected\def\pdfcolorstack     {\pdfextension colorstack}
 \fi
 \PDFCOL@RequirePackage{ltxcmds}[2010/03/01]
 \ltx@newif\ifpdfcolAvailable

@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% Copyright 1993-2016
+% Copyright 1993-2018
 %
 % The LaTeX3 Project and any individual authors listed elsewhere
 % in this file.
@@ -12,7 +12,7 @@
 % conditions of the LaTeX Project Public License, either version 1.3c
 % of this license or (at your option) any later version.
 % The latest version of this license is in
-%    http://www.latex-project.org/lppl.txt
+%    https://www.latex-project.org/lppl.txt
 % and version 1.3c or later is part of all distributions of LaTeX
 % version 2005/12/01 or later.
 %
@@ -25,13 +25,23 @@
 %% Package `array' to use with LaTeX 2e
 %% Copyright (C) 1989-1998 Frank Mittelbach, all rights reserved.
 %<+package>\NeedsTeXFormat{LaTeX2e}[1995/06/01]
+%<+package>\providecommand\DeclareRelease[3]{}
+%<+package>\providecommand\DeclareCurrentRelease[2]{}
+%<+package>
+%<+package>\DeclareRelease{}{2016-10-06}{array-2016-10-06.sty}
+%<+package>\DeclareCurrentRelease{}{2018-04-30}
+%<+package>
 %<+package>\ProvidesPackage{array}
-%<+package>         [2016/10/06 v2.4d Tabular extension package (FMi)]
+%<+package>         [2018/12/30 v2.4k Tabular extension package (FMi)]
 %
 % \fi
 %
 %%
 %
+%
+% \changes{v2.4g}{2018/04/07}{Renamed internal \cs{mcell@box} to
+%       \cs{ar@mcellbox} and \cs{align@mcell} to \cs{ar@align@mcell}
+%        to avoid conflict with makecell package}
 %
 % \changes{v2.4c}{2008/09/09}{(WR) Typo fix in documentation}
 %
@@ -225,7 +235,7 @@
 % For example, we used =\setlength{\extrarowheight}{1pt}=
 % in table~\ref{tab:opt}.
 %
-% \begin{table}[t]
+% \begin{table}[!t]
 % \begin{center}
 %    \setlength{\extrarowheight}{1pt}
 %    \begin{tabular}{|>{\tt}c|m{9cm}|}
@@ -271,6 +281,23 @@
 %                        vertical line, so this option doesn't
 %                        suppress the normally inserted space between
 %                        columns in contrast to =@{...}=.\\
+%       \hline\hline
+%       w\{align\}\{width\} & Sets the cell content in a box of the
+%                        specified \texttt{width} aligned according to
+%                        the \texttt{align} parameter which could be 
+%                        either \texttt{l}, \texttt{c} or
+%                        \texttt{r}. Works essentially like
+%                        =\makebox[=width=][=align=]{=cell=}= so
+%                        silently overprints if the cell content is
+%                        wider than the specified width. If that is
+%                        not desired use \texttt{W} instead.\\
+%       \hline
+%       W\{align\}\{width\} & Like \texttt{w} but spits out an overfull
+%                        box warning (and an overfullrule marker in
+%                        draft mode) when the cell content is too wide
+%                        to fit. This also means that the alignment is
+%                        different if there is too much material,
+%                        because it then always protrudes to the right!\\
 %       \hline
 %    \end{tabular}
 % \end{center}
@@ -324,6 +351,13 @@
 %       columns which is enlarged by one centimeter, while
 %       =c@{\hspace{1cm}}c= gives you exactly one centimeter
 %       space between two columns.
+%
+%    \item
+%       A declaration like =w{l}{3cm}= (or even shorter =wl{3cm}=)
+%       works like an =l= column except that the width will always be
+%       =3cm= regardless of the cell content. Same with =w{c}= or
+%       =w{r}=. This means that it is easy to set up tables in which all
+%       columns have predefined widths.
 % \end{itemize}
 %
 % \subsection{Defining new column specifiers}
@@ -593,6 +627,16 @@
 % standard \LaTeX, and also in \texttt{!}-expressions (but see the
 % note below).
 % \end{itemize}
+%
+% Prior to version 2.4f the space added by the optional argument to "\\"
+% was added inside an m-cell if the last column was of type
+% \texttt{m}. As a result that cell was vertically centered with that
+% space inside, resulting in a strange offset. Since 2.4f, this space
+% is now added after centering the cell.
+% 
+% A similar problem happened when "\extrarowheight" was used. For that
+% reason m-cells now manually position the cell content which
+% allows to ignore this extra space request during the vertical aligment. 
 %
 %
 % \subsection{Bugs and Features}
@@ -1239,6 +1283,10 @@
 % \subsection{The macro \texttt{\textbackslash @mkpream}}
 %
 % \begin{macro}{\@mkpream}
+%    \emph{The code below has been replaced long time ago by an
+%    extended version further down but the code and its documentation
+%    was left here for reference. It is now commented out to avoid
+%    confusion.}
 % \begin{macro}{\the@toks}
 %    \label{@mkpream}
 %    Now we can define the macro which builds up the preamble for the
@@ -1246,7 +1294,7 @@
 %    First we initialize =\@preamble=, =\@lastchclass=
 %    and the boolean variable =\if@firstamp=.
 %    \begin{macrocode}
-\def\@mkpream#1{\gdef\@preamble{}\@lastchclass 4 \@firstamptrue
+%\def\@mkpream#1{\gdef\@preamble{}\@lastchclass 4 \@firstamptrue
 %    \end{macrocode}
 %    During the build-up of the preamble we cannot directly use the
 %    =#= sign; this would lead to an error message in the next
@@ -1265,26 +1313,36 @@
 %    macros expand in many \textsf{tokens} which would delay the
 %    build-up of the preamble.
 %    \begin{macrocode}
-   \let\@sharp\relax \let\@startpbox\relax \let\@endpbox\relax
+%   \let\@sharp\relax\let\@startpbox\relax\let\@endpbox\relax
+%    \end{macrocode}
+%    Two more are needed to deal with the code that handles struts
+%    for extra space after a row from =\\[<space>]=
+%    (=\do@row@strut=) and code that manages m-cells depending on
+%   their heights (=\ar@align@mcell=).
+% \changes{v2.4e}{2016/10/07}{Fixing SX68732}
+% \changes{v2.4f}{2017/11/04}{Managing m-cells without \cs{vcenter}}
+%    \begin{macrocode}
+%   \let\do@row@strut\relax
+%   \let\ar@align@mcell\relax 
 %    \end{macrocode}
 %    Now we remove possible  $*$-forms in the user preamble with the
 %    command =\@xexpast=.  As we already know, this command saves
 %    its result in the macro =\@tempa=.
 %    \begin{macrocode}
-   \@xexpast #1*0x\@@
+%   \@xexpast #1*0x\@@
 %    \end{macrocode}
 %    Afterwards we initialize all registers and macros, that we need
 %    for the build-up of the preamble.
 %    Since we want to start with the \textsf{token} register $0$,
 %    =\count@= has to contain the value $-1$.
 %    \begin{macrocode}
-   \count@\m@ne
-   \let\the@toks\relax
+%   \count@\m@ne
+%   \let\the@toks\relax
 %    \end{macrocode}
 %    Then we call up =\prepnext@tok= in order to prepare the
 %    \textsf{token} register $0$ for use.
 %    \begin{macrocode}
-   \prepnext@tok
+%   \prepnext@tok
 %    \end{macrocode}
 %    To evaluate the user preamble (without stars) saved in
 %    =\@tempa= we use the \LaTeX--macro =\@tfor=.
@@ -1293,8 +1351,8 @@
 %    =\@tempa= and not the macro =\@tempa= to this
 %    \LaTeX--macro.
 %    \begin{macrocode}
-   \expandafter \@tfor \expandafter \@nextchar
-    \expandafter :\expandafter =\@tempa \do
+%   \expandafter \@tfor \expandafter \@nextchar
+%    \expandafter :\expandafter =\@tempa \do
 %    \end{macrocode}
 %    The body of this loop (the group after the =\do=)
 %    is executed for one \textsf{token} at a time, whereas
@@ -1305,15 +1363,15 @@
 %    the character number of this \textsf{token}.
 % \changes{v2.0f}{1992/02/29}{\cs{@testpach} now without arg}
 %    \begin{macrocode}
-   {\@testpach
+%   {\@testpach
 %    \end{macrocode}
 %    Then we branch out depending on the value of =\@chclass= into
 %    different macros that extend the preamble respectively.
 %    \begin{macrocode}
-   \ifcase \@chclass \@classz \or \@classi \or \@classii
-     \or \save@decl \or \or \@classv \or \@classvi
-     \or \@classvii \or \@classviii  \or \@classix
-     \or \@classx \fi
+%   \ifcase \@chclass \@classz \or \@classi \or \@classii
+%     \or \save@decl \or \or \@classv \or \@classvi
+%     \or \@classvii \or \@classviii  \or \@classix
+%     \or \@classx \fi
 %    \end{macrocode}
 %    Two cases deserve our special attention: Since the current
 %    \textsf{token} cannot have the character class $4$ (start) we
@@ -1325,29 +1383,29 @@
 %    =\@lastchclass= to assure that this information will be available
 %    during the next run of the loop.
 %    \begin{macrocode}
-   \@lastchclass\@chclass}%
+%   \@lastchclass\@chclass}%
 %    \end{macrocode}
 %    After the loop has been finished space must still be added to
 %    the created preamble, depending on the last \textsf{token}.
 %    Depending on the value of =\@lastchclass= we perform
 %    the necessary operations.
 %    \begin{macrocode}
-   \ifcase\@lastchclass
+%   \ifcase\@lastchclass
 %    \end{macrocode}
 %    If the last class equals $0$ we add a
 %    =\hskip \col@sep=.
 %    \begin{macrocode}
-   \@acol \or
+%   \@acol \or
 %    \end{macrocode}
 %    If it equals $1$ we do not add any additional space so that the
 %    horizontal lines do not exceed the vertical ones.
 %    \begin{macrocode}
-   \or
+%   \or
 %    \end{macrocode}
 %    Class $2$ is treated like class $0$ because a =<{...}=  can
 %    only directly follow after class $0$.
 %    \begin{macrocode}
-   \@acol \or
+%   \@acol \or
 %    \end{macrocode}
 %    Most of the other possibilities can only appear if the user
 %    preamble was defective. Class $3$ is not allowed since after a
@@ -1355,32 +1413,32 @@
 %    \texttt{r}, \texttt{p},\texttt{m} or \texttt{b}. We report an
 %    error and ignore the declaration given by ={..}=.
 %    \begin{macrocode}
-   \@preamerr \thr@@ \or
+%   \@preamerr \thr@@ \or
 %    \end{macrocode}
 %    If =\@lastchclass= is $4$ the user preamble has been empty.
 %    To continue, we insert a =#= in the preamble.
 %    \begin{macrocode}
-   \@preamerr \tw@ \@addtopreamble\@sharp \or
+%   \@preamerr \tw@ \@addtopreamble\@sharp \or
 %    \end{macrocode}
 %    Class $5$ is allowed again. In this case
 %    (the user preamble ends with =@{..}=) we need not
 %    do anything.
 %    \begin{macrocode}
-   \or
+%   \or
 %    \end{macrocode}
 %    Any other case means that the arguments to =@=, \texttt{!},
 %    \texttt{<}, \texttt{>}, \texttt{p}, \texttt{m} or \texttt{b} have
 %    been forgotten. So we report an error and ignore the last
 %    \textsf{token}.
 %    \begin{macrocode}
-   \else  \@preamerr \@ne \fi
+%   \else  \@preamerr \@ne \fi
 %    \end{macrocode}
 %    Now that the build-up of the preamble is almost finished we can
 %    insert the \textsf{token} registers and therefore redefine
 %    =\the@toks=. The actual insertion, though, is performed
 %    later.
 %    \begin{macrocode}
-   \def\the@toks{\the\toks}}
+%   \def\the@toks{\the\toks}}
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}
@@ -1492,6 +1550,13 @@
 %    \begin{macrocode}
       \hfil
 %    \end{macrocode}
+%    We also add a space of 1sp just in case the first thing in the
+%    cell is a command doing an =\unskip=.      
+% \changes{v2.4k}{2018/12/30}{Add extra \cs{hskip} to guard against an
+%   \cs{unskip} at the start of a c-column cell (gh/102)}
+%    \begin{macrocode}
+      \hskip1sp%
+%    \end{macrocode}
 %    The command =\d@llarbegin= follows expanding into =\begingroup=
 %    (in the \textsf{tabular}--environment) or into =$=.  Doing this
 %    (provided an appropriate setting of =\d@llarbegin=) we achieve
@@ -1510,8 +1575,10 @@
 %    \end{macrocode}
 %    We end this case with =\d@llarend= and =\hfil= where =\d@llarend=
 %    again is either =$= or =\endgroup=.
+%    The strut to enforce a regular row height is placed between the two.
+% \changes{v2.4e}{2016/10/07}{Fixing SX68732}
 %    \begin{macrocode}
-      \d@llarend \hfil \or
+      \d@llarend \do@row@strut \hfil \or
 %    \end{macrocode}
 %    The templates for \texttt{l} and \texttt{r} (i.e.\ =\@chnum= $1$
 %    or $2$) are generated the same way. Since one  =\hfil= is
@@ -1526,16 +1593,18 @@
 %             internal/2122}
 % \changes{v2.3i}{1996/06/14}
 %     {Change both \cs{kern}\cs{z@} to \cs{hskip}1sp for latex/2160}
+% \changes{v2.4e}{2016/10/07}{Fixing SX68732}
 %    \begin{macrocode}
-      \hskip1sp\d@llarbegin \insert@column \d@llarend \hfil \or
-      \hfil\hskip1sp\d@llarbegin \insert@column \d@llarend \or
+      \hskip1sp\d@llarbegin \insert@column \d@llarend \do@row@strut \hfil \or
+      \hfil\hskip1sp\d@llarbegin \insert@column \d@llarend \do@row@strut \or
 %    \end{macrocode}
 %    The templates for \texttt{p}, \texttt{m} and \texttt{b} mainly
 %    consist of a \textsf{box}. In case of \texttt{m} it is generated
 %    by =\vcenter=.  This command is allowed only in math
 %    mode. Therefore we start with a~=$=.
+% \changes{v2.4f}{2017/11/04}{Managing m-cells without \cs{vcenter}}
 %    \begin{macrocode}
-   $\vcenter
+    \setbox\ar@mcellbox\vbox 
 %    \end{macrocode}
 %    The part of the templates which is the same in all three cases
 %    (\texttt{p}, \texttt{m} and \texttt{b})
@@ -1545,15 +1614,21 @@
 %    \textsf{token} (i.e.\ =\@nextchar=).
 %    Between these two macros we find the well known
 %    =\insert@column=.
+%    The strut is places after the box
+% \changes{v2.4e}{2016/10/07}{Fixing SX68732}
+% \changes{v2.4f}{2017/11/04}{Managing m-cells without \cs{vcenter}}
 %    \begin{macrocode}
-   \@startpbox{\@nextchar}\insert@column \@endpbox $\or
+    \@startpbox{\@nextchar}\insert@column \@endpbox 
+    \ar@align@mcell
+    \do@row@strut \or
 %    \end{macrocode}
 %    The templates for \texttt{p} and \texttt{b} are generated in the
 %    same way though we do not need the =$= characters because we use
 %    =\vtop= or =\vbox=.
+% \changes{v2.4e}{2016/10/07}{Fixing SX68732}
 %    \begin{macrocode}
-   \vtop \@startpbox{\@nextchar}\insert@column \@endpbox \or
-   \vbox \@startpbox{\@nextchar}\insert@column \@endpbox
+   \vtop \@startpbox{\@nextchar}\insert@column \@endpbox\do@row@strut \or
+   \vbox \@startpbox{\@nextchar}\insert@column \@endpbox\do@row@strut
 %    \end{macrocode}
 %    Other values for =\@chnum= are impossible. Therefore we
 %    end the arguments to =\@addtopreamble= and =\ifcase=.
@@ -1564,8 +1639,72 @@
 %    \end{macrocode}
 % \end{macro}
 %
+
+%
+% \begin{macro}{\ar@mcellbox}
+%    When dealing with m-cells we need a box to measure the cell
+%    height.
+% \changes{v2.4f}{2017/11/04}{Managing m-cells without \cs{vcenter}}
+%    \begin{macrocode}
+\newbox\ar@mcellbox
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\ar@align@mcell}
+%    M-cells are supposed to be vertically centered within the table
+%    row. In the original implementation that was done using
+%    =\vcenter= but the issue with that approach is that it centers
+%    the material based on the math-axis. In most situations that
+%    comes out quit right, but if, for example, an m-cell has only a
+%    single line worth of material inside it will be positioned
+%    differently to a =l=, =c= or =r= cell or to a =p= or =b= cell
+%    with  the same content.
+%
+%    For that reason the new implementation does the centering
+%    manually: First we check the height of the cell and if that is
+%    less or equal to =\ht\@arstrutbox= we assume that this is a
+%    single line cell. In that case  we don't do any vertical maneuvre
+%    and simply output the box, i.e., make it behave like a single
+%    line p-cell.
+% \changes{v2.4f}{2017/11/04}{Managing m-cells without \cs{vcenter}}
+%    \begin{macrocode}
+\def\ar@align@mcell{%
+  \ifdim \ht\ar@mcellbox > \ht\@arstrutbox
+%    \end{macrocode}
+%    Otherwise we realign vertically by lowering the box. The question
+%    is how much do we need to move down? If there is any
+%    =\arraystretch= in place then the first line will have some
+%    unusual height and we don't want to consider that when finding
+%    the middle point. So we substract from the cell height the height
+%    of that strut. But of course we want to include the normal height
+%    of the first line (which would be something like =\ht\strutbox=)
+%    so we need to add that. On the other hand, when centering around
+%    the mid-point of the cell, we also need to account for the depth
+%    of the last line (which is nominally something like
+%    =\dp\strutbox=). Both together equals =\baselineskip= so that is
+%    what we add and then lower the cell by half of the resulting value.
+%    \begin{macrocode}
+    \begingroup
+     \dimen@\ht\ar@mcellbox
+     \advance\dimen@-\ht\@arstrutbox
+     \advance\dimen@\baselineskip
+     \lower.5\dimen@\box\ar@mcellbox
+    \endgroup
+  \else % assume one line and align at baseline
+    \box\ar@mcellbox
+  \fi}
+%    \end{macrocode}
+% \end{macro}
+%
+
 %
 % \begin{macro}{\@classix}
+%    \emph{The code below has been replaced long time ago by an
+%    extended version further down but the code and its documentation
+%    was left here for reference. It is now commented out to avoid
+%    confusion.}
+%
 %    In case of class $9$ (\texttt{>}--\textsf{token}) we first check
 %    if the character class of the last
 %    \textsf{token} was $3$. In this case we have a
@@ -1574,28 +1713,33 @@
 %    So the declarations defined by the first  =>{...}=
 %    are ignored.
 %    \begin{macrocode}
-\def\@classix{\ifnum \@lastchclass = \thr@@
-       \@preamerr \thr@@ \fi
+%\def\@classix{\ifnum \@lastchclass = \thr@@
+%       \@preamerr \thr@@ \fi
 %    \end{macrocode}
 %    Furthermore, we call up =\@class10= because afterwards always a
 %    new column is started by \texttt{c}, \texttt{l}, \texttt{r},
 %    \texttt{p}, \texttt{m} or \texttt{b}.
 %    \begin{macrocode}
-       \@classx}
+%       \@classx}
 %    \end{macrocode}
 % \end{macro}
 %
 %
 %
 % \begin{macro}{\@classviii}
+%    \emph{The code below has been replaced long time ago by an
+%    extended version further down but the code and its documentation
+%    was left here for reference. It is now commented out to avoid
+%    confusion.}
+%
 %    If the current \textsf{token} is a \texttt{<} the last character
 %    class must be $0$. In this case it is not necessary to extend the
 %    preamble. Otherwise we output an error message, set =\@chclass=
 %    to $6$ and call =\@classvi=.  By doing this we achieve that
 %    \texttt{<} is treated like \texttt{!}.
 %    \begin{macrocode}
-\def\@classviii{\ifnum \@lastchclass >\z@
-      \@preamerr 4\@chclass 6 \@classvi \fi}
+%\def\@classviii{\ifnum \@lastchclass >\z@
+%      \@preamerr 4\@chclass 6 \@classvi \fi}
 %    \end{macrocode}
 % \end{macro}
 %
@@ -1694,11 +1838,16 @@
 %
 %
 % \begin{macro}{\@classv}
+%    \emph{The code below has been replaced long time ago by an
+%    extended version further down but the code and its documentation
+%    was left here for reference. It is now commented out to avoid
+%    confusion.}
+%
 %    If the current \textsf{token} is of class $5$ then it is an
 %    argument of a \texttt{@} \textsf{token}. It must be stored into a
 %    \textsf{token} register.
 %    \begin{macrocode}
-\def\@classv{\save@decl
+%\def\@classv{\save@decl
 %    \end{macrocode}
 %    We extend the preamble with a command which inserts this
 %    \textsf{token} register into the preamble when its construction
@@ -1709,11 +1858,11 @@
 % \changes{v2.0c}{1990/08/14}{\cs{relax} added to avoid problem
 %                           `the`toks0`the`toks1.}
 %    \begin{macrocode}
-   \@addtopreamble{\d@llarbegin\the@toks\the\count@\relax\d@llarend}%
+%   \@addtopreamble{\d@llarbegin\the@toks\the\count@\relax\d@llarend}%
 %    \end{macrocode}
 %    Finally we must prepare the next \textsf{token} register.
 %    \begin{macrocode}
-   \prepnext@tok}
+%   \prepnext@tok}
 %    \end{macrocode}
 % \end{macro}
 %
@@ -1743,8 +1892,10 @@
 %    The width of the \textsf{parbox} is passed as an argument.
 %    =\vcenter=, =\vtop= or =\vbox= are already in the
 %    preamble. So we start with the braces for the wanted box.
+% \changes{v2.4i}{2018/09/13}{Add group to prevent color leak (gh/72)}
 %    \begin{macrocode}
 \def\@startpbox#1{\bgroup
+  \color@begingroup
 %    \end{macrocode}
 %    The argument is the width of the box. This information has to be
 %    assigned to =\hsize=.
@@ -1792,8 +1943,9 @@
 %    =\@startpbox=.
 % \changes{v2.2d}{1994/05/16}{Use \LaTeXe \cs{@finalstrut}}
 % \changes{v2.3g}{1996/05/07}{Add \cs{hfil} for tools/2120}
+% \changes{v2.4i}{2018/09/13}{Add group to prevent color leak (gh/72)}
 %    \begin{macrocode}
-\def\@endpbox{\@finalstrut\@arstrutbox \egroup\hfil}
+\def\@endpbox{\@finalstrut\@arstrutbox \color@endgroup \egroup\hfil}
 %    \end{macrocode}
 % \end{macro}
 %
@@ -2038,10 +2190,23 @@
 % \begin{macro}{\@xargarraycr}
 % \begin{macro}{\@yargarraycr}
 %    The following macros were already explained above.
+% \changes{v2.4e}{2016/10/07}{Fixing SX68732}
 %    \begin{macrocode}
-\def\@xargarraycr#1{\unskip
-  \@tempdima #1\advance\@tempdima \dp\@arstrutbox
-  \vrule \@depth\@tempdima \@width\z@ \cr}
+\def\@xargarraycr#1{\unskip\gdef\do@row@strut
+ {\@tempdima #1\advance\@tempdima \dp\@arstrutbox
+   \vrule \@depth\@tempdima \@width\z@\global\let\do@row@strut\relax}%
+%    \end{macrocode}
+%    If the last column is a =\multicolumn= cell then we need to
+%    insert the row strut now as it isn't inside the template (as that
+%    got =\omit=ted).
+% \changes{v2.4h}{2018/04/30}{Fixing issue 42}
+ %    \begin{macrocode}
+   \ifnum\@multicnt >\z@ \do@row@strut \fi
+   \cr}
+\let\do@row@strut\relax
+%    \end{macrocode}
+%
+%    \begin{macrocode}
 \def\@yargarraycr#1{\cr\noalign{\vskip #1}}
 %    \end{macrocode}
 % \end{macro}
@@ -2169,10 +2334,15 @@
 % \end{macro}
 %
 % \begin{macro}{\@tabarray}
+%    \emph{The code below has been replaced long time ago by an
+%    extended version further down but the code and its documentation
+%    was left here for reference. It is now commented out to avoid
+%    confusion.}
+%
 %    This macro tests for a optional bracket and then calls up
 %    =\@array= or =\@array[c]= (as default).
 %    \begin{macrocode}
-\def\@tabarray{\@ifnextchar[{\@array}{\@array[c]}}
+%\def\@tabarray{\@ifnextchar[{\@array}{\@array[c]}}
 %    \end{macrocode}
 % \end{macro}
 %
@@ -2228,6 +2398,11 @@
 % \end{macro}
 %
 % \begin{macro}{\endarray}
+%    \emph{The code below has been replaced long time ago by an
+%    extended version further down but the code and its documentation
+%    was left here for reference. It is now commented out to avoid
+%    confusion.}
+%
 %    When the processing of \textsf{array} is finished we have to
 %    close the =\halign=
 %    and afterwards the surrounding \textsf{box} selected by
@@ -2235,7 +2410,7 @@
 %    =\@preamble=
 %    because its replacement text isn't longer needed.
 %    \begin{macrocode}
-\def\endarray{\crcr \egroup \egroup \gdef\@preamble{}}
+%\def\endarray{\crcr \egroup \egroup \gdef\@preamble{}}
 %    \end{macrocode}
 % \end{macro}
 %
@@ -2537,13 +2712,34 @@
                   {\expandafter\@nextchar\the\toks\count@}}
 %    \end{macrocode}
 % \end{macro}
+%
 % \begin{macro}{\@mkpream}
 %    The main modification to "\@mkpream" is to replace the call to
 %    "\@xexpast" (which expanded $*$-forms) by a loop which expands
 %    all "\newcolumntype" specifiers.
+% \changes{v2.4e}{2016/10/07}{Fixing SX68732}
+% \changes{v2.4f}{2017/11/04}{Managing m-cells without \cs{vcenter}}
 %    \begin{macrocode}
 \def\@mkpream#1{\gdef\@preamble{}\@lastchclass 4 \@firstamptrue
-   \let\@sharp\relax \let\@startpbox\relax \let\@endpbox\relax
+   \let\@sharp\relax 
+%    \end{macrocode}
+%    
+% \changes{v2.4j}{2018/11/13}{Do not expand argument of
+%    \cs{@startpbox} while building the tabular preamble (sx/459285)}
+%    The "\@startpbox" (which is called for "p", "m" or "b" columns)
+%    receives a user supplied argument: the width of the
+%    paragraph-column. Normally that is something harmless like a length or a
+%    simple length expression, but with the calc package involved it
+%    could break under an "\edef" operation, which is how the preamble
+%    is constructed. We now make use of "\unexpanded" here to prevent that. The
+%    "\expandafter" gymnastics is necessary to expand the "#1" at least
+%    once (since it will get "\@nextchar" as its value and need its
+%    content!
+%    \begin{macrocode}
+   \def\@startpbox##1{\unexpanded\expandafter{\expandafter
+                      \@startpbox\expandafter{##1}}}\let\@endpbox\relax
+   \let\do@row@strut\relax
+   \let\ar@align@mcell\relax 
 %    \end{macrocode}
 %    Now we remove possible  $*$-forms and user-defined column
 %    specifiers in the user preamble by repeatedly executing the list
@@ -2807,6 +3003,77 @@
 %</package>
 %    \end{macrocode}
 %  \end{macro}
+
+% \subsection{Implementing column types \texttt{w} and \texttt{W}}
+%
+% In TugBoat 38/2 an extension was presented that implemented two
+% aditional column types \texttt{w} and \texttt{W}. These have now
+% been added to the package itself.
+%
+%
+%  \begin{macro}{\ar@cellbox}
+%    For \texttt{w} and \texttt{W} column types we need a box to
+%    temporarily hold the cell content.
+% \changes{v2.4f}{2017/11/07}{Macro added}
+%    \begin{macrocode}
+\newsavebox\ar@cellbox
+%    \end{macrocode}
+%  \end{macro}
+%
+%
+%  \begin{macro}{\newcolumntype w}
+%    The \texttt{w} column type has two arguments: the first holds the
+%    alignment which is either "l", "c", or "r" and the second is the
+%    nominal width of the column.
+% \changes{v2.4f}{2017/11/07}{Column type added}
+%    \begin{macrocode}
+\newcolumntype{w}[2]{%
+%    \end{macrocode}
+%    Before the cell content we start an "lrbox"-environment to
+%    collect the cell material into the previously allocated box
+%    "\ar@cellbox".
+%    \begin{macrocode}
+  >{\begin{lrbox}\ar@cellbox}%
+%    \end{macrocode}
+%    Then comes a specifier for the cell content.  We use "c", but
+%    that doesn't matter as in the end we will always put a box of a
+%    specific width ("#2") into the cells of that column, so "l" or
+%    "r" would give the same result. There is only a difference if
+%    there are also very wide "\multicolumn" rows overwriting the
+%    setting  in which case "c" seems to be slightly better.
+%    \begin{macrocode}
+  c%
+%    \end{macrocode}
+%    At the end of the cell we end the "lrbox" environment so that all
+%    of the cell content is now in box "\ar@cellbox".  As a final step we
+%    put that box into a "\makebox" using the optional arguments of
+%    that command to achieve the correct width and the desired
+%    alignment within that width.
+%    \begin{macrocode}
+  <{\end{lrbox}%
+    \makebox[#2][#1]{\usebox\ar@cellbox}}}
+%    \end{macrocode}
+%  \end{macro}
+
+%
+%
+%  \begin{macro}{\newcolumntype W}
+%    The \texttt{W} is similar but in this case we want a warning if
+%    the cell content is too wide.
+% \changes{v2.4f}{2017/11/07}{Column type added}
+%    \begin{macrocode}
+\newcolumntype{W}[2]
+  {>{\begin{lrbox}\ar@cellbox}%
+   c%
+   <{\end{lrbox}%
+   \let\hss\hfil
+   \makebox[#2][#1]{\unhbox\ar@cellbox}}}
+%    \end{macrocode} 
+%    This is a bit sneaky, as it temporarily disables "\hss", but
+%    given that we know what goes into that box it should be
+%    sufficient.
+%  \end{macro}
+%
 %
 % \PrintIndex
 % \PrintChanges

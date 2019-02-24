@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% Copyright 1993-2016
+% Copyright 1993-2018
 % The LaTeX3 Project and any individual authors listed elsewhere
 % in this file.
 %
@@ -11,7 +11,7 @@
 % conditions of the LaTeX Project Public License, either version 1.3c
 % of this license or (at your option) any later version.
 % The latest version of this license is in
-%    http://www.latex-project.org/lppl.txt
+%    https://www.latex-project.org/lppl.txt
 % and version 1.3c or later is part of all distributions of LaTeX
 % version 2005/12/01 or later.
 %
@@ -29,9 +29,9 @@
 \catcode`\{=1
 \catcode`\}=2
 \def\filename{docstrip.dtx}
-\def\fileversion{2.5e}
-\def\filedate{2014/09/29}
-\def\docdate {2014/09/29}
+\def\fileversion{2.5g}
+\def\filedate{2018/05/03}
+\def\docdate {2018/05/03}
 %%
 %
 %\iffalse
@@ -438,7 +438,7 @@
 %
 % Do not use the  \LaTeX\ syntax |\input{docstrip}| as batch files may
 % be used with plain~\TeX\ or ini\TeX.
-% You may that old batch files always have a line
+% You may find that old batch files always have a line
 % |\def\batchfile{|\meta{filename}|}|
 % just before the input.
 % Such usage is still supported but is now discouraged, as it causes
@@ -1029,6 +1029,19 @@ Z
 %    We use \verb=^^J= for this purpose.
 %    \begin{macrocode}
 \newlinechar=`\^^J
+%    \end{macrocode}
+%
+% \changes{2.58}{2018/05/03}{Read 8bit raw to leave high bits in the
+%   .ins files unchanged}
+% Reset the catcodes of 8-bit characters so that processing a \texttt{.ins}
+% file with plain \TeX\ or \LaTeX\ both work.
+%    \begin{macrocode}
+\count@=128\relax
+\loop
+  \catcode\count@ 12\relax
+\ifnum\count@ <255\relax
+    \advance\count@\@ne
+\repeat
 %    \end{macrocode}
 %
 % \subsubsection{Switches}
@@ -3033,6 +3046,18 @@ Z
     \makeOther\_\makeOther\^^A\makeOther\%%
     \makeOther\~\makeOther\{\makeOther\}\makeOther\&%
     \endlinechar-1\relax
+%    \end{macrocode}
+%    To avoid any UTF-8 handling of characters we set code points
+%    128--255 to other.
+% \changes{2.5f}{2018/04/10}{Read 8bit raw to leave high bits in the
+%   code to unchanged without utf8 handling (issue 34)}
+%    \begin{macrocode}
+    \@tempcnta=128\relax
+    \loop
+    \catcode\@tempcnta 12\relax
+    \ifnum\@tempcnta <255\relax
+    \advance\@tempcnta\@ne
+    \repeat
 %    \end{macrocode}
 %    Then we start a loop to process the lines in the file one by one.
 %    \begin{macrocode}

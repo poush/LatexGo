@@ -9,7 +9,7 @@
 %% This is a generated file.
 %% 
 %% Project: accsupp
-%% Version: 2016/05/16 v0.4
+%% Version: 2018/03/28 v0.5
 %% 
 %% Copyright (C) 2007, 2010 by
 %%    Heiko Oberdiek <heiko.oberdiek at googlemail.com>
@@ -31,7 +31,8 @@
 %% This work consists of the main source file accsupp.dtx
 %% and the derived files
 %%    accsupp.sty, accsupp.pdf, accsupp.ins, accsupp.drv,
-%%    accsupp-pdftex.def, accsupp-dvipdfm.def, accsupp-dvips.def,
+%%    accsupp-pdftex.def, accsupp-luatex.def, accsupp-dvipdfm.def,
+%%    accsupp-dvips.def,
 %%    accsupp-example1.tex, accsupp-example2.tex,
 %%    accsupp-test1.tex.
 %% 
@@ -87,7 +88,7 @@
 \edef\ACCSUPP@AtEnd{\ACCSUPP@AtEnd\noexpand\endinput}
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{accsupp}%
-  [2016/05/16 v0.4 Accessibility support by marked content (HO)]
+  [2018/03/28 v0.5 Accessibility support by marked content (HO)]
 \RequirePackage{pdfescape}[2007/02/25]
 \RequirePackage{ifpdf}
 \RequirePackage{ifxetex}
@@ -112,6 +113,7 @@
 }
 \let\ACCSUPP@DisableOptions\@empty
 \ACCSUPP@DefineDriverKey{pdftex}
+\ACCSUPP@DefineDriverKey{luatex}
 \ACCSUPP@DefineDriverKey{dvips}
 \ACCSUPP@DefineDriverKey[dvips]{dvipsone}
 \ACCSUPP@DefineDriverKey{dvipdfm}
@@ -121,7 +123,11 @@
 \InputIfFileExists{accsupp.cfg}{}{}
 \providecommand*{\ActualTextDriverDefault}{dvips}
 \ifpdf
-  \def\ACCSUPP@driver{pdftex}%
+  \ifx\pdfextension\@undefined
+    \def\ACCSUPP@driver{pdftex}%
+  \else
+    \def\ACCSUPP@driver{luatex}%
+  \fi
 \else
   \ifxetex
     \def\ACCSUPP@driver{dvipdfm}%
@@ -135,11 +141,15 @@
 \ACCSUPP@DisableOptions
 \def\ACCSUPP@temp{pdftex}%
 \ifpdf
+  \ifx\pdfextension\@undefined\else
+    \def\ACCSUPP@temp{luatex}%
+  \fi
   \ifx\ACCSUPP@temp\ACCSUPP@driver
   \else
     \PackageWarningNoLine{accsupp}{%
       Wrong driver `\ACCSUPP@driver', using `pdftex' instead%
     }%
+ed as
     \let\ACCSUPP@driver\ACCSUPP@temp
   \fi
 \else

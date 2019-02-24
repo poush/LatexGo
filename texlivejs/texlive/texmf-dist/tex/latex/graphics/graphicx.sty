@@ -7,12 +7,12 @@
 %% graphicx.dtx  (with options: `package')
 %% 
 %% The source is maintained by the LaTeX Project team and bug
-%% reports for it can be opened at http://latex-project.org/bugs.html
+%% reports for it can be opened at https://latex-project.org/bugs/
 %% (but please observe conditions on bug reports sent to that address!)
 %% 
 %% 
 %% graphicx.dtx Copyright (C) 1994      David Carlisle Sebastian Rahtz
-%%              Copyright (C) 1995--2015 David Carlisle, LaTeX3 Project
+%%              Copyright (C) 1995--2015,2017 David Carlisle, LaTeX3 Project
 %%
 %% This file is part of the Standard LaTeX `Graphics Bundle'.
 %% It may be distributed under the terms of the LaTeX Project Public
@@ -21,7 +21,7 @@
 %%
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
 \ProvidesPackage{graphicx}
-          [2014/10/28 v1.0g  Enhanced LaTeX Graphics (DPC,SPQR)]
+          [2017/06/01 v1.1a  Enhanced LaTeX Graphics (DPC,SPQR)]
 \DeclareOption{unknownkeysallowed}
   {\PassOptionsToPackage\CurrentOption{keyval}}
 \DeclareOption*{\PassOptionsToPackage\CurrentOption{graphics}}
@@ -124,6 +124,38 @@
 \let\Gin@eread\@empty
 \define@key{Gin}{command}{\def\Gin@ecom##1{#1}}
 \let\Gin@ecom\@firstofone
+\define@key{Gin}{decodearray}{%
+  \def\Gin@decode{#1}%
+}
+\define@key{Gin}{quiet}{%
+  \let\Gin@log\@gobble
+}
+\define@key{Gin}{page}{%
+  \def\Gin@page{#1}%
+  \ifx\Gin@page\@empty
+  \else
+    \edef\Gin@page{\number\Gin@page}%
+  \fi
+}
+\define@key{Gin}{interpolate}[true]{%
+  \lowercase{\Gin@boolkey{#1}}{interpolate}}
+\define@key{Gin}{pagebox}{%
+        \expandafter\let\expandafter\Gin@pagebox
+            \csname Gin@pagebox@#1\endcsname
+        \ifx\Gin@pagebox\relax
+          \let\Gin@pagebox\Gin@pagebox@cropbox
+          \@warning{%
+            Unknown value `#1' for `pagebox'.\MessageBreak
+            Supported values:\MessageBreak
+            mediabox, cropbox, bleedbox, trimbox, artbox%
+          }%
+        \fi
+      }
+      \def\Gin@pagebox@mediabox{mediabox}%
+      \def\Gin@pagebox@cropbox{cropbox}%
+      \def\Gin@pagebox@bleedbox{bleedbox}%
+      \def\Gin@pagebox@trimbox{trimbox}%
+      \def\Gin@pagebox@artbox{artbox}%
 \def\Gin@boolkey#1#2{%
   \csname Gin@#2\ifx\relax#1\relax true\else#1\fi\endcsname}
 \def\Gin@eresize{\height}

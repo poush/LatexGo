@@ -1,7 +1,124 @@
 (This file public domain.  Originally written by Norbert Preining and
 Karl Berry, 2010.)
 
-<p><b>tlmgr 41258 (TeX Live 2016):</b>
+<p><b>tlmgr 49226 (released 23nov18):</b>
+<li>new environment variable TEXLIVE_PREFER_OWN to prefer compression
+(e.g., xz) and download (e.g., wget) programs shipped with TL to those
+provided by the system.
+
+<p><b>tlmgr 48598 (released 29oct18):</b>
+<li>remove debugging line for caller() left in by mistake.
+<li>update ctan backbone list (to the one remaining).
+
+<p><b>tlmgr 48522 (released 3sep18):</b>
+<li>tlmgr info: report Catalogue contact info if available.
+<li>only run mtxrun if luatex is available.
+
+<p><b>tlmgr 48271 (released 25jul18):</b>
+<li>prefer system provided binaries over TL provided binaries for
+  compressor and download programs.
+<li>tlmgr info now allows listing only packages from the remote 
+  repository using <tt>--only-remote</tt>.
+<li>further checks on downloaded signature files to reduce
+  spurious warnings.
+<li>save alias information from TeX Catalogue.
+
+<p><b>tlmgr 47951 (released 07jun18):</b>
+<li>Backup removal for non-xz.
+
+<p><b>tlmgr 47935 (released 05-06jun18):</b>
+<li>Bug fix for lz4 backups (need <tt>-m</tt> for normal behavior).
+
+<p><b>tlmgr 47907 (released 03jun18):</b>
+<li>support for curl as a download program, and new default behavior for
+choosing. In this order:
+  <ol>
+  <li>If the environment variable <tt>TEXLIVE_DOWNLOADER</tt> is
+      defined, use it; abort if the specified program doesn't work.
+      Possible values: <tt>curl</tt>, <tt>wget</tt>.
+  <li>If the environment variable <tt>TL_DOWNLOAD_PROGRAM</tt> is
+      defined (can be any value), use it together with
+      <tt>TL_DOWNLOAD_ARGS</tt>; abort if it doesn't work.
+  <li>If LWP is available and working, use that (by far the most
+      efficient method, as it supports persistent downloads).
+  <li>If curl is available (from the system) and working, use that.
+  <li>If wget is available (either from the system or TL) and
+      working, use that.
+  </ol>
+  <p>TL still provides <tt>wget</tt> binaries for some platforms, so
+  some download method should always be available.
+  
+<li>support for alternative compressor programs; until now, backups and
+  intermediate rollback containers were always created with xz. Now:
+  <ol>
+  <li>If the environment variable <tt>TEXLIVE_COMPRESSOR</tt> is
+      defined, use it; abort if it doesn't work. Possible values:
+      <tt>lz4</tt>, <tt>gzip</tt>, <tt>xz</tt>.
+  <li>If lz4 is available (either from the system or TL) and working, use that.
+  <li>If gzip is available (from the system) and working, use that.
+  <li>If xz is available (either from the system or TL) and working, use that.
+  </ol>
+  <p>lz4 and gzip are much faster in creating tlmgr's local backups.
+  The unconditional use of xz for the tlnet containers is unaffected,
+  to minimize download sizes.
+
+<li><a href="https://openssh.com/">ssh</a> support: installing from a
+  repository of the form <tt>user@machine:/path/to/tlnet</tt> is now
+  supported; the url-like forms
+  <tt>scp://user@machine/path/to/tlnet</tt> and
+  <tt>ssh://user@machine/path/to/tlnet</tt> are equivalent. ssh-agent
+  is strongly recommended!
+
+<li>Not tlmgr, but close enough: our generic Windows wrapper
+runscript.tlu now sets <tt>LC_CTYPE</tt> to be the system encoding, to
+support files with non-ASCII characters.
+
+<p><b>tlmgr 47303 (released 14apr18):</b>
+<li>uninstall now a synonym for remove, so requiring --all to remove the
+TeX&nbsp;Live installation.
+
+<p><b>tlmgr 46207 (released 31jan18):</b>
+<li>new action/option print-platform-info to dump platform name(s) as
+  well as the identifier.
+<li>fix integrity checks to include checksum and not only size.
+<li>remove support for md5 checksums (unused for a long time).
+
+<p><b>tlmgr 46034 (released 12dec17):</b>
+<li>tlmgr info (list): reinstate previous (and intended) list format.
+<li>tlmgr info: only load remote tlpdb when necessary.
+<li>(Windows) do not run post-actions when luatex.dll is not
+  available (because runscript needs luatex).
+
+<p><b>tlmgr 45838 (released 23nov17):</b>
+<li>allow excluding packages from update in tlmgr config file.
+<li>JSON output for various commands.
+<li>other machine-readable improvements.
+
+<p><b>tlmgr 45286 (released 15sep17):</b>
+<li>require the main repository to be signed.
+<li>fix tlmgr info output.
+
+<p><b>tlmgr 45190 (released 1sep17):</b>
+<li>fix tlmgrgui not to switch to single repo mode on CTAN mirror usage.
+<li>prohibit upgrades between releases using tlmgr.
+<li>add shell mode.
+<li>add tabulated info output.
+
+<p><b>tlmgr 44452 (released 9jun17):</b>
+<li>bug fix for tlmgr conf editing of line continuations.
+
+<p><b>tlmgr 44422 (TeX Live 2017):</b>
+<li>new action <tt>shell</tt> for interactive and scripted use.
+<li>new action <tt>conf auxtrees</tt> to easily add and remove extra
+  texmf trees.
+<li>if backups are enabled, a backup is automatically made by the
+  <tt>remove</tt> action.
+<li>the <tt>info</tt> output includes sizes for schemes and collections.
+
+<p><b>tlmgr 41476 (released 20jun16):</b>
+<li>fix <tt>tlmgr restore</tt> failure
+
+<p><b>tlmgr 41258 (TeX Live 2016, 19may16):</b>
 <li>support for system-level configuration files in 
 <tt>TEXMFSYSCONFIG/tlmgr/config</tt>, where a restricted set of allowed
 actions can be defined, in addition to the usual tlmgr config file

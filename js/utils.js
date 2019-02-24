@@ -98,7 +98,7 @@ function compile(source_code) {
     if(!window.enable)
        return
 
-    var texlive = new TeXLive();
+    var texlive = new TeXLive('texlivejs/');
     var pdftex = texlive.pdftex;
     pdftex.on_stdout = stdout;
     pdftex.on_stderr = function(m){console.log(m)};

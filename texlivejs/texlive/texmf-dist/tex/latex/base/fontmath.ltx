@@ -8,7 +8,7 @@
 %% 
 %% This is a generated file.
 %% 
-%% Copyright 1993-2016
+%% Copyright 1993-2018
 %% The LaTeX3 Project and any individual authors listed elsewhere
 %% in this file.
 %% 
@@ -19,7 +19,7 @@
 %% conditions of the LaTeX Project Public License, either version 1.3c
 %% of this license or (at your option) any later version.
 %% The latest version of this license is in
-%%    http://www.latex-project.org/lppl.txt
+%%    https://www.latex-project.org/lppl.txt
 %% and version 1.3c or later is part of all distributions of LaTeX
 %% version 2005/12/01 or later.
 %% 
@@ -37,7 +37,7 @@
 %% 
 %%% From File: fontdef.dtx
 \ProvidesFile{fontmath.ltx}
-           [2016/12/03 v3.0a LaTeX Kernel
+           [2018/09/24 v3.0b LaTeX Kernel
 (Math
            font setup)]
 \typeout{=== Don't modify this file, use a .cfg file instead ===^^J}
@@ -506,10 +506,14 @@
 \def\mathsterling{\mathit{\mathchar"7024}}
 \def\mathunderscore{\kern.06em\vbox{\hrule\@width.3em}}
 \def\mathellipsis{\mathinner{\ldotp\ldotp\ldotp}}%
-\def\big#1{{\hbox{$\left#1\vbox to8.5\p@{}\right.\n@space$}}}
-\def\Big#1{{\hbox{$\left#1\vbox to11.5\p@{}\right.\n@space$}}}
-\def\bigg#1{{\hbox{$\left#1\vbox to14.5\p@{}\right.\n@space$}}}
-\def\Bigg#1{{\hbox{$\left#1\vbox to17.5\p@{}\right.\n@space$}}}
+\def\big#1{\leavevmode@ifvmode
+   {\hbox{$\left#1\vbox to8.5\p@{}\right.\n@space$}}}
+\def\Big#1{\leavevmode@ifvmode
+   {\hbox{$\left#1\vbox to11.5\p@{}\right.\n@space$}}}
+\def\bigg#1{\leavevmode@ifvmode
+   {\hbox{$\left#1\vbox to14.5\p@{}\right.\n@space$}}}
+\def\Bigg#1{\leavevmode@ifvmode
+   {\hbox{$\left#1\vbox to17.5\p@{}\right.\n@space$}}}
 \def\n@space{\nulldelimiterspace\z@ \m@th}
 \def\operator@font{\mathgroup\symoperators}
 \thinmuskip=3mu

@@ -9,7 +9,7 @@
 %% This is a generated file.
 %% 
 %% Project: aliascnt
-%% Version: 2016/05/16 v1.4
+%% Version: 2018/09/07 v1.5
 %% 
 %% Copyright (C) 2006, 2009 by
 %%    Heiko Oberdiek <heiko.oberdiek at googlemail.com>
@@ -34,7 +34,7 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{aliascnt}%
-  [2016/05/16 v1.4 Alias counters (HO)]%
+  [2018/09/07 v1.5 Alias counters (HO)]%
 \newcommand*{\newaliascnt}[2]{%
   \begingroup
     \def\AC@glet##1{%
@@ -80,7 +80,9 @@
     \csname AC@org@#1reset\endcsname{##1}{\AC@findrootcnt{##2}}%
   }%
 }
-\RequirePackage{remreset}
+\ifx\@removefromreset\@undefined
+  \RequirePackage{remreset}
+\fi
 \AC@patch{addto}
 \AC@patch{removefrom}
 \endinput

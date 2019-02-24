@@ -11,7 +11,7 @@
 % conditions of the LaTeX Project Public License, either version 1.3c
 % of this license or (at your option) any later version.
 % The latest version of this license is in
-%    http://www.latex-project.org/lppl.txt
+%    https://www.latex-project.org/lppl.txt
 % and version 1.3c or later is part of all distributions of LaTeX
 % version 2005/12/01 or later.
 %
@@ -32,7 +32,7 @@
 %<*driver>
 % \fi
 \ProvidesFile{ltplain.dtx}
-             [2017/01/06 v2.3b LaTeX Kernel (Plain TeX)]
+             [2017/04/10 v2.3c LaTeX Kernel (Plain TeX)]
 % \iffalse
 \documentclass{ltxdoc}
 \GetFileInfo{ltplain.dtx}
@@ -369,14 +369,19 @@
 %         {Extended stream allocation in luatex (0.85)}
 % \changes{v2.2b}{2015/11/19}
 %         {Only extend allocation of write streams (see luatex list)}
+% \changes{v2.3c}{2017/04/10}
+%         {Correction to code to skip write18 in luatex}
 % Skip |\write18| due to its traditional use as a shell-escape.
 %    \begin{macrocode}
 \ifx\directlua\@undefined
   \def\newwrite   {\e@alloc\write \chardef{\count17}\m@ne\sixt@@n}
 \else
   \def\newwrite   {\e@alloc\write    
-                   {\ifnum\allocationnumber=18 \allocationnumber19\fi
-                     \global\chardef}%
+                   {\ifnum\allocationnumber=18
+                     \advance\count17\@ne
+                     \allocationnumber\count17 %
+                    \fi
+                    \global\chardef}%
                    {\count17}%
                    \m@ne
                    {128}}
@@ -684,7 +689,7 @@
 % \begin{macro}{\alloc@}
 %    \begin{macrocode}
 \def\alloc@#1#2#3#4#5{\global\advance\count1#1\@ne
-  \ch@ck#1#4#2% make sure there's still room
+  \ch@ck#1#4#2%
   \allocationnumber\count1#1%
   \global#3#5\allocationnumber
   \wlog{\string#5=\string#2\the\allocationnumber}}
@@ -1454,7 +1459,7 @@
 % \changes{v2.0d}{2015/02/20}{Spell commands correctly :-)}
 % \changes{v2.0g}{2015/03/10}{Reorganise to be less noisy}
 %    \begin{macrocode}
-%<latexrelease>\IncludeInRelease{2015/01/20}{\loggingall}{etex tracing}%
+%<latexrelease>\IncludeInRelease{2015/01/01}{\loggingall}{etex tracing}%
 %<*2ekernel|latexrelease>
 \ifx\tracingscantokens\@undefined
 \gdef\loggingall{%
@@ -1506,7 +1511,7 @@
 % \begin{macro}{\hideoutput}
 % \changes{v2.0g}{2015/03/10}{macro added}
 %    \begin{macrocode}
-%<latexrelease>\IncludeInRelease{2015/01/20}{\tracingnone}%
+%<latexrelease>\IncludeInRelease{2015/01/01}{\tracingnone}%
 %<latexrelease>                             {turn off etex tracing}%
 %<*2ekernel|latexrelease>
 \ifx\tracingscantokens\@undefined

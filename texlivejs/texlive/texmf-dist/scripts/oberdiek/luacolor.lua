@@ -9,7 +9,7 @@
 --  This is a generated file.
 --  
 --  Project: luacolor
---  Version: 2016/05/16 v1.10
+--  Version: 2018/11/22 v1.11
 --  
 --  Copyright (C) 2007, 2009-2011 by
 --     Heiko Oberdiek <heiko.oberdiek at googlemail.com>
@@ -32,12 +32,11 @@
 --  and the derived files
 --     luacolor.sty, luacolor.pdf, luacolor.ins, luacolor.drv,
 --     luacolor-test1.tex, luacolor-test2.tex, luacolor-test3.tex,
---     oberdiek.luacolor.lua, luacolor.lua,
---     oberdiek.luacolor-pre065.lua, luacolor-pre065.lua.
+--     luacolor.lua,
 --  
 module("oberdiek.luacolor", package.seeall)
 function getversion()
-  tex.write("2016/05/16 v1.10")
+  tex.write("2018/11/22 v1.11")
 end
 local ifpdf
 if tonumber(tex.outputmode or tex.pdfoutput) > 0 then
@@ -126,6 +125,8 @@ local node_types = {
   [node.id("whatsit")] = {
     [node.subtype("special")] = COLOR,
     [node.subtype("pdf_literal")] = COLOR,
+    [node.subtype("pdf_save")] = COLOR,
+    [node.subtype("pdf_restore")] = COLOR, -- probably not needed
 -- TODO (DPC)    [node.subtype("pdf_refximage")] = COLOR,
   },
   [node.id("glue")] =

@@ -8,7 +8,7 @@
 %% 
 %% This is a generated file.
 %% 
-%% Copyright 1995, 199, 2004, 2009, 2015 American Mathematical Society.
+%% Copyright 1995, 199, 2004, 2009, 2015, 2017 American Mathematical Society.
 %% 
 %% American Mathematical Society
 %% Technical Support
@@ -21,14 +21,24 @@
 %% fax: (401) 331-3842
 %% email: tech-support@ams.org
 %% 
-%% Unlimited copying and redistribution of this file are permitted as
-%% long as this file is not modified.  Modifications, and distribution
-%% of modified versions, are permitted, but only if the resulting file
-%% is renamed.
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3c
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3c or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+%% 
+%% This work has the LPPL maintenance status `maintained'.
+%% 
+%% The Current Maintainer of this work is the American Mathematical
+%% Society.
+%% 
+%% ========================================================================
 %% 
 \NeedsTeXFormat{LaTeX2e}% LaTeX 2.09 can't be used (nor non-LaTeX)
 [1995/06/01]% LaTeX date must be June 1995 or later
-\ProvidesClass{amsart}[2015/03/04 v2.20.2]
+\ProvidesClass{amsart}[2017/10/31 v2.20.4]
 \global\expandafter\let\csname ver@amsthm.sty\expandafter\endcsname
   \csname ver@\@currname.\@currext\endcsname
 \let\@xp=\expandafter
@@ -510,7 +520,7 @@
   \ifx\@empty\addresses \else\@setaddresses\fi}
 \AtEndDocument{\enddoc@text}
 \def\curraddrname{{\itshape Current address}}
-\def\emailaddrname{{\itshape E-mail address}}
+\def\emailaddrname{{\itshape Email address}}
 \def\urladdrname{{\itshape URL}}
 \def\@setaddresses{\par
   \nobreak \begingroup
@@ -1822,9 +1832,13 @@
     \mark{\@themark}}%
   \if@nobreak\ifvmode\nobreak\fi\fi}
 \def\@markleft#1#2#3{\gdef\@themark{{#3}{#2}}}
-\def\@tempa{}
-\edef\@dh{%
-  \noexpand\mathhexbox{\hexnumber@\symAMSb}67}
+\@ifundefined{symAMSb}{%
+  \def\@dh{dh}%
+  \ClassWarning{\@classname}{\string\dh\space unavailable without amsfonts;
+    replaced by 'dh'}%
+}{%
+  \edef\@dh{\noexpand\mathhexbox{\hexnumber@\symAMSb}67}%
+}
 \DeclareTextCommand{\dh}{OT1}{%
   \edef\@tempb{\scdefault}%
   \ifx\f@shape\@tempb

@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% Copyright 1993-2016
+% Copyright 1993-2018
 % The LaTeX3 Project and any individual authors listed elsewhere
 % in this file.
 %
@@ -11,7 +11,7 @@
 % conditions of the LaTeX Project Public License, either version 1.3c
 % of this license or (at your option) any later version.
 % The latest version of this license is in
-%    http://www.latex-project.org/lppl.txt
+%    https://www.latex-project.org/lppl.txt
 % and version 1.3c or later is part of all distributions of LaTeX
 % version 2005/12/01 or later.
 %
@@ -30,6 +30,7 @@
 % \iffalse
 %
 %<*dtx>
+          \def\latexreleaseversion{<date only known in .sty file>} 
           \ProvidesFile{latexrelease.dtx}
 %</dtx>
 %<driver>\ProvidesFile{latexrelease.drv}
@@ -39,7 +40,8 @@
 %<*!fixltx2e>
 % \fi
 %         \ProvidesFile{latexrelease.dtx}
-          [2016/12/29 v1.0h LaTeX release emulation and tests]
+          [2018/05/08 v1.0k LaTeX release emulation and tests
+              (including releases up to \latexreleaseversion)]
 % \iffalse
 %</!fixltx2e>
 %<*driver>
@@ -55,6 +57,8 @@
 %</driver>
 % \fi
 %
+% \changes{v1.0i}{2017/12/17}{Add \cs{latexreleaseversion} info
+%                             to \cs{ProvidesPackage} output}
 %
 %
 % \let\package\textsf
@@ -104,6 +108,12 @@
 % the commands defined here to  adjust their definitions to the
 % specified date as described below.
 %
+% Note that the \Lpack{latexrelease} package is intended for use 
+% at the start of a \emph{document}. Package and class code should not
+% include this package as loading a package should not normally globally
+% reset the effective version of \LaTeX\ that is in force, so affecting all
+% other packages used in the document.
+%
 %
 % The bulk of this package, after some initial setup and option
 % handling consists of a series of |\IncludeInRelease| commands
@@ -113,20 +123,33 @@
 %
 % \section{Package Options}
 % \begin{itemize}
-% \item \emph{yyyy/mm/dd}
-% The package accepts any \LaTeX\ format date as argument,% 
+% \item \emph{yyyy/mm/dd} or \emph{yyyy-nn-dd}
+% The package accepts any possible \LaTeX\ format date as argument,
 % although dates in the future for which the current release of this
-% package has no information will generate a warning.
+% package has no information will generate a warning. Dates 
+% earlier than 2015 will work but will roll back to some point in 2015 
+% when the method was introduced.
+% |\IncludeInRelease| command is defined.
+% The |\requestedLaTeXdate| is set to the normalized date argument
+% so that package rollback defaults to the specified date.
 %
 % \item%
 % |current| This is the default behaviour, it does not change the
 % effective date of the format but does ensure that the
 % |\IncludeInRelease| command is defined.
+% the |\requestedLaTeXdate| is reset to 0 so that package rollback
+% does not use the implicit date.
+% |\IncludeInRelease| command is defined.
+% The |\requestedLaTeXdate| macro is reset to 0 so that package rollback
+% does not use the implicit date.
 %
 % \item
 % |latest| sets the effective date of the format to the release date
 % of this file, so in an older format applies all patches currently
 % available.
+% |\IncludeInRelease| command is defined.
+% The |\requestedLaTeXdate| macro is reset to 0 so that package rollback
+% does not use the implicit date.
 % \end{itemize}
 %
 %
@@ -373,18 +396,21 @@
 % \end{macro}
 %
 % \changes{v1.0c}{2015/02/19}{Swap argument order}
+% \changes{v1.0k}{2018/05/08}{reset \cs{\requestedLaTeXdate} for current and latest options, gitub issue 43}
 %    \begin{macrocode}
 \DeclareOption*{%
   \def\@IncludeInRelease#1[#2]{\@IncludeInRele@se{#1}}%
   \let\requestedpatchdate\CurrentOption}
 \DeclareOption{latest}{%
-  \let\requestedpatchdate\latexreleaseversion}
+  \let\requestedpatchdate\latexreleaseversion
+  \AtEndOfPackage{\def\requestedLaTeXdate{0}}}
 \DeclareOption{current}{%
-  \let\requestedpatchdate\fmtversion}
+  \let\requestedpatchdate\fmtversion
+  \AtEndOfPackage{\def\requestedLaTeXdate{0}}}
 %    \end{macrocode}
 %
 %    \begin{macrocode}
-\ExecuteOptions{current}
+\let\requestedpatchdate\fmtversion
 \ProcessOptions\relax
 %    \end{macrocode}
 %
@@ -392,6 +418,7 @@
 % ensures |requestedLaTeXdate| gets set to a number.  Generate an
 % error if there are any non digit tokens remaining after removing the
 % |//|.
+% \changes{v1.0j}{2018/01/30}{Explain both date formats in error message}
 %    \begin{macrocode}
 \def\reserved@a{%
 \edef\requestedLaTeXdate{\the\count@}%
@@ -401,7 +428,7 @@
 \ifx\reserved@b\@empty\else
 \PackageError{latexrelease}%
              {Unexpected option \requestedpatchdate}%
-             {The option must be of the form yyyy/mm/dd}%
+             {The option must be of the form yyyy/mm/dd or yyyy-mm-dd}%
 \fi}
 \afterassignment\reserved@a
 \count@\expandafter
@@ -417,7 +444,7 @@
 %    \begin{macrocode}
 \ifnum\requestedLaTeXdate=\currentLaTeXdate
 \PackageWarningNoLine{latexrelease}{%
-  Current format date selected, no patches applied.}
+  Current format date selected, no patches applied}
 \expandafter\endinput
 \fi
 %    \end{macrocode}

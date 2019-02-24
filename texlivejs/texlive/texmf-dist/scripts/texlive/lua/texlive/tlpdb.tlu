@@ -1,6 +1,6 @@
 #! /usr/bin/env texlua
 -- texlive/tlpdb.tlu
--- $Id: tlpdb.tlu 17011 2010-02-14 14:24:05Z mpg $
+-- $Id: tlpdb.tlu 48111 2018-06-29 10:44:46Z preining $
 -- 
 -- Copyright (C) 2008 Norbert Preining
 -- This file is licensed under the GNU General Public License version 2
@@ -22,9 +22,9 @@
 --  tlpobj.containersize string
 --  tlpobj.srccontainersize string
 --  tlpobj.doccontainersize string
---  tlpobj.containermd5 string
---  tlpobj.srccontainermd5 string
---  tlpobj.doccontainermd5 string
+--  tlpobj.containerchecksum string
+--  tlpobj.srccontainerchecksum string
+--  tlpobj.doccontainerchecksum string
 --  tlpobj.binfiles table indexed by archs giving table indexed by numbers
 --  tlpobj.binsize table indexed by archs giving strings
 --  tlpobj.docfiles = table indexed by numbers
@@ -118,12 +118,12 @@ function read_tlpdb(root)
           tlpobj.srccontainersize = rest
         elseif first == "doccontainersize" then
           tlpobj.doccontainersize = rest
-        elseif first == "containermd5" then
-          tlpobj.containermd5 = rest
-        elseif first == "srccontainermd5" then
-          tlpobj.srccontainermd5 = rest
-        elseif first == "doccontainermd5" then
-          tlpobj.doccontainermd5 = rest
+        elseif first == "containerchecksum" then
+          tlpobj.containerchecksum = rest
+        elseif first == "srccontainerchecksum" then
+          tlpobj.srccontainerchecksum = rest
+        elseif first == "doccontainerchecksum" then
+          tlpobj.doccontainerchecksum = rest
         elseif first == "runfiles" then
           local rsize = string.match(rest,'size=([0-9]*)')
           if (rsize) then

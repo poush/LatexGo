@@ -9,11 +9,11 @@
 %% This is a generated file.
 %% 
 %% The source is maintained by the LaTeX Project team and bug
-%% reports for it can be opened at http://latex-project.org/bugs.html
+%% reports for it can be opened at https://latex-project.org/bugs.html
 %% (but please observe conditions on bug reports sent to that address!)
 %% 
 %% 
-%% Copyright 1993-2016
+%% Copyright 1993-2017
 %% The LaTeX3 Project and any individual authors listed elsewhere
 %% in this file.
 %% 
@@ -24,7 +24,7 @@
 %% conditions of the LaTeX Project Public License, either version 1.3c
 %% of this license or (at your option) any later version.
 %% The latest version of this license is in
-%%    http://www.latex-project.org/lppl.txt
+%%    https://www.latex-project.org/lppl.txt
 %% and version 1.3c or later is part of all distributions of LaTeX
 %% version 2005/12/01 or later.
 %% 
@@ -43,7 +43,7 @@
 %% extension .ins) which are part of the distribution.
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{ltxdoc}
-         [2015/03/26 v2.0w Standard LaTeX documentation class]
+         [2018/03/15 v2.0x Standard LaTeX documentation class]
 \DeclareOption{a5paper}{\@latexerr{Option not supported}%
    {}}
 \DeclareOption*{%
@@ -182,9 +182,12 @@
 \@writeckpt{#1}\if@filesw \immediate\closeout\@partaux \fi
 \else\@nameuse{cp@#1}\fi\let\@auxout\@mainaux}
 \gdef\codeline@wrindex#1{\if@filesw
+      \begingroup
+        \let\protect\noexpand
         \immediate\write\@indexfile
             {\string\indexentry{#1}%
-            {\filesep\number\c@CodelineNo}}\fi}%
+            {\filesep\number\c@CodelineNo}}%
+      \endgroup\fi}
 \let\filesep\@empty
 \def\aalph#1{\@aalph{\csname c@#1\endcsname}}
 \def\@aalph#1{%
@@ -198,7 +201,7 @@
   \def\thepart{\aalph{part}}\def\filesep{\thepart-}%
   \let\filekey\@gobble
   \g@addto@macro\index@prologue{%
-    \gdef\@oddfoot{\parbox{\textwidth}{\strut\footnotesize
+    \gdef\@oddfoot{\parbox[t]{\textwidth}{\strut\footnotesize
        \raggedright{\bfseries File Key:} \filekey}}%
     \let\@evenfoot\@oddfoot}%
   \global\let\docincludeaux\relax
@@ -219,7 +222,7 @@
 {\gdef\@maintainedby{%
 This file is maintained by the \LaTeX{} Project team.\\%
 Bug reports can be opened (category \texttt{#1}) at\\%
-\url{http://latex-project.org/bugs.html}.}}}
+\url{https://latex-project.org/bugs.html}.}}}
 \def\@maketitle{%
   \newpage
   \null

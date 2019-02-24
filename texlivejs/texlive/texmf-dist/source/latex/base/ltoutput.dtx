@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% Copyright 1993-2016
+% Copyright 1993-2018
 % The LaTeX3 Project and any individual authors listed elsewhere
 % in this file.
 %
@@ -11,7 +11,7 @@
 % conditions of the LaTeX Project Public License, either version 1.3c
 % of this license or (at your option) any later version.
 % The latest version of this license is in
-%    http://www.latex-project.org/lppl.txt
+%    https://www.latex-project.org/lppl.txt
 % and version 1.3c or later is part of all distributions of LaTeX
 % version 2005/12/01 or later.
 %
@@ -30,14 +30,14 @@
 %%% From File: ltoutput.dtx
 %<flafter>\ProvidesPackage{flafter}
 %<fltrace>\ProvidesPackage{fltrace}
-%<flafter,fltrace>       [2016/10/04 v1.3b
+%<flafter,fltrace>       [2018/11/28 v1.4d
 %<flafter>                  Standard LaTeX floats after reference (FMi)]
 %<fltrace>                  Tracing LaTeX floats algorithm (FMi)]
 %
 %<*driver>
 % \fi
 \ProvidesFile{ltoutput.dtx}
-             [2016/10/04 v1.3b LaTeX Kernel (Output Routine)]
+             [2018/11/28 v1.4d LaTeX Kernel (Output Routine)]
 % \iffalse
 \documentclass{ltxdoc}
 \GetFileInfo{ltoutput.dtx}
@@ -646,6 +646,7 @@
 %   END
 %
 %   Floats and marginpars add a lot of dead cycles.
+% \end{oldcomments}
 %    \begin{macrocode}
 \maxdeadcycles = 100
 %    \end{macrocode}
@@ -743,7 +744,7 @@
 \gdef\@currlist{}
 \gdef\@deferlist{}
 \gdef\@dbltoplist{}
-%    \begin{macrocode}
+%    \end{macrocode}
 % \changes{v1.2m}{2015/03/12}
 %         {initialise \cs{@dbldeferlist} again}
 %    The new algorithm stores page wide floats together with column floats
@@ -751,7 +752,7 @@
 %    initialised  as empty so that packages that are testing for
 %    deferred floats can use the same code for old or new float
 %    handling. 
-%    \end{macrocode}
+%    \begin{macrocode}
 \gdef\@dbldeferlist{}
 %    \end{macrocode}
 %
@@ -773,7 +774,6 @@
 \newdimen\marginparsep
 \newdimen\marginparpush
 %    \end{macrocode}
-% \end{oldcomments}
 %
 % \begin{macro}{\AtBeginDvi}
 % \changes{v1.1c}{1994/11/05}
@@ -962,6 +962,7 @@
 % \changes{v1.1z}{1996/10/24}{Better checks for noskipsec and
 %                 inlabel added, plus nobreak}
 % \changes{v1.2a}{1996/10/25}{Reset all flags explicitly}
+% \changes{v2.4a}{2017/04/11}{account for the depth of the last row of the page}
 %    The two checks at the beginning ensure that an item label or
 %    run-in section title immediately before a |\newpage| get printed
 %    on the correct page, the one before the page break.
@@ -970,6 +971,10 @@
 %    that is why they all reset the flags explicitly, even when it
 %    would appear that this would be done by a |\leavevmode|.
 %    \begin{macrocode}
+%</2ekernel|fltrace>
+%<latexrelease>\IncludeInRelease{2017/04/15}%
+%<latexrelease>                 {\newpage}{Check depth of page}%
+%<*2ekernel|latexrelease|fltrace>
 \def \newpage {%
   \if@noskipsec
     \ifx \@nodocument\relax
@@ -983,8 +988,49 @@
   \fi
   \if@nobreak \@nobreakfalse \everypar{}\fi
   \par
+%    \end{macrocode}
+%    The |\vfil| at the end of the macro before the break penalty will 
+%    normally result in the page being run short,  even with |\flushbottom|
+%    in effect (in contrast to the behavior
+%    of |\pagebreak|). However, if there 
+%    is some explicit stretch on the page, say, a |\vfill|, it has the undesired
+%    side-effect, that the last line will not align at its baseline if it
+%    contains characters going below the baseline, as the value of |\prevdepth|
+%    is no longer taken into account by \TeX{}. So we back up by that amount 
+%    (or by |\maxdepth| if it is really huge), to mimic the normal behavior 
+%    without the |\newpage|.
+%    \begin{macrocode}
+  \ifdim\prevdepth>\z@
+     \vskip -%
+       \ifdim\prevdepth>\maxdepth
+         \maxdepth
+       \else
+         \prevdepth
+       \fi
+  \fi
   \vfil
   \penalty -\@M}
+%</2ekernel|latexrelease|fltrace>
+%<latexrelease>\EndIncludeInRelease
+%<latexrelease>\IncludeInRelease{0000/00/00}%
+%<latexrelease>                 {\newpage}{Check depth of page}%
+%<latexrelease>\def \newpage {%
+%<latexrelease>  \if@noskipsec
+%<latexrelease>    \ifx \@nodocument\relax
+%<latexrelease>      \leavevmode
+%<latexrelease>      \global \@noskipsecfalse
+%<latexrelease>    \fi
+%<latexrelease>  \fi
+%<latexrelease>  \if@inlabel
+%<latexrelease>    \leavevmode
+%<latexrelease>    \global \@inlabelfalse
+%<latexrelease>  \fi
+%<latexrelease>  \if@nobreak \@nobreakfalse \everypar{}\fi
+%<latexrelease>  \par
+%<latexrelease>  \vfil
+%<latexrelease>  \penalty -\@M}
+%<latexrelease>\EndIncludeInRelease
+%<*2ekernel|fltrace>
 %    \end{macrocode}
 %  \end{macro}
 %
@@ -1988,11 +2034,18 @@
 %    out box be executed in the environment set up for the writes, or
 %    after it finishes?
 %
-%    A lot of this code has been in-lined tp prevent mis-use of
+%    A lot of this code has been in-lined to prevent mis-use of
 %    internal commands as hooks.
 %    \begin{macrocode}
+%</2ekernel>
+%<latexrelease>\IncludeInRelease{2017/04/15}%
+%<latexrelease>  {\@outputpage}{Reset language for hyphenation}%
+%<*2ekernel|latexrelease>
 \def\@outputpage{%
-\begingroup           % the \endgroup is put in by \aftergroup
+%    \end{macrocode}
+% The |\endgroup| is put in by |\aftergroup|.
+%    \begin{macrocode}
+\begingroup
 %    \end{macrocode}
 %    Now all the set-up stuff has been in-lined for Frank.
 %
@@ -2005,6 +2058,14 @@
 %
 %    RmS 93/08/19: Redefined accents to allow changes in font encoding;
 %    but exactly why was this needed?
+%
+% \changes{v1.3c}{2017/03/10}{Reset \cs{language}}
+% Reset |\language| to the value current at |\begin{document}|.
+% In particular this ensures that a pagebreak in |verbatim| does not
+% prevent hyphenation in the page head.
+%    \begin{macrocode}
+  \language\document@default@language
+%    \end{macrocode}
 %
 %    The |\catcode`\ = 10| was removed as it was considered useless
 %    (presumably because nothing gets tokenised during shipout).
@@ -2062,9 +2123,10 @@
   \shipout \vbox{%
     \set@typeset@protect
     \aftergroup \endgroup
+%    \end{macrocode}
+% Correct? or just restore by ending the group?
+%    \begin{macrocode}
     \aftergroup \set@typeset@protect
-                                % correct? or just restore by ending
-                                % the group?
 %    \end{macrocode}
 %    This first bit has been moved inside the shipped out box.
 %
@@ -2130,7 +2192,10 @@
           \normalcolor
           \hb@xt@\textwidth{\@thehead}%
         \color@endbox
-        }%                        %% 22 Feb 87
+%    \end{macrocode}
+%  22 Feb 87
+%    \begin{macrocode}
+        }%
       \dp\@tempboxa \z@
       \box\@tempboxa
       \vskip \headsep
@@ -2161,6 +2226,67 @@
 %    \begin{macrocode}
   \let\firstmark\botmark
 }
+%</2ekernel|latexrelease>
+%<latexrelease>\EndIncludeInRelease
+%<latexrelease>\IncludeInRelease{0000/00/00}%
+%<latexrelease>  {\@outputpage}{Reset language for hyphenation}%
+%<latexrelease>\def\@outputpage{%
+%<latexrelease>\begingroup
+%<latexrelease>  \let \protect \noexpand
+%<latexrelease>  \@resetactivechars
+%<latexrelease>  \global\let\@@if@newlist\if@newlist
+%<latexrelease>  \global\@newlistfalse
+%<latexrelease>  \@parboxrestore
+%<latexrelease>  \shipout \vbox{%
+%<latexrelease>    \set@typeset@protect
+%<latexrelease>    \aftergroup \endgroup
+%<latexrelease>    \aftergroup \set@typeset@protect
+%<latexrelease>  \if@specialpage
+%<latexrelease>    \global\@specialpagefalse\@nameuse{ps@\@specialstyle}%
+%<latexrelease>  \fi
+%<latexrelease>  \if@twoside
+%<latexrelease>    \ifodd\count\z@
+%<latexrelease>         \let\@thehead\@oddhead \let\@thefoot\@oddfoot
+%<latexrelease>         \let\@themargin\oddsidemargin
+%<latexrelease>    \else \let\@thehead\@evenhead
+%<latexrelease>       \let\@thefoot\@evenfoot \let\@themargin\evensidemargin
+%<latexrelease>    \fi
+%<latexrelease>  \fi
+%<latexrelease>  \reset@font
+%<latexrelease>  \normalsize
+%<latexrelease>  \normalsfcodes
+%<latexrelease>  \let\label\@gobble
+%<latexrelease>  \let\index\@gobble
+%<latexrelease>  \let\glossary\@gobble
+%<latexrelease>  \baselineskip\z@skip \lineskip\z@skip \lineskiplimit\z@
+%<latexrelease>    \@begindvi
+%<latexrelease>    \vskip \topmargin
+%<latexrelease>    \moveright\@themargin \vbox {%
+%<latexrelease>      \setbox\@tempboxa \vbox to\headheight{%
+%<latexrelease>        \vfil
+%<latexrelease>        \color@hbox
+%<latexrelease>          \normalcolor
+%<latexrelease>          \hb@xt@\textwidth{\@thehead}%
+%<latexrelease>        \color@endbox
+%<latexrelease>        }%
+%<latexrelease>      \dp\@tempboxa \z@
+%<latexrelease>      \box\@tempboxa
+%<latexrelease>      \vskip \headsep
+%<latexrelease>      \box\@outputbox
+%<latexrelease>      \baselineskip \footskip
+%<latexrelease>      \color@hbox
+%<latexrelease>        \normalcolor
+%<latexrelease>        \hb@xt@\textwidth{\@thefoot}%
+%<latexrelease>      \color@endbox
+%<latexrelease>      }%
+%<latexrelease>    }%
+%<latexrelease>  \global\let\if@newlist\@@if@newlist
+%<latexrelease>  \global \@colht \textheight
+%<latexrelease>  \stepcounter{page}%
+%<latexrelease>  \let\firstmark\botmark
+%<latexrelease>}
+%<latexrelease>\EndIncludeInRelease
+%<*2ekernel>
 %    \end{macrocode}
 %  \end{macro}
 %  \end{macro}
@@ -2287,7 +2413,18 @@
          \dblfigrule
        \fi
        \vskip \dbltextfloatsep
-       \box\@outputbox
+%    \end{macrocode}
+%    If pdf links are present in the galley and those links get broken
+%   across pages they have to end up being on the same level of boxing
+%   (even if not actually in the same structure) due to some engine
+%   restrictions in pdf\TeX\ and Lua\TeX. We therefore unbox
+%   |\@outputbox| here (which only contains a single |\hbox|) so that
+%   this case has the same boxing level as a normal twocolumn page
+%   without top floats.
+% \changes{v1.4d}{2018/11/28}{Unbox \cs{@outputbox} to preserve boxing
+%   level (github/94)}
+%    \begin{macrocode}
+       \unvbox\@outputbox
        }%
   \fi
 }
@@ -3175,10 +3312,11 @@
 %    Lots of changes.
 %
 % \changes{v1.2n}{2015/01/14}{float order in 2-column (latexrelease)}
+% \changes{v1.4b}{2017/12/17}{fix doc guards}
 %    \begin{macrocode}
 %<latexrelease|fltrace>\IncludeInRelease{2015/01/01}
 %<latexrelease|fltrace>  {\@addtonextcol}{float order in 2-column}%
-%<*2ekernel|fltrace>
+%<*2ekernel|latexrelease|fltrace>
 \def\@addtonextcol{%
   \begingroup
 %<*trace>
@@ -3262,7 +3400,7 @@
  \fl@trace{col: \the\@colnum. top: \the \@topnum. bot: \the \@botnum.}%
 %</trace>
 }%
-%</2ekernel|fltrace>
+%</2ekernel|latexrelease|fltrace>
 %<latexrelease|fltrace>\EndIncludeInRelease
 %<latexrelease|fltrace>\IncludeInRelease{0000/00/00}%
 %<latexrelease|fltrace>  {\@addtonextcol}{float order in 2-column}%
@@ -4552,7 +4690,7 @@
 %  In case of |\enlargethispage| we will have infinite negative glue
 %  at the bottom of the page (coming from |\vss|) and that will earn
 %  us an error message if we |\vsplit| to get at the marks.  So we
-%  need to remove thek last glue (if any) at the end of |\@outputbox|
+%  need to remove the last glue (if any) at the end of |\@outputbox|
 %  as we are only interested in marks that change doesn't matter.
 % \changes{v1.1o}{2014/04/18}{Handle infinite glue from
 %  \cs{enlargethispage} (pr/4023)}

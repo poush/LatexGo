@@ -9,11 +9,11 @@
 %% This is a generated file.
 %% 
 %% The source is maintained by the LaTeX Project team and bug
-%% reports for it can be opened at http://latex-project.org/bugs.html
+%% reports for it can be opened at https://latex-project.org/bugs.html
 %% (but please observe conditions on bug reports sent to that address!)
 %% 
 %% 
-%% Copyright 1993-2016
+%% Copyright 1993-2017
 %% The LaTeX3 Project and any individual authors listed elsewhere
 %% in this file.
 %% 
@@ -24,7 +24,7 @@
 %% conditions of the LaTeX Project Public License, either version 1.3c
 %% of this license or (at your option) any later version.
 %% The latest version of this license is in
-%%    http://www.latex-project.org/lppl.txt
+%%    https://www.latex-project.org/lppl.txt
 %% and version 1.3c or later is part of all distributions of LaTeX
 %% version 2005/12/01 or later.
 %% 
@@ -43,7 +43,7 @@
 %% extension .ins) which are part of the distribution.
 %%% From File: ltoutenc.dtx
 \ProvidesFile{t1enc.def}
- [2017/02/22 v2.0g
+ [2018/08/11 v2.0j
          Standard LaTeX file]
 \DeclareFontEncoding{T1}{}{}
 \DeclareTextAccent{\`}{T1}{0}
@@ -76,6 +76,38 @@
    {\%\char 24 }          % space or `relax as delimiter?
 \DeclareTextCommand{\textpertenthousand}{T1}
    {\%\char 24\char 24 }  % space or `relax as delimiter?
+\DeclareTextCommand{\Hwithstroke}{T1}
+   {%
+    \hmode@bgroup
+    \vphantom{H}%
+    \sbox\z@{H}%
+    \ooalign{%
+      H\cr
+      \hidewidth
+      \vrule
+        height \dimexpr 0.7\ht\z@+0.1ex\relax
+        depth  -0.7\ht\z@
+        width  0.8\wd\z@
+      \hidewidth\cr
+    }%
+    \egroup
+   }
+\DeclareTextCommand{\hwithstroke}{T1}
+   {%
+    \hmode@bgroup
+    \vphantom{h}%
+    \sbox\z@{h}%
+    \ooalign{%
+      h\cr
+      \kern0.075\wd\z@
+      \vrule
+        height \dimexpr 0.7\ht\z@+0.1ex\relax
+        depth  -0.7\ht\z@
+        width  0.4\wd\z@
+      \hidewidth\cr
+    }%
+    \egroup
+   }
 \DeclareTextSymbol{\AE}{T1}{198}
 \DeclareTextSymbol{\DH}{T1}{208}
 \DeclareTextSymbol{\DJ}{T1}{208}
@@ -88,6 +120,8 @@
 \DeclareTextSymbol{\ae}{T1}{230}
 \DeclareTextSymbol{\dh}{T1}{240}
 \DeclareTextSymbol{\dj}{T1}{158}
+\DeclareTextSymbol{\guillemetleft}{T1}{19}
+\DeclareTextSymbol{\guillemetright}{T1}{20}
 \DeclareTextSymbol{\guillemotleft}{T1}{19}
 \DeclareTextSymbol{\guillemotright}{T1}{20}
 \DeclareTextSymbol{\guilsinglleft}{T1}{14}

@@ -4,36 +4,56 @@
 %%
 %% The original source files were:
 %%
+%% ltclass.dtx  (with options: `latexreleasefirst,tracerollback')
 %% ltvers.dtx  (with options: `latexrelease')
 %% latexrelease.dtx  (with options: `latexrelease')
 %% ltdirchk.dtx  (with options: `latexrelease')
 %% ltdefns.dtx  (with options: `latexrelease')
+%% ltalloc.dtx  (with options: `latexrelease')
+%% ltcntrl.dtx  (with options: `latexrelease')
+%% lterror.dtx  (with options: `latexrelease')
+%% ltpar.dtx  (with options: `latexrelease')
+%% ltlists.dtx  (with options: `latexrelease')
 %% ltboxes.dtx  (with options: `latexrelease')
+%% lttab.dtx  (with options: `latexrelease')
 %% ltmath.dtx  (with options: `latexrelease')
 %% ltpictur.dtx  (with options: `latexrelease')
+%% ltthm.dtx  (with options: `latexrelease')
+%% ltsect.dtx  (with options: `latexrelease')
+%% ltfiles.dtx  (with options: `latexrelease')
 %% ltoutenc.dtx  (with options: `latexrelease')
 %% ltcounts.dtx  (with options: `latexrelease')
 %% ltlength.dtx  (with options: `latexrelease')
 %% ltfloat.dtx  (with options: `latexrelease')
+%% ltidxglo.dtx  (with options: `latexrelease')
+%% ltbibl.dtx  (with options: `latexrelease')
+%% ltpage.dtx  (with options: `latexrelease')
 %% ltoutput.dtx  (with options: `latexrelease')
-%% ltclass.dtx  (with options: `latexrelease')
+%% ltclass.dtx  (with options: `latexrelease,tracerollback')
 %% ltspace.dtx  (with options: `latexrelease')
+%% ltlogos.dtx  (with options: `latexrelease')
 %% ltplain.dtx  (with options: `latexrelease')
 %% ltfssdcl.dtx  (with options: `latexrelease')
 %% ltfssini.dtx  (with options: `latexrelease')
+%% fontdef.dtx  (with options: `latexrelease')
+%% ltfntcmd.dtx  (with options: `latexrelease')
 %% ltfssbas.dtx  (with options: `latexrelease')
+%% ltfsstrc.dtx  (with options: `latexrelease')
 %% ltfsscmp.dtx  (with options: `latexrelease')
+%% ltpageno.dtx  (with options: `latexrelease')
+%% ltxref.dtx  (with options: `latexrelease')
+%% ltmiscen.dtx  (with options: `latexrelease')
 %% ltluatex.dtx  (with options: `latexrelease')
 %% ltfinal.dtx  (with options: `latexrelease')
 %% 
 %% This is a generated file.
 %% 
 %% The source is maintained by the LaTeX Project team and bug
-%% reports for it can be opened at http://latex-project.org/bugs.html
+%% reports for it can be opened at https://latex-project.org/bugs.html
 %% (but please observe conditions on bug reports sent to that address!)
 %% 
 %% 
-%% Copyright 1993-2016
+%% Copyright 1993-2018
 %% The LaTeX3 Project and any individual authors listed elsewhere
 %% in this file.
 %% 
@@ -44,7 +64,7 @@
 %% conditions of the LaTeX Project Public License, either version 1.3c
 %% of this license or (at your option) any later version.
 %% The latest version of this license is in
-%%    http://www.latex-project.org/lppl.txt
+%%    https://www.latex-project.org/lppl.txt
 %% and version 1.3c or later is part of all distributions of LaTeX
 %% version 2005/12/01 or later.
 %% 
@@ -61,10 +81,218 @@
 %% The list of derived (unpacked) files belonging to the distribution
 %% and covered by LPPL is defined by the unpacking scripts (with
 %% extension .ins) which are part of the distribution.
+%%% From File: ltclass.dtx
+\def\@parse@version#1/#2/#3#4#5\@nil{%
+\@parse@version@dash#1-#2-#3#4\@nil
+}
+\def\@parse@version@dash#1-#2-#3#4#5\@nil{%
+  \if\relax#2\relax\else#1\fi#2#3#4 }
+\let\pkgcls@debug\@gobble
+\def\requestedLaTeXdate{0}
+\ifx\pkgcls@targetdate\@undefined
+  \newcount\pkgcls@targetdate
+\fi
+\let\pkgcls@targetlabel\@empty
+\def\pkgcls@innerdate{\maxdimen}
+
+\let\pkgcls@candidate\@empty
+\let\pkgcls@releasedate\@empty
+\ifx\load@onefilewithoptions\@undefined
+ \let\load@onefilewithoptions\@onefilewithoptions
+ \def\@onefilewithoptions#1[#2][#3]#4{%
+  \pkgcls@debug{--- File loaded request (\noexpand\usepackage or ...)}%
+  \pkgcls@debug{\@spaces 1: #1}%
+  \pkgcls@debug{\@spaces 2: #2}%
+  \pkgcls@debug{\@spaces 3: #3}%
+  \pkgcls@debug{\@spaces 4: #4}%
+  \def\pkgcls@name{#1}%                  % for info message
+  \def\pkgcls@arg {#3}%                  % for info message
+  \pkgcls@parse@date@arg{#3}%
+  \let\pkgcls@candidate\@empty
+  \begingroup
+  \edef\reserved@a{%
+    \endgroup
+    \unexpanded{\load@onefilewithoptions#1[#2]}%
+    [\pkgcls@mindate]%
+    \unexpanded{#4}}%
+   \reserved@a
+ }
+\fi
+\def\pkgcls@parse@date@arg #1{%
+   \ifx\@nil#1\@nil
+     \pkgcls@targetdate\requestedLaTeXdate\relax
+     \let\pkgcls@targetlabel\@empty
+     \let\pkgcls@mindate\@empty
+   \else
+     \pkgcls@parse@date@arg@#1=\@nil\relax
+   \fi
+ }
+\def\pkgcls@parse@date@arg@#1=#2\@nil{%
+  \pkgcls@targetdate
+    \ifx\@nil#1\@nil
+      \@parse@version0#2//00\@nil\relax
+      \ifnum \pkgcls@targetdate=\z@
+        \pkgcls@targetdate\@ne
+        \def\pkgcls@innerdate{\maxdimen}%
+        \pkgcls@parse@date@arg@version#2%
+      \else
+        \edef\pkgcls@innerdate{\the\pkgcls@targetdate}%
+      \fi
+      \let\pkgcls@mindate\@empty
+    \else
+      \requestedLaTeXdate\relax
+      \let\pkgcls@targetlabel\@empty
+      \def\pkgcls@innerdate{\maxdimen}%
+      \def\pkgcls@mindate{#1}%
+      \ifnum \pkgcls@targetdate > \z@
+        \ifnum \@parse@version0#1//00\@nil > \pkgcls@targetdate
+          \@latex@warning@no@line{Suspicious rollback/min-date date given\MessageBreak
+            A minimal date of #1 has been specified for
+             \@cls@pkg\MessageBreak '\pkgcls@name'.\MessageBreak
+             But this is in conflict
+             with a rollback request to \requestedpatchdate}
+        \fi
+      \fi
+    \fi
+}
+\def\pkgcls@parse@date@arg@version#1={%
+  \def\pkgcls@targetlabel{#1}}
+
+\def\DeclareRelease#1#2#3{%
+  \ifnum\pkgcls@targetdate>\z@  % some sort of rollback request
+    \pkgcls@debug{---\string\DeclareRelease:}%
+    \pkgcls@debug{\@spaces 1: #1}%
+    \pkgcls@debug{\@spaces 2: #2}%
+    \pkgcls@debug{\@spaces 3: #3}%
+    \ifx\@nil#2\@nil
+      \ifnum\pkgcls@targetdate=\@ne  % named request
+        \def\reserved@a{#1}%
+        \ifx\pkgcls@targetlabel\reserved@a
+          \pkgcls@use@this@release{#3}{}%
+        \else
+          \pkgcls@debug{Label doesn't match}%
+        \fi
+      \else
+        \pkgcls@debug{Date request: ignored}%
+      \fi
+    \else
+      \ifnum\pkgcls@targetdate>\@ne  % a real request
+        \ifnum\@parse@version#2//00\@nil
+             >\pkgcls@targetdate
+          \ifx\pkgcls@candidate\@empty
+            \pkgcls@rollbackdate@error{#2}%
+            \pkgcls@use@this@release{#3}{#2}%
+          \else
+            \pkgcls@use@this@release\pkgcls@candidate
+                                    \pkgcls@releasedate
+          \fi
+        \else
+          \def\pkgcls@candidate{#3}%
+          \def\pkgcls@releasedate{#2}%
+          \pkgcls@debug{New candidate: #3}%
+        \fi
+      \else
+        \def\reserved@a{#1}%
+        \ifx\pkgcls@targetlabel\reserved@a
+          \pkgcls@use@this@release{#3}{#2}%
+        \else
+          \pkgcls@debug{Label doesn't match}%
+        \fi
+      \fi
+    \fi
+  \fi
+}
+
+\def\pkgcls@use@this@release#1#2{%
+   \pkgcls@show@selection{#1}{#2}%
+   \pkgcls@targetdate\z@
+   \@@input #1\relax
+   \endinput
+}
+
+\def\pkgcls@show@selection#1#2{%
+  \pkgcls@debug{Result: use  #1}%
+  \GenericInfo
+   {\@spaces\@spaces\space}{Rollback for
+    \@cls@pkg\space'\@currname' requested ->
+    \ifnum\pkgcls@targetdate>\@ne
+       date
+       \ifnum\requestedLaTeXdate=\pkgcls@targetdate
+          \requestedpatchdate
+       \else
+          \expandafter\@gobble\pkgcls@arg
+       \fi.\MessageBreak
+       Best approximation is
+    \else
+       version '\pkgcls@targetlabel'.\MessageBreak
+       This corresponds to
+    \fi
+    \ifx\@nil#2\@nil
+       a special release%
+    \else
+       the release introduced on #2%
+    \fi
+    \@gobble}%
+}
+
+\def\pkgcls@rollbackdate@error#1{%
+  \@latex@error{Suspicious rollback date given}%
+     {The \@cls@pkg\space'\@currname'  claims that it
+      came into existence on #1 which\MessageBreak
+      is after your requested rollback date --- so
+      something is wrong here.\MessageBreak
+      Continue and we use the earliest known release.}}
+\def\DeclareCurrentRelease#1#2{%
+  \ifnum\pkgcls@targetdate>\z@  % some sort of rollback request
+    \pkgcls@debug{---DeclareCurrentRelease}%
+    \pkgcls@debug{   1: #1}%
+    \pkgcls@debug{   2: #2}%
+    \ifnum\pkgcls@targetdate>\@ne  % a date request
+      \ifnum\@parse@version#2//00\@nil
+           >\pkgcls@targetdate
+
+        \ifx\pkgcls@candidate\@empty
+          \pkgcls@rollbackdate@error{#2}%
+        \else
+          \pkgcls@use@this@release\pkgcls@candidate
+                                  \pkgcls@releasedate
+        \fi
+      \else
+        \pkgcls@show@selection{current version}{#2}%
+      \fi
+    \else % a label request
+      \def\reserved@a{#1}%
+      \ifx\pkgcls@targetlabel\reserved@a
+        \pkgcls@show@selection{current version}{#2}%
+      \else
+        \@latex@error{Requested version '\pkgcls@targetlabel' for
+          \@cls@pkg\space'\@currname' is unknown}\@ehc
+      \fi
+    \fi
+  \fi
+}
+
+\long\def\IfTargetDateBefore#1{%
+  \ifnum\pkgcls@innerdate <%
+        \expandafter\@parse@version\expandafter0#1//00\@nil
+    \typeout{Exclude code introduced on #1}%
+    \expandafter\@firstoftwo
+  \else
+    \typeout{Include code introduced on #1}%
+    \expandafter\@secondoftwo
+  \fi
+}
 %%% From File: ltvers.dtx
 \edef\latexreleaseversion
-   {2017/01/01}
-\def\IncludeInRelease#1{\kernel@ifnextchar[%
+   {2018-12-01}
+\newif\if@includeinrelease
+\@includeinreleasefalse
+\def\IncludeInRelease#1{%
+ \if@includeinrelease
+  \PackageError{latexrelease}{mis-matched IncludeInRelease}{}%
+  \@includeinreleasefalse
+  \fi
+  \kernel@ifnextchar[%
   {\@IncludeInRelease{#1}}
   {\@IncludeInRelease{#1}[#1]}}
 \def\@IncludeInRelease#1[#2]{\@IncludeInRele@se{#2}}
@@ -77,6 +305,7 @@
      \expandafter\expandafter\expandafter\@gobble@IncludeInRelease
     \else
       \GenericInfo{}{Applying: \the\toks@}%
+      \@includeinreleasetrue
       \expandafter\let\csname\string#2+\@currname+IIR\endcsname\@empty
     \fi
   \else
@@ -84,19 +313,35 @@
     \expandafter\@gobble@IncludeInRelease
   \fi
 }
-\long\def\@gobble@IncludeInRelease#1\EndIncludeInRelease{}
-\let\EndIncludeInRelease\relax
+\def\EndIncludeInRelease{%
+\if@includeinrelease
+  \@includeinreleasefalse
+\else
+  \PackageError{latexrelease}{mis-matched EndIncludeInRelease}{}%
+\fi}
+\long\def\@gobble@IncludeInRelease#1\EndIncludeInRelease{%
+  \@includeinreleasefalse
+  \@check@IncludeInRelease#1\IncludeInRelease\@check@IncludeInRelease
+  \@end@check@IncludeInRelease}
+\long\def\@check@IncludeInRelease#1\IncludeInRelease
+                                   #2#3\@end@check@IncludeInRelease{%
+  \ifx\@check@IncludeInRelease#2\else
+    \PackageError{latexrelease}{skipped IncludeInRelease}{}%
+  \fi}
 \ProvidesPackage{latexrelease}
-          [2016/12/29 v1.0h LaTeX release emulation and tests]
+          [2018/05/08 v1.0k LaTeX release emulation and tests
+              (including releases up to \latexreleaseversion)]
 \NeedsTeXFormat{LaTeX2e}[1996/06/01]
 \DeclareOption*{%
   \def\@IncludeInRelease#1[#2]{\@IncludeInRele@se{#1}}%
   \let\requestedpatchdate\CurrentOption}
 \DeclareOption{latest}{%
-  \let\requestedpatchdate\latexreleaseversion}
+  \let\requestedpatchdate\latexreleaseversion
+  \AtEndOfPackage{\def\requestedLaTeXdate{0}}}
 \DeclareOption{current}{%
-  \let\requestedpatchdate\fmtversion}
-\ExecuteOptions{current}
+  \let\requestedpatchdate\fmtversion
+  \AtEndOfPackage{\def\requestedLaTeXdate{0}}}
+\let\requestedpatchdate\fmtversion
 \ProcessOptions\relax
 \def\reserved@a{%
 \edef\requestedLaTeXdate{\the\count@}%
@@ -106,7 +351,7 @@
 \ifx\reserved@b\@empty\else
 \PackageError{latexrelease}%
              {Unexpected option \requestedpatchdate}%
-             {The option must be of the form yyyy/mm/dd}%
+             {The option must be of the form yyyy/mm/dd or yyyy-mm-dd}%
 \fi}
 \afterassignment\reserved@a
 \count@\expandafter
@@ -115,7 +360,7 @@
    \expandafter\@parse@version\fmtversion//00\@nil}
 \ifnum\requestedLaTeXdate=\currentLaTeXdate
 \PackageWarningNoLine{latexrelease}{%
-  Current format date selected, no patches applied.}
+  Current format date selected, no patches applied}
 \expandafter\endinput
 \fi
 \ifnum\currentLaTeXdate
@@ -203,6 +448,64 @@ of this package available from CTAN}
 \IncludeInRelease{0000/00/00}{\MakeRobust}{\MakeRobust}%
 \let\MakeRobust\@undefined
 \EndIncludeInRelease
+\IncludeInRelease{2018-04-01}{\@ifundefined}
+{Leave commands undefined in \@ifundefined}%
+\def\@ifundefined#1{%
+  \ifcsname#1\endcsname\@ifundefin@d@i\else\@ifundefin@d@ii\fi{#1}}
+\long\def\@ifundefin@d@i#1\fi#2{\fi
+  \expandafter\ifx\csname #2\endcsname\relax
+    \@ifundefin@d@ii
+  \fi
+  \@secondoftwo}
+\long\def\@ifundefin@d@ii\fi#1#2#3{\fi #2}
+\ifx\numexpr\@undefined
+\def\@ifundefined#1{%
+  \expandafter\ifx\csname#1\endcsname\relax
+    \expandafter\@firstoftwo
+  \else
+    \expandafter\@secondoftwo
+  \fi}
+\else\ifx\directlua\@undefined
+\else
+\def\@ifundefined#1{%
+  \ifcsname#1\endcsname
+    \expandafter\ifx\lastnamedcs\relax\else\@ifundefin@d@i\fi
+  \fi
+  \@firstoftwo}
+\long\def\@ifundefin@d@i#1#2#3#4#5{#1#2#5}
+\fi
+\fi
+\EndIncludeInRelease
+\IncludeInRelease{0000-00-00}{\@ifundefined}
+{Leave commands undefined in \@ifundefined}%
+\def\@ifundefined#1{%
+  \expandafter\ifx\csname#1\endcsname\relax
+    \expandafter\@firstoftwo
+  \else
+    \expandafter\@secondoftwo
+  \fi}
+\EndIncludeInRelease
+\IncludeInRelease{2017/04/15}{\-}{Use \hyphenchar in \-}%
+\DeclareRobustCommand{\-}{%
+  \discretionary{%
+    \char \ifnum\hyphenchar\font<\z@
+            \defaulthyphenchar
+          \else
+            \hyphenchar\font
+          \fi
+               }{}{}%
+}
+\let\@dischyph=\-
+\EndIncludeInRelease
+\IncludeInRelease{0000/00/00}{\-}{Use \hyphenchar in \-}%
+\def\-{\discretionary{-}{}{}}
+\let\@dischyph=\-
+\EndIncludeInRelease
+%%% From File: ltalloc.dtx
+%%% From File: ltcntrl.dtx
+%%% From File: lterror.dtx
+%%% From File: ltpar.dtx
+%%% From File: ltlists.dtx
 %%% From File: ltboxes.dtx
 \IncludeInRelease{2015/01/01}%
                  {\makebox}{Make \makebox robust}%
@@ -262,6 +565,44 @@ of this package available from CTAN}
     {\@iiiparbox c\relax[s]}}%
 \expandafter\let\csname parbox \endcsname\@undefined
 \EndIncludeInRelease
+\IncludeInRelease{2017-04-15}%
+                 {\normallineskiplimit}
+                 {reset \lineskiplimit}%
+\def\@arrayparboxrestore{%
+  \let\if@nobreak\iffalse
+  \let\if@noskipsec\iffalse
+  \let\par\@@par
+  \let\-\@dischyph
+  \let\'\@acci\let\`\@accii\let\=\@acciii
+  \parindent\z@ \parskip\z@skip
+  \everypar{}%
+  \linewidth\hsize
+  \@totalleftmargin\z@
+  \leftskip\z@skip \rightskip\z@skip \@rightskip\z@skip
+  \parfillskip\@flushglue
+  \lineskip\normallineskip
+  \lineskiplimit\normallineskiplimit
+  \baselineskip\normalbaselineskip
+  \sloppy}
+\EndIncludeInRelease
+\IncludeInRelease{0000-00-00}%
+                 {\normallineskiplimit}
+                 {reset \lineskiplimit}%
+\def\@arrayparboxrestore{%
+  \let\if@nobreak\iffalse
+  \let\if@noskipsec\iffalse
+  \let\par\@@par
+  \let\-\@dischyph
+  \let\'\@acci\let\`\@accii\let\=\@acciii
+  \parindent\z@ \parskip\z@skip
+  \everypar{}%
+  \linewidth\hsize
+  \@totalleftmargin\z@
+  \leftskip\z@skip \rightskip\z@skip \@rightskip\z@skip
+  \parfillskip\@flushglue \lineskip\normallineskip
+  \baselineskip\normalbaselineskip
+  \sloppy}
+\EndIncludeInRelease
 \IncludeInRelease{2015/01/01}%
                  {\rule}{Make \rule robust}%
 \DeclareRobustCommand\rule{\@ifnextchar[\@rule{\@rule[\z@]}}%
@@ -284,7 +625,31 @@ of this package available from CTAN}
   \@ifnextchar[{\@rsbox{#1}}{\@irsbox{#1}[]}}
 \expandafter\let\csname raisebox \endcsname\@undefined
 \EndIncludeInRelease
+%%% From File: lttab.dtx
 %%% From File: ltmath.dtx
+\IncludeInRelease{2018/12/01}%
+                 {\finph@nt}{Start LR-mode}%
+\def\finph@nt{%
+  \setbox\tw@\null
+  \ifv@ \ht\tw@\ht\z@ \dp\tw@\dp\z@\fi
+  \ifh@ \wd\tw@\wd\z@\fi
+  \leavevmode@ifvmode\box\tw@}
+\EndIncludeInRelease
+\IncludeInRelease{0000/00/00}%
+                 {\finph@nt}{Start LR-mode}%
+\def\finph@nt{%
+  \setbox\tw@\null
+  \ifv@ \ht\tw@\ht\z@ \dp\tw@\dp\z@\fi
+  \ifh@ \wd\tw@\wd\z@\fi \box\tw@}
+\EndIncludeInRelease
+\IncludeInRelease{2018/12/01}%
+                 {\finsm@sh}{Start LR-mode}%
+\def\finsm@sh{\ht\z@\z@ \dp\z@\z@ \leavevmode@ifvmode\box\z@}
+\EndIncludeInRelease
+\IncludeInRelease{0000/00/00}%
+                 {\finsm@sh}{Start LR-mode}%
+\def\finsm@sh{\ht\z@\z@ \dp\z@\z@ \box\z@}
+\EndIncludeInRelease
 \IncludeInRelease{2015/01/01}{\(}{Make \( robust}%
 \DeclareRobustCommand\({%
   \relax\ifmmode\@badmath\else$\fi}%
@@ -437,7 +802,221 @@ of this package available from CTAN}
     \if@ovl \else \kern \@ovdx \fi
     \kern \@ovri}}
 \EndIncludeInRelease
+%%% From File: ltthm.dtx
+%%% From File: ltsect.dtx
+\IncludeInRelease{2018/12/01}%
+                 {\addcontentsline}{Mask line endings}%
+\def\addcontentsline#1#2#3{%
+  \addtocontents{#1}{\protect\contentsline{#2}{#3}{\thepage}%
+                     \protected@file@percent}}
+\EndIncludeInRelease
+\IncludeInRelease{0000/00/00}%
+                 {\addcontentsline}{Mask line endings}%
+\def\addcontentsline#1#2#3{%
+  \addtocontents{#1}{\protect\contentsline{#2}{#3}{\thepage}}}
+\EndIncludeInRelease
+\IncludeInRelease{2018/12/01}%
+                 {\@dottedtocline}{Prevent protrusion}%
+\def\@dottedtocline#1#2#3#4#5{%
+  \ifnum #1>\c@tocdepth \else
+    \vskip \z@ \@plus.2\p@
+    {\leftskip #2\relax \rightskip \@tocrmarg \parfillskip -\rightskip
+     \parindent #2\relax\@afterindenttrue
+     \interlinepenalty\@M
+     \leavevmode
+     \@tempdima #3\relax
+     \advance\leftskip \@tempdima \null\nobreak\hskip -\leftskip
+     {#4}\nobreak
+     \leaders\hbox{$\m@th
+        \mkern \@dotsep mu\hbox{.}\mkern \@dotsep
+        mu$}\hfill
+     \nobreak
+     \hb@xt@\@pnumwidth{\hfil\normalfont \normalcolor #5%
+                        \kern-\p@\kern\p@}%
+     \par}%
+  \fi}
+
+\DeclareRobustCommand\noprotrusion{\leavevmode\kern-\p@\kern\p@}
+\EndIncludeInRelease
+\IncludeInRelease{0000/00/00}%
+                 {\@dottedtocline}{Prevent protrusion}%
+\def\@dottedtocline#1#2#3#4#5{%
+  \ifnum #1>\c@tocdepth \else
+    \vskip \z@ \@plus.2\p@
+    {\leftskip #2\relax \rightskip \@tocrmarg \parfillskip -\rightskip
+     \parindent #2\relax\@afterindenttrue
+     \interlinepenalty\@M
+     \leavevmode
+     \@tempdima #3\relax
+     \advance\leftskip \@tempdima \null\nobreak\hskip -\leftskip
+     {#4}\nobreak
+     \leaders\hbox{$\m@th
+        \mkern \@dotsep mu\hbox{.}\mkern \@dotsep
+        mu$}\hfill
+     \nobreak
+     \hb@xt@\@pnumwidth{\hfil\normalfont \normalcolor #5}%
+     \par}%
+  \fi}
+
+\let\noprotrusion\@undefined
+\EndIncludeInRelease
+%%% From File: ltfiles.dtx
+\IncludeInRelease{2017/04/15}%
+  {\document}{Save language for hyphenation}%
+\def\document{\endgroup
+  \ifx\@unusedoptionlist\@empty\else
+    \@latex@warning@no@line{Unused global option(s):^^J%
+            \@spaces[\@unusedoptionlist]}%
+  \fi
+  \@colht\textheight
+  \@colroom\textheight \vsize\textheight
+  \columnwidth\textwidth
+  \@clubpenalty\clubpenalty
+  \if@twocolumn
+    \advance\columnwidth -\columnsep
+    \divide\columnwidth\tw@ \hsize\columnwidth \@firstcolumntrue
+  \fi
+  \hsize\columnwidth \linewidth\hsize
+  \begingroup\@floatplacement\@dblfloatplacement
+    \makeatletter\let\@writefile\@gobbletwo
+    \global \let \@multiplelabels \relax
+    \@input{\jobname.aux}%
+  \endgroup
+  \if@filesw
+    \immediate\openout\@mainaux\jobname.aux
+    \immediate\write\@mainaux{\relax}%
+  \fi
+  \process@table
+  \let\glb@currsize\@empty  %% Force math initialization.
+  \normalsize
+  \everypar{}%
+  \ifx\normalsfcodes\@empty
+    \ifnum\sfcode`\.=\@m
+      \let\normalsfcodes\frenchspacing
+    \else
+      \let\normalsfcodes\nonfrenchspacing
+    \fi
+  \fi
+  \ifx\document@default@language\m@ne
+    \chardef\document@default@language\language
+  \fi
+  \@noskipsecfalse
+  \let \@refundefined \relax
+  \let\AtBeginDocument\@firstofone
+  \@begindocumenthook
+  \ifdim\topskip<1sp\global\topskip 1sp\relax\fi
+  \global\@maxdepth\maxdepth
+  \global\let\@begindocumenthook\@undefined
+  \ifx\@listfiles\@undefined
+    \global\let\@filelist\relax
+    \global\let\@addtofilelist\@gobble
+  \fi
+  \gdef\do##1{\global\let ##1\@notprerr}%
+  \@preamblecmds
+  \global\let \@nodocument \relax
+  \global\let\do\noexpand
+  \ignorespaces}
+\EndIncludeInRelease
+\IncludeInRelease{0000/00/00}%
+  {\document}{Save language for hyphenation}
+\def\document{\endgroup
+  \ifx\@unusedoptionlist\@empty\else
+    \@latex@warning@no@line{Unused global option(s):^^J%
+            \@spaces[\@unusedoptionlist]}%
+  \fi
+  \@colht\textheight
+  \@colroom\textheight \vsize\textheight
+  \columnwidth\textwidth
+  \@clubpenalty\clubpenalty
+  \if@twocolumn
+    \advance\columnwidth -\columnsep
+    \divide\columnwidth\tw@ \hsize\columnwidth
+    \@firstcolumntrue
+  \fi
+  \hsize\columnwidth \linewidth\hsize
+  \begingroup\@floatplacement\@dblfloatplacement
+    \makeatletter\let\@writefile\@gobbletwo
+    \global \let \@multiplelabels \relax
+    \@input{\jobname.aux}%
+  \endgroup
+  \if@filesw
+    \immediate\openout\@mainaux\jobname.aux
+    \immediate\write\@mainaux{\relax}%
+  \fi
+  \process@table
+  \let\glb@currsize\@empty
+  \normalsize
+  \everypar{}%
+  \ifx\normalsfcodes\@empty
+    \ifnum\sfcode`\.=\@m
+      \let\normalsfcodes\frenchspacing
+    \else
+      \let\normalsfcodes\nonfrenchspacing
+    \fi
+  \fi
+  \@noskipsecfalse
+  \let \@refundefined \relax
+  \let\AtBeginDocument\@firstofone
+  \@begindocumenthook
+  \ifdim\topskip<1sp\global\topskip 1sp\relax\fi
+  \global\@maxdepth\maxdepth
+  \global\let\@begindocumenthook\@undefined
+  \ifx\@listfiles\@undefined
+    \global\let\@filelist\relax
+    \global\let\@addtofilelist\@gobble
+  \fi
+  \gdef\do##1{\global\let ##1\@notprerr}%
+  \@preamblecmds
+  \global\let \@nodocument \relax
+  \global\let\do\noexpand
+  \ignorespaces}
+\EndIncludeInRelease
 %%% From File: ltoutenc.dtx
+\IncludeInRelease{2017/04/15}{\DeclareTextCompositeCommand}
+                             {test for undeclared accent}%
+\def\DeclareTextCompositeCommand#1#2#3#4{%
+  \expandafter\let\expandafter\reserved@a\csname#2\string#1\endcsname
+  \ifx\reserved@a\relax
+   \DeclareTextCommand#1{#2}{%
+     \@latex@error{\string#1 undeclared in encoding #2}\@eha}%
+   \@latex@info{Composite with undeclared \string#1 in encoding #2}%
+   \expandafter\let\expandafter\reserved@a\csname#2\string#1\endcsname
+  \fi
+  \expandafter\expandafter\expandafter\ifx
+  \expandafter\@car\reserved@a\relax\relax\@nil \@text@composite \else
+      \edef\reserved@b##1{%
+         \def\expandafter\noexpand
+            \csname#2\string#1\endcsname####1{%
+            \noexpand\@text@composite
+               \expandafter\noexpand\csname#2\string#1\endcsname
+               ####1\noexpand\@empty\noexpand\@text@composite
+               {##1}}}%
+      \expandafter\reserved@b\expandafter{\reserved@a{##1}}%
+   \fi
+   \expandafter\def\csname\expandafter\string\csname
+      #2\endcsname\string#1-\string#3\@empty\endcsname{#4}%
+  }
+\EndIncludeInRelease
+\IncludeInRelease{0000/00/00}{\DeclareTextCompositeCommand}
+                            {test for undeclared accent}%
+\def\DeclareTextCompositeCommand#1#2#3#4{%
+  \expandafter\let\expandafter\reserved@a
+                      \csname#2\string#1\endcsname
+  \expandafter\expandafter\expandafter\ifx
+  \expandafter\@car\reserved@a\relax\relax\@nil
+                               \@text@composite \else
+      \edef\reserved@b##1{%
+         \def\expandafter\noexpand
+           \csname#2\string#1\endcsname####1{%
+           \noexpand\@text@composite
+             \expandafter\noexpand\csname#2\string#1\endcsname
+             ####1\noexpand\@empty\noexpand\@text@composite
+             {##1}}}%
+      \expandafter\reserved@b\expandafter{\reserved@a{##1}}%
+   \fi
+   \expandafter\def\csname\expandafter\string\csname
+      #2\endcsname\string#1-\string#3\@empty\endcsname{#4}}
+\EndIncludeInRelease
 \IncludeInRelease{2015/10/01}{\textcommabelow}{comma accent}%
 \DeclareTextCommandDefault\textcommabelow[1]
   {\hmode@bgroup\ooalign{\null#1\crcr\hidewidth\raise-.31ex
@@ -487,6 +1066,7 @@ of this package available from CTAN}
   \let\csname\string\T1\string\c-g\endcsname\@undefined
 \EndIncludeInRelease
 %%% From File: ltcounts.dtx
+
 \IncludeInRelease{2015/01/01}{\@stpelt}
                              {Reset nested counters}%
 \def\@stpelt#1{\global\csname c@#1\endcsname \m@ne\stepcounter{#1}}%
@@ -494,6 +1074,63 @@ of this package available from CTAN}
 \IncludeInRelease{0000/00/00}{\@stpelt}
                              {Reset nested counters}%%
 \def\@stpelt#1{\global\csname c@#1\endcsname \z@}%
+\EndIncludeInRelease
+\IncludeInRelease{2018-04-01}
+                 {\@removefromreset}{Add interfaces}%
+\def\@removefromreset#1#2{%
+  \@ifundefined{c@#2}\relax
+  {\begingroup
+     \expandafter\let\csname c@#1\endcsname\@removefromreset
+     \def\@elt##1{%
+       \expandafter\ifx\csname c@##1\endcsname\@removefromreset
+       \else
+         \noexpand\@elt{##1}%
+       \fi}%
+     \expandafter\xdef\csname cl@#2\endcsname
+      {\csname cl@#2\endcsname}%
+    \endgroup}}
+
+\def\@ifbothcounters#1#2#3{%
+  \@ifundefined{c@#1}{\@nocounterr{#1}}%
+    {% else counter is defined
+     \@ifundefined{c@#2}{\@nocounterr{#2}}%
+       {% else both counter and within  are defined
+        #3}}}
+
+\def\counterwithout {\@ifstar\counterwithout@s\counterwithout@x}
+\def\counterwithout@s#1#2{%
+  \@ifbothcounters{#1}{#2}{\@removefromreset{#1}{#2}}}
+\def\counterwithout@x#1#2{%
+  \@ifbothcounters{#1}{#2}%
+      {\@removefromreset{#1}{#2}%
+       \expandafter
+       \gdef\csname the#1\expandafter\endcsname\expandafter
+            {\expandafter
+             \@arabic\csname c@#1\endcsname}}}
+
+\def\counterwithin{\@ifstar\counterwithin@s\counterwithin@x}
+\def\counterwithin@s#1#2{%
+  \@ifbothcounters{#1}{#2}{\@addtoreset{#1}{#2}}}
+\def\counterwithin@x#1#2{%
+  \@ifbothcounters{#1}{#2}%
+      {\@addtoreset{#1}{#2}%
+       \expandafter
+       \gdef\csname the#1\expandafter\endcsname\expandafter
+            {\csname the#2\expandafter\endcsname\expandafter
+             .\expandafter
+             \@arabic\csname c@#1\endcsname}}}
+
+\EndIncludeInRelease
+\IncludeInRelease{0000-00-00}
+                 {\@removefromreset}{Add interfaces}%
+\let \@removefromreset \undefined
+\let \@ifbothcounters  \undefined
+\let \counterwithout   \undefined
+\let \counterwithout@s \undefined
+\let \counterwithout@x \undefined
+\let \counterwithin    \undefined
+\let \counterwithin@s  \undefined
+\let \counterwithin@x  \undefined
 \EndIncludeInRelease
 \IncludeInRelease{2015/01/01}{\@fnsymbol}{Use \TexOrMath}%
 \def\@fnsymbol#1{%
@@ -749,13 +1386,16 @@ of this package available from CTAN}
 \DeclareRobustCommand*\textsubscript[1]{%
   \@textsubscript{\selectfont#1}}%
 \def\@textsubscript#1{%
-  {\m@th\ensuremath{_{\mbox{\fontsize\sf@size\z@#1}}}}}%
+  {\m@th\ensuremath{_{\mbox{\fontsize\sf@size\z@#1}}}}}
 \EndIncludeInRelease
 \IncludeInRelease{0000/00/00}%
                  {\textsubscript}{\textsubscript}%
 \let\textsubscript\@undefined
 \let\@textsubscript\@undefined
 \EndIncludeInRelease
+%%% From File: ltidxglo.dtx
+%%% From File: ltbibl.dtx
+%%% From File: ltpage.dtx
 %%% From File: ltoutput.dtx
 \IncludeInRelease{2015/10/01}%
                  {\bx@ZZ}{Extended float list}%
@@ -785,6 +1425,50 @@ of this package available from CTAN}
   \@elt\bx@K\@elt\bx@L\@elt\bx@M\@elt\bx@N
   \@elt\bx@O\@elt\bx@P\@elt\bx@Q\@elt\bx@R}
   \insc@unt=234
+\EndIncludeInRelease
+\IncludeInRelease{2017/04/15}%
+                 {\newpage}{Check depth of page}%
+\def \newpage {%
+  \if@noskipsec
+    \ifx \@nodocument\relax
+      \leavevmode
+      \global \@noskipsecfalse
+    \fi
+  \fi
+  \if@inlabel
+    \leavevmode
+    \global \@inlabelfalse
+  \fi
+  \if@nobreak \@nobreakfalse \everypar{}\fi
+  \par
+  \ifdim\prevdepth>\z@
+     \vskip -%
+       \ifdim\prevdepth>\maxdepth
+         \maxdepth
+       \else
+         \prevdepth
+       \fi
+  \fi
+  \vfil
+  \penalty -\@M}
+\EndIncludeInRelease
+\IncludeInRelease{0000/00/00}%
+                 {\newpage}{Check depth of page}%
+\def \newpage {%
+  \if@noskipsec
+    \ifx \@nodocument\relax
+      \leavevmode
+      \global \@noskipsecfalse
+    \fi
+  \fi
+  \if@inlabel
+    \leavevmode
+    \global \@inlabelfalse
+  \fi
+  \if@nobreak \@nobreakfalse \everypar{}\fi
+  \par
+  \vfil
+  \penalty -\@M}
 \EndIncludeInRelease
 \IncludeInRelease{2015/01/01}%
                  {\@testwrongwidth}{float order in 2-column}%
@@ -885,6 +1569,122 @@ of this package available from CTAN}
        \clearpage
      \fi
   }%
+\EndIncludeInRelease
+\IncludeInRelease{2017/04/15}%
+  {\@outputpage}{Reset language for hyphenation}%
+\def\@outputpage{%
+\begingroup
+  \let \protect \noexpand
+  \language\document@default@language
+  \@resetactivechars
+  \global\let\@@if@newlist\if@newlist
+  \global\@newlistfalse
+  \@parboxrestore
+  \shipout \vbox{%
+    \set@typeset@protect
+    \aftergroup \endgroup
+    \aftergroup \set@typeset@protect
+  \if@specialpage
+    \global\@specialpagefalse\@nameuse{ps@\@specialstyle}%
+  \fi
+  \if@twoside
+    \ifodd\count\z@ \let\@thehead\@oddhead \let\@thefoot\@oddfoot
+         \let\@themargin\oddsidemargin
+    \else \let\@thehead\@evenhead
+       \let\@thefoot\@evenfoot \let\@themargin\evensidemargin
+    \fi
+  \fi
+  \reset@font
+  \normalsize
+  \normalsfcodes
+  \let\label\@gobble
+  \let\index\@gobble
+  \let\glossary\@gobble
+  \baselineskip\z@skip \lineskip\z@skip \lineskiplimit\z@
+    \@begindvi
+    \vskip \topmargin
+    \moveright\@themargin \vbox {%
+      \setbox\@tempboxa \vbox to\headheight{%
+        \vfil
+        \color@hbox
+          \normalcolor
+          \hb@xt@\textwidth{\@thehead}%
+        \color@endbox
+        }%
+      \dp\@tempboxa \z@
+      \box\@tempboxa
+      \vskip \headsep
+      \box\@outputbox
+      \baselineskip \footskip
+      \color@hbox
+        \normalcolor
+        \hb@xt@\textwidth{\@thefoot}%
+      \color@endbox
+      }%
+    }%
+  \global\let\if@newlist\@@if@newlist
+  \global \@colht \textheight
+  \stepcounter{page}%
+  \let\firstmark\botmark
+}
+\EndIncludeInRelease
+\IncludeInRelease{0000/00/00}%
+  {\@outputpage}{Reset language for hyphenation}%
+\def\@outputpage{%
+\begingroup
+  \let \protect \noexpand
+  \@resetactivechars
+  \global\let\@@if@newlist\if@newlist
+  \global\@newlistfalse
+  \@parboxrestore
+  \shipout \vbox{%
+    \set@typeset@protect
+    \aftergroup \endgroup
+    \aftergroup \set@typeset@protect
+  \if@specialpage
+    \global\@specialpagefalse\@nameuse{ps@\@specialstyle}%
+  \fi
+  \if@twoside
+    \ifodd\count\z@
+         \let\@thehead\@oddhead \let\@thefoot\@oddfoot
+         \let\@themargin\oddsidemargin
+    \else \let\@thehead\@evenhead
+       \let\@thefoot\@evenfoot \let\@themargin\evensidemargin
+    \fi
+  \fi
+  \reset@font
+  \normalsize
+  \normalsfcodes
+  \let\label\@gobble
+  \let\index\@gobble
+  \let\glossary\@gobble
+  \baselineskip\z@skip \lineskip\z@skip \lineskiplimit\z@
+    \@begindvi
+    \vskip \topmargin
+    \moveright\@themargin \vbox {%
+      \setbox\@tempboxa \vbox to\headheight{%
+        \vfil
+        \color@hbox
+          \normalcolor
+          \hb@xt@\textwidth{\@thehead}%
+        \color@endbox
+        }%
+      \dp\@tempboxa \z@
+      \box\@tempboxa
+      \vskip \headsep
+      \box\@outputbox
+      \baselineskip \footskip
+      \color@hbox
+        \normalcolor
+        \hb@xt@\textwidth{\@thefoot}%
+      \color@endbox
+      }%
+    }%
+  \global\let\if@newlist\@@if@newlist
+  \global \@colht \textheight
+  \stepcounter{page}%
+  \let\firstmark\botmark
+}
 \EndIncludeInRelease
 \IncludeInRelease{2015/01/01}%
   {\@startdblcolumn}{float order in 2-column}%
@@ -1136,6 +1936,36 @@ of this package available from CTAN}
 \EndIncludeInRelease
 \IncludeInRelease{2015/01/01}
   {\@addtonextcol}{float order in 2-column}%
+\def\@addtonextcol{%
+  \begingroup
+   \@insertfalse
+   \@setfloattypecounts
+   \ifnum \@fpstype=8
+   \else
+     \ifnum \@fpstype=24
+     \else
+       \@flsettextmin
+       \@reqcolroom \ht\@currbox
+       \advance \@reqcolroom \@textmin
+       \ifdim \@colroom>\@reqcolroom
+         \@flsetnum \@colnum
+         \ifnum\@colnum>\z@
+            \@bitor\@currtype\@deferlist
+            \@testwrongwidth\@currbox
+            \if@test
+            \else
+              \@addtotoporbot
+            \fi
+         \fi
+       \fi
+     \fi
+   \fi
+   \if@insert
+   \else
+     \@cons\@deferlist\@currbox
+   \fi
+  \endgroup
+}%
 \EndIncludeInRelease
 \IncludeInRelease{0000/00/00}%
   {\@addtonextcol}{float order in 2-column}%
@@ -1357,6 +2187,28 @@ of this package available from CTAN}
 }%
 \EndIncludeInRelease
 %%% From File: ltclass.dtx
+\IncludeInRelease{2018/04/01}%
+                 {\@ifl@t@r}{Guard against bad input}%
+\def\@ifl@t@r#1#2{%
+  \ifnum\expandafter\@parse@version@#1//00\@nil<%
+        \expandafter\@parse@version@#2//00\@nil
+    \expandafter\@secondoftwo
+  \else
+    \expandafter\@firstoftwo
+  \fi}
+\def\@parse@version@#1{\@parse@version0#1}
+\EndIncludeInRelease
+\IncludeInRelease{0000/00/00}%
+                 {\@ifl@t@r}{Guard against bad input}%
+\def\@ifl@t@r#1#2{%
+  \ifnum\expandafter\@parse@version#1//00\@nil<%
+        \expandafter\@parse@version#2//00\@nil
+    \expandafter\@secondoftwo
+  \else
+    \expandafter\@firstoftwo
+  \fi}
+\let\@parse@version@\@undefined
+\EndIncludeInRelease
 \IncludeInRelease{2017/01/01}%
                  {\@if@pti@ns}{Spaces in option clash check}%
 \def\@if@pti@ns#1#2{%
@@ -1390,8 +2242,9 @@ of this package available from CTAN}
   \fi
  }%
  \reserved@a}
+\EndIncludeInRelease
 \IncludeInRelease{2017/01/01}%
-                 {\@if@pti@ns}{Spaces in \ExecuteOptions}%
+                 {\ExecuteOptions}{Spaces in \ExecuteOptions}%
 \def\ExecuteOptions#1{%
   \edef\@fortmp{\zap@space#1 \@empty}%
   \def\reserved@a##1\@nil{%
@@ -1401,13 +2254,14 @@ of this package available from CTAN}
   \expandafter\reserved@a\CurrentOption\@nil}
 \EndIncludeInRelease
 \IncludeInRelease{0000/00/00}%
-                 {\@if@pti@ns}{Spaces in \ExecuteOptions}%
+                 {\ExecuteOptions}{Spaces in \ExecuteOptions}%
 \def\ExecuteOptions#1{%
   \def\reserved@a##1\@nil{%
     \@for\CurrentOption:=#1\do
              {\csname ds@\CurrentOption\endcsname}%
     \edef\CurrentOption{##1}}%
   \expandafter\reserved@a\CurrentOption\@nil}
+\EndIncludeInRelease
 \IncludeInRelease{2017/01/01}%
         {\@fileswith@pti@ns}{ifx tests in \@fileswith@pti@ns}%
 \def\@fileswith@pti@ns#1[#2]#3[#4]{%
@@ -1462,9 +2316,28 @@ of this package available from CTAN}
         \expandafter\reserved@b\reserved@a,\@nil,}%
   \fi
   \reserved@a}
+\EndIncludeInRelease
 %%% From File: ltspace.dtx
+\IncludeInRelease{2018/10/10}%
+                 {\@esphack}{hyphenation and nobreak after space hack}%
+\def\@esphack{%
+  \relax
+  \ifhmode
+    \spacefactor\@savsf
+    \ifdim\@savsk>\z@
+      \ifdim\lastskip=\z@
+        \nobreak \hskip\z@skip
+      \fi
+      \ignorespaces
+    \fi
+  \else
+    \ifvmode
+      \if@nobreak\nobreak\else\if@noskipsec\nobreak\fi\fi
+    \fi
+  \fi}%
+\EndIncludeInRelease
 \IncludeInRelease{2015/10/01}%
-                 {\@esphack}{hyphenation after space hack}%
+                 {\@esphack}{hyphenation and nobreak after space hack}%
 \def\@esphack{%
   \relax
   \ifhmode
@@ -1478,7 +2351,7 @@ of this package available from CTAN}
   \fi}%
 \EndIncludeInRelease
 \IncludeInRelease{2015/01/01}%
-                 {\@esphack}{hyphenation after space hack}%
+                 {\@esphack}{hyphenation and nobreak after space hack}%
 \def\@esphack{%
   \relax
   \ifhmode
@@ -1490,7 +2363,7 @@ of this package available from CTAN}
   \fi}%
 \EndIncludeInRelease
 \IncludeInRelease{0000/00/00}%
-                 {\@esphack}{hyphenation after space hack}%
+                 {\@esphack}{hyphenation and nobreak after space hack}%
 \def\@esphack{%
   \relax
   \ifhmode
@@ -1589,6 +2462,21 @@ of this package available from CTAN}
                  {\@}{Space after \@}%
 \def\@{\spacefactor\@m}%
 \EndIncludeInRelease
+\IncludeInRelease{2018/12/01}%
+                 {\thinspace}{Start LR-mode}%
+\def\thinspace{\leavevmode@ifvmode\kern .16667em }
+\def\negthinspace{\leavevmode@ifvmode\kern-.16667em }
+\def\enspace{\leavevmode@ifvmode\kern.5em }
+\protected\def\leavevmode@ifvmode{\ifvmode\expandafter\indent\fi}
+\EndIncludeInRelease
+\IncludeInRelease{0000/00/00}%
+                 {\thinspace}{Start LR-mode}%
+\def\thinspace{\kern .16667em }
+\def\negthinspace{\kern-.16667em }
+\def\enspace{\kern.5em }
+\let\leavevmode@ifvmode\@undefined
+\EndIncludeInRelease
+%%% From File: ltlogos.dtx
 %%% From File: ltplain.dtx
 \IncludeInRelease{2015/01/01}%
                  {\newcount}{Extended Allocation}%
@@ -1610,8 +2498,11 @@ of this package available from CTAN}
   \def\newwrite   {\e@alloc\write \chardef{\count17}\m@ne\sixt@@n}
 \else
   \def\newwrite   {\e@alloc\write
-                   {\ifnum\allocationnumber=18 \allocationnumber19\fi
-                     \global\chardef}%
+                   {\ifnum\allocationnumber=18
+                     \advance\count17\@ne
+                     \allocationnumber\count17 %
+                    \fi
+                    \global\chardef}%
                    {\count17}%
                    \m@ne
                    {128}}
@@ -1808,7 +2699,7 @@ of this package available from CTAN}
   \global\chardef#1\allocationnumber
   \wlog{\string#1=\string\insert\the\allocationnumber}}
 \EndIncludeInRelease
-\IncludeInRelease{2015/01/20}{\loggingall}{etex tracing}%
+\IncludeInRelease{2015/01/01}{\loggingall}{etex tracing}%
 \ifx\tracingscantokens\@undefined
 \gdef\loggingall{%
   \tracingstats\tw@
@@ -1848,7 +2739,7 @@ of this package available from CTAN}
   \errorcontextlines\maxdimen\loggingoutput}
   \gdef\tracingall{\loggingall\showoverfull}
 \EndIncludeInRelease
-\IncludeInRelease{2015/01/20}{\tracingnone}%
+\IncludeInRelease{2015/01/01}{\tracingnone}%
                              {turn off etex tracing}%
 \ifx\tracingscantokens\@undefined
 \def\tracingnone{%
@@ -2030,6 +2921,55 @@ of this package available from CTAN}
                        \upshape \else \itshape \fi}%
 \let\eminnershape\@undefined
 \EndIncludeInRelease
+%%% From File: fontdef.dtx
+\IncludeInRelease{2017/01/01}%
+                 {\encodingdefault}{TU encoding default}%
+\ifx\Umathchar\@undefined
+\renewcommand\encodingdefault{OT1}
+\fontencoding{\encodingdefault}
+\renewcommand\rmdefault{cmr}
+\fontfamily{\rmdefault}
+\renewcommand\sfdefault{cmss}
+\renewcommand\ttdefault{cmtt}
+\else
+\renewcommand\encodingdefault{TU}
+%done in everyjob\fontencoding{\encodingdefault}
+\renewcommand\rmdefault{lmr}
+\fontfamily{\rmdefault}
+\renewcommand\sfdefault{lmss}
+\renewcommand\ttdefault{lmtt}
+\fi
+\EndIncludeInRelease
+\IncludeInRelease{0000/00/00}%
+                 {\encodingdefault}{TU encoding default}%
+\fontencoding{OT1}
+\renewcommand\encodingdefault{OT1}
+\fontencoding{\encodingdefault}
+\renewcommand\rmdefault{cmr}
+\fontfamily{\rmdefault}
+\renewcommand\sfdefault{cmss}
+\renewcommand\ttdefault{cmtt}
+\EndIncludeInRelease
+\IncludeInRelease{2018/12/01}%
+                 {\Big}{Start LR-mode}%
+\def\big#1{\leavevmode@ifvmode
+   {\hbox{$\left#1\vbox to8.5\p@{}\right.\n@space$}}}
+\def\Big#1{\leavevmode@ifvmode
+   {\hbox{$\left#1\vbox to11.5\p@{}\right.\n@space$}}}
+\def\bigg#1{\leavevmode@ifvmode
+   {\hbox{$\left#1\vbox to14.5\p@{}\right.\n@space$}}}
+\def\Bigg#1{\leavevmode@ifvmode
+   {\hbox{$\left#1\vbox to17.5\p@{}\right.\n@space$}}}
+\EndIncludeInRelease
+\IncludeInRelease{0000/00/00}%
+                 {\Big}{Start LR-mode}%
+\def\big#1{{\hbox{$\left#1\vbox to8.5\p@{}\right.\n@space$}}}
+\def\Big#1{{\hbox{$\left#1\vbox to11.5\p@{}\right.\n@space$}}}
+\def\bigg#1{{\hbox{$\left#1\vbox to14.5\p@{}\right.\n@space$}}}
+\def\Bigg#1{{\hbox{$\left#1\vbox to17.5\p@{}\right.\n@space$}}}
+\EndIncludeInRelease
+%%% From File: ltfntcmd.dtx
+%%
 %%% From File: ltfssbas.dtx
 %% Copyright (C) 1989-2002 Frank Mittelbach and Rainer Sch\"opf
 \IncludeInRelease{2015/01/01}{\@DeclareMathSizes}%
@@ -2208,6 +3148,9 @@ of this package available from CTAN}
     \hbadness\z@\showboxdepth\z@\ #1%
     \color@endgroup}}
 \EndIncludeInRelease
+%%% From File: ltfsstrc.dtx
+%% Copyright (C) 1989-97 by Frank Mittelbach and Rainer Sch\"opf.
+%% Copyright (C) 1994-97 by LaTeX3 project. All rights reserved.
 %%% From File: ltfsscmp.dtx
 %% Copyright (C) 1989-1995 Frank Mittelbach and Rainer Sch\"opf,
 %% all rights reserved.
@@ -2352,6 +3295,157 @@ of this package available from CTAN}
   \warn@rel@i\addtoversion\SetMathAlphabet
   \SetMathAlphabet#2{#1}{U}}%
 \@onlypreamble\addtoversion
+\EndIncludeInRelease
+%%% From File: ltpageno.dtx
+%%% From File: ltxref.dtx
+%%% From File: ltmiscen.dtx
+\IncludeInRelease{2018/12/01}%
+                 {\protected@file@percent}{Mask line endings}%
+\protected\def\protected@file@percent{}
+
+\begingroup
+\catcode`\%=12
+\catcode`\^^A=9
+\long\gdef\add@percent@to@temptokena
+    #1\protected@file@percent#2\add@percent@to@temptokena
+    {\ifx!#2!\@temptokena\expandafter{#1}\else
+             \@temptokena\expandafter{#1%^^A
+      }\fi}
+\endgroup
+\long\def\@writefile#1#2{%
+  \@ifundefined{tf@#1}\relax
+    {%
+      \add@percent@to@temptokena
+        \@empty#2\protected@file@percent
+        \add@percent@to@temptokena
+     \immediate\write\csname tf@#1\endcsname{\the\@temptokena}%
+    }%
+}
+\EndIncludeInRelease
+\IncludeInRelease{0000/00/00}%
+                 {\protected@file@percent}{Mask line endings}%
+\let\protected@file@percent\@undefined
+\let\add@percent@to@temptokena\@undefined
+\long\def\@writefile#1#2{%
+  \@ifundefined{tf@#1}\relax
+    {\@temptokena{#2}%
+     \immediate\write\csname tf@#1\endcsname{\the\@temptokena}%
+    }%
+}
+\EndIncludeInRelease
+\IncludeInRelease{2017-04-15}{\@verbatim}%
+                 {Disable hyphenation in verbatim}%
+\def\@verbatim{\trivlist \item\relax
+  \if@minipage\else\vskip\parskip\fi
+  \leftskip\@totalleftmargin\rightskip\z@skip
+  \parindent\z@\parfillskip\@flushglue\parskip\z@skip
+  \@@par
+  \language\l@nohyphenation
+  \@tempswafalse
+  \def\par{%
+    \if@tempswa
+      \leavevmode \null \@@par\penalty\interlinepenalty
+    \else
+      \@tempswatrue
+      \ifhmode\@@par\penalty\interlinepenalty\fi
+    \fi}%
+  \let\do\@makeother \dospecials
+  \obeylines \verbatim@font \@noligs
+  \everypar \expandafter{\the\everypar \unpenalty}%
+}
+\EndIncludeInRelease
+\IncludeInRelease{0000-00-00}{\@verbatim}%
+                 {Disable hyphenation in verbatim}%
+\def\@verbatim{\trivlist \item\relax
+  \if@minipage\else\vskip\parskip\fi
+  \leftskip\@totalleftmargin\rightskip\z@skip
+  \parindent\z@\parfillskip\@flushglue\parskip\z@skip
+  \@@par
+  \@tempswafalse
+  \def\par{%
+    \if@tempswa
+      \leavevmode \null \@@par\penalty\interlinepenalty
+    \else
+      \@tempswatrue
+      \ifhmode\@@par\penalty\interlinepenalty\fi
+    \fi}%
+  \let\do\@makeother \dospecials
+  \obeylines \verbatim@font \@noligs
+  \hyphenchar\font\m@ne
+  \everypar \expandafter{\the\everypar \unpenalty}%
+}
+\EndIncludeInRelease
+\IncludeInRelease{2018/12/01}%
+                 {\verbvisiblespace}{Setup visible space for verb}%
+\DeclareRobustCommand\asciispace{\char 32 }
+\ifx\Umathcode\@undefined
+  \let\verbvisiblespace\asciispace                                % Pdftex version
+\else
+  \DeclareRobustCommand\verbvisiblespace
+           {\leavevmode{\usefont{OT1}{cmtt}{m}{n}\asciispace}}    % xetex/luatex version
+\fi
+
+\def\@setupverbvisiblespace{%
+  \ifx\verbvisiblespace\asciispace
+    \let\@xobeysp\asciispace
+  \else
+    \setbox\z@\hbox{x}%
+    \setbox\@verbvisiblespacebox\hbox to\wd\z@{\hss\verbvisiblespace\hss}%
+    \def\@xobeysp{\leavevmode\copy\@verbvisiblespacebox}%
+  \fi
+}
+
+\newbox\@verbvisiblespacebox
+\def\@sverb#1{%
+  \catcode`#1\active
+  \lccode`\~`#1%
+  \gdef\verb@balance@group{\verb@egroup
+     \@latex@error{\noexpand\verb illegal in command argument}\@ehc}%
+  \aftergroup\verb@balance@group
+  \lowercase{\let~\verb@egroup}%
+  \ifnum\catcode`\ =\active
+  \else  \@setupverbvisiblespace \@vobeyspaces \fi
+}
+\@namedef{verbatim*}{\@verbatim
+  \@setupverbvisiblespace
+  \frenchspacing\@vobeyspaces\@sxverbatim}
+\expandafter\let\csname endverbatim*\endcsname =\endverbatim
+\EndIncludeInRelease
+\IncludeInRelease{0000/00/00}%
+                 {\verbvisiblespace}{Setup visible space for verb}%
+
+\@namedef{verbatim*}{\@verbatim\@sxverbatim}
+
+\let\asciispace            \@undefined
+\let\verbvisiblespace      \@undefined
+\let\@setupverbvisiblespace\@undefined
+\let\@verbvisiblespacebox  \@undefined
+
+\def\@sverb#1{%
+  \catcode`#1\active
+  \lccode`\~`#1%
+  \gdef\verb@balance@group{\verb@egroup
+     \@latex@error{\noexpand\verb illegal in command argument}\@ehc}%
+  \aftergroup\verb@balance@group
+  \lowercase{\let~\verb@egroup}}%
+
+\EndIncludeInRelease
+\IncludeInRelease{2017-04-15}{\verb}%
+                 {Disable hyphenation in verb}%
+\def\verb{\relax\ifmmode\hbox\else\leavevmode\null\fi
+  \bgroup
+    \verb@eol@error \let\do\@makeother \dospecials
+    \verbatim@font\@noligs
+    \language\l@nohyphenation
+    \@ifstar\@sverb\@verb}
+\EndIncludeInRelease
+\IncludeInRelease{0000-00-00}{\verb}%
+                 {Disable hyphenation in verb}%
+\def\verb{\relax\ifmmode\hbox\else\leavevmode\null\fi
+  \bgroup
+    \verb@eol@error \let\do\@makeother \dospecials
+    \verbatim@font\@noligs
+    \@ifstar\@sverb\@verb}
 \EndIncludeInRelease
 \ifx\directlua\@undefined\else
 \IncludeInRelease{2015/10/01}
@@ -2536,14 +3630,6 @@ of this package available from CTAN}
 \fontencoding{TU}\let\encodingdefault\f@encoding
 \ifx\directlua\@undefined\else
   \directlua{%
-%% Horrible hack, locally reset the luatex version number
-%% This is not required for the source version of luaotfload
-%% but is required due to an error in the version check in the
-%% public version (January 2017)
-%% https://github.com/lualatex/luaotfload/issues/387
-%% It is expected that this will be removed before TeXLive 2017
-  local tmp_version=tex.luatexversion %
-  tex.luatexversion=199 %
   if xpcall(function ()%
              require('luaotfload-main')%
             end,texio.write_nl) then %
@@ -2552,7 +3638,6 @@ of this package available from CTAN}
   texio.write_nl('Error in luaotfload: reverting to OT1')%
   tex.print('\string\\def\string\\encodingdefault{OT1}')%
   end %
-  tex.luatexversion=tmp_version%
   }%
   \let\f@encoding\encodingdefault
   \expandafter\let\csname ver@luaotfload.sty\endcsname\fmtversion
@@ -2686,6 +3771,132 @@ of this package available from CTAN}
    \global\XeTeXinterchartoks 3 2 = {\xtxHanGlue}
    \global\XeTeXinterchartoks 3 3 = {\nobreak\xtxHanGlue}
   \fi
+\EndIncludeInRelease
+\IncludeInRelease{2017/04/15}%
+                 {\document@default@language}{Save language for hyphenation}%
+\let\document@default@language\m@ne
+\EndIncludeInRelease
+\IncludeInRelease{0000/00/00}%
+                 {\document@default@language}{Save language for hyphenation}%
+\let\document@default@language\@undefined
+\EndIncludeInRelease
+\IncludeInRelease{2018/04/01}%
+                 {\UTFviii@invalid}{UTF-8 default}%
+\ifnum0%
+  \ifx\Umathchar\@undefined\else 1\fi
+  \ifx\mubyte\@undefined\else 1\fi
+  \ifx\charsubdef\@undefined\else 1\fi
+  =\z@
+\def\saved@space@catcode{10}
+\let\@inpenc@test\relax
+\def\IeC{%
+  \ifx\protect\@typeset@protect
+    \expandafter\@firstofone
+  \else
+    \noexpand\IeC
+  \fi
+}
+\@tempcnta=1
+\loop
+  \catcode\@tempcnta=13  %
+  \advance\@tempcnta\@ne %
+\ifnum\@tempcnta<32      %
+\repeat                  %
+\catcode0=15  % null
+\catcode9=10  % tab
+\catcode10=12 % ctrl J
+\catcode12=13 % ctrl L
+\catcode13=5  % newline
+\@tempcnta=128
+\loop
+  \catcode\@tempcnta=13
+  \advance\@tempcnta\@ne
+\ifnum\@tempcnta<256
+\repeat
+\def\UseRawInputEncoding{%
+\let\inputencodingname\@undefined                     % revert
+\let\DeclareFontEncoding@\DeclareFontEncoding@saved   % revert
+\let\DeclareUnicodeCharacter\@undefined               % revert
+\@tempcnta=1
+\loop
+  \catcode\@tempcnta=15  %
+  \advance\@tempcnta\@ne %
+\ifnum\@tempcnta<32      %
+\repeat                  %
+\catcode0=15  % null
+\catcode9=10  % tab
+\catcode10=12 % ctrl J
+\catcode12=13 % ctrl L
+\catcode13=5  % newline
+\@tempcnta=128
+\loop
+  \catcode\@tempcnta=12
+  \advance\@tempcnta\@ne
+\ifnum\@tempcnta<256
+\repeat
+}
+\let\DeclareFontEncoding@saved\DeclareFontEncoding@
+\edef\inputencodingname{utf8}%
+\input{utf8.def}
+\let\UTFviii@undefined@err@@\UTFviii@undefined@err
+\let\UTFviii@invalid@err@@\UTFviii@invalid@err
+\let\UTFviii@two@octets@@\UTFviii@two@octets
+\let\UTFviii@three@octets@@\UTFviii@three@octets
+\let\UTFviii@four@octets@@\UTFviii@four@octets
+\let\@inpenc@test\@undefined
+\let\saved@space@catcode\@undefined
+\else
+\@tempcnta=0
+\loop
+  \catcode\@tempcnta=15  %
+  \advance\@tempcnta\@ne %
+\ifnum\@tempcnta<32      %
+\repeat                  %
+\catcode0=15  % null
+\catcode9=10  % tab
+\catcode10=12 % ctrl J
+\catcode12=13 % ctrl L
+\catcode13=5  % newline
+\let\UseRawInputEncoding\relax
+\fi
+\EndIncludeInRelease
+\IncludeInRelease{0000/00/00}%
+                 {\UTFviii@invalid}{UTF-8 default}%
+\@tempcnta=0
+\loop
+  \catcode\@tempcnta=15
+  \advance\@tempcnta\@ne
+\ifnum\@tempcnta<32
+\repeat       %
+\catcode9=10  % tab
+\catcode10=12 % ctrl J
+\catcode12=13 % ctrl L
+\catcode13=5  % newline
+\@tempcnta=128
+\loop
+\catcode\@tempcnta=12
+\advance\@tempcnta\@ne
+\ifnum\@tempcnta<256
+\repeat
+\let\IeC\@undefined
+\def\DeclareFontEncoding@#1#2#3{%
+  \expandafter
+  \ifx\csname T@#1\endcsname\relax
+     \def\cdp@elt{\noexpand\cdp@elt}%
+     \xdef\cdp@list{\cdp@list\cdp@elt{#1}%
+                    {\default@family}{\default@series}%
+                    {\default@shape}}%
+     \expandafter\let\csname#1-cmd\endcsname\@changed@cmd
+  \else
+     \@font@info{Redeclaring font encoding #1}%
+  \fi
+  \global\@namedef{T@#1}{#2}%
+  \global\@namedef{M@#1}{\default@M#3}%
+  \xdef\LastDeclaredEncoding{#1}%
+  }
+  \let\UseRawInputEncoding\@undefined
+  \let\DeclareFontEncoding@saved\@undefined
+  \let\inputencodingname\@undefined
 \EndIncludeInRelease
 \endinput
 %%

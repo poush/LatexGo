@@ -1,13 +1,13 @@
-%% This is file `dvipdfmx.def' for DVIPDFMx by J.-H. Cho and S. Hirata
-%% based upon `dvipdf.def' in the LaTeX `Graphics Bundle'.
+%% dvipdfmx.def Copyright (C) 2005-2017 LaTeX3 Project, Jin-Hwan Cho, Shunsaku Hirata
+%%                                      (with contributions from many others)
 %%
-%% Copyright 2005-2016 LaTeX3 Project, Jin-Hwan Cho, Shunsaku Hirata
-%% (with contributions from many others)
-%% 
-%% This file is not part of the Standard LaTeX `Graphics Bundle'.
-%% It may be distributed under the terms of the LaTeX Project Public
-%% License, as described in lppl.txt in the base LaTeX distribution.
-%% Either version 1.0 or, at your option, any later version.
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3c
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3c or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
 %%
 %% This work has the LPPL maintenance status `maintained'.
 %%
@@ -16,34 +16,17 @@
 %% https://github.com/latex3/graphics-def/issues
 %%
 \ProvidesFile{dvipdfmx.def}
-  [2016/07/11 v4.12 LaTeX color/graphics driver for dvipdfmx (L3/ChoF)]
-%
-% miniltx.tex does not define \PackageWarning
-\@ifundefined{PackageWarning}{%
-  \def\PackageWarning#1#2{%
-    \begingroup
-      \def\@spaces{\space\space\space\space}%
-      \ifx\on@line\@undefined\def\on@line{}\fi
-      \newlinechar=10 %
-      \def\MessageBreak{%
-        ^^J(#1)\@spaces\@spaces\@spaces\@spaces
-      }%
-      \immediate\write16{^^JPackage #1 Warning: #2\on@line.^^J}%
-    \endgroup
-  }%
-}{}
-
-\def\GPT@warn{\PackageWarning{dvipdfmx.def}}%
-
+  [2017/06/24 v5.0g Graphics/color driver for dvipdfmx]
+\def\GPT@space{ }
 \def\c@lor@arg#1{%
   \dimen@#1\p@
   \ifdim\dimen@<\z@\dimen@\maxdimen\fi
   \ifdim\dimen@>\p@
-    \PackageError{color}{Argument `#1' not in range [0,1]}{}%
+    \PackageError{color}{Argument `#1' not in range [0,1]}\@ehd
   \fi}
 \def\color@gray#1#2{%
   \c@lor@arg{#2}%
-  \edef#1{[#2]}%
+  \edef#1{gray #2}%
   }
 \def\color@cmyk#1#2{\c@lor@@cmyk#2\@@#1}
 \def\c@lor@@cmyk#1,#2,#3,#4\@@#5{%
@@ -51,14 +34,14 @@
   \c@lor@arg{#1}%
   \c@lor@arg{#2}%
   \c@lor@arg{#3}%
-  \edef#5{[#1 #2 #3 #4]}%
+  \edef#5{cmyk #1 #2 #3 #4}%
   }
 \def\color@rgb#1#2{\c@lor@@rgb#2\@@#1}
 \def\c@lor@@rgb#1,#2,#3\@@#4{%
   \c@lor@arg{#1}%
   \c@lor@arg{#2}%
   \c@lor@arg{#3}%
-  \edef#4{[#1 #2 #3]}%
+  \edef#4{rgb #1 #2 #3}%
   }
 \def\color@RGB#1#2{\c@lor@@RGB#2\@@#1}
 \def\c@lor@@RGB#1,#2,#3\@@#4{%
@@ -71,19 +54,17 @@
   \dimen@#1\p@
   \divide\dimen@\@cclv
   \edef#2{\strip@pt\dimen@}}
-%%
-%% the following 7 lines do not work. (2016/06/22)
-%%\def\color@hsb#1#2{\c@lor@@hsb#2\@@#1}
-%%\def\c@lor@@hsb#1,#2,#3\@@#4{%
-%%  \c@lor@arg{#1}%
-%%  \c@lor@arg{#2}%
-%%  \c@lor@arg{#3}%
-%%  \edef#4{[#1 #2 #3] hsb}%
-%%  }
+\def\color@hsb#1#2{\c@lor@@hsb#2\@@#1}
+\def\c@lor@@hsb#1,#2,#3\@@#4{%
+  \c@lor@arg{#1}%
+  \c@lor@arg{#2}%
+  \c@lor@arg{#3}%
+  \edef#4{hsb #1 #2 #3}%
+  }
 \def\color@named#1#2{\c@lor@@named#2,,\@@#1}
 \def\c@lor@@named#1,#2,#3\@@#4{%
   \@ifundefined{col@#1}%
-    {\PackageError{color}{Undefined color `#1'}{}}%
+    {\PackageError{color}{Undefined color `#1'}\@ehd}%
   {\edef#4{ #1}}%
   }
 \def\c@lor@to@ps#1 #2\@@{\csname c@lor@ps@#1\endcsname#2 \@@}
@@ -92,97 +73,39 @@
 \def\c@lor@ps@hsb#1\@@{#1 sethsbcolor}
 \def\c@lor@ps@cmyk#1\@@{#1 setcmykcolor}
 \def\c@lor@ps@gray#1\@@{#1 setgray}
-\def\current@color{[0]}
+\def\current@color{ Black}
 \def\set@color{%
-            \special{pdf:bcolor \current@color
+ \special{color push  \current@color
                           }\aftergroup\reset@color}
 \def\reset@color{\special{%
-         pdf:ecolor}}
+        color pop}}
 \def\set@page@color{\special{%
-         pdf:bgcolor \current@color}}
+        background \current@color}}
 \def\define@color@named#1#2{%
   \expandafter\let\csname col@#1\endcsname\@nnil}
-%
-% Graphics
-%
-\def\declareimagemask{%
-  \@ifnextchar[\declareimagemask@i{\declareimagemask@i[]}}
-\def\declareimagemask@i[#1]#2#3{%
-  \special{pdf:image @#2\space hide (#3) #1}}
-%
-% import from pdftex.def
-%
-\let\GPT@pagebox@option\@empty
-\begingroup
-\toks@{%
-\define@key{Gin}{page}{\def\Gin@page{#1}}
-\define@key{Gin}{mask}{\def\Gin@mask{#1}}
-\define@key{Gin}{interpolate}[true]{%
-  \lowercase{\Gin@boolkey{#1}}{interpolate}}
-\define@key{Gin}{pagebox}{%
-  \expandafter\let\expandafter\GPT@pagebox%
-      \csname GPT@pagebox@#1\endcsname
-  \ifx\GPT@pagebox\relax
-    \let\GPT@pagebox\@empty
-    \GPT@warn{%
-      Unknown value `#1' for `pagebox'.\MessageBreak
-      Supported values:\MessageBreak
-      mediabox, cropbox, bleedbox, trimbox, artbox%
-    }%
-  \else%
-    \def\GPT@pagebox@option{-B \GPT@pagebox\space}%
-  \fi%
-}%
-}
-\@ifundefined{define@key}{
-    \edef\x{\endgroup
-      \noexpand\AtBeginDocument{%
-        \noexpand\@ifundefined{define@key}{}{\the\toks@}%
-      }%
-    }\x
-  }{%
-    \expandafter\endgroup\the\toks@
-  }%
-
-\def\GPT@pagebox@cropbox{cropbox}%
-\def\GPT@pagebox@mediabox{mediabox}%
-\def\GPT@pagebox@artbox{artbox}%
-\def\GPT@pagebox@trimbox{trimbox}%
-\def\GPT@pagebox@bleedbox{bleedbox}%
-%
-% end (import from pdftex.def)
-%
-% improved by N. Abe to cache BoundingBox for pdfpages package
-%
+      \def\no@page@color{\special{background \string"newpath clip}}
+\@ifundefined{Gin@decode}
+  {\let\Gin@decode\@empty}
+  {}
+\@ifundefined{Gin@page}
+  {\let\Gin@page\@empty}
+  {}
+\@ifundefined{Gin@pagebox}
+  {\def\Gin@pagebox{cropbox}}
+  {}
+\@ifundefined{Gin@interpolate}
+  {\csname newif\endcsname\ifGin@interpolate}
+  {}
 \def\Gread@pdf#1{%
-\edef\@tempa{pdf@bbox@cache@\Gin@page @\GPT@pagebox @#1}%
-\expandafter\expandafter\expandafter\@ifundefined\expandafter{\@tempa}{\Gread@@pdf{#1}}{%
-\edef\@gtempa{\csname\@tempa\endcsname}%
-\expandafter\Gread@parse@bb\@gtempa\\}}
-\def\Gread@@pdf#1{%
-  \begingroup
-  \@tempcnta\z@
-  \loop\ifnum\@tempcnta<\@xxxii
-     \catcode\@tempcnta14 %
-     \advance\@tempcnta\@ne
-  \repeat
-  \catcode`\^^?14 %
-  \let\do\@makeother
-  \dospecials
-  \catcode`\ 10 %
-  \catcode`\^^I10 %
-  \catcode\endlinechar5 %
-  \@makeother\:%
-  \@makeother\-%
-  \immediate\openin\@inputcheck"#1" % allow spaces in a name of a .xbb file
+  \Gread@generic{#1}\Gread@extractbb@aux
+}
+\def\Gread@extractbb@aux#1{%
   \ifeof\@inputcheck
-    \def\@tempc{!}%
-    \ifx\Gin@page\@tempc
-      \def\@tempc{}%
-    \else
-      \def\@tempc{-p \Gin@page\space}%
-    \fi
-    \immediate\openin\@inputcheck="|extractbb \GPT@pagebox@option \@tempc -O \Gin@base\Gin@ext"%
+    \immediate\openin\@inputcheck=%
+      "|extractbb %
+      \ifx\Gin@page\@empty\else -p \Gin@page\GPT@space\fi
+      \ifx\Gin@pagebox\@empty\else -B \Gin@pagebox\GPT@space\fi
+      -O \Gin@base\Gin@ext"%
   \fi
   \Gread@true
   \let\@tempb\Gread@false
@@ -203,102 +126,44 @@
       \repeat
     \immediate\closein\@inputcheck
   \fi
-%
-% If BoundingBox is not obtained, extractbb may be an old one which does not
-% support the -p and/or -B options, and usage of extractbb is printed to stdout.
-% Thus we retry without the -p and/or -B optons.
-%
-  \ifGin@bbox\else
-    \immediate\openin\@inputcheck="|extractbb -O \Gin@base\Gin@ext"%
-    \message{^^JI try without the new options^^J}%
-    \Gread@true
-    \let\@tempb\Gread@false
-    \ifeof\@inputcheck
-      \@latex@error
-        {Cannot run pipe command. Try --shell-escape^^J%
-         (--enable-pipes in MikTeX) option}%
-        {}%
-    \else
-      \loop
-        \read\@inputcheck to\@tempa
-        \ifeof\@inputcheck
-          \Gread@false
-        \else
-          \expandafter\Gread@find@bb\@tempa:.\\%
-        \fi
-        \ifGread@
-        \repeat
-      \immediate\closein\@inputcheck
-      \aftergroup\Gin@clear@pagebox
-    \fi
-  \fi
-%
-% improved by N. Abe to cache BoundingBox for pdfpages package
-%
-  \ifGin@bbox
-    \edef\@tempa{pdf@bbox@cache@\Gin@page @\GPT@pagebox @#1}%
-    \expandafter\expandafter\expandafter\xdef\expandafter\csname\@tempa\endcsname{\@gtempa}%
-  \else
-    \@latex@error
-      {Cannot determine size of image (no BoundingBox)}%
-      {}%
-    \gdef\@gtempa{0 0 72 72 }%
-  \fi
-  \endgroup
-  \expandafter\Gread@parse@bb\@gtempa\\}
-\def\Gin@clear@pagebox{%
-  \let\GPT@pagebox\@empty}
+}
 \let\Gread@bmp\Gread@pdf
-\def\Gin@page{!}
-\def\Gin@mask{!}
-\newif\ifGin@interpolate\Gin@interpolatefalse
-\let\GPT@pagebox\@empty
 \def\Ginclude@pdf#1{%
- \message{<#1>}%
-  \bgroup
-  \def\@tempa{!}%
-    \special{pdf:epdf\space
-      \ifx\Gin@page\@tempa\else page\space\Gin@page\space\fi
-      \ifx\GPT@pagebox\@empty\else pagebox\space\GPT@pagebox\space\fi
-      bbox\space\Gin@llx\space\Gin@lly\space\Gin@urx\space\Gin@ury\space
-      clip\space\ifGin@clip 1\else 0\fi\space
-      \ifx\Gin@scalex\@tempa\else width\space\the\Gin@req@width\space\fi
-      \ifx\Gin@scaley\@tempa\else height\space\the\Gin@req@height\space\fi
-      (#1)\space
-      \ifx\Gin@mask\@tempa
-        \ifGin@interpolate<</Interpolate\space true>>\fi
-      \else
-        <</SMask @\Gin@mask\space%
-        \ifGin@interpolate/Interpolate\space true\fi>>%
-      \fi}%
-  \egroup}
+  \let\Gin@decode\@empty
+  \Gin@interpolatefalse
+  \Ginclude@dvipdfmx{#1}{epdf}%
+}
 \def\Ginclude@bmp#1{%
- \message{<#1>}%
+  \let\Gin@page\@empty
+  \let\Gin@pagebox\@empty
+  \Ginclude@dvipdfmx{#1}{image}%
+}
+\def\Ginclude@dvipdfmx#1#2{%
+  \Gin@log{<#1>}%
   \bgroup
   \def\@tempa{!}%
-    \special{pdf:image\space
-      \ifx\Gin@page\@tempa\else page\space\Gin@page\space\fi
-      % The next line was \ifGin@bbox previously. However, LaTeX can read
-      % BoundingBox from a .xbb file even when \Gin@bboxfalse.
-      % Thus, we give bbox in the cases of trim/viewport, since
-      % trim/viewport don't work without bbox.
-      \ifx\Gin@ollx\@undefined\else
-        bbox\space\Gin@llx\space\Gin@lly\space\Gin@urx\space\Gin@ury\space
-        clip\space\ifGin@clip 1\else 0\fi\space
+    \special{pdf:#2\GPT@space
+      \ifx\Gin@page\@empty\else page\GPT@space\Gin@page\GPT@space\fi
+      \ifx\Gin@pagebox\@empty\else pagebox\GPT@space\Gin@pagebox\GPT@space\fi
+      bbox\GPT@space\Gin@llx\GPT@space\Gin@lly\GPT@space\Gin@urx\GPT@space\Gin@ury\GPT@space
+      clip\GPT@space\ifGin@clip 1\else 0\fi\GPT@space
+      \ifx\Gin@scalex\@tempa\else width\GPT@space\the\Gin@req@width\GPT@space\fi
+      \ifx\Gin@scaley\@tempa\else height\GPT@space\the\Gin@req@height\GPT@space\fi
+      (#1)\GPT@space
+      \ifnum0%
+        \ifx\Gin@decode\@empty\else 1\fi
+        \ifGin@interpolate 1\fi
+        >0 %
+        <<%
+          \ifx\Gin@decode\@empty\else /Decode[\Gin@decode]\fi
+          \ifGin@interpolate /Interpolate true\fi
+        >>%
       \fi
-      \ifx\Gin@scalex\@tempa\else width\space\the\Gin@req@width\space\fi
-      \ifx\Gin@scaley\@tempa\else height\space\the\Gin@req@height\space\fi
-      (#1)\space
-      \ifx\Gin@mask\@tempa
-        \ifGin@interpolate<</Interpolate\space true>>\fi
-      \else
-        <</SMask @\Gin@mask\space%
-        \ifGin@interpolate/Interpolate\space true\fi>>%
-      \fi}%
+    }%
   \egroup}
 \newif\if@trim@vport
 \def\Ginclude@eps#1{%
- \message{<#1>}%
+  \Gin@log{<#1>}%
   \bgroup
   \ifx\Undefined\Gin@vllx\else\@trim@vporttrue\fi
   \def\@tempa{!}%
@@ -319,15 +184,15 @@
   \divide\dimen@\dimen@ii
   \@tempdima\Gin@req@height
   \divide\@tempdima\dimen@ii
-    \special{PSfile="#1"\space
+    \special{PSfile="#1"\GPT@space
       \if@trim@vport
-      llx=\Gin@vllx\space
-      lly=\Gin@vlly\space
+      llx=\Gin@vllx\GPT@space
+      lly=\Gin@vlly\GPT@space
       \fi
-      urx=\Gin@urx\space
-      ury=\Gin@ury\space
-      \ifx\Gin@scalex\@tempa\else rwi=\number\dimen@\space\fi
-      \ifx\Gin@scaley\@tempa\else rhi=\number\@tempdima\space\fi
+      urx=\Gin@urx\GPT@space
+      ury=\Gin@ury\GPT@space
+      \ifx\Gin@scalex\@tempa\else rwi=\number\dimen@\GPT@space\fi
+      \ifx\Gin@scaley\@tempa\else rhi=\number\@tempdima\GPT@space\fi
       \ifGin@clip clip\fi}%
   \egroup}
 %
@@ -345,7 +210,7 @@
 % the option --mvorigin.
 %
 \def\Ginclude@mps#1{%
- \message{<#1>}%
+  \Gin@log{<#1>}%
   \bgroup
   \def\@tempa{!}%
   \dimen@\Gin@req@width
@@ -353,22 +218,38 @@
   \divide\dimen@\dimen@ii
   \@tempdima\Gin@req@height
   \divide\@tempdima\dimen@ii
-    \special{PSfile="#1"\space
-      llx=\Gin@llx\space
-      lly=\Gin@lly\space
-      urx=\Gin@urx\space
-      ury=\Gin@ury\space
-      \ifx\Gin@scalex\@tempa\else rwi=\number\dimen@\space\fi
-      \ifx\Gin@scaley\@tempa\else rhi=\number\@tempdima\space\fi
+    \special{PSfile="#1"\GPT@space
+      llx=\Gin@llx\GPT@space
+      lly=\Gin@lly\GPT@space
+      urx=\Gin@urx\GPT@space
+      ury=\Gin@ury\GPT@space
+      \ifx\Gin@scalex\@tempa\else rwi=\number\dimen@\GPT@space\fi
+      \ifx\Gin@scaley\@tempa\else rhi=\number\@tempdima\GPT@space\fi
       \ifGin@clip clip\fi}%
   \egroup}
 %
 \def\Grot@start{%
 \special{pdf:btrans rotate \Grot@angle}}
 \def\Grot@end{\special{pdf:etrans}}
+
+% 4.13 add support for ptex vertical writing mode
+% inspired by pxtatescale package (Hironobu Yamashita)
+\ifx\kanjiskip\@undefined
 \def\Gscale@start{%
   \special{pdf:btrans}%
-  \special{pdf:literal \Gscale@x\space 0 0 \Gscale@y\space 0 0 cm}}
+  \special{x:scale \Gscale@x\GPT@space\Gscale@y}%
+}
+\else
+\edef\Gscale@start{%
+  \special{pdf:btrans}%
+  \special{x:scale
+  \expandafter\noexpand\csname iftdir\endcsname
+    \noexpand\Gscale@y\noexpand\GPT@space\noexpand\Gscale@x
+  \expandafter\noexpand\csname else\endcsname
+    \noexpand\Gscale@x\noexpand\GPT@space\noexpand\Gscale@y
+  \expandafter\noexpand\csname fi\endcsname}}
+\fi
+%
 \def\Gscale@end{\special{pdf:etrans}}
 \def\Gin@PS@raw#1{\special{ps: #1}}
 \def\Gin@PS@restored#1{\special{" #1}}
@@ -426,13 +307,6 @@
 \@namedef{Gin@rule@.eps.gz}#1{{eps}{.eps.xbb}{`gunzip -c #1}}
 %
 \@namedef{Gin@rule@*}#1{{eps}{\Gin@ext}{#1}}
-
-
-% v4.10
-% Support new (no)setpagesize option of graphics and color.
-% v4.11
-% Use \special{pdf:pagesize ...} instead of \special{papersize=...}
-% to support \mag (dvipdfmx only)
 \@ifundefined{ifGin@setpagesize}
 {\expandafter\let\csname ifGin@setpagesize\expandafter\endcsname
 \csname iftrue\endcsname}
@@ -445,13 +319,14 @@
 \ifnum\mag=\@m
 \AtBeginDvi{%
 \begingroup
-\ifx\stockwidth\@undefined\else
-\paperwidth\stockwidth
-\paperheight\stockheight
-\fi
+  \@ifundefined{stockwidth}{}
+    {%
+      \paperwidth\stockwidth
+      \paperheight\stockheight
+    }%
 \ifdim\paperwidth>\z@
 \ifdim\paperheight>\z@
-\special{pdf:pagesize width \the\paperwidth\space height \the\paperheight}%
+\special{pdf:pagesize width \the\paperwidth\GPT@space height \the\paperheight}%
 \fi
 \fi
 \endgroup}%
@@ -459,7 +334,3 @@
 }
 \fi
 \fi 
-
-\endinput
-%%
-%% End of file `dvipdfmx.def'.

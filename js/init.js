@@ -13,11 +13,6 @@ function init() {
   };
   firebase.initializeApp(config);
 
-
-  //// Get Firebase Database reference.
-  var firepadRef = getExampleRef();
-
-
   //// Create ACE
   editor = ace.edit("editor");
   editor.setTheme("ace/theme/material");
@@ -26,17 +21,40 @@ function init() {
   session.setUseWorker(false);
   session.setMode("ace/mode/latex");
 
+}
+
+function initializeFirepad(uid) {
+
+  //// Get Firebase Database reference.
+  var firepadRef = getExampleRef();
 
   //// Create Firepad.
   var firepad = Firepad.fromACE(firepadRef, editor, {
-    defaultText: defaultLatex
+    defaultText: defaultLatex,
+    userId: uid
   });
 
+  //// set events listeners
+  firepad.on('ready', function() {
+    // enable editing for user
+  })
+
+  firepad.on('synced', function() {
+    // update sync time
+  })
+
+  var firepadUsersRef = firepadRef.child('users'); // ref for active editors
+  firepadUsersRef.on('child_added', function() {
+    // add to list of active editors
+  });
+
+  firepadUsersRef.on('child_removed', function() {
+    // remove from list of active editors
+  });
 }
 
-
 function showLogin() {
-  
+
   var uiConfig = {
     signInSuccessUrl: window.location.href,
     signInOptions: [{
@@ -81,6 +99,8 @@ function initAuth(){
       $("#login").animate({top: "100vh"}, 450, function(){
         $('.pyaaz').removeClass("blur")
       })
+
+      initializeFirepad(user.uid);
 
     } else {
       // User is signed out.

@@ -1,0 +1,96 @@
+% FIGFLOW:  plain TEX macro by Ian Hutchinson, 21 Oct 95.
+% Copyright 1995 Ian Hutchinson.
+% You may freely use, modify, and/or distribute this file, without limitation.
+% Make text flow round figure.
+% Usage: \figflow{<width>}{<height>}{<[Figure+][Caption]>}
+% at start of new paragraph. Figure top starts at insert.
+% #1 figure width dimen. If negative, fig on right, else left.
+% #2 figure height (including caption) dimen. (E.g.: 4 truein)
+% #3 \special for figure if desired, then \vfill caption. (Both optional).
+% Example: figflow{4 truein}{5 truein}{\epsfbox{figure.ps}\vfill Figure 1.}
+% User is responsible for the figure fitting within the space defined.
+% If figure won't fit on page, it is moved over the page break.
+% If a new figflow starts before the old one is finished, a message is given
+% and the second figure is skipped. Fix manually.
+% Does not work for Latex.
+
+\newdimen\pageremains\newdimen\pdepth
+\newdimen\figwidth
+\newdimen\figheight
+\newcount\figlines
+\newcount\flevel
+
+\def\figflow#1#2#3{
+\ifnum\flevel>0
+\message{******Figure collision. Ignoring second figure.******}
+\else
+\figwidth=#1
+\figheight=#2
+\def\contents{#3}
+% Put figure contents in an appropriate box.
+\def\figure{\let\temp=\par \let\par=\plainpar
+  \line{\overfullrule=0pt%  Avoid black box.
+   \ifdim \figwidth<0pt \hsize=-\figwidth \hss\else \hsize=\figwidth\fi
+   \advance \hsize by -10pt% Give a little extra hspace.
+   \vbox to \figheight{\vfil\noindent\contents}
+   \ifdim \figwidth>0pt \hss\fi
+  } \vskip-\figheight
+  \let\par=\temp%
+}
+\advance\figheight by \baselineskip
+\divide\figheight by \baselineskip% convert height to lines.
+\figlines=\figheight \multiply\figheight by \baselineskip
+\begingroup\overfullrule=0pt% Turn off black box outside fig
+\tolerance=1000% Allow more spaced out lines.
+\flevel=1
+% Store \par
+\let\plainpar=\par
+% Define new \par to process figures each paragraph.
+\def\par{
+  \ifnum\flevel=1
+% We are starting a new figure. Set to look for enough room.
+   \plainpar
+% End the previous paragraph.
+   \pageremains=\pagegoal \advance\pageremains by -\pagetotal
+   \ifdim\pageremains<\figheight \message{Moving figure...}%keep looking
+   \else
+% Found the starting place. Store prevdepth. Remove glue. Place the figure.
+      \pdepth=\prevdepth
+      \nointerlineskip
+      \figure
+      \hangindent \figwidth \hangafter -\figlines \hfuzz 5 pt
+      \flevel=2
+      \prevgraf=0
+      \figheight=\baselineskip% Removed parskip adjust.
+   \fi
+  \else
+   \ifnum\flevel=2%level 2, making the figure.
+    \ifdim\figheight<\parskip
+       \advance\figlines -1 \advance\hangafter 1
+       \advance\figheight\baselineskip
+    \else
+       \advance\figheight -\parskip%\message{else \the\figheight}
+    \fi
+    \hangcarrypar\relax% I don't know why, but this is needed.
+   \fi
+  \fi
+}
+\par
+\vskip-\pdepth%Restore the prevdepth from the previous paragraph.
+\fi
+}
+% Macros.
+\def\endflow{\global\let\par=\plainpar\endgroup}% terminate main group.
+\def\hangcarrypar{% Carry the hangindent to next par.
+\edef\next{\hangafter=\the\hangafter\hangindent=\the\hangindent}
+\plainpar\next
+\edef\next{\prevgraf=\the\prevgraf}
+\ifnum\prevgraf>0
+   \ifnum\prevgraf>\figlines \endflow \flevel=0
+   \else
+     \message{FIGFLOW: line \the\prevgraf, of \the\figlines.}
+     \leavevmode% Sets prevgraf to 0. So reset it using next.
+     \next
+   \fi
+\fi
+}

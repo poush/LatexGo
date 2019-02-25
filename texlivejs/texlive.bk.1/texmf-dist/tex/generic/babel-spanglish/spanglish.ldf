@@ -1,0 +1,268 @@
+%%
+%% This is file `spanglish.ldf',
+%% Copyright 2008-2015 Luis Rivera and any individual authors
+%% listed elsewhere in this file.  All rights reserved.
+%%
+%    The 'spanglish' dialect was originally adapted from the 'galician'
+%    language (v1.2l 2005/03/30), by Manuel Carriba (mcarriba at eunetcom.net),
+%    based on the original spanish.sty, written by Julio S\'anchez,
+%    (jsanchez at gmv.es)
+%    Additional code from spanish.ldf v4.2, by Javier Bezos L\'opez (JBL).
+%%
+%% This file may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2003/12/01 or later.
+%%
+%% This work has the LPPL maintenance status "maintained".
+%%
+%% The Current Maintainer of this work is J. Luis Rivera N.
+%%                                        jlrn77 at gmail dot com
+%%
+%% \changes{2010/12/28}{Release version, from 2007/01/26 code.}
+%5 \changes{2013/03/01}{Bug fixes.}
+%% \changes{2015/04/01}{Removed accented math operators and \bbl@activate patch.}
+%% \changes{2015/04/10}{Removed activeacute support and added ascii input modifiers.}
+%% \changes{2015/04/10}{Removed dependency on esindex: now you have to load it yourself.}
+%%
+\ProvidesLanguage{spanglish}
+    [2015/04/01 v0.3 Spanglish: Simpler Spanish support]
+\LdfInit{spanglish}\captionsspanglish
+% spanglish is a dialect of either Spanish or English
+\ifx\l@spanglish\@undefined
+ \ifx\l@spanish\@undefined
+  \@nopatterns{span[gl]ish}
+   \adddialect\l@spanglish0
+  \else
+   \adddialect\l@spanglish\l@spanish
+ \fi\fi
+%
+\addto\captionsspanglish{%
+  \def\prefacename{Prefacio}%
+  \def\refname{Referencias}%
+  \def\abstractname{Resumen}%
+  \def\bibname{Bibliograf\'{\i}a}%
+  \def\chaptername{Cap\'{\i}tulo}%
+  \def\appendixname{Ap\'endice}%
+  \def\contentsname{\'Indice}%
+  \def\listfigurename{\'Indice de Figuras}%
+  \def\listtablename{\'Indice de Cuadros}%
+  \def\indexname{\'Indice Alfab\'etico}%
+  \def\figurename{Figura}%
+  \def\tablename{Cuadro}%
+  \def\partname{Parte}%
+  \def\enclname{Anexo}%
+  \def\ccname{Copia a}%
+  \def\headtoname{A}%
+  \def\pagename{P\'agina}%
+  \def\seename{v\'ease}%
+  \def\alsoname{v\'ease tambi\'en}%
+  \def\proofname{Demostraci\'on}%
+  \def\glossaryname{Glosario}%
+}
+%
+\def\datespanglish{%
+  \def\today{\number\day\space de \ifcase\month\or
+    enero\or febrero\or marzo\or abril\or mayo\or junio\or
+    julio\or agosto\or septiembre\or octubre\or noviembre\or diciembre\fi
+    \space de \number\year}}
+\addto\extrasspanglish{\bbl@frenchspacing}
+\addto\noextrasspanglish{\bbl@nonfrenchspacing}
+%
+\newif\ifesmx@latex
+\@ifundefined{documentclass}
+ {\esmx@latexfalse}
+ {\esmx@latextrue}
+%
+\addto\extrasspanglish{\languageshorthands{spanglish}}
+\initiate@active@char{"}% Only doublequote is active by default
+\addto\extrasspanglish{%
+  \bbl@activate{"}}
+\addto\noextrasspanglish{%
+  \bbl@deactivate{"}}
+\addto\extrasspanglish{%
+  \babel@save\"%
+  \def\"{\protect\@umlaut}}
+\let\dieresis\"
+\def\@umlaut#1{\allowhyphens\dieresis{#1}\allowhyphens}
+% shorthands for hyphenation
+\declare@shorthand{spanglish}{"-}{\nobreak-\bbl@allowhyphens}
+\declare@shorthand{spanglish}{"|}{\discretionary{-}{}{\kern.03em}}
+\declare@shorthand{spanglish}{"r}% to hyphenate para"rrayos properly
+  {\bbl@allowhyphens\discretionary{\char\hyphenchar\font}%
+       {}{r}\bbl@allowhyphens}
+\declare@shorthand{spanglish}{"R}
+  {\bbl@allowhyphens\discretionary{\char\hyphenchar\font}%
+       {}{R}\bbl@allowhyphens}
+\ifesmx@latex% this guillemets hack, by jbl
+  \DeclareTextCommand{\guillemotleft}{OT1}{%
+    \ifmmode\ll
+    \else
+      \save@sf@q{\penalty\@M
+        \leavevmode\hbox{\usefont{U}{lasy}{m}{n}%
+          \char40 \kern-0.19em\char40 }}%
+    \fi}%
+  \DeclareTextCommand{\guillemotright}{OT1}{%
+    \ifmmode\gg
+    \else
+      \save@sf@q{\penalty\@M
+          \leavevmode\hbox{\usefont{U}{lasy}{m}{n}%
+            \char41 \kern-0.19em\char41 }}%
+    \fi}%
+% end jbl; jlrn's American double quotes
+\declare@shorthand{spanglish}{"`}{\textquotedblleft{}}
+\declare@shorthand{spanglish}{"'}{\textquotedblright{}}
+\fi % end quotedbldefs
+% three hacks by JBL to adjust height of ?`!`/ with all uppercase letters
+\declare@shorthand{spanglish}{"/}% first
+ {\setbox\z@\hbox{/}%
+  \dimen@\ht\z@
+  \advance\dimen@-1ex
+  \advance\dimen@\dp\z@
+  \dimen@.31\dimen@
+  \advance\dimen@-\dp\z@
+  \ifdim\dimen@>0pt
+   \kern.01em\lower\dimen@\box\z@\kern.03em
+  \else
+   \box\z@
+  \fi}
+\declare@shorthand{spanglish}{"?}% second
+ {\setbox\z@\hbox{?`}%
+  \leavevmode\raise\dp\z@\box\z@}
+\declare@shorthand{spanglish}{"!}% third
+ {\setbox\z@\hbox{!`}%
+  \leavevmode\raise\dp\z@\box\z@}
+\addto\extrasspanglish{% JS's discretionary hyphens
+  \babel@save{\-}%
+  \def\-{\bbl@allowhyphens\discretionary{-}{}{}\bbl@allowhyphens}}
+%%%
+%%% some code to support accented and spaced math operators was here. RIP.
+%%%
+% support for abbreviations
+\def\esmx@plain@esabrv#1{.$^{{\rm #1}}$}
+\def\esmx@ltx@esabrv#1{.\textsuperscript{#1}}
+\def\esmx@esabrv@r#1#2{\esabrv{#1#2}}% nice trick by JBL
+\ifesmx@latex
+ \let\esabrv\esmx@ltx@esabrv
+  \else
+ \let\esabrv\esmx@plain@esabrv
+\fi
+%% ascii shorthands, rearranged, without activeacute...
+\bbl@declare@ttribute{spanglish}{asc}{
+  \initiate@active@char{'}
+  \addto\extrasspanglish{\bbl@activate{'}}
+  \addto\noextrasspanglish{\bbl@deactivate{'}}
+  \babel@save\'%
+  \addto\extrasspanglish{\def\'{\protect\@acute}}
+  \let\textacute\'
+  \def\@acute##1{\allowhyphens\textacute{##1}\allowhyphens}
+  \declare@shorthand{spanglish}{'a}{\textormath{\@acute a}{^{\prime} a}}
+  \declare@shorthand{spanglish}{'e}{\textormath{\@acute e}{^{\prime} e}}
+  \declare@shorthand{spanglish}{'i}{\textormath{\@acute\i{}}{^{\prime}i}}
+  \declare@shorthand{spanglish}{'o}{\textormath{\@acute o}{^{\prime} o}}
+  \declare@shorthand{spanglish}{'u}{\textormath{\@acute u}{^{\prime} u}}
+  \declare@shorthand{spanglish}{'A}{\textormath{\@acute A}{^{\prime} A}}
+  \declare@shorthand{spanglish}{'E}{\textormath{\@acute E}{^{\prime} E}}
+  \declare@shorthand{spanglish}{'I}{\textormath{\@acute I}{^{\prime} I}}
+  \declare@shorthand{spanglish}{'O}{\textormath{\@acute O}{^{\prime} O}}
+  \declare@shorthand{spanglish}{'U}{\textormath{\@acute U}{^{\prime} U}}
+  \declare@shorthand{spanglish}{'n}{\textormath{\~n}{^{\prime} n}}
+  \declare@shorthand{spanglish}{'N}{\textormath{\~N}{^{\prime} N}}
+  \declare@shorthand{spanglish}{''}{\textormath{\textquotedblright}{\sp\bgroup\prim@s'}}
+  \declare@shorthand{spanglish}{"u}{\@umlaut{u}}
+  \declare@shorthand{spanglish}{"U}{\@umlaut{U}}
+  \declare@shorthand{spanglish}{"i}{\@umlaut{\i}}
+  \declare@shorthand{spanglish}{"I}{\@umlaut{I}}
+  \declare@shorthand{spanglish}{"a}{\esabrv{a}}
+  \declare@shorthand{spanglish}{"o}{\esabrv{o}}
+  \declare@shorthand{spanglish}{"e}{\protect\esmx@esabrv@r{e}}
+  \declare@shorthand{spanglish}{"A}{\esabrv{A}}
+  \declare@shorthand{spanglish}{"O}{\esabrv{O}}
+  \declare@shorthand{spanglish}{"E}{\protect\esmx@esabrv@r{E}}
+  \declare@shorthand{spanglish}{"<}{\guillemotleft{}}
+  \declare@shorthand{spanglish}{">}{\guillemotright{}}
+}
+%% tilden tildeN
+\bbl@declare@ttribute{spanglish}{nt}{
+  \initiate@active@char{~}
+  \addto\extrasspanglish{\bbl@activate{~}\def\~{\protect\@tilde}}
+  \addto\noextrasspanglish{\bbl@deactivate{~}}
+  \addto\extrasspanglish{\babel@save\~}
+  \let\texttilde\~
+  \let\@tilde\texttilde
+  \declare@shorthand{spanglish}{~n}{\textormath{\~n}{\@tilde n}}
+  \declare@shorthand{spanglish}{~N}{\textormath{\~N}{\@tilde N}}
+}
+% A crude hack to turn ES into US abbreviations.
+\bbl@declare@ttribute{spanglish}{usord}{
+\addto\extrasspanglish{% this code should state ordinal 1"o as 1o.
+  \def\esmx@usabrv##1{##1.}
+  \let\esabrv\esmx@usabrv
+  \def\esmx@esabrv@r##1##2{\esabrv{##1##2}}
+  }
+}
+% spanish layout
+\addto\extrasspanglish{%
+ \def\@alph#1%
+  {\ifcase#1\or a\or b\or c\or d\or e\or f\or g\or h\or i\or j\or
+   k\or l\or m\or n\or \~n\or o\or p\or q\or r\or s\or t\or u\or v\or
+   w\or x\or y\or z\else\@ctrerr\fi}%
+ \def\@Alph#1%
+  {\ifcase#1\or A\or B\or C\or D\or E\or F\or G\or H\or I\or J\or
+   K\or L\or M\or N\or \~N\or O\or P\or Q\or R\or S\or T\or U\or V\or
+   W\or X\or Y\or Z\else\@ctrerr\fi}
+ }
+% JBL's fix (lowercase small caps) for lowercase roman numbers and acronyms.
+\ifesmx@latex
+  \addto\textspanish{%
+    \babel@save\lsc
+    \def\lsc{\protect\esmx@lsc}}
+%
+  \def\esmx@lsc#1{%
+    \leavevmode
+    \hbox{\scshape\selectfont
+       \expandafter\ifx\csname\f@encoding/\f@family/\f@series
+           /n/\f@size\expandafter\endcsname
+         \csname\curr@fontshape/\f@size\endcsname
+         \csname S@\f@size\endcsname
+         \fontsize\sf@size\z@\selectfont
+           \PackageInfo{spanglish}{Replacing undefined sc font\MessageBreak
+                                 shape by faked small caps}%
+         \MakeUppercase{#1}%
+       \else
+         \MakeLowercase{#1}%
+       \fi}}
+%
+\DeclareTextCompositeCommand{\'}{OT1}{i}{\@tabacckludge'{\i}}
+%
+ \def\spanglishlayout{
+ \def\theenumii{\alph{enumii}}% fix the second level enumeration label
+ \def\labelenumii{\textit{\theenumii})}
+ \def\p@enumii{\textit{\theenumii}}
+ \def\theenumiii{\Roman{enumiii}}% fix the third level enumeration label
+ \def\labelenumiii{\theenumiii.}
+ \def\p@enumiii{\theenumiii}
+ \let\@afterindentfalse\@afterindenttrue% afterindent true
+ \@afterindenttrue%
+ \def\@fnsymbol##1%
+  {\ifcase##1\or*\or**\or***\or****\or
+   *****\or******\else\@ctrerr\fi}%
+ \def\@roman##1{\protect\esmx@roman{\number##1}}%
+ \def\esmx@roman##1{\protect\esmx@lsc{\romannumeral##1}}%
+ %\def\esromanindex##1##2{##1{\protect\esmx@lsc{##2}}}
+  }
+\AtEndOfPackage{%
+  %\RequirePackage{esindex}% now load it on your own!
+  \def\bbl@tempa{spanglish}%
+  \ifx\bbl@main@language\bbl@tempa%
+  \AtBeginDocument{\spanglishlayout}\fi%
+  }
+\fi
+%% A patch to fix a bug in \bbl@activate was here. RIP.
+\ldf@finish{spanglish}
+\endinput
+%%
+%% End of file `spanglish.ldf'.

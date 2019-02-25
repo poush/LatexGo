@@ -1,0 +1,120 @@
+% file `diffcoeff.def'
+% variant forms of derivative
+% 2018-11-12
+% Andrew Parsloe ajparsloe@gmail.com
+%
+% paren, up, Up, wrapall, nabla, left, svrule
+% pvrule, padrift, psqbra, pDelta, pleft, ptxt, pscr
+%%%%%%%%%% ordinary %%%%%%%%%%
+% ( ) for pt of eval.
+\diffdef { paren } 
+  {
+    left-delim   = \left ( ,
+    right-delim  = \right ),
+    subscr-nudge = -6 mu
+  }
+
+% upright
+\diffdef { up } 
+  {
+    op-symbol      = \mathrm{d},
+    op-order-sep   = 0 mu      ,
+    /-op-order-sep = 0 mu
+  }
+
+\diffdef { Up } 
+  {
+    op-symbol      = \mathrm{D},
+    op-order-sep   = 0 mu      ,
+    /-op-order-sep = 0 mu
+  }
+
+% wrap long vars: (d longvar)
+\diffdef { wrapall } {long-var-wrap = (dv)}
+
+% nabla in numerator, d in denominator
+\diffdef { nabla } 
+  {
+    op-symbol     = \nabla,
+    op-symbol-alt = d
+  }
+
+% align op left; no italic nudge 
+\diffdef { left } 
+  {
+    *-op-left      = true,
+    *-italic-nudge = 0 mu
+  }
+
+% slash-form: vrule for pt of eval
+\diffdef { svrule } 
+  {
+    /-left-delim  =  ,
+    /-right-delim = |
+  }
+
+%%%%%%%%%% partial %%%%%%%%%%
+% partial, vrule for pt of eval.
+\diffdef { pvrule } { op-symbol = \partial }
+
+% partial, no subscr nudge (adrift in a sea of white space)
+\diffdef { padrift } 
+  { 
+    op-symbol    = \partial,
+    left-delim   = \left ( ,
+    right-delim  = \right ),
+    subscr-nudge = 0 mu
+  }
+
+% partial, [ ] for pt of eval.
+\diffdef { psqbra } 
+  {
+    op-symbol    = \partial,
+    left-delim   = \left [ ,
+    right-delim  = \right ],
+    subscr-nudge = 0 mu
+  }
+
+% Delta as partial deriv.
+\diffdef { pDelta } 
+  {
+    op-symbol      = \Delta  ,
+    op-order-sep   = 0 mu    ,
+    /-op-order-sep = 0 mu    ,
+    left-delim     = \left ( ,
+    right-delim    = \right ),
+    subscr-nudge   = -6 mu
+  }
+
+% align op left; italic nudge
+\diffdef { pleft } 
+  {
+    op-symbol      = \partial,
+    *-op-left      = true    ,
+    *-italic-nudge = 3 mu    ,
+    left-delim     = \left ( ,
+    right-delim    = \right ),
+    subscr-nudge   = -3 mu
+  }
+
+% partial, textstyle
+\diffdef { ptxt } 
+  {
+    op-symbol      = \partial,
+    denom-term-sep = 1 mu    ,
+    left-delim     = \left ( ,
+    right-delim    = \right ),
+    elbowroom      = -2 mu   ,
+    subscr-nudge   = -3 mu 
+  }
+
+% partial, wide sep of terms
+\diffdef { pwide } 
+  {
+    op-symbol        = \partial,
+    denom-term-sep   = 3 mu    ,
+    /-denom-term-sep = 3 mu    ,
+    left-delim       = \left ( ,
+    right-delim      = \right ),
+    subscr-nudge     = -6 mu 
+  }

@@ -1,0 +1,958 @@
+% \iffalse
+%<*driver>
+\ProvidesFile{fascicules.dtx}
+%</driver>
+%<class>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+%<class>\ProvidesPackage{fascicules}
+%<*class>
+    [2018/12/18 v1 fascicules package]
+%</class>
+%
+%<*driver>
+\documentclass{ltxdoc}
+\EnableCrossrefs         
+\CodelineIndex
+\RecordChanges
+\begin{document}
+  \DocInput{fascicules.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \CheckSum{0}
+%
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%   Dollar        \$     Percent       \%     Ampersand     \&
+%   Acute accent  \'     Left paren    \(     Right paren   \)
+%   Asterisk      \*     Plus          \+     Comma         \,
+%   Minus         \-     Point         \.     Solidus       \/
+%   Colon         \:     Semicolon     \;     Less than     \<
+%   Equals        \=     Greater than  \>     Question mark \?
+%   Commercial at \@     Left bracket  \[     Backslash     \\
+%   Right bracket \]     Circumflex    \^     Underscore    \_
+%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%   Right brace   \}     Tilde         \~}
+%
+%
+% \changes{v1.0}{2018/12/17}{Initial version}
+%
+% \GetFileInfo{fascicules.dtx}
+%
+% \DoNotIndex{\newcommand,\newenvironment}
+% 
+% \newcommand{\blackbox}{\rule{0.65em}{0.65em}} 
+%
+
+%
+%
+% \newcommand*{\NEWfeature}[1]{%
+%     \hskip 1sp \marginpar{\small\sffamily\raggedright
+%     New feature\\#1}}
+%
+% \title{fascicules package: creating mathematics secondary book using \LaTeX{}}
+%
+% \author{Martin Moritz\\ \texttt{martin.moritz@esh.fi}\\{\large European School of Helsinki}}
+%
+% \date{Version \fileversion, \filedate}
+%
+% \maketitle
+%
+%
+% \tableofcontents
+%
+%
+% \section{Introduction} \label{sec:introduction}
+%
+% This is a package intended to help teachers creating mathematics books for secondary/upper secondary. 
+%
+% \section{Usage} \label{sec:usage}
+%
+%  \subsection{Options of the package} \label{ssec:options}
+%  
+%  There are 4 keys thant can be given as an option : \texttt{exercises}, \texttt{activities}, \texttt{lesson} or \texttt{solutions}. All these keys can have two values : \texttt{true} or \texttt{false}.
+%
+% When the values are false, the corresponding part of the book will not appear in the document. If it's true, it will appear.
+%
+% For these 4 keys, the default value is true.
+%
+% If you want a book that contains only the exercises (and the solutions),
+% call the package that  way :
+%
+% \begin{quote}
+% |\usepackage|[lesson=false,activities=false]\{fascicules\}
+% \end{quote}
+% 
+% There is another possible value for solutions : \texttt{inside}. In that case, the solutions appear inside the exercises part, right after the exercise. The goal is to make it easier to check, when you want to type or modify the solutions.
+%
+% There is also another possible value for lesson : \texttt{methods}. In that case, only the methods appear inside the lesson part (actually, there is in that case a method part that replaces the lesson part). In that case, the lesson will be compiled somewhere else, as a beamer presentation.
+%
+% \subsection{Make the title page} \label{ssec:title}
+%
+%\DescribeMacro{\fasciculestitle}  This commands replace the \LaTeX command |\maketitle|. It uses the well-known \LaTeX commands |\title{}|, |\subtitle{}|, |\author{}|, |\publishers{}| and |\date{}|,
+% \subsection{Create a chapter} \label{ssec:chapter}
+% Start a new chapter with the \LaTeX command |\chapter|\{title of the chapter\}
+% 
+% You can have an image in the background with the following code :
+%
+% \begin{quote}
+% |\backgroundimage|\{\textsl{paths/to/image}\}
+%
+% |\thispagestyle|\{chapterpage\}
+% \end{quote}
+%
+% \subsection{The table of contents} \label{ssec:tableofcontents}
+%
+%\DescribeMacro{\listofmethods}
+% In addition to the latex command |\tableofcontents| the package provides the command |\listofmethods| in order to print the list of the methods. The methods are numbered in the way 1.1, where the first number is the number of the chapter and the second the number of the method. 
+%
+% \subsection{Organisation of the chapters} \label{ssec:organisation}
+%
+% \DescribeEnv{lesson} \DescribeEnv{activities} \DescribeEnv{exercises}
+% These three environments start the pages for the lesson,the activities and the exercises. Each chapter can have these type of pages.The exercises are displayed in a twocolumn environment.
+%
+%\DescribeEnv{solutions} This environment is to display the solutions of the exercises. All the solutions of the different chapter will appear at the end of the book.
+%
+%
+% \subsection{Exercises} \label{ssec:exercises}
+%\DescribeMacro{\onecolumnexos} 
+% The exercises always appear in a twocolumn layout. If for some reason, we want to avoid it, we can use this command 
+% \begin{quote}
+% |\onecolumnexos|\marg{the text in one column}
+% \end{quote}
+%
+%
+%
+%
+%\DescribeMacro{\groupexos} 
+% This commands can appear before exercises that match the same learning goal. The title will appear clearly in the middle of the columns
+% \begin{quote}
+% |\groupexos|\marg{title}
+% \end{quote}
+%
+%\DescribeEnv{exo} This environment contains the text of one exercise. The exercises are numbered starting at  1 for each new chapter. The exercise have optionnal argument.
+% \begin{itemize} 
+% \item title : is the title of the exercise, if any (none by default).
+% \item type : |solution| (there is a solution printed usually at the end of the book). In that case, the number of the exercise appears in another color.
+% 
+% |method| This exercice is supposed to appear in the lesson, right after a method. The number appears also in a specific color.
+%\end{itemize}
+% \begin{quote}
+% |\begin{exo}|\oarg{title=,type=}\\
+% \ldots \meta{text} \ldots\\
+% |\end{exo}|
+%\end{quote}
+%
+% \DescribeEnv{sol} \DescribeEnv{sol*}
+% Those environments contain the text of the answers. The solution will appear on another page and only for the teachers for the environment \texttt{sol*} 
+%
+% \subsection{Activities} \label{ssec:activities}
+% 
+%\DescribeMacro{\activity} This command starts a new activity, the activities are numbered starting at 1 for each chapter.
+%
+%\DescribeEnv{objective} An environment where you can write the objective of this activity (if any).
+%
+%
+% \subsection{Lesson} \label{ssec:lesson}
+%
+% After the lesson command, you can start writing your lesson.
+% the lessons are divided into sections and subsections.
+%
+%\DescribeEnv{method} \DescribeEnv{theorem} \DescribeEnv{definition} \DescribeEnv{property}  \DescribeEnv{formula}
+% All those environments must have a title (possibly empty). A label can be given as an optionnal argument, so that it can be referred to in other parts of the book (e.g. in the exercises). 
+% \begin{quote}
+% |\begin{method}|\oarg{yourlabel}\marg{title}\\
+% \ldots \meta{text} \ldots\\
+% |\end{method}|
+%\end{quote}
+%
+%
+% \DescribeEnv{remark} \DescribeEnv{proof}
+% Those are also straightforward. No argument, they just work on their own.
+%
+%
+%
+% \subsection{Graphics} \label{ssec:graphics}
+% Graphics are quite important in a secondary mathematics book. The following commands are here to ensure that the graphics have all the same style.
+%
+%\DescribeMacro{\window} 
+% This command defines the window where the graphic will be drawn. The x-axes is horizontal and the y-axes is vertical.
+%
+% \begin{quote}
+% |\window|\marg{Xmin}\marg{Xmax}\marg{Ymin}\marg{Ymax}
+% \end{quote}
+% \DescribeMacro{\axeH} \DescribeMacro{\axeV} \DescribeMacro{\tickX} \DescribeMacro{\tickY}
+% Those commands enable to draw rapidly the axes (vertical and horizontal) and to mark the first graduation. By default, the axes are labeled $x$ and $y$ and the graduation is put at $1$. It can be changed by using the optional argument.  
+% \begin{quote}
+% |\axeH|\oarg{label}
+% \end{quote}
+% \begin{quote}
+% |\axeV|\oarg{label}
+% \end{quote}
+% \begin{quote}
+% |\tickX|\oarg{graduation}
+% \end{quote}
+% \begin{quote}
+% |\tickY|\oarg{graduation}
+% \end{quote}
+%
+% \DescribeEnv{windowsratio} 
+% Finally, you can force the ratio of the rectangle window. The height/width is by default 0.66, so that the graphics looks moreorless like the screen of a calulator, the ratio can be changed.
+% 
+%
+% \begin{quote}
+% |\begin{windowsratio}|\oarg{ratio}\\
+% \ldots \meta{text} \ldots\\
+% |\end{windowsratio}|
+%\end{quote}
+%
+% \section{Implementation}
+%    \begin{macrocode}
+\NeedsTeXFormat{LaTeX2e}[1994/06/01]
+\ProvidesPackage{fascicules}[2018/02/22]
+\RequirePackage[svgnames]{xcolor}   % nice colors with nice names
+\@ifclassloaded{scrbook}{
+\RequirePackage[noxcolor]{beamerarticle} 
+}{}
+
+\RequirePackage{amsthm}
+\RequirePackage{keyval}
+\RequirePackage{comment}
+\RequirePackage{ifthen}
+\@ifclassloaded{scrbook}{
+	\RequirePackage{enumitem}
+}
+
+% ligne vide necessaire après la condition
+
+\RequirePackage{multicol}
+\RequirePackage{calc}  %commande widthof
+\RequirePackage{tikz}
+\RequirePackage{nameref}
+\usetikzlibrary{calc}
+\RequirePackage{tcolorbox}      % differentes box colorées
+\tcbuselibrary{theorems}
+\RequirePackage{pgfopts}   % use keyval option in the package
+\RequirePackage{environ}  % new command \NewEnviron
+\RequirePackage{comment}  % include environment as a comment. The goal here is to include or not the lessons, the activities or the exercises
+\RequirePackage{tagging}   % conditionnal compiling (used for the methods)
+\RequirePackage{xcomment}  % to comment everything but some environments (used for the methods)
+\RequirePackage{hyperref}  % references
+\RequirePackage{cleveref}   % clever references
+
+%    \end{macrocode}
+%
+%    To be able to use the old commands \bf and \it
+%
+%    \begin{macrocode}
+
+
+\DeclareOldFontCommand{\bf}{\normalfont\bfseries}{\mathbf}
+\DeclareOldFontCommand{\it}{\normalfont\bfseries}{\mathit}
+
+%    \end{macrocode}
+%
+%    The colors and the name of the part of the book, in French
+%
+%    \begin{macrocode}
+
+
+\newcommand{\methodscolor}{DarkOrchid}
+\newcommand{\lessoncolor}{LimeGreen}
+\newcommand{\exercisescolor}{SlateBlue}
+\newcommand{\activitiescolor}{OrangeRed}
+\newcommand{\solutionscolor}{red}
+\newcommand{\notez}{}
+\newlength{\fascicules@groupexoswidth}
+\newcommand{\esbook@lessonname}{cours}
+\newcommand{\esbook@activitiesname}{activit\'es}
+\newcommand{\esbook@activityname}{activit\'e}
+\newcommand{\esbook@exercisesname}{exercices}
+\newcommand{\esbook@solutionsname}{corrig\'es}
+\newcommand{\esbook@methodsname}{m\'ethodes}
+
+
+
+%    \end{macrocode}
+%
+%     Definition of the theorem-like environment for the lesson
+%
+%    \begin{macrocode}
+\renewenvironment{theorem}[2][]{\begin{theo}[label=#1]{#2}{}}{\end{theo}}
+\renewenvironment{definition}[2][]{\begin{defi}[label=#1]{#2}{}}{\end{defi}}
+\newenvironment{objective}{\begin{obj}{}{}}{\end{obj}}
+\newenvironment{property}[2][]{\begin{prop}[label=#1]{#2}{}}{\end{prop}}
+\newenvironment{formula}[2][]{\begin{form}[label=#1]{#2}{}}{\end{form}}
+
+%    \end{macrocode}
+%
+%     The method environment vary if we are in a beamer or not. In order to get the list of methods also in beamer
+%
+%    \begin{macrocode}
+
+\@ifclassloaded{scrbook}{
+	
+
+%    \end{macrocode}
+
+%	 Personnalisation de la numerotation, utilise le package enumitem. 
+%	 La numérotation est le plus compacte possible, serrée sur la marge
+%	,afin de laisser de la place pour le texte (notamment quand il y a deux colonnes)
+%    \begin{macrocode}
+	
+	
+\setitemize{itemsep=0pt,parsep=0pt,leftmargin=*,labelsep=1pt,noitemsep}
+\setenumerate{wide,nosep,noitemsep,labelsep=0pt}
+\setenumerate[1]{label=\bf{\arabic*.}\; }
+\setenumerate[2]{label=\bf{\alph*)\;}   }	
+	
+	
+\newenvironment{method}[2][]{\begin{meth}[label=#1]{#2}{}  }{\end{meth}}
+}
+{} 
+\@ifclassloaded{beamer}{
+\newenvironment{method}[2][]{\begin{meth}[label=#1]{#2}{} %
+\only<1>{\addcontentsline{lom}{method}{m\'ethode \protect\ref{#1} .#2\par} }}{\end{meth}}
+}
+{}
+
+\makeatletter
+
+\newtcbtheorem{theo}{Th\'eorème}
+{code={\NR@gettitle{#2}},colback=green!5,colframe=green!35!black,%
+fonttitle=\bfseries,theorem name,separator sign none,%
+description delimiters parenthesis,label type=theorem}{th}
+
+
+\@ifclassloaded{scrbook}{
+\newtcbtheorem[list inside=method,number within=chapter]%
+{meth}{m\'ethode}{code={\NR@gettitle{#2}},%
+colback=blue!5,colframe=blue!30,coltitle=black,fonttitle=\bfseries,%
+theorem name and number,separator sign colon,description delimiters none,%
+label type=method}{}
+}
+{}
+\@ifclassloaded{beamer}{  
+\newtcbtheorem{meth}{m\'ethode}{code={\NR@gettitle{#2}},colback=blue!5,colframe=blue!30%
+,coltitle=black,fonttitle=\bfseries,theorem name and number,separator sign colon,%
+description delimiters none,label type=method}{}
+}
+{}
+
+
+\newtcbtheorem{prop}{Propri\'et\'e}{code={\NR@gettitle{#2}},colback=green!5,%
+colframe=green!35!black,fonttitle=\bfseries,theorem name,separator sign none,%
+description delimiters parenthesis,label type=property}{}
+
+\newtcbtheorem{obj}{Objectif}{colback=orange!5,colframe=orange!35!black,%
+fonttitle=\bfseries,theorem name,separator sign none,description delimiters parenthesis}{}
+
+\newtcbtheorem{form}{Formule}{code={\NR@gettitle{#2}},colback=orange!5,colframe=green!35!black,%
+fonttitle=\bfseries,theorem name,separator sign none,label type=formula}{}
+
+\newtcbtheorem{defi}{D\'efinition}{code={\NR@gettitle{#2}},colback=red!5,%
+colframe=red!35!black,fonttitle=\bfseries,theorem name,separator sign none,%
+description delimiters parenthesis,label type=definition}{}
+
+\newenvironment{remark}{  \begin{tikzpicture}[baseline]  %
+\node[fill=orange!30,anchor=base,circle,draw=orange,line width=1pt]%
+ at (0,0) {NB:}; \end{tikzpicture} \begin{minipage}{.8\columnwidth}}{\end{minipage}}
+
+\renewenvironment{proof}{\textbf{D\'emonstration:} \par}{\hfill \qed}
+
+%    \end{macrocode}
+%
+%    The code is specific to the book. It does not concern beamer lessons
+%
+%    \begin{macrocode}
+
+
+
+\@ifclassloaded{scrbook}{
+
+%    \end{macrocode}
+%
+%   Definition of the title
+%
+%    \begin{macrocode}
+% pour importer des presentations beamer dans le manuel
+\RequirePackage[noxcolor]{beamerarticle} 
+
+\makeatletter
+\def\fasciculestitle{
+\begin{titlepage}
+%=========================
+\begin{center}
+\hspace{0pt}\\
+\vspace{4cm}
+{\Large\bfseries \@author}\\
+\vspace{3cm}
+ {\scalebox{1.5}{\Huge\bfseries \@title }}\\
+\vspace{0.8cm}
+ {\LARGE\bfseries \@subtitle}\\[10pt]
+ % ----------------------------------------------------------------
+ \vfill
+\@publishers\\
+\@date
+ % ----------------------------------------------------------------
+\end{center}
+
+% ---------------
+
+\thispagestyle{empty}
+
+\clearpage
+\end{titlepage}
+}
+\makeatother
+%    \end{macrocode}
+%
+%   Processing the options
+%
+%    \begin{macrocode}
+
+
+	\pgfkeys{
+	/include/.is family,/include,
+	default/.style = {exercises = true,lesson = true,activities=true,solutions=true},
+	exercises/.store in=\fascicules@modeexercises,
+	lesson/.store in=\fascicules@modelesson,
+	activities/.store in=\fascicules@modeactivities,
+	solutions/.store in=\fascicules@modesolutions,
+	}
+	\pgfkeys{/include,/include/default}
+	\ProcessPgfOptions{/include}
+	
+%    \end{macrocode}
+%
+%   If we want to have the solutions of the exercises inside exercices pages.
+%
+%    \begin{macrocode}
+	\ifthenelse
+	{\equal{\fascicules@modesolutions}{inside}}
+	{\PassOptionsToPackage{nosolutionfiles}{answers}}
+	{}
+	
+	\RequirePackage{answers}
+	
+%  activates pagestyle scrheadings
+	
+	\RequirePackage[headsepline=1pt,footsepline=1pt]{scrlayer-scrpage}
+	\clearpairofpagestyles
+	
+	\addtokomafont{pagehead}{\color{white} \bfseries}  % font for the page headers
+	\addtokomafont{pagefoot}{\large \bfseries}  % font for the page headers
+	
+	\newcommand*{\headcontents}[1]{%
+	  \raisebox{0pt}[\ht\strutbox][\dimexpr\headheight-\ht\strutbox\relax]{#1}}
+	
+	\newpairofpagestyles[scrheadings]{lesson}%
+	{\ihead{\esbook@lessonname} \ohead{\leftmark} \ofoot{\thepage} }
+	\newpairofpagestyles[scrheadings]{activities}%
+	{\ihead{\esbook@activitiesname} \ohead{\leftmark} \ofoot{\thepage} }
+	\newpairofpagestyles[scrheadings]{exercises}%
+	{\ihead{\esbook@exercisesname} \ohead{\leftmark} \ofoot{\thepage} }
+	\newpairofpagestyles[scrheadings]{solutions}%
+	{\ihead{\esbook@solutionsname}  \ofoot{\thepage} }
+	\newpairofpagestyles[scrheadings]{methods}%
+	{\ihead{\esbook@methodsname}  \ohead{\leftmark} \ofoot{\thepage} }
+
+%    \end{macrocode}
+%
+%   Here are the definitions of the layers
+%
+%    \begin{macrocode}
+	\newcommand*\headcoloredbg[1]{%
+	  \begin{tikzpicture}
+	  \fill[color=#1](0,0)rectangle({\layerwidth},{\layerheight});
+	  \end{tikzpicture}
+	  }
+	\DeclareNewLayer[background,topmargin,
+	addheight=20pt,
+	  contents=\headcoloredbg{\lessoncolor}
+	]{lesson.bg}
+	\DeclareNewLayer[background,topmargin,
+	addheight=20pt,
+	  contents=\headcoloredbg{\exercisescolor}
+	]{exercises.bg}
+	\DeclareNewLayer[background,topmargin,
+	addheight=20pt,
+	  contents=\headcoloredbg{\activitiescolor}
+	]{activities.bg}
+	\DeclareNewLayer[background,topmargin,
+	addheight=20pt,
+	  contents=\headcoloredbg{\solutionscolor}
+	]{solutions.bg}
+	\DeclareNewLayer[background,topmargin,
+	addheight=20pt,
+	 contents=\headcoloredbg{\methodscolor}
+	]{methods.bg}
+	
+	\AddLayersAtBeginOfPageStyle{lesson}{lesson.bg}
+	\AddLayersAtBeginOfPageStyle{exercises}{exercises.bg}
+	\AddLayersAtBeginOfPageStyle{activities}{activities.bg}
+	\AddLayersAtBeginOfPageStyle{solutions}{solutions.bg}
+	\AddLayersAtBeginOfPageStyle{methods}{methods.bg}
+	
+	
+	\newpairofpagestyles[scrheadings]{chapterpage}{}
+	\makeatletter
+%    \end{macrocode}
+%
+%    The background image for the chapter page
+%
+%    \begin{macrocode}
+	\newcommand*\@backgroundimage{}
+	\newcommand*\backgroundimage[1]{%
+	  \ifstr{#1}{}{\gdef\@backgroundimage{}}{%
+	    \gdef\@backgroundimage{\includegraphics[width=\layerwidth\relax]{#1}}%
+	}}
+	
+	\colorlet{backgroundcolor}{white}
+	\newcommand*\coloredbg{%
+	  \tikz\fill[backgroundcolor,opacity=.5](0,0)rectangle({\layerwidth},{\layerheight});}
+	\DeclareNewLayer[background,textarea,
+	  addvoffset=-5pt,addhoffset=-5pt,addwidth=10pt,addheight=10pt,
+	  contents=\coloredbg
+	]{text.bg}
+	\DeclareNewLayer[background,
+	  textarea, mode=picture,align=t,
+	  contents={
+	    \putLL{\begin{tikzpicture}
+	     \fill[top color=PeachPuff,bottom color=PapayaWhip] (0,0) rectangle (\layerwidth,\layerheight/4+\layerheight/10);
+	    \draw (0,\layerheight/5) rectangle (\layerwidth,\layerheight/2+\layerheight/5);
+	    \shade[top color=Peru,bottom color=PeachPuff] (0,\layerheight/2) rectangle (\layerwidth,\layerheight);
+	    \clip (0,\layerheight/5) rectangle (\layerwidth,\layerheight/2+\layerheight/5);
+	    \node at (\layerwidth/2,\layerheight/4+\layerheight/10) {\@backgroundimage};
+	    \end{tikzpicture}
+	  }}
+	]{image.bg}
+	\AddLayersAtBeginOfPageStyle{chapterpage}{text.bg,image.bg}
+	
+
+%    \end{macrocode}
+%
+% Solutions with the package answers. 
+%
+%    \begin{macrocode}	
+	\Newassociation{sol}{Solution}{solution}
+	\Newassociation{sol*}{Solution}{soluce}
+	
+	\renewcommand{\Solutionlabel}[1]{\tikz{\node[rectangle,draw=red!50,fill=red!20] at(0,0) {#1}; }}
+
+
+
+
+	\newcommand{\headerFormat}{\color{white} \Large \bf } %le format des header des sections
+	\newcommand{\groupexosFormat}{\color{blue}} %le format de l'intitule des groupes d'exos
+% le format de l'intitule des groupes d'exos
+	\newcommand{\activitytitleFormat}{\color{\activitiescolor} \Large \bf} 
+	\newcommand{\fascicules@exocolour}{}   % la couleur des étiquettes des exercices
+	
+	
+	\newcounter{fascicules@exo}
+	\newcounter{fascicules@activity}
+	\newenvironment{activities}{
+		\setcounter{fascicules@activity}{0}
+		\newpage
+		\pagestyle{activities}
+	}{ \clearpage}
+
+%    \end{macrocode}
+%
+%     Exercices are always in a two column environment, sometimes we don't want it.
+%
+%    \begin{macrocode}		
+
+	
+	\newcommand{\onecolumnexos}[1]
+	{
+	\end{multicols}
+	\thispagestyle{exercises}
+	#1
+	\pagestyle{exercises}
+	\begin{multicols}{2}
+	}
+	
+	
+	\NewEnviron{exercises}{
+	\newpage
+	\begin{multicols}{2}
+	\pagestyle{exercises}
+	\Opensolutionfile{solution}[solutions/ch\thechapter]
+	\Opensolutionfile{soluce}[solutions/ch\thechapter_prof]
+	  \BODY
+	  \clearpage
+	\Closesolutionfile{solution}
+	\Closesolutionfile{soluce}
+	\end{multicols}
+	}
+	
+	\NewEnviron{solutions}{
+	\newpage
+	\pagestyle{solutions}
+	\begin{multicols}{2}
+	  \BODY
+	  \clearpage
+	\end{multicols}
+	}
+	
+	\newenvironment{lesson}{
+	     \setcounter{fascicules@exo}{0}
+		\newpage
+		\ifthenelse{\equal{\fascicules@modelesson}{true}}%
+		{\pagestyle{lesson}}{}
+		\ifthenelse{\equal{\fascicules@modelesson}{methods}}{
+		     \pagestyle{methods}
+		     \Opensolutionfile{solution}[solutions/ch\thechapter_methods]
+		}{}
+	}
+	{
+		\clearpage
+		\ifthenelse{\equal{\fascicules@modelesson}{methods}}{
+			\pagestyle{methods}
+			\Closesolutionfile{solution}
+		}{}
+	}
+	
+
+	
+	\newcommand{\activity}[1]{
+	\refstepcounter{fascicules@activity}
+	{
+	\activitytitleFormat \esbook@activityname~\thefascicules@activity.  #1}
+	\medskip
+	}
+	
+	\newcommand{\groupexos}[1]
+	{
+	\setlength{\fascicules@groupexoswidth}{\minof{\widthof{#1}}{.4\textwidth}}
+	
+	\begin{center}
+	\begin{minipage}{\fascicules@groupexoswidth}
+	\groupexosFormat
+	\dotfill \par
+	#1
+	\end{minipage}
+	\end{center}
+	}
+	
+%    \end{macrocode}
+%    The parts to include or exclude, depending of the package options
+%    \begin{macrocode}	
+	
+	\ifthenelse
+	{\equal{\fascicules@modeexercises}{true}}
+	{}
+	{\excludecomment{exercises}}
+	\ifthenelse
+	{\equal{\fascicules@modeactivities}{true}}
+	{}
+	{\excludecomment{activities}}
+	\ifthenelse
+	{\equal{\fascicules@modelesson}{true}}
+	{}
+	{}
+	\ifthenelse
+	{\equal{\fascicules@modelesson}{false}}
+	{\excludecomment{lesson}}
+	{}
+	\ifthenelse
+	{\equal{\fascicules@modelesson}{methods}}
+	{\usetag{method}}  % will print only the methods
+	{}	
+	\ifthenelse
+	{\equal{\fascicules@modesolutions}{false}}
+	{\excludecomment{solutions}}
+	{}
+	\ifthenelse
+	{\equal{\fascicules@modesolutions}{inside}}
+	{\excludecomment{solutions}}
+	{}
+	
+%    \end{macrocode}
+%    Exercises have optional arguments. The color of the number varies if there are solutions or not in the manual.
+%    \begin{macrocode}	
+	\pgfkeys{
+	/fascicules/.is family,/fascicules,
+	default/.style = {title = ,type = none},
+	title/.estore in = \exotitle,
+	type/.estore in = \exotype,
+	}
+
+%    \end{macrocode}
+%    Tricky environment...
+%    \begin{macrocode}
+
+	
+	\newenvironment{exo}[1][]
+	{%
+	 \pgfkeys{/fascicules, default, #1}%
+	 \vspace{3mm}
+	 \refstepcounter{fascicules@exo}
+	 
+	 \ifthenelse{\equal{\exotype}{solution}}{\renewcommand{\fascicules@exocolour}{red}}
+	 {
+	 \ifthenelse{\equal{\exotype}{method}}{
+	 \renewcommand{\fascicules@exocolour}{\methodscolor}
+	      \untagged{method}{
+	         \begin{multicols}{2}
+	         \bgroup
+	         \renewenvironment{sol}{{\bfseries solution:}}{}
+	      }
+	      
+	 }{
+	 \renewcommand{\fascicules@exocolour}{blue}
+	 }
+	 }
+	 \tikz \node[rectangle,draw=\fascicules@exocolour!50,fill=\fascicules@exocolour!20] {\thefascicules@exo};
+	 \ifthenelse{\equal{\exotitle}{}}{}{{\bf \exotitle.}}
+	}
+	{
+	\ifthenelse{\equal{\exotype}{method}}{
+		\untagged{method}{\egroup \end{multicols}}
+	}{}
+	\penalty -1000 \par
+	}
+
+
+
+	\setkomafont{chapter}{\color{white} \usefont{T1}{qhv}{b}{n}\selectfont\huge}
+	\renewcommand\chapterformat{%
+	\begin{tikzpicture}
+	 \node[rotate=90]at (0,0) {\Large \chapapp};
+	 \node[rectangle,draw,fill=Olive] at (1,0) {\thechapter};
+	\end{tikzpicture}
+	}
+	\addtokomafont{subsection}{\fontsize{12pt}{12pt}\color{LimeGreen}\selectfont}
+	\addtokomafont{section}{\fontsize{14pt}{14pt}\color{LimeGreen}\selectfont}
+	\newkomafont{sectionnumber}{\fontsize{18pt}{18pt}\selectfont\rmfamily\color{white}}	
+	\makeatletter
+	\renewcommand\sectionlinesformat[4]{%
+	  \makebox[0pt][l]{\rule[-5pt]{\textwidth}{1pt}}%
+	  \@hangfrom{#3}{#4}%
+	}
+	\makeatother
+
+
+	\makeatletter
+	
+	\renewcommand{\thesection}{\arabic{section}}
+	\renewcommand\sectionformat{%
+	  \setlength\fboxsep{5pt}%
+	  \raisebox{-4pt}{\colorbox{LimeGreen}{%
+	    \enskip{\usekomafont{sectionnumber} \thesection\autodot}\enskip}%
+	  \quad%
+	}}
+	
+
+%    \end{macrocode}  
+%    How to manage the references with the cref  package
+%
+%    \begin{macrocode}  	
+	\makeatletter
+	\def\cref@getref#1#2{%
+	  \xdef\@lastusedlabel{#1}%
+	  \expandafter\let\expandafter#2\csname r@#1@cref\endcsname%
+	  \expandafter\expandafter\expandafter\def%
+	    \expandafter\expandafter\expandafter#2%
+	    \expandafter\expandafter\expandafter{%
+	      \expandafter\@firstoftwo#2}}%
+	\crefformat{method}{\color{\lessoncolor}  M\'ethode #2#1#3 \nameref*{\@lastusedlabel} }
+	\crefformat{section}{\color{\lessoncolor}  \S #2#1#3 \nameref*{\@lastusedlabel} }
+	\crefformat{fascicules@activity}{\color{\activitiescolor}  \esbook@activityname~#2#1#3 \nameref*{\@lastusedlabel} }
+	
+%    \end{macrocode}  
+%    The command listofmethods for the book
+%
+%    \begin{macrocode}	
+	\newcommand\listofmethods{\tcblistof[\section*]{method}{Liste des M\'ethodes} }
+	
+
+
+
+
+	
+} % class scrbook uniquement
+{}
+
+
+%    \end{macrocode}
+%    Then what is specific to the beamer slides
+%    \begin{macrocode}
+\makeatother
+\makeatletter
+\@ifclassloaded{beamer}
+{
+
+     \usecolortheme{rose}
+     \useoutertheme[hideallsubsections,height=8pt]{sidebar}
+     \setbeamertemplate{section in toc}[sections numbered]
+     \setbeamercolor{structure}{fg=\lessoncolor, bg=green!10}
+	\resetcounteronoverlays{tcb@cnt@meth}   % reset counters for methods
+	
+	
+	
+	\AtBeginSection[
+	{
+	\begin{frame}<beamer>
+	    \begin{centering}
+	    \begin{beamercolorbox}[sep=12pt,center]{part title}
+	    \usebeamerfont{section title} \insertsection\par
+	    \end{beamercolorbox}
+	    \end{centering}
+	    
+	    \vfill
+	    \tableofcontents[currentsection,sectionstyle=hide/hide,subsectionstyle=show/show/hide]
+	    \vfill
+	\end{frame}    
+	}
+	]
+     {
+	\begin{frame}<beamer>
+	    \begin{centering}
+	    \begin{beamercolorbox}[sep=12pt,center]{part title}
+	    \usebeamerfont{section title}\S \thesection.~ \insertsection\par
+	    \end{beamercolorbox}
+	    \end{centering}
+	    
+	    \vfill
+	    \tableofcontents[currentsection,sectionstyle=hide/hide,subsectionstyle=show/show/hide]
+	    \vfill
+	%
+	%\frame{\sectionpage}
+	%\frametitle{\insertsection}
+	%	\tableofcontents[currentsection, hideothersubsections]
+	\end{frame}
+     }
+
+	\newenvironment{cours}[1][]{	 		
+		\title{\Cref{#1}. \nameref{#1}}
+		 \begin{frame}
+		 \titlepage
+		 \end{frame}
+		 % table des matières
+		 \begin{frame}
+		 \setcounter{tocdepth}{1}
+		 \tableofcontents
+		 \setcounter{tocdepth}{2}
+		 \end{frame}
+	}{}	
+
+%    \end{macrocode}
+%
+%     This trick (found on the net) to make possible the usage of cleveref (with tcolorbox list inside option) in beamer
+%
+%    \begin{macrocode}
+	
+	\AtBeginDocument{
+	  \def\beamer@label<#1>{%
+	    \def\hack@arg{#1}%
+	    \@ifnextchar[\beamer@label@opt\beamer@label@noopt
+	  }%
+	  \def\beamer@label@opt[#1]#2{%
+	    \expandafter\alt\expandafter<\hack@arg>%
+	      {\beamer@origlabel[#1]{#2}\beamer@nameslide{#2}}%
+	      {\beamer@dummynameslide}%
+	  }%
+	  \def\beamer@label@noopt#1{%
+	    \expandafter\alt\expandafter<\hack@arg>%
+	      {\beamer@origlabel{#1}\beamer@nameslide{#1}}%
+	      {\beamer@dummynameslide}%
+	  }%
+	}
+
+	\renewcommand{\notez}{
+	\mode<beamer>{
+	\begin{tikzpicture}[remember picture,overlay]
+		\node[scale=2,text opacity=0.1]
+		  at (current page.center) {\includegraphics{../../commons/img/crayon}
+	};
+	\end{tikzpicture}
+	}
+	}
+
+%    \end{macrocode}
+%    The commands list of methods vary if we are in a beamer
+%    \begin{macrocode}
+     
+     \makeatletter
+     \newcommand\listofmethods{\@starttoc{lom}}
+     \makeatother
+
+%    \end{macrocode}
+%    The exercises that appear in the beamer lessons
+%    \begin{macrocode}
+
+\newcounter{beamerExo}
+\resetcounteronoverlays{beamerExo}
+
+\pgfkeys{
+	/fascicules/.is family,/fascicules,
+	default/.style = {title = ,type = none},
+	title/.estore in = \exotitle,
+	type/.estore in = \exotype,
+}
+
+
+\newenvironment{exo}[1][]
+{    \pgfkeys{/fascicules, default, #1}%   
+	\refstepcounter{beamerExo}
+	\tikz \node[rectangle,draw=\methodscolor!50,fill=\methodscolor!20] {\thebeamerExo};
+	\ifthenelse{\equal{\exotitle}{}}{}{{\bf \exotitle.}}
+}
+
+
+\newenvironment{sol}
+{{\bfseries r\'eponse :}}
+{}
+
+
+
+
+}
+{}
+\makeatother
+
+
+%    \end{macrocode}
+% Commandes pour tracer des jolies courbes
+%    \begin{macrocode}
+
+
+\tikzstyle{general}=[line width=0.3mm, >=latex, x=1cm, y=1cm,line cap=round, line join=round]
+\tikzstyle{grid}=[line width=0.3mm, color=LightBlue]
+\tikzstyle{courbe} = [draw=blue,line width=1.2pt]
+
+\newcommand{\window}[4]
+{
+\def\poslabelX{above left}
+\def\poslabelY{below right}
+\pgfmathsetmacro{\windowwidth}{7}; % la largeur par défaut d'une window
+
+\pgfmathsetmacro{\Xmin}{#1}; %
+\pgfmathsetmacro{\Xmax}{#2}; %
+\pgfmathsetmacro{\Ymin}{#3}; %
+\pgfmathsetmacro{\Ymax}{#4}; %
+}
+
+\newenvironment{windowsratio}[1][0.66]
+{
+ \begin{scope}[xscale=\windowwidth/(\Xmax-\Xmin),yscale=(\windowwidth * #1)/(\Ymax-\Ymin)]
+}
+{
+\end{scope}
+}
+\newcommand{\axeH}[1][$x$]{\draw[line width=1.5pt,->] (\Xmin,0)--(\Xmax,0) node[\poslabelX]{#1};}
+\newcommand{\axeV}[1][$y$]{\draw[line width=1.5pt,->] (0,\Ymin)--(0,\Ymax) node[\poslabelY]{#1};}
+\newcommand{\tickX}[1][1]{\draw (#1,0) node {\scriptsize$+$} node[below]{#1};}
+\newcommand{\tickY}[1][1]{\draw (0,#1) node {\scriptsize$+$} node[left]{#1}; }
+%    \end{macrocode}
+%
+% \PrintIndex
+% \PrintChanges
+% \Finale
+\endinput

@@ -1,0 +1,122 @@
+%%
+%% This is file `lwarp-framed.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `framed')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+\LWR@ProvidesPackagePass{framed}[2011/10/22]
+\RequirePackage{xcolor}% for \convertcolorspec
+
+
+\renewenvironment{framed}{%
+\LWR@forcenewpage
+\BlockClass{framed}%
+}
+{\endBlockClass}
+
+\renewenvironment{oframed}{%
+\LWR@forcenewpage
+\BlockClass{framed}%
+}
+{\endBlockClass}
+
+\renewenvironment{shaded}{%
+\convertcolorspec{named}{shadecolor}{HTML}\LWR@tempcolor%
+\LWR@forcenewpage
+\BlockClass[background: \LWR@origpound\LWR@tempcolor]{shaded}%
+}
+{\endBlockClass}
+
+\renewenvironment{shaded*}{%
+\convertcolorspec{named}{shadecolor}{HTML}\LWR@tempcolor%
+\LWR@forcenewpage
+\BlockClass[background: \LWR@origpound\LWR@tempcolor]{shaded}%
+}
+{\endBlockClass}
+
+\renewenvironment{leftbar}{%
+\LWR@forcenewpage
+    \BlockClass{framedleftbar}
+  \def\FrameCommand{}%
+  \MakeFramed {}
+}%
+ {\endMakeFramed\endBlockClass}
+
+\renewenvironment{snugshade}{%
+\convertcolorspec{named}{shadecolor}{HTML}\LWR@tempcolor%
+\LWR@forcenewpage
+\BlockClass[background: \LWR@origpound\LWR@tempcolor]{snugframed}%
+}
+{\endBlockClass}
+
+\renewenvironment{snugshade*}{%
+\convertcolorspec{named}{shadecolor}{HTML}\LWR@tempcolor%
+\LWR@forcenewpage
+\BlockClass[background: \LWR@origpound\LWR@tempcolor]{snugframed}%
+}
+{\endBlockClass}
+
+\let\oframed\framed
+\let\endoframed\endframed
+
+\RenewEnviron{titled-frame}[1]{%
+\CustomFBox{#1}{}{0pt}{0pt}{0pt}{0pt}{\BODY}
+}
+
+\renewcommand{\CustomFBox}[7]{%
+\convertcolorspec{named}{TFFrameColor}{HTML}\LWR@tempcolor%
+\LWR@forcenewpage
+\begin{BlockClass}[border: 3px solid \LWR@origpound\LWR@tempcolor]{framed}%
+\ifthenelse{\isempty{#1}}{}{% not empty
+    \begin{BlockClass}[background: \LWR@origpound\LWR@tempcolor]{framedtitle}%
+    \textcolor{TFTitleColor}{\textbf{#1}}%
+    \end{BlockClass}
+}% not empty
+
+#7
+
+\ifthenelse{\isempty{#2}}{}{% not empty
+    \convertcolorspec{named}{TFFrameColor}{HTML}\LWR@tempcolor%
+    \begin{BlockClass}[background: \LWR@origpound\LWR@tempcolor]{framedtitle}%
+    \textcolor{TFTitleColor}{\textbf{#2}}%
+    \end{BlockClass}
+}% not empty
+\end{BlockClass}
+}
+
+\renewcommand\TitleBarFrame[3][]{
+\CustomFBox
+    {#2}{}%
+    \fboxrule\fboxrule\fboxrule\fboxrule
+    {#3}%
+}
+
+\renewcommand{\TF@Title}[1]{#1}
+
+\let\MakeFramed\relax
+\let\endMakeFramed\relax
+
+\NewEnviron{MakeFramed}[1]{%
+\FrameCommand{\begin{minipage}{\linewidth}\BODY\end{minipage}}%
+}
+
+\renewcommand*{\fb@put@frame}[2]{%
+\relax%
+\@tempboxa%
+}
+
+\endinput
+%%
+%% End of file `lwarp-framed.sty'.

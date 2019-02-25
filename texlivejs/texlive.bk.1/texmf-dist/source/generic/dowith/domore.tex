@@ -1,0 +1,166 @@
+\ProvidesFile{domore.tex}[2015/11/14 documenting domore files]
+\title{\pkg{domore}\\---\\Some More Commands for Lists of Tokens}
+% \listfiles
+{ \RequirePackage{makedoc} \ProcessLineMessage{}
+  \renewcommand\mdSectionLevelOne  {\string\subsection}
+  \renewcommand\mdSectionLevelTwo  {\string\subsubsection}
+  \MainDocParser{\SectionLevelTwoParseInput}
+  \HeaderLines{17} 
+  \MakeSingleDoc{domore.sty}
+  \MakeSingleDoc{reversdo.sty} 
+  \MakeSingleDoc{domodes.sty} 
+}
+\documentclass[fleqn]{article}%% TODO paper dimensions!?
+\input{makedoc.cfg} %% shared formatting settings
+\MDkeywords{Macro programming, programming structures, 
+            loops, list macros}
+\newcommand*{\headersec}{%
+    \subsection{Package File Header---\pkg{plainpkg} and Legalese}}
+\usepackage{catchdq} \catchdqs                  %% 2012/11/19
+\AddToMacro{\mdStartPackageCode}{\MakeOther\"}  %% 2012/11/19
+       %% something moved to makedoc.cfg from here 2013/03/21
+\newif\ifmultmore                               %% 2012/11/19
+%%% \multmoretrue %% 2015/11/14 TODO domodes/revers... with plainpkg!
+\MDfinaldatechecks
+\sloppy
+\begin{document}
+\maketitle
+\begin{MDabstract}
+\ifmultmore
+  This document describes packages that do similar things 
+  as the 'dowith' package or extend it.
+\else
+  'domore.sty' is a package that enhances 'dowith.sty''s 
+  `\DoWith' (without assignments)
+  and `\setdo' commands for applying something 
+  (e.g., `\do') to each item of an "arglist".
+  Each item may consist of two or more arguments for a macro, 
+  and some "separator" material may be inserted between the 
+  applications to items. A practiced application has been 
+  generating inline lists of links that are separated 
+  by \qtdcode{~\string|~}.
+  'domore.sty' is (to some extent) format-independent 
+  by means of the \ctanpkgref{plainpkg} and 'stacklet' packages. 
+\fi
+% \MDaddtoabstract{Required Packages}
+% \ctanpkgref{plainpkg}, 'stacklet'
+\MDaddtoabstract{Related Packages} cf. `dowith.pdf'.
+\end{MDabstract}
+\tableofcontents
+
+\edef\domore{\ifmultmore\noexpand\MetaVar domore>\else domore\fi}
+% \section{Shared Features of Usage}
+\ifmultmore
+  \section{Shared Features of Usage}
+  All the packages described in this document 
+  are "\pkg{plainpkg} packages" 
+\else
+  \section{Making 'domore.sty' Available}
+  The 'domore' package is a "\pkg{plainpkg} package"
+\fi
+in the sense of the 
+\ctanpkgdref{plainpkg}
+documentation that exhibits details of what is summarized here. 
+Therefore:
+\begin{itemize}
+  \item \ifmultmore All of them require \else It is required \fi
+        that \TeX\ finds `plainpkg.tex' 
+        as well as `stackrel.sty' from the 
+        \ctanpkgdref{catcodes} bundle.
+  \item In order to load \file{\domore.sty}%%%
+        \ifmultmore\ (where \domore\ is `domore', `domodes', or `reversdo')\fi, 
+        type
+    \begin{description}
+        \ifmultmore\cmdboxitem|\usepackage{<domore>}|
+               \else\cmdboxitem|\usepackage{domore}|      \fi
+        \ within a \LaTeX\ document 
+        preamble, \ 
+        \ifmultmore\cmdboxitem|\RequirePackage{<domore>}| 
+               \else\cmdboxitem|\RequirePackage{domore}|  \fi
+        \ in a "\pkg{plainpkg} package", or \ 
+        \ifmultmore\cmdboxitem|\input <domore>.sty| 
+               \else\cmdboxitem|\input domore.sty|        \fi
+    \end{description}
+        $\dots$ \ or perhaps `\input{<domore>.sty}'? 
+\end{itemize}
+
+\section{Remark on the Style of Code Documentation}
+In `dowith.pdf', the documentation of the 'dowith' package,
+in the section about "\TeX's tokens," I have tried to explain 
+the difference between \TeX\ input code and the tokens that 
+arise from it. In order to really understand what packages 
+in the 'dowith' bundle do, one should think of the behaviour 
+of the \emph{tokens}. For convenience however, I may rather 
+fall back into the usual confusion here. After reading the 
+documentation `dowith.pdf' of `dowith.sty', you may be able 
+to guess successfully what is meant below.
+
+% \section{Overview of Packages Described in \file{\jobname.pdf}}
+\ifmultmore
+  \section{Overview of Packages Described in \file{\jobname.pdf}}
+  \label{sec:over}
+  The present document describes the packages provided by the 
+  \ctanpkgref{dowith} bundle apart from 'dowith.sty' itself 
+  for applying something to each item from some list. 
+  \begin{enumerate}
+    \item 
+\else
+  \section{Overview of Commands}
+\fi
+        \strong{\pkg{domore.sty}} provides a more powerful version 
+        of 'dowith.sty''s 
+        \[|\DoWith{<repeat>}<args>\StopDoing|\]
+        acting on an "arglist" <args>
+        where <repeat> may be more complex than with 'dowith.sty'. 
+        Based on this, another variant |\DoWithMore| of `\DoWith' 
+        is provided where <repeat> may be a macro with more than 
+        one argument. With \LaTeX\ e.g., <repeat> may be |\do| 
+        defined by \[|\setdo[<digit>]<opt>{<replace>}|\] 
+        an extension of 'dowith.sty''s `\setdo'.
+        Further, 
+        \[|\DoSeparateWith{<repeat>}{<sep>}<args>\StopDoing|\]
+        inserts "separator material" <sep> between the applications 
+        of <repeat> to the items in <args>. Another 
+        |\DoSeparateWithMore| combines the features of the two 
+        previous macros. I have used this with 'blog.sty' from 
+        the \ctanpkgref{morehype} bundle for generating inline 
+        lists of links, separated by something like \qtdcode{~\string|~}, 
+        in \acro{HTML} documents. 
+
+        As auxiliaries, variants |\@firstsecondoftwo| and 
+        |\@secondfirstoftwo| of \LaTeX's `\@firstofone' are introduced.
+\ifmultmore 
+  \end{enumerate}
+
+  \section{'domore.sty'}
+  An overview of what 'domore.sty' provides has been given in 
+  Section~\ref{sec:over}. 
+  For details, see the comments to the package's code below.
+\else
+
+  For details, see the comments to the package's code below.
+  \section{Contents of 'domore.sty'}
+\fi
+\headersec
+\input{domore.doc}
+
+\MakeOther\"
+\ifmultmore
+\section{'domodes.sty'}
+See Section~\ref{sec:domodes-cmds} for the commands provided.
+\headersec
+\input{domodes.doc}
+
+\section{'reversdo.sty'}
+See Section~\ref{sec:reversdo-cmds} for the commands provided.
+\headersec
+\input{reversdo.doc}
+
+\fi
+\end{document}
+
+VERSION HISTORY
+
+2012/10/23    for v0.2   started
+2012/11/05ff. for v0.3
+2013/03/21f.  for v0.31  \MDfinaldatecheck

@@ -1,0 +1,34 @@
+%%%%
+%%%% This file belongs to the ROEX package.
+%%%%
+%%% draw write_preamble write_postamble find_BB set_BB fill_C draw_C
+%%% draw fix_fill_cmyk fix_draw_cmyk
+% RO-03.MF, ``ENCIRCLED CROSS 2'':
+%  An example very similar to RO-02.MF; removing overlaps applied to
+%  a negatively oriented circle and two positively oriented rectangles,
+%  background colour is set to |1| (default is |0|).
+% ---
+input mftoeps; eps_mode_setup; input roex; tracingremoving:=1;
+% ---
+beginchar("0",in#,in#,0);
+ path A,B,C;
+ A=reverse fullcircle scaled w shifted (1/2w,1/2h);
+ B=unitsquare xscaled 1/5w yscaled 3/5w shifted (2/5w,1/5w);
+ C=B rotatedaround((1/2w,1/2h), 90);
+ background_color:=1; remove_overlap (A,B,C) () R;
+ set_BB 0,0,w,h;
+ write_preamble jobname;
+ for i:=1 upto R.num:
+  fix_draw_cmyk if check_turn(R[i])>0: 0,1,1,0 else: 1,1,0,0 fi; 
+  draw_C R[i];
+  if proofing>0:
+   for j:=0 upto length(R[i])-1:
+    makelabel(decimal(j) & "/" & decimal(i),point j of R[i]);
+   endfor
+  fi
+ endfor 
+ write_postamble;
+endchar;
+end.
+%%\end
+

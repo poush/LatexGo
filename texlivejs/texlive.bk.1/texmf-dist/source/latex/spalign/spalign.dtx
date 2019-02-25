@@ -1,0 +1,1211 @@
+% \iffalse meta-comment
+%
+% Copyright (C) 2016 by Joseph Rabinoff <rabinoff@math.gatech.edu>
+% -------------------------------------------------------
+%
+% This file may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in:
+%
+%    http://www.latex-project.org/lppl.txt
+%
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+%
+% \fi
+%
+% \iffalse
+%<*driver>
+\ProvidesFile{spalign.dtx}
+%</driver>
+%<package>\NeedsTeXFormat{LaTeX2e}[2005/12/01]
+%<package>\ProvidesPackage{spalign}
+%<*package>
+    [2016/10/05 aligns delimited by spaces]
+%</package>
+%
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage{spalign}[2016/10/05]
+\usepackage[charter,sfscaled,ttscaled,cal=cmcal]{mathdesign}
+\usepackage{amsmath}
+
+\def\usage#1#2{\textbf{Usage:} \texttt{\string#1} #2\vadjust{\vskip 1ex}\\}
+
+\newdimen\poptskip\poptskip=1.3cm
+\advance\poptskip by 1ex
+\def\poption #1:{%
+  \hangindent=\poptskip\hangafter=1%
+  \noindent\hbox to 1.3cm{\hfil\bf#1:}\hskip 1ex%
+  }
+\def\endopt{\par\vskip2pt}
+
+\let\tvs=\textvisiblespace
+
+\EnableCrossrefs
+\CodelineIndex
+\RecordChanges
+\begin{document}
+  \DocInput{spalign.dtx}
+  \PrintChanges
+  \PrintIndex
+\end{document}
+%</driver>
+% \fi
+%
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%   Dollar        \$     Percent       \%     Ampersand     \&
+%   Acute accent  \'     Left paren    \(     Right paren   \)
+%   Asterisk      \*     Plus          \+     Comma         \,
+%   Minus         \-     Point         \.     Solidus       \/
+%   Colon         \:     Semicolon     \;     Less than     \<
+%   Equals        \=     Greater than  \>     Question mark \?
+%   Commercial at \@     Left bracket  \[     Backslash     \\
+%   Right bracket \]     Circumflex    \^     Underscore    \_
+%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%   Right brace   \}     Tilde         \~}
+%
+%
+% \changes{v1.0}{2016/10/05}{Initial version}
+%
+% \GetFileInfo{spalign.dtx}
+%
+% \DoNotIndex{\newcommand,\newenvironment}
+%
+%
+% \title{The \textsf{spalign} package\thanks{This document
+%   corresponds to the version of \textsf{spalign} dated \filedate.}}
+% \author{Joseph Rabinoff \\ \texttt{rabinoff@math.gatech.edu}}
+%
+% \maketitle
+%
+% \section{Introduction}
+%
+% The purpose of this package is to decrease the number of keystrokes needed to
+% typeset small amounts of aligned material (matrices, arrays, etc.).  For
+% instance, it is inconvenient to type (using the \textsf{amsmath} package)
+% \begin{verbatim}
+%    \[ \begin{matrix}
+%          1 & 12 & -3 \\
+%         24 & -2 &  2 \\
+%          0 &  0 &  1
+%       \end{matrix} \]\end{verbatim}
+% in a document where several hundred such
+% matrices must  be typeset.  Of course
+% one can always define a macro |\mat| which puts its argument inside a
+% |matrix| environment, but it is still necessary to type the align character
+% |&| and the end-of-row control sequence |\\| many times for each matrix.
+%
+% This package provides a facility for typesetting matrices, and using other
+% alignment environments and macros, with spaces as the
+% alignment delimiter and semicolons (by default) as the end-of-row indicator.  So
+% the above matrix could be produced using the command:
+% \begin{verbatim}
+%    \[ \spalignmat{1 12 -3; 24 -2 2; 0 0 1} \]\end{verbatim}
+% This package also contains utility macros for typesetting augmented matrices,
+% vectors, arrays, and more, and is easily extendable to other situations that use
+% alignments.
+%
+% \section{Usage}
+%
+% In~\S\ref{sec:alignment} the simplified alignment format used by arguments to
+% macros in this package is described.  In~\S\ref{sec:utility} the utility
+% macros provided by the \textsf{spalign} package are presented; these are the
+% macros that most users will need.  Section~\ref{sec:options} contains the
+% package options.  The macros designed to allow the user to adapt the
+% \textsf{spalign} package to other situations are presented
+% in~\S\ref{sec:general}.
+%
+% \subsection{Alignment format}\label{sec:alignment}
+% The core functionality of the \textsf{spalign} package is to convert spaces to
+% alignment characters `|&|' and semicolons to end-of-row control sequences
+% `|\\|'.  This process is called \textit{retokenization}.  The retokenization
+% procedure is designed to work more or less how one would expect.
+% Retokenization of a string \meta{text} proceeds as follows.
+% \begin{enumerate}
+% \item Spaces at the beginning and end of \meta{text} are ignored, as are
+%   spaces at the beginning and end of a line, and spaces before and after a
+%   semicolon or a comma.
+% \item Multiple spaces are combined into one space.
+% \item Spaces between non-space characters are converted to |&| (really, to
+%   the contents of |\spalignaligntab|).
+% \item Commas (really, the contents of |\spalignseparator|) are also converted to
+% |&|.
+% \item Semicolons (really, the contents of |\spalignendofrow|) are
+%   converted to |\\| (really, to the contents of |\spalignendline|).
+% \item Text in braces |{...}| is treated as a unit: the contents are not
+%   retokenized, and the braces are preserved.
+% \end{enumerate}
+% These rules are best understood by example.
+%
+% \medskip\noindent\textbf{Example.} The command
+% \begin{verbatim}
+%    \[ \spalignmat{ 1
+%         -2 3 ; 4
+%         55 2^3;
+%         \frac{1 1}2 {1
+%         3} {1 0 1} } \]\end{verbatim}
+% produces
+% \[\spalignmat{ 1
+%        -2 3 ; 4
+%        55 2^3 ;
+%        \frac{1 1}2 {1
+%        3} {1 0 1} }.
+% \]
+%
+% \medskip\noindent\textbf{Example.} The command
+% \begin{verbatim}
+%    \[ \spalignmat{ \cos\theta, \sin\theta;
+%       -\sin\theta, \cos\theta} \]\end{verbatim}
+% produces
+% \[\spalignmat{ \cos\theta, \sin\theta;
+%      -\sin\theta, \cos\theta}.
+% \]
+% Here the commas are necessary: \TeX\ will not tokenize spaces following a
+% command sequence, so
+% \begin{verbatim}
+%    \[ \spalignmat{ \cos\theta \sin\theta;
+%       -\sin\theta \cos\theta} \]\end{verbatim}
+% produces the (presumably unexpected) result
+% \[\spalignmat{ \cos\theta \sin\theta;
+%      -\sin\theta \cos\theta}.
+% \]
+% Instead of commas, one could also type, for instance,
+% \begin{verbatim}
+%    \[ \spalignmat{ \cos\theta{} \sin\theta;
+%       -\sin{\theta} \cos\theta} \]\end{verbatim}
+% 
+% \medskip\noindent\textbf{Example.} The fact that expressions between braces
+% |{...}| are not retokenized allows for arbitrarily complex entries in
+% \textsf{spalign} macros---although these macros are probably not terribly
+% useful in such cases.  The \textsf{spalign} macros can even be nested: for
+% instance, 
+% \begin{verbatim}
+%    \[ \spalignmat{ \spalignmat{a b; c d} \spalignmat{a' b'; c' d'};
+%         \spalignmat{d e; f g} \spalignmat{d' e'; f' g'} } \] \end{verbatim}
+% produces
+% \[ \spalignmat{ \spalignmat{a b; c d} \spalignmat{a' b'; c' d'};
+%       \spalignmat{d e; f g} \spalignmat{d' e'; f' g'} }. \]
+% 
+%
+% \subsection{Utility macros}\label{sec:utility}
+% Most math-mode utility macros use the |array| environment internally.  This
+% can be the vanilla \LaTeX\ |array| environment, or the one from the
+% \textsf{array} package; it makes no difference.  All math-mode utility macros
+% have an un-starred version and a starred version.  The un-starred version
+% produces arrays with the delimiters defined by the package options
+% (see~\ref{sec:options}), and the starred version omits the delimiters (and the
+% glue between the delimiters and the array).
+%
+% As the only purpose of this package is to save keystrokes, the user may want
+% to put
+% \begin{verbatim}
+%    \let\mat=\spalignmat
+%    \let\amat=\spalignaugmat
+%    \let\vec=\spalignvector\end{verbatim}
+% or something similar after |\usepackage{spalign}|.  Note that |\mat*| will now
+% also be synonymous with |\spalignmat*|, etc.
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{\spalignarray}
+% \DescribeMacro{\spalignarray*}
+% \usage\spalignarray{\marg{alignment specifier}\marg{text}}
+% Produces a (potentially delimited) |array| environment, passing it
+% \meta{alignment specifier}, after retokenizing \meta{text}.  This is exactly
+% like the matrix environments below, except that it is possible to specify the
+% alignment of each column separately, add vertical bars, etc.
+% For example,
+% \begin{verbatim}
+%    \[ \spalignarray{l|c|r}{1 1 1; 100 100 100} \]\end{verbatim}
+% produces
+% \[ \DeleteShortVerb{\|}
+%    \spalignarray{l|c|r}{1 1 1; 100 100 100}. 
+%    \MakeShortVerb{\|}
+% \]
+% Note that |\spalignarray*| simply produces an |array| environment surrounding
+% the retokenized \meta{text}.
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{\spalignmat}
+% \DescribeMacro{\spalignmat*}
+% \usage\spalignmat{\oarg{column alignment}\marg{text}}
+% Produces a matrix whose columns are aligned according to the
+% \meta{column alignment}, after retokenizing \meta{text}.  The \meta{column alignment}
+% is an array environment alignment specifier for a single column (usually |l|,
+% |c|, or |r|), which is used for each column.  The default is |c|.  For example,
+% \begin{verbatim}
+%    \[ \spalignmat[l]{1 1 1; 100 100 100} \]\end{verbatim}
+% produces
+% \[ \spalignmat[l]{1 1 1; 100 100 100}. \]
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{\spalignvector}
+% \DescribeMacro{\spalignvector*}
+% \usage\spalignvector{\oarg{column alignment}\marg{text}}
+% Produces a matrix with one column.  Spaces, commas, and semicolons are all
+% retokenized to the end-of-row control sequence `|\\|'.  The
+% \meta{column alignment} is interpreted as in |\spalignmat|; the default is
+% |c|.  For example,
+% \begin{verbatim}
+%    \[ \spalignvector[r]{1 100 1000} \]\end{verbatim}
+% produces
+% \[ \spalignvector[r]{1 100 1000}. \]
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{\spalignaugmatn}
+% \DescribeMacro{\spalignaugmatn*}
+% \usage\spalignaugmatn{\oarg{column alignment}\marg{augmented columns}\marg{text}}
+% Produces a matrix with a vertical divider located \meta{augmented columns} from the
+% right side of the matrix.  The \meta{column alignment} is interpreted as in
+% |\spalignmat|; the default is |r|.  For example,
+% \begin{verbatim}
+%    \[ \spalignaugmatn[c]{3}{1 2 3 4; 10 20 30 40} \]\end{verbatim}
+% produces
+% \[ \spalignaugmatn[c]{3}{1 2 3 4; 10 20 30 40}. \]
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{\spalignaugmat}
+% \DescribeMacro{\spalignaugmat*}
+% \usage\spalignaugmat{\oarg{column alignment}\marg{text}}
+% This is the same as |\spalignaugmatn|, with \meta{augmented columns} equal to
+% $1$.  For example,
+% \begin{verbatim}
+%    \[ \spalignaugmat{1 2 3 4; 10 20 30 40} \]\end{verbatim}
+% produces
+% \[ \spalignaugmat{1 2 3 4; 10 20 30 40}. \]
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{\spalignaugmathalf}
+% \DescribeMacro{\spalignaugmathalf*}
+% \usage\spalignaugmathalf{\oarg{column alignment}\marg{text}}
+% This is the same as |\spalignaugmatn|, with \meta{augmented columns} equal to
+% the largest integer less or equal to half of the total number of columns
+% parsed from \meta{text}.  For example,
+% \begin{verbatim}
+%    \[ \spalignaugmathalf[l]{1 2 3 4; 10 20 30 40} \]\end{verbatim}
+% produces
+% \[ \spalignaugmathalf[l]{1 2 3 4; 10 20 30 40}. \]
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{\spalignsys}
+% \DescribeMacro{\spalignsys*}
+% \usage\spalignsys{\marg{text}}
+% Typesets systems of simple equations so that binary operators and relations
+% are aligned vertically, and variables are right-justified.  This macro assumes
+% that variables are in odd columns and that binary operators and relations are
+% in even columns.  For example,
+% \begin{verbatim}
+%    \[ \spalignsys{2x + y = 4; x - 3y = -17} \]\end{verbatim}
+% produces
+% \[ \spalignsys{2x + y = 4; x - 3y = -17\rlap.} \]
+% Within \marg{text} the macro |\+| is defined to be an empty box with the size
+% and spacing of a binary operator, the macro |\=| is defined to be an empty box
+% with the size and spacing of a relation, and the macro |\.| is defined to be
+% empty.  (Ordinarily, the latter two macros produce th\=ese acc\.ents, but they
+% cannot be used in math mode.)  This allows one to deal with empty columns in
+% an easy-to-read way: for example,
+% \begin{verbatim}
+%    \[ \spalignsys{
+%         2x \+ \. - 3z =  1; 
+%         \. \+ 4y +  z = -4}
+%    \]\end{verbatim}
+% produces
+%    \[ \spalignsys{
+%         2x \+ \. - 3z = 1; 
+%         \. \+ 4y +  z = -4\rlap.} 
+%    \]
+% As with the matrix macros, delimiters can be changed with the package options.
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{\spaligntabular}
+% \usage\spaligntabular{\marg{alignment specifier}\marg{text}}
+% Produces an (undelimited) |tabular| environment, passing it
+% \meta{alignment specifier}, after retokenizing \meta{text}.  This macro may be
+% used outside of math mode, and therefore is undelimited.
+% For example,
+% \begin{verbatim}
+%    \spaligntabular{lrc}{a b c; aa bb cc}\end{verbatim}
+% produces
+% \[ \spaligntabular{lcr}{a b c; aa bb cc} \]
+%
+% \subsection{Package options}\label{sec:options}
+% The following package options can be specified as key-value pairs when the
+% package is loaded, as in
+% \begin{verbatim}
+%    \usepackage[sep={,},endofrow=;]{spalign} \end{verbatim}
+% They can also be set directly with macros, which are described as well.
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{delims}
+% \DescribeMacro{\spaligndelims}
+% \poption Use: Specifies the delimiters used by all matrix macros.\endopt
+% \poption Format: Must contain exactly two delimiter tokens, the first for the left
+%   delimiter, the second for the right.\endopt
+% \poption Default: |delims=()|\endopt
+% \poption Macro: |\spaligndelims|\marg{left-delim}\marg{right-delim}\endopt
+% \smallskip
+% It is easier to specify |\{\}| as delimiters using the macro form.
+% For example,
+% \begin{verbatim}
+%    \[ \spaligndelims\vert\vert \spalignmat{a b; c d} \]\end{verbatim}
+% produces
+% \[ \spaligndelims\vert\vert \spalignmat{a b; c d}. \]
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{sysdelims}
+% \DescribeMacro{\spalignsysdelims}
+% These function the same way as |delims| and |\spaligndelims|, except they
+% apply only to the |\spalignsys| macro.  The default is |\spalignsysdelims\{.|,
+% i.e., left brace and no right delimiter.
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{matdelimskip}
+% \DescribeMacro{\spalignmatdelimskip}
+% \poption Use: Specifies the glue to insert between delimiters and the internal
+%   |array| environment in (un-starred) math-mode matrix macros, i.e., all
+%   math-mode utility macros except |\spalignvector|.\endopt
+% \poption Format: Should either be empty, or expand to a legal |\hskip|,
+%   |\mskip|, or |\kern| command.  (Really any sequence of tokens can be
+%   specified; they will dutifully be inserted between the delimiters and the
+%   |array|, but this behavior may change in future versions.)\endopt
+% \poption Default: |matdelimskip=\,|\endopt
+% \poption Macro: |\def\spalignmatdelimskip|\marg{skip}\endopt
+% \smallskip
+% Actually, an additional skip of |\hskip-\arraycolsep| is always added; the
+% effect is that if |matdimskip| is empty, then there is no extra space between
+% the outer columns of the |array| and the delimiters.  This is how the
+% \textsf{amsmath} package's |matrix| environment is defined.  It is this
+% package author's opinion that matrices look better when a thin space is added
+% between the outer columns of the |array| and the delimiters.  To keep the
+% original array spacing inside the delimiters, specify
+% |matdelimskip=\hskip\arraycolsep|.
+%
+% Here are four matrices typeset, respectively, with |matdelimskip|
+% set to |{}|, |\,|, |\;|, and |{\hskip\arraycolsep}|.
+% \[ \def\spalignmatdelimskip{}   \spalignmat{10 20; 30 40} \quad
+%    \def\spalignmatdelimskip{\,} \spalignmat{10 20; 30 40} \quad
+%    \def\spalignmatdelimskip{\;} \spalignmat{10 20; 30 40} \quad
+%    \def\spalignmatdelimskip{\hskip\arraycolsep} \spalignmat{10 20; 30 40}
+%  \]
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{vecdelimskip}
+% \DescribeMacro{\spalignvecdelimskip}
+% These function the same way as |matdelimskip| and |\spalignmatdelimskip|,
+% except they apply only to the |\spalignvector| macro.  The default is no extra
+% skip in vectors, i.e., |vecdelimskip={}|.
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{sysdelimskip}
+% \DescribeMacro{\spalignsysdelimskip}
+% These function the same way as |matdelimskip| and |\spalignmatdelimskip|,
+% except they apply only to the |\spalignsys| macro.  The default is
+% |sysdelimskip=\,|.
+%
+% Actually there is a slight difference: the |\halign| primitive used in the
+% |\spalignsys| macro does not put glue on the outsides of the columns, so that
+% it is unnecessary to subtract any |\arraycolsep| glue.
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{systabspace}
+% \DescribeMacro{\spalignsystabspace}
+% \poption Use: Specifies the amount of glue between columns in
+%   |\spsysalign|.\endopt 
+% \poption Format: Must be a legal glue specification.\endopt
+% \poption Default: |systabspace=1pt|\endopt
+% \poption Macro: |\spalignsystabspace=|\meta{glue}\endopt
+% \smallskip
+% Equations with operators, relations, and variables all aligned look a 
+% better with a bit of extra spacing between these three.  Setting |systabspace|
+% to zero will cause the equations to use their natural spacing, subject to
+% the alignment. For example, the following systems of equations were typeset,
+% respectively, with |systabspace| set to |0pt|, |1pt|, and |5pt|.
+%   \[ 
+%      \spalignsystabspace=0pt \spalignsys{2x + y = 4; x - 3y = -17} \qquad
+%      \spalignsystabspace=1pt \spalignsys{2x + y = 4; x - 3y = -17} \qquad
+%      \spalignsystabspace=5pt \spalignsys{2x + y = 4; x - 3y = -17\rlap.}
+%   \]
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{endofrow}
+% \DescribeMacro{\spalignendofrow}
+% \poption Use: Specifies the token to convert into the end-of-row
+%   control sequence |\\| (really into the contents of |\spalignendline|) during
+%   retokenization.\endopt
+% \poption Format: Must consist of a single token.\endopt
+% \poption Default: |endofrow=;|\endopt
+% \poption Macro: |\def\spalignendofrow|\marg{token}\endopt
+% \smallskip
+% For example,
+% \begin{verbatim}
+%   \[ \def\spalignendofrow{|} 
+%      \spalignmat{1;2 3;4 | 5;6 7;8} \]\end{verbatim}
+% produces
+% \[ \def\spalignendofrow{|} \spalignmat{1;2 3;4 | 5;6 7;8}. \]
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{separator}
+% \DescribeMacro{\spalignseparator}
+% \poption Use: Specifies a token (in addition to space tokens) to convert into
+%   the alignment character `|&|' (really the contents of |\spalignseparator|)
+%   during  retokenization.\endopt
+% \poption Format: Must consist of a single token.\endopt
+% \poption Default: |separator={,}|\endopt
+% \poption Macro: |\def\spalignseparator|\marg{token}\endopt
+% \smallskip
+% For example,
+% \begin{verbatim}
+%   \[ \def\spalignseparator{|} 
+%      \spalignmat{(1,2)|(3,4);(5,6)|(7,8)} \]\end{verbatim}
+% produces
+%   \[ \def\spalignseparator{|} \spalignmat{(1,2)|(3,4);(5,6)|(7,8)}. \]
+%
+% \bigskip
+% The following commands can be redefined to affect the behavior of the package,
+% but cannot be specified as key-value pairs when the package is loaded.
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{\spalignendline}
+% \poption Use: The end-of-row token is replaced by the top-level expansion of
+%   this macro during retokenization.\endopt
+% \poption Format: May contain any tokens.\endopt
+% \poption Default: |\def\spalignendline{\\}|\endopt
+% \smallskip
+% This is useful, for instance, when using \textsf{spalign} in conjunction with
+% plain \TeX-style alignment macros that use |\cr| as the end-of-row token.
+% See the documentation for |\spalignrun| in~\S\ref{sec:general} and the
+% implementation of |\spalignsys| for examples.
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{\spalignaligntab}
+% \poption Use: Spaces and the contents of |\spalignseparator| are replaced by the
+%   top-level expansion of this macro during retokenization.\endopt
+% \poption Format: May contain any tokens.\endopt
+% \poption Default: |\def\spalignaligntab{&}|\endopt
+% \smallskip
+% This is useful, for instance, in one-column alignments.  For example,
+% \begin{verbatim}
+%   \[ \def\spalignaligntab{\\} \spalignmat{12 1 2 13} \]\end{verbatim}
+% produces
+%   \[ \def\spalignaligntab{\\} \spalignmat{12 1 2 13}. \]
+% The |\spalignvector| macro is defined in this way.
+%
+%
+% \subsection{General macros}\label{sec:general}
+% The following macros are meant to make it easy to make new utility macros
+% in different situations using \textsf{spalign}.
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{\spalignretokenize}
+% \usage\spalignretokenize{\marg{text}}
+% Applies the retokenization procedure to \meta{text}, and expands to the
+% retokenized version.  For instance, |\spalignretokenize{1 2; 3 4}| expands to
+% |1&2\\3&4|.  
+% For example, using the |split| environment from the
+% \textsf{amsmath} package,
+% \begin{verbatim}
+%    \[ \begin{split}
+%         \spalignretokenize{f_0 =1; f_1 =1; f_{n+2} =f_n+f_{n+1}}
+%       \end{split} \]\end{verbatim}
+% produces
+%    \[ \begin{split}
+%         \spalignretokenize{f_0 =1; f_1 =1; f_{n+2} =f_n+f_{n+1}}.
+%       \end{split} \]
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{\spalignrun}
+% \usage\spalignrun{\marg{tokens}\marg{text}}
+% Applies the retokenization procedure to \meta{text}, saving the result into
+% the token register |\spaligntoks| (see below).  Then executes \meta{tokens},
+% which presumably makes reference to |\spaligntoks|.  For example,
+% \begin{verbatim}
+%    \[ \def\spalignendline{\cr}
+%       \spalignrun{\bordermatrix{\the\spaligntoks}}
+%           {, x y; u 1 2; v 3 4} \]\end{verbatim}
+% produces
+%    \[ \def\spalignendline{\cr}
+%       \spalignrun{\bordermatrix{\the\spaligntoks}}
+%           {, x y; u 1 2; v 3 4}. \]
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{\spalignenv}
+% \usage\spalignenv{\marg{before-tokens}\marg{after-tokens}\marg{text}}
+% Convenience macro that expands to 
+% \[ \hbox{|\spalignrun{|\meta{before-tokens}
+%    |\the\spaligntoks| \meta{after-tokens}|}{|\meta{text}|}|.} \]
+% For example, using the |align*| environment from the
+% \textsf{amsmath} package,
+% \begin{verbatim}
+%    \spalignenv{\begin{align*}}{\end{align*}}%
+%      {x =y x' =y'; z =w z' =w'.}\end{verbatim} 
+% produces
+%    \spalignenv{\begin{align*}}{\end{align*}}%
+%      {x =y x' =y'; z =w z' =w'.} 
+%
+% \bigskip
+% The \meta{tokens} arguments of |\spalignrun| and |\spalignenv| have access to
+% the following registers, which are defined locally in a group inside
+% |\spalignrun| and |\spalignenv|.
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{\spaligntoks}
+% A tokens register that contains the result of the retokenizing procedure.
+%
+% \bigskip
+% \noindent
+% \DescribeMacro{\spalignmaxcols}
+% A count register that contains the maximum number of columns in any given row,
+% as parsed by the retokenizer.  This is used in |\spalignmat| and in the
+% |\spalignaugmat| family of macros.
+
+% \StopEventually{}
+%
+% \section{Implementation}
+% 
+% \subsection{Options processing}
+%
+%    \begin{macrocode}
+\makeatletter
+
+\RequirePackage{kvoptions}
+%    \end{macrocode}
+% With the following options, the key |foo| gets stored as |\spalign@foo|.
+%    \smallskip
+%    \begin{macrocode}
+\SetupKeyvalOptions{family=spalign,prefix=spalign@}
+
+\DeclareStringOption[()]{delims}
+\DeclareStringOption[\{.]{sysdelims}
+\DeclareStringOption[\,]{matdelimskip}
+\DeclareStringOption[]{vecdelimskip}
+\DeclareStringOption[\,]{sysdelimskip}
+\DeclareStringOption[1pt]{systabspace}
+\DeclareStringOption[;]{endofrow}
+\DeclareStringOption[,]{separator}
+
+\ProcessLocalKeyvalOptions*
+
+\def\spaligndelims#1#2{%
+  \def\spalign@leftdelim{#1}\def\spalign@rightdelim{#2}}
+\expandafter\spaligndelims\spalign@delims
+\def\spalignsysdelims#1#2{%
+  \def\spalign@sysleftdelim{#1}\def\spalign@sysrightdelim{#2}}
+\expandafter\spalignsysdelims\spalign@sysdelims
+\let\spalignmatdelimskip=\spalign@matdelimskip
+\let\spalignvecdelimskip=\spalign@vecdelimskip
+\let\spalignsysdelimskip=\spalign@sysdelimskip
+\newdimen\spalignsystabspace
+\spalignsystabspace=\spalign@systabspace
+\let\spalignendofrow=\spalign@endofrow
+\let\spalignseparator=\spalign@separator
+\def\spalignendline{\\}
+\def\spalignaligntab{&}
+%    \end{macrocode}
+%
+% \bigskip
+% \subsection{Main retokenizing code}
+% The retokenizer processes the input token list one ``item'' at a time,
+% performing replacements as necessary, and saving the resulting tokens in
+% |\spaligntoks|.  The difficulties arise because of the special treatment that
+% \TeX\ gives to spaces and braces.  First let's review the rules of the game:
+% \begin{enumerate}\itemsep=1\jot\parskip=0pt
+% \item Spaces after a control sequence are not tokenized.
+% \item Multiple spaces are tokenized into a single space.
+% \item Space tokens between a control sequence and its argument are ignored:
+%   undelimited spaces are never interpreted as a macro argument.
+% \item Braces around a macro argument are stripped.
+% \item The |\futurelet|\meta{control sequence}\meta{token1}\meta{token2} syntax
+%   will |\let| the specified \meta{control sequence} be \meta{token2}, nomatter
+%   what kind of token \meta{token2} is.
+% \end{enumerate}
+% Consider then a macro |\retokenize#1{...}| and the token sequence
+% \[ \hbox{|\retokenize |\tvs|{\bf a}b|} \]
+% The |\retokenize| macro needs to recognize both the space (as it should be
+% replaced by an align token, if other non-space tokens have just been processed),
+% and the braces (so |{\bf a}b| is not replaced by |\bf ab|).  However, the
+% argument to |\retokenize| will be |\bf a|; the space and braces are ignored.
+%
+% The solution, of course, is judicious use of |\futurelet|.  (One could
+% conceivably use |\let| and |\futurelet| exclusively, except then one would
+% have the opposite problem: we \emph{want} the retokenizer to swallow whole
+% arguments in braces.)  This is still somewhat tricky:
+% \[ \hbox{|\futurelet\next\retokenize |\tvs|{\bf a}b|} \]
+% will expand |\retokenize| with the argument set to |\bf a| and |\next|
+% behaving like \tvs, but the braces will still disappear.  Hence one has to use
+% the |\futurelet| in a macro which does not take any arguments.
+%
+% Here is the outline of the solution to the problem used in this package.  The
+% |\spalign@gobble@spaces| macro has the effect of deleting the subsequent
+% sequence of space tokens and replacing them with the token
+% |\spalign@parsetoks|.  It sets |\spalign@saw@spacetrue| if it ate at least
+% one space token, and in any case it sets |\spalign@nexttok| to the following
+% token.  The |\spalign@parsetoks| macro takes one argument.  When it is
+% executed, |\spalign@nexttok| represents a non-space token.  Now
+% |\spalign@parsetoks| knows if the token beginning its argument is a brace, and
+% it knows if there was a space preceding the brace as well, using
+% |\ifspalign@saw@space|.  It can proceed to parse its argument in a
+% straightforward manner, eventually expanding back into
+% |\splign@gobble@spaces|, unless it sees |\spalign@end|, which signifies the
+% end of input.
+%
+% See Appendix~D in the {\TeX}book for a discussion of these kinds of tricks.
+%
+% \begin{macro}{\spalign@makespace}
+%   This macro expands to a single space token.  It is mildly tricky to
+%   construct, since \TeX\ allows one optional space token after |\let\foo| or
+%   |\let\foo=|, but multiple spaces are combined into one space token.  Here is
+%   one trick for producing two consecutive space tokens.  See Exercise~24.6 in
+%   the {\TeX}book.
+%    \begin{macrocode}
+\begingroup
+\def\\{\global\let\spalign@space= } \\ %
+\endgroup
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalign@end}
+%   Sentinel macro that is used to mark the end-of-input for
+%   |\spalign@parsetoks|.  Defining it recursively like this has the
+%   disadvantage that \LaTeX\ will hang if it tries to expand |\spalign@end|.
+%   On the other hand, one can test whether a token is |\spalign@end| using
+%   |\ifx| without using some other sentinel expansion of the macro, and the
+%   only reason |\spalign@end| would be executed is if there is a bug in this
+%   package. 
+%    \begin{macrocode}
+\def\spalign@end{\spalign@end}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalign@bgroup}
+%   This is just used to test whether a token is a literal |\bgroup| (as opposed
+%   to an actual open brace |{|) using |\ifx|.
+%    \begin{macrocode}
+\def\spalign@bgroup{\bgroup}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalign@curcols}
+%   This counter keeps track of how many columns are in the current row.
+%    \begin{macrocode}
+\newcount\spalign@curcols
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\ifspalign@ignorespaces}
+%   Boolean variable which keeps track of whether spaces should be ignored in
+%   the current state, like after an end-of-row token.
+%    \begin{macrocode}
+\newif\ifspalign@ignorespaces
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\ifspalign@saw@space}
+%   Boolean variable which is true if the argument to |\spalign@parsetoks| was
+%   preceded by at least one space token.
+%    \begin{macrocode}
+\newif\ifspalign@saw@space
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalign@gobble@spaces}
+%   This macro has the effect of deleting any subsequent space tokens, replacing
+%   them with |\spalign@parsetoks|.  It sets |\spalign@nexttok| to the next
+%   (non-space) token, and sets |\spalign@saw@spacetrue| if it ate at least one
+%   space.  The boolean variable |\ifspalign@saw@space| should be false before
+%   |\spalign@gobble@spaces| is first executed.
+%
+%   The macro |\spalign@gobble@next| has the effect of replacing the following
+%   token with |\spalign@gobble@spaces|.
+%    \begin{macrocode}
+\def\spalign@gobble@next{%
+  \afterassignment\spalign@gobble@spaces\let\spalign@atoken= }
+\def\spalign@check@space{%
+  \ifx\spalign@nexttok\spalign@space%
+    \spalign@saw@spacetrue%
+    \let\spalign@next=\spalign@gobble@next%
+  \else%
+%    \end{macrocode}
+%   Don't set |\spalign@saw@spacefalse| here: eventually we will run
+%   into a non-space token.
+%    \begin{macrocode}
+    \let\spalign@next=\spalign@parsetoks%
+  \fi%
+  \spalign@next%
+  }
+\def\spalign@gobble@spaces{%
+  \futurelet\spalign@nexttok\spalign@check@space}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalign@append}
+%   Convenience macro that appends its argument, unexpanded, onto the token
+%   register |\spaligntoks|.
+%    \begin{macrocode}
+\def\spalign@append#1{%
+  \begingroup%
+  \toks255={#1}%
+%    \end{macrocode}
+%   The |\edef| and |\xdef| macros do not expand tokens obtained by expanding a
+%   token register.
+%    \begin{macrocode}
+  \xdef\spalign@settok{%
+    \spaligntoks={\the\spaligntoks\the\toks255}}%
+  \endgroup%
+  \spalign@settok%
+  }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalign@addcol}
+%   Convenience macro to take care of housekeeping when an align column has been
+%   parsed but the row is not complete.  Note that it appends the top-level
+%   expansion of |\spaligntab| to |\spaligntoks|, not the token |\spaligntab|
+%   itself.
+%    \begin{macrocode}
+\def\spalign@addcol{%
+  \expandafter\spalign@append\expandafter{\spalignaligntab}%
+  \advance\spalign@curcols by 1 %
+  }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalign@endrow}
+%   Convenience macro to take care of housekeeping when a row has been ended,
+%   either by an end-of-row token or an end-of-input token.
+%    \begin{macrocode}
+\def\spalign@endrow{%
+  \advance\spalign@curcols by 1 %
+  \ifnum\spalign@curcols>\spalignmaxcols%
+    \spalignmaxcols=\spalign@curcols%
+  \fi%
+  \spalign@curcols=0%
+  \spalign@ignorespacestrue%
+  }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalign@normaltok}
+%   Convenience macro to take care of housekeeping when a non-special token (not
+%   a space, end-of-row token, separator token, or end-of-input token) has been
+%   parsed.  The boolean variable |\ifspalign@saw@space| will be true if the token
+%   preceding the non-special token was a space.
+%    \begin{macrocode}
+\def\spalign@normaltok{%
+  \ifspalign@saw@space%
+    \ifspalign@ignorespaces%
+    \else%
+      \spalign@addcol%
+    \fi%
+  \fi%
+  \spalign@ignorespacesfalse%
+  }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalign@parsetoks}
+%   This is the main retokenizing routine.  It is only called by
+%   |\spalign@gobble@spaces|.  When it is expanded, |\spalign@nexttok| is the
+%   token that immediately follows the |\spalign@parsetoks| token itself; this
+%   is not a space.  The value of the boolean variable |\ifspalign@saw@space| is
+%   true if there was a space before the argument of |\spalign@parsetoks| in the
+%   token list.
+%    \begin{macrocode}
+\def\spalign@parsetoks#1{%
+  \let\spalign@next=\spalign@gobble@spaces%
+%    \end{macrocode}
+%   This is for |\ifx| comparisons:
+%    \begin{macrocode}
+  \def\spalign@arg{#1}%
+%    \end{macrocode}
+%   Anything in braces is passed through untouched:
+%    \begin{macrocode}
+  \ifx\spalign@nexttok\bgroup%
+    \spalign@normaltok%
+    \ifx\spalign@arg\spalign@bgroup%
+%    \end{macrocode}
+%   The argument is a literal |\bgroup|, not a brace.
+%    \begin{macrocode}
+      \spalign@append{#1}%
+    \else%
+%    \end{macrocode}
+%   Re-wrap the argument in braces and append.
+%    \begin{macrocode}
+      \spalign@append{{#1}}%
+    \fi%
+  \else%
+%    \end{macrocode}
+%   The argument is not wrapped in braces.
+%    \begin{macrocode}
+    \ifx\spalign@arg\spalignendofrow%
+%    \end{macrocode}
+%   End-of-row token.  Append the top-level expansion of |\spalignendline|.
+%   (Ignore previous spaces.)
+%    \begin{macrocode}
+      \expandafter\spalign@append\expandafter{\spalignendline}%
+      \spalign@endrow%
+    \else%
+      \ifx\spalign@arg\spalignseparator%
+%    \end{macrocode}
+%   Separator token.  (Ignore previous spaces.)
+%    \begin{macrocode}
+        \spalign@addcol%
+        \spalign@ignorespacestrue%
+      \else%
+        \ifx\spalign@arg\spalign@end%
+%    \end{macrocode}
+%   End-of-input token.  End the current row to record |\spalign@maxcols|.
+%   (Ignore previous spaces.)
+%    \begin{macrocode}
+          \let\spalign@next=\relax%
+          \spalign@endrow%
+        \else%
+%    \end{macrocode}
+%   Non-special token.
+%    \begin{macrocode}
+          \spalign@normaltok%
+          \spalign@append{#1}%
+        \fi%
+      \fi%
+    \fi%
+  \fi%
+%    \end{macrocode}
+%   Reset |\ifspalign@saw@space| for the next |\spalign@gobble@spaces|.
+%    \begin{macrocode}
+  \spalign@saw@spacefalse%
+  \spalign@next%
+  }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalign@process}
+%   This is a wrapper for |\spalign@parsetoks|.  It initializes registers and
+%   boolean variables, then starts the parsing routine with
+%   |\spalign@gobble@spaces|.  It should be run in a local group.  It stops
+%   processing at |\spalign@end|.  It fills |\spalignmaxcols| and |\spaligntoks|
+%   with the results of the retokenization.  It replaces everything in the token
+%   list up through |\spalign@end| with |\relax|.
+%    \begin{macrocode}
+\def\spalign@process{%
+  \spaligntoks={}%
+  \spalignmaxcols=0%
+  \spalign@curcols=0%
+  \spalign@ignorespacestrue%
+  \spalign@saw@spacefalse%
+  \spalign@gobble@spaces%
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Poor man's starred commands}
+% There are several excellent packages that allow for flexible command
+% specifications.  However, the needs of this package are minimal as regards
+% starred commands, so in order to reduce dependencies, this package contains
+% its own simple implimentation.
+%
+% \begin{macro}{\ifspalign@star}
+%   Boolean variable which records whether or not the current command has a star
+%   on it.
+%    \begin{macrocode}
+\newif\ifspalign@star
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalign@def@star}
+%   Used like |\def|, the command |\spalign@def@star\foo{...}| defines a macro
+%   |\foo| which can be called as |\foo| or |\foo*|.  In the body of |\foo|,
+%   the boolean variable |\ifspalign@star| indicates whether the command was
+%   called with a star.
+%
+%   This command actually defines three commands: |\foo|, |\foo@x|, and
+%   |\foo@star|.  The first calls the second with |\spalign@nexttok| defined via
+%   |\futurelet| to the token following |\foo|.  The command |\foo@x| checks
+%   whether or not the next token is a star, and if it is, it is removed from
+%   the token list.  It then sets |\ifspalign@star| appropriately and calls
+%   |\foo@star|, which contains the original command definition.  Of course,
+%   |\foo@star| can then be redefined, for instance using |\newcommand|, to take
+%   advantage of \LaTeX's optional argument parsing.
+%    \begin{macrocode}
+\def\spalign@gobble@one#1{}
+
+\def\spalign@def@star#1{%
+%    \end{macrocode}
+%   If |#1| is |\foo|, then |\spalign@cmd| expands to |\foo|,
+%   |\spalign@cmd@x| expands to |\foo@x|, and |\spalign@cmd@star| expands to
+%   |\foo@star|.
+%    \begin{macrocode}
+  \def\spalign@cmd{#1}%
+  \edef\spalign@cmd@x{%
+    \csname\expandafter\spalign@gobble@one\string#1@x\endcsname}%
+  \edef\spalign@cmd@star{%
+    \csname\expandafter\spalign@gobble@one\string#1@star\endcsname}%
+%    \end{macrocode}
+%   Make |\foo@x| unexpandable.  (The |\csname...\endcsname| construction
+%   already does this, but only if |\foo@x| was previously undefined.)  This
+%   makes it easier to define |\foo|.
+%    \begin{macrocode}
+  \expandafter\let\spalign@cmd@x=\relax
+  \expandafter\edef\spalign@cmd{%
+    \futurelet\noexpand\spalign@nexttok\spalign@cmd@x}%
+%    \end{macrocode}
+%   I don't know a less annoying but still short way of defining a token list
+%   where only one token in the middle is to be expanded, and that one token only
+%   once (not recursively).
+%    \begin{macrocode}
+  \def\spalign@mkcmd##1{%
+    \expandafter\def\spalign@cmd@x{%
+      \ifx\spalign@nexttok*%
+        \spalign@startrue%
+        \let\spalign@next=\spalign@gobble@one%
+      \else%
+        \spalign@starfalse%
+        \def\spalign@next{}%
+      \fi%
+%    \end{macrocode}
+%   Expanding |\spalign@gobble@one| before |##1| (which is |\foo@star|) eats the
+%   star before parsing the arguments for |\foo@star|.
+%    \begin{macrocode}
+      \expandafter##1\spalign@next%
+      }%
+    }%
+  \expandafter\spalign@mkcmd\spalign@cmd@star%
+  \expandafter\def\spalign@cmd@star%
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{General macros}
+%
+% Here are the definitions of the macros presented in~\S\ref{sec:general}.
+%    \begin{macrocode}
+\newtoks\spaligntoks
+\newcount\spalignmaxcols
+%    \end{macrocode}
+% \begin{macro}{\spalignrun}
+%   Calls |\spalign@process| on |#2|, then inserts |#1|, in a group.
+%   Presumably |#1| will refer to |\spaligntoks| and/or |\spalignmaxcols|.
+%    \begin{macrocode}
+\def\spalignrun#1#2{%
+  \begingroup%
+  \spalign@process#2\spalign@end%
+  %\showthe\spaligntoks%  For debugging
+  #1%
+  \endgroup%
+  }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalignenv}
+%   This effectively calls |\spalign@process| on |#3|, then puts the resulting
+%   token list between |#1| and |#2|.  Both |#1| and |#2| have access to
+%   |\spaligntoks| and |\spalignmaxcols|.
+%    \begin{macrocode}
+\def\spalignenv#1#2{%
+  \spalignrun{%
+    #1%
+    \the\spaligntoks%
+    #2%
+    }%
+  }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalignretokenize}
+%   This calls |\spalign@process| on |#1|, then expands to |\the\spaligntoks|.
+%    \begin{macrocode}
+\def\spalignretokenize#1{%
+  \begingroup%
+  \spalign@process#1\spalign@end%
+  \expandafter\endgroup\the\spaligntoks%
+  }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spaligntabular}
+%   Tabular utility macro.
+%    \begin{macrocode}
+\def\spaligntabular#1#2{%
+  \begin{tabular}{#1}\spalignretokenize{#2}\end{tabular}}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalign@maybedelim}
+%   This is like |\spalignenv|, but it adds delimiters and the glue specified in
+%   |#3| before |#1| and after |#2|, if |\ifspalign@star| is false.
+%    \begin{macrocode}
+\def\spalign@maybedelim#1#2#3{%
+  \spalignenv%
+    {\ifspalign@star\else\left\spalign@leftdelim#3\fi#1}%
+    {#2\ifspalign@star\else#3\right\spalign@rightdelim\fi}%
+  }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalignarray}
+%   Array utility macro with delimiters.
+%    \begin{macrocode}
+\spalign@def@star\spalignarray#1{%
+  \spalign@maybedelim%
+    {\begin{array}{#1}}%
+    {\end{array}}%
+    {\hskip-\arraycolsep\spalignmatdelimskip}%
+  }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalignvector}
+%   Vector utility macro: an array with one column, with |\spaligntab| set to
+%   |\\| so that spaces produce new rows.
+%    \begin{macrocode}
+\spalign@def@star\spalignvector{}
+\renewcommand\spalignvector@star[2][c]{%
+  \begingroup%
+  \def\spalignaligntab{\\}%
+  \spalign@maybedelim%
+    {\begin{array}{#1}}%
+    {\end{array}}%
+%    \end{macrocode}
+%   Note the use of |\spalignvecdelimskip| here.
+%    \begin{macrocode}
+    {\hskip-\arraycolsep\spalignvecdelimskip}%
+    {#2}%
+  \endgroup%
+  }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalign@repeat}
+%   Sets |\spalign@repeated| to |#1|, repeated |#2| times.  Used for
+%   auto-constructing |array| alignment specifications from |\spalignmaxcols|.
+%    \begin{macrocode}
+\def\spalign@repeat#1#2{%
+  \begingroup%
+  \count255=0 %
+  \toks255={}%
+  \loop\ifnum\count255<#2%
+    \edef\spalign@settok{\toks255={\the\toks255 #1}}%
+    \spalign@settok%
+    \advance\count255 by 1 %
+  \repeat%
+  \xdef\spalign@repeated{\the\toks255}%
+  \endgroup
+  }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalignmat}
+%   Matrix utility macro.  Uses |\spalignmaxcols| and |\spalign@repeat| to
+%   construct the |array| align specification.
+%    \begin{macrocode}
+\spalign@def@star\spalignmat{}
+\renewcommand\spalignmat@star[1][c]{%
+  \spalign@maybedelim{%
+    \spalign@repeat{#1}{\spalignmaxcols}%
+    \edef\spalign@barray{\noexpand\begin{array}{%
+        \spalign@repeated}}%
+    \spalign@barray%
+    }{\end{array}%
+    }{\hskip-\arraycolsep\spalignmatdelimskip}%
+  }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalignaugmatn}
+%   Augmented matrix with |#2| columns on the right of the vertical bar.  Uses
+%   |\spalignmaxcols| and |\spalign@repeat| to construct the |array| align
+%   specification.
+%    \begin{macrocode}
+\spalign@def@star\spalignaugmatn{}
+\renewcommand\spalignaugmatn@star[2][r]{%
+  \spalign@maybedelim{%
+    \advance\spalignmaxcols by -#2 %
+    \spalign@repeat{#1}{\spalignmaxcols}%
+    \let\spalign@repeated@one=\spalign@repeated%
+    \spalign@repeat{#1}{#2}%
+    \let\spalign@repeated@two=\spalign@repeated%
+    \edef\spalign@barray{\noexpand\begin{array}{%
+        \spalign@repeated@one|\spalign@repeated@two}}%
+    \spalign@barray%
+    }{\end{array}%
+    }{\hskip-\arraycolsep\spalignmatdelimskip}%
+  }%
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalignaugmat}
+%   Augmented matrix with one column on the right of the vertical bar.
+%    \begin{macrocode}
+\spalign@def@star\spalignaugmat{}
+\renewcommand\spalignaugmat@star[1][r]{%
+  \spalignaugmatn@star[#1]{1}%
+  }%
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalignaugmathalf}
+%   Augmented matrix with (ceiling of) half the columns on the right.
+%    \begin{macrocode}
+\spalign@def@star\spalignaugmathalf{}
+\renewcommand\spalignaugmathalf@star[1][r]{%
+  \spalign@maybedelim{%
+    \count255=\spalignmaxcols%
+    \divide\spalignmaxcols by 2 %
+    \advance\count255 by -\spalignmaxcols%
+    \spalign@repeat{#1}{\spalignmaxcols}%
+    \let\spalign@repeated@one=\spalign@repeated%
+    \spalignmaxcols=\count255%
+    \spalign@repeat{#1}{\spalignmaxcols}%
+    \let\spalign@repeated@two=\spalign@repeated%
+    \edef\spalign@barray{\noexpand\begin{array}{%
+      \spalign@repeated@one|\spalign@repeated@two}}%
+    \spalign@barray%
+    }{\end{array}%
+    }{\hskip-\arraycolsep\spalignmatdelimskip}%
+  }%
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\spalignsys}
+%   System of equations with aligned operators and variables.
+%    \begin{macrocode}
+\spalign@def@star\spalignsys#1{%
+  \ifspalign@star\else%
+    \left\spalign@sysleftdelim\spalignsysdelimskip%
+  \fi%
+  \vcenter{%
+    \def\spalignendline{\cr}%
+    \openup1pt%
+    \tabskip=0pt%
+    \def\+{\mathbin{\phantom{+}}}%
+    \def\={\mathrel{\phantom{=}}}%
+    \def\.{}%
+    \halign{%
+%    \end{macrocode}
+% Adding |{}| to each side of the align argument in the even columns causes
+% binary operators ($+$, $-$, $\ldots$) and relations ($=$, $<$, $\ldots$) to
+% use their natural spacing.  Assuming the even columns contain only binary
+% operators (resp.\ only relations), these columns will all be the same width.
+% The |\hfil| in the odd columns right-justifies.  There should be no spaces in
+% the templates.
+%    \begin{macrocode}
+      \tabskip=\spalignsystabspace%      
+      &$\hfil##$&${}##{}$\cr%
+      \spalignretokenize{#1}\crcr%
+      }%
+%    \end{macrocode}
+% It seems that one can't specify tabskip glue for after the last column when
+% there are repeated templates.
+%    \begin{macrocode}
+    }\hskip-\spalignsystabspace%
+  \ifspalign@star\else%
+    \spalignsysdelimskip\right\spalign@sysrightdelim%
+  \fi%
+  }
+%    \end{macrocode}
+% \end{macro}
+%    \begin{macrocode}
+\makeatother
+%    \end{macrocode}
+% \Finale
+\endinput

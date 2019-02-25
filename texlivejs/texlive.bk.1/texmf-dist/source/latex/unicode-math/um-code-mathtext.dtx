@@ -1,0 +1,246 @@
+%%^^A%% um-code-mathtext.dtx -- part of UNICODE-MATH <wspr.io/unicode-math>
+%%^^A%% The "math text" commands such as `\mathbf` and co.
+
+% \section{Maths text commands}
+%
+%    \begin{macrocode}
+%<*package>
+%    \end{macrocode}
+%
+% \subsection{\cs{setmathfontface}}
+%
+% \begin{macro}{\@@_setmathfontface:Nnn}
+% Interface around \cs{SetMathAlphabet}.
+%    \begin{macrocode}
+\keys_define:nn {@@_mathface}
+  {
+    version .tl_set:N = \l_@@_mversion_tl
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_setmathfontface:Nnn
+  {
+    \tl_clear:N \l_@@_mversion_tl
+
+    \keys_set_known:nnN {@@_mathface} {#2} \l_@@_keyval_clist
+
+    \fontspec_set_family:Nxx \l_@@_tmpa_tl
+      { ItalicFont={}, BoldFont={}, SmallCapsFont={}, \exp_not:V \l_@@_keyval_clist }
+      { #3 }
+
+    \tl_if_empty:NT \l_@@_mversion_tl
+      {
+        \tl_set:Nn \l_@@_mversion_tl {normal}
+        \DeclareMathAlphabet #1 {\g_fontspec_encoding_tl} {\l_@@_tmpa_tl} {\mddefault} {\updefault}
+      }
+
+    \SetMathAlphabet #1 {\l_@@_mversion_tl} {\g_fontspec_encoding_tl} {\l_@@_tmpa_tl} {\mddefault} {\updefault}
+
+    % integrate with fontspec's \setmathrm etc:
+    \tl_case:Nn #1
+      {
+        \mathrm { \cs_gset_eq:NN \g__fontspec_mathrm_tl \l_@@_tmpa_tl }
+        \mathsf { \cs_gset_eq:NN \g__fontspec_mathsf_tl \l_@@_tmpa_tl }
+        \mathtt { \cs_gset_eq:NN \g__fontspec_mathtt_tl \l_@@_tmpa_tl }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \subsection{Hooks into \LaTeXe}
+%
+% Switching to a different style of alphabetic symbols was traditionally performed with
+% commands like \cmd\mathbf, which literally changes fonts to access alternate symbols.
+% This is not as simple with Unicode fonts.
+%
+% In traditional \TeX{} maths font setups, you simply switch between different `families' (\cmd\fam), which is analogous to changing from one font to another---a symbol such as `a' will be upright in one font, bold in another, and so on.
+% In pkg{unicode-math}, a different mechanism is used to switch between styles. For every letter (start with ascii a-zA-Z and numbers to keep things simple for now), they are assigned a `mathcode' with \cmd\Umathcode\ that maps from input letter to output font glyph slot. This is done with the equivalent of
+% \begin{Verbatim}
+% \Umathcode`\a = 7 1 "1D44E\relax
+% \Umathcode`\b = 7 1 "1D44F\relax
+% \Umathcode`\c = 7 1 "1D450\relax
+% ...
+% \end{Verbatim}
+% When switching from regular letters to, say, \cmd\mathrm, we now need to execute a new mapping:
+% \begin{Verbatim}
+% \Umathcode`\a = 7 1 `\a\relax
+% \Umathcode`\b = 7 1 `\b\relax
+% \Umathcode`\c = 7 1 `\c\relax
+% ...
+% \end{Verbatim}
+% This is fairly straightforward to perform when we're defining our own commands such as \cmd\symbf\ and so on. However, this means that `classical' \TeX\ font setups will break, because with the original mapping still in place, the engine will be attempting to insert unicode maths glyphs from a standard font.
+%
+% \begin{macro}{\use@mathgroup}
+% To overcome this, we patch \cs{use@mathgroup}, which is only used inside of commands
+% such as \cs{mathXYZ}, so this shouldn't have any side-effects.
+% Omit the test for math mode because this is only called \emph{inside} \cs{mathrm} or similar,
+% which already has a math mode check.
+%    \begin{macrocode}
+\cs_set:Npn \use@mathgroup #1 #2
+  {
+    \math@bgroup
+      \cs_if_eq:cNF {M@\f@encoding} #1 {#1}
+      \@@_switch_to:n {literal}
+      \@@_mathgroup_set:n {#2}
+    \math@egroup
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% In LaTeX maths, the command |\operator@font| is defined that switches to the |operator| mathgroup. The classic example is the |\sin| in |$\sin{x}$|; essentially we’re using |\mathrm| to typeset the upright symbols, but the syntax is |{\operator@font sin}|.
+% I thought that hooking into |\operator@font| would be hard because all other maths font selection in 2e uses |\mathrm{...}| style.
+% Then reading source2e a little more I stumbled upon \cs{@fontswitch}.
+% Reimplement that here to avoid \cs{bgroup}/\cs{egroup}.
+% \begin{macro}{\operator@font}
+%    \begin{macrocode}
+\cs_set:Npn \operator@font
+  {
+    \@@_switch_to:n {literal}
+    \@@_fontswitch:n { \g_@@_operator_mathfont_tl }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_fontswitch:n}
+% Omit the check for math mode as \verb|#1| should do that for us.
+%    \begin{macrocode}
+\cs_set:Nn \@@_fontswitch:n
+  {
+    \cs_set_eq:NN \math@bgroup     \scan_stop:
+    \cs_set_eq:NN \@@_group_begin: \scan_stop:
+    \cs_set:Npn \@@_group_end:n % takes no argument in this case
+      {
+        \cs_set_eq:NN \@@_group_begin:  \@@_group_begin_frozen:
+        \cs_set_eq:NN \@@_group_end:n   \@@_group_end_frozen:n
+        \cs_set_eq:NN \math@bgroup \@@@@math@bgroup
+        \cs_set_eq:NN \math@egroup \@@@@math@egroup
+      }
+    \cs_set_eq:NN \math@egroup \@@_group_end:n
+    #1 \scan_stop:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \subsection{Hooks into \pkg{fontspec}}
+%
+% Historically, \cs{mathrm} and so on were completely overwritten by \pkg{unicode-math}, and \pkg{fontspec}'s methods for setting these fonts in the classical manner were bypassed.
+%
+% While we could now re-activate the way that \pkg{fontspec} does the following, because we can now change maths fonts whenever it's better to define new commands in \pkg{unicode-math} to define the \cs{mathXYZ} fonts.
+%
+% \subsubsection{Text font}
+%
+%    \begin{macrocode}
+\cs_generate_variant:Nn \tl_if_eq:nnT {o}
+\@@_cs_set:Nn \__fontspec_setmainfont_hook:nn
+  {
+    \tl_if_eq:onT {\g__fontspec_mathrm_tl} {\rmdefault}
+      {
+%<XE>   \fontspec_gset_family:Nnn \g__fontspec_mathrm_tl {#1} {#2}
+%<LU>   \fontspec_gset_family:Nnn \g__fontspec_mathrm_tl {Renderer=Basic,#1} {#2}
+        \__fontspec_setmathrm_hook:nn {#1} {#2}
+      }
+  }
+%    \end{macrocode}
+%    \begin{macrocode}
+\@@_cs_set:Nn \__fontspec_setsansfont_hook:nn
+  {
+    \tl_if_eq:onT {\g__fontspec_mathsf_tl} {\sfdefault}
+      {
+%<XE>   \fontspec_gset_family:Nnn \g__fontspec_mathsf_tl {#1} {#2}
+%<LU>   \fontspec_gset_family:Nnn \g__fontspec_mathsf_tl {Renderer=Basic,#1} {#2}
+        \__fontspec_setmathsf_hook:nn {#1} {#2}
+      }
+  }
+%    \end{macrocode}
+%    \begin{macrocode}
+\@@_cs_set:Nn \__fontspec_setmonofont_hook:nn
+  {
+    \tl_if_eq:onT {\g__fontspec_mathtt_tl} {\ttdefault}
+      {
+%<XE>   \fontspec_gset_family:Nnn \g__fontspec_mathtt_tl {#1} {#2}
+%<LU>   \fontspec_gset_family:Nnn \g__fontspec_mathtt_tl {Renderer=Basic,#1} {#2}
+        \__fontspec_setmathtt_hook:nn {#1} {#2}
+      }
+  }
+%    \end{macrocode}
+%
+% \subsubsection{Maths font}
+%
+% If the maths fonts are set explicitly, then the text commands above will not execute their branches to set the maths font alphabets.
+%    \begin{macrocode}
+\@@_cs_set:Nn \__fontspec_setmathrm_hook:nn
+  {
+    \SetMathAlphabet\mathrm{normal}\g_fontspec_encoding_tl\g__fontspec_mathrm_tl\mddefault\updefault
+    \SetMathAlphabet\mathit{normal}\g_fontspec_encoding_tl\g__fontspec_mathrm_tl\mddefault\itdefault
+    \SetMathAlphabet\mathbf{normal}\g_fontspec_encoding_tl\g__fontspec_mathrm_tl\bfdefault\updefault
+  }
+%    \end{macrocode}
+%    \begin{macrocode}
+\@@_cs_set:Nn \__fontspec_setboldmathrm_hook:nn
+  {
+    \SetMathAlphabet\mathrm{bold}\g_fontspec_encoding_tl\g__fontspec_bfmathrm_tl\mddefault\updefault
+    \SetMathAlphabet\mathbf{bold}\g_fontspec_encoding_tl\g__fontspec_bfmathrm_tl\bfdefault\updefault
+    \SetMathAlphabet\mathit{bold}\g_fontspec_encoding_tl\g__fontspec_bfmathrm_tl\mddefault\itdefault
+  }
+%    \end{macrocode}
+%    \begin{macrocode}
+\@@_cs_set:Nn \__fontspec_setmathsf_hook:nn
+  {
+    \SetMathAlphabet\mathsf{normal}\g_fontspec_encoding_tl\g__fontspec_mathsf_tl\mddefault\updefault
+    \SetMathAlphabet\mathsf{bold}  \g_fontspec_encoding_tl\g__fontspec_mathsf_tl\bfdefault\updefault
+  }
+%    \end{macrocode}
+%    \begin{macrocode}
+\@@_cs_set:Nn \__fontspec_setmathtt_hook:nn
+  {
+    \SetMathAlphabet\mathtt{normal}\g_fontspec_encoding_tl\g__fontspec_mathtt_tl\mddefault\updefault
+    \SetMathAlphabet\mathtt{bold}  \g_fontspec_encoding_tl\g__fontspec_mathtt_tl\bfdefault\updefault
+  }
+%    \end{macrocode}
+%
+% I can't quite remember the logic behind the following two.
+%
+% If \pkg{fontspec} has been loaded and \verb|\setmathsf| (etc) run, this
+% syncs things up:
+%    \begin{macrocode}
+\tl_if_eq:onF {\g__fontspec_mathrm_tl} {\rmdefault} { \__fontspec_setmathrm_hook:nn {} {} }
+\tl_if_eq:onF {\g__fontspec_mathsf_tl} {\sfdefault} { \__fontspec_setmathsf_hook:nn {} {} }
+\tl_if_eq:onF {\g__fontspec_mathtt_tl} {\ttdefault} { \__fontspec_setmathtt_hook:nn {} {} }
+%    \end{macrocode}
+%
+% I suppose this is to make things work if neither fontspec or unicode-math
+% load any fonts: (I should check that)
+%    \begin{macrocode}
+\AtBeginDocument
+  {
+    \tl_if_eq:onT {\g__fontspec_mathrm_tl} {\rmdefault} { \__fontspec_setmathrm_hook:nn {} {} }
+    \tl_if_eq:onT {\g__fontspec_mathsf_tl} {\sfdefault} { \__fontspec_setmathsf_hook:nn {} {} }
+    \tl_if_eq:onT {\g__fontspec_mathtt_tl} {\ttdefault} { \__fontspec_setmathtt_hook:nn {} {} }
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%</package>
+%    \end{macrocode}
+
+\endinput
+
+% /©
+%
+% ------------------------------------------------
+% The UNICODE-MATH package  <wspr.io/unicode-math>
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% Copyright 2006-2019  Will Robertson, LPPL "maintainer"
+% Copyright 2010-2017  Philipp Stephani
+% Copyright 2011-2017  Joseph Wright
+% Copyright 2012-2015  Khaled Hosny
+% ------------------------------------------------
+%
+% ©/

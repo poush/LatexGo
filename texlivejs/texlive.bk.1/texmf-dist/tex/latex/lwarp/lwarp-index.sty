@@ -1,0 +1,71 @@
+%%
+%% This is file `lwarp-index.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `index')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+\LWR@ProvidesPackagePass{index}[2004/01/20]
+\xpatchcmd{\newindex}
+    {\x@newindex[thepage]}
+    {%
+        \@tempswatrue%
+        \x@newindex[theLWR@autoindex]%
+    }
+    {}
+    {\LWR@patcherror{index}{newindex}}
+
+\xpatchcmd{\renewindex}
+    {\x@renewindex[thepage]}
+    {%
+        \@tempswatrue%
+        \x@renewindex[theLWR@autoindex]%
+    }
+    {}
+    {\LWR@patcherror{index}{renewindex}}
+\xpatchcmd{\@wrindex}
+    {\begingroup}
+    {%
+        \addtocounter{LWR@autoindex}{1}%                    lwarp
+        \LWR@new@label{LWRindex-\arabic{LWR@autoindex}}%    lwarp
+        \begingroup%
+    }
+    {}
+    {\LWR@patcherror{index}{@wrindex}}
+\let\LWR@index@wrindex\@wrindex
+
+\AtBeginDocument{
+\let\@wrindex\LWR@index@wrindex
+}
+\AtBeginDocument{
+\renewenvironment*{theindex}{%
+    \LWR@indexsection{\indexname}%
+    \ifx\index@prologue\@empty\else
+        \index@prologue
+        \bigskip
+    \fi
+    \let\item\LWR@indexitem%
+    \let\subitem\LWR@indexsubitem%
+    \let\subsubitem\LWR@indexsubsubitem%
+}{}
+}% AtBeginDocument
+\def\@showidx#1{}
+\let\@texttop\relax
+\renewcommand*{\raggedbottom}{}
+\renewcommand*{\flushbottom}{}
+\renewcommand*{\markboth}[2]{}
+\renewcommand*{\markright}[1]{}
+
+\endinput
+%%
+%% End of file `lwarp-index.sty'.

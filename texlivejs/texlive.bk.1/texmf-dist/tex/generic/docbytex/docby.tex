@@ -1,0 +1,1072 @@
+%% docby.tex, Petr Olsak, (C) 2008
+%% dokumentaci k docby.tex vytvorite prikazem csplain docby.d
+
+\def\dbtversion {May 2014} % version of DocBy.TeX
+
+% May  2014:  - generated words in ENG if \ehyph, CS if \chyph
+%             - \input utf8off introduced
+% Mar. 2011:  - fnote: prints short words instead long.
+%             - index: printsno braces
+%             - \module is able to read name\_of\_modul with underscore
+% Jan. 2009:  - ^^I prints eight spaces, no three.
+%             - the \part macro introduced
+% Nov. 2008:  - fith replaced by xyz
+%             - \refns correction
+%             - space corrections in \namespace, \endnamespace
+%             - run me twice -> run me again
+% Oct. 2008:  - first version released
+
+%%%%%%%%%%%%%%%%%% Vyøazení UTF-8 vstupu z encTeXu
+
+\input utf8off \csname clearmubyte\endcsname
+
+%%%%%%%%%%%%%%%%%%% Interní názvy
+
+\def\titmodule{Module}
+\def\tittoc{Table of Contents}
+\def\titindex{Index}
+\def\titversion{version }
+\def\opartname{>> PART}
+\ifx\chyph\undefined
+\else \ifnum\language=0 
+      \else 
+          \def\titmodule{Modul}
+          \def\tittoc{Obsah}
+          \def\titindex{Rejstøík}
+          \def\titversion{verze }
+          \def\opartname{>> CAST}
+\fi   \fi
+
+%%%%%%%%%%%%%%%%%% Vlo¾ené skupiny pøíkazù (hooks)
+
+\def\begtthook{}
+\def\quotehook{}
+\def\indexhook{}
+\def\tochook{}
+\def\bookmarkshook{}
+\def\outputhook{}
+
+%%%%%%%%%%%%%%%%%% Pøíkaz \module a \ins
+
+\def\docsuffix {.d}  % implicit filename extension (for \module command)
+\def\module #1 {\endnamespace\namespace{##1./#1}\sec [m:#1] \titmodule\space #1 \par
+   \def\modulename{#1} \input #1\docsuffix\relax
+}
+\def\ins #1 #2 {\ifirst {\modulename.#1}{//: #2}{//:}{--}}
+
+%%%%%%%%%%%%%%%%%% Zelenající komentáøe
+
+\ifx\mubyte\undefined 
+    \def\setlinecomment#1{}
+    \def\setlrcomment#1#2{}
+\else
+   \def\setlinecomment#1{\mubyte \linecomment ##0 #1\endmubyte}
+   \def\setlrcomment#1#2{\mubyte \leftcomment ##0 #1\endmubyte
+        \mubyte \rightcomment #2\endmubyte \gdef\rightcomment{#2\returntoBlack}}
+\fi
+
+\def\linecomment {\let\Black=\Green \Green}
+\def\leftcomment {\global\let\Black=\Green \Green}
+
+\def\returntoBlack {\global\let\Black=\oriBlack \Black}
+
+\setlinecomment{//}  \setlrcomment{/*}{*/}
+
+%%%%%%%%%%%%%%%%%% Parametry a pomocná makra pro nastavení vzhledu
+
+\parindent=30pt
+
+\newdimen\nwidth \nwidth=\hsize \advance\nwidth by-2\parindent
+
+\raggedbottom
+\exhyphenpenalty=10000
+
+\font\bbf=csb10 at12pt
+\font\bbbf=csb10 at14.4pt
+\font\btt=cstt12
+\font\ttsmall=cstt8
+\font\rmsmall=csr8
+\font\itsmall=csti8
+\font\partfont=csb10 at80pt
+
+\def\setsmallprinting{\ttsmall \let\it=\itsmall \let\rm=\rmsmall 
+   \def\ttstrut{\vrule height8pt depth3pt width0pt}%
+   \offinterlineskip \parskip=-1pt\relax
+}
+\def\setnormalprinting{\tt \baselineskip=0pt \hfuzz=4em 
+   \def\ttstrut{\vrule height10pt depth3pt width0pt}%
+   \offinterlineskip \parskip=-1pt\relax
+}
+
+\ifx\pdfoutput\undefined
+   \def\setcmykcolor#1{}
+\else
+   \def\setcmykcolor#1{\special{PDF:#1 k}}
+\fi
+\def\Blue{\setcmykcolor{0.9 0.9 0.1 0}}
+\def\Red{\setcmykcolor{0.1 0.9 0.9 0}}
+\def\Brown{\setcmykcolor{0 0.85 0.87 0.5}}
+\def\Green{\setcmykcolor{0.9 0.1 0.9 0.2}}
+\def\Yellow{\setcmykcolor{0.0 0.0 0.3 0.03}}
+\def\Black{\setcmykcolor{0 0 0 1}}
+\let\oriBlack=\Black
+
+\ifx\pdfoutput\undefined 
+   \def\rectangle#1#2#3#4{\vbox to0pt{\vss\hrule\kern-.3pt
+      \hbox to#3{\vrule height#1 depth#2\hss#4\hss\vrule}%
+      \kern-.3pt\hrule\kern-#2\kern-.1pt}}
+\else
+   \def\rectangle#1#2#3#4{\vbox to0pt{\vss\hbox to#3{%
+       \rlap{\Yellow \vrule height#1 depth#2 width#3}%
+       \hss#4\Black\hss}\kern-#2}}
+\fi    
+
+\def\docbytex {\leavevmode\hbox{DocBy}.\TeX}
+
+%%%%%%%%%%%%%%%%%% Vzhled kapitol a podkapitol
+
+\def\printsec #1{\par
+    \removelastskip\bigskip\medskip
+    \noindent \makelinks
+    \rectangle{16pt}{9pt}{25pt}{\Brown\bbbf\ifsavetoc\the\secnum\else\emptynumber\fi}%
+    \kern5pt{\bbbf\let\_=\subori #1}\par
+}
+\def\printsecbelow {\nobreak\medskip}
+
+\def\printsubsec #1{\par
+    \removelastskip\bigskip
+    \noindent \makelinks
+    \vbox to0pt{\vss
+       \rectangle{16pt}{9pt}{25pt}{\Brown\bf
+          \ifsavetoc\the\secnum.\the\subsecnum\else\emptynumber\fi}\kern-5pt}%
+    \kern5pt{\bbf\let\_=\subori \let\tt=\btt #1}\par
+}
+\def\printsubsecbelow {\nobreak\smallskip}
+
+\def\printpart #1{\par
+    \removelastskip\bigskip\medskip
+    \noindent {\linkskip=60pt\makelinks}%
+    \rectangle{16pt}{9pt}{25pt}{}%
+    \kern-20pt{\Brown\partfont\thepart\Black}\kern10pt{\bbbf #1}\par
+}
+\def\printpartbelow {\nobreak\bigskip}
+
+\def\emptynumber{}
+
+%%%%%%%%%%%%%%%%%%%% Titul, autor
+
+\def\title{\def\tmpA{title}\futurelet\nextchar\secparam}
+\ifx\pdfoutput\undefined
+   \def\iititle {\par
+      \ifx\headtitle\empty\edef\headtitle{\the\sectitle}\fi
+      \noheadline
+      \ifx\projectversion\empty \else 
+         \line{\hss\rmsmall\titversion\projectversion}\nobreak\medskip\fi
+      \centerline{\bbbf \let\_=\subori\the\sectitle}\nobreak\medskip}
+\else
+  \def\iititle {\par
+      \ifx\headtitle\empty\edef\headtitle{\the\sectitle}\fi
+      \noheadline
+      \indent\rlap{\rectangle{25pt}{15pt}{\nwidth}{\Black\let\_=\subori\bbbf\the\sectitle}}%
+          \ifx\projectversion\empty \else   
+          \hbox to\nwidth{\hss
+             \raise26pt\hbox{\Brown\rmsmall\titversion\projectversion\Black}}\fi
+      \par\nobreak\vskip15pt}
+\fi
+
+\ifx\projectversion\undefined \def\projectversion{}\fi
+
+\def\author #1\par{\centerline{\bf #1\unskip}\smallskip}
+
+%%%%%%%%%%%%%%%%%%%% Hlavièky, patièky
+
+\footline={\hss\rectangle{8pt}{2pt}{25pt}{\tenrm\Black\folio}\hss}
+
+\headline={\normalhead}
+\def\normalhead {\savepglink \let\_=\subori
+    \vbox to0pt{\vss \baselineskip=7pt \lineskiplimit=0pt
+     \line{\indent\Black\tenit \firstmark \hss \headtitle\indent}
+     \line{\indent\Yellow\xleaders\headlinebox\hfil\indent\Black}}}
+
+\def\noheadline {\global\headline={\savepglink\hfil\global\headline={\normalhead}}}
+
+\ifx\headtitle\undefined \def\headtitle {}\fi
+
+\ifx\pdfoutput\undefined
+   \def\headlinebox{\hbox{\kern2pt\rectangle{4pt}{0pt}{4pt}{}\kern2pt}}
+\else
+   \def\headlinebox{\hbox{\kern2pt\vrule height4pt depth0pt width4pt\kern2pt}}
+\fi
+
+%%%%%%%%%%%%%%%%%%%% Tisk cíle odkazu a odkazù pod èarou
+
+\ifx\pdfoutput\undefined
+   \def\printdg#1#2#3{\leavevmode\hbox{\kern-.6pt
+      \vbox{\hrule\hbox{\vrule height8.5pt depth2.5pt \kern.2pt
+            \tt#2\kern.2pt\vrule}\hrule\kern-2.9pt}\kern-.6pt}}
+\else
+   \def\printdg#1#2#3{\leavevmode \setbox0=\hbox{\tt#2}%
+           \Yellow\rlap{\vrule height8.7pt depth2.7pt width\wd0}%
+           \printdginside{#2}{\box0}}
+\fi
+
+\def\printdginside#1#2{\ifnum\pgref[+#1]>-1 {\let\Blue=\Red \ilink[+#1]{#2}}%
+    \else \Red#2\relax\Black\fi}
+
+\def\printfnote #1#2#3#4{%
+  \specfootnote{{\let\Black=\oriBlack \ttsmall #1\Red #4\Black#3\rmsmall
+       \apinum=\pgref[+#2]\relax
+       \ifnum\apinum>-1 :~\lower1.4pt\vbox{\hbox{\pglink\apinum}\kern1pt\hrule}\fi
+       \undef{w:#2}\iftrue \setbox0=\hbox{}\else \dgnum=-1 \setbox0=\hbox{\listofpages{#2}}\fi
+       \ifdim\wd0=0pt \else
+           \ifnum\apinum>-1 , \else :~\fi
+           \unhbox0
+       \fi}}%
+}
+
+%%%%%%%%%%%%%%%%%%%% Tisk údaje v obsahu a rejstøíku
+
+\def\ptocline #1#2#3{%
+   \if^^X#1^^X\advance\partnum by1 \medskip \fi
+   \line{\rectangle{8pt}{1pt}{25pt}{%
+     \if^^X#1^^X\ilink[sec:\thepart]{\bbbf \thepart}\else\ilink[sec:#1]{#1}\fi}\kern5pt 
+     {\bf\let\_=\subori #2}\mydotfill\pglink#3}}
+\def\ptocsubline #1#2#3{%
+   \line{\indent\rectangle{8pt}{1pt}{25pt}{\ilink[sec:#1]{#1}}\kern5pt 
+         \let\_=\subori #2\mydotfill\pglink#3}}
+\def\mydotfill{\leaders\hbox to5pt{\hss.\hss}\hfil}
+
+\def\ptocentry#1#2#3{\ifhmode,\hskip 7pt plus 20pt minus 3pt \fi 
+    \noindent \hbox{\ttsmall \if+#1\apitext\fi \ilink[#1#2]{\ifx^^X#3^^X#2\else#3\fi}}%
+    \nobreak\myldots\pglink\pgref[#1#2]\relax
+}
+\def\myldots{\leaders\hbox to5pt{\hss.\hss}\hskip20pt\relax}
+
+\def\printindexentry #1{%
+     \expandafter \expandafter\expandafter \separeright \csname-#1\endcsname\end
+     \apinum=\pgref[+#1]\relax
+     \leavevmode\llap{\ttsmall \ifnum\apinum>-1 \apitext\fi\tmpa}%
+         {\tt \ilink[@#1]{#1}\tmpb}: {\bf\pglink\pgref[@#1]}%
+         \ifnum\apinum>-1 , $\underline{\pglink\apinum}$\fi
+         \dgnum=\pgref[@#1]\relax 
+         \undef{w:#1}\iftrue \setbox0=\hbox{}\else \setbox0=\hbox{\it\listofpages{#1}}\fi
+         \ifdim\wd0=0pt \else, \unhbox0 \fi
+     \hangindent=2\parindent \hangafter=1 \par
+}
+\def\separeright #1\right#2\end{\def\tmpa{#1}\def\tmpb{#2}}
+
+
+%%%%%%%%%%%%%%%%%%%% Tisk zdrojového textu
+
+\ifx\pdfoutput\undefined
+   \def\printiabove{\line{\leaders\specrule\hfill \kern2pt
+         {\ttsmall \Brown\inputfilename}\kern2pt \specrule width\parindent}\nobreak
+          \setsmallprinting}
+   \def\printibelow{\vskip2pt\hrule\medskip}
+   \def\specrule{\vrule height 2pt depth-1.6pt }
+   \def\printiline#1#2{\noindent\ttstrut
+      \hbox to\parindent{\hss#1:\kern.5em}{#2\par}\penalty11 }
+\else
+   \def\printiabove{\smallskip \setsmallprinting}
+   \def\printibelow{\medskip}
+   \def\printiline #1#2{\noindent 
+      \rlap{\Yellow \ttstrut width\hsize}%
+      \ifx\isnameprinted\undefined
+          \rlap{\line{\hss \raise8.5pt
+             \hbox{\ttsmall \Brown \vrule height5pt width0pt \inputfilename}}}%
+          \let\isnameprinted=\relax
+      \fi
+      \hbox to\parindent{\hss\Brown#1:\Black\kern.5em}{#2\par}\penalty11 }
+\fi
+
+%%%%%%%%%%%%%%%%%%%% Tisk z prostøedí \begtt, \endtt
+
+\ifx\pdfoutput\undefined
+   \def\printvabove{\smallskip\hrule\nobreak\smallskip\setnormalprinting}
+   \def\printvbelow{\nobreak\smallskip\hrule\smallskip}
+   \def\printvline#1#2{\hbox{\ttstrut\indent#2}\penalty12 }
+\else
+   \def\printvabove{\medskip\Yellow\hrule height2pt \setnormalprinting\nobreak}
+   \def\printvbelow{\Yellow\hrule height2pt \Black\medskip}
+   \def\printvline#1#2{\noindent
+     \rlap{\hbox to\hsize{\Yellow\ttstrut width25pt\hfil
+        \vrule width25pt\Black}}\hbox{\indent#2}\par\penalty12 } 
+\fi
+
+%%%%%%%%%%%%%%%%%% Vlo¾ení obrázku
+
+\newdimen\figwidth  \figwidth=\hsize \advance\figwidth by-\parindent
+
+\ifx\pdfoutput\undefined
+   \input epsf
+   \def\ifig #1 #2 {\bigskip\indent
+      \hbox{\epsfxsize=#1\figwidth\epsfbox{\figdir#2.eps}}\bigskip}
+\else
+   \def\ifig #1 #2 {\bigskip\indent
+       \hbox{\pdfximage width#1\figwidth {\figdir#2.pdf}%
+             \pdfrefximage\pdflastximage}\bigskip}
+\fi
+\def\figdir{fig/}
+
+%%%%%%%%%%%%%%%%%%%%%%% Vycty
+
+\newcount\itemno
+\def\begitems{\medskip\begingroup\advance\leftskip by\parindent \let\item=\dbtitem}
+\def\dbtitem #1 {\par\advance\itemno by1 \noindent\llap{\ifx*#1$\bullet$\else#1\fi\kern3pt}}
+\def\enditems{\medskip\endgroup}
+
+
+%%%%%%%%%%%%%%%%%%%%%%% Pomocna makra
+
+\def\dbtwarning#1{\immediate\write16{DocBy.TeX WARNING: #1.}}
+
+\def\defsec#1{\expandafter\def\csname#1\endcsname}
+\def\edefsec#1{\expandafter\edef\csname#1\endcsname}
+\def\undef#1\iftrue{\expandafter\ifx\csname#1\endcsname\relax}
+
+{\catcode`\^^I=\active \gdef^^I{\space\space\space\space\space\space\space\space}
+ \catcode`\|=0 \catcode`\\=12 |gdef|nb{\}}
+\bgroup
+   \catcode`\[=1 \catcode`]=2 \catcode`\{=12 \catcode`\}=12 \catcode`\%=12
+   \gdef\obrace[{] \gdef\cbrace[}] \gdef\percent[%]
+\egroup
+\def\inchquote{"}
+
+\def\softinput #1 {\let\next=\relax \openin\infile=#1
+   \ifeof\infile \dbtwarning{The file #1 does not exist, run me again}
+   \else \closein\infile \def\next{\input #1 }\fi
+   \next}
+
+\def\setverb{\def\do##1{\catcode`##1=12}\dospecials}
+
+%%%%%%%%%%%%%%%%%%%% Inicializace
+
+\immediate\write16{This is DocBy.TeX, version \dbtversion, modes:
+    \ifx\mubyte\undefined NO\fi enc+%
+    \ifx\pdfoutput\undefined DVI\else PDF\fi+%
+    \ifnum\language=0 ENG\else CS\fi}
+
+%\ifx\chyph\undefined \else \chyph \fi
+
+\ifx\mubyte\undefined % encTeX ??
+   \dbtwarning{encTeX is not detected}
+   \message{ \space The documented words will be not recognized in source code.}
+   \message{ \space Use pdfetex -ini -enc format.ini to make 
+                    your format with encTeX support.} 
+   \csname newcount\endcsname \mubytein
+   \def\enctextable#1#2{}
+   \def\noactive#1{}   
+\else 
+   \def\enctextable#1#2{%
+      \def\tmp ##1,#1,##2\end{\ifx^^X##2^^X}%
+      \expandafter \tmp \owordbuffer ,#1,\end
+         \expandafter \mubyte \csname.#1\endcsname #1\endmubyte \fi
+      \expandafter \gdef \csname.#1\endcsname {#2}%
+   }
+   \def\noactive#1{\mubyte \emptysec ##0 #1\endmubyte}
+   \def\emptysec{}
+\fi      
+
+\def\sword#1{\ilink[@#1]{#1}\write\reffile{\string\refuseword{#1}{\the\pageno}}}
+
+\def\onlyactive #1#2#3{\enctextable{#1#2#3}{\oword{#1}{#2}{#3}}%
+   \def\tmp ##1,#2,##2\end{\ifx^^X##2^^X}%
+   \expandafter \tmp \owordbuffer ,#2,\end 
+      \addtext #2,\to\owordbuffer \noactive{#2}\fi}
+\def\owordbuffer{,}
+\def\oword#1#2#3{#1\undef{.#2}\iftrue #2\else\csname.#2\endcsname\fi #3}
+
+\ifx\pdfoutput\undefined
+   \dbtwarning{pdfTeX is not detected}
+   \message{ \space The document will be without colors and hyperlinks.}
+   \message{ \space Use pdfTeX engine, it means: pdfetex command, for example. }
+\else
+   \pdfoutput=1
+\fi
+
+%%%%%%%%%%%%%%%%%% Makra \ifirst, \inext, \ilabel
+
+\newcount\lineno
+\newcount\ttlineno
+\newif\ifcontinue
+\newif\ifskipping  \skippingtrue
+\newread\infile
+
+\def\ifirst #1#2#3#4{\par\readiparamwhy#4..\end
+   \openin\infile=#1 \global\lineno=0
+   \ifeof\infile
+      \dbtwarning {I am not able to open the file "#1" to reading}
+   \else
+      \xdef\inputfilename{#1}
+      \scaniparam #2^^X\tmpa\tmpA \scaniparam #3^^X\tmpb\tmpB
+      {\let~=\space \def\empty{^^B^^E}\let\end=\relax \uccode`\~=`\"\uppercase{\let~}"%
+      \noswords \xdef\act{\noexpand\insinternal {\tmpa}{\tmpb}}}\act
+   \fi
+}
+\def\inext #1#2#3{\par\readiparamwhy#3..\end 
+   \ifx\inputfilename\undefined
+      \dbtwarning {use \string\ifirst\space before using of \string\inext}
+   \else
+      \ifeof\infile
+         \dbtwarning {the file "\inputfilename" is completely read}
+      \else
+         \scaniparam #1^^X\tmpa\tmpA \scaniparam #2^^X\tmpb\tmpB
+         {\let~=\space \def\empty{^^B^^E}\let\end=\relax \uccode`\~=`\"\uppercase{\let~}"%
+         \noswords \xdef\act{\noexpand\insinternal{\tmpa}{\tmpb}}}\act
+   \fi\fi
+}
+\def\noswords{\def\sword##1{##1}\def\lword##1{##1}\def\fword##1##2##3{##2}%
+   \let\flword=\fword \def\leftcomment{}\def\returntoBlack{}\def\linecomment{}}
+
+\def\readiparamwhy#1#2#3\end{\let\startline=#1\relax\let\stopline=#2\relax}
+
+\def\scaniparam{\futurelet\nextchar\scaniparamA}
+\def\scaniparamA{\ifx\nextchar\count \expandafter\scaniparamB
+   \else \def\tmp{\scaniparamB \count=1 }\expandafter\tmp
+   \fi}
+\def\scaniparamB \count{\afterassignment\scaniparamC\tempnum}
+\def\scaniparamC #1^^X#2#3{\def#2{#1}\edef#3{\the\tempnum}}
+
+\def\insinternal #1#2{%
+   \bgroup
+      \printiabove  % graficke zpracovani zacatku 
+      \setverb \catcode`\"=12 \catcode`\^^M=9 \catcode`\^^I=\active
+      \mubytein=1 \obeyspaces \continuetrue \tempnum=\tmpA\relax
+      \def\testline##1#1##2\end{\ifx^^Y##2^^Y\else \nocontinue \fi}%      
+      \ifx^^X#1^^X\def\testline##1\end{\nocontinue}\fi
+      \loop % preskakovani radku
+         \ifeof\infile \returninsinternal{Text "#1" not found (\string\count=\the\tempnum)}{}\fi
+         \readnewline
+         \expandafter \testline \expandafter^^B\etext ^^E#1\end
+         \ifcontinue \repeat
+      \let\lastline=\empty
+      \continuetrue  \tempnum=\tmpB\relax
+      \def\testline##1#2##2\end{\ifx^^Y##2^^Y\else \nocontinue \fi}%
+      \ifx^^X#2^^X\def\testline##1\end{\nocontinue}\fi
+      \ifx+\startline \printilineA
+         \expandafter \testline \expandafter ^^B\etext ^^E#2\end
+         \ifcontinue\else\returninsinternal{}\fi
+         \readnewline 
+      \else
+         \readnewline
+         \ifskipping\ifx\text\empty \readnewline \fi\fi
+      \fi
+      \loop  % pretisk radku
+         \expandafter \testline \expandafter ^^B\etext ^^E#2\end
+         \ifcontinue
+            \printilineA
+            \ifeof\infile \returninsinternal{}\fi
+            \readnewline \repeat    
+      \ifx+\stopline \printilineA 
+         \ifx\lastline\relax \else \printiline{\lastline}{}\relax\fi
+      \fi
+      \global\let\Black=\oriBlack % pokud jsme skoncili vypis uvnitr komentare
+      \printibelow  % graficke zpracovani konce
+   \egroup\gdef\ilabellist{}\Black
+}
+\def\nocontinue{\advance\tempnum by-1 \ifnum\tempnum<1 \continuefalse \fi}
+
+\def\returninsinternal #1#2#3\printibelow{%
+   \ifx^^X#1^^X\else
+     \dbtwarning{#1 in file \inputfilename}\fi
+   #2\fi\printibelow
+}
+\def\readnewline {\read\infile to\text \global\advance\lineno by1\relax
+   {\noswords \xdef\etext{\text}}}
+
+\def\printilineA {%
+   \ifskipping\else \ifx\text\empty \def\text{ }\fi\fi % trik pro pripad \skippingfalse
+   \ifx\text\empty
+      \ifx\lastline\empty % nacten prvni prazdny radek 
+         \let\lastline=\relax
+      \else               % nacten pozdejsi prazdny radek
+         \ifx\lastline\relax \else \printiline{\lastline}{}\relax\fi
+         \edef\lastline{\the\lineno}%
+      \fi
+   \else                  % nacten plny radek
+      \ifx\lastline\empty \let\lastline=\relax \fi
+      \ifx\lastline\relax \else \printiline{\lastline}{}\relax\fi
+      \printiline{\the\lineno}{\text}\relax
+      \let\lastline=\relax
+   \fi \ilabellist
+}
+\def\ilabellist {}
+\def\ilabel [#1]#2{{\noswords\edef\act{\noexpand\ilabelee{#1}{#2}}\expandafter}\act}
+\def\ilabelee #1#2{\expandafter\def\expandafter\ilabellist\expandafter{%
+    \ilabellist \expandafter\testilabel\etext\end{#1}{#2}}
+}
+\def\testilabel#1\end#2#3{%
+    \def\tmp ##1#3##2\end{\ifx^^Y##2^^Y\else
+       \undef{d:#2}\iftrue \defsec{d:#2}{}\labeltext[#2]{\the\lineno}\fi\fi}
+    \tmp^^B#1^^E#3\end
+}
+
+%%%%%%%%%%%%%%%%%% Pøíkazy \begtt, \endtt
+
+\def\begtt {\bgroup\printvabove
+   \setverb \catcode`\"=12 \catcode`\^^M=12 \obeyspaces
+   \begtthook\relax \startverb}
+{\catcode`\|=0 \catcode`\^^M=12 \catcode`\\=12 %
+  |gdef|startverb^^M#1\endtt{|runttloop#1|end^^M}%
+  |gdef|runttloop#1^^M{|ifx|end#1 |expandafter|endttloop%
+     |else|global|advance|ttlineno by1 %
+       |printvline{|the|ttlineno}{#1}|relax|expandafter|runttloop|fi}} %
+\def\endttloop#1{\printvbelow\egroup\futurelet\nextchar\scannexttoken}
+\long\def\scannexttoken{\ifx\nextchar\par\else\noindent\fi}
+
+%%%%%%%%%%%%%%%%%%%% Jmenne prostory
+
+\def\namespacemacro#1{}
+
+\def\namespace #1{%
+   \let\tmp=\namespacemacro
+   \gdef\namespacemacro##1{#1}%
+   \global\expandafter\let\csname no:\namespacemacro{@!}\endcsname\tmp
+   \ewrite{\string\refns{\namespacemacro{@!}}}%
+   \def\locword##1{%
+      \global\expandafter\let
+         \csname\namespacemacro{@!},##1\expandafter\endcsname\csname.##1\endcsname
+      \enctextable{##1}{\lword{##1}}}%
+   \csname ns:\namespacemacro{@!}\endcsname
+}
+\def\endnamespace{\if^^X\namespacemacro{@!}^^X\else
+   \def\locword##1{%
+      \global\expandafter\let
+          \csname.##1\expandafter\endcsname\csname\namespacemacro{@!},##1\endcsname 
+      \undef{.##1}\iftrue \noactive{##1}\fi}%
+   \csname ns:\namespacemacro{@!}\endcsname
+   \ewrite{\string\refnsend{\namespacemacro{@!}}}%
+   \global\expandafter\let\expandafter\namespacemacro\csname no:\namespacemacro{@!}\endcsname
+   \fi
+}
+\def\ewrite#1{{\let\nb=\relax \edef\act{\write\reffile{#1}}\act}}
+
+\def\lword#1{\genlongword\tmp{#1}\ilink[@\tmp]{#1}%
+    \ewrite{\string\refuseword{\tmp}{\noexpand\the\pageno}}}
+\def\genlongword#1#2{\expandafter\def\expandafter#1\expandafter{\namespacemacro{#2}}}
+
+\def\refns#1{\edefsec{o:#1}{\currns}
+   \edef\currns{#1}\undef{ns:\currns}\iftrue \defsec{ns:\currns}{}\fi}
+\def\refnsend#1{\edef\currns{\csname o:#1\endcsname}}
+\def\currns{}
+
+%%%%%%%%%%%%%%%%%%%% \dg a pratele
+
+\def\dg{\def\tmpA{dg}\dgpar}  \def\dgn{\def\tmpA{dgn}\dgpar}  \def\dgh{\def\tmpA{dgh}\dgpar}
+\def\dl{\def\tmpA{dl}\dgpar}  \def\dln{\def\tmpA{dln}\dgpar}  \def\dlh{\def\tmpA{dlh}\dgpar}
+
+\def\dgpar {\futurelet\nextchar\dgparA}
+\def\dgparA {\ifx\nextchar[\def\tmp{\dparam}\else\def\tmp{\dparam[]}\fi\tmp}
+
+\def\dparam [#1]#2 {%
+    \def\printbrackets{}%
+    \ifx^^X#2^^X\nextdparam{#1}\fi
+    \def\tmpa{#2}\def\tmpb{}%
+    \varparam,\tmpa, \varparam.\tmpa. \varparam;\tmpa; \varparam:\tmpa:
+    \expandafter\managebrackets\tmpa()\end
+    {\let\nb=\relax
+    \edef\act{\expandafter\noexpand \csname ii\tmpA\endcsname{#1}{\tmpa}{\printbrackets}}%
+    \expandafter}\act
+    \tmpb \if|\expandafter\ignoretwo\tmpA|\expandafter\maybespace\fi
+}
+\def\nextdparam#1#2\maybespace\fi{\fi\dparam[#1 ]}
+
+\def\varparam#1{\def\tmp ##1#1##2 {\def\tmpa{##1}\if^^X##2^^X\else
+        \expandafter\gobblelast\tmpb\end#1##2\fi}%
+   \expandafter\tmp}
+\def\gobblelast#1\end#2{\def\tmp##1#2{\def\tmpb{#2##1#1}}\tmp}
+
+\def\managebrackets #1()#2\end{\def\tmpa{#1}%
+   \if|#2|\else\def\printbrackets{()}\fi}
+
+\def\maybespace{\futurelet\tmp\domaybespace}
+\def\domaybespace{\let\next=\space
+   \ifx\tmp`\def\next##1{}\fi
+   \next}
+
+\def\iidg #1#2#3{%
+    \enctextable{#2}{\sword{#2}}%
+    \label [@#2]%
+    \write\reffile{\string\refdg{#1}{#2}{#3}{}}%
+    \printdg{#1}{#2}{#3}%
+    \printfnote{#1}{#2}{#3}{#2}%
+}
+\def\iidl #1#2#3{%
+    \genlongword\tmpB{#2}%
+    \ifx\tmpB\empty \dbtwarning{\string\dl\space#2 outside namespace, ignored}%    
+    \else
+       \expandafter\label\expandafter [\expandafter @\tmpB]%
+       \ewrite{\string\refdg{#1}{\tmpB}{#3}{#2}}%
+       \printdg{#1}{#2}{#3}%
+       \printfnote{#1}{\tmpB}{#3}{#2}%
+    \fi
+}
+\def\iidgh#1#2#3{{\def\printdg##1##2##3{}\iidg{#1}{#2}{#3}}}
+\def\iidlh#1#2#3{{\def\printdg##1##2##3{}\iidl{#1}{#2}{#3}}}
+
+\def\iidgn#1#2#3{\enctextable{#2}{\fword{#1}{#2}{#3}}} 
+
+\def\fword#1#2#3{\iidgh{#1}{#2}{#3}\printdginside{#2}{#2}}
+
+\def\iidln#1#2#3{%
+    \global\expandafter\let\csname;#2\expandafter\endcsname\csname.#2\endcsname
+    \enctextable{#2}{\flword{#1}{#2}{#3}}}
+
+\def\flword#1#2#3{\iidlh{#1}{#2}{#3}\printdginside{#2}{#2}%
+    \global\expandafter\let\csname.#2\expandafter\endcsname\csname;#2\endcsname
+    \undef{.#2}\iftrue \noactive{#2}\fi}
+
+%%%%%%%%%%%%%%%%%% Specialni poznamky pod carou
+
+\let\footnote=\undefined
+
+\skip\footins=18pt
+\dimen\footins=\vsize
+\count\footins=200
+
+\newcount\totalfoocount
+\newdimen\totalfoodim
+
+\def\specfootnote#1{\insert\footins\bgroup
+    \let\tt=\ttsmall \rmsmall
+    \floatingpenalty=20000 \setbox0=\hbox{#1}%
+    \ht0=10pt \dp0=0pt \box0 \egroup
+    \global\advance\totalfoocount by1
+}
+
+\def\footnoterule \unvbox\footins {
+   \vskip-12pt \vfil
+   \moveright\parindent\vbox{\hsize=\nwidth \hrule
+   \setbox2=\vbox{\unvbox\footins \unskip
+       \setbox2=\lastbox
+       \global\setbox4=\hbox{\unhbox2}
+       \loop \unskip\unskip\unpenalty
+           \setbox2=\lastbox
+           \ifhbox2 \global\setbox4=
+              \hbox{\unhbox2 \penalty-300\hskip15pt plus5pt \unhbox4}
+           \repeat}
+       \setbox2=\vbox{\hbox{} \parskip=0pt
+       \lineskiplimit=0pt \baselineskip=10pt \raggedright \rightskip=0pt plus7em 
+       \leftskip=0pt \hyphenpenalty=10000 \noindent \Black \unhbox4 }
+       \global\advance\totalfoodim by\ht2 \unvbox2}
+}
+
+\def\refcoef#1#2#3{%
+   \ifnum#1=200 % jsme na zacatku tretiho pruchodu
+      \dimen0=#3 \divide\dimen0 by #2
+      \multiply \dimen0 by100 
+      \afterassignment\gobblerest \count\footins=\the\dimen0 \end
+   \else \count\footins=#1
+   \fi
+   \message{foot-coef: \the\count\footins}
+}
+\def\gobblerest #1\end{}
+
+\output={\setbox0=\makeheadline \def\makeheadline{\box0\nointerlineskip}
+  \let~=\relax \let\nb=\relax \let\TeX=\relax \let\docbytex=\relax \let\_=\relax \let\tt=\relax
+  \outputhook \plainoutput }
+
+
+%%%%%%%%%%%%%%%%%% Kapitoly, podkapitoly
+
+\newcount\secnum
+\newcount\subsecnum
+\newtoks\sectitle
+\newif\ifsavetoc \savetoctrue
+
+\def\sec{\def\tmpA{sec}\futurelet\nextchar\secparam}  
+\def\subsec{\def\tmpA{subsec}\futurelet\nextchar\secparam}
+
+\def\secparam{\ifx\nextchar[%
+     \def\tmp[##1]{\def\seclabel{##1}\futurelet\nextchar\secparamA}%
+     \expandafter\tmp
+   \else \def\seclabel{}\expandafter\secparamB\fi
+}
+\def\secparamA{\expandafter\ifx\space\nextchar 
+      \def\tmp{\afterassignment\secparamB\let\next= }\expandafter\tmp
+   \else \expandafter\secparamB \fi
+}
+\def\secparamB #1\par{\nolastspace #1^^X ^^X\end}
+\def\nolastspace #1 ^^X#2\end{\ifx^^X#2^^X\secparamC #1\else \secparamC #1^^X\fi}
+\def\secparamC #1^^X{\sectitle={#1}\csname ii\tmpA\endcsname}
+
+\def\iisec{%
+    \ifsavetoc \global\advance\secnum by1 \global\subsecnum=0 \fi
+    \edef\makelinks{%
+        \ifsavetoc \noexpand\savelink[sec:\the\secnum]\fi
+        \if^^X\seclabel^^X\else \noexpand\labeltext[\seclabel]{\the\secnum}\fi}
+    \expandafter \printsec \expandafter{\the\sectitle}% vlozi horni mezeru, text, nakonec \par
+    \ifsavetoc
+       \ewrite {\string\reftocline{\the\secnum}{\the\sectitle}{\noexpand\the\pageno}}\fi
+    \mark{\ifsavetoc \the\secnum\space \else
+          \ifx\emptynumber\empty\else\emptynumber\space\fi\fi \the\sectitle} 
+    \savetoctrue \printsecbelow
+}
+\def\iisubsec {%
+    \ifsavetoc \global\advance\subsecnum by1 \fi
+    \edef\makelinks{%
+        \ifsavetoc \noexpand\savelink[sec:\the\secnum.\the\subsecnum]\fi
+        \if^^X\seclabel^^X\else \noexpand\labeltext[\seclabel]{\the\secnum.\the\subsecnum}\fi}
+    \expandafter \printsubsec \expandafter{\the\sectitle}% vlozi horni mezeru, text, nakonec \par
+    \ifsavetoc  \ewrite 
+         {\string\reftocline{\the\secnum.\the\subsecnum}{\the\sectitle}{\noexpand\the\pageno}}\fi
+    \savetoctrue \printsubsecbelow
+}
+
+%%%%%%%%%%%%%%%%%%%%%%% Part (doplneno leden 2009)
+
+\newcount\partnum
+\def\thepart{\ifcase\partnum --\or A\or B\or C\or D\or E\or F\or G\or
+  H\or I\or J\or K\or L\or M\or N\or O\or P\or Q\or R\or S\or T\or
+  U\or V\or W\or X\or Y\or Z\else +\the\partnum\fi}
+
+\def\part{\def\tmpA{part}\futurelet\nextchar\secparam}
+\def\iipart{% 
+    \ifsavetoc \global\advance\partnum by1 \fi
+    \edef\makelinks{%
+        \ifsavetoc \noexpand\savelink[sec:\thepart]\fi
+        \if^^X\seclabel^^X\else \noexpand\labeltext[\seclabel]{\thepart}\fi}
+    \expandafter \printpart \expandafter{\the\sectitle}% vlozi horni mezeru, text, nakonec \par
+    \ifsavetoc
+       \ewrite {\string\reftocline{}{\the\sectitle}{\noexpand\the\pageno}}\fi
+    \savetoctrue \printpartbelow
+}
+
+%%%%%%%%%%%%%%%%%%%%%%% Odkazy, reference
+
+\ifx\pdfoutput\undefined
+   \def\savelink[#1]{}
+   \def\ilink [#1]#2{#2}
+   \def\savepglink{}
+   \def\pglink{\afterassignment\dopglink\tempnum=}
+   \def\dopglink{\the\tempnum}
+   \def\ulink[#1]#2{#2}
+\else
+   \def\savelink[#1]{\ifvmode\nointerlineskip\fi
+      \vbox to0pt{\def\nb{/_}\vss\pdfdest name{#1} xyz\vskip\linkskip}}
+   \def\ilink [#1]#2{{\def\nb{/_}\pdfstartlink height 9pt depth 3pt
+      attr{/Border[0 0 0]} goto name{#1}}\Blue#2\Black\pdfendlink}
+   \def\savepglink{\ifnum\pageno=1 \pdfdest name{sec::start} xyz\relax\fi % viz \bookmarks
+       \pdfdest num\pageno fitv\relax}
+   \def\pglink{\afterassignment\dopglink\tempnum=}
+   \def\dopglink{\pdfstartlink height 9pt depth 3pt
+       attr{/Border[0 0 0]} goto num\tempnum\relax\Blue\the\tempnum\Black\pdfendlink}
+   \def\ulink[#1]#2{\pdfstartlink height 9pt depth 3pt 
+   user{/Border[0 0 0]/Subtype/Link/A << /Type/Action/S/URI/URI(#1)>>}\relax
+   \Green{\tt #2}\Black\pdfendlink}
+\fi
+\newdimen\linkskip \linkskip=12pt
+
+\def\reflabel #1#2#3{%
+   \undef{^^Y#1}\iftrue
+      \ifx^^X#2^^X\else\defsec{^^X#1}{#2}\fi
+      \defsec{^^Y#1}{#3}%
+   \else
+      \dbtwarning{The label [#1] is declared twice}%
+   \fi
+}
+\def\numref [#1]{\undef{^^X#1}\iftrue \else \csname^^X#1\endcsname\fi}
+\def\pgref [#1]{\undef{^^Y#1}\iftrue-1000\else \csname^^Y#1\endcsname\fi}
+
+\def\labeltext[#1]#2{\savelink[#1]\writelabel[#1]{#2}}
+\def\writelabel[#1]#2{\edef\tmp{\noexpand\writelabelinternal{#2}}\tmp{#1}}
+\def\writelabelinternal#1#2{\write\reffile{\string\reflabel{#2}{#1}{\the\pageno}}}
+
+\def\label[#1]{\labeltext[#1]{}}
+
+\def\cite[#1]{\ifnum \pgref[#1]=-1000
+      \dbtwarning{label [#1] is undeclared}\Red??\Black
+   \else \edef\tmp{\numref[#1]}%
+      \ifx\tmp\empty \edef\tmp{\pgref[#1]}\fi
+      \ilink[#1]{\tmp}%
+   \fi
+}
+
+\def\api #1{\label[+#1]\write\reffile{\string\refapiword{#1}}}
+\def\apitext{$\succ$}
+
+\def\bye{\par\vfill\supereject
+   \ifx\indexbuffer\empty \else % jsme ve druhem a dalsim pruchodu
+      \immediate\write\reffile{\string\refcoef
+         {\the\count\footins}{\the\totalfoocount}{\the\totalfoodim}}
+      \immediate\closeout\reffile
+      \setrefchecking \continuetrue \input \jobname.ref
+      \ifcontinue  \indexbuffer \relax \fi
+      \ifcontinue \ifx\text\tocbuffer \else
+          \continuefalse \dbtwarning{toc-references are inconsistent, run me again}\fi
+      \fi
+      \ifcontinue \immediate\write16{DocBy.TeX: OK, all references are consistent.}\fi
+   \fi
+   \end
+}
+\def\setrefchecking{\catcode`\"=12
+   \def\refcoef##1##2##3{}
+   \def\reflabel##1##2##3{\def\tmp{##3}\let\next=\relax
+       \expandafter\ifx\csname^^Y##1\endcsname \tmp 
+          \ifx^^X##2^^X\else 
+             \def\tmp{##2} \expandafter \ifx \csname^^X##1\endcsname \tmp \else
+                \continuefalse
+                \dbtwarning{text references are inconsistent, run me again}
+                \let\next=\endinput
+          \fi\fi
+       \else
+          \continuefalse
+          \dbtwarning{page references are inconsistent, run me again}
+          \let\next=\endinput
+       \fi\next}
+   \def\refuseword##1##2{\expandafter \ifx\csname -##1\endcsname \relax
+      \defsec{-##1}{##2}\else \edefsec{-##1}{\csname -##1\endcsname,##2}\fi}
+   \def\refdg##1##2##3##4{\addtext\ptocentry @{##2}{##4}\to\tocbuffer}
+   \let\text=\tocbuffer \def\tocbuffer{}
+   \def\,##1{\let##1=\relax}\indexbuffer
+   \def\,##1{\edef\tmp{\expandafter\ignoretwo \string ##1}%
+       \expandafter\ifx \csname w:\tmp\endcsname ##1\else
+          \continuefalse
+          \dbtwarning{auto-references are inconsistent, run me again}
+          \expandafter\ignoretorelax \fi}
+}
+\def\ignoretorelax #1\relax{}
+
+%%%%%%%%%%%%%%%%%% Tvorba obsahu a rejstriku
+
+\def\tocbuffer{}
+\def\indexbuffer{}
+\def\addtext #1\to#2{\expandafter\gdef\expandafter#2\expandafter{#2#1}}
+
+\def\reftocline#1#2#3{\def\currb{#1}%
+   \istocsec#1.\iftrue \def\currsecb{#1}\else \addbookmark\currsecb \fi
+   \addtext\dotocline{#1}{#2}{#3}\to\tocbuffer}
+
+\def\dotocline#1#2#3{\par 
+   \istocsec#1.\iftrue \ptocline{#1}{#2}{#3}\else \ptocsubline{#1}{#2}{#3}\fi}
+\def\istocsec#1.#2\iftrue{\if^^X#2^^X}
+
+\def\refdg#1#2#3#4{%
+    \edefsec{-#2}{#1\noexpand\right\if!#4!#3\fi}
+    \expandafter\addtext\csname-#2\endcsname,\to\indexbuffer
+    \addbookmark\currb
+    \addtext\ptocentry @{#2}{#4}\to\tocbuffer
+    \ifx^^X#4^^X\enctextable{#2}{\sword{#2}}    % slovo je z \dg
+    \else \expandafter\def\csname ns:\currns    % slovo je z \dl
+          \expandafter\expandafter\expandafter\endcsname
+          \expandafter\expandafter\expandafter
+           {\csname ns:\currns\endcsname \locword{#4}}
+    \fi
+}
+\def\refapiword#1{\addbookmark\currb \addtext\ptocentry +{#1}{}\to\tocbuffer}
+
+\def\dotoc{\bgroup \savetocfalse \sec \tittoc \par \smallskip 
+   \leftskip=\parindent \rightskip=\parindent plus .5\hsize
+   \tochook \tocbuffer \par\egroup}
+
+\def\doindex {\par\penalty0
+   \calculatedimone
+   \ifdim\dimen1<7\baselineskip \vfil\break \fi
+   \sec \titindex \par
+   \ifx\indexbuffer\empty
+       \dbtwarning {index is empty, run me again}
+   \else
+       \message{DocBy.TeX: sorting index...}
+       \sortindex
+       \indexhook
+       \vskip-\baselineskip  
+       \begmulti 2 \rightskip=0pt plus5em \parfillskip=0pt plus2em
+         \widowpenalty=0 \clubpenalty=0
+         \let\,=\doindexentry \indexbuffer \endmulti
+   \fi
+}
+\def\doindexentry #1{%
+      \edef\tmp{\expandafter\ignoretwo \string #1}%
+      \expandafter \remakebackslash \tmp\end
+      \expandafter \printindexentry \expandafter {\tmp}% 
+}
+\def\remakebackslash#1#2\end{\if#1\nb \def\tmp{\nb#2}\fi}
+\def\ignoretwo #1#2{}
+
+\def\addbookmark#1{\undef{bk:#1}\iftrue\defsec{bk:#1}{1}%
+   \else \tempnum=\csname bk:#1\endcsname\relax 
+         \advance\tempnum by1
+         \edefsec{bk:#1}{\the\tempnum}
+   \fi}
+\def\currb{} % vychozi hodnota <uzel> pro jistotu
+
+\def\bookmarks{\ifx\pdfoutput\undefined \else
+   \bgroup
+     \def\dotocline##1##2##3{%
+         \undef{bk:##1}\iftrue \tempnum=0 \else \tempnum=\csname bk:##1\endcsname\relax\fi
+         \if^^X##1^^X\advance\partnum by1 
+            \setoutline[sec:\thepart]{##2}{\opartname\space\thepart: }%
+         \else \setoutline[sec:##1]{##2}{}\fi}
+     \def\ptocentry##1##2##3{\edef\tmpb{\ifx^^X##3^^X##2\else##3\fi}%
+         \tempnum=0 \setoutline[##1##2]{\tmpb}{}}%
+     \def\nb{\string\\}\def\TeX{TeX}\def\docbytex{DocBy.TeX}\def\_{_}\def\tt{}\def~{ }%
+     \def\unskip{}\bookmarkshook 
+     \ifx\headtile\empty \else 
+        \tempnum=0 \setoutline[sec::start]{...\headtitle\empty...}{}\fi % viz \savepglink
+     \tocbuffer 
+   \egroup \fi
+}
+\def\setoutline[#1]#2#3{{\def\nb{/_}\xdef\tmp{#1}}%
+   \def\tmpa{\pdfoutline goto name{\tmp} count -\tempnum}%
+   \cnvbookmark{\tmpa{#3\nobraces#2{\end}}}%
+}
+\def\cnvbookmark#1{#1}  % zadna konverze
+\def\nobraces#1#{#1\nobrA}
+\def\nobrA#1{\ifx\end#1\empty\else\nobraces#1\fi}
+
+%%%%%%%%%%%%%%%%%%%%%%%% Razeni podle abecedy
+
+\newif\ifAleB
+\def\nullbuf{\def\indexbuffer{}}
+\def\return#1#2\fi\relax{#1} \def\fif{\fi}
+
+\def\sortindex{\expandafter\nullbuf
+  \expandafter\mergesort\indexbuffer\end,\end
+}
+\def\mergesort #1#2,#3{%
+   \ifx,#1                       % prazdna-skupina,neco,  (#2=neco #3=pokracovani)
+      \addtext#2,\to\indexbuffer    % dvojice skupin vyresena
+      \return{\fif\mergesort#3}%    % \mergesort pokracovani
+   \fi
+   \ifx,#3                       % neco,prazna-skupina,  (#1#2=neco #3=,)
+      \addtext#1#2,\to\indexbuffer  % dvojice skupin vyresena
+      \return{\fif\mergesort}%      % \mergesort dalsi
+   \fi
+   \ifx\end#3                    % neco,konec (#1#2=neco)
+      \ifx\empty\indexbuffer                      % neco=kompletni setrideny seznam
+         \edef\indexbuffer{\napercarky#1#2\end}%  % vlozim \, mezi polozky
+         \return{\fif\fif\gobblerest}%            % koncim
+      \else                      % neco=posledni skupina nebo \end
+         \return{\fif\fif \expandafter\nullbuf    % spojim \indexbuffer+neco a cele znova
+                \expandafter\mergesort\indexbuffer#1#2,#3}%
+   \fi\fi                      % zatriduji: p1+neco1,p2+neco2, (#1#2=p1+neco1 #3=p2)
+   \isAleB #1#3\ifAleB         % p1<p2
+      \addtext#1\to\indexbuffer   % p1 do bufferu
+      \return{\fif\mergesort#2,#3}%         % \mergesort neco1,p2+neco2,
+   \else                       % p1>p2
+      \addtext#3\to\indexbuffer   % p2 do bufferu
+      \return{\fif\mergesort#1#2,}%         % \mergesort p1+neco1,neco2,
+   \fi
+   \relax % zarazka, na ktere se zastavi \return
+}
+\def\isAleB #1#2{%
+   \edef\tmp{\expandafter\ignoretwo\string#1&0\relax\expandafter\ignoretwo\string#2&1\relax}%
+   \lowercase \expandafter {\expandafter \testAleB \tmp}%
+}
+\def\testAleB #1#2\relax #3#4\relax {%
+   \ifx #1#3\testAleB #2\relax #4\relax \else
+       \ifnum `#1<`#3 \AleBtrue \else \AleBfalse \fi
+   \fi
+}
+\def\napercarky#1{\ifx#1\end \else
+    \noexpand\,\noexpand#1\expandafter\napercarky
+  \fi
+}
+
+
+%%%%%%%%%% pageno transformations
+
+\def\refuseword#1#2{%
+   \expandafter \ifx\csname w:#1\endcsname \relax
+      \defsec{w:#1}{#2}
+   \else
+      \edefsec{w:#1}{\csname w:#1\endcsname,#2}
+   \fi
+}
+\def\listofpages#1{%
+    \expandafter\expandafter\expandafter \transf\csname w:#1\endcsname,0,%
+}
+
+\newcount\apinum
+\newcount\dgnum
+\newcount\tempnum
+\newif\ifdash
+\newif\iffirst
+
+\def\transf{\dashfalse \firsttrue \tempnum=-100 \bgroup \cykltransf}
+
+\def\cykltransf #1,{\ifnum #1=\apinum \else \ifnum #1=\dgnum \else
+   \ifnum #1=0 \let\cykltransf=\egroup
+      \ifdash \pglink\the\tempnum\relax \fi
+   \else 
+      \ifnum #1=\tempnum % cislo se opakuje, nedelam nic
+      \else
+         \advance\tempnum by 1
+         \ifnum #1=\tempnum  % cislo navazuje
+            \ifdash \else
+               --\dashtrue
+            \fi
+         \else               % cislo nenavazuje
+            \ifdash
+               \advance\tempnum by-1 
+               \pglink\the\tempnum \relax\dashfalse, \pglink#1\relax
+            \else
+               \carka \pglink#1\relax
+   \fi\fi\fi\fi
+   \tempnum=#1 \fi\fi \cykltransf
+}
+\def\carka{\iffirst \firstfalse \else, \fi}
+
+%% Vice sloupcu
+
+\newdimen\colsep  \colsep=\parindent % horiz. mezera mezi sloupci 
+\def\roundtolines #1{%% zaokrouhlí na celé násobky vel. rádku
+   \divide #1 by\baselineskip \multiply #1 by\baselineskip}
+\def\corrsize #1{%% #1 := #1 + \splittopskip - \topskip
+   \advance #1 by \splittopskip \advance #1 by-\topskip}
+
+\def\begmulti #1 {\par\bigskip\penalty0 \def\Ncols{#1}
+   \splittopskip=\baselineskip
+   \setbox0=\vbox\bgroup\penalty0
+   \advance\hsize by\colsep
+   \divide\hsize by\Ncols  \advance\hsize by-\colsep}
+\def\endmulti{\vfil\egroup \setbox1=\vsplit0 to0pt
+   \calculatedimone
+   \ifdim \dimen1<2\baselineskip
+     \vfil\break \dimen1=\vsize \corrsize{\dimen1} \fi
+   \dimen0=\Ncols\baselineskip \advance\dimen0 by-\baselineskip
+   \advance\dimen0 by \ht0 \divide\dimen0 by\Ncols
+   \roundtolines{\dimen0}%
+   \ifdim \dimen0>\dimen1 \splitpart  
+   \else \makecolumns{\dimen0} \fi
+   \ifvoid0 \else \errmessage{ztracený text ve sloupcích?} \fi
+   \bigskip}
+\def\makecolumns#1{\setbox1=\hbox{}\tempnum=0
+   \loop \ifnum\Ncols>\tempnum
+      \setbox1=\hbox{\unhbox1 \vsplit0 to#1 \hss}
+      \advance\tempnum by1
+   \repeat
+   \hbox{}\nobreak\vskip-\splittopskip \nointerlineskip
+   \line{\unhbox1\unskip}}
+\def\splitpart{\roundtolines{\dimen1}
+   \makecolumns{\dimen1} \advance\dimen0 by-\dimen1
+   \vskip 0pt plus 1fil minus\baselineskip \break
+   \dimen1=\vsize \corrsize{\dimen1}
+   \ifvoid0 \else
+      \ifdim \dimen0>\dimen1 \splitpart
+      \else \makecolumns{\dimen0} \fi \fi}% TBN
+\def\calculatedimone{%
+   \ifdim\pagegoal=\maxdimen \dimen1=\vsize \corrsize{\dimen1}
+   \else \dimen1=\pagegoal \advance\dimen1 by-\pagetotal \fi}
+
+
+%% final settings
+
+\catcode`\_=12
+\let\subori=\_ \def\_{_}
+\everymath={\catcode`\_=8 } \everydisplay={\catcode`\_=8 }
+
+\newwrite\reffile
+\softinput \jobname.ref
+\immediate\openout\reffile=\jobname.ref
+
+\catcode`\"=\active
+\let\activeqq="
+\def"{\leavevmode\hbox\bgroup\mubytein=1\let\leftcomment=\empty
+      \let\returntoBlack=\empty \let\linecomment=\empty \let"=\egroup 
+      \def\par{\errmessage{\string\par\space inside \string"...\string"}}%
+      \setverb\tt\quotehook
+}
+
+\def\langleactive{\uccode`\~=`\<\catcode`\<=13
+      \uppercase{\def~}##1>{{$\langle$\it##1\/$\rangle$}}}

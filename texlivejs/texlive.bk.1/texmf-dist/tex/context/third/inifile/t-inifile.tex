@@ -1,0 +1,221 @@
+%D \module
+%D   [      file=t-inifile,
+%D        version=2008.07.15,
+%D          title=\CONTEXT\ User Module,
+%D       subtitle=Formatting of ini-files,
+%D         author=Peter Münster,
+%D           date=\currentdate,
+%D      copyright={Peter Münster}]
+%C This module is copyrighted by Peter Münster.
+%C Please send any comments to pmrb at free.fr.
+%C You can find the latest version of this module on
+%C http://modules.contextgarden.net/
+
+% This program is free software; you can redistribute it and/or
+% modify it under the terms of the GNU General Public License
+% as published by the Free Software Foundation; either version 2
+% of the License, or (at your option) any later version.
+
+% This program is distributed in the hope that it will be useful,
+% but without any warranty; without even the implied warranty of
+% merchantability or fitness for a particular purpose.  See the
+% GNU General Public License for more details.
+
+\writestatus{loading}{Formatting of ini-files}
+\doifnotmode{mkiv}{\writestatus{error}{needs luatex}\wait\end}
+
+\unprotect
+
+\startluacode
+-- namespace
+thirddata = thirddata or { }
+thirddata.inifile = {}
+
+-- sort the table
+-- s1: primary key
+-- s2: secondary key
+-- s3: third key
+local function sort_table(s1, s2, s3)
+	local function cmp(a, b)
+		if s2 ~= "" and a[s1] == b[s1] then
+			if s3 ~= "" and a[s2] == b[s2] then
+				return a[s3] < b[s3]
+			else
+				return a[s2] < b[s2]
+			end
+		else
+			return a[s1] < b[s1]
+		end
+	end
+	if s1 ~= "" then
+		table.sort(thirddata.inifile.t, cmp)
+	end
+end
+
+-- write default values to table entry
+-- d: the default values separated by commas
+-- i: the index of the entry
+local function write_defaults(d, i)
+	for k, v in string.gmatch(d, "[,%s]*(.-)=([^,]*)") do
+		thirddata.inifile.t[i][k] = v
+	end
+end
+
+-- generate table from ini-file
+-- d: default values for all entries
+-- s1: primary sort-key
+-- s2: secondary sort-key
+-- s3: third sort-key
+function thirddata.inifile.make_table(d, s1, s2, s3)
+	thirddata.inifile.t = {}
+	local i = 0
+	local lastkey
+	while true do
+		local l = io.read()
+		if not l then
+			break
+		end
+		while true do
+			-- check for new entry:
+			key = string.match(l, "^%[(.+)%]$")
+			if key then
+				i = i + 1
+				thirddata.inifile.t[i] = {}
+				thirddata.inifile.t[i]["key"] = key
+				thirddata.inifile.t[i]["n"] = i
+				write_defaults(d, i)
+				break			-- continue !
+			end
+			-- treat continued lines:
+			while string.match(l, "\\$") do
+				local c = io.read()
+				l = string.match(l, "^(.*)\\$") .. c
+			end
+			local c = string.match(l, "^%s+(.*)$")
+			if c then
+				thirddata.inifile.t[i][lastkey] =
+					thirddata.inifile.t[i][lastkey] .. " " .. c
+			end
+			-- get a new key value pair:
+			key, val = string.match(l, "^([%w_]+)%s*=%s(.*)$")
+			if key then
+				thirddata.inifile.t[i][key] = val
+				lastkey = key
+			end
+			break
+		end
+	end
+	sort_table(s1, s2, s3)
+	print(table.serialize(thirddata.inifile.t))
+end
+
+-- let ConTeXt print the sorted table with user defined formatting
+-- c: the user supplied command to print one entry
+function thirddata.inifile.print(c)
+	for i = 1,#thirddata.inifile.t do
+		tex.print(string.format("%s\\def\\IF@index{%d}%s\\%s",
+								"\\unprotect", i, "\\protect", c))
+	end
+end
+
+-- initialise the new entry, in general to be called in the beginning
+-- of the user supplied formatting command
+-- i: the index of the new entry
+function thirddata.inifile.newentry(i)
+	for k, v in pairs(thirddata.inifile.t[i]) do
+		tex.print(string.format("\\def\\IF%s{%s}", k, v))
+	end
+end
+
+-- filter applied to values of a key
+-- k: the key
+-- s: the search pattern
+-- r: the replace string
+function thirddata.inifile.filter(k, s, r)
+	for i = 1,#thirddata.inifile.t do
+		thirddata.inifile.t[i][k] =
+			string.gsub(thirddata.inifile.t[i][k], s, r)
+	end
+end
+\stopluacode
+
+\getparameters[IF@][defaults=,sortA=,sortB=,sortC=,file=/dev/null]
+\def\setupIniFile[#1]{
+  \getparameters[IF@][#1]
+  \ctxlua{io.input("\IF@file")}
+  \ctxlua{thirddata.inifile.make_table("\IF@defaults",
+    "\IF@sortA", "\IF@sortB", "\IF@sortC")}
+}
+\def\IniFilePrint{\ctxlua{thirddata.inifile.print("\IF@command")}}
+\def\IniFileNewEntry{\ctxlua{thirddata.inifile.newentry(\IF@index)}}
+\def\IniFileFilter[#1][#2][#3]{\ctxlua{thirddata.inifile.filter("#1",
+    "#2", "#3")}}
+
+\protect
+
+\doifnotmode{demo}{\endinput}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%D Usage example:
+
+\startbuffer[thewho]
+[p_t]
+givenname = Peter
+surname = Townshend
+birthyear = 1945
+comment = 100 % with nobreakspace
+
+[r_d]
+givenname = Roger
+surname = Daltrey
+comment = 100 % with thinspace
+
+[j_e]
+givenname = John
+surname = Entwistle
+comment = very very very very
+		long line
+
+[k_m]
+givenname = Keith
+surname = Moon
+birthyear = 1946
+comment = another very very very very \
+		long line
+
+[k_j]
+givenname = Kenney
+surname = Jones
+birthyear = 1948
+comment = yet another very very very very \
+long line
+\stopbuffer
+\savebuffer[thewho]
+
+\usemodule[inifile]
+
+\setupIniFile[defaults={birthyear=1944,comment=},
+  sortA=birthyear,sortB=key,command=FormatMember,file=\jobname-thewho.tmp]
+\IniFileFilter[comment][\%\% ][\\letterpercent\\space ]
+\IniFileFilter[comment][\%\%][\\letterpercent ]
+
+\setupTABLE[frame=off,width=0.5\textwidth]
+\nonknuthmode
+
+\def\IFbirthyear{}
+\def\FormatMember{
+  \edef\LastBirthyear{\IFbirthyear}
+  \IniFileNewEntry
+  \doifnot\IFbirthyear\LastBirthyear{\section{\IFbirthyear}}
+  \subsection{\WORD{\IFkey}}
+  \bTABLE\bTR
+  \bTD Given name: \IFgivenname\eTD\bTD Surname: \IFsurname\eTD
+  \eTR\eTABLE
+  \doifsomething\IFcomment{Comment to show the treatment of the percent
+    sign and multi-line values: \IFcomment}}
+
+\starttext
+\title{The Who}
+\IniFilePrint
+\stoptext

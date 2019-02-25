@@ -1,0 +1,723 @@
+% \iffalse meta-comment (by the way, this file is contains UTF-8)
+%
+% Written in 2010, 2011 by Manuel Pégourié-Gonnard <mpg@elzevir.fr>
+%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Manuel Pégourié-Gonnard
+%
+% This work consists of the main source file luacode.dtx
+% and the derived files
+%    luacode.sty luacode.pdf
+%
+% Unpacking:
+%    tex luacode.dtx
+% Documentation:
+%    pdflatex luacode.dtx
+%
+%<*ignore>
+\begingroup
+  \def\x{LaTeX2e}%
+\expandafter\endgroup
+\ifcase 0\ifx\install y1\fi\expandafter
+         \ifx\csname processbatchFile\endcsname\relax\else1\fi
+         \ifx\fmtname\x\else 1\fi\relax
+\else\csname fi\endcsname
+%</ignore>
+%<*install>
+\input docstrip.tex
+
+\keepsilent
+\askforoverwritefalse
+
+\preamble
+
+See the source file for author and licensing information.
+
+\endpreamble
+
+\generate{%
+  \usedir{tex/lualatex/luacode}%
+  \file{luacode.sty}{\from{luacode.dtx}{texpackage}}%
+}
+
+\generate{%
+  \usedir{doc/lualatex/luacode}%
+  \file{test-luacode.tex}{\from{luacode.dtx}{testlatex}}%
+}
+
+\obeyspaces
+\Msg{************************************************************************}
+\Msg{*}
+\Msg{* To finish the installation you have to move the following}
+\Msg{* files into a directory searched by TeX:}
+\Msg{*}
+\Msg{*     luacode.sty}
+\Msg{*}
+\Msg{* Happy TeXing!}
+\Msg{*}
+\Msg{************************************************************************}
+
+\endbatchfile
+%</install>
+%<*ignore>
+\fi
+%</ignore>
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{lmodern}
+\usepackage{fixltx2e, mparhack}
+
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{xspace}
+\usepackage[a4paper]{geometry}
+\usepackage[english]{babel}
+\usepackage[colorlinks]{hyperref}
+\usepackage{bookmark}
+
+\newcommand*\email [1] {<\href{mailto:#1}{#1}>}
+\newcommand \file       {\nolinkurl}
+\newcommand \pk         {\textsf}
+\newcommand \cmdname    {\texttt}
+
+\pdfstringdefDisableCommands{%
+  \def\cs#1{\@backslashchar #1}}
+
+\MakeShortVerb\|
+\renewcommand\MacroFont{\ttfamily\small\color{blue}}
+
+\begin{document}
+  \DocInput{luacode.dtx}%
+\end{document}
+%</driver>
+% \fi
+%
+% \CheckSum{0}
+%
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%   Dollar        \$     Percent       \%     Ampersand     \&
+%   Acute accent  \'     Left paren    \(     Right paren   \)
+%   Asterisk      \*     Plus          \+     Comma         \,
+%   Minus         \-     Point         \.     Solidus       \/
+%   Colon         \:     Semicolon     \;     Less than     \<
+%   Equals        \=     Greater than  \>     Question mark \?
+%   Commercial at \@     Left bracket  \[     Backslash     \\
+%   Right bracket \]     Circumflex    \^     Underscore    \_
+%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%   Right brace   \}     Tilde         \~}
+%
+% \title{The \pk{luacode} package}
+% \author{Manuel P\'egouri\'e-Gonnard \email{mpg@elzevir.fr}}
+% \date{v1.2a 2012/01/23}
+%
+% \maketitle
+%
+% \begin{abstract}
+% Executing Lua code from within \TeX\ with |\directlua| can sometimes be
+% tricky: there is no easy way to use the percent character, counting
+% backslashes may be hard, and Lua comments don't work the way you expect.
+% This package provides the |\luaexec| command and the |luacode(*)|
+% environments to help with these problems, as well as helper macros and a
+% debugging mode.
+% \end{abstract}
+%
+% \tableofcontents
+%
+% \section{Documentation}
+%
+% \subsection{Lua code in \LaTeX}
+%
+% For an introduction to the most important gotchas of |\directlua|, see
+% \file{lualatex-doc.pdf}. Before presenting the tools in this package, let me
+% insist that the best way to manage a non-trivial piece of Lua code is
+% probably to use an external file and source it from Lua, as explained in the
+% cited document.
+%
+% \medskip
+%
+% \DescribeMacro\luadirect
+% First, the exact syntax of |\directlua| has changed along version of
+% Lua\TeX, so this package provides a |\luadirect| command which is an exact
+% synonym of |\directlua| except that it doesn't have the funny, changing
+% parts of its syntax, and benefits from the debugging facilities described
+% below (\ref{dbg}).\footnote{And expands in two steps instead of one. If
+% you don't know what it means, then you hopefully don't need to.}
+%
+% The problems with |\directlua| (or |\luadirect|) are mainly with \TeX\
+% special characters. Actually, things are not that bad, since most special
+% characters do work, namely: |_|, |^|, |&|, \verb+$+, |{|, |}|. Three are a
+% bit tricky but they can be managed with |\string|: |\|, |#| and |~|. Only
+% |%| is really hard to obtain. Also, \TeX\ macros are expanded, which is good
+% since it allows to pass information from \TeX\ to Lua, but you must be
+% careful and use only purely expandable macros.
+%
+% \DescribeMacro\luaexec
+% The |\luaexec| command is similar to |\luadirect| but with a few additional
+% features:\footnote{And one major drawback: it is not purely expandable. See
+% previous note.} |\\| gives a double backslash (see note below)
+% |\%| a percent character, and |~| just works. For single backslashes,
+% |\string| is still needed.  Also, \TeX\ macros are expanded.
+%
+% \DescribeEnv{luacode}
+% The |luacode| environment is similar to |\luaexec|, except that you can now
+% use |%| and |#| directly (but |\%| and |\#| also work) and the line breaks
+% are respected, so that you can use line-wise Lua comments in the normal way,
+% without mistakenly commenting the rest of the chunk.
+%
+% Only the backslash and the braces keep their special meaning, so that macros
+% still work as usual, and you still need to use |\string| to get a single
+% backslash.
+%
+% \DescribeEnv{luacode*}
+% The variant |luacode*| goes further and makes even backslash a normal
+% character, so that you don't need any trick to obtain a single backslash. On
+% the other end, macros don't work any more. So, the content of a |luacode*|
+% is interpreted exactly as if it were in a normal Lua file, directly fed to
+% the Lua interpreter without any \TeX\ intervention.
+%
+% \medskip
+%
+% The following table summarizes how to use special characters with the
+% various commands and environments.
+%
+% \begin{center}
+%   \begin{tabular}{rcccc}
+%     \toprule
+%                         & |\luadirect|    & |\luaexec|      & |luacode|       & |luacode*|   \\
+%     \midrule
+%     Macros              & Yes             & Yes             & Yes             & No           \\
+%     Single backslash    & |\string\|      & |\string\|      & |\string\|      & Just |\|     \\
+%     Double backslash    & |\string\\|     & |\\|            & |\\|            & |\\|         \\
+%     Tilde               & |\string~|      & |~|             & |~|             & |~|          \\
+%     Sharp               & |\string#|      & |\#|            & |#| (or |\#|)   & |#|          \\
+%     Percent             & No easy way     & |\%|            & |%| (or |\%|)   & |%|          \\
+%     \TeX\ comments      & Yes             & Yes             & No              & No           \\
+%     Lua line comments   & No              & No              & Yes             & Yes          \\
+%     \bottomrule
+%   \end{tabular}
+% \end{center}
+%
+% \noindent\textbf{Backslashes and Lua strings.}
+% In the table and descriptions above, ``double backslash'' means that the Lua
+% interpreter will see a double backslash. It may then turn it into a single
+% backslash in the context of a Lua string delimited by single or double quotes
+% as opposed to a Lua string delimited by brackets, see
+% \href{http://www.lua.org/pil/2.4.html}{\emph{Programming in Lua} section
+% 2.4}. Similarly, a single backslash may or may not be interpreted as
+% starting an escape sequence. For example:
+% \begin{verbatim}
+% \begin{luacode}
+% a = "\\"      -- a contains a single backslash
+% b = [[\\]]    -- b contains two backslashes
+% c = "\\\\"    -- c contains two backslashes too
+% d = "line one\nline two"  -- d contains a newline character
+% e = [[single\nline]]      -- e contains no newline character
+% \end{luacode}
+% \end{verbatim}
+% The alert reader may notice that in the case of |\luadirect| and |\luaexec|,
+% single backslashes are a bit weird. For example with
+% \begin{verbatim}
+% \luaexec{texio.write_nl("line one\string\nline two")}
+% \end{verbatim}
+% \TeX\ will see |\nline| as a control sequence which is the ``argument'' of
+% |\string| and the Lua interpreter will consider only |\n| as an escape
+% sequence, and |line| as independent characters. In practice, this should not
+% have any unwanted consequences (except perhaps on the sanity of the reader).
+%
+% \medskip
+%
+% \noindent\textbf{Technical notes on environments.}
+% \DescribeEnv{luacodestar}
+% The environments will not work inside the argument of a command (just as
+% with verbatim commands and environments).  Also, you are supposed to leave a
+% space (or end-of-line) after the |\begin{luacode}| or |\begin{luacode*}|,
+% which is probably a natural thing to do anyway.  Finally, if you wish to
+% define derived environments, you'll need to use |\luacode| \dots
+% |\endluacode| instead of the usual |\begin| |\end| pair in your
+% environment's definition.  For the stared variant, use |\luacodestar| and
+% |\endluacodestar|.
+%
+% \medskip
+%
+% The test file (section~\ref{test}, or \file{test-luacode.tex} in the same
+% directory as this document) provides stupid but complete examples.
+%
+% \subsection{Helper macros}
+%
+% As mentioned in the previous section, except for trivial pieces of codes (or
+% examples) it is good practice to keep all your Lua code in separate |.lua|
+% files and then use |\luadirect| only to |require()| or |dofile()| it and
+% define \LaTeX\ wrappers for some functions, eg:
+% \begin{quote}
+%   |\newcommand*\foo[2]{\luadirect{foo("#1", #2)}}|
+% \end{quote}
+% This way, problems with \TeX\ special characters are avoided, since most of
+% the Lua is never seen by \TeX. Unfortunately, there is still potential
+% for problems. For example |\foo{a"b}{2}| will cause the Lua interpreter to
+% complain since the |"| in |#1| will end the string; we want the Lua
+% interpreter to see |"a\"b"| as the first argument.
+%
+% \DescribeMacro\luastring
+% Fortunately, Lua\TeX\ offers a primitive that does exactly what we need:
+% escape characters that need to be escaped in a Lua string. Unfortunately, it
+% has a very long name (especially in the prefixed form available in \LaTeX):
+% |\luatexluaescapestring|.  Also, you need to think to use quotes in addition
+% to this primitive.  So this package provides a shorter version: |\luastring|
+% that also include the quotes, so a safer version of |\foo| might be defined
+% as
+% \begin{quote}
+%   |\newcommand*\foo[2]{\luadirect{foo(\luastring{#1}, #2)}}|
+% \end{quote}
+%
+% \DescribeMacro\luastringN
+% \DescribeMacro\luastringO
+% It should be noted that the argument of |\luastring| is fully
+% expanded\footnote{If you don't know what this means, just skip this
+% paragraph.} before being turned into a Lua string. In case where such an
+% expansion is unwanted, two variants are provided: |\luastringN| for no
+% expansion, and |\luastringO| for one-level expansion (of the first token)
+% only.
+%
+% \subsection{Debugging} \label{dbg}
+%
+% \DescribeMacro\LuaCodeDebugOn
+% \DescribeMacro\LuaCodeDebugOff
+% The commands |\luadirect| and |\luaexec| as well as the environments
+% |luacode| and |luacode*| can optionally print the Lua code as it will be
+% seen by the Lua interpreter in the log file before executing it. The feature
+% is disabled by default and can be turned on and off using |\LuaCodeDebugOn|
+% and |\LuaCodeDebugOff| (which obey the usual \TeX\ scoping rules).
+%
+%    \section{Implementation}
+%
+%    \begin{macrocode}
+%<*texpackage>
+%    \end{macrocode}
+%
+%    \subsection{Preliminaries}
+%
+%    Catcode defenses.
+%
+%    \begin{macrocode}
+\begingroup\catcode61\catcode48\catcode32=10\relax% = and space
+  \catcode123 1 % {
+  \catcode125 2 % }
+  \catcode 35 6 % #
+  \toks0{\endlinechar\the\endlinechar}%
+  \edef\x{\endlinechar13}%
+  \def\y#1 #2 {%
+    \toks0\expandafter{\the\toks0 \catcode#1 \the\catcode#1}%
+    \edef\x{\x \catcode#1 #2}}%
+  \y  13  5 % carriage return
+  \y  61 12 % =
+  \y  32 10 % space
+  \y 123  1 % {
+  \y 125  2 % }
+  \y  35  6 % #
+  \y  64 11 % @ (letter)
+  \y  39 12 % '
+  \y  40 12 % (
+  \y  41 12 % )
+  \y  42 12 % *
+  \y  45 12 % -
+  \y  46 12 % .
+  \y  47 12 % /
+  \y  91 12 % [
+  \y  93 12 % ]
+  \y  94  7 % ^
+  \y  96 12 % `
+  \y 126 13 % ~
+  \toks0\expandafter{\the\toks0 \relax\noexpand\endinput}%
+  \edef\y#1{\noexpand\expandafter\endgroup%
+    \noexpand\ifx#1\relax \edef#1{\the\toks0}\x\relax%
+    \noexpand\else \noexpand\expandafter\noexpand\endinput%
+    \noexpand\fi}%
+\expandafter\y\csname luacode@sty@endinput\endcsname%
+%    \end{macrocode}
+%
+%    Package declaration.
+%
+%    \begin{macrocode}
+\ProvidesPackage{luacode}[2012/01/23 v1.2a lua-in-tex helpers (mpg)]
+%    \end{macrocode}
+%
+%    Make sure Lua\TeX\ is used.
+%
+%    \begin{macrocode}
+\RequirePackage{ifluatex}
+\ifluatex\else
+  \PackageError{luacode}{LuaTeX is required for this package. Aborting.}{%
+    This package can only be used with the LuaTeX engine\MessageBreak
+    (command `lualatex'). Package loading has been stopped\MessageBreak
+    to prevent additional errors.}
+  \expandafter\luacode@sty@endinput
+\fi
+%    \end{macrocode}
+%
+%    Use \pk{luatexbase} for catcode tables.
+%
+%    \begin{macrocode}
+\RequirePackage{luatexbase}
+%    \end{macrocode}
+%
+%    \subsection{Internal code}
+%
+%    Produce Lua code printing debug info for the given argument.
+%
+%    \begin{macrocode}
+\newcommand \luacode@printdbg [1] {%
+  texio.write_nl('log',
+    '-- BEGIN luacode debug (on input line \the\inputlineno)')
+  texio.write_nl('log', "\luatexluaescapestring{#1}")
+  texio.write_nl('log',
+    '-- END luacode debug (on input line \the\inputlineno)')
+}
+%    \end{macrocode}
+%
+%    Execute a piece of Lua code, possibly printing debug info.
+%    |maybe@printdbg| will be either |printdbg| or |gobble|, see user macros.
+%
+%    \begin{macrocode}
+\newcommand \luacode@dbg@exec [1] {%
+  \directlua {
+    \luacode@maybe@printdbg{#1}
+    #1
+  }%
+}
+%    \end{macrocode}
+%    Execute a piece of code, with shortcuts for double-backslash, percent and
+%    tilde, and trying to preserve newlines. This internal macro is long so
+%    that we can use in the environment, while the corresponding user command
+%    will be short. Make sure |~| is active.
+%
+%    \begin{macrocode}
+\begingroup \catcode`\~\active \expandafter\endgroup
+\@firstofone{%
+  \newcommand \luacode@execute [1] {%
+    \begingroup
+    \escapechar92
+    \newlinechar10
+    \edef\\{\string\\}%
+    \edef~{\string~}%
+    \let\%=\luacode@percentchar
+    \let\#=\luacode@sharpchar
+    \expandafter\expandafter\expandafter\endgroup
+    \luacode@dbg@exec{#1}}
+}
+%    \end{macrocode}
+%
+%    Catcode 12 percent and sharp characters for use in the previous command.
+%
+%    \begin{macrocode}
+\begingroup \escapechar\m@ne \edef\aux{\endgroup
+  \unexpanded{\newcommand\luacode@percentchar}{\string\%}%
+  \unexpanded{\newcommand\luacode@sharpchar  }{\string\#}%
+}\aux
+%    \end{macrocode}
+%
+%    Generic code for environments; the argument is the name of a catcode
+%    table.  We're normally inside a group, but let's open a new one in case
+%    we're called directly rather that using |\begin|. Define the end marker
+%    to be |\end{<envname>}| with current catcodes.
+%
+%    \begin{macrocode}
+\newcommand*\luacode@begin [1] {%
+  \begingroup
+  \escapechar92
+  \luatexcatcodetable#1\relax
+  \edef\luacode@endmark{\string\end{\@currenvir}}%
+  \expandafter\def \expandafter\luacode@endmark \expandafter{%
+    \luatexscantextokens \expandafter{\luacode@endmark}}%
+  \luacode@grab@body}
+%    \end{macrocode}
+%
+%    We'll define the body grabber in a moment, but let's see how the
+%    environment ends now.
+%
+%    \begin{macrocode}
+\newcommand\luacode@end{%
+  \edef\luacode@next{%
+    \noexpand\luacode@execute{\the\luacode@lines}%
+    \noexpand\end{\@currenvir}}%
+  \expandafter\endgroup
+  \luacode@next}
+%    \end{macrocode}
+%
+%    It is not possible to grab the body using a macro with delimited
+%    argument, since the end marker may contains open-group characters,
+%    depending on the current catcode regime. So we collect it linewise and
+%    check each line against the end marker.
+%
+%    Storage for lines.
+%
+%    \begin{macrocode}
+\newtoks\luacode@lines
+\newcommand*\luacode@addline [1] {%
+  \luacode@lines\expandafter{\the\luacode@lines#1^^J}}
+%    \end{macrocode}
+%
+%    Loop initialisation. Set endlinechar explicitely so that we can use it
+%    as a delimiter (and later when writing the code to Lua). Eat up the first
+%    token which is supposed to be a (catcode 12) |\endlinechar| character
+%    token.
+%
+%    \begin{macrocode}
+\newcommand \luacode@grab@body [1] {%
+  \luacode@lines{}%
+  \endlinechar10
+  \luacode@grab@lines}
+%    \end{macrocode}
+%
+%    The actual line-grabbing loop.
+%
+%    \begin{macrocode}
+\long\def\luacode@grab@lines#1^^J{%
+  \def\luacode@curr{#1}%
+  \luacode@strip@spaces
+  \ifx\luacode@curr\luacode@endmark
+    \expandafter\luacode@end
+  \else
+    \expandafter\luacode@addline\expandafter{\luacode@curr}%
+    \expandafter\luacode@grab@lines
+  \fi}
+%    \end{macrocode}
+%
+%    Strip catcode 12 spaces from the beginning of the token list inside
+%    |\luacode@curr|. First we need catcode 12 space, then we procede in the
+%    usual way.
+%
+%    \begin{macrocode}
+\begingroup\catcode32 12 \expandafter\endgroup
+\@firstofone{\newcommand\luacode@spaceother{ }}
+\newcommand \luacode@strip@spaces {%
+  \expandafter\luacode@strip@sp@peek\luacode@curr\@nil}
+\newcommand \luacode@strip@sp@peek {%
+  \futurelet\@let@token\luacode@strip@sp@look}
+\newcommand \luacode@strip@sp@look {%
+  \expandafter\ifx\luacode@spaceother\@let@token
+    \expandafter\@firstoftwo
+  \else
+    \expandafter\@secondoftwo
+  \fi{%
+    \afterassignment\luacode@strip@sp@peek
+    \let\@let@token=
+  }{%
+    \luacode@strip@sp@def
+  }}
+\@ifdefinable \luacode@strip@sp@def \relax
+\def \luacode@strip@sp@def #1\@nil{%
+  \def\luacode@curr{#1}}
+%    \end{macrocode}
+%
+%    Finally, we need a custom catcode table for the default environment:
+%    everything other, except backslash, braces and letters which retain their
+%    natural catcodes.
+%
+%    Be carefull about the name of the macro for setting catcode ranges which
+%    is currently changing in luatexbase. The group here doesn't matter since
+%    catcode table settings are always global.
+%
+%    \begin{macrocode}
+\newluatexcatcodetable \luacode@table@soft
+\begingroup
+\ifdefined\SetCatcodeRange \else
+  \let\SetCatcodeRange\setcatcoderange
+\fi
+\setluatexcatcodetable \luacode@table@soft {%
+  \luatexcatcodetable\CatcodeTableOther
+  \catcode 92  0
+  \catcode 123 1
+  \catcode 125 2
+  \SetCatcodeRange {65}{90} {11}
+  \SetCatcodeRange {97}{122}{11}
+}
+\endgroup
+%    \end{macrocode}
+%
+%    \subsection{Public macros and environments}
+%
+%    Debugging.
+%
+%    \begin{macrocode}
+\newcommand \LuaCodeDebugOn  {\let \luacode@maybe@printdbg \luacode@printdbg}
+\newcommand \LuaCodeDebugOff {\let \luacode@maybe@printdbg \@gobble}
+\LuaCodeDebugOff
+%    \end{macrocode}
+%
+%    The |\luadirect| and |\luaexec| macros.
+%
+%    \begin{macrocode}
+\@ifdefinable\luadirect {\let\luadirect\luacode@dbg@exec}
+\newcommand*\luaexec [1] {\luacode@execute{#1}}
+%    \end{macrocode}
+%
+%    Environments using different catcode tables.
+%
+%    \begin{macrocode}
+\newenvironment {luacode}  {\luacode@begin\luacode@table@soft} {}
+\newenvironment {luacode*} {\luacode@begin\CatcodeTableOther}  {}
+\newcommand     \luacodestar    {\@nameuse{luacode*}}
+\def            \endluacodestar {\@nameuse{endluacode*}}
+%    \end{macrocode}
+%
+%    Helper macros
+%
+%    \begin{macrocode}
+\newcommand \luastring   [1] {"\luatexluaescapestring{#1}"}
+\newcommand \luastringO  [1] {\luastring{\unexpanded\expandafter{#1}}}
+\newcommand \luastringN  [1] {\luastring{\unexpanded{#1}}}
+%    \end{macrocode}
+%
+%    We're already done!
+%
+%    \begin{macrocode}
+\luacode@sty@endinput
+%</texpackage>
+%    \end{macrocode}
+%
+%    \section{Test file} \label{test}
+%
+%    TODO: this test files requires manual checking that the output (pdf and
+%    log file) is correct; this should be fixed.
+%
+%    \begin{macrocode}
+%<*testlatex>
+\documentclass{minimal}
+\usepackage{luacode}
+\begin{document}
+
+\newcommand\foo{3}
+
+\(
+  \luadirect{
+    texio.write_nl("Special chars: _ ^ & $ { } working.\string\n"
+    .. "Backslashes need a bit of care.\string\n"
+    .. "Sharps and tildes too: # doubled, but \string# and \string~")
+    % a tex comment: no easy way to get a %
+    tex.sprint("\string\\pi \string\\neq", tostring(math.pi))
+    % we can use TeX macros
+    tex.sprint("-", math.sqrt(\foo))
+  }
+\)
+
+
+\(
+  \luaexec{
+    texio.write_nl("Special chars: _ ^ & $ { } ~ working.\string\n"
+    .. "Backslashes still need a bit of care.\string\n"
+    .. "Single sharps are easier now: \#")
+    % a tex comment: we also get a % below
+    tex.sprint("\\pi \\neq ", tostring(math.pi):gsub('\%.', '+'))
+    % we can use TeX macros
+    tex.sprint("-", math.sqrt(\foo))
+  }
+\)
+
+\[
+  \begin{luacode}
+    texio.write_nl("Special chars: _ ^ & $ { } ~ # % working.\string\n"
+    .. "Only backslashes still need a bit of care.\string\n")
+    -- a lua comment: we could use \% below, too
+    tex.sprint("\\pi \\neq ", tostring(math.pi):gsub('%.', '+'))
+    -- we can use TeX macros
+    tex.sprint("-", math.sqrt(\foo))
+  \end{luacode}
+\]
+
+\[
+  \begin{luacode*}
+    texio.write_nl("Special chars: _ ^ & $ { } ~ # % \\ working.\n")
+    -- a lua comment: the backlash is doubled as in normal Lua code
+    tex.sprint("\\pi \\neq ", tostring(math.pi):gsub('%.', '+'))
+    -- no way to use a TeX variable here
+  \end{luacode*}
+\]
+
+\newenvironment{mathluacode} { \[ \luacode     }{ \endluacode     \] }
+\newenvironment{mathluacode*}{ \[ \luacodestar }{ \endluacodestar \] }
+
+\begin{mathluacode}
+  local foo = "A full line.\string\n"
+  tex.sprint("\\pi \\neq ", tostring(math.pi):gsub('%.', '+'))
+  -- a lua comment: we could have used \% above, too
+  tex.sprint("-", math.sqrt(\foo))
+\end{mathluacode}
+
+\begin{mathluacode*}
+  local foo_bar = "A full line.\n"
+  tex.sprint("\\pi \\neq ", tostring(math.pi):gsub('%.', '+'))
+  -- a lua comment: no way to use a TeX variable here
+\end{mathluacode*}
+
+\begin{luacode*}
+  function myfunc(str)
+    assert(type(str) == 'string')
+    tex.sprint(-2, str)
+  end
+\end{luacode*}
+
+\newcommand*\mymac [1] {\texttt{\luadirect{myfunc(\luastring{#1})}}\par}
+\mymac{abc}
+\mymac{123}
+\mymac{a"b\string\nc'd}
+
+\def\mac{\onelevel}
+\def\onelevel{fully expanded}
+string : \texttt{\luadirect{myfunc(\luastring \mac)}}\par
+stringO: \texttt{\luadirect{myfunc(\luastringO\mac)}}\par
+stringN: \texttt{\luadirect{myfunc(\luastringN\mac)}}\par
+
+\LuaCodeDebugOn
+\luadirect  {local foo = 'bar'      .. \luastring{a"b'c}}
+\luaexec    {local foo = 'bar\%\#'  .. \luastring{a"b'c}}
+\begin{luacode}
+  local foo = 'bar'
+  local baz = 12 % 2
+  assert(\luastring\mac  == 'fully expanded')
+  -- assert(\luastringO\mac == '\\onelevel')
+  -- assert(\luastringN\mac == '\\mac')
+\end{luacode}
+
+\LuaCodeDebugOff
+\luadirect{local rem = 'dbg should be disabled here'}
+
+%    \end{macrocode}
+%
+%    Now track spurious spaces. This is the only part that is automatically
+%    checked, using grep in the Makefile.
+%
+%    \begin{macrocode}
+\tracingcommands1
+\luadirect{local foo}%
+\luaexec{local foo}%
+\begin{luacode}
+  local foo
+\end{luacode}
+\begin{luacode*}
+  local foo
+\end{luacode*}
+\tracingcommands0
+
+\end{document}
+%</testlatex>
+%    \end{macrocode}
+%
+%
+% \Finale
+\endinput

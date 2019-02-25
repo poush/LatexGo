@@ -1,0 +1,85 @@
+require"gates.lua"
+
+pitex = gates.new("pitex")
+pitex.misc = gates.new("pitex.misc") 
+
+function pitex.log (message, ...)
+	texio.write_nl(string.format("\n" .. message .. "\n", ...))
+end
+function pitex.error (...)
+	tex.error ("! PiTeX error: " .. string.format(...) .. ".")
+end
+
+pitex.callback = gates.new("pitex.callback")
+
+-- Creates a gate with a callback's name and put it in that callback, if not
+-- already there. Adds the subgate(s).
+function pitex.callback.register (c, f)
+  if pitex.callback.type(c) == 2 then
+    pitex.callback.add(f, c)
+  else
+    pitex.callback.list{c}
+    pitex.callback.add(f, c)
+    callback.register(c, pitex.callback.execute[c])
+  end
+end
+
+-- Latin1 to UTF-8.
+local char = unicode.utf8.char
+local function convert_char (ch)
+  return char(string.byte(ch))
+end
+function pitex.callback.convert (buf)
+	return string.gsub(buf,".",convert_char)
+end
+
+pitex.callback.register("process_input_buffer", "convert")
+
+function remove_conversion ()
+  pitex.callback.close("convert", "process_input_buffer")
+end
+function restore_conversion ()
+  pitex.callback.open("convert", "process_input_buffer")
+end
+
+require("nodeinspector")
+new_inspection = nodeinspector.new_inspection
+
+local french_highmarks = {
+	string.byte("?"),
+	string.byte("!"),
+	string.byte(":"),
+	string.byte(";"),
+	}
+local french_marks = {
+	string.byte("?"),
+	string.byte("!"),
+	string.byte(":"),
+	string.byte(";"),
+	string.byte(","),
+	string.byte("."),
+	string.byte("("),
+	string.byte("["),
+	string.byte("{"),
+	}
+
+local function french_punctuation (head, ...)
+	for _, glue in ipairs(arg) do
+		if glue.id == 10 then
+			head = node.remove(head, glue)
+ 			node.free(glue)
+		end
+	end
+	local kern = node.new(11, 1)
+	kern.kern = tex.sp(".15em")
+	node.insert_after(head, arg[1], kern)
+end
+
+pitex.callback.french_punctuation = new_inspection(
+	french_punctuation,
+  {{id = 37, _char = french_marks}, {true, id = 37, char = french_highmarks}},
+	{{id = 10, subtype = 0}, {id = 11, subtype = 0}})
+
+pitex.callback.register("kerning", "french_punctuation")
+pitex.callback.original_kerning = node.kerning
+pitex.callback.register("kerning", "original_kerning")

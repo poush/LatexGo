@@ -1,0 +1,242 @@
+% scancsv. tex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 26. 2. 2005                     Petr Olsak
+
+%  This is a macro for processing the CSV format in plain TeX. 
+%
+%  The input file is assumed in the form:
+%
+%  "header1";"header2";"header3"; ... "header-n"
+%  "text 1,1";"text 1,2";"text 1,3"; ... "text 1,n"
+%  "text 2,1";"text 2,2";"text 2,3"; ... "text 2,n"
+%  "text 3,1";"text 3,2";"text 3,3"; ... "text 3,n"
+%  ...
+%
+%  You can process such a file by
+%
+%  \input scancsv.tex
+%  \def\lineaction{...}
+%  \scanbase soubor
+%
+%  The separator " can be omited in a arbitrary header or item text.
+%  I.e. the following format is scanned without problems:
+%
+%  "firstname";"lastname";number;RC
+%  "Ferdinand";"Mravenec";1;000111/2244
+%  "Josef";"Vykutal";2;444333/2211
+%
+%  The macro reads the headers and then reads next lines repeatedly.
+%  The full expanable macro \e is ready after the line is read. 
+%  More exactly \e[header] expands to the appropriate item body.
+%  The \lineaction macro is processed after each line is read.
+%  It is supposed that \lineaction is defined by user.
+%
+%  Next line of the table is read after \lineaction, the \e macros have 
+%  a new meaning (items from this next line) and the \lineaction is executed
+%  again. This is repeated until last line of the input table is reached.
+%  Moreower, the \linenum register is available, where the number of the
+%  last scanned line is stored. 
+
+%  Example:
+%
+%  \input scancsv
+%
+%  \newcount \mylines
+%  \def\bb #1 #2/{\hbox to#1{#2\hss}}
+%
+%  \def\printaction{\global\advance\mylines by1 %% \scanabase works 
+%     \hbox{%                                   %% in the TeX group 
+%        \bb 2em \the\numline./
+%        \bb 26em \e[subject]/
+%        \bb 10em \e[lastname] \e[firstname]/
+%        \bb 3em \hfill\e[pay2002]/
+%        \bb 3em \hfill\e[pay2001]/}
+%  }
+%  \def\lineaction{\if K\e[member_type]% Institutional members
+%     \printaction
+%     \else \if G\e[member_type]% High school
+%        \printaction
+%     \fi\fi  % I am printing Institutional mambers and high schools only
+%  }
+%  \scanbase database1
+%  \scanbase database2
+%  {\it Number of printed lines: \the\mylines}.
+%  \end
+%
+%  If the \lineaction macro isn't defined by user then scanbase used
+%  its own (default) macro which prints all items from one line
+%  into the one paragraph in comprimend form (you can try this).
+%  
+%  The \scanbase macro opens the TeX group then runs \beginhook
+%  then reads headers, then reads the lines ans processes \linecation
+%  repeatedly, then runs \endhook and finally closes the group.
+%  Default values for \beginhook and \endhook is \relax but user
+%  can define something else.
+%
+%  The user can redefine the \separator and \obklopeni (surrounding char)
+%  after \input scanbase if there are used another characters than semicolon
+%  and " in the input file.
+
+\def\separator{;}             % separator mezi polozkami
+\def\obklopeni{"}             % nepovinne "obklopeni" polozky
+
+\newcount\colnum \newcount\numline
+
+\catcode`\^^X=13 \def^^X{}
+
+\def\scanheader{\futurelet \nextchar \doheader}
+
+\def\doheader {\expandafter\ifx \obklopeni\nextchar \expandafter \maskheader 
+               \else \expandafter \nomaskheader \fi}
+
+\def\runheader{\advance\colnum by1
+  \expandafter \ifx \csname e:\itemdata\endcsname \relax
+     \expandafter \edef \csname c:\the\colnum\endcsname{\itemdata}%
+     \expandafter \def \csname e:\itemdata\endcsname {}%
+  \else
+     \expandafter \edef \csname c:\the\colnum\endcsname{\itemdata:\the\colnum}%
+  \fi
+  \futurelet \nextchar \testnextchar
+}
+\def\testnextchar{\ifx\nextchar^^X\let\next=\ignorethirdline
+  \else \let\next=\scanheader 
+  \fi \next
+}
+
+\def\ignorethirdline ^^X{\edef\maxcolumn{\the\colnum}\runfirstitem}
+
+\def\runfirstitem #1^^X{\def\tmp{#1}%
+  \ifx\tmp\empty \expandafter\endinput \fi
+  \ifx\tmp\stopmark 
+  \else \colnum=0 
+        \edef\tmp{\noexpand\scanitem #1\separator\noexpand^^X}\expandafter\tmp
+  \fi}
+\def\scanitem {\futurelet \nextchar \doitem}
+
+\def\doitem {\expandafter \ifx \obklopeni\nextchar \expandafter \maskitem 
+             \else \expandafter \nomaskitem \fi}
+
+\def\runitem {\advance\colnum by1
+  \expandafter\edef\csname e:\csname c:\the\colnum\endcsname\endcsname{\itemdata}%
+  \futurelet \nextchar \testnextitem
+}  
+\def\testnextitem{\ifx\nextchar^^X\let\next=\runline
+  \else \let\next=\scanitem
+  \fi \next
+}
+\def\runline ^^X{\advance\numline by1
+  \lineaction
+  \futurelet \nextchar \runfirstitem
+}
+\def\e [#1]{\expandafter\ifx \csname e:#1\endcsname \relax
+    \message{Warning: the #1 column is not defined in header.}%
+  \else \csname e:#1\endcsname \fi
+}
+
+\def\printall{\colnum = 0
+   \noindent \hangindent=\parindent \raggedright
+   \loop
+      \advance\colnum by1
+      {\seventt \ignorespaces \csname c:\the\colnum\endcsname:}\penalty0
+      \csname e:\csname c:\the\colnum\endcsname\endcsname
+      \ifnum\colnum < \maxcolumn , \repeat
+   .\par
+}
+\let\lineaction=\printall
+
+\def\scanbase #1 {\begingroup \endlinechar=`\^^X
+  \edef\maskauvo{\obklopeni####1\obklopeni\separator}
+  \edef\maskaneuvo{####1\separator}
+  \expandafter\def \expandafter\maskheader   \maskauvo   {\def\itemdata{##1}\runheader}
+  \expandafter\def \expandafter\nomaskheader \maskaneuvo {\def\itemdata{##1}\runheader}
+  \expandafter\def \expandafter\maskitem     \maskauvo   {\def\itemdata{##1}\runitem}
+  \expandafter\def \expandafter\nomaskitem   \maskaneuvo {\def\itemdata{##1}\runitem}
+  \edef\scanfirstline ##1^^X{\noexpand\scanheader##1\separator\noexpand^^X}
+  \def\do##1{\catcode`##1=12 }\dospecials
+  \catcode`\ =10 \beginhook
+  \expandafter \scanfirstline \input #1 \relax^^X\endhook \endgroup}
+\def\stopmark{\relax}
+
+\let\beginhook=\relax \let\endhook=\relax
+
+\endinput
+
+%  Makro na zpracovani databasovych vystupu ve formatu CSV pro plain.
+%
+%  Srovnejte tez makro scanbase.tex
+%
+%  Nacitane soubory se predpokladaji ve tvaru:
+%
+%  "zahlavi1";"zahlavi2";"zahlavi3"; ... "zahlavi-n"
+%  "text 1,1";"text 1,2";"text 1,3"; ... "text 1,n"
+%  "text 2,1";"text 2,2";"text 2,3"; ... "text 2,n"
+%  "text 3,1";"text 3,2";"text 3,3"; ... "text 3,n"
+%  ...
+%
+%  Na takovy soubor je mozno po
+%
+%  \input scancsv.tex
+%
+%  aplikovat makro \scanbase takto:
+%
+%  \scanbase soubor
+%
+%  Obklopujici znak " muze u libovolneho zahlavi nebo polozky 
+%  chybet. Tj. je korektni treba i takovy zapis dat:
+%
+%  "jmeno";"prijmeni";cislo;RC
+%  "Ferdinand";"Mravenec";1;000111/2244
+%  "Josef";"Vykutal";2;444333/2211
+%
+%  Makro nacte zahlavi a zacne cist jednotlive radky. Po precteni
+%  kazdeho radku je obsah polozky pripraven v expanznim makru
+%  \e. Presneji \e[zahlavi] expanduje na text odpovidajici polozky.
+%  V teto situaci \scanbase spusti makro \lineaction, ktere si muze
+%  uzivatel definovat jak chce.
+%
+%  Po ukonceni makra \lineaction cte scanbase dalsi radek tabulky, naplni
+%  znovu expanzni makra \e texty polozek z tohoto radku a spusti znovu
+%  \lineaction. To se opakuje tak dlouho, dokud neni ukonceno cteni
+%  tabulky. Navic je makru \lineaction k dispozici registr \numline
+%  obsahujici cislo prave precteneho radku.
+%
+%  Priklad pouziti:
+%
+%  \input scancsv
+%
+%  \newcount \mylines
+%  \def\bb #1 #2/{\hbox to#1{#2\hss}}
+%
+%  \def\printaction{\global\advance\mylines by1 %% \scanabase pracuje 
+%     \hbox{%                                   %% uvnitr skupiny! 
+%        \bb 2em \the\numline./
+%        \bb 26em \e[nazev]/
+%        \bb 10em \e[prijmeni] \e[jmeno]/
+%        \bb 3em \hfill\e[kc2002]/
+%        \bb 3em \hfill\e[kc2001]/}
+%  }
+%  \def\lineaction{\if K\e[typ_clenstvi]% Kolektivni clenove
+%     \printaction
+%     \else \if G\e[typ_clenstvi]% Gymnazia
+%        \printaction
+%     \fi\fi  % tisknu jen kolektivni cleny a gymnazia
+%  }
+%  \scanbase database1
+%  \scanbase database2
+%  {\it Number of printed lines: \the\mylines}.
+%  \end
+%
+%  Pokud neni uzivatelem definovano makro \lineaction, pouzije
+%  scanbase sve vlastni (defaultni) makro, ktere vytiskne vsechny polozky
+%  jednoho radku do odstavce ve velmi zhustenem tvaru (vyzkousejte si).
+%
+% Kazde \scanbase vstupuje do skupiny, pak spusti \beginhook,
+% pak cte hlavicku a jednotlive radky, jak bylo receno vyse,
+% pak spusti \endhook a nakonec vyleze ze skupiny.
+% Sekvence \beginhook a \endhook muze predefinovat uzivatel, defaltne maji
+% hodnotu \relax
+%
+% Uzivatel muze po nacteni \input scanbase predefinovat makra \separator
+% a \obklopeni (viz nize), pokud jsou v datech polozky a zahlavi 
+% oddeleny jinymi znaky nez strednik a symbol palce. 
+

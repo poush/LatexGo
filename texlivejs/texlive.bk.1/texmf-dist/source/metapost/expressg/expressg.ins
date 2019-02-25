@@ -1,0 +1,114 @@
+%% expressg.ins
+%% Author: Peter Wilson (CUA) now at peter.r.wilson@boeing.com until June 2004
+%%                            (or: pandgwilson at earthlink dot net) 
+%% Copyright 1996, 2003, 2004 Peter R. Wilson
+%%
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either
+%% version 1.3 of this license or (at your option) any 
+%% later version.
+%% The latest version of the license is in
+%%    http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of
+%% LaTeX version 2003/06/01 or later.
+%%
+%% This work has the LPPL maintenance status "author-maintained".
+%%
+%% This work consists of the files listed in the README file.
+%%
+%%
+%% This file will generate fast loadable files and documentation
+%% driver files from the doc files in this work when run through
+%% LaTeX.
+%%
+%%
+%%
+%% --------------- start of docstrip commands ------------------
+%%
+\def\batchfile{expressg.ins}
+\input docstrip.tex
+\preamble
+
+  Author: Peter Wilson (CUA) now at peter.r.wilson@boeing.com until June 2004
+                             (or pandgwilson@earthlink.net) 
+  Copyright 1996, 2003 Peter R. Wilson
+ 
+ v1.0 1996/05/09 (first release)
+ v1.2 1999/11/15
+ v1.3 2000/05/22
+ v1.4 2000/07/10
+ v1.5 2003/07/31
+ v1.6 2004/02/29
+ v1.61 2004/03/17
+
+  This work may be distributed and/or modified under the
+  conditions of the LaTeX Project Public License, either
+  version 1.3 of this license or (at your option) any 
+  later version.
+  The latest version of the license is in
+     http://www.latex-project.org/lppl.txt
+  and version 1.3 or later is part of all distributions of
+  LaTeX version 2003/06/01 or later.
+ 
+  This work has the LPPL maintenance status "author-maintained".
+ 
+  This work consists of the files listed in the README file.
+ This program is provided under the terms of the
+ LaTeX Project Public License distributed from CTAN
+ archives in directory macros/latex/base/lppl.txt.
+
+\endpreamble
+
+\keepsilent
+
+%%% \Msg{*** Generating the driver file ***}
+%%% \generateFile{expressg.drv}{t}{\from{expressg.dtx}{driver}}
+
+\Msg{*** Generating the Metapost files ***}
+
+\usepostamble\empty
+\generateFile{expressg.mp}{t}{\from{expressg.dtx}{up}}
+\generateFile{expeg.mp}{t}{\from{expressg.dtx}{eg}}
+
+
+\Msg{*** Generating the LaTeX files ***}
+\usepostamble\defaultpostamble
+
+\generateFile{expeg.tex}{t}{\from{expressg.dtx}{egt}}
+
+\Msg{*** Generating the script files ***}
+
+\usepreamble\empty
+\usepostamble\empty
+\generateFile{n2mps.sh}{t}{\from{expressg.dtx}{shell}}
+\generateFile{n2mpsprl.prl}{t}{\from{expressg.dtx}{perl}}
+
+\Msg{***********************************************************}
+\Msg{*}
+\Msg{* To finish the installation you have to move the following}
+\Msg{* files into directories searched by Metapost:}
+\Msg{*}
+\Msg{* \space\space expressg.mp}
+\Msg{*}
+\Msg{* To run the examples move the following files into a}
+\Msg{* working directory:}
+\Msg{* \space\space expeg.mp}
+\Msg{* \space\space expeg.tex}
+\Msg{* Then run MetaPost on expeg.mp and (pdf)LaTeX on expeg.tex.}
+\Msg{*}
+\Msg{* To run the scripts, make the following files executable:}
+\Msg{* \space\space n2mps.sh}
+\Msg{* \space\space n2mpsprl.prl}
+\Msg{*}
+\Msg{*}
+\Msg{* To produce the documentation run the files ending with}
+\Msg{* `.dtx' through LaTeX.}
+\Msg{* Process any name.idx file by:}
+\Msg{* \space\space\space\space makeindex -s gind.ist name}
+\Msg{* Process any name.glo file by:}
+\Msg{* \space\space\space\space makeindex -s gglo.ist -o name.gls name.glo}
+\Msg{*}
+\Msg{* Happy TeXing}
+\Msg{***********************************************************}
+
+\endinput

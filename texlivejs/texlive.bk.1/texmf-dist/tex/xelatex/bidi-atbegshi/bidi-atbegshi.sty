@@ -1,0 +1,134 @@
+%%
+%% This is file `bidi-atbegshi.sty'.
+%% 
+%%   ___________________________________________
+%%   Copyright © 2014  Vafa Khalighi <vafak@me.com>
+%% 
+%%   It may be distributed and/or modified under the LaTeX Project Public License,
+%%   version 1.3c or higher (your choice). The latest version of
+%%   this license is at: http://www.latex-project.org/lppl.txt
+%% 
+%%   This work is “author-maintained” (as per LPPL maintenance status)
+%%   by Vafa Khalighi.
+%% 
+%% 
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{bidi-atbegshi}[2014/09/11 v0.1 bidi-aware shipout macros]
+\RequirePackage{atbegshi}
+\newcommand*\LengthToUnit[1]{#1\@gobble}
+\newcommand*{\AtBegShi@bidi@horigin@left}{%
+  \if@RTL%
+    \dimexpr-\textwidth-\AtBegShi@horigin\relax
+  \else%
+    -\AtBegShi@horigin%
+  \fi%
+}
+\newcommand*{\AtBegShi@bidi@horigin@right}{%
+  \if@RTL%
+    \dimexpr\paperwidth-\textwidth-\AtBegShi@horigin\relax
+  \else%
+    \dimexpr\paperwidth-\AtBegShi@horigin\relax
+  \fi%
+}
+\newcommand*{\AtBegShi@bidi@vorigin@bottom}[1]{%
+  \dimexpr\paperheight-\AtBegShi@vorigin\relax
+}
+\renewcommand*{\AtBeginShipoutUpperLeft}[1]{%
+  \AtBeginShipoutAddToBox{%
+    \kern\AtBegShi@bidi@horigin@left\relax
+    \vbox to 0pt{%
+      \kern-\AtBegShi@vorigin\relax
+      \AtBegShi@BeginPicture
+      #1%
+      \AtBegShi@EndPicture
+      \vss
+    }%
+  }%
+}
+\renewcommand*{\AtBeginShipoutUpperLeftForeground}[1]{%
+  \AtBeginShipoutAddToBoxForeground{%
+    \kern\AtBegShi@bidi@horigin@left\relax
+    \vbox to 0pt{%
+      \kern-\AtBegShi@vorigin\relax
+      \AtBegShi@BeginPicture
+      #1%
+      \AtBegShi@EndPicture
+      \vss
+    }%
+  }%
+}
+\newcommand*{\AtBeginShipoutUpperRight}[1]{%
+  \AtBeginShipoutAddToBox{%
+    \kern\AtBegShi@bidi@horigin@right\relax
+    \vbox to 0pt{%
+      \kern-\AtBegShi@vorigin\relax
+      \AtBegShi@BeginPicture
+      #1%
+      \AtBegShi@EndPicture
+      \vss
+    }%
+  }%
+}
+\newcommand*{\AtBeginShipoutUpperRightForeground}[1]{%
+  \AtBeginShipoutAddToBoxForeground{%
+    \kern\AtBegShi@bidi@horigin@right\relax
+    \vbox to 0pt{%
+      \kern-\AtBegShi@vorigin\relax
+      \AtBegShi@BeginPicture
+      #1%
+      \AtBegShi@EndPicture
+      \vss
+    }%
+  }%
+}
+\newcommand*{\AtBeginShipoutLowerLeft}[1]{%
+  \AtBeginShipoutAddToBox{%
+    \kern\AtBegShi@bidi@horigin@left\relax
+    \vbox to 0pt{%
+      \kern\AtBegShi@bidi@vorigin@bottom\relax
+      \AtBegShi@BeginPicture
+      #1%
+      \AtBegShi@EndPicture
+      \vss
+    }%
+  }%
+}
+\newcommand*{\AtBeginShipoutLowerLeftForeground}[1]{%
+  \AtBeginShipoutAddToBoxForeground{%
+    \kern\AtBegShi@bidi@horigin@left\relax
+    \vbox to 0pt{%
+      \kern\AtBegShi@bidi@vorigin@bottom\relax
+      \AtBegShi@BeginPicture
+      #1%
+      \AtBegShi@EndPicture
+      \vss
+    }%
+  }%
+}
+\newcommand*{\AtBeginShipoutLowerRight}[1]{%
+  \AtBeginShipoutAddToBox{%
+    \kern\AtBegShi@bidi@horigin@right\relax
+    \vbox to 0pt{%
+      \kern\AtBegShi@bidi@vorigin@bottom\relax
+      \AtBegShi@BeginPicture
+      #1%
+      \AtBegShi@EndPicture
+      \vss
+    }%
+  }%
+}
+\newcommand*{\AtBeginShipoutLowerRightForeground}[1]{%
+  \AtBeginShipoutAddToBoxForeground{%
+    \kern\AtBegShi@bidi@horigin@right\relax
+    \vbox to 0pt{%
+      \kern\AtBegShi@bidi@vorigin@bottom\relax
+      \AtBegShi@BeginPicture
+      #1%
+      \AtBegShi@EndPicture
+      \vss
+    }%
+  }%
+}
+\endinput
+%%
+%% End of file `bidi-atbegshi.sty'.

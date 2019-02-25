@@ -1,0 +1,200 @@
+% \iffalse meta-comment
+%
+% Written in 2009, 2010 by Manuel Pégourié-Gonnard and Élie Roux.
+%     <mpg@elzevir.fr>
+%     <elie.roux@telecom-bretagne.eu>
+%
+% This work is under the CC0 license.
+%
+% This work consists of the main source file luatextra.dtx
+% and the derived files
+%    luatextra.sty, luatextra.lua, luatextra.pdf.
+%
+% Unpacking:
+%    tex luatextra.dtx
+% Documentation:
+%    pdflatex luatextra.dtx
+%
+%<*ignore>
+\begingroup
+  \def\x{LaTeX2e}%
+\expandafter\endgroup
+\ifcase 0\ifx\install y1\fi\expandafter
+         \ifx\csname processbatchFile\endcsname\relax\else1\fi
+         \ifx\fmtname\x\else 1\fi\relax
+\else\csname fi\endcsname
+%</ignore>
+%<*install>
+\input docstrip.tex
+
+\keepsilent
+\askforoverwritefalse
+
+\preamble
+
+Written in 2009, 2010 by Manuel Pegourie-Gonnard and Elie Roux.
+
+This work is under the CC0 license.
+See source file '\inFileName' for details.
+
+\endpreamble
+
+\generate{%
+  \usedir{tex/luatex/luatextra}%
+  \file{luatextra.sty}{\from{luatextra.dtx}{package}}%
+}
+
+\generate{%
+  \usedir{doc/luatex/luatextra}%
+  \file{test.tex}{\from{luatextra.dtx}{test}}%
+}
+
+\obeyspaces
+\Msg{************************************************************************}
+\Msg{*}
+\Msg{* To finish the installation you have to move the following}
+\Msg{* files into a directory searched by TeX:}
+\Msg{*}
+\Msg{*     luatextra.sty luatextra.lua}
+\Msg{*}
+\Msg{* Happy TeXing!}
+\Msg{*}
+\Msg{************************************************************************}
+
+\endbatchfile
+%</install>
+%<*ignore>
+\fi
+%</ignore>
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{lmodern}
+\usepackage{metalogo}
+\usepackage[bookmarks=true, colorlinks=true]{hyperref}
+\usepackage{bookmark}
+\usepackage[english]{babel}
+\providecommand\eTeX{e\TeX}
+\newcommand\pf{\textsf}
+\newcommand\file{\texorpdfstring{\nolinkurl}{}}
+\newcommand\code{\texttt}
+\newcommand*\email[1]{\href{mailto:#1}{#1}}
+\begin{document}
+  \DocInput{luatextra.dtx}%
+\end{document}
+%</driver>
+% \fi
+%
+% \CheckSum{0}
+%
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%   Dollar        \$     Percent       \%     Ampersand     \&
+%   Acute accent  \'     Left paren    \(     Right paren   \)
+%   Asterisk      \*     Plus          \+     Comma         \,
+%   Minus         \-     Point         \.     Solidus       \/
+%   Colon         \:     Semicolon     \;     Less than     \<
+%   Equals        \=     Greater than  \>     Question mark \?
+%   Commercial at \@     Left bracket  \[     Backslash     \\
+%   Right bracket \]     Circumflex    \^     Underscore    \_
+%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%   Right brace   \}     Tilde         \~}
+%
+% \title{The \textsf{luatextra} package}
+% \date{2010/10/10 v1.0}
+% \author{%
+%   Manuel P\'egouri\'e-Gonnard \& \'Elie Roux \\
+%   Support: \email{lualatex-dev@tug.org}}
+%
+% \maketitle
+%
+% \begin{abstract}
+% The \pf{luatextra} package loads essential and useful packages for
+% \LuaLaTeX. It is meant as convenience for users who don't want to load them
+% individually.
+% \end{abstract}
+%
+% \tableofcontents
+%
+% \section{Documentation}
+%
+% The following packages are loaded:
+% \begin{description}
+%   \item[fontspec] --- advanced font management, integrated in the \LaTeX\ font
+%   selection scheme, with access to system fonts and opentype features;
+%   \item[luacode] --- tools for easier integration of Lua code in \LaTeX;
+%   \item[metalogo] --- commands for logos, including |\LuaTeX| and
+%   |\LuaLaTeX|;
+%   \item[fixltx2e] --- various fixes and small enchancements for the \LaTeX\
+%   core;
+%   \item[luatexbase] --- low-level management of \LuaTeX's new and extended
+%   resources;
+%   \item[lualibs] --- additional general-purpose Lua functions.
+% \end{description}
+%
+% In case you are not yet familiar with the available \LuaLaTeX\ packages, you
+% might want to check the document \nolinkurl{lualatex-doc.pdf} from the
+% eponymous package.
+%
+%    \section{Implementation}
+%
+%    \begin{macrocode}
+%<*package>
+%    \end{macrocode}
+%
+%    Identify.
+%
+%    \begin{macrocode}
+\ProvidesPackage{luatextra}[2010/10/10 v1.0 Loading usual LuaLaTeX packages]
+%    \end{macrocode}
+%
+%    Make sure Lua\TeX\ is being used.
+%
+%    \begin{macrocode}
+\RequirePackage{ifluatex}
+\ifluatex\else
+  \PackageError{luatextra}{LuaTeX is required for this package. Aborting.}{%
+    This package can only be used with the LuaTeX engine^^J%
+    (command `lualatex' or `luatex').^^J%
+    Package loading has been stopped to prevent additional errors.}
+  \expandafter\endinput
+\fi
+%    \end{macrocode}
+%
+%    Load packages; \pf{luatexbase} and \pf{lualibs} are loaded (indirectly)
+%    by fontspec, but just to be sure (in case it changes in the future).
+%
+%    \begin{macrocode}
+\RequirePackage{fontspec}
+\RequirePackage{luatexbase}
+\RequireLuaModule{lualibs}
+\RequirePackage{metalogo}
+\RequirePackage{luacode}
+\RequirePackage{fixltx2e}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%</package>
+%    \end{macrocode}
+%
+%    \section{Test file}
+%
+%    Very minimal, just check that the package correctly loads. We have to use
+%    |\documentclass| to make \pf{xkeyval} (loaded by \pf{fontspec}) happy.
+%
+%    \begin{macrocode}
+%<*test>
+\documentclass{minimal}
+\usepackage{luatextra}
+\stop
+%</test>
+%    \end{macrocode}
+%
+%
+% \Finale
+\endinput

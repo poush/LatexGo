@@ -1,0 +1,134 @@
+%D \module
+%D   [       file=m-graph,
+%D        version=2008.09.08,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=\METAPOST\ graph module support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% We just assume lua specification instead of the graph ones that
+% are limited by what mp can do. We support @ as replacement for
+% the percent symbol. We also add a specifier when no one is given.
+
+\unprotect
+
+\defineMPinstance
+  [graph]
+  [\s!format=metafun,
+   \s!extensions=\v!yes,
+   \s!initializations=\v!yes,
+   \c!method=\s!double]
+
+\startMPdefinitions{graph}
+    loadmodule "grap" ;
+%     input mp-grap.mpiv ;
+\stopMPdefinitions
+
+\protect
+
+\continueifinputfile{m-graph.mkiv}
+
+%D We put this test here as in \type {meta-tex.mkiv} it would abort due to redefinition
+%D of namespaces.
+
+\starttext
+
+\startMPpage[instance=graph]
+    label.rt(format("@g","1e-8"),  (0,       0)) ;
+    label.rt(format("@g","1e+8"),  (2cm,     0)) ;
+    label.rt(format("@g","1e-10"), (0,  -0.5cm)) ;
+    label.rt(format("@g","1e+10"), (2cm,-0.5cm)) ;
+    label.rt(format("@g","1e-12"), (0,  -1.0cm)) ;
+    label.rt(format("@g","1e+12"), (2cm,-1.0cm)) ;
+    label.rt(format("@g","1e-0"),  (0,  -1.5cm)) ;
+    label.rt(format("@g","1e+0"),  (2cm,-1.5cm)) ;
+    label.rt(format("@g","1"),     (0,  -2.0cm)) ;
+    label.rt(format("@g","1"),     (2cm,-2.0cm)) ;
+    label.rt(format("@g","1e-102"),(0,  -2.5cm)) ;
+    label.rt(format("@g","1e+102"),(2cm,-2.5cm)) ;
+    currentpicture := currentpicture shifted (-4cm,0) ;
+    %
+    label.rt(format("@j","1e-8"),  (0,       0)) ;
+    label.rt(format("@j","1e+8"),  (2cm,     0)) ;
+    label.rt(format("@j","1e-10"), (0,  -0.5cm)) ;
+    label.rt(format("@j","1e+10"), (2cm,-0.5cm)) ;
+    label.rt(format("@j","1e-12"), (0,  -1.0cm)) ;
+    label.rt(format("@j","1e+12"), (2cm,-1.0cm)) ;
+    label.rt(format("@j","1e-0"),  (0,  -1.5cm)) ;
+    label.rt(format("@j","1e+0"),  (2cm,-1.5cm)) ;
+    label.rt(format("@j","1"),     (0,  -2.0cm)) ;
+    label.rt(format("@j","1"),     (2cm,-2.0cm)) ;
+    label.rt(format("@j","1e-102"),(0,  -2.5cm)) ;
+    label.rt(format("@j","1e+102"),(2cm,-2.5cm)) ;
+    label.rt(formatted("(@f,@f)",(1.23,4.56)),(0cm,-3.0cm)) ;
+    label.rt(formatted("(@i,@i)",(1.23,4.56)),(0cm,-3.5cm)) ;
+    label.rt(formatted("(@g,@g)",(1.23,4.56)),(0cm,-4.0cm)) ;
+    label.rt(formatted("(@e,@e)",(1.23,4.56)),(0cm,-4.5cm)) ;
+    label.rt(formatted("(@j,@j)",(1.23,4.56)),(0cm,-5.0cm)) ;
+\stopMPpage
+
+% \startMPpage[instance=graph]
+% draw begingraph(3in,2in);
+%     gdraw "t:/metapost/grphdata/agepop91.d";
+% endgraph;
+% \stopMPpage
+
+% \startMPpage[instance=graph]
+% draw begingraph(3in,2in);
+%     gdraw "agepop91.d" plot btex $\bullet$ etex;
+% endgraph;
+% \stopMPpage
+
+% \startMPpage[instance=graph]
+% draw begingraph(3in,2in);
+%     glabel.lft(btex \vbox{\hbox{Population} \hbox{in millions}} etex, OUT);
+%     glabel.bot(btex Age in years etex, OUT);
+%     gdraw "agepopm.d";
+% endgraph;
+% \stopMPpage
+
+% \startMPpage[instance=graph]
+% draw begingraph(3in,2in);
+%     glabel.lft(btex \vbox{\hbox{Population} \hbox{in millions}} etex, OUT);
+%     glabel.bot(btex Age in years etex, OUT);
+%     setrange(origin, whatever,whatever);
+%     gdraw "agepopm.d";
+% endgraph;
+% \stopMPpage
+
+% \startMPpage[instance=graph]
+% draw begingraph(2.3in,2in);
+%     setcoords(log,log);
+%     glabel.lft(btex Seconds etex,OUT);
+%     glabel.bot(btex Matrix size etex,
+%     OUT);
+%     gdraw "matmul.d" dashed evenly;
+%     glabel.ulft(btex Standard etex,8);
+%     gdraw "matmul.d";
+%     glabel.lrt(btex Strassen etex,7);
+% endgraph;
+% \stopMPpage
+
+% \startMPpage[instance=graph]
+% draw begingraph(6.5cm,4.5cm);
+%     setrange(80,0, 90,whatever);
+%     glabel.bot(btex Year etex, OUT);
+%     glabel.lft(btex \vbox{\hbox{Emissions in} \hbox{thousands of}
+%     \hbox{metric tons} \hbox{(heavy line)}}etex, OUT);
+%     gdraw "lead.d" withpen pencircle scaled 1.5pt;
+%     autogrid(,otick.lft);
+%     setcoords(linear,linear);
+%     setrange(80,0, 90,whatever);
+%     glabel.rt(btex \vbox{\hbox{Micrograms} \hbox{per cubic}
+%     \hbox{meter of air} \hbox{(thin line)}}etex, OUT);
+%     gdraw "lead.d";
+%     autogrid(otick.bot,otick.rt);
+% endgraph;
+% \stopMPpage
+
+\stoptext

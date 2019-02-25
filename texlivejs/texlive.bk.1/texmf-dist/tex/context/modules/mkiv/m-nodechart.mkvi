@@ -1,0 +1,125 @@
+%D \module
+%D   [       file=m-nodechart,
+%D        version=2011.11.11, % nos sure when it started, needed for fonts-mkiv
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Node Visualization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\registerctxluafile{m-nodechart}{}
+
+\usemodule[chart]
+
+\unprotect
+
+\def\enspaceminus{\hskip.5em minus .25em\relax}
+
+\starttexdefinition unexpanded doFLOWglyphnode #comment #subtype #font #char #unicode
+   \dontleavehmode\hbox{\bf\setstrut\strut \doifsomething{#comment}{#comment\enspaceminus:\enspaceminus}glyph #subtype}
+   \vss
+   \dontleavehmode\hbox{\tx\setstrut\strut font\enspaceminus#font:\enspace#unicode:\enspaceminus\setfontofid{#font}\char#char}
+\stoptexdefinition
+
+\starttexdefinition unexpanded doFLOWdiscnode #comment #subtype
+   \dontleavehmode\hbox{\bf\setstrut\strut disc}
+   \vss
+   \dontleavehmode\hbox{\tx\setstrut\strut}
+\stoptexdefinition
+
+\starttexdefinition unexpanded doFLOWkernnode #comment #subtype #kern
+   \dontleavehmode\hbox{\bf\setstrut\strut#subtype}
+   \vss
+   \dontleavehmode\hbox{\tx\setstrut\strut#kern}
+\stoptexdefinition
+
+\starttexdefinition unexpanded doFLOWpenaltynode #comment #subtype #penalty
+   \dontleavehmode\hbox{\bf\setstrut\strut#subtype}
+   \vss
+   \dontleavehmode\hbox{\tx\setstrut\strut#penalty}
+\stoptexdefinition
+
+\starttexdefinition unexpanded doFLOWgluenode #comment #subtype #width #shrink #stretch
+   \dontleavehmode\hbox{\bf\setstrut\strut#subtype}
+   \vss
+   \dontleavehmode\hbox{\tx\setstrut\strut#width\enspaceminus-\enspaceminus#shrink\enspaceminus+\enspaceminus#stretch}
+\stoptexdefinition
+
+\starttexdefinition unexpanded doFLOWdirnode #comment #subtype #direction
+   \dontleavehmode\hbox{\bf\setstrut\strut#subtype}
+   \vss
+   \dontleavehmode\hbox{\tx\setstrut\strut#direction}
+\stoptexdefinition
+
+\defineframed
+  [flowcell:node]
+  [flowcell:base]
+  [\c!top=\vss,
+   \c!bottom=\vss,
+   \c!align=\v!middle,
+   \c!foregroundstyle=\tt]
+
+% this is a temporary interface ... we will have instances and optional settings
+
+\unexpanded\def\boxtoFLOWchart[#name]#box%
+  {\ctxlua{moduledata.charts.nodes.chart {
+       name = "#name",
+       box  = \number#box,
+   }}}
+
+\unexpanded\def\nextboxtoFLOWchart[#name]%
+  {\dowithnextbox{\boxtoFLOWchart[#name]\nextbox}}
+
+\unexpanded\def\hboxtoFLOWchart[#name]%
+  {\nextboxtoFLOWchart[#name]\hbox}
+
+\unexpanded\def\vboxtoFLOWchart[#name]%
+  {\nextboxtoFLOWchart[#name]\vbox}
+
+\protect
+
+\continueifinputfile{m-nodechart.mkvi}
+
+\definecolor[nodechart:glyph][darkred]
+
+\setupbodyfont[dejavu,10pt]
+
+\starttext
+
+\startTEXpage[offset=10pt]
+
+    \hboxtoFLOWchart[dummy]{an affil\discretionary{-}{-}{!}iation}
+
+    \FLOWchart[dummy][width=14em,height=3em,dx=1em,dy=.75em,hcompact=yes]
+
+\stopTEXpage
+
+\startTEXpage[offset=10pt]
+
+    \hboxtoFLOWchart[dummy]{an affiliation}
+
+    \FLOWchart[dummy][width=14em,height=3em,dx=.5em,dy=.75em,hcompact=yes]
+
+\stopTEXpage
+
+\startTEXpage[offset=10pt]
+
+    \hboxtoFLOWchart[dummy]{\nl effe fijn fietsen}
+
+    \FLOWchart[dummy][width=14em,height=3em,dx=.5em,dy=.75em,hcompact=yes]
+
+\stopTEXpage
+
+\startTEXpage[offset=10pt]
+
+    \hboxtoFLOWchart[dummy]{\righttoleft t\kern 1pt est}
+
+    \FLOWchart[dummy][width=14em,height=3em,dx=.5em,dy=.75em,hcompact=yes]
+
+\stopTEXpage
+
+\stoptext

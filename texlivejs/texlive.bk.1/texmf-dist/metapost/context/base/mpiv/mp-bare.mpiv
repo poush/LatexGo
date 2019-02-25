@@ -1,0 +1,89 @@
+%D \module
+%D   [       file=mp-bare.mpiv,
+%D        version=2014.10.31,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=plain plugins,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+%C details.
+
+if known context_bare : endinput ; fi ;
+boolean context_bare  ; context_bare := true ;
+
+vardef colordecimals primary c =
+    if cmykcolor c  :
+        decimal cyanpart c & ":" & decimal magentapart c & ":" & decimal yellowpart c & ":" & decimal blackpart c
+    elseif rgbcolor c :
+        decimal redpart c & ":" & decimal greenpart c & ":" & decimal bluepart c
+    else :
+        decimal c
+    fi
+enddef ;
+
+rgbcolor mfun_tt_r ;
+numeric mfun_tt_n ; mfun_tt_n := 0 ;
+picture mfun_tt_o ; mfun_tt_o := nullpicture ;
+picture mfun_tt_c ; mfun_tt_c := nullpicture ;
+
+def mfun_reset_tex_texts =
+    mfun_tt_n := 0 ;
+    mfun_tt_o := nullpicture ; % redundant
+    mfun_tt_c := nullpicture ; % redundant
+enddef ;
+
+def mfun_flush_tex_texts =
+enddef ;
+
+vardef rawtextext(expr s) =
+    if s = "" :
+        nullpicture
+    else :
+        mfun_tt_n := mfun_tt_n + 1 ;
+        mfun_tt_c := nullpicture ;
+        mfun_tt_o := nullpicture ;
+        addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
+        mfun_tt_r := runscript("mp.SomeText(" & decimal mfun_tt_n & "," & ditto & s & ditto & ")") ;
+        addto mfun_tt_c doublepath unitsquare
+            xscaled redpart mfun_tt_r
+            yscaled (greenpart mfun_tt_r + bluepart mfun_tt_r)
+            shifted (0,-bluepart mfun_tt_r)
+            withprescript "mf_object=text"
+            withprescript "tx_index=" & decimal mfun_tt_n
+            withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
+        ;
+        mfun_tt_c
+    fi
+enddef ;
+
+vardef rawmadetext =
+    mfun_tt_n := mfun_tt_n + 1 ;
+    mfun_tt_c := nullpicture ;
+    mfun_tt_o := nullpicture ;
+    addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
+    mfun_tt_r := runscript("mp.MadeText(" & decimal mfun_tt_n & ")") ;
+    addto mfun_tt_c doublepath unitsquare
+        xscaled redpart mfun_tt_r
+        yscaled (greenpart mfun_tt_r + bluepart mfun_tt_r)
+        shifted (0,-bluepart mfun_tt_r)
+        withprescript "mf_object=text"
+        withprescript "tx_index=" & decimal mfun_tt_n
+        withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
+    ;
+    mfun_tt_c
+enddef ;
+
+extra_beginfig := extra_beginfig & "mfun_reset_tex_texts ;" ;
+extra_endfig   := "mfun_flush_tex_texts ; mfun_reset_tex_texts ; " & extra_endfig ;
+
+primarydef str infont name = % nasty hack
+    if name = "" :
+        rawtextext(str)
+    else :
+        rawtextext("\definedfont[" & name & "]" & str)
+    fi
+enddef ;
+

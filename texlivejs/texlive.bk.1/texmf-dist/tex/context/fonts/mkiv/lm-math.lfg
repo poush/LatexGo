@@ -1,0 +1,263 @@
+-- we could consider taking more from 'tex-mr-missing'
+
+-- This patch code is moved from font-pat.lua to this goodies
+-- files as it does not belong in the core code.
+
+-- This patch is no longer needed but we keep it commented as
+-- it is an example.
+--
+-- local patches = fonts.handlers.otf.enhancers.patches
+--
+-- local function patch(data,filename)
+--     local uni_to_ind = data.map.map
+--     if not uni_to_ind[0x391] then
+--         -- beware, this is a hack, features for latin often don't apply to greek
+--         -- but lm has not much features anyway (and only greek for math)
+--         patches.report("adding 13 greek capitals")
+--         uni_to_ind[0x391] = uni_to_ind[0x41]
+--         uni_to_ind[0x392] = uni_to_ind[0x42]
+--         uni_to_ind[0x395] = uni_to_ind[0x45]
+--         uni_to_ind[0x397] = uni_to_ind[0x48]
+--         uni_to_ind[0x399] = uni_to_ind[0x49]
+--         uni_to_ind[0x39A] = uni_to_ind[0x4B]
+--         uni_to_ind[0x39C] = uni_to_ind[0x4D]
+--         uni_to_ind[0x39D] = uni_to_ind[0x4E]
+--         uni_to_ind[0x39F] = uni_to_ind[0x4F]
+--         uni_to_ind[0x3A1] = uni_to_ind[0x52]
+--         uni_to_ind[0x3A4] = uni_to_ind[0x54]
+--         uni_to_ind[0x3A7] = uni_to_ind[0x58]
+--         uni_to_ind[0x396] = uni_to_ind[0x5A]
+--     end
+-- end
+--
+-- patches.register("before","check extra features","^lmroman",     patch)
+-- patches.register("before","check extra features","^lmsans",      patch)
+-- patches.register("before","check extra features","^lmtypewriter",patch)
+
+-- rm-lmr5  : LMMathRoman5-Regular
+-- rm-lmbx5 : LMMathRoman5-Bold          ]
+-- lmbsy5   : LMMathSymbols5-BoldItalic
+-- lmsy5    : LMMathSymbols5-Italic
+-- lmmi5    : LMMathItalic5-Italic
+-- lmmib5   : LMMathItalic5-BoldItalic
+
+local five = {
+    { name = "lmroman5-regular.otf", features = "virtualmath", main = true },
+    { name = "rm-lmr5.tfm", vector = "tex-mr-missing" } ,
+    { name = "lmmi5.tfm", vector = "tex-mi", skewchar = 0x7F },
+    { name = "lmmi5.tfm", vector = "tex-it", skewchar = 0x7F },
+    { name = "lmsy5.tfm", vector = "tex-sy", skewchar = 0x30, parameters = true } ,
+    { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
+    { name = "msam5.tfm", vector = "tex-ma" },
+    { name = "msbm5.tfm", vector = "tex-mb" },
+    { name = "stmary10.afm", vector = "tex-mc" },
+ -- { name = "rm-lmbx5.tfm", vector = "tex-bf" } ,
+    { name = "lmroman5-bold", vector = "tex-bf" } ,
+    { name = "lmmib5.tfm", vector = "tex-bi", skewchar = 0x7F } ,
+    { name = "lmsans8-regular.otf", vector = "tex-ss", optional = true },
+    { name = "lmmono8-regular.otf", vector = "tex-tt", optional = true },
+    { name = "eufm5.tfm", vector = "tex-fraktur", optional = true },
+}
+
+-- rm-lmr6  : LMMathRoman6-Regular
+-- rm-lmbx6 : LMMathRoman6-Bold
+-- lmsy6    : LMMathSymbols6-Italic
+-- lmmi6    : LMMathItalic6-Italic
+
+local six = {
+    { name = "lmroman6-regular.otf", features = "virtualmath", main = true },
+    { name = "rm-lmr6.tfm", vector = "tex-mr-missing" } ,
+    { name = "lmmi6.tfm", vector = "tex-mi", skewchar = 0x7F },
+    { name = "lmmi6.tfm", vector = "tex-it", skewchar = 0x7F },
+    { name = "lmsy6.tfm", vector = "tex-sy", skewchar = 0x30, parameters = true } ,
+    { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
+    { name = "msam5.tfm", vector = "tex-ma" },
+    { name = "msbm5.tfm", vector = "tex-mb" },
+    { name = "stmary10.afm", vector = "tex-mc" },
+ -- { name = "rm-lmbx6.tfm", vector = "tex-bf" } ,
+    { name = "lmroman6-bold.otf", vector = "tex-bf" } ,
+    { name = "lmmib5.tfm", vector = "tex-bi", skewchar = 0x7F } ,
+    { name = "lmsans8-regular.otf", vector = "tex-ss", optional = true },
+    { name = "lmmono8-regular.otf", vector = "tex-tt", optional = true },
+    { name = "eufm5.tfm", vector = "tex-fraktur", optional = true },
+    { name = "eufb5.tfm", vector = "tex-fraktur-bold", optional = true },
+}
+
+-- rm-lmr7  : LMMathRoman7-Regular
+-- rm-lmbx7 : LMMathRoman7-Bold
+-- lmbsy7   : LMMathSymbols7-BoldItalic
+-- lmsy7    : LMMathSymbols7-Italic
+-- lmmi7    : LMMathItalic7-Italic
+-- lmmib7   : LMMathItalic7-BoldItalic
+
+local seven = {
+    { name = "lmroman7-regular.otf", features = "virtualmath", main = true },
+    { name = "rm-lmr7.tfm", vector = "tex-mr-missing" } ,
+    { name = "lmmi7.tfm", vector = "tex-mi", skewchar = 0x7F },
+    { name = "lmmi7.tfm", vector = "tex-it", skewchar = 0x7F },
+    { name = "lmsy7.tfm", vector = "tex-sy", skewchar = 0x30, parameters = true } ,
+    { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
+    { name = "msam7.tfm", vector = "tex-ma" },
+    { name = "msbm7.tfm", vector = "tex-mb" },
+    { name = "stmary10.afm", vector = "tex-mc" },
+ -- { name = "rm-lmbx7.tfm", vector = "tex-bf" } ,
+    { name = "lmroman7-bold.otf", vector = "tex-bf" } ,
+    { name = "lmmib7.tfm", vector = "tex-bi", skewchar = 0x7F } ,
+    { name = "lmsans8-regular.otf", vector = "tex-ss", optional = true },
+    { name = "lmmono8-regular.otf", vector = "tex-tt", optional = true },
+    { name = "eufm7.tfm", vector = "tex-fraktur", optional = true },
+    { name = "eufb7.tfm", vector = "tex-fraktur-bold", optional = true },
+}
+
+-- rm-lmr8  : LMMathRoman8-Regular
+-- rm-lmbx8 : LMMathRoman8-Bold
+-- lmsy8    : LMMathSymbols8-Italic
+-- lmmi8    : LMMathItalic8-Italic
+
+local eight = {
+    { name = "lmroman8-regular.otf", features = "virtualmath", main = true },
+    { name = "rm-lmr8.tfm", vector = "tex-mr-missing" } ,
+    { name = "lmmi8.tfm", vector = "tex-mi", skewchar = 0x7F },
+    { name = "lmmi8.tfm", vector = "tex-it", skewchar = 0x7F },
+    { name = "lmsy8.tfm", vector = "tex-sy", skewchar = 0x30, parameters = true } ,
+    { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
+    { name = "msam7.tfm", vector = "tex-ma" },
+    { name = "msbm7.tfm", vector = "tex-mb" },
+    { name = "stmary10.afm", vector = "tex-mc" },
+ -- { name = "rm-lmbx8.tfm", vector = "tex-bf" } ,
+    { name = "lmroman8-bold.otf", vector = "tex-bf" } ,
+    { name = "lmmib7.tfm", vector = "tex-bi", skewchar = 0x7F } ,
+    { name = "lmsans8-regular.otf", vector = "tex-ss", optional = true },
+    { name = "lmmono8-regular.otf", vector = "tex-tt", optional = true },
+    { name = "eufm7.tfm", vector = "tex-fraktur", optional = true },
+    { name = "eufb7.tfm", vector = "tex-fraktur-bold", optional = true },
+}
+
+-- rm-lmr9  : LMMathRoman9-Regular
+-- rm-lmbx9 : LMMathRoman9-Bold
+-- lmsy9    : LMMathSymbols9-Italic
+-- lmmi9    : LMMathItalic9-Italic
+
+local nine = {
+    { name = "lmroman9-regular.otf", features = "virtualmath", main = true },
+    { name = "rm-lmr9.tfm", vector = "tex-mr-missing" } ,
+    { name = "lmmi9.tfm", vector = "tex-mi", skewchar = 0x7F },
+    { name = "lmmi9.tfm", vector = "tex-it", skewchar = 0x7F },
+    { name = "lmsy9.tfm", vector = "tex-sy", skewchar = 0x30, parameters = true } ,
+    { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
+    { name = "msam10.tfm", vector = "tex-ma" },
+    { name = "msbm10.tfm", vector = "tex-mb" },
+    { name = "stmary10.afm", vector = "tex-mc" },
+ -- { name = "rm-lmbx9.tfm", vector = "tex-bf" } ,
+    { name = "lmroman9-bold.otf", vector = "tex-bf" } ,
+    { name = "lmmib10.tfm", vector = "tex-bi", skewchar = 0x7F } ,
+    { name = "lmsans9-regular.otf", vector = "tex-ss", optional = true },
+    { name = "lmmono9-regular.otf", vector = "tex-tt", optional = true },
+    { name = "eufm10.tfm", vector = "tex-fraktur", optional = true },
+    { name = "eufb10.tfm", vector = "tex-fraktur-bold", optional = true },
+}
+
+-- rm-lmr10  : LMMathRoman10-Regular
+-- rm-lmbx10 : LMMathRoman10-Bold
+-- lmbsy10   : LMMathSymbols10-BoldItalic
+-- lmsy10    : LMMathSymbols10-Italic
+-- lmex10    : LMMathExtension10-Regular
+-- lmmi10    : LMMathItalic10-Italic
+-- lmmib10   : LMMathItalic10-BoldItalic
+
+local ten = {
+    { name = "lmroman10-regular.otf", features = "virtualmath", main = true },
+    { name = "rm-lmr10.tfm", vector = "tex-mr-missing" } ,
+    { name = "lmmi10.tfm", vector = "tex-mi", skewchar = 0x7F },
+    { name = "lmmi10.tfm", vector = "tex-it", skewchar = 0x7F },
+    { name = "lmsy10.tfm", vector = "tex-sy", skewchar = 0x30, parameters = true } ,
+    { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
+    { name = "msam10.tfm", vector = "tex-ma" },
+    { name = "msbm10.tfm", vector = "tex-mb" },
+    { name = "stmary10.afm", vector = "tex-mc" },
+ -- { name = "rm-lmbx10.tfm", vector = "tex-bf" } ,
+    { name = "lmroman10-bold.otf", vector = "tex-bf" } ,
+    { name = "lmmib10.tfm", vector = "tex-bi", skewchar = 0x7F } ,
+    { name = "lmsans10-regular.otf", vector = "tex-ss", optional = true },
+    { name = "lmmono10-regular.otf", vector = "tex-tt", optional = true },
+    { name = "eufm10.tfm", vector = "tex-fraktur", optional = true },
+    { name = "eufb10.tfm", vector = "tex-fraktur-bold", optional = true },
+}
+
+-- rm-lmr12  : LMMathRoman12-Regular
+-- rm-lmbx12 : LMMathRoman12-Bold
+-- lmmi12    : LMMathItalic12-Italic
+
+local twelve = {
+    { name = "lmroman12-regular.otf", features = "virtualmath", main = true },
+    { name = "rm-lmr12.tfm", vector = "tex-mr-missing" },
+    { name = "lmmi12.tfm", vector = "tex-mi", skewchar = 0x7F },
+    { name = "lmmi12.tfm", vector = "tex-it", skewchar = 0x7F },
+    { name = "lmsy10.tfm", vector = "tex-sy", skewchar = 0x30, parameters = true } ,
+    { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
+    { name = "msam10.tfm", vector = "tex-ma" },
+    { name = "msbm10.tfm", vector = "tex-mb" },
+    { name = "stmary10.afm", vector = "tex-mc" },
+ -- { name = "rm-lmbx12.tfm", vector = "tex-bf" } ,
+    { name = "lmroman12-bold.otf", vector = "tex-bf" } ,
+    { name = "lmmib10.tfm", vector = "tex-bi", skewchar = 0x7F } ,
+    { name = "lmsans12-regular.otf", vector = "tex-ss", optional = true },
+    { name = "lmmono12-regular.otf", vector = "tex-tt", optional = true },
+    { name = "eufm10.tfm", vector = "tex-fraktur", optional = true },
+    { name = "eufb10.tfm", vector = "tex-fraktur-bold", optional = true },
+}
+
+-- rm-lmr17 : LMMathRoman17-Regular
+
+local seventeen = {
+    { name = "lmroman17-regular.otf", features = "virtualmath", main = true },
+    { name = "rm-lmr12.tfm", vector = "tex-mr-missing" } ,
+    { name = "lmmi12.tfm", vector = "tex-mi", skewchar = 0x7F },
+    { name = "lmmi12.tfm", vector = "tex-it", skewchar = 0x7F },
+    { name = "lmsy10.tfm", vector = "tex-sy", skewchar = 0x30, parameters = true } ,
+    { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
+    { name = "msam10.tfm", vector = "tex-ma" },
+    { name = "msbm10.tfm", vector = "tex-mb" },
+    { name = "stmary10.afm", vector = "tex-mc" },
+ -- { name = "rm-lmbx12.tfm", vector = "tex-bf" } ,
+    { name = "lmroman12-bold.otf", vector = "tex-bf" } ,
+    { name = "lmmib10.tfm", vector = "tex-bi", skewchar = 0x7F } ,
+    { name = "lmsans17-regular.otf", vector = "tex-ss", optional = true },
+    { name = "lmmono17-regular.otf", vector = "tex-tt", optional = true },
+    { name = "eufm10.tfm", vector = "tex-fraktur", optional = true },
+    { name = "eufb10.tfm", vector = "tex-fraktur-bold", optional = true },
+}
+
+return {
+    name = "lm-math",
+    version = "1.00",
+    comment = "Goodies that complement latin modern math (virtual).",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        mapfiles = {
+            "lm-math.map",
+            "lm-rm.map",
+            "mkiv-base.map",
+        },
+        virtuals = {
+            ["lmroman5-math"]  = five,
+            ["lmroman6-math"]  = six,
+            ["lmroman7-math"]  = seven,
+            ["lmroman8-math"]  = eight,
+            ["lmroman9-math"]  = nine,
+            ["lmroman10-math"] = ten,
+            ["lmroman12-math"] = twelve,
+            ["lmroman17-math"] = seventeen,
+        },
+        variables = {
+            joinrelfactor = 3, -- default anyway
+        },
+        parameters = { -- test values
+         -- FactorA = 123.456,
+         -- FactorB = false,
+         -- FactorC = function(value,target,original) return 7.89 * target.factor end,
+         -- FactorD = "Hi There!",
+        },
+    }
+}

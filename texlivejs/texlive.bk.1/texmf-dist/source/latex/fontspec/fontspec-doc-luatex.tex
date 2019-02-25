@@ -1,0 +1,94 @@
+%%^^A%%  fontspec-doc-luatex.tex -- part of FONTSPEC <wspr.io/fontspec>
+
+\documentclass[a4paper]{l3doc}
+\usepackage{fontspec-doc-style}
+\showexamplesfalse
+\begin{document}
+
+\part{\LuaTeX-only font features}
+\label{sec:luatex-features}
+
+\section{Different font technologies and shapers}
+\label{sec:renderer-luatex}
+
+\LuaTeX\ does not directly support any font rendering technologies out of the box, it
+requires additional functionality to be added to properly support and control technologies such as OpenType.
+
+Using the \feat{Renderer} feature, there are a number of options that \pkg{fontspec} can pass to the engine to control which font technology is being used.
+Pre-2019, there were two options provided by \pkg{luaotfload} that generally did not require user intervention.
+
+\begin{itemize}
+\item \feat{Renderer} = \opt{Node} : the default `mode' for typesetting OpenType fonts.
+\item \feat{Renderer} = \opt{Base} : a simplified mode useful only in a limited number of situations such as mathematics typesetting.
+\end{itemize}
+
+From 2019 the possibility of using the Harfbuzz text shaping engine within \LuaTeX\ has
+been developed by Khaled Hosny. When running a suitable \LuaTeX\ engine with Harfbuzz support, \pkg{fontspec} provides the following options:
+
+\begin{itemize}
+\item \feat{Renderer} = \opt{Harfbuzz} : use the Harfbuzz engine without an explicit `shaper'.
+\item \feat{Renderer} = \opt{OpenType} : use the Harfbuzz engine with the OpenType shaper.
+\item \feat{Renderer} = \opt{AAT} : use the Harfbuzz engine with the AAT shaper.
+\item \feat{Renderer} = \opt{Graphite} : use the Harfbuzz engine with the Graphite shaper.
+\item \feat{Renderer} = \meta{foo} : use the Harfbuzz engine with the \meta{foo} shaper.
+\end{itemize}
+
+Support for the Harfbuzz renderer is preliminary and may be improved over time.
+Please treat the interface for Harfbuzz fonts as subject to change.
+
+
+\section{Custom font features}
+
+\LuaTeX, via the \pkg{luaotfload} package, allows the definition and re-definition of custom OpenType features for a selected font. This facility is particularly useful to implement custom substitutions or to disable unwanted but not all ligatures.
+
+Figure~\ref{fig:featurefile} shows an minimal example of this type of functionality.
+This example creates a new OpenType feature, \texttt{oneb}, which substitutes the glyph
+when typesetting `\texttt{1}' for the named glyph \texttt{one.ss01}. The glyph names
+are font specific and can be interrogated with third-party software such as \emph{FontForge}.
+
+A third-party collection of additional examples are maintained in the repository `\texttt{fonts-in-luatex}'\footnote{\url{https://github.com/mewtant/fonts-in-luatex}}.
+These examples are intended to correct or adjust font features in a range of commercial fonts and provide a good introduction to some of the possibilities that \LuaTeX\ affords.
+
+Please refer to the \LuaTeX/\pkg{luaotfload} documentation for more details.
+
+\begin{figure}
+\caption{An example of custom font features.}
+\label{fig:featurefile}
+\hrule
+\begin{Verbatim}
+\documentclass{article}
+\usepackage{fontspec}
+\directlua{
+    fonts.handlers.otf.addfeature {
+        name = "oneb",
+        type = "substitution",
+        data = {
+                ["1"] = "one.ss01",
+        }
+    }
+}
+\setmainfont{Vollkorn-Regular.otf}[RawFeature=+oneb]
+\begin{document}
+1234567890
+\end{document}
+\end{Verbatim}
+\hrule
+\end{figure}
+
+\end{document}
+
+% /©
+% ------------------------------------------------
+% The FONTSPEC package  <wspr.io/fontspec>
+% ------------------------------------------------
+% Copyright  2004-2019  Will Robertson, LPPL "maintainer"
+% Copyright  2009-2015  Khaled Hosny
+% Copyright  2013       Philipp Gesang
+% Copyright  2013-2016  Joseph Wright
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% ©/
+

@@ -1,0 +1,137 @@
+%D \module
+%D   [       file=back-swf,
+%D        version=2009.12.31,
+%D          title=\CONTEXT\ Backend Macros,
+%D       subtitle=Shockwave Experiment,
+%D         author=Hans Hagen \& Luigi Scarso,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The question is: should I still document this in interaction.tex or just
+%D assume it's obsolete technology \unknown
+
+%D This is only a placeholder that demonstrates the usage of swf resources.
+%D There is no need to include this file into the format. The module was
+%D tested by Luigi and Willi and based on their suggestions the functionality
+%D was improved.
+%D
+%D \starttyping
+%D \enabletrackers[graphics.locating]
+%D \enabletrackers[backend.swf]
+%D
+%D \startluaparameterset [swf:relative:resources]
+%D     relativepaths = {
+%D         "assets"
+%D     }
+%D \stopluaparameterset
+%D
+%D \startluaparameterset[swf:relative:display]
+%D     toolbar  = true,
+%D     preview  = "images/posterframes/*.jpg", -- relative to assets
+%D     open     = "click",
+%D     close    = "focus",
+%D \stopluaparameterset
+%D
+%D \startTEXpage
+%D    \externalfigure
+%D      [whatever.swf]
+%D      [resources=swf:relative:resources,
+%D       display=swf:relative:display]
+%D \stopTEXpage
+%D \stoptyping
+
+%D Embedding (and using) movies used to be a breeze in acrobat but depended
+%D on a plugin. Then we got renditions that depended on the built-in flash
+%D player. And now we have rich media, depending on whatever and being able
+%D to use the flash player as well ... but it's an erratic and soon obsolete
+%D adventure. So \unknown\ we do provide the user the means but stay away
+%D from it ourselves: it's a dead end. The following tricks use the already
+%D present shockwave (flash) trickery.
+%D
+%D At some point we will no longer provide this in the core but load it at
+%D runtime.
+%D
+%D \starttyping
+%D \externalfigure
+%D   [shockwave]
+%D   [file=test.mp4,
+%D    label=foo]
+%D
+%D \useJSscripts[vplayer] % or \useJSscripts[videoplayer]
+%D
+%D \goto{START} [JS(StartShockwave{foo})]
+%D \goto{REWIND}[JS(RewindShockwave{foo})]
+%D \goto{PAUSE} [JS(PauseShockwave{foo})]
+%D \goto{STOP}  [JS(StopShockwave{foo})]
+%D
+%D \useexternalrendering[foo][application/x-shockwave-flash][test.swf][embed=yes,width=100pt,height=100pt]
+%D \definerenderingwindow[foo][width=100pt,height=100pt]
+%D
+%D \placerenderingwindow[foo][foo]
+%D
+%D \goto{START}[StartRendering{foo}]
+%D \goto{STOP} [StopRendering{foo}]
+%D \goto{PAUSE}[PauseRendering{foo}]
+%D
+%D %     \useexternalrendering[foo][audio/mpeg][t:/sources/akkerman.mp3][embed=yes]
+%D %     \definerenderingwindow[foo][width=0pt,height=0pt]
+%D %   % \placerenderingwindow[foo][foo]
+%D %     \setupbackgrounds[page][background=resources]
+%D %     \setlayer[resources]{\placerenderingwindow[foo][foo]}
+%D %     \goto{START}[StartRendering{foo}]
+%D %     \goto{STOP} [StopRendering{foo}]
+%D %     \goto{PAUSE}[PauseRendering{foo}]
+%D \stoptyping
+
+\unprotect
+
+%D The code has moved to the (explicitly loaded) \JAVASCRIPT\ modules. See there
+%D for more info.
+
+\protect \endinput
+
+\starttext
+
+\startluaparameterset [swf:myset:display:1]
+    toolbar  = true,
+    preview  = "assets/images/posterframes/SPT_14-16_Ra_01_PN_LE01_02_DoLikeMeLater_posterframe.jpg",
+ -- preview  = "t:/sources/cow.pdf",
+ -- preview  = "t:/sources/hacker.jpg",
+    open     = "click", -- click page focus
+    close    = "focus", -- click page focus
+\stopluaparameterset
+
+\startluaparameterset [swf:myset:resources:1]
+    paths = {
+        "assets"
+    },
+    files = {
+        -- "somename_1"
+        -- "somename_1"
+    }
+\stopluaparameterset
+
+\startluaparameterset [swf:dolikemelater:resources]
+    paths    = {
+        "assets"
+    },
+\stopluaparameterset
+
+% preview=swf:myset:display:1
+% controls=swf:myset:controls:1
+% resources=swf:myset:resources:1
+
+\placefigure
+  {flash demo}
+  {\startcombination[2*2]
+     {\externalfigure[trasf1.swf][width=0.45\textwidth,height=0.25\textheight]} {one}
+     {\externalfigure[trasf2.swf][width=0.45\textwidth,height=0.25\textheight]} {two}
+     {\externalfigure[trasf3.swf][width=0.45\textwidth,height=0.25\textheight]} {three}
+     {\externalfigure[trasf4.swf][width=0.45\textwidth,height=0.25\textheight]} {four}
+   \stopcombination}
+
+\stoptext

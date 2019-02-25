@@ -1,0 +1,144 @@
+%%
+%% This is file `l3str-esc-string.def',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% l3str-convert.dtx  (with options: `string')
+%% 
+%% Copyright (C) 2011-2019 The LaTeX3 Project
+%% 
+%% It may be distributed and/or modified under the conditions of
+%% the LaTeX Project Public License (LPPL), either version 1.3c of
+%% this license or (at your option) any later version.  The latest
+%% version of this license is in the file:
+%% 
+%%    http://www.latex-project.org/lppl.txt
+%% 
+%% This file is part of the "l3experimental bundle" (The Work in LPPL)
+%% and all files in that bundle must be distributed together.
+%% 
+%% File: l3str-convert.dtx Copyright (C) 2013-2019 The LaTeX3 Project
+\group_begin:
+  \char_set_catcode_other:N \^^J
+  \char_set_catcode_other:N \^^M
+  \cs_set_protected:Npn \__str_tmp:w #1
+    {
+      \cs_new_protected:Npn \__str_convert_unescape_string:
+        {
+          \group_begin:
+            \flag_clear:n { str_byte }
+            \flag_clear:n { str_error }
+            \int_set:Nn \tex_escapechar:D { 92 }
+            \tl_gset:Nx \g__str_result_tl
+              {
+                \exp_after:wN \__str_unescape_string_newlines:wN
+                  \g__str_result_tl \prg_break: ^^M ?
+                \prg_break_point:
+              }
+            \tl_gset:Nx \g__str_result_tl
+              {
+                \exp_after:wN \__str_unescape_string_loop:wNNN
+                  \g__str_result_tl #1 ?? { ? \prg_break: }
+                \prg_break_point:
+              }
+            \__str_if_flag_error:nnx { str_byte } { non-byte } { string }
+            \__str_if_flag_error:nnx { str_error } { unescape-string } { }
+          \group_end:
+        }
+    }
+  \exp_args:No \__str_tmp:w { \c_backslash_str }
+  \exp_last_unbraced:NNNNo
+    \cs_new:Npn \__str_unescape_string_loop:wNNN #1 \c_backslash_str #2#3#4
+        {
+          \__str_filter_bytes:n {#1}
+          \use_none:n #4
+          \__str_output_byte:w '
+            \__str_octal_use:NTF #2
+              {
+                \__str_octal_use:NTF #3
+                  {
+                    \__str_octal_use:NTF #4
+                      {
+                        \if_int_compare:w #2 > 3 \exp_stop_f:
+                          - 256
+                        \fi:
+                        \__str_unescape_string_repeat:NNNNNN
+                      }
+                      { \__str_unescape_string_repeat:NNNNNN ? }
+                  }
+                  { \__str_unescape_string_repeat:NNNNNN ?? }
+              }
+              {
+                \str_case_e:nnF {#2}
+                  {
+                    { \c_backslash_str } { 134 }
+                    { ( } { 50 }
+                    { ) } { 51 }
+                    { r } { 15 }
+                    { f } { 14 }
+                    { n } { 12 }
+                    { t } { 11 }
+                    { b } { 10 }
+                    { ^^J } { 0 - 1 }
+                  }
+                  {
+                    \flag_raise:n { str_error }
+                    0 - 1 \use_i:nn
+                  }
+              }
+          \__str_output_end:
+          \use_i:nn \__str_unescape_string_loop:wNNN #2#3#4
+        }
+  \cs_new:Npn \__str_unescape_string_repeat:NNNNNN #1#2#3#4#5#6
+    { \__str_output_end: \__str_unescape_string_loop:wNNN }
+  \cs_new:Npn \__str_unescape_string_newlines:wN #1 ^^M #2
+    {
+      #1
+      \if_charcode:w ^^J #2 \else: ^^J \fi:
+      \__str_unescape_string_newlines:wN #2
+    }
+  \__kernel_msg_new:nnnn { str } { unescape-string }
+    { String~invalid~in~escaping~'string'. }
+    {
+      LaTeX~came~across~an~escape~character~'\c_backslash_str'~
+      not~followed~by~any~of:~'n',~'r',~'t',~'b',~'f',~'(',~')',~
+      '\c_backslash_str',~one~to~three~octal~digits,~or~the~end~
+      of~a~line.
+    }
+\group_end:
+\str_const:Nx \c__str_escape_string_str
+  { \c_backslash_str ( ) }
+\cs_new_protected:Npn \__str_convert_escape_string:
+  { \__str_convert_gmap:N \__str_escape_string_char:N }
+\cs_new:Npn \__str_escape_string_char:N #1
+  {
+    \__str_if_escape_string:NTF #1
+      {
+        \__str_if_contains_char:NNT
+          \c__str_escape_string_str #1
+          { \c_backslash_str }
+        #1
+      }
+      {
+        \c_backslash_str
+        \int_div_truncate:nn {`#1} {64}
+        \int_mod:nn { \int_div_truncate:nn {`#1} { 8 } } { 8 }
+        \int_mod:nn {`#1} { 8 }
+      }
+  }
+\prg_new_conditional:Npnn \__str_if_escape_string:N #1 { TF }
+  {
+    \if_int_compare:w `#1 < "21 \exp_stop_f:
+      \prg_return_false:
+    \else:
+      \if_int_compare:w `#1 > "7E \exp_stop_f:
+        \prg_return_false:
+      \else:
+        \prg_return_true:
+      \fi:
+    \fi:
+  }
+%% 
+%%
+%% End of file `l3str-esc-string.def'.

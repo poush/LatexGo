@@ -1,0 +1,332 @@
+%%^^A%%  fontspec-code-vars.dtx -- part of FONTSPEC <wspr.io/fontspec>
+%
+% \section{Declaration of variables}
+%
+% \iffalse
+%    \begin{macrocode}
+%<*fontspec>
+%    \end{macrocode}
+% \fi
+%
+% This file consists solely of declaration of variables used by \pkg{fontspec}.
+% In some cases these variables are also initialised with default values.
+% In time I would like to move these initialisations
+%
+% \paragraph{Booleans}
+%
+% \begin{macro}{\l_@@_firsttime_bool}
+% As \cs{keys_set:nn} is run multiple times, some of its
+% information storing only occurs once while we decide if the font family
+% has been defined or not. When the later processing is occuring per-shape
+% this no longer needs to happen; this is indicated by the `firsttime'
+% conditional.
+%    \begin{macrocode}
+\bool_new:N \l_@@_firsttime_bool
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+\bool_new:N \l_@@_nobf_bool
+\bool_new:N \l_@@_noit_bool
+\bool_new:N \l_@@_nosc_bool
+\bool_new:N \l_@@_check_bool
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\bool_new:N \l_@@_tfm_bool
+\bool_new:N \l_@@_atsui_bool
+\bool_new:N \l_@@_ot_bool
+\bool_new:N \l_@@_mm_bool
+\bool_new:N \l_@@_harfbuzz_bool
+\bool_new:N \l_@@_graphite_bool
+\bool_new:N \l_@@_fontcfg_bool
+\bool_set_true:N \l_@@_fontcfg_bool
+%    \end{macrocode}
+% For dealing with legacy maths:
+%    \begin{macrocode}
+\bool_new:N \g_@@_math_euler_bool
+\bool_new:N \g_@@_math_lucida_bool
+\bool_new:N \g_@@_pkg_euler_loaded_bool
+%    \end{macrocode}
+% For package options:
+%    \begin{macrocode}
+\bool_new:N \g_@@_cfg_bool
+\bool_new:N \g_@@_math_bool
+\bool_new:N \g_@@_euenc_bool
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\bool_new:N \l_@@_tmpa_bool
+\bool_new:N \l_@@_disable_defaults_bool
+\bool_new:N \l_@@_alias_bool
+\bool_new:N \l_@@_external_bool
+\bool_new:N \l_@@_defining_encoding_bool
+\bool_new:N \l_@@_scriptlang_exist_bool
+\bool_new:N \g_@@_em_normalise_slant_bool
+\bool_new:N \l_@@_proceed_bool
+%    \end{macrocode}
+%
+% \begin{macro}{\l_@@_never_check_bool}
+% It is used to disable checking opentype script, language, and tags
+% when running checking code that has a user-defined return path we want to allow the higher-level
+% code to dictate the logic.
+% TODO: tidy this up!
+%    \begin{macrocode}
+\bool_new:N \l_@@_never_check_bool
+%    \end{macrocode}
+% \end{macro}
+%
+% \paragraph{Counters}
+%    \begin{macrocode}
+\int_new:N \l_@@_script_int
+\int_new:N \l_@@_language_int
+\int_new:N \l_@@_strnum_int
+\int_new:N \l_@@_tmp_int
+\int_new:N \l_@@_tmpa_int
+\int_new:N \l_@@_tmpb_int
+\int_new:N \l_@@_tmpc_int
+\int_new:N \l_@@_em_int
+\int_new:N \l_@@_emdef_int
+\int_new:N \l_@@_strong_int
+\int_new:N \l_@@_strongdef_int
+%    \end{macrocode}
+%
+% \paragraph{Floats}
+%    \begin{macrocode}
+\fp_new:N \l_@@_tmpa_fp
+\fp_new:N \l_@@_tmpb_fp
+%    \end{macrocode}
+%
+% \paragraph{Dimensions}
+%    \begin{macrocode}
+\dim_new:N \l_@@_tmpa_dim
+\dim_new:N \l_@@_tmpb_dim
+\dim_new:N \l_@@_tmpc_dim
+%    \end{macrocode}
+%
+% \paragraph{Sequences}
+%    \begin{macrocode}
+\seq_new:N \l_@@_bf_series_seq
+%    \end{macrocode}
+%
+% \paragraph{Comma-lists}
+%    \begin{macrocode}
+\clist_new:N \g_@@_default_fontopts_clist
+\clist_new:N \g_@@_all_keyval_modules_clist
+\clist_new:N \l_@@_sizefeat_clist
+\clist_set:Nn \l_@@_sizefeat_clist {Size={-}}
+\clist_new:N \l_@@_extensions_clist
+\clist_new:N \l_@@_fontopts_clist
+\clist_new:N \l_@@_family_fontopts_clist
+\clist_new:N \l_@@_all_features_clist
+\clist_new:N \l_@@_leftover_clist
+\clist_new:N \l_@@_keys_leftover_clist
+\clist_new:N \l_@@_sizing_leftover_clist
+\clist_new:N \l_@@_fontfeat_clist
+\clist_new:N \l_@@_fontfeat_curr_clist
+\clist_new:N \l_@@_arg_clist
+\clist_new:N \l_@@_this_feat_clist
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\clist_new:N \l_@@_fontfeat_up_clist
+\clist_new:N \l_@@_fontfeat_bf_clist
+\clist_new:N \l_@@_fontfeat_it_clist
+\clist_new:N \l_@@_fontfeat_bfit_clist
+\clist_new:N \l_@@_fontfeat_sl_clist
+\clist_new:N \l_@@_fontfeat_bfsl_clist
+\clist_new:N \l_@@_fontfeat_sc_clist
+%    \end{macrocode}
+%
+% \paragraph{Property lists}
+%    \begin{macrocode}
+\prop_new:N \g_@@_fontopts_prop
+\prop_new:N \l_@@_nfss_prop
+\prop_new:N \l_@@_nfssfont_prop
+\prop_new:N \g_@@_OT_features_prop
+\prop_new:N \g_@@_all_opentype_feature_names_prop
+\prop_new:N \g_@@_em_prop
+\prop_new:N \g_@@_strong_prop
+\prop_new:N \g_@@_fontid_family_prop
+\prop_new:N \g_@@_family_int_prop
+%    \end{macrocode}
+%
+% \paragraph{Token lists}
+%
+% \paragraph{Visible (perhaps?)}
+%
+%    \begin{macrocode}
+\tl_new:N \l_fontspec_family_tl
+\tl_new:N \g_fontspec_encoding_tl
+\tl_new:N \l_fontspec_fontname_tl
+%    \end{macrocode}
+%
+% \paragraph{2e interactions}
+%
+%    \begin{macrocode}
+\tl_clear_new:N \UTFencname
+\tl_clear_new:N \cyrillicencoding
+\tl_clear_new:N \latinencoding
+%    \end{macrocode}
+%
+% \paragraph{Renderer/shaper}
+%
+%    \begin{macrocode}
+\tl_new:N \l_@@_renderer_tl
+\tl_new:N \l_@@_mode_tl
+\tl_new:N \l_@@_shaper_tl
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\tl_new:N \g_@@_defined_shapes_tl
+\tl_new:N \g_@@_single_feat_tl
+\tl_new:N \l_@@_basename_tl
+\tl_new:N \g_@@_curr_series_tl
+\tl_new:N \l_@@_curr_fontname_tl
+\tl_new:N \l_@@_curr_bfname_tl
+\tl_new:N \l_@@_ext_filename_tl
+\tl_new:N \l_@@_extension_tl
+\tl_new:N \l_@@_font_path_tl
+\tl_new:N \l_@@_fontid_tl
+\tl_new:N \l_@@_fontname_tl
+\tl_new:N \l_@@_options_tl
+\tl_new:N \l_@@_saved_fontname_tl
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\tl_new:N \g_@@_nfss_enc_tl
+\tl_new:N \g_@@_nfss_family_tl
+\tl_new:N \l_@@_nfss_sc_tl
+\tl_new:N \l_@@_nfss_tl
+\tl_new:N \l_@@_nfss_fam_tl
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\tl_new:N \l_@@_size_tl
+\tl_new:N \l_@@_sizedfont_tl
+\tl_new:N \l_@@_this_font_tl
+\tl_new:N \l_@@_ttc_index_tl
+\tl_new:N \l_@@_smcp_shape_tl
+%    \end{macrocode}
+%
+% \paragraph{EM and STRONG}
+%    \begin{macrocode}
+\tl_new:N \l_@@_emshape_query_tl
+\tl_new:N \l_@@_em_switch_tl
+\tl_new:N \l_@@_strong_switch_tl
+%    \end{macrocode}
+%
+% \paragraph{Scratch variables}
+%    \begin{macrocode}
+\tl_new:N \l_@@_tmp_tl
+\tl_new:N \l_@@_tmpa_tl
+\tl_new:N \l_@@_tmpb_tl
+\tl_new:N \l_@@_em_tmp_tl
+\tl_new:N \l_@@_strong_tmp_tl
+%    \end{macrocode}
+%
+% \paragraph{Maths fonts}
+%    \begin{macrocode}
+\tl_new:N \g_@@_mathrm_tl
+\tl_new:N \g_@@_bfmathrm_tl
+\tl_new:N \g_@@_mathsf_tl
+\tl_new:N \g_@@_mathtt_tl
+%    \end{macrocode}
+%
+% Defaults: (these are set elsewhere; TODO: check if redundant)
+%    \begin{macrocode}
+\tl_gset:Nn \g_@@_mathrm_tl {\rmdefault}
+\tl_gset:Nn \g_@@_mathsf_tl {\sfdefault}
+\tl_gset:Nn \g_@@_mathtt_tl {\ttdefault}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\tl_new:N \l_@@_family_label_tl
+\tl_new:N \l_@@_fake_slant_tl
+\tl_new:N \l_@@_fake_embolden_tl
+%    \end{macrocode}
+%
+% \paragraph{Internal font names}
+%    \begin{macrocode}
+\tl_new:N \l_@@_fontname_up_tl
+\tl_new:N \l_@@_fontname_bf_tl
+\tl_new:N \l_@@_fontname_it_tl
+\tl_new:N \l_@@_fontname_bfit_tl
+\tl_new:N \l_@@_fontname_sl_tl
+\tl_new:N \l_@@_fontname_bfsl_tl
+\tl_new:N \l_@@_fontname_sc_tl
+%    \end{macrocode}
+%
+% \paragraph{Script and Language}
+%
+%    \begin{macrocode}
+\tl_new:N  \l_@@_script_tl
+\tl_new:N  \l_@@_script_name_tl
+\tl_set:Nn \l_@@_script_name_tl {CustomDefault}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\tl_new:N  \l_@@_lang_tl
+\tl_new:N  \l_@@_lang_name_tl
+\tl_set:Nn \l_@@_lang_name_tl {Default}
+%    \end{macrocode}
+%
+% \paragraph{Generic font features}
+%
+%    \begin{macrocode}
+\tl_new:N \l_@@_scale_tl
+\tl_new:N \l_@@_hyphenchar_tl
+\tl_new:N \l_@@_hexcol_tl
+\tl_new:N \l_@@_opacity_tl
+\tl_new:N \l_@@_optical_size_tl
+\tl_new:N \l_@@_mapping_tl
+\tl_new:N \l_@@_punctspace_adjust_tl
+\tl_new:N \l_@@_wordspace_adjust_tl
+\tl_new:N \l_@@_postadjust_tl
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\tl_const:Nn \c_@@_hexcol_tl {000000}
+\tl_const:Nn \c_@@_opacity_tl {FF~}
+\tl_const:Nn \c_@@_postadjust_tl { \l_@@_wordspace_adjust_tl \l_@@_punctspace_adjust_tl }
+%    \end{macrocode}
+%
+% \paragraph{Semi-colon-lists}
+% Not a real data structure but sensible to name accordingly.
+%    \begin{macrocode}
+\tl_new:N \g_@@_rawfeatures_sclist
+\tl_new:N \l_@@_pre_feat_sclist
+%    \end{macrocode}
+%
+% \paragraph{Font families}
+%    \begin{macrocode}
+\tl_new:N \l_@@_rmfamily_family_tl
+\tl_new:N \l_@@_sffamily_family_tl
+\tl_new:N \l_@@_ttfamily_family_tl
+%    \end{macrocode}
+%
+%
+%
+% \iffalse
+%    \begin{macrocode}
+%</fontspec>
+%    \end{macrocode}
+% \fi
+
+
+\endinput
+
+% /©
+% ------------------------------------------------
+% The FONTSPEC package  <wspr.io/fontspec>
+% ------------------------------------------------
+% Copyright  2004-2019  Will Robertson, LPPL "maintainer"
+% Copyright  2009-2015  Khaled Hosny
+% Copyright  2013       Philipp Gesang
+% Copyright  2013-2016  Joseph Wright
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% ©/

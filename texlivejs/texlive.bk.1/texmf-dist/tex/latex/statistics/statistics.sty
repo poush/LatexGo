@@ -1,0 +1,1512 @@
+%%
+%% This is file `statistics.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% statistics.dtx  (with options: `package')
+%% 
+%% File: statistics.dtx (C) Copyright 2014-2018 RIVAUD Julien
+%%
+%% It may be distributed and/or modified under the conditions of the
+%% General Public License (GPL), either version 3 of this
+%% license or (at your option) any later version.
+\NeedsTeXFormat{LaTeX2e}[1995/12/01]
+\RequirePackage{expl3}[2016/01/19]
+\def\ExplFileName{statistics}
+\def\ExplFileDescription{Compute and typeset statistics table and graphics}
+\def\ExplFileDate{2018/07/21}
+\def\ExplFileVersion{2.0}
+\ProvidesExplPackage
+  {\ExplFileName}{\ExplFileDate}{\ExplFileVersion}{\ExplFileDescription}
+\RequirePackage{xparse}
+\RequirePackage{siunitx}
+\RequirePackage{tikz}
+\RequirePackage{etoolbox}
+
+\ExplSyntaxOff
+\usetikzlibrary{datavisualization, fit}
+\ExplSyntaxOn
+\tl_new:N \valuename
+\tl_new:N \countname
+\tl_new:N \freqname
+\tl_new:N \ccountname
+\tl_new:N \cfreqname
+\tl_new:N \iccname
+\tl_new:N \icfname
+\tl_new:N \dccname
+\tl_new:N \dcfname
+
+\tl_set:Nn \valuename   { Values }
+\tl_set:Nn \countname   { Count }
+\tl_set:Nn \ccountname  { Cumulative~count }
+\tl_set:Nn \freqname    { Frequency }
+\tl_set:Nn \cfreqname   { Cumulative~frequency }
+\tl_set:Nn \iccname     { ICC }
+\tl_set:Nn \icfname     { ICF }
+\tl_set:Nn \dccname     { DCC }
+\tl_set:Nn \dcfname     { DCF }
+
+\AtEndPreamble {
+    \tl_if_exist:NT \captionsfrench {
+        \tl_put_right:Nn \captionsfrench {
+            \tl_set:Nn \valuename   { Modalit\'e }
+            \tl_set:Nn \countname   { Effectif }
+            \tl_set:Nn \ccountname  { Effectif~cumul\'e }
+            \tl_set:Nn \freqname    { Fr\'equence }
+            \tl_set:Nn \cfreqname   { Fr\'equence~cumul\'ee }
+            \tl_set:Nn \iccname     { ECC }
+            \tl_set:Nn \icfname     { FCC }
+            \tl_set:Nn \dccname     { ECD }
+            \tl_set:Nn \dcfname     { FCD }
+        }
+    }
+}
+\cs_new_protected:Nn \__statistics_keys_define:nn {
+    \keys_define:nn { statistics / #1 } { #2 }
+}
+\cs_new_protected:Nn \__statistics_setup:nn {
+    \keys_set:nn { statistics / #1 } { #2 }
+}
+\NewDocumentCommand \statisticssetup { o +m } {
+    \IfNoValueTF { #1 } {
+        \keys_set:nn { statistics } { #2 }
+    }{
+        \keys_set:nn { statistics / #1 } { #2 }
+    }
+}
+
+\tl_new:N \l__statistics_data_tl
+\seq_new:N \l__statistics_show_seq
+
+\int_new:N \l__statistics_nbvals_int
+\int_new:N \l__statistics_currange_int
+
+\fp_new:N \l__statistics_total_fp
+\fp_new:N \l__statistics_curtotal_fp
+
+\fp_new:N \l__statistics_range_min_fp
+\fp_new:N \l__statistics_range_max_fp
+\tl_new:N \l__statistics_range_minrel_tl
+\tl_new:N \l__statistics_range_maxrel_tl
+\cs_new_protected_nopar:Npn
+            \__statistics_parse_range:w \IN#1#2;#3;#4#5\q_stop {
+    \fp_set:Nn \l__statistics_range_min_fp { #2 }
+    \fp_set:Nn \l__statistics_range_max_fp { #3 }
+}
+\cs_new_protected_nopar:Npn
+            \__statistics_parse_range_full:w \IN#1#2;#3;#4#5\q_stop {
+    \fp_set:Nn \l__statistics_range_min_fp { #2 }
+    \fp_set:Nn \l__statistics_range_max_fp { #3 }
+    \tl_if_eq:nnTF { #1 } { [ } {
+        \tl_set:Nn \l__statistics_range_minrel_tl { <=}
+    }{
+        \tl_set:Nn \l__statistics_range_minrel_tl { < }
+    }
+    \tl_if_eq:nnTF { #4 } { ] } {
+        \tl_set:Nn \l__statistics_range_maxrel_tl { <= }
+    }{
+        \tl_set:Nn \l__statistics_range_maxrel_tl { < }
+    }
+    \exp_args:NNnx
+    \prg_set_conditional:Nnn \__statistics_if_in_range:n { T } {
+        \exp_not:N \fp_compare:nTF {
+                \exp_not:N \l__statistics_range_min_fp
+                \exp_not:V \l__statistics_range_minrel_tl
+                \exp_not:n { ##1 }
+                \exp_not:V \l__statistics_range_maxrel_tl
+                \exp_not:N \l__statistics_range_max_fp }{
+            \exp_not:N \prg_return_true:
+        }{
+            \exp_not:N \prg_return_false:
+        }
+    }
+}
+\NewDocumentCommand \__statistics_IN:w { m u{;} u{;} m } {
+    \ensuremath{ \left#1 \num{#2} \mathbin{;} \num{#3} \right#4 }
+}
+
+\cs_new_protected:Nn \__statistics_setshow:n {
+    \seq_clear:N \l__statistics_show_seq
+    \clist_map_inline:nn {#1} {
+        \tl_if_in:nnTF {##1} {-} {
+            \__statistics_setshow_aux:w ##1 \q_stop
+        }{
+            \seq_put_right:Nn \l__statistics_show_seq {##1}
+        }
+    }
+}
+\cs_new_protected:Npn \__statistics_setshow_aux:w #1 - #2 \q_stop {
+    \int_step_inline:nnnn {#1} {1} {#2} {
+        \seq_put_right:Nn \l__statistics_show_seq {##1}
+    }
+}
+\cs_new_protected_nopar:Nn \__statistics_set_if_shown:N {
+    \seq_if_empty:NTF \l__statistics_show_seq {
+        \bool_set_true:N #1
+    }{
+        \seq_if_in:NVTF
+                \l__statistics_show_seq
+                \l__statistics_currange_int {
+            \bool_set_true:N #1
+        }{
+            \bool_set_false:N #1
+        }
+    }
+}
+
+\__statistics_keys_define:nn { table } {
+    showonly    .value_required:n = true,
+    showonly    .code:n = \__statistics_setshow:n{#1},
+
+    showonly/hidden .value_required:n = true,
+    showonly/hidden .code:n = {
+                    \cs_set_protected:Nn
+                            \__statistics_table_hidden_format:n
+                            { #1 }
+                },
+    showonly/hidden .initial:n = ,
+
+    showonly/shown  .value_required:n = true,
+    showonly/shown  .code:n = {
+                    \cs_set_protected:Nn
+                            \__statistics_table_shown_format:n
+                            { #1 }
+                },
+    showonly/shown  .initial:n = #1,
+
+    maxcols     .int_set:N  = \l__statistics_table_maxcols_int,
+    maxcols     .value_required:n = true,
+    maxcols     .initial:n  = 0,
+
+    tablesep    .tl_set:N   = \l__statistics_table_sep_tl,
+    tablesep    .value_required:n = true,
+    tablesep    .initial:n  = \\,
+
+    valign      .tl_set:N   = \l__statistics_table_valign_tl,
+    valign      .value_required:n = true,
+    valign      .initial:n  = t,
+
+    coltype     .tl_set:N   = \l__statistics_table_coltype_tl,
+    coltype     .value_required:n = true,
+
+    headcoltype .tl_set:N   = \l__statistics_table_headcoltype_tl,
+    headcoltype .value_required:n = true,
+
+    newline     .tl_set:N   = \l__statistics_table_newline_tl,
+    newline     .value_required:n = true,
+
+    preline     .tl_set:N   = \l__statistics_table_preline_tl,
+    preline     .value_required:n = true,
+
+    postline    .tl_set:N   = \l__statistics_table_postline_tl,
+    postline    .value_required:n = true,
+
+    outline     .meta:n     = { preline={#1}, postline={#1} },
+    outline     .value_required:n = true,
+
+    frame       .choice:,
+    frame/full  .meta:n     = { preline=\firsthline, postline=\lasthline,
+                                newline=\\\hline,
+                                headcoltype=|l|, coltype=c| },
+    frame/full  .value_forbidden:n = true,
+
+    frame/none  .meta:n     = { outline=, newline=\\,
+                                headcoltype=l, coltype=c },
+    frame/none  .value_forbidden:n = true,
+
+    frame/clean .meta:n     = { preline=\firsthline, postline=\lasthline,
+                                newline=\\,
+                                headcoltype=l, coltype=c },
+    frame/clean .initial:n  = ,
+    frame/clean .value_forbidden:n = true,
+
+    digits      .int_set:N  = \l__statistics_table_round_int,
+    digits      .initial:n  = 3,
+
+    allcounts/format    .code:n = {
+                    \cs_set_protected:Nn
+                            \__statistics_table_allcounts_format:n
+                            { #1 }
+                },
+    allcounts/format    .value_required:n = true,
+    allcounts/format    .initial:n = { \num{#1} },
+
+    allfreqs/format     .code:n = {
+                    \cs_set_protected:Nn
+                            \__statistics_table_allfreqs_format:n
+                            { #1 }
+                },
+    allfreqs/format     .value_required:n = true,
+
+    allfreqs/format/real .meta:n = {
+                    allfreqs/format = \num{##1}
+                },
+    allfreqs/format/real .value_forbidden:n = true,
+
+    allfreqs/format/percent .meta:n = {
+                    allfreqs/format = \SI{\fp_eval:n{##1*100}}{\percent}
+                },
+    allfreqs/format/percent .initial:n = ,
+    allfreqs/format/percent .value_forbidden:n = true,
+
+    allfreqs/format/scaled .meta:n = {
+                    allfreqs/format = \num{\fp_eval:n{##1*#1}}
+                },
+    allfreqs/format/scaled .value_required:n = true,
+}
+
+\cs_new:Nn \__statistics_define_row:nnn {
+    \tl_new:c { l__statistics_table_#1_name_tl }
+    \bool_new:c { l__statistics_table_#1_bool }
+    \__statistics_keys_define:nn { table } {
+        #1          .code:n = {
+                        \bool_set_true:c { l__statistics_table_#1_bool }
+                        \quark_if_no_value:nF { ##1 } {
+                            \__statistics_setup:nn { table } {
+                                #1/header = { ##1 }
+                            }
+                        }
+                    },
+        #1          .default:n = \q_no_value,
+
+        no#1        .code:n =
+                        \bool_set_false:c { l__statistics_table_#1_bool },
+        no#1        .value_forbidden:n = true,
+
+        #1/header   .tl_set:c = { l__statistics_table_#1_name_tl },
+        #1/header   .value_required:n = true,
+        #1/header   .initial:n = { #3 },
+
+        #1/format   .code:n = {
+                        \cs_set_protected:cn
+                                { __statistics_table_#1_format:n }
+                                { ##1 }
+                    },
+        #1/format   .value_required:n = true,
+        #1/format   .initial:n = { ##1 },
+    }
+    \bool_set:cn { l__statistics_table_#1_bool } { #2 }
+}
+
+\__statistics_define_row:nnn { values } \c_true_bool \valuename
+\__statistics_define_row:nnn { counts } \c_false_bool \countname
+\__statistics_define_row:nnn { frequencies }  \c_false_bool \freqname
+\__statistics_define_row:nnn { icc }   \c_false_bool \iccname
+\__statistics_define_row:nnn { icf }   \c_false_bool \icfname
+\__statistics_define_row:nnn { dcc }   \c_false_bool \dccname
+\__statistics_define_row:nnn { dcf }   \c_false_bool \dcfname
+
+\__statistics_setup:nn { table } {
+    values/format = \ensuremath{#1},
+}
+
+\cs_undefine:N \__statistics_define_row:nnn
+
+\seq_new:N \l__statistics_table_contents_seq
+\tl_new:N \l__statistics_table_preamble_tl
+
+\tl_new:N \l__statistics_table_values_tl
+\tl_new:N \l__statistics_table_counts_tl
+\tl_new:N \l__statistics_table_frequencies_tl
+\tl_new:N \l__statistics_table_icc_tl
+\tl_new:N \l__statistics_table_icf_tl
+\tl_new:N \l__statistics_table_dcc_tl
+\tl_new:N \l__statistics_table_dcf_tl
+
+\fp_new:N \l__statistics_table_curICF_fp
+\fp_new:N \l__statistics_table_prevICF_fp
+
+\bool_new:N \l__statistics_table_firstrow_bool
+
+\cs_generate_variant:Nn \keyval_parse:NNn { NNV }
+\NewDocumentCommand \StatsTable { +O{} +m +O{} } {
+    \group_begin:
+    \cs_if_exist:NF \firsthline {
+        \cs_set_eq:NN \firsthline \hline
+    }
+    \cs_if_exist:NF \lasthline {
+        \cs_set_eq:NN \lasthline \hline
+    }
+    \cs_if_exist:NF \IN {
+        \cs_set_eq:NN \IN \__statistics_IN:w
+    }
+    \__statistics_setup:nn { table } { #1, #3 }
+    \tl_if_single:nTF { #2 } {
+        \cs_if_exist:NF #2 { #2 }
+        \tl_set_eq:NN \l__statistics_data_tl #2
+    }{
+        \tl_set:Nn \l__statistics_data_tl { #2 }
+    }
+    \fp_zero:N \l__statistics_total_fp
+    \keyval_parse:NNV
+            \__statistics_table_count:n
+            \__statistics_table_count:nn
+            \l__statistics_data_tl
+    \__statistics_table_start:
+    \fp_zero:N \l__statistics_table_prevICF_fp
+    \keyval_parse:NNV
+            \__statistics_table_make:n
+            \__statistics_table_make:nn
+            \l__statistics_data_tl
+    \__statistics_table_end:
+    \group_end:
+}
+\cs_new_protected_nopar:Nn \__statistics_table_start: {
+    \int_zero:N \l__statistics_nbvals_int
+    \clist_map_inline:nn { values, counts, frequencies, icc, icf, dcc, dcf } {
+        \tl_set:cx { l__statistics_table_##1_tl } {
+            \exp_not:N \ensuremath { \exp_not:N \hbox {
+                \exp_not:c { l__statistics_table_##1_name_tl }
+            } }
+        }
+    }
+}
+\cs_new_protected_nopar:Nn \__statistics_table_end: {
+    \tl_set:Nx \l__statistics_table_preamble_tl {
+        \exp_not:n { \begin{array}[ }
+            \exp_not:V \l__statistics_table_valign_tl
+        \exp_not:n { ] }
+                { \exp_not:V \l__statistics_table_headcoltype_tl
+                  \prg_replicate:nn { \l__statistics_nbvals_int }
+                    { \exp_not:V \l__statistics_table_coltype_tl } }
+    }
+    \seq_clear:N \l__statistics_table_contents_seq
+    \clist_map_inline:nn { values, counts, icc, dcc, frequencies, icf, dcf } {
+        \bool_if:cT { l__statistics_table_##1_bool } {
+            \seq_put_right:Nv
+                    \l__statistics_table_contents_seq
+                    { l__statistics_table_##1_tl }
+        }
+    }
+    $\tl_use:N \l__statistics_table_preamble_tl
+        \l__statistics_table_preline_tl
+        \seq_use:Nn
+                \l__statistics_table_contents_seq
+                { \l__statistics_table_newline_tl }
+        \\ \l__statistics_table_postline_tl
+    \end{array}$
+}
+\cs_new_protected_nopar:Nn \__statistics_table_count:n {
+    \__statistics_table_count:nn {} { 1 }
+}
+\cs_new_protected_nopar:Nn \__statistics_table_count:nn {
+    \fp_add:Nn \l__statistics_total_fp { #2 }
+}
+\cs_new_protected_nopar:Nn \__statistics_table_make:n {
+    \__statistics_table_make:nn { #1 } { 1 }
+}
+\cs_new_protected_nopar:Nn \__statistics_table_make:nn {
+    \int_compare:nT
+            { 0 < \l__statistics_table_maxcols_int
+                = \l__statistics_nbvals_int } {
+        \__statistics_table_end:
+        \tl_use:N \l__statistics_table_sep_tl
+        \__statistics_table_start:
+    }
+    \int_incr:N \l__statistics_nbvals_int
+    \int_incr:N \l__statistics_currange_int
+    \fp_add:Nn \l__statistics_curtotal_fp { #2 }
+    \__statistics_set_if_shown:N \l_tmpa_bool
+    \tl_set:Nx \l_tmpa_tl {
+        \exp_not:n { & \tl_set:Nn \currentcolumn } {
+            \int_use:N \l__statistics_currange_int
+        }
+    }
+    \bool_if:NTF \l_tmpa_bool {
+        \tl_put_right:Nn \l_tmpa_tl
+            {\__statistics_table_shown_format:n}
+    }{
+        \tl_put_right:Nn \l_tmpa_tl
+            {\__statistics_table_hidden_format:n}
+    }
+    \bool_if:NT \l__statistics_table_values_bool {
+        \tl_put_right:Nx \l__statistics_table_values_tl {
+            \exp_not:V \l_tmpa_tl {
+                \exp_not:n {
+                    \__statistics_table_values_format:n { #1 }
+                }
+            }
+        }
+    }
+    \bool_if:NT \l__statistics_table_counts_bool {
+        \tl_put_right:Nx \l__statistics_table_counts_tl {
+            \exp_not:V \l_tmpa_tl {
+                \exp_not:n {
+                    \__statistics_table_counts_format:n {
+                        { \__statistics_table_allcounts_format:n { #2 } }
+                    }
+                }
+            }
+        }
+    }
+    \bool_if:NT \l__statistics_table_icc_bool {
+        \tl_put_right:Nx \l__statistics_table_icc_tl {
+            \exp_not:V \l_tmpa_tl {
+                \exp_not:n { \__statistics_table_icc_format:n }
+                {
+                    \exp_not:n{ \__statistics_table_allcounts_format:n }
+                        { \fp_use:N \l__statistics_curtotal_fp }
+                }
+            }
+        }
+    }
+    \bool_if:NT \l__statistics_table_dcc_bool {
+        \tl_put_right:Nx \l__statistics_table_dcc_tl {
+            \exp_not:V \l_tmpa_tl {
+                \exp_not:n { \__statistics_table_dcc_format:n }
+                {
+                    \exp_not:n{ \__statistics_table_allcounts_format:n }
+                    {
+                        \fp_eval:n {
+                            \l__statistics_total_fp
+                                - \l__statistics_curtotal_fp
+                                + #2
+                        }
+                    }
+                }
+            }
+        }
+    }
+    \fp_set:Nn \l__statistics_table_curICF_fp {
+        round(\l__statistics_curtotal_fp
+                / \l__statistics_total_fp,
+              \l__statistics_table_round_int)
+    }
+    \bool_if:NT \l__statistics_table_frequencies_bool {
+        \tl_put_right:Nx \l__statistics_table_frequencies_tl {
+            \exp_not:V \l_tmpa_tl {
+                \exp_not:n { \__statistics_table_frequencies_format:n }
+                {
+                    \exp_not:n{ \__statistics_table_allfreqs_format:n }
+                    {
+                        \fp_eval:n {
+                            \l__statistics_table_curICF_fp
+                                - \l__statistics_table_prevICF_fp
+                        }
+                    }
+                }
+            }
+        }
+    }
+    \bool_if:NT \l__statistics_table_icf_bool {
+        \tl_put_right:Nx \l__statistics_table_icf_tl {
+            \exp_not:V \l_tmpa_tl {
+                \exp_not:n { \__statistics_table_icf_format:n }
+                {
+                    \exp_not:n{ \__statistics_table_allfreqs_format:n }
+                        { \fp_to_decimal:N \l__statistics_table_curICF_fp }
+                }
+            }
+        }
+    }
+    \bool_if:NT \l__statistics_table_dcf_bool {
+        \tl_put_right:Nx \l__statistics_table_dcf_tl {
+            \exp_not:V \l_tmpa_tl {
+                \exp_not:n { \__statistics_table_dcf_format:n }
+                {
+                    \exp_not:n{ \__statistics_table_allfreqs_format:n }
+                    {
+                        \fp_eval:n {
+                            1 - \l__statistics_table_prevICF_fp
+                        }
+                    }
+                }
+            }
+        }
+    }
+    \fp_set_eq:NN
+        \l__statistics_table_prevICF_fp
+        \l__statistics_table_curICF_fp
+}
+\cs_new_protected:Nn \__statistics_make_forwarded_key:nnnn {
+    \tl_clear:N \l_tmpa_tl
+    \clist_map_inline:nn {#3} {
+        \tl_put_right:Nx \l_tmpa_tl {
+            \exp_not:n {#1}
+            \tl_if_empty:nF {#1} { \tl_if_empty:nF {##1} {\exp_not:N /} }
+            \exp_not:n {##1}
+            \tl_if_empty:nF {#4} { \tl_if_empty:nF {##1} {\exp_not:N /} }
+            \exp_not:n {#4,}
+        }
+    }
+    \tl_set:Nx \l_tmpb_tl {
+        \exp_not:n {#1}
+        \tl_if_empty:nF {#1} { \tl_if_empty:nF {#2} {\exp_not:N /} }
+        \exp_not:n {#2}
+        \tl_if_empty:nF {#4} { \tl_if_empty:nF {#2} {\exp_not:N /} }
+        \exp_not:n {#4}
+    }
+    \use:x {
+        \exp_not:n { \__statistics_keys_define:nn { graph } }
+        {
+            \exp_not:V \l_tmpb_tl \exp_not:n { .default:n = \q_no_value, }
+            \exp_not:V \l_tmpb_tl
+                \exp_not:n { .code:n = \__statistics_forwarded_key:nn }
+                    { \exp_not:V \l_tmpa_tl }
+                    { \exp_not:n { ##1 } }
+        }
+    }
+}
+\cs_new_protected:Nn \__statistics_forwarded_key:nn {
+    \quark_if_no_value:nTF { #2 } {
+        \__statistics_setup:nn { graph } { #1 }
+    }{
+        \clist_set:Nn \l_tmpa_clist { #1,{} }
+        \use:x {
+            \exp_not:n { \__statistics_setup:nn { graph } } {
+                \clist_use:Nn \l_tmpa_clist { = {#2}, }
+            }
+        }
+    }
+}
+\cs_new_protected_nopar:Nn \__statistics_forward_keys:nn {
+    \clist_map_inline:nn {#2} {
+        \__statistics_make_forwarded_key:nnnn {} {} { #1 } { ##1 }
+    }
+}
+
+\cs_new:Nn \__statistics_create_append_reset:nn {
+    \tl_new:c { l__statistics_graph_#2_tl }
+    \__statistics_keys_define:nn { graph } {
+        #1          .value_required:n = true,
+        #1          .code:n = \tl_put_right:cn
+                                { l__statistics_graph_#2_tl }
+                                { ##1, },
+
+        #1/reset    .value_forbidden:n = true,
+        #1/reset    .code:n = \tl_clear:c
+                                { l__statistics_graph_#2_tl },
+    }
+}
+
+\cs_new:Nn \__statistics_DO:nn { \__statistics_create_append_reset:nn {#1}{options_#2} }
+
+\cs_new:Nn \__statistics_define_unit:nn {
+    \__statistics_DO:nn { #2/#1/axis }       { #2_#1axis }
+    \__statistics_keys_define:nn { graph } {
+        #2/#1       .code:n = {
+                        \tl_set:cn {l__statistics_graph_#2_unit_tl} { #1 }
+                        \quark_if_no_value:nF { ##1 } {
+                            \__statistics_setup:nn { graph }{ #2/#1/label = { ##1 } }
+                        }
+                    },
+        #2/#1       .default:n = \q_no_value,
+
+        #2/#1/label .meta:n = { #2/#1/axis = { label = { ##1 } } },
+        #2/#1/label .value_required:n = true,
+
+        #2/#1/format .code:n = {
+                        \cs_set_protected:cn
+                                { __statistics_graph_#2_#1_format:n }
+                                { ##1 }
+                    },
+        #2/#1/format .value_required:n = true,
+
+        #2/#1/margin .tl_set:c = l__statistics_graph_#2_#1_vmargin_tl,
+        #2/#1/margin .value_required:n = true,
+    }
+}
+
+\__statistics_DO:nn { picture }                  { pic }
+\__statistics_DO:nn { axissystem }               { system }
+
+\__statistics_DO:nn { histogram/areas/style }    { areas }
+\__statistics_DO:nn { histogram/legend/options } { legend }
+
+\clist_map_inline:nn { histogram, cumulative, comb } {
+    \__statistics_define_unit:nn                 { counts } { #1 }
+    \__statistics_define_unit:nn                 { frequencies } { #1 }
+    \__statistics_DO:nn { #1/style }             { #1 }
+    \__statistics_DO:nn { #1/values/axis }       { #1_xaxis }
+    \__statistics_keys_define:nn { graph/#1 } {
+        values/margin .value_required:n = true,
+        values/margin .tl_set:c = l__statistics_graph_#1_hmargin_tl,
+
+        values/label .meta:n = { values/axis = { label = { ##1 } } },
+        values/label .value_required:n = true,
+
+        values/format .code:n = { \cs_set_protected:cn
+                                    {__statistics_graph_#1_values_format:n} { ##1 }
+        },
+        values/format .value_required:n = true,
+
+        frequencies/format/real .meta:n = {
+            frequencies/format = {
+                \num[round-mode=places,round-precision=##1]{####1}
+            }
+        },
+        frequencies/format/real .default:n = 1,
+
+        frequencies/format/percent .meta:n = {
+            frequencies/format = {
+                \SI[round-mode=places,round-precision=##1]{
+                    \fp_eval:n{####1*100}
+                }{\percent}
+            }
+        },
+        frequencies/format/percent .default:n = 1,
+    }
+    \__statistics_make_forwarded_key:nnnn {#1/values}{}{label}{}
+    \clist_map_inline:nn { axis, axis/reset, label, margin, format } {
+        \__statistics_make_forwarded_key:nnnn {#1}{x}{values}{##1}
+        \__statistics_make_forwarded_key:nnnn {#1}{y}{counts, frequencies}{##1}
+    }
+}
+
+\cs_undefine:N \__statistics_DO:nn
+\cs_undefine:N \__statistics_define_unit:nnn
+
+\__statistics_forward_keys:nn { histogram, cumulative, comb } {
+    values, values/label, values/margin, values/format,
+    values/axis, values/axis/reset,
+    x/label, x/axis, x/axis/reset, x/margin, x/format,
+    counts, counts/label, counts/margin, counts/format,
+    counts/axis, counts/axis/reset,
+    frequencies, frequencies/label, frequencies/margin,
+    frequencies/format, frequencies/format/real, frequencies/format/percent,
+    frequencies/axis, frequencies/axis/reset,
+    y/label, y/axis, y/axis/reset, y/margin, y/format,
+    style, style/reset
+}
+
+\__statistics_create_append_reset:nn { tikzinfo' } { userpreinfo }
+\__statistics_create_append_reset:nn { tikzinfo }  { userpostinfo }
+
+\cs_undefine:N \__statistics_forward_keys:nn
+\cs_undefine:N \__statistics_make_forwarded_key:nnnn
+\cs_undefine:N \__statistics_create_append_reset:nn
+
+\__statistics_keys_define:nn { graph } {
+    showonly    .value_required:n = true,
+    showonly    .code:n = \__statistics_setshow:n{#1},
+
+    height      .value_required:n = true,
+    height      .meta:n = { axissystem = { height = { #1 } } },
+
+    width       .value_required:n = true,
+    width       .meta:n = { axissystem = { width = { #1 } } },
+
+    cumulative  .bool_set:N = \l__statistics_graph_cumulative_bool,
+    cumulative  .default:n = true,
+
+    decreasing  .bool_set:N = \l__statistics_graph_decreasing_bool,
+    decreasing  .default:n = true,
+
+    histogram/areas .bool_set:N = \l__statistics_graph_areas_bool,
+    histogram/areas .default:n = true,
+
+    histogram/legend/label .value_required:n = true,
+    histogram/legend/label .meta:n = {
+                histogram/legend/options = {label={#1}} },
+
+    histogram/legend/area .value_required:n = true,
+    histogram/legend/area .meta:n = {
+                histogram/legend/h = (#1)/\width },
+
+    histogram/legend    .value_required:n = true,
+    histogram/legend    .code:n = {
+                \__statistics_setup:nn { graph / histogram/legend  } {
+                    #1
+                }
+            },
+
+    histogram/y/autostep .value_required:n = true,
+    histogram/y/autostep .meta:n = {
+                histogram/counts/autostep = {#1},
+                histogram/frequencies/autostep = {#1},
+                histogram/legend/area = {#1},
+            },
+}
+\tl_map_inline:nn {xywh} {
+    \__statistics_keys_define:nn { graph / histogram / legend } {
+        #1 .value_required:n = true,
+        #1 .tl_set:c = {l__statistics_graph_legend_#1_tl},
+    }
+}
+\clist_map_inline:nn { counts, frequencies } {
+    \__statistics_keys_define:nn { graph/histogram/#1 } {
+        autostep .default:n = 1,
+        autostep .meta:n = { axis = {
+                grid = { compute~step =
+                    \group_begin:
+                    \tl_set:Nx \total { \fp_to_decimal:N \l__statistics_total_fp }
+                    \fp_gset:Nn \g_tmpa_fp { ##1 }
+                    \group_end:
+                    \tl_set:Nx \tikz@lib@dv@step {
+                        \fp_eval:n {\g_tmpa_fp / \g__statistics_graph_xstep_fp }
+                    }
+                }
+        }},
+    }
+}
+
+\__statistics_setup:nn { graph }{
+    width = 0.75\columnwidth,
+    cumulative = false,
+    decreasing = false,
+
+    values/axis = {
+        label = \valuename,
+        ticks~and~grid={many, integer~minor~steps}
+    },
+    values/margin = \xstep / 2,
+    values/format = \num{#1},
+
+    y/margin = \range/10,
+
+    counts/format = { \num{#1} },
+    counts/axis = { ticks~and~grid={
+        many, int~about~strategy, integer~minor~steps,
+        } },
+    comb/counts/label = \countname,
+    cumulative/counts/label = \ccountname,
+
+    frequencies/format/percent,
+    frequencies/axis = { ticks~and~grid=many },
+    comb/frequencies/label = \freqname,
+    cumulative/frequencies/label = \cfreqname,
+
+    histogram/y/axis/reset,
+    histogram/y/axis = {ticks = none},
+    histogram/y/autostep = 1,
+    histogram/legend = { x=, y=0, w=\xstep },
+    histogram/style  = { semithick, black, fill=black, fill~opacity=0.1 },
+    histogram/areas,
+    histogram/areas/style = { auto, font=\small },
+
+    comb/style  = { ultra~thick },
+
+    counts,
+
+    picture = {
+        baseline = (current~bounding~box.center),
+        label~position = right,
+    },
+}
+
+\tl_const:Nn \c__statistics_graph_savexstep_tl {
+    grid = { compute~step/.append = {
+        \cs_if_eq:NNF \tikz@lib@dv@step \relax {
+            \pgfkeysgetvalue
+                {/tikz/data~visualization/minor~steps~between~steps}
+                \l_tmpa_tl
+            \fp_gset:Nn \g__statistics_graph_xstep_fp {
+                \tikz@lib@dv@step
+                / (\fp_max:nn{0\l_tmpa_tl + 1}{1})
+            }
+        }
+    }}
+}
+\tl_new:N \l__statistics_graph_maxminor_tl
+\int_new:N \l__statistics_graph_minorsteps_int
+\fp_new:N \l__statistics_graph_ims_step_fp
+\fp_new:N \l__statistics_graph_ims_range_fp
+\fp_new:N \l__statistics_graph_ims_threshold_fp
+\tikzdatavisualizationset{
+integer~minor~steps/.style={
+    /utils/exec = \tl_set:Nn \l__statistics_graph_maxminor_tl {#1},
+    minor~steps~between~steps/.code=
+            \tl_clear:N \l__statistics_graph_maxminor_tl
+            \pgfkeyssetvalue
+                {/tikz/data~visualization/minor~steps~between~steps}
+                {##1} ,
+    compute~step/.append = {
+        \tl_set_eq:NN \l_tmpa_tl \tikz@lib@dv@step
+        \tl_if_empty:NT \l__statistics_graph_maxminor_tl {
+            \tl_set_eq:NN \l_tmpa_tl \relax
+        }
+        \tl_if_eq:NNF \l_tmpa_tl \relax {
+            \fp_set:Nn \l__statistics_graph_ims_step_fp { \l_tmpa_tl }
+            \tikz@lib@dv@mapper.get~in~range~interval()
+            \pgfdvinrangeinterval.get~min~and~max()
+            \pgfdvmathexitbyscientificformat \l_tmpa_tl \pgfdvmin
+            \pgfdvmathexitbyscientificformat \l_tmpb_tl \pgfdvmax
+            \fp_set:Nn \l__statistics_graph_ims_range_fp { \l_tmpb_tl - \l_tmpa_tl }
+            \fp_set:Nn \l__statistics_graph_ims_threshold_fp {
+                \fp_max:nn {
+                    \l__statistics_graph_ims_step_fp * (\l__statistics_graph_maxminor_tl)
+                }{
+                    \l__statistics_graph_ims_range_fp
+                }
+            }
+            \int_set:Nn \l__statistics_graph_minorsteps_int
+                    { \fp_to_int:N \l__statistics_graph_ims_step_fp }
+            \bool_while_do:nn {
+                \fp_compare_p:n {
+                    \l__statistics_graph_minorsteps_int * \l__statistics_graph_ims_range_fp
+                    > \l__statistics_graph_ims_threshold_fp
+                }
+            }{
+                \tl_map_inline:nn {{2}{5}{10}} {
+                    \fp_compare:nF {
+                        \l__statistics_graph_minorsteps_int * \l__statistics_graph_ims_range_fp
+                        > \l__statistics_graph_ims_threshold_fp * ##1
+                    }{
+                        \int_compare:nT {
+                            \int_mod:nn{\l__statistics_graph_minorsteps_int}{##1} = 0
+                        }{
+                            \int_set:Nn
+                                \l__statistics_graph_minorsteps_int
+                                { \l__statistics_graph_minorsteps_int / ##1 }
+                            \tl_map_break:
+                        }
+                    }
+                }
+                \fp_compare:nT {
+                    \l__statistics_graph_minorsteps_int * \l__statistics_graph_ims_range_fp
+                    > \l__statistics_graph_ims_threshold_fp
+                }{
+                    \tl_map_inline:nn {{3}{2}{5}{\l__statistics_graph_minorsteps_int}} {
+                        \int_compare:nT {
+                            \int_mod:nn{\l__statistics_graph_minorsteps_int}{##1} = 0
+                        }{
+                            \int_set:Nn
+                                \l__statistics_graph_minorsteps_int
+                                { \l__statistics_graph_minorsteps_int / ##1 }
+                            \tl_map_break:
+                        }
+                    }
+                }
+            }
+            \int_compare:nNnTF \l__statistics_graph_minorsteps_int > 1 {
+                \use:x { \exp_not:n {
+                    \pgfkeyssetvalue
+                    {/tikz/data~visualization/minor~steps~between~steps}
+                    }
+                    { \int_eval:n {\l__statistics_graph_minorsteps_int-1} }
+                }
+            }{
+                \pgfkeyssetvalue
+                    {/tikz/data~visualization/minor~steps~between~steps}
+                    {}
+            }
+            \tl_clear:N \l__statistics_graph_maxminor_tl
+        }
+    }
+},
+integer~minor~steps/.default=50,
+}
+\bool_new:N \l__statistics_graph_allranges_bool
+
+\fp_new:N \l__statistics_graph_curvalue_fp
+\fp_new:N \l__statistics_graph_curheight_fp
+\fp_new:N \l__statistics_graph_prevheight_fp
+\fp_new:N \l__statistics_graph_maxheight_fp
+\fp_new:N \l__statistics_graph_minvalue_fp
+\fp_new:N \l__statistics_graph_maxvalue_fp
+\fp_new:N \g__statistics_graph_xstep_fp
+\int_new:N \g__statistics_graph_last_int
+
+\tl_new:N \l__statistics_graph_tikzdata_tl
+\tl_new:N \l__statistics_graph_tikzinfo_tl
+\clist_new:N \l__statistics_graph_tikzincludex_clist
+\clist_new:N \l__statistics_graph_tikzincludey_clist
+\tl_new:N \l__statistics_graph_tikzpicture_tl
+\fp_new:N \l__statistics_graph_scale_fp
+\fp_new:N \l__statistics_graph_counts_scale_fp
+\fp_new:N \l__statistics_graph_frequencies_scale_fp
+\fp_set:Nn \l__statistics_graph_counts_scale_fp { 1 }
+
+\NewDocumentCommand \StatsGraph { +O{} +m +O{} } {
+    \group_begin:
+    \int_gincr:N \g__statistics_graph_last_int
+    \tl_set:Nx \l_tmpa_tl {
+        \exp_not:n { g__statistics_graph_xstep_ }
+        \int_use:N \g__statistics_graph_last_int
+        \exp_not:n { _tl }
+    }
+    \tl_if_exist:cTF { \l_tmpa_tl } {
+        \fp_gset:Nn \g__statistics_graph_xstep_fp
+            { \tl_use:c {\l_tmpa_tl} }
+    }{
+        \fp_gset:Nn \g__statistics_graph_xstep_fp { \c_one }
+    }
+    \__statistics_setup:nn { graph } { #1, #3 }
+    \tl_if_single:nTF { #2 } {
+        \cs_if_exist:NF #2 { #2 }
+        \tl_set_eq:NN \l__statistics_data_tl #2
+    }{
+        \tl_set:Nn \l__statistics_data_tl { #2 }
+    }
+    \fp_zero:N \l__statistics_graph_maxheight_fp
+    \fp_set:Nn \l__statistics_graph_minvalue_fp {inf}
+    \fp_set:Nn \l__statistics_graph_maxvalue_fp {-inf}
+    \fp_zero:N \l__statistics_total_fp
+    \int_zero:N \l__statistics_nbvals_int
+    \bool_set_true:N \l__statistics_graph_allranges_bool
+    \keyval_parse:NNV
+            \__statistics_graph_prepare:n
+            \__statistics_graph_prepare:nn
+            \l__statistics_data_tl
+    \tl_clear:N \l__statistics_graph_tikzdata_tl
+    \tl_clear:N \l__statistics_graph_tikzinfo_tl
+    \int_zero:N \l__statistics_currange_int
+    \bool_if:NTF \l__statistics_graph_allranges_bool {
+        \bool_if:NTF \l__statistics_graph_cumulative_bool {
+            \__statistics_graph_dopicture_cumulative:
+        }{
+            \__statistics_graph_dopicture_hist:
+        }
+    }{
+        \__statistics_graph_dopicture_comb:
+    }
+    \iow_now:Nx \@auxout {
+        \exp_not:n {
+            \ExplSyntaxOn
+            \tl_gset:cn
+        }
+        {
+            \exp_not:n {g__statistics_graph_xstep_}
+            \int_use:N \g__statistics_graph_last_int
+            \exp_not:n {_tl}
+        }
+        {
+            \fp_to_decimal:N \g__statistics_graph_xstep_fp
+        }
+        \exp_not:n {
+            \ExplSyntaxOff
+        }
+    }
+    \group_end:
+}
+\cs_new_protected_nopar:Nn \__statistics_graph_prepare:n {
+    \__statistics_graph_prepare:nn { #1 } { 1 }
+}
+\cs_new_protected_nopar:Nn \__statistics_graph_prepare:nn {
+    \int_incr:N \l__statistics_nbvals_int
+    \fp_add:Nn \l__statistics_total_fp { #2 }
+    \exp_args:Nx \tl_if_eq:nnF { \tl_head:n {#1} }{ \IN } {
+        \bool_set_false:N \l__statistics_graph_allranges_bool
+    }
+}
+\cs_new_protected_nopar:Nn \__statistics_graph_addpoint:nnn {
+    \tl_put_right:Nx \l__statistics_graph_tikzdata_tl {
+        \exp_not:N \pgfkeys {
+            \exp_not:n { /data~point/name = #1 }
+                \int_use:N \l__statistics_currange_int
+            \exp_not:n { ,/data~point/x = } \fp_eval:n { #2 }
+            \exp_not:n { ,/data~point/y = } \fp_eval:n { #3 }
+        }
+        \exp_not:n { \pgfdatapoint }
+    }
+}
+\cs_new_protected_nopar:Nn \__statistics_graph_outlier: {
+    \tl_put_right:Nn \l__statistics_graph_tikzdata_tl {
+        \pgfkeys{/data~point/outlier = true}
+        \pgfdatapoint
+        \pgfkeys{/data~point/outlier = }
+    }
+}
+\cs_new_protected_nopar:Nn \__statistics_graph_setup:n {
+    \fp_set_eq:Nc \l__statistics_graph_hmargin_tl {l__statistics_graph_#1_hmargin_tl}
+    \tl_set_eq:Nc \l__statistics_graph_unit_tl { l__statistics_graph_#1_unit_tl }
+    \tl_set_eq:Nc \l__statistics_graph_vmargin_tl
+        {l__statistics_graph_#1_ \l__statistics_graph_unit_tl _vmargin_tl}
+    \tl_set_eq:Nc
+        \l__statistics_graph_options_yaxis_tl
+        {l__statistics_graph_options_#1_ \l__statistics_graph_unit_tl axis_tl}
+    \cs_set_eq:Nc
+        \__statistics_graph_y_format:n
+        {__statistics_graph_#1_ \l__statistics_graph_unit_tl _format:n}
+    \cs_set_eq:Nc
+        \__statistics_graph_values_format:n
+        {__statistics_graph_#1_values_format:n}
+    \fp_set_eq:NN
+        \l__statistics_graph_frequencies_scale_fp
+        \l__statistics_total_fp
+    \fp_set_eq:Nc
+        \l__statistics_graph_scale_fp
+        {l__statistics_graph_ \l__statistics_graph_unit_tl _scale_fp}
+}
+\cs_new_protected_nopar:Nn \__statistics_graph_update_minmaxval:NN {
+    \fp_set:Nn \l__statistics_graph_minvalue_fp {
+        min( \l__statistics_graph_minvalue_fp, #1 )
+    }
+    \fp_set:Nn \l__statistics_graph_maxvalue_fp {
+        max( \l__statistics_graph_maxvalue_fp, #2 )
+    }
+}
+\cs_new_protected_nopar:Nn \__statistics_graph_update_maxheight: {
+    \fp_set:Nn \l__statistics_graph_maxheight_fp {
+        max( \l__statistics_graph_maxheight_fp , \l__statistics_graph_curheight_fp )
+    }
+}
+\cs_new_protected_nopar:Nn \__statistics_graph_handle_hmargin: {
+    \group_begin:
+    \tl_set:Nx \min { \fp_to_decimal:N \l__statistics_graph_minvalue_fp }
+    \tl_set:Nx \max { \fp_to_decimal:N \l__statistics_graph_maxvalue_fp }
+    \tl_set:Nx \range {
+        \fp_eval:n { \l__statistics_graph_maxvalue_fp - \l__statistics_graph_minvalue_fp }
+    }
+    \tl_set:Nx \xstep { \fp_to_decimal:N \g__statistics_graph_xstep_fp }
+    \exp_args:NNV \fp_gset:Nn \g_tmpa_fp \l__statistics_graph_hmargin_tl
+    \group_end:
+    \clist_put_right:Nx \l__statistics_graph_tikzincludex_clist {
+        \fp_eval:n { \l__statistics_graph_minvalue_fp - \g_tmpa_fp }
+    }
+    \clist_put_right:Nx \l__statistics_graph_tikzincludex_clist {
+        \fp_eval:n { \l__statistics_graph_maxvalue_fp + \g_tmpa_fp }
+    }
+}
+\cs_new_protected_nopar:Nn \__statistics_graph_handle_vmargin: {
+    \group_begin:
+    \tl_set:Nn \min { 0 }
+    \tl_set:Nx \max { \fp_to_decimal:N \l__statistics_graph_maxheight_fp }
+    \tl_set_eq:NN \range \max
+    \exp_args:NNV \fp_gset:Nn \g_tmpa_fp \l__statistics_graph_vmargin_tl
+    \group_end:
+    \clist_put_right:Nx \l__statistics_graph_tikzincludey_clist {
+        \fp_eval:n { \l__statistics_graph_maxheight_fp + \g_tmpa_fp }
+    }
+}
+\cs_new_protected_nopar:Nn \__statistics_graph_dopicture_hist: {
+    \__statistics_graph_setup:n {histogram}
+    \keyval_parse:NNV
+            \__statistics_graph_make_hist:n
+            \__statistics_graph_make_hist:nn
+            \l__statistics_data_tl
+    \tl_if_empty:NF \l__statistics_graph_legend_x_tl {
+        \group_begin:
+        \tl_set:Nx \min { \fp_to_decimal:N \l__statistics_graph_minvalue_fp }
+        \tl_set:Nx \max { \fp_to_decimal:N \l__statistics_graph_maxvalue_fp }
+        \tl_set:Nx \range {
+            \fp_eval:n { \l__statistics_graph_maxvalue_fp - \l__statistics_graph_minvalue_fp }
+        }
+        \tl_set:Nx \xstep { \fp_to_decimal:N \g__statistics_graph_xstep_fp }
+        \exp_args:NNV \fp_gset:Nn \g_tmpa_fp \l__statistics_graph_legend_x_tl
+        \exp_args:NNV \fp_gset:Nn \g_tmpb_fp \l__statistics_graph_legend_w_tl
+        \group_end:
+        \tl_set:Nx \l__statistics_graph_legend_x_tl { \fp_to_decimal:N \g_tmpa_fp }
+        \tl_set:Nx \l__statistics_graph_legend_w_tl { \fp_to_decimal:N \g_tmpb_fp }
+
+        \group_begin:
+        \tl_set:Nn \min { 0 }
+        \tl_set:Nx \max { \fp_to_decimal:N \l__statistics_graph_maxheight_fp }
+        \tl_set_eq:NN \range \max
+        \tl_set:Nx \xstep { \fp_to_decimal:N \g__statistics_graph_xstep_fp }
+        \tl_set_eq:NN \width \l__statistics_graph_legend_w_tl
+        \tl_set:Nx \total { \fp_to_decimal:N \l__statistics_total_fp }
+        \exp_args:NNV \fp_gset:Nn \g_tmpb_fp \l__statistics_graph_legend_h_tl
+        \tl_set:Nx \height { \fp_to_decimal:N \g_tmpb_fp }
+        \exp_args:NNV \fp_gset:Nn \g_tmpa_fp \l__statistics_graph_legend_y_tl
+        \group_end:
+
+        \tl_put_right:Nx \l__statistics_graph_tikzinfo_tl {
+            \exp_not:n { \path (visualization~cs }
+            \token_to_str:N : \exp_not:n { x= }
+            \exp_not:V \l__statistics_graph_legend_x_tl
+            \exp_not:n { ,y= }
+            \fp_to_decimal:N \g_tmpa_fp
+            \exp_not:n { ) coordinate (LSW) (visualization~cs }
+            \token_to_str:N : \exp_not:n { x= }
+            \fp_eval:n {
+                \l__statistics_graph_legend_x_tl +
+                \l__statistics_graph_legend_w_tl
+            }
+            \exp_not:n { ,y= }
+            \fp_eval:n { \g_tmpa_fp + \g_tmpb_fp }
+            \exp_not:n { ) coordinate (LNE);
+                \node[ fit=(LSW)~(LNE), draw, inner~sep=0pt,
+            }
+            \exp_not:V \l__statistics_graph_options_histogram_tl
+            \exp_not:N ,
+            \exp_not:V \l__statistics_graph_options_legend_tl
+            \exp_not:n { ] {}; }
+        }
+    }
+    \__statistics_graph_handle_hmargin:
+    \__statistics_graph_handle_vmargin:
+    \tl_set:Nx \l__statistics_graph_tikzpicture_tl {
+        \exp_not:n { \begin{tikzpicture}[ }
+            \exp_not:V \l__statistics_graph_options_pic_tl
+        \exp_not:n { ] \datavisualization
+                [scientific~axes = } {
+                        \exp_not:V
+                            \l__statistics_graph_options_system_tl
+                    }
+        \exp_not:n { , x~axis = } {
+                    \exp_not:n { include~value/.list = } {
+                        \exp_not:V \l__statistics_graph_tikzincludex_clist
+                    }
+                    \exp_not:n { , ticks = { tick~typesetter/.code = {
+                        $\__statistics_graph_values_format:n { \fp_eval:n{####1} }$ }}, }
+                    \exp_not:V
+                        \l__statistics_graph_options_histogram_xaxis_tl
+                    \exp_not:n { , }
+                    \exp_not:V
+                        \c__statistics_graph_savexstep_tl
+                }
+        \exp_not:n { , y~axis = } {
+                    \exp_not:n { include~value/.list = } {
+                        \exp_not:V \l__statistics_graph_tikzincludey_clist
+                    }
+                    \exp_not:n { , }
+                    \exp_not:V
+                        \l__statistics_graph_options_yaxis_tl
+                }
+        \exp_not:n { , visualize~as~line = histogram,
+                       histogram = } {
+            \exp_not:n { polygon, style = } {
+                \exp_not:n { every~path/.append~style = } {
+                        \exp_not:V \l__statistics_graph_options_histogram_tl
+                    } } }
+        \exp_not:n { ] data [set = histogram, format = TeX~code] } {
+            \exp_not:V \l__statistics_graph_tikzdata_tl
+        }
+        \exp_not:n { info' } {
+            \exp_not:V \l__statistics_graph_userpreinfo_tl
+        }
+        \exp_not:n { info } {
+            \exp_not:V \l__statistics_graph_tikzinfo_tl
+            \exp_not:V \l__statistics_graph_userpostinfo_tl
+        }
+        \exp_not:n { ; \end{tikzpicture} }
+    }
+    \tl_use:N \l__statistics_graph_tikzpicture_tl
+}
+\cs_new_protected_nopar:Nn \__statistics_graph_make_hist:n {
+    \__statistics_graph_make_hist:nn { #1 } { 1 }
+}
+\cs_new_protected_nopar:Nn \__statistics_graph_make_hist:nn {
+    \int_incr:N \l__statistics_currange_int
+    \__statistics_parse_range:w #1 \q_stop
+    \fp_set:Nn \l__statistics_graph_curheight_fp {
+        (#2) / ( \l__statistics_range_max_fp -
+                    \l__statistics_range_min_fp)
+    }
+    \__statistics_graph_update_minmaxval:NN \l__statistics_range_min_fp \l__statistics_range_max_fp
+    \__statistics_graph_update_maxheight:
+    \__statistics_set_if_shown:N \l_tmpa_bool
+    \__statistics_graph_addpoint:nnn { SW }
+        { \l__statistics_range_min_fp }
+        { 0 }
+    \bool_if:NF \l_tmpa_bool {
+        \__statistics_graph_outlier:
+    }
+    \__statistics_graph_addpoint:nnn { NW }
+        { \l__statistics_range_min_fp }
+        { \l__statistics_graph_curheight_fp }
+    \bool_if:NF \l_tmpa_bool { \__statistics_graph_outlier: }
+    \__statistics_graph_addpoint:nnn { NE }
+        { \l__statistics_range_max_fp }
+        { \l__statistics_graph_curheight_fp }
+    \bool_if:NF \l_tmpa_bool { \__statistics_graph_outlier: }
+    \__statistics_graph_addpoint:nnn { SE }
+        { \l__statistics_range_max_fp }
+        { 0 }
+    \bool_if:NT \l_tmpa_bool {
+        \bool_if:NT \l__statistics_graph_areas_bool {
+            \__statistics_graph_addlabel:nn
+                \__statistics_graph_y_format:n
+                { \fp_eval:n {#2 / \l__statistics_graph_scale_fp} }
+        }
+    }
+    \__statistics_graph_outlier:
+}
+\cs_new_protected_nopar:Nn \__statistics_graph_addlabel:nn {
+    \tl_put_right:Nx \l__statistics_graph_tikzinfo_tl {
+        \exp_not:n { \path (NW }
+        \int_use:N \l__statistics_currange_int
+        \exp_not:n { ) -- node[ }
+            \exp_not:V \l__statistics_graph_options_areas_tl
+        \exp_not:N ] {
+            \exp_not:n { $ #1 } { #2 } \exp_not:N $
+        } \exp_not:n { (NE }
+        \int_use:N \l__statistics_currange_int
+        \exp_not:n { ); }
+    }
+}
+\cs_new_protected:Nn \__statistics_graph_dopicture_comb: {
+    \__statistics_graph_setup:n {comb}
+    \keyval_parse:NNV
+            \__statistics_graph_make_comb:n
+            \__statistics_graph_make_comb:nn
+            \l__statistics_data_tl
+    \__statistics_graph_handle_hmargin:
+    \__statistics_graph_handle_vmargin:
+    \tl_set:Nx \l__statistics_graph_tikzpicture_tl {
+        \exp_not:n { \begin{tikzpicture}[ }
+            \exp_not:V \l__statistics_graph_options_pic_tl
+        \exp_not:n { ] \datavisualization
+                [scientific~axes = } {
+                        \exp_not:V
+                            \l__statistics_graph_options_system_tl
+                    }
+        \exp_not:n { , x~axis = } {
+                    \exp_not:n { include~value/.list = } {
+                        \exp_not:V \l__statistics_graph_tikzincludex_clist
+                    }
+                    \exp_not:n { , ticks = { tick~typesetter/.code = {
+                        $\__statistics_graph_values_format:n { \fp_eval:n{####1} }$ }}, }
+                    \exp_not:V
+                        \l__statistics_graph_options_comb_xaxis_tl
+                    \exp_not:n { , }
+                    \exp_not:V
+                        \c__statistics_graph_savexstep_tl
+                }
+        \exp_not:n { , y~axis = } {
+                    \exp_not:n { include~value/.list = } {
+                        \exp_not:V \l__statistics_graph_tikzincludey_clist
+                    }
+                    \exp_not:n { , }
+                    \exp_not:n { , ticks = { tick~typesetter/.code = {
+                        $\__statistics_graph_y_format:n { \fp_eval:n{####1} }$ }}, }
+                    \exp_not:V
+                        \l__statistics_graph_options_yaxis_tl
+                }
+        \exp_not:n { , visualize~as~line = bar~graph,
+                       bar~graph = } {
+            \exp_not:n { style = } {
+                \exp_not:n { every~path/.append~style = } {
+                        \exp_not:V \l__statistics_graph_options_comb_tl
+                    } } }
+        \exp_not:n { ] data [set = bar~graph, format = TeX~code] } {
+            \exp_not:V \l__statistics_graph_tikzdata_tl
+        }
+        \exp_not:n { info' } {
+            \exp_not:V \l__statistics_graph_userpreinfo_tl
+        }
+        \exp_not:n { info } {
+            \exp_not:V \l__statistics_graph_tikzinfo_tl
+            \exp_not:V \l__statistics_graph_userpostinfo_tl
+        }
+        \exp_not:n { ; \end{tikzpicture} }
+    }
+    \tl_use:N \l__statistics_graph_tikzpicture_tl
+}
+\cs_new_protected_nopar:Nn \__statistics_graph_make_comb:n {
+    \__statistics_graph_make_comb:nn { #1 } { 1 }
+}
+\cs_new_protected_nopar:Nn \__statistics_graph_make_comb:nn {
+    \int_incr:N \l__statistics_currange_int
+    \fp_set:Nn \l__statistics_graph_curvalue_fp {
+        #1
+    }
+    \fp_set:Nn \l__statistics_graph_curheight_fp {
+        (#2) / \l__statistics_graph_scale_fp
+    }
+    \__statistics_graph_update_minmaxval:NN
+        \l__statistics_graph_curvalue_fp \l__statistics_graph_curvalue_fp
+    \__statistics_graph_update_maxheight:
+    \__statistics_set_if_shown:N \l_tmpa_bool
+    \__statistics_graph_addpoint:nnn { S }
+        { \l__statistics_graph_curvalue_fp }
+        { 0 }
+    \bool_if:NF \l_tmpa_bool {
+        \__statistics_graph_outlier:
+    }
+    \__statistics_graph_addpoint:nnn { N }
+        { \l__statistics_graph_curvalue_fp }
+        { \l__statistics_graph_curheight_fp }
+    \__statistics_graph_outlier:
+}
+\cs_new_protected_nopar:Nn \__statistics_graph_dopicture_cumulative: {
+    \__statistics_graph_setup:n {cumulative}
+    \bool_if:NTF \l__statistics_graph_decreasing_bool {
+        \fp_set_eq:NN \l__statistics_curtotal_fp
+                    \l__statistics_total_fp
+    }{
+        \fp_zero:N \l__statistics_curtotal_fp
+    }
+    \fp_set:Nn \l__statistics_graph_curheight_fp {
+        \l__statistics_curtotal_fp
+            / \l__statistics_graph_scale_fp
+    }
+    \__statistics_graph_update_maxheight:
+    \keyval_parse:NNV
+            \__statistics_graph_make_cumulative:n
+            \__statistics_graph_make_cumulative:nn
+            \l__statistics_data_tl
+    \__statistics_graph_handle_hmargin:
+    \int_incr:N \l__statistics_currange_int
+    \__statistics_set_if_shown:N \l_tmpa_bool
+    \bool_if:NF \l_tmpa_bool { \__statistics_graph_outlier: }
+    \__statistics_graph_addpoint:nnn { E }
+        { \l__statistics_graph_maxvalue_fp + \g_tmpa_fp }
+        { \l__statistics_graph_curheight_fp }
+    \tl_set_eq:NN \l_tmpa_tl \l__statistics_graph_tikzdata_tl
+    \tl_clear:N \l__statistics_graph_tikzdata_tl
+    \int_zero:N \l__statistics_currange_int
+    \__statistics_graph_addpoint:nnn { B }
+        { \l__statistics_graph_minvalue_fp - \g_tmpa_fp }
+        { \l__statistics_graph_maxheight_fp - \l__statistics_graph_curheight_fp }
+    \__statistics_set_if_shown:N \l_tmpa_bool
+    \bool_if:NF \l_tmpa_bool { \__statistics_graph_outlier: }
+    \tl_put_right:NV \l__statistics_graph_tikzdata_tl \l_tmpa_tl
+    \__statistics_graph_handle_vmargin:
+    \tl_set:Nx \l__statistics_graph_tikzpicture_tl {
+        \exp_not:n { \begin{tikzpicture}[ }
+            \exp_not:V \l__statistics_graph_options_pic_tl
+        \exp_not:n { ] \datavisualization
+                [scientific~axes = } {
+                        \exp_not:V
+                            \l__statistics_graph_options_system_tl
+                    }
+        \exp_not:n { , x~axis = } {
+                    \exp_not:n { include~value/.list = } {
+                        \exp_not:V \l__statistics_graph_tikzincludex_clist
+                    }
+                    \exp_not:n { , ticks = { tick~typesetter/.code = {
+                        $\__statistics_graph_values_format:n { \fp_eval:n{####1} }$ }}, }
+                    \exp_not:V
+                        \l__statistics_graph_options_cumulative_xaxis_tl
+                    \exp_not:n { , }
+                    \exp_not:V
+                        \c__statistics_graph_savexstep_tl
+                }
+        \exp_not:n { , y~axis = } {
+                    \exp_not:n { include~value/.list = } {
+                        \exp_not:V \l__statistics_graph_tikzincludey_clist
+                    }
+                    \exp_not:n { , }
+                    \exp_not:n { , ticks = { tick~typesetter/.code = {
+                        $\__statistics_graph_y_format:n { \fp_eval:n{####1} }$ }}, }
+                    \exp_not:V
+                        \l__statistics_graph_options_yaxis_tl
+                }
+        \exp_not:n { , visualize~as~line = cumulative,
+                       cumulative = } {
+            \exp_not:n { style = } {
+                \exp_not:n { every~path/.append~style = } {
+                        \exp_not:V \l__statistics_graph_options_cumulative_tl
+                    } } }
+        \exp_not:n { ] data [set = cumulative, format = TeX~code] } {
+            \exp_not:V \l__statistics_graph_tikzdata_tl
+        }
+        \exp_not:n { info' } {
+            \exp_not:V \l__statistics_graph_userpreinfo_tl
+        }
+        \exp_not:n { info } {
+            \exp_not:V \l__statistics_graph_tikzinfo_tl
+            \exp_not:V \l__statistics_graph_userpostinfo_tl
+        }
+        \exp_not:n { ; \end{tikzpicture} }
+    }
+    \tl_use:N \l__statistics_graph_tikzpicture_tl
+}
+\cs_new_protected_nopar:Nn \__statistics_graph_make_cumulative:n {
+    \__statistics_graph_make_hist:nn { #1 } { 1 }
+}
+\cs_new_protected_nopar:Nn \__statistics_graph_make_cumulative:nn {
+    \__statistics_parse_range:w #1 \q_stop
+    \fp_set_eq:NN
+        \l__statistics_graph_prevheight_fp
+        \l__statistics_graph_curheight_fp
+    \bool_if:NTF \l__statistics_graph_decreasing_bool {
+        \fp_sub:Nn \l__statistics_curtotal_fp { #2 }
+    }{
+        \fp_add:Nn \l__statistics_curtotal_fp { #2 }
+    }
+    \fp_set:Nn \l__statistics_graph_curheight_fp {
+        \l__statistics_curtotal_fp
+            / \l__statistics_graph_scale_fp
+    }
+    \__statistics_graph_update_minmaxval:NN \l__statistics_range_min_fp \l__statistics_range_max_fp
+    \__statistics_graph_update_maxheight:
+    \int_incr:N \l__statistics_currange_int
+    \__statistics_graph_addpoint:nnn { L }
+        { \l__statistics_range_min_fp }
+        { \l__statistics_graph_prevheight_fp }
+    \__statistics_set_if_shown:N \l_tmpa_bool
+    \bool_if:NF \l_tmpa_bool { \__statistics_graph_outlier: }
+    \__statistics_graph_addpoint:nnn { R }
+        { \l__statistics_range_max_fp }
+        { \l__statistics_graph_curheight_fp }
+}
+\clist_new:N \l__statistics_compute_data_clist
+\int_new:N \l__statistics_compute_count_int
+
+\fp_new:N \l__statistics_compute_curvalue_fp
+\seq_new:N \l__statistics_data_seq
+
+\NewDocumentCommand \StatsSortData { +O{} u{=} m +O{} } {
+    \group_begin:
+    \tl_if_single:nTF { #3 } {
+        \cs_if_exist:NF #3 { #3 }
+        \tl_set_eq:NN \l__statistics_data_tl #3
+    }{
+        \tl_set:Nn \l__statistics_data_tl { #3 }
+    }
+    \seq_set_from_clist:NN \l__statistics_data_seq \l__statistics_data_tl
+    \seq_sort:Nn \l__statistics_data_seq {
+        \seq_set_split:Nnn \l_tmpa_seq {=} { ##1 }
+        \seq_set_split:Nnn \l_tmpb_seq {=} { ##2 }
+        \fp_compare:nNnTF
+            { \seq_item:Nn \l_tmpa_seq {1} } > { \seq_item:Nn \l_tmpb_seq {1} }
+        {
+            \sort_return_swapped:
+        }{
+            \sort_return_same:
+        }
+    }
+    \seq_put_right:Nn \l__statistics_data_seq { nan = 0 }
+    \tl_set:Nx \l__statistics_data_tl { \seq_use:Nn \l__statistics_data_seq {,} }
+    \clist_clear:N \l__statistics_compute_data_clist
+    \int_zero:N \l__statistics_compute_count_int
+    \fp_zero:N \l__statistics_compute_curvalue_fp
+    \keyval_parse:NNV
+            \__statistics_accumulate:n
+            \__statistics_accumulate:nn
+            \l__statistics_data_tl
+    \exp_args:NNNV
+    \group_end:
+    \clist_set:Nn #2 \l__statistics_compute_data_clist
+}
+\cs_new_protected_nopar:Nn \__statistics_accumulate:n {
+    \__statistics_accumulate:nn { #1 } { 1 }
+}
+\cs_new_protected_nopar:Nn \__statistics_accumulate:nn {
+    \fp_compare:nNnTF { #1 } = { \l__statistics_compute_curvalue_fp } {
+        \int_add:Nn \l__statistics_compute_count_int { #2 }
+    }{
+        \int_compare:nNnT { \l__statistics_compute_count_int } > { 0 } {
+            \clist_put_right:Nx \l__statistics_compute_data_clist {
+                \fp_to_decimal:N \l__statistics_compute_curvalue_fp
+                \exp_not:n { = }
+                \exp_not:V \l__statistics_compute_count_int
+            }
+        }
+        \fp_set:Nn \l__statistics_compute_curvalue_fp { #1 }
+        \int_set:Nn \l__statistics_compute_count_int { #2 }
+    }
+}
+\NewDocumentCommand \StatsRangeData { +O{} u{=} m +r() +O{} } {
+    \group_begin:
+    \tl_if_single:nTF { #3 } {
+        \cs_if_exist:NF #3 { #3 }
+        \tl_set_eq:NN \l__statistics_data_tl #3
+    }{
+        \tl_set:Nn \l__statistics_data_tl { #3 }
+    }
+    \clist_clear:N \l__statistics_compute_data_clist
+    \clist_map_inline:nn { #4 } {
+        \exp_args:Nx \tl_if_eq:nnF { \tl_head:n {##1} }{ \IN } {
+            \clist_map_break:
+        }
+        \__statistics_parse_range_full:w ##1 \q_stop
+        \int_zero:N \l__statistics_compute_count_int
+        \keyval_parse:NNV
+                \__statistics_range_count:n
+                \__statistics_range_count:nn
+                \l__statistics_data_tl
+        \clist_put_right:Nx \l__statistics_compute_data_clist {
+            \exp_not:n { ##1 = }
+            \exp_not:V \l__statistics_compute_count_int
+        }
+    }
+    \exp_args:NNNV
+    \group_end:
+    \clist_set:Nn #2 \l__statistics_compute_data_clist
+}
+\cs_new_protected_nopar:Nn \__statistics_range_count:n {
+    \__statistics_range_count:nn { #1 } { 1 }
+}
+\cs_new_protected_nopar:Nn \__statistics_range_count:nn {
+    \__statistics_if_in_range:nT { #1 } {
+        \int_add:Nn \l__statistics_compute_count_int { #2 }
+    }
+}
+%% 
+%%
+%% End of file `statistics.sty'.

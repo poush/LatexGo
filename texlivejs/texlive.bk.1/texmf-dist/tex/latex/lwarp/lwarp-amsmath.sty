@@ -1,0 +1,312 @@
+%%
+%% This is file `lwarp-amsmath.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `amsmath')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+\LWR@ProvidesPackagePass{amsmath}[2017/09/02]
+\def\maketag@@@#1{\text{#1}}
+\def\tagform@#1{\maketag@@@{(\ignorespaces#1\unskip)}}
+
+\ifbool{mathjax}{}{% not mathjax
+
+\LetLtxMacro\LWR@origmake@df@tag@@\make@df@tag@@
+\LetLtxMacro\LWR@origmake@df@tag@@@\make@df@tag@@@
+
+\renewcommand*{\make@df@tag@@}[1]{%
+\LWR@remembertag{#1}%
+\LWR@origmake@df@tag@@{#1}%
+}
+
+\renewcommand*{\make@df@tag@@@}[1]{%
+\LWR@remembertag{#1}%
+\LWR@origmake@df@tag@@@{#1}%
+}
+
+}% not mathjax
+\BeforeBeginEnvironment{multline}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@syncmathjax
+    \booltrue{LWR@amsmultline}
+    \LWR@beginhideamsmath
+}
+{
+    \begin{BlockClass}{displaymathnumbered}
+    \LWR@newautoidanchor%
+    \booltrue{LWR@indisplaymathimage}%
+    \begin{lateximage}[\LWR@amsmathbodynumbered{multline}]
+}
+}
+
+\AfterEndEnvironment{multline}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@endhideamsmath
+    \boolfalse{LWR@amsmultline}
+    \LWR@addmathjax{multline}{\the\@envbody}
+}
+{\end{lateximage}\end{BlockClass}}
+
+}
+
+\BeforeBeginEnvironment{multline*}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@syncmathjax
+    \booltrue{LWR@amsmultline}
+    \LWR@beginhideamsmath
+}
+{
+    \begin{BlockClass}{displaymath}
+    \LWR@newautoidanchor
+    \booltrue{LWR@indisplaymathimage}%
+    \begin{lateximage}[\LWR@amsmathbody{multline*}]
+}
+}
+
+\AfterEndEnvironment{multline*}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@endhideamsmath
+    \boolfalse{LWR@amsmultline}
+    \LWR@addmathjax{multline*}{\the\@envbody}
+}
+{\end{lateximage}\end{BlockClass}}
+
+}
+
+
+\BeforeBeginEnvironment{gather}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@syncmathjax
+    \boolfalse{LWR@amsmultline}
+    \LWR@beginhideamsmath
+}
+{
+    \begin{BlockClass}{displaymathnumbered}
+    \LWR@newautoidanchor%
+    \booltrue{LWR@indisplaymathimage}%
+    \begin{lateximage}[\LWR@amsmathbodynumbered{gather}]
+}
+}
+
+\AfterEndEnvironment{gather}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@endhideamsmath
+    \LWR@addmathjax{gather}{\the\@envbody}
+}
+{\end{lateximage}\end{BlockClass}}
+
+}
+
+\BeforeBeginEnvironment{gather*}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@syncmathjax
+    \boolfalse{LWR@amsmultline}
+    \LWR@beginhideamsmath
+}
+{
+    \begin{BlockClass}{displaymath}
+    \LWR@newautoidanchor%
+    \booltrue{LWR@indisplaymathimage}%
+    \begin{lateximage}[\LWR@amsmathbody{gather*}]
+}
+}
+
+\AfterEndEnvironment{gather*}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@endhideamsmath
+    \LWR@addmathjax{gather*}{\the\@envbody}
+}
+{\end{lateximage}\end{BlockClass}}
+
+}
+
+\BeforeBeginEnvironment{align}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@syncmathjax
+    \boolfalse{LWR@amsmultline}
+    \LWR@beginhideamsmath
+}
+{
+    \begin{BlockClass}{displaymathnumbered}
+    \LWR@newautoidanchor%
+    \booltrue{LWR@indisplaymathimage}%
+    \begin{lateximage}[\LWR@amsmathbodynumbered{align}]
+}
+}
+
+\AfterEndEnvironment{align}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@endhideamsmath
+    \LWR@addmathjax{align}{\the\@envbody}
+}
+{\end{lateximage}\end{BlockClass}}
+
+}
+
+\BeforeBeginEnvironment{align*}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@syncmathjax
+    \boolfalse{LWR@amsmultline}
+    \LWR@beginhideamsmath
+}
+{
+    \begin{BlockClass}{displaymath}
+    \LWR@newautoidanchor%
+    \booltrue{LWR@indisplaymathimage}%
+    \begin{lateximage}[\LWR@amsmathbody{align*}]
+}
+}
+
+\AfterEndEnvironment{align*}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@endhideamsmath
+    \LWR@addmathjax{align*}{\the\@envbody}
+}
+{\end{lateximage}\end{BlockClass}}
+
+}
+
+\BeforeBeginEnvironment{flalign}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@syncmathjax
+    \boolfalse{LWR@amsmultline}
+    \LWR@beginhideamsmath
+}
+{
+    \begin{BlockClass}{displaymathnumbered}
+    \LWR@newautoidanchor%
+    \booltrue{LWR@indisplaymathimage}%
+    \begin{lateximage}[\LWR@amsmathbodynumbered{flalign}]
+}
+}
+
+\AfterEndEnvironment{flalign}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@endhideamsmath
+    \LWR@addmathjax{flalign}{\the\@envbody}
+}
+{\end{lateximage}\end{BlockClass}}
+
+}
+
+\BeforeBeginEnvironment{flalign*}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@syncmathjax
+    \boolfalse{LWR@amsmultline}
+    \LWR@beginhideamsmath
+}
+{
+    \begin{BlockClass}{displaymath}
+    \LWR@newautoidanchor%
+    \booltrue{LWR@indisplaymathimage}%
+    \begin{lateximage}[\LWR@amsmathbody{flalign*}]
+}
+}
+
+\AfterEndEnvironment{flalign*}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@endhideamsmath
+    \LWR@addmathjax{flalign*}{\the\@envbody}
+}
+{\end{lateximage}\end{BlockClass}}
+
+}
+
+\BeforeBeginEnvironment{alignat}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@syncmathjax
+    \boolfalse{LWR@amsmultline}
+    \LWR@beginhideamsmath
+}
+{
+    \begin{BlockClass}{displaymathnumbered}
+    \LWR@newautoidanchor%
+    \booltrue{LWR@indisplaymathimage}%
+    \begin{lateximage}[\LWR@amsmathbodynumbered{alignat}]
+}
+}
+
+\AfterEndEnvironment{alignat}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@endhideamsmath
+    \LWR@addmathjax{alignat}{\the\@envbody}
+}
+{\end{lateximage}\end{BlockClass}}
+
+}
+
+\BeforeBeginEnvironment{alignat*}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@syncmathjax
+    \boolfalse{LWR@amsmultline}
+    \LWR@beginhideamsmath
+}
+{
+    \begin{BlockClass}{displaymath}
+    \LWR@newautoidanchor%
+    \booltrue{LWR@indisplaymathimage}%
+    \begin{lateximage}[\LWR@amsmathbody{alignat*}]
+}
+}
+
+\AfterEndEnvironment{alignat*}{
+
+\ifboolexpr{bool{mathjax} or ( bool{FormatWP} and bool{WPMarkMath} ) }%
+{
+    \LWR@endhideamsmath
+    \LWR@addmathjax{alignat*}{\the\@envbody}
+}
+{\end{lateximage}\end{BlockClass}}
+
+}
+\endinput
+%%
+%% End of file `lwarp-amsmath.sty'.

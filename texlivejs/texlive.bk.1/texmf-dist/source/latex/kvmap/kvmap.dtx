@@ -1,0 +1,792 @@
+% \iffalse meta-comment
+% This is kvmap, (c) 2018 Ben Frank
+%
+% It may be distributed and/or modified under the conditions of the
+% LaTeX Project Public License (LPPL), either version 1.3c of this
+% license or (at your option) any later version.  The latest version
+% of this license is in the file
+%
+%    http://www.latex-project.org/lppl.txt
+%<*driver>
+\def\nameofplainTeX{plain}
+\ifx\fmtname\nameofplainTeX\else
+  \expandafter\begingroup
+\fi
+\input l3docstrip.tex
+\askforoverwritefalse
+\preamble
+Copyright (C) 2018 Ben Frank
+
+It may be distributed and/or modified under the conditions of
+the LaTeX Project Public License (LPPL), either version 1.3c of
+this license or (at your option) any later version.  The latest
+version of this license is in the file:
+
+   http://www.latex-project.org/lppl.txt
+
+\endpreamble
+\postamble
+End of file
+\endpostamble
+\generate{\file{kvmap.sty}{\from{kvmap.dtx}{pkg,cfg}}}
+\ifx\fmtname\nameofplainTeX
+  \expandafter\endbatchfile
+\else
+  \expandafter\endgroup
+\fi
+%</driver>
+%
+%<*driver>
+\RequirePackage{scrlfile}
+\ReplaceClass{article}{scrartcl}
+\documentclass[DIV=calc,BCOR=18mm,12pt]{l3doc}
+
+\EnableCrossrefs
+^^A\PageIndex
+^^A\CodelineNumbered
+\RecordChanges
+
+\usepackage[english]{babel}
+
+\usepackage[svgnames]{xcolor}
+\usepackage{graphicx}
+\usepackage{tcolorbox}
+\tcbuselibrary{minted,listings,documentation,breakable}
+\tcbset{listing engine=minted,minted language=latex,
+	documentation minted style=vs,documentation minted options={fontsize=\small},
+	color command=blue,color definition=blue,doc marginnote={halign=center,
+	colframe=DarkSlateGray!50!white,colback=Silver!20!white}, index colorize=true,
+	index annotate=true,index format=doc,
+	doclang/new={\textcolor{DarkGreen}{\textbf{\textsf{N}}}},
+	doclang/updated={\textcolor{DarkGreen}{\textbf{\textsf{U}}}},
+	minted options={linenos,xleftmargin=8.75pt,breaklines=true,
+		breakanywhere,fontsize=\small,escapeinside=§§,autogobble=false}}
+\tcbset{enhanced,sharp corners=all}
+\usemintedstyle{vs}
+
+\usepackage{fontspec}
+\usepackage{unicode-math}
+\setmainfont[Numbers={OldStyle}]{Libertinus Serif}
+\setsansfont[Scale=MatchUppercase,Numbers={OldStyle}]{Libertinus Sans}
+\setmonofont[Scale=MatchLowercase,Numbers={OldStyle}]{Fira Mono}
+\setmathfont[Scale=MatchLowercase]{Libertinus Math}
+\setmathfont[Scale=MatchLowercase,range=\setminus]{XITS Math}
+\usepackage{hologo}
+\recalctypearea
+
+\usepackage{enumitem}
+\setlist[description,itemize,enumerate]{noitemsep}
+
+\usepackage{multicol}
+
+% some fix from https://tex.stackexchange.com/questions/83204/how-can-i-make-source-code-included-with-minted-copyable
+\usepackage{accsupp}
+\newcommand\emptyaccsupp[1]{\BeginAccSupp{ActualText={}}#1\EndAccSupp{}}
+% default definition is: \def\theFancyVerbLine{\rmfamily\tiny\arabic{FancyVerbLine}}
+\let\theHFancyVerbLine\theFancyVerbLine% don't apply our patch to hyperref's version
+\def\theFancyVerbLine{\rmfamily\tiny\emptyaccsupp{\arabic{FancyVerbLine}}}
+
+\newcommand{\clsopt}[1]{\texttt{#1}}
+\newmintinline{latex}{}
+\hypersetup{pdfencoding=auto,linktoc=page}
+% workaround from https://tex.stackexchange.com/questions/407873/using-minted-in-l3doc-documentation
+\fvset{gobble=0}
+
+\usepackage{kvmap}
+
+\begin{document}
+  \DocInput{kvmap.dtx}
+\end{document}
+%</driver>
+%
+%<*pkg>
+%<@@=kvmap>
+\RequirePackage{expl3}
+\ProvidesExplPackage{kvmap}{2018/09/20}{0.3.1}{Drawing karnaugh maps with LaTeX}
+%</pkg>
+% \fi
+%
+% \changes{v0.1.0}{2018/03/10}{Stable release}
+% \changes{v0.2.0}{2018/08/17}{Rework documentation and syntax recommendations}
+% \changes{v0.3.0}{2018/09/20}{Improve documentation}
+% \changes{v0.3.1}{2018/09/20}{Fix INS file}
+% \GetFileInfo{kvmap.sty}
+%
+% \title{The \pkg{kvmap} package\thanks{This document corresponds to
+%   \pkg{kvmap}~\fileversion, dated~\filedate.}}
+% \author{Ben Frank\\\url{https://gitlab.com/benfrank/kvmap}}
+% \date{\today}
+% \maketitle
+%	\begin{abstract}
+%		\noindent This package provides a simple way to typeset Karnaugh maps
+%		including automated generation of gray code and options to draw bundles of
+%		adjacent cells (implicants).
+%	\end{abstract}
+%	\vfill
+%	\section*{Contents}
+%	\begin{multicols*}{2}
+%		\listoftoc*{toc}
+%	\end{multicols*}
+%	\clearpage
+%
+% \begin{documentation}
+%		\section{Introduction}
+%			\pkg{kvmap} aims to provide a \emph{user-friendly} (i.e. less typing) way to
+%			typeset Karnaugh maps including the surrounding gray code and bundles of
+%			cells (implicants). This package relies on \pkg{xparse} (with \pkg{expl3}),
+%			\pkg{tikz} and \pkg{environ}.\par
+%			Drawing Karnaugh maps is not that uncommon and there are already packages
+%			available on CTAN that provide means to typeset them:\begin{itemize}
+%				\item \pkg{askmaps} -- This package lets you draw American style Karnaugh
+%					maps but restricts you to five variables.
+%				\item \pkg{karnaugh-map} -- This package allows you to typeset Karnaugh
+%					maps with up to 6 variables. Unfortunately, the user has to provide many
+%					arguments which makes changing the input error-prone.
+%				\item \pkg{karnaugh} -- This package lets you typeset Karnaugh maps up
+%					to ten variables but I wanted more of what \pkg{askmaps} calls ``American
+%					style''.
+%				\item \pkg{karnaughmap} -- This package aims to be a more customizable
+%					version of \pkg{karnaugh}, so unfortunately, it does not meet my style
+%					requirements either.
+%				\item There is also a TikZ library called \pkg{karnaugh} which allows you
+%					to use 12 variables (or 4096 cells) and has superior styling options, even
+%					for maps with Gray code. But personally I do not like the input format.
+%			\end{itemize}
+%			So these are basically the reasons, why I need yet another Karnaugh map
+%			package. And this package is based on my personal needs, so if you are
+%			missing some exciting feature, feel free to open an issue at Gitlab.\par
+%			\paragraph*{Acknowledgements} Special thanks to
+%			\href{https://tex.stackexchange.com/users/124577/texnician}{TeXnician} who
+%			provided a first version of the Karnaugh map code^^A
+%			\footnote{see \url{https://tex.stackexchange.com/a/425135}} and
+%			\href{https://tex.stackexchange.com/users/80496/marcel-kr%c3%bcger}{Marcel Krüger}
+%			who developed the relevant code to generate sequences of gray code
+%			\footnote{see \url{https://tex.stackexchange.com/a/418887}}.
+%		\section{Drawing Karnaugh maps}
+%			\subsection{Basic commands and environments}
+%			\begin{function}{\kvmapsetup}
+%				\begin{syntax}
+%					|\kvmapsetup|\marg{options}
+%				\end{syntax}
+%				This function sets key-value pairs. Please note that you may need a prefix
+%				like |bundle| in front of the key. Currently the range of supported keys is
+%				very limited, but you will learn about them in the description of
+%				\tn{bundle}.
+%			\end{function}
+%			\begin{docEnvironment}{kvmap}{\oarg{key-value pairs}}{}
+%				\DescribeEnv{kvmap}This environment is a semantic interface to
+%				\env{tikzpicutre} which should have a \env{kvmatrix} or \tn{kvlist} as
+%				first child element. Basically this should surround every Karnaugh map
+%				you typeset.
+%			\end{docEnvironment}
+%			\begin{docEnvironment}{kvmatrix}{\marg{a,b,c[,\dots]}}{}
+%				\DescribeEnv{kvmatrix}This environment is one of the two input modes. It
+%				provides a structured way of inputting rows and columns, similar to the
+%				|tabular| environment. You should prefer this over \tn{kvlist}.\par
+%				The environment itself takes one argument: a comma-separated list of
+%				variable names. Please note that they are typeset in math-mode, so you
+%				should not use |$| signs.
+%			\end{docEnvironment}
+%			\begin{function}{\kvlist}
+%				\begin{syntax}
+%					|\kvlist|\marg{width}\marg{height}\marg{1,0[,\dots]}\marg{a,b[,\dots]}
+%				\end{syntax}
+%				This function provides the alternative input mode. You specify width and
+%				height of the matrix and then input your elements row-wise. The last
+%				argument consists of a comma-separated list of variable names. They are
+%				typeset in math-mode.
+%			\end{function}
+%			\subsection{Drawing Bundles (implicants)}
+%			Another feature of this package is to draw bundles, at least that is how I
+%			prefer to call rectangles visualizing adjacent ones or zeros (also called
+%			implicants). Please note that currently this package does not compute the
+%			bundles for you.
+%			\begin{function}{\bundle}
+%				\begin{syntax}
+%					|\bundle|\oarg{key-value pairs}\marg{$x_1$}\marg{$y_1$}\marg{$x_2$}\marg{$y_2$}
+%				\end{syntax}
+%				This function draws a rectangle (bundle) around the area specified by the
+%				two corners. The option |invert| opens the bundle outwards and
+%				|overlapmargins| lets you specify a length which describes how far the 
+%				edges will be drawn into the margin (both options are useful for corners).
+%				With |color| you may change the color of the border and |reducespace|
+%				allows you to specify whether you want the package to be narrower or wider.
+%				\par
+%				Warning: This package is unable to draw a bundle including all four corners
+%				this way. If you need this specific edge case, please use TikZ to draw it
+%				yourself (see the last example in \autoref{sec:examples}).
+%			\end{function}
+%			\subsection{Styling the nodes}
+%			This package defines two TikZ styles to allow easy customizations: |kvnode|
+%			and |kvbundle|. The former is applied to every node within the output matrix,
+%			i.e. the zeros and ones. It styles a node, so all options applicable to a
+%			|\node| are available to you.\par
+%			The latter describes the styling of the bundles' paths. It is applied to a
+%			|\draw| command, so you have to use options available to paths.\par
+%			The whole Karnaugh map is a TikZ grid with many TikZ nodes. In the case you
+%			need to address a single node you may refer to it by its position, i.e.
+%			the node's name is |xy| (zero-based), e.g. |00| for the node in the upper
+%			left corner.
+%		\section{Examples}\label{sec:examples}
+%\iffalse
+%<*driver>
+%\fi
+\begin{tcblisting}{}
+\kvlist{2}{4}{0,1,0,0,0,0,0,1}{a,b,c}
+\hfill
+\begin{kvmatrix}{a,b,c}
+  0 & 1 & 1 & 0\\
+  0 & 1 & 0 & 1
+\end{kvmatrix}
+\end{tcblisting}
+\begin{tcblisting}{}
+\kvlist{4}{4}{0,1,1,0,0,1,0,1,0,1,1,1,0,0,1,1}{a,b,c,d}
+\end{tcblisting}
+\begin{tcblisting}{}
+\begin{kvmap}
+  \kvlist{4}{4}{0,1,1,0,0,1,0,1,0,1,1,1,0,0,1,1}{a,b,c,d,e,f}
+  \bundle[color=red]{1}{1}{1}{2}
+  \bundle{3}{2}{2}{3}
+  \bundle[color=blue,reducespace=3pt]{3}{2}{3}{1}
+\end{kvmap}
+\end{tcblisting}
+\begin{tcblisting}{}
+\begin{kvmap}
+  \begin{kvmatrix}{a,b,c,d}
+    0 & 1 & 1 & 0\\
+    1 & 0 & 0 & 1\\
+    0 & 0 & 0 & 1\\
+    0 & 1 & 1 & 1\\
+  \end{kvmatrix}
+  \bundle{3}{3}{2}{3}
+  \bundle[color=blue]{3}{2}{3}{1}
+  \bundle[invert=true,reducespace=2pt,overlapmargins=6pt]{1}{0}{2}{3}
+  \bundle[invert=true,reducespace=2pt]{0}{1}{3}{1}
+\end{kvmap}
+\end{tcblisting}
+\begin{tcblisting}{}
+\begin{kvmap}
+  \begin{kvmatrix}{a,b,c,d,e,f}
+    0 & 1 & 1 & 0 & 0 & 1 & 0 & 1\\
+    1 & 1 & 1 & 0 & 0 & 1 & 1 & 0\\
+    1 & 0 & 0 & 1 & 0 & 1 & 0 & 1\\
+    1 & 0 & 0 & 1 & 1 & 0 & 1 & 1\\
+    0 & 1 & 0 & 1 & 0 & 1 & 1 & 1\\
+    0 & 1 & 1 & 0 & 1 & 1 & 0 & 0\\
+    0 & 1 & 0 & 1 & 1 & 1 & 0 & 0\\
+    1 & 1 & 0 & 1 & 0 & 1 & 0 & 1
+  \end{kvmatrix}
+  \draw[fill=white, opacity=.6] (00.center) rectangle (22.center);
+  \draw[white, line width=.4cm] (07) -- (70);
+  \draw[fill=white, opacity=.6] (77.center) rectangle (55.center);
+\end{kvmap}
+\end{tcblisting}
+%\iffalse
+%</driver>
+%\fi
+% \end{documentation}
+% \begin{implementation}
+%	\clearpage\section{Implementation}
+%    \begin{macrocode}
+\RequirePackage{xparse}
+\RequirePackage{tikz}
+\RequirePackage{environ}
+%    \end{macrocode}
+% \begin{macro}[aux]{\seq_set_split:Nno,\seq_set_split:Nnx,\int_mod:VV,\int_div_truncate:VV}
+%		Define variants for better expansion.
+%    \begin{macrocode}
+\cs_generate_variant:Nn \seq_set_split:Nnn   { Nno, Nnx }
+\cs_generate_variant:Nn \int_mod:nn          { VV       }
+\cs_generate_variant:Nn \int_div_truncate:nn { VV       }
+
+%    \end{macrocode}
+% \end{macro}
+%		\subsection{Generating the Gray code}
+%			This part of the code is primarily based on Marcel Krüger's StackExchange
+%			post (see
+%			\url{https://tex.stackexchange.com/questions/418853/latex3-pad-something-unexpandable}).
+% \begin{macro}[int]{\@@_graycode_xor_bits:nn}
+%		This function will apply xor to two bits.
+%		\begin{arguments}
+%			\item bit (0 or 1)
+%			\item bit (0 or 1)
+%		\end{arguments}
+%    \begin{macrocode}
+\cs_new:Npn \@@_graycode_xor_bits:nn #1#2
+  {
+    \int_compare:nTF { #1 = #2 }
+      { 0 } { 1 }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}[int]{\@@_graycode_xor:w,\@@_graycode_xor:nn,\@@_graycode_xor:xx}
+%		This macro executes a bitwise xor on two expanded bit sequences. It is
+%		defined recursively, so that on every run the first two bits from the bit
+%		sequence are split.
+%   \begin{arguments}
+%     \item first bit sequence
+%     \item second bit sequence
+%   \end{arguments}
+%    \begin{macrocode}
+\cs_new:Npn \@@_graycode_xor:w #1#2\q_stop#3#4\q_stop
+  {
+    \@@_graycode_xor_bits:nn { #1 } { #3 }
+    \tl_if_empty:nF { #2 }
+      {
+        \@@_graycode_xor:w #2\q_stop#4\q_stop
+      }
+  }
+\cs_new:Npn \@@_graycode_xor:nn #1#2
+  {
+    \@@_graycode_xor:w #1\q_stop#2\q_stop
+  }
+\cs_generate_variant:Nn \@@_graycode_xor:nn { xx }
+
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\kvmap_graycode_at:nn}
+%   Calculate the gray code at a specific digit, see the Wikipedia for details.
+%   \begin{arguments}
+%     \item digit
+%     \item number of bits
+%   \end{arguments}
+%    \begin{macrocode}
+\cs_new:Npn \kvmap_graycode_at:nn #1#2
+	{
+    \@@_graycode_xor:xx
+      { \tl_tail:f { \int_to_bin:n { #1 - 1 + #2 } } }
+      { \tl_tail:f { \int_to_bin:n { \fp_eval:n { floor((#1-1)/2) + #2 } } } }
+	}
+\cs_generate_variant:Nn \kvmap_graycode_at:nn { nV }
+
+%    \end{macrocode}
+% \end{macro}
+%		\subsection{Internal code to automate output}
+%	\begin{variable}[int]{\l_@@_matrix_isintikz_bool}
+%		Are we in a tikzpicture?
+%    \begin{macrocode}
+\bool_new:N \l_@@_matrix_isintikz_bool
+%    \end{macrocode}
+%	\end{variable}
+% \begin{variable}[int]{\l_@@_matrix_height_int,\l_@@_matrix_width_int}
+%		Save the dimensions of the matrix (important for bundling).
+%    \begin{macrocode}
+\int_new:N \l_@@_matrix_height_int
+\int_new:N \l_@@_matrix_width_int
+%    \end{macrocode}
+% \end{variable}
+% \begin{macro}[int]{\@@_outputgraycode:}
+%   Output gray code around the grid.
+%    \begin{macrocode}
+\cs_new:Nn \@@_outputgraycode:
+  {
+%    \end{macrocode}
+%		Iterate through the horizontal part first and add each item as node. Add $-1$
+%		to the coordinate calculation to convert one-based to zero-based numbers.
+%    \begin{macrocode}
+    \int_step_inline:nnnn { 1 } { 1 } { \l_@@_matrix_width_int }
+      {
+				\node ~ at ~ (\fp_eval:n { 0.5 + (##1-1) }, .3)
+					{ \kvmap_graycode_at:nV { ##1 } \l_@@_matrix_width_int };
+      }
+%    \end{macrocode}
+%		Afterwards tackle the vertical part.
+%    \begin{macrocode}
+    \int_step_inline:nnnn { 1 } { 1 } { \l_@@_matrix_height_int }
+      {
+				\node[anchor = east] ~ at ~ (0, \fp_eval:n { -0.5 - (##1-1) })
+					{ \kvmap_graycode_at:nV { ##1 } \l_@@_matrix_height_int };
+      }
+  }
+
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}[int]{\@@_outputmatrix:n}
+%		Define a TikZ style for easier customizability.
+%    \begin{macrocode}
+\tikzset{kvnode/.style = { inner ~ sep = 8pt }}
+%    \end{macrocode}
+%   This macro fill the grid with values.
+%   \begin{arguments}
+%     \item list
+%   \end{arguments}
+%    \begin{macrocode}
+\cs_new:Npn \@@_outputmatrix:n #1
+	{
+%    \end{macrocode}
+%		We iterate using a for each loop, hence there is no counter and we need to
+%		define one.
+%    \begin{macrocode}
+		\int_zero:N \l_tmpa_int
+%    \end{macrocode}
+%		Use a temporary sequence to store the argument.
+%    \begin{macrocode}
+		\seq_set_from_clist:Nn \l_tmpa_seq { #1 }
+%    \end{macrocode}
+%		Loop over the elements of the list. Every element will be output as node
+%		where $x = \text{counter}\mod\text{width}$ and
+%		$y=\left\lfloor\frac{\text{counter}}{\text{height}}\right\rfloor$.
+%    \begin{macrocode}
+		\seq_map_inline:Nn \l_tmpa_seq
+			{
+				\node[kvnode] ~
+					(\int_mod:VV \l_tmpa_int \l_@@_matrix_width_int
+                    \int_div_truncate:VV \l_tmpa_int \l_@@_matrix_width_int ) ~
+					at ~
+					(.5+\int_mod:VV \l_tmpa_int \l_@@_matrix_width_int,
+                -.5-\int_div_truncate:nn \l_tmpa_int \l_@@_matrix_width_int ) ~
+					{$##1$};
+				\int_incr:N \l_tmpa_int
+			}
+	}
+
+%    \end{macrocode}
+% \end{macro}
+%		\subsection{Implicant-related code}
+% \begin{macro}[updated=2018-03-17]{\bundle}
+%		\changes{v0.1.1}{2018/03/17}{Correct dimensions}
+% 		\changes{v0.2.1}{2018/09/20}{Fix inversion}
+%   Draw a bundle with given corners.
+%   \begin{arguments}
+%     \item key-value pairs
+%     \item x coordinate of point 1
+%     \item y coordinate of point 1
+%     \item x coordinate of point 2
+%     \item y coordinate of point 2
+%   \end{arguments}
+%    \begin{macrocode}
+\keys_define:nn { kvmap/bundle }
+	{
+%    \end{macrocode}
+%		|reducespace|: reduce inner sep of the node; negative values mean expansion
+%    \begin{macrocode}
+		reducespace    .dim_set:N      = \l_@@_bundle_reducespace_dim,
+		reducespace    .initial:n      = { 0pt },
+%    \end{macrocode}
+%		|color|: path color of the bundle
+%    \begin{macrocode}
+		color          .tl_set:N       = \l_@@_bundle_color_tl,
+		color          .initial:n      = { black },
+%    \end{macrocode}
+%		|invert|: open bundle instead of closed path
+%    \begin{macrocode}
+		invert         .bool_set:N     = \l_@@_bundle_invert_bool,
+		invert         .default:n      = true,
+		invert         .initial:n      = false,
+%    \end{macrocode}
+%		|overlapmargins|: intrude into margin (when inverted)
+%    \begin{macrocode}
+		overlapmargins .dim_set:N      = \l_@@_bundle_overlapmargins_dim,
+		overlapmargins .initial:n      = { 0pt },
+	}
+%    \end{macrocode}
+%		TikZ-style to easily adapt the bundle design.
+%    \begin{macrocode}
+\tikzset{kvbundle/.style = { rounded ~ corners = 5pt }}
+%    \end{macrocode}
+% \begin{variable}[int]{\l_@@_bundle_minx_int,\l_@@_bundle_miny_int,\l_@@_bundle_maxx_int,\l_@@_bundle_maxy_int}
+%		Auxiliary variables for drawing bundles.
+%    \begin{macrocode}
+\int_new:N \l_@@_bundle_minx_int
+\int_new:N \l_@@_bundle_miny_int
+\int_new:N \l_@@_bundle_maxx_int
+\int_new:N \l_@@_bundle_maxy_int
+%    \end{macrocode}
+% \end{variable}
+%    \begin{macrocode}
+\NewDocumentCommand { \bundle } { O{} m m m m }
+	{
+		\group_begin:
+%    \end{macrocode}
+%		Set optional parameters and save the minima and maxima of x- and
+%		y-coordinates.
+%    \begin{macrocode}
+		\keys_set:nn { kvmap/bundle } { #1 }
+		\int_set:Nn \l_@@_bundle_minx_int { \int_min:nn { #2 } { #4 } }
+		\int_set:Nn \l_@@_bundle_miny_int { \int_min:nn { #3 } { #5 } }
+		\int_set:Nn \l_@@_bundle_maxx_int { \int_max:nn { #2 } { #4 } }
+		\int_set:Nn \l_@@_bundle_maxy_int { \int_max:nn { #3 } { #5 } }
+%    \end{macrocode}
+%		Check whether the bundle will be inverted. The current conformance test which
+%		is executed later on allows the edge case of inverting at every corner, which
+%		is currently unsupported (code-wise).
+%    \begin{macrocode}
+		\bool_if:NTF \l_@@_bundle_invert_bool
+			{
+%    \end{macrocode}
+%		If the bundle will be inverted, the first check is whether it will exceed the
+%		height. In that case there will be an opened rectangle on both sides (top and
+%		bottom) which is positioned according to the minima and maxima of the
+%		coordinates. The |reducespace| option is realized as shift.
+%    \begin{macrocode}
+				\bool_if:nT
+					{
+						\int_compare_p:n { \l_@@_matrix_height_int - 1 = \l_@@_bundle_maxy_int }
+						&& \int_compare_p:n { 0 = \l_@@_bundle_miny_int }
+					}
+					{
+						\draw[draw=\l_@@_bundle_color_tl,kvbundle] ~
+							([xshift=\l_@@_bundle_reducespace_dim,
+								yshift=\l_@@_bundle_overlapmargins_dim]
+								\int_use:N \l_@@_bundle_minx_int
+								\int_use:N \l_@@_bundle_miny_int . north ~ west) --
+							([xshift=\l_@@_bundle_reducespace_dim,
+								yshift=\l_@@_bundle_reducespace_dim]
+								\int_use:N \l_@@_bundle_minx_int
+								\int_use:N \l_@@_bundle_miny_int . south ~ west) --
+							([xshift=-\l_@@_bundle_reducespace_dim,
+								yshift=\l_@@_bundle_reducespace_dim]
+								\int_use:N \l_@@_bundle_maxx_int
+								\int_use:N \l_@@_bundle_miny_int . south ~ east) --
+							([xshift=-\l_@@_bundle_reducespace_dim,
+								yshift=\l_@@_bundle_overlapmargins_dim]
+								\int_use:N \l_@@_bundle_maxx_int
+								\int_use:N \l_@@_bundle_miny_int . north ~ east);
+						\draw[draw=\l_@@_bundle_color_tl,kvbundle] ~
+							([xshift=\l_@@_bundle_reducespace_dim,
+								yshift=-\l_@@_bundle_overlapmargins_dim]
+								\int_use:N \l_@@_bundle_minx_int
+								\int_use:N \l_@@_bundle_maxy_int . south ~ west) --
+							([xshift=\l_@@_bundle_reducespace_dim,
+								yshift=-\l_@@_bundle_reducespace_dim]
+								\int_use:N \l_@@_bundle_minx_int
+								\int_use:N \l_@@_bundle_maxy_int . north ~ west) --
+							([xshift=-\l_@@_bundle_reducespace_dim,
+								yshift=-\l_@@_bundle_reducespace_dim]
+								\int_use:N \l_@@_bundle_maxx_int
+								\int_use:N \l_@@_bundle_maxy_int . north ~ east) --
+							([xshift=-\l_@@_bundle_reducespace_dim,
+								yshift=-\l_@@_bundle_overlapmargins_dim]
+								\int_use:N \l_@@_bundle_maxx_int
+								\int_use:N \l_@@_bundle_maxy_int . south ~ east);
+					}
+%    \end{macrocode}
+%		Is it larger than the width? Then turn 90° and work as above.
+%    \begin{macrocode}
+				\bool_if:nT
+					{
+						\int_compare_p:n { \l_@@_matrix_width_int - 1 = \l_@@_bundle_maxx_int }
+						&& \int_compare_p:n { 0 = \l_@@_bundle_minx_int }
+					}
+					{
+						\draw[draw=\l_@@_bundle_color_tl,kvbundle] ~
+							([yshift=-\l_@@_bundle_reducespace_dim,
+								xshift=-\l_@@_bundle_overlapmargins_dim]
+								\int_use:N \l_@@_bundle_minx_int
+								\int_use:N \l_@@_bundle_miny_int . north ~ west) --
+							([yshift=-\l_@@_bundle_reducespace_dim,
+								xshift=-\l_@@_bundle_reducespace_dim]
+								\int_use:N \l_@@_bundle_minx_int
+								\int_use:N \l_@@_bundle_miny_int . north ~ east) --
+							([yshift=\l_@@_bundle_reducespace_dim,
+								xshift=-\l_@@_bundle_reducespace_dim]
+								\int_use:N \l_@@_bundle_minx_int
+								\int_use:N \l_@@_bundle_maxy_int . south ~ east) --
+							([yshift=\l_@@_bundle_reducespace_dim,
+								xshift=-\l_@@_bundle_overlapmargins_dim]
+								\int_use:N \l_@@_bundle_minx_int
+								\int_use:N \l_@@_bundle_maxy_int . south ~ west);
+						\draw[draw=\l_@@_bundle_color_tl,kvbundle] ~
+							([yshift=-\l_@@_bundle_reducespace_dim,
+								xshift=\l_@@_bundle_overlapmargins_dim]
+								\int_use:N \l_@@_bundle_maxx_int
+								\int_use:N \l_@@_bundle_miny_int . north ~ east) --
+							([yshift=-\l_@@_bundle_reducespace_dim,
+								xshift=\l_@@_bundle_reducespace_dim]
+								\int_use:N \l_@@_bundle_maxx_int
+								\int_use:N \l_@@_bundle_miny_int . north ~ west) --
+							([yshift=\l_@@_bundle_reducespace_dim,
+								xshift=\l_@@_bundle_reducespace_dim]
+								\int_use:N \l_@@_bundle_maxx_int
+								\int_use:N \l_@@_bundle_maxy_int . south ~ west) --
+							([yshift=\l_@@_bundle_reducespace_dim,
+								xshift=\l_@@_bundle_overlapmargins_dim]
+								\int_use:N \l_@@_bundle_maxx_int
+								\int_use:N \l_@@_bundle_maxy_int . south ~ east);
+					}
+			}
+			{
+%    \end{macrocode}
+%		If the package will not be inverted, it will be output by using the
+%		coordinates provided (min and max).
+%    \begin{macrocode}
+				\draw[draw=\l_@@_bundle_color_tl, kvbundle] ~
+					([xshift=\l_@@_bundle_reducespace_dim,
+							yshift=-\l_@@_bundle_reducespace_dim]
+						\int_use:N \l_@@_bundle_minx_int
+						\int_use:N \l_@@_bundle_miny_int . north ~ west) ~
+					rectangle ~
+					([xshift=-\l_@@_bundle_reducespace_dim,
+							yshift=\l_@@_bundle_reducespace_dim]
+						\int_use:N \l_@@_bundle_maxx_int
+						\int_use:N \l_@@_bundle_maxy_int . south ~ east);
+			}
+		\group_end:
+	}
+%    \end{macrocode}
+% \end{macro}
+%		\subsection{User-interface code}
+% \begin{macro}{\kvmap_map:nn,\kvmap_map:xn}
+%		Output the matrix (interface level).
+%		\begin{arguments}
+%			\item values
+%			\item variables (lables), first horizontal part, then vertical
+%		\end{arguments}
+%		Example: |\kvmap_map:nn{0,1,1,0,0,1,0,1,0,1,1,1,0,0,1,1}{a,b,c,d}|
+%    \begin{macrocode}
+\cs_new:Npn \kvmap_map:nn #1#2
+	{
+%    \end{macrocode}
+%		Firstly, generate the map (lines).
+%    \begin{macrocode}
+		\draw ~ (0,0) ~ grid ~
+			(\int_use:N \l_@@_matrix_width_int, -\int_use:N \l_@@_matrix_height_int);
+%    \end{macrocode}
+%		After having drawn the grid, construct the nodes from the csv and output the
+%		gray code.
+%    \begin{macrocode}
+		\@@_outputmatrix:n  { #1 }
+		\@@_outputgraycode:
+		\draw ~ (0,0) ~ -- ~ (-.7,.7);
+%    \end{macrocode}
+%		Now the labels will be output. The first part of the csv will be positioned
+%		at the top right, the second part bottom left. The point of separation will
+%		be saved.
+%    \begin{macrocode}
+		\int_set:Nn \l_tmpa_int
+			{ \fp_eval:n { floor(ln(\l_@@_matrix_width_int)/ln(2)) }  }
+		\tl_clear:N \l_tmpa_tl
+		\int_step_inline:nnnn { 1 } { 1 } { \l_tmpa_int }
+			{
+				 \tl_put_right:Nn \l_tmpa_tl { \clist_item:nn { #2 } { ##1 } }
+			}
+		\node[anchor = west] ~ at ~ (-.5, .7) ~ { $\tl_use:N \l_tmpa_tl$ };
+%    \end{macrocode}
+%		After working on the horizontal part, work on the left entries. This will
+%		also become a node.
+%    \begin{macrocode}
+		\tl_clear:N \l_tmpa_tl
+		\int_step_inline:nnnn { \l_tmpa_int + 1 } { 1 }
+			{ \l_tmpa_int + \fp_eval:n { floor(ln(\l_@@_matrix_height_int)/ln(2)) } }
+			{
+				 \tl_put_right:Nn \l_tmpa_tl { \clist_item:nn { #2 } { ##1 } }
+			}
+		\node[anchor = east] ~ at ~ (-.4, .2) ~ { $\tl_use:N \l_tmpa_tl$ };
+	}
+\cs_generate_variant:Nn \kvmap_map:nn { xn }
+
+%    \end{macrocode}
+% \end{macro}
+% \begin{environment}{kvmap}
+%		This is a |tikzpicture|, but for semantic reasons introduced as new
+%		environment. Furthermore this will clear the results of the last execution.
+%		\begin{arguments}
+%			\item optional: key-value pairs
+%		\end{arguments}
+%    \begin{macrocode}
+\NewDocumentEnvironment { kvmap } { O{} }
+	{
+		\group_begin:
+		\keys_set:nn { kvmap } { #1 }
+		\int_gzero:N \l_@@_matrix_height_int
+		\int_gzero:N \l_@@_matrix_width_int
+		\begin{tikzpicture}
+	}
+	{
+		\end{tikzpicture}
+		\group_end:
+	}
+%    \end{macrocode}
+% \end{environment}
+% \begin{macro}{\kvlist}
+%		User wrapper around \cs{kvmap_map:nn}. It will insert a |tikzpicture| if not
+%		already present.
+%    \begin{macrocode}
+\NewDocumentCommand { \kvlist } { m m m m }
+	{
+		\tikzifinpicture
+			{ \bool_set_true:N  \l_@@_matrix_isintikz_bool }
+			{ \bool_set_false:N \l_@@_matrix_isintikz_bool }
+		\bool_if:NF \l_@@_matrix_isintikz_bool
+			{ \begin{tikzpicture} }
+		\int_gset:Nn \l_@@_matrix_width_int  { #1 }
+		\int_gset:Nn \l_@@_matrix_height_int { #2 }
+		\kvmap_map:nn { #3 } { #4 }
+		\bool_if:NF \l_@@_matrix_isintikz_bool
+			{ \end{tikzpicture} }
+	}
+
+%    \end{macrocode}
+% \end{macro}
+% \begin{environment}{kvmatrix}
+%		This environment enables a |tabular|-like input syntax.
+%    \begin{arguments}
+%			\item labels (variables)
+%    \end{arguments}
+% 		\begin{variable}[int]{\l_@@_tmp_seq}
+%			Temporary variable to split the matrix.
+%    \begin{macrocode}
+\seq_new:N \l_@@_tmp_seq
+%    \end{macrocode}
+%		\end{variable}
+%    \begin{macrocode}
+\NewEnviron { kvmatrix } [ 1 ]
+	{
+%    \end{macrocode}
+%		Split the environments body at |\\| and remove empty lines. Now the height
+%		of the map is just the count of the sequence. Split the first element at |&|
+%		and use the count of that as width.
+%    \begin{macrocode}
+		\seq_set_split:Nno \l_tmpa_seq { \\ } { \BODY }
+		\seq_remove_all:Nn \l_tmpa_seq { }
+		\seq_set_split:Nnx \l_tmpb_seq { & } { \seq_item:Nn \l_tmpa_seq { 1 } }
+		\seq_remove_all:Nn \l_tmpb_seq { }
+		\int_gset:Nn \l_@@_matrix_width_int  { \seq_count:N \l_tmpb_seq }
+		\int_gset:Nn \l_@@_matrix_height_int { \seq_count:N \l_tmpa_seq }
+%    \end{macrocode}
+%		Clean up the lists and convert the input into something \cs{kvmap_map:nn} may
+%		process. Maybe this could be optimised in terms of performance (TikZ matrix?).
+%    \begin{macrocode}
+		\seq_clear:N \l_@@_tmp_seq
+		\seq_map_inline:Nn \l_tmpa_seq
+			{
+				\seq_clear:N \l_tmpb_seq
+				\seq_set_split:Nnn \l_tmpb_seq { & } { ##1 }
+				\seq_concat:NNN \l_@@_tmp_seq \l_@@_tmp_seq \l_tmpb_seq
+			}
+%    \end{macrocode}
+%		Output the map by inserting commas between the elements of the 
+%   temporary sequence.
+%    \begin{macrocode}
+		\tikzifinpicture
+			{ \bool_set_true:N  \l_@@_matrix_isintikz_bool }
+			{ \bool_set_false:N \l_@@_matrix_isintikz_bool }
+		\bool_if:NF \l_@@_matrix_isintikz_bool
+			{ \begin{tikzpicture} }
+		\kvmap_map:xn
+			{ \seq_use:Nnnn \l_@@_tmp_seq { , } { , } { , } }
+			{ #1                  }
+		\bool_if:NF \l_@@_matrix_isintikz_bool
+			{ \end{tikzpicture}   }
+	}
+
+%    \end{macrocode}
+% \end{environment}
+% \begin{macro}{\kvmapsetup}
+%		Set options (key-value pairs). 
+%		Example: |\kvmapsetup{bundle/color=red}|
+%		\begin{arguments}
+%			\item key-value pairs
+%		\end{arguments}
+%    \begin{macrocode}
+\NewDocumentCommand { \kvmapsetup } { m }
+	{
+		\keys_set:nn { kvmap } { #1 }
+	}
+%    \end{macrocode}
+% \end{macro}
+% \end{implementation}
+% \clearpage\PrintChanges
+% \clearpage\PrintIndex
+% \Finale
+% \endinput

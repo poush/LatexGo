@@ -1,0 +1,367 @@
+%%
+%% This is file `gotoh.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% gotoh.dtx  (with options: `package')
+%% 
+%% Copyright (c) 2017 Takuto ASAKURA (wtsnjp)
+%%   GitHub:   https://github.com/wtsnjp
+%%   Twitter:  @wtsnjp
+%% 
+%% This package is distributed under the MIT License.
+%% 
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{gotoh}[2017/07/07 v1.1 Sequence alignment algorithm]
+\RequirePackage{xkeyval}
+\def\gth@pkgname{gotoh}
+\def\gth@warn{\PackageWarningNoLine\gth@pkgname}
+\def\gth@error{\PackageError\gth@pkgname}
+\newif\if@gth@first@
+\newif\if@gth@remain@
+\newif\if@gth@gap@
+\newif\if@gth@gapx@
+\newif\if@gth@gapy@
+\newcount\gth@tempcnta
+\newcount\gth@tempcntb
+\newcount\gth@tempcntc
+\newcount\gth@tempcntd
+\newcount\gth@calc
+\edef\gth@sn{\number\z@}
+\mathchardef\gth@M="7FFF
+\edef\gth@min{-\number\gth@M}
+\newdimen\gth@tempdima
+\define@cmdkeys[gth]{config}[gth@]{match, mismatch, d, e}
+\setkeys[gth]{config}{match=1, mismatch=-1, d=7, e=1}
+\define@key[gth]{config}{score}{\def\gth@score{#1}}
+\define@key[gth]{config}{result A}{\def\gth@resulta{#1}}
+\define@key[gth]{config}{result B}{\def\gth@resultb{#1}}
+\setkeys[gth]{config}{
+  score=\GotohScore, result A=\GotohResultA, result B=\GotohResultB}
+\define@boolkeys[gth]{config}[@gth@]{memoization, uppercase}[true]
+\define@key[gth]{config}{gap char}{\def\gth@gap@char{#1}}
+\setkeys[gth]{config}{memoization=false, uppercase=false, gap char={.}}
+\def\gth@nameuse#1{\csname gth@#1\endcsname}
+\def\gth@name@edef#1{\expandafter\edef\csname gth@#1\endcsname}
+\def\gth@name@xdef#1{\expandafter\xdef\csname gth@#1\endcsname}
+\def\gth@glet{\global\let}
+\def\gth@advance#1#2{%
+  \gth@calc#1\advance\gth@calc#2\edef#1{\the\gth@calc}}
+\def\gth@increment#1{\gth@advance#1\@ne}
+\def\gth@decrement#1{\gth@advance#1\m@ne}
+\def\gth@max#1{%
+  \@gth@first@true
+  \@for\gth@member:=#1\do{%
+    \if@gth@first@
+      \gth@calc\gth@member
+      \@gth@first@false
+    \else
+      \ifnum\gth@member>\gth@calc
+        \gth@calc\gth@member
+      \fi
+    \fi}}
+\def\gth@gap@penalty#1{%
+  \gth@calc#1\relax
+  \advance\gth@calc\m@ne
+  \multiply\gth@calc-\gth@e
+  \advance\gth@calc-\gth@d}
+\def\gth@tab#1{%
+  \bgroup
+    \sbox\z@ 0%
+    \expandafter\gth@tempdima\ht\z@
+    \multiply\gth@tempdima 8%
+    \mbox{\hbox to\gth@tempdima{\hss #1}}%
+  \egroup}
+\def\gth@print@matrix#1{%
+  \bgroup\ttfamily
+    #1:\\
+    \gth@tempcnta\z@
+    \@whilenum\gth@tempcnta<\gth@m\do{%
+      \gth@tempcntb\z@
+      \@whilenum\gth@tempcntb<\gth@n\do{%
+        \gth@tab{%
+          \gth@nameuse{\gth@sn @#1@\the\gth@tempcnta
+                       @\the\gth@tempcntb}}%
+      \advance\gth@tempcntb\@ne}\\
+    \advance\gth@tempcnta\@ne}%
+  \egroup}
+\newcommand{\Gotoh}{%
+  \gth@increment\gth@sn
+  \bgroup  % \egroup is in \gth@gotoh@pre
+  \@ifnextchar[{\gth@gotoh@setkeys}{\gth@gotoh@pre}}
+\def\gth@gotoh@setkeys[#1]{\setkeys[gth]{config}{#1}\gth@gotoh@pre}
+\def\gth@gotoh@pre#1#2{%
+  \edef\gth@tmpa{\noexpand\gth@gotoh{#1}{#2}}%
+  \if@gth@uppercase
+    \uppercase\expandafter{\gth@tmpa}%
+  \else
+    \gth@tmpa
+  \fi\egroup}
+\def\gth@gotoh#1#2{%
+  \gth@tempcnta\z@
+  \@tfor\gth@member:=#1\do{%
+    \gth@name@edef{seqa@\the\gth@tempcnta}{\gth@member}%
+    \advance\gth@tempcnta\@ne}%
+  \advance\gth@tempcnta\@ne
+  \edef\gth@m{\the\gth@tempcnta}%
+  \gth@tempcntb\z@
+  \@tfor\gth@member:=#2\do{%
+    \gth@name@edef{seqb@\the\gth@tempcntb}{\gth@member}%
+    \advance\gth@tempcntb\@ne}%
+  \advance\gth@tempcntb\@ne
+  \edef\gth@n{\the\gth@tempcntb}%
+  \gth@tempcnta\z@
+  \@whilenum\gth@tempcnta<\gth@m\do{%
+    \gth@gap@penalty{\gth@tempcnta}%
+    \gth@name@xdef{\gth@sn @m@\the\gth@tempcnta @0}{\gth@min}%
+    \gth@name@xdef{\gth@sn @ix@\the\gth@tempcnta @0}{\the\gth@calc}%
+    \gth@name@xdef{\gth@sn @iy@\the\gth@tempcnta @0}{\gth@min}%
+    \advance\gth@tempcnta\@ne}%
+  \gth@tempcntb\z@
+  \@whilenum\gth@tempcntb<\gth@n\do{%
+    \gth@gap@penalty{\gth@tempcntb}%
+    \gth@name@xdef{\gth@sn @m@0@\the\gth@tempcntb}{\gth@min}%
+    \gth@name@xdef{\gth@sn @ix@0@\the\gth@tempcntb}{\gth@min}%
+    \gth@name@xdef{\gth@sn @iy@0@\the\gth@tempcntb}{\the\gth@calc}%
+    \advance\gth@tempcntb\@ne}%
+  \gth@name@xdef{\gth@sn @m@0@0}{\number\z@}%
+  \if@gth@memoization
+    \gth@decrement\gth@m \gth@decrement\gth@n
+      \gth@memo@ix{\gth@m}{\gth@n}%
+      \gth@memo@iy{\gth@m}{\gth@n}%
+      \gth@memo@m{\gth@m}{\gth@n}%
+    \gth@increment\gth@m \gth@increment\gth@n
+  \else
+    \gth@tempcnta\@ne
+    \@whilenum\gth@tempcnta<\gth@m\do{%
+      \gth@tempcntb\@ne
+      \@whilenum\gth@tempcntb<\gth@n\do{%
+        \advance\gth@tempcnta\m@ne
+          \gth@max{%
+            \gth@nameuse{\gth@sn @m@\the\gth@tempcnta
+                         @\the\gth@tempcntb},%
+            \gth@nameuse{\gth@sn @iy@\the\gth@tempcnta
+                         @\the\gth@tempcntb}}%
+          \gth@tempcntc\gth@calc
+          \gth@tempcntd
+            \gth@nameuse{\gth@sn @ix@\the\gth@tempcnta
+                         @\the\gth@tempcntb}%
+          \advance\gth@tempcntc-\gth@d\advance\gth@tempcntd-\gth@e
+        \advance\gth@tempcnta\@ne
+        \gth@max{\gth@tempcntc,\gth@tempcntd}%
+        \gth@name@xdef{\gth@sn @ix@\the\gth@tempcnta
+                       @\the\gth@tempcntb}{%
+          \the\gth@calc}%
+        \advance\gth@tempcntb\m@ne
+          \gth@tempcntc
+            \gth@nameuse{\gth@sn @m@\the\gth@tempcnta
+                         @\the\gth@tempcntb}%
+          \gth@tempcntd
+            \gth@nameuse{\gth@sn @iy@\the\gth@tempcnta
+                         @\the\gth@tempcntb}%
+          \advance\gth@tempcntc-\gth@d\advance\gth@tempcntd-\gth@e
+        \advance\gth@tempcntb\@ne
+        \gth@max{\gth@tempcntc,\gth@tempcntd}%
+        \gth@name@xdef{\gth@sn @iy@\the\gth@tempcnta
+                       @\the\gth@tempcntb}{%
+          \the\gth@calc}%
+        \advance\gth@tempcnta\m@ne\advance\gth@tempcntb\m@ne
+          \gth@max{%
+            \gth@nameuse{\gth@sn @m@\the\gth@tempcnta
+                         @\the\gth@tempcntb},%
+            \gth@nameuse{\gth@sn @ix@\the\gth@tempcnta
+                         @\the\gth@tempcntb},%
+            \gth@nameuse{\gth@sn @iy@\the\gth@tempcnta
+                         @\the\gth@tempcntb}}%
+          \edef\gth@tmpa{\gth@nameuse{seqa@\the\gth@tempcnta}}%
+          \edef\gth@tmpb{\gth@nameuse{seqb@\the\gth@tempcntb}}%
+        \advance\gth@tempcnta\@ne\advance\gth@tempcntb\@ne
+        \ifx\gth@tmpa\gth@tmpb
+          \advance\gth@calc\gth@match
+        \else
+          \advance\gth@calc\gth@mismatch
+        \fi
+        \gth@name@xdef{\gth@sn @m@\the\gth@tempcnta
+                       @\the\gth@tempcntb}{%
+          \the\gth@calc}%
+        \advance\gth@tempcntb\@ne}%
+      \advance\gth@tempcnta\@ne}%
+  \fi
+  %\gth@print@matrix{m}%
+  %\gth@print@matrix{ix}%
+  %\gth@print@matrix{iy}%
+  \bgroup
+    \gth@decrement\gth@m \gth@decrement\gth@n
+    \expandafter\xdef\gth@score{%
+      \gth@nameuse{\gth@sn @m@\gth@m @\gth@n}}%
+  \egroup
+  \let\gth@rseq@x\@empty\let\gth@rseq@y\@empty
+  \@gth@remain@true\@gth@gapx@false\@gth@gapy@false
+  \@whilesw\if@gth@remain@\fi{%
+    \ifnum\gth@m=\z@
+      \gth@decrement\gth@n
+      \expandafter\expandafter\expandafter
+      \ifx\gth@nameuse{seqb@\gth@n}\relax\else
+        \edef\gth@rseq@x{\gth@gap@char\gth@rseq@x}%
+        \edef\gth@rseq@y{\gth@nameuse{seqb@\gth@n}%
+                         \gth@rseq@y}%
+      \fi
+    \else\ifnum\gth@n=\z@
+      \gth@decrement\gth@m
+      \expandafter\expandafter\expandafter
+      \ifx\gth@nameuse{seqa@\gth@m}\relax\else
+        \edef\gth@rseq@x{\gth@nameuse{seqa@\gth@m}%
+                         \gth@rseq@x}%
+        \edef\gth@rseq@y{\gth@gap@char\gth@rseq@y}%
+      \fi
+    \else
+      \if@gth@gapx@
+        \gth@decrement\gth@m
+        \expandafter\expandafter\expandafter
+        \ifx\gth@nameuse{seqa@\gth@m}\relax\else
+          \edef\gth@rseq@x{\gth@nameuse{seqa@\gth@m}%
+                           \gth@rseq@x}%
+          \edef\gth@rseq@y{\gth@gap@char\gth@rseq@y}%
+        \fi
+        \gth@tempcnta\gth@nameuse{\gth@sn @m@\gth@m @\gth@n}%
+        \gth@tempcntb\gth@nameuse{\gth@sn @ix@\gth@m @\gth@n}%
+        \gth@tempcntc\gth@nameuse{\gth@sn @iy@\gth@m @\gth@n}%
+        \advance\gth@tempcnta-\gth@d
+        \advance\gth@tempcntb-\gth@e
+        \advance\gth@tempcntc-\gth@d
+        \ifnum\gth@tempcnta>\gth@tempcntb
+          \@gth@gapx@false
+        \else\ifnum\gth@tempcntb<\gth@tempcntc
+          \@gth@gapx@false\@gth@gapy@true
+        \fi\fi
+      \else\if@gth@gapy@
+        \gth@decrement\gth@n
+        \expandafter\expandafter\expandafter
+        \ifx\gth@nameuse{seqb@\gth@n}\relax\else
+          \edef\gth@rseq@x{\gth@gap@char\gth@rseq@x}%
+          \edef\gth@rseq@y{\gth@nameuse{seqb@\gth@n}%
+                           \gth@rseq@y}%
+        \fi
+        \gth@tempcnta\gth@nameuse{\gth@sn @m@\gth@m @\gth@n}%
+        \gth@tempcntb\gth@nameuse{\gth@sn @iy@\gth@m @\gth@n}%
+        \advance\gth@tempcnta-\gth@d\advance\gth@tempcntb-\gth@e
+        \ifnum\gth@tempcnta>\gth@tempcntb
+          \@gth@gapy@false
+        \fi
+      \else
+        \gth@decrement\gth@m
+        \gth@decrement\gth@n
+        \expandafter\expandafter\expandafter
+        \ifx\gth@nameuse{seqa@\gth@m}\relax\else
+          \expandafter\expandafter\expandafter
+          \ifx\gth@nameuse{seqb@\gth@n}\relax\else
+            \edef\gth@rseq@x{\gth@nameuse{seqa@\gth@m}%
+                             \gth@rseq@x}%
+            \edef\gth@rseq@y{\gth@nameuse{seqb@\gth@n}%
+                             \gth@rseq@y}%
+          \fi
+        \fi
+        \gth@tempcnta\gth@nameuse{\gth@sn @m@\gth@m @\gth@n}%
+        \gth@tempcntb\gth@nameuse{\gth@sn @ix@\gth@m @\gth@n}%
+        \gth@tempcntc\gth@nameuse{\gth@sn @iy@\gth@m @\gth@n}%
+        \@gth@gap@false
+        \ifnum\gth@tempcnta<\gth@tempcntb\@gth@gap@true\fi
+        \ifnum\gth@tempcnta<\gth@tempcntc\@gth@gap@true\fi
+        \if@gth@gap@
+          \ifnum\gth@tempcntb>\gth@tempcntc
+            \@gth@gapx@true
+          \else
+            \@gth@gapy@true
+          \fi
+        \fi
+      \fi\fi
+    \fi\fi
+    \ifnum\gth@m<\@ne\ifnum\gth@n<\@ne
+      \@gth@remain@false
+    \fi\fi}%
+  \expandafter\gth@glet\gth@resulta\gth@rseq@x
+  \expandafter\gth@glet\gth@resultb\gth@rseq@y}
+\def\gth@memo@ix#1#2{%
+  \bgroup
+    \gth@tempcnta#1\gth@tempcntb#2\relax
+    \expandafter\expandafter\expandafter
+    \ifx\gth@nameuse{\gth@sn @ix@\the\gth@tempcnta
+                     @\the\gth@tempcntb}\relax
+      \advance\gth@tempcnta\m@ne
+        \gth@memo@ix{\gth@tempcnta}{\gth@tempcntb}%
+        \edef\gth@tmp@ix@return{\gth@ix@return}%
+        \gth@memo@iy{\gth@tempcnta}{\gth@tempcntb}%
+        \edef\gth@tmp@iy@return{\gth@iy@return}%
+        \gth@memo@m{\gth@tempcnta}{\gth@tempcntb}%
+      \advance\gth@tempcnta\@ne
+      \gth@advance{\gth@m@return}{-\gth@d}%
+      \gth@advance{\gth@tmp@ix@return}{-\gth@e}%
+      \gth@advance{\gth@tmp@iy@return}{-\gth@d}%
+      \gth@max{\gth@m@return,\gth@tmp@ix@return,\gth@tmp@iy@return}%
+      \gth@name@xdef{\gth@sn @ix@\the\gth@tempcnta
+                     @\the\gth@tempcntb}{%
+        \the\gth@calc}%
+      \xdef\gth@ix@return{\the\gth@calc}
+    \else
+      \xdef\gth@ix@return{%
+        \gth@nameuse{\gth@sn @ix@\the\gth@tempcnta @\the\gth@tempcntb}}
+    \fi
+  \egroup}
+\def\gth@memo@iy#1#2{%
+  \bgroup
+    \gth@tempcnta#1\gth@tempcntb#2\relax
+    \expandafter\expandafter\expandafter
+    \ifx\gth@nameuse{\gth@sn @iy@\the\gth@tempcnta
+                     @\the\gth@tempcntb}\relax
+      \advance\gth@tempcntb\m@ne
+        \gth@memo@iy{\gth@tempcnta}{\gth@tempcntb}%
+        \edef\gth@tmp@iy@return{\gth@iy@return}%
+        \gth@memo@m{\gth@tempcnta}{\gth@tempcntb}%
+      \advance\gth@tempcntb\@ne
+      \gth@advance{\gth@m@return}{-\gth@d}%
+      \gth@advance{\gth@tmp@iy@return}{-\gth@e}%
+      \gth@max{\gth@m@return,\gth@tmp@iy@return}%
+      \gth@name@xdef{\gth@sn @iy@\the\gth@tempcnta
+                     @\the\gth@tempcntb}{%
+        \the\gth@calc}%
+      \xdef\gth@iy@return{\the\gth@calc}%
+    \else
+      \xdef\gth@iy@return{%
+        \gth@nameuse{\gth@sn @iy@\the\gth@tempcnta @\the\gth@tempcntb}}
+    \fi
+  \egroup}
+\def\gth@memo@m#1#2{%
+  \bgroup
+    \gth@tempcnta#1\gth@tempcntb#2\relax
+    \expandafter\expandafter\expandafter
+    \ifx\gth@nameuse{\gth@sn @m@\the\gth@tempcnta
+                     @\the\gth@tempcntb}\relax
+      \advance\gth@tempcnta\m@ne\advance\gth@tempcntb\m@ne
+        \gth@memo@ix{\gth@tempcnta}{\gth@tempcntb}%
+        \edef\gth@tmp@ix@return{\gth@ix@return}%
+        \gth@memo@iy{\gth@tempcnta}{\gth@tempcntb}%
+        \edef\gth@tmp@iy@return{\gth@iy@return}%
+        \gth@memo@m{\gth@tempcnta}{\gth@tempcntb}%
+        \edef\gth@tmpa{\gth@nameuse{seqa@\the\gth@tempcnta}}%
+        \edef\gth@tmpb{\gth@nameuse{seqb@\the\gth@tempcntb}}%
+      \advance\gth@tempcnta\@ne\advance\gth@tempcntb\@ne
+      \gth@max{\gth@m@return,\gth@tmp@ix@return,\gth@tmp@iy@return}%
+      \ifx\gth@tmpa\gth@tmpb
+        \advance\gth@calc\gth@match
+      \else
+        \advance\gth@calc\gth@mismatch
+      \fi
+      \gth@name@xdef{\gth@sn @m@\the\gth@tempcnta
+                     @\the\gth@tempcntb}{%
+        \the\gth@calc}%
+      \xdef\gth@m@return{\the\gth@calc}%
+    \else
+      \xdef\gth@m@return{%
+        \gth@nameuse{\gth@sn @m@\the\gth@tempcnta @\the\gth@tempcntb}}%
+    \fi
+  \egroup}
+\newcommand{\GotohConfig}[1]{\setkeys[gth]{config}{#1}}
+\endinput
+%%
+%% End of file `gotoh.sty'.

@@ -1,0 +1,55 @@
+% This is the french style check file (that check french cs & issue a warning)
+% After Bernard Gaulle's decease this work is now maintained as a part of
+% the e-French project by a group of enthusiast users 
+% under LPPL copyright as declared in http://www.efrench.org/
+%
+% to be used only to see if a document is french-style compatible
+%
+%                                                              rev. 2005/05/17
+\catcode`\/=0{\catcode`/\=12/gdef/Aboi{/string\}}%}emacs+TeX
+/catcode`/\=0\catcode`\/=12\catcode`\@=11
+% THERE IS A LOOP when using the msg package thus
+\let\kbBissue\relax% i don't use it.
+% Localisation code for numbered \typeout: "\kbBissue% localise it."
+% For debugging one can remove "msg" access, just uncomment
+%\let\kbBissue\relax% this line.
+   \ifx\kbBissue\undefined%
+% Firstly we add the material to use the "msg" package for localization.
+      \def\kb@issue#1#2{\kb@issue@[#1]#2\void}% The local \issuemsg macro.
+                                      % which will call the real one;
+                                      % #1 is the macro message required.
+                                      % #2 is the message header + msg number
+                                      %    such as "^^J -234-", just message 
+                                      %    number (234) is kept. 
+      \let\kbBissue\kb@issue%
+      \def\kb@issue@[#1]#2-#3-#4\void{\issuemsg[#1]#3(french)}%
+   \ifx\issuemsg\undefined\let\kbBissue\relax\let\typeouA\typeout\fi%
+   \fi%
+%
+\catcode`\@=12
+{\catcode`\]=13\def]{}
+\gdef\ErrMsgF#1{%
+\ifx\kbBissue\relax%
+    \errhelp{-46- Cette commande est deja definie dans le style french}%
+%   \errhelp{-46- Your command will be ignored, type <return> to proceed}%
+\fi%
+\kbBissue% localise it.
+ \errmessage{-46- Probleme eventuel avec FrenchPro (macro \Aboi #1)}}
+\def\DmyDeF#1{\expandafter\gdef\csname#1\endcsname{\ErrMsgF{#1}}}%
+\def\Dmydef#1,#2]{\DmyDeF{#1}%
+                  \def\temp{#2}\ifx\temp\empty\let\Dmydef\relax\fi%
+                  \Dmydef#2]}%
+\def\dummydef[{\Dmydef}%
+\input french.cmd %
+% the following for super-activated-characters
+\catcode`\"=\active
+\gdef"{{\def\Aboi{}\ErrMsgF{\string"}}}
+\catcode`<=\active\catcode`>=\active
+\gdef<{{\def\Aboi{}\ErrMsgF{\string<}}}
+\gdef>{{\def\Aboi{}\ErrMsgF{\string>}}}
+\catcode`<=12\catcode`>=12
+\gdef\EBCDICbrackets{\catcode`<=\active\catcode`>=\active}
+\gdef\noEBCDICbrackets{\catcode`<=12\catcode`>=12}
+\def\frenchTeXmods{\ErrMsgF{frenchTeXmods}}% normally unused by user
+\endinput
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

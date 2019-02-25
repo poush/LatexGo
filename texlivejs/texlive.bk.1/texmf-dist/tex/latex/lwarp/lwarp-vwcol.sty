@@ -1,0 +1,87 @@
+%%
+%% This is file `lwarp-vwcol.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `vwcol')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+\LWR@ProvidesPackagePass{vwcol}[2015/02/10]
+\newcommand*{\LWR@vwcol@addrule}[1]{%
+    \appto{\LWR@vwcolstyle}{%
+        #1: %
+        \LWR@printlength{\vwcol@rule} solid \LWR@origpound\LWR@vwcol@rulecolor ; %
+    }%
+}
+
+\newcommand*{\LWR@vwcol@addgap}[1]{%
+    \appto{\LWR@vwcolstyle}{%
+        #1: %
+        \LWR@printlength{\vwcol@sep} ; %
+    }%
+}
+\renewenvironment*{vwcol}[1][]{%
+\par\noindent%
+\vwcolsetup{#1}%
+\newcommand*{\LWR@vwcolstyle}{}
+\if@vwcol@presep
+    \appto{\LWR@vwcolstyle}{margin-left: 1em ; padding-left: .5em ; }
+\fi
+\if@vwcol@postsep
+    \appto{\LWR@vwcolstyle}{margin-right: 1em ; padding-right: .5em ; }
+\fi
+\ifdimgreater{\vwcol@sep}{1sp}{
+    \LWR@vwcol@addgap{column-gap}
+    \LWR@vwcol@addgap{-moz-column-gap}
+    \LWR@vwcol@addgap{-webkit-column-gap}
+}{}
+\convertcolorspec{named}{\vwcol@rulecol}{HTML}\LWR@vwcol@rulecolor%
+\ifdimgreater{\vwcol@rule}{0pt}{
+    \ifdimless{\vwcol@rule}{1pt}{
+        \setlength{\vwcol@rule}{1pt}
+    }{}
+    \LWR@vwcol@addrule{column-rule}
+    \LWR@vwcol@addrule{-moz-column-rule}
+    \LWR@vwcol@addrule{-webkit-column-rule}
+    \if@vwcol@prerule\LWR@vwcol@addrule{border-left}\fi
+    \if@vwcol@postrule\LWR@vwcol@addrule{border-right}\fi
+}{}
+\ifdefequal{\vwcol@justify}{\RaggedRight}{
+    \appto{\LWR@vwcolstyle}{text-align: left ; }
+    \ifdimgreater{\vwcol@parindent}{0pt}{
+        \appto{\LWR@vwcolstyle}{%
+            text-indent: \LWR@printlength{\vwcol@parindent} ; %
+        }
+    }{}
+}{}
+\ifdefequal{\vwcol@justify}{\RaggedLeft}{
+    \appto{\LWR@vwcolstyle}{text-align: right ; }
+}{}
+\ifdefequal{\vwcol@justify}{\Centering}{
+    \appto{\LWR@vwcolstyle}{text-align: center ; }
+}{}
+\ifdefequal{\vwcol@justify}{\justifying}{
+    \appto{\LWR@vwcolstyle}{text-align: justify ; }
+    \ifdimgreater{\vwcol@parindent}{0pt}{
+        \appto{\LWR@vwcolstyle}{%
+            text-indent: \LWR@printlength{\vwcol@parindent} ; %
+        }
+    }{}
+}{}
+\BlockClass[\LWR@vwcolstyle]{multicols}
+}
+{
+\endBlockClass
+}
+\endinput
+%%
+%% End of file `lwarp-vwcol.sty'.

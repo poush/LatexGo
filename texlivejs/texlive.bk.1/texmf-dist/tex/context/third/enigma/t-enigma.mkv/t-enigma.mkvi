@@ -1,0 +1,157 @@
+%D \module
+%D   [     file=t-enigma.mkvi,
+%D      version=2013-03-28 02:15:37+0100,
+%D        title=\CONTEXT\ User Module,
+%D     subtitle=Enigma,
+%D       author=Philipp Gesang,
+%D         date=\currentdate,
+%D    copyright=Philipp Gesang,
+%D      license=2-clause BSD,
+%D        email={phg42 dot 2a at gmail dot com}]
+%C This module is licensed under the conditions of the BSD license with
+%C two clauses. There is a copy in a file named "COPYING" in the
+%C t-enigma source tree.
+
+\unprotect
+
+\writestatus{loading} {ConTeXt module / Enigma Document Encryption}
+
+\startinterface all
+  \setinterfacevariable {enigma} {enigma}
+\stopinterface
+
+\definenamespace [\v!enigma] [
+ \v!command=\v!no,
+    comment=Enigma Document Encryption,
+    \s!name=\v!enigma,
+  \s!parent=\v!enigma,
+      % setup=\v!list,
+      setup=\v!no,
+      style=\v!no,
+       type=module,
+    version=hg-tip,
+]
+
+%D Loading the \LUA\ conversion routines.
+
+\startluacode
+thirddata = thirddata or { }
+\stopluacode
+\registerctxluafile{enigma}
+
+%D \startdocsection[title=Macro Generator]
+%D \startparagraph
+%D The main setup.\reference[listing:define]{} The
+%D \texmacro{defineenigma} macro does not adhere to the reommended
+%D practis of automatical macro derivation. Rather, we have our own
+%D parser do the job of setting globals. This is a consequence of the
+%D intention to offer the same behavior in any of the three main
+%D formats, \PLAIN, \CONTEXT and \LATEX. Hence, we don’t rely on the
+%D internal mechanisms but implement our own macro generator.
+%D \stopparagraph
+
+\def\enigma_define_indeed#id{%
+  \edef\enigmaid{#id}%
+  \expandafter\gdef\csname \e!start\enigmaid\endcsname{%
+    \endgraf
+    \bgroup
+    \ctxlua{
+      if thirddata.enigma.machines["#id"] then
+        nodes.tasks.enableaction("processors",
+                                 "thirddata.enigma.callbacks.#id")
+      else
+        print([[ENIGMA: No machine of that name: #id!]])
+      end
+    }%
+  }%
+  %
+  \expandafter\gdef\csname \e!stop\enigmaid\endcsname{%
+    \endgraf%% We need to force a paragraph here for the callback to be
+            %% applied.
+    \ctxlua{
+      nodes.tasks.disableaction("processors",
+                                "thirddata.enigma.callbacks.#id")
+      thirddata.enigma.machines["#id"]:processed_chars()
+    }%
+    \egroup%
+  }%
+}
+
+%D \startparagraph
+%D The \texmacro{enigma_inherit}\reference[listing:inherit]{} is called
+%D as an intermediate step when deriving one machine from an already
+%D existing one. It gets the stored configuration of its ancestor,
+%D relying on the \luafunction{retrieve_raw_args} function (see
+%D \at{page}[listing:retrieve].
+%D \stopparagraph
+\def\enigma_inherit#to#from{%
+  \ctxlua{%
+    local enigma       = thirddata.enigma
+    local current_args = enigma.retrieve_raw_args(\!!bs#from\!!es)
+    enigma.save_raw_args(current_args, \!!bs#to\!!es)
+    enigma.new_callback(enigma.new_machine(\!!bs#to\!!es),
+                        \!!bs#to\!!es)
+  }%
+  \enigma_define_indeed{#to}%
+}
+
+\def\enigma_define[#id][#secondid]{%
+  \ifsecondargument %% Copy an existing machine and callback.
+    \enigma_inherit{#id}{#secondid}%
+  \else             %% Create a new machine.
+    \iffirstargument
+      \enigma_define_indeed{#id}%
+    \else
+      \donothing
+    \fi
+  \fi
+  \endgroup%
+}
+
+\def\defineenigma{%
+  \begingroup
+  \dodoubleempty\enigma_define
+}
+
+%D \stopdocsection
+
+%D \startdocsection[title=Setup]
+\def\enigma_setup_indeed#args{%
+    \ctxlua{
+      local enigma = thirddata.enigma
+      local current_args =
+        enigma.parse_args(\!!bs\detokenize{#args}\!!es)
+      enigma.save_raw_args(current_args, \!!bs\currentenigmaid\!!es)
+      enigma.new_callback(
+        enigma.new_machine(\!!bs\currentenigmaid\!!es),
+        \!!bs\currentenigmaid\!!es)
+    }%
+}
+
+%D \startparagraph
+%D The module setup \texmacro{setupenigma} expects key=value, notation.
+%D All the logic is at the Lua end, not much to see here …
+%D \stopparagraph
+
+\def\enigma_setup[#id][#args]{%
+  \ifsecondargument
+    \edef\currentenigmaid{#id}
+    \pushcatcodetable
+    \catcodetable \txtcatcodes
+      \enigma_setup_indeed{#args}%
+  \else
+    \donothing
+  \fi
+  \popcatcodetable
+  \egroup%
+}
+
+\def\setupenigma{%
+  \bgroup
+  \dodoubleempty\enigma_setup%
+}
+
+%D \stopdocsection
+
+\protect
+% vim:ft=context:sw=2:ts=2:tw=71

@@ -1,0 +1,182 @@
+% These macros are based on plain TeX. Use them to typeset
+% calculational proofs and programs written in what Dijkstra called ``dot
+% notation''. Dijkstra described the proof format in EWD 1300 and
+% the programming language in ``A Discipline of Programming''.
+% Don't hesitate to contact me:
+% Wolfgang Helbig              helbig@lehre.ba-stuttgart.de
+% Stauferstr. 22               http://wwwlehre.ba-stuttgart.de/~helbig
+% 71334 Waiblingen             November 2008
+
+% Sets and quantified operators
+% The first two parameters are delimited by `: ', they provide the
+% the quantifier and the range. The last parameter defines the term.
+% It is delimited by `\>'. If the range is empty, the two colons will not
+% be separated by space. The quantifier may be empty to give you a set.
+
+\def\<#1: #2: #3\>{\langle #1\;:\if#2\empty\else\;#2\;\fi:\;#3\rangle}
+\let\mx\uparrow % maximum
+\let\mn\downarrow % minimum
+\let\fa\forall % universal quantifier
+\let\ex\exists % existential quantifier
+\let\su\Sigma % sum
+\def\nbr{\#} % number of 
+
+% Space surrounding binary operators.
+% The lower the precedence of a operator the more space should surround it.
+% Plain TeX provides \qquad = 36u; \quad = 18u; \; = 5u; \> = 4u; \, = 3u;
+%          \!=-3u where one u is em/18.
+
+% logical operators (use mxx for operator xx surrounded by space)
+\let\eq\equiv
+\def\meq{\qquad\eq\qquad} % equivalence surrounded by 36u
+\let\ff\Leftarrow % "follows from"
+\def\mff{\quad\ff\quad} % "follows from" surrounded by 18u
+\let\impl\Rightarrow
+\def\mimpl{\quad\impl\quad} % "implies" surrounded by 18u
+\let\and\land
+\def\mand{\;\,\and\;\,} % "and" surrounded by 9u
+%\let\or\lor
+\def\mor{\;\,\lor\;\,} % "or" surrounded by by 9u
+
+% For most arithmetic operators, we use what plain TeX provides, namely
+% mathrel is surrounded by 5u space (see p. 170 in The TeXbook)
+% mathbin is surrounded by 4u space
+% mathpunct is followed by 3u space
+
+% Plain TeXs classification needs some correction however.
+% ``\mathcode "cfpp'' encodes class, font family and position in the font.
+% Plain TeX treats '*' as a bin operator, we need it as an ordinary symbol.
+\mathcode`\*="0203 % class was 2 (binary)
+
+% Plain TeX treats ':' as a rel operator, we need it as an ordinary symbol.
+\mathcode`\:="003A % class was 3 (relation)
+
+% \div and \mod should be surrounded by very little space, since
+% they have a high precedence
+\def\halfthinneg{\mskip-.5\thinmuskip}
+\def\div{\mathbin{\halfthinneg\hbox{\bf div}\halfthinneg}}
+\def\mod{\mathbin{\halfthinneg\hbox{\bf mod}\halfthinneg}}
+\def\gcd{\hbox{\bf gcd}}
+
+% Indented formulas and proofs
+% A proof is a succession of formula lines and hint lines.
+
+% A formula line has one parameter which is deliminated by \\
+% Use as `\f formula \\'
+\def\f#1\\{\tabalign&&$#1$\cr} % like `\f E=mc^2\\'
+
+% A hint line has two parameters,  a relational operator and a hint.
+% Use as `\h\eq {hint why the relation holds}'
+\def\h#1#2{\tabalign&$#1$&&$\{\,$#2$\,\}$\cr} % hint line
+\def\heq#1{\h\eq {#1}} % Abbreviation for `\h\eq {easily seen}'
+
+% A named formula has two parameters: The name, deliminated by
+% `:' and the formula, deliminated by `\\'.
+% Use as `\nf R1: formula \\'
+\def\nf #1:#2\\{\tabalign$#1:$&&$#2$\cr} % like `\nf Einstein: E=mc^2\\'
+
+% A numbered formula is similar, it typesets a parenthesized number at
+% the left side, e.g., `\nrf 1 E=mc^2\\'
+% Use as `\nrf 1 formula \\'
+\def\nrf #1#2\\{\tabalign(#1)&&$#2$\cr} % numbered formula
+
+% To typeset formulas, named formulas, and hints in double columns, use
+% the `d'-versions that take twice as much parameters.
+\def\dnf #1:#2\\#3:#4\\{\tabalign$#1:$&&$#2$&&$#3:$&&$#4$\cr} % named formula
+\def\df#1\\#2\\{\tabalign&&$#1$&&&&$#2$\cr} % double formula
+% Use `\dh \relax \relax = {hint}' for empty left columns
+\def\dh#1#2#3#4{\tabalign&$#1$&&\condhint{#2}&&$#3$&&$\{\,$#4$\,\}$\cr}
+\def\condhint#1{\ifx#1\relax\else$\{\,$#1$\,\}$\fi} % left column empty
+
+% Here are the alignments of (double column) formulas and hint lines.
+\def\+{\tabalign} % we don't want \outer\def
+\def\setcols{\settabs\+\qquad&\quad&\qquad&\hskip .5\hsize\hskip-5em&
+                       \qquad&\quad&\qquad&\cr}
+
+% Macros for programs
+% comments are specified as `\co {some text}'
+\def\co#1{\;\{\,#1\,\}} % comment
+\def\cofl#1{\{\,#1\,\}} % comment flush left
+
+% Indententation of a program line is controlled by \& and \decind.
+% \& sets the indentation of the following lines to its current position.
+% \decind decrements the indentation level of the following lines
+\newcount\nskips % holds number of tabstops
+\def\skipn{\ifcase\nskips\def\j{&}\or\def\j{&&}\or\def\j{&&&}
+      \or\def\j{&&&&}\or\def\j{&&&&&}\or\def\j{&&&&&&}\or\def\j{&&&&&&&}
+      \else\def\j{}\fi\j} % skip nskips tabstops
+\def\skipnmone{\global\advance\nskips by -1 \skipn\global\advance\nskips by 1}
+
+% Set a tabstop, succeeding lines will be left aligned to the new tabstop.
+\def\&{$\cleartabs&\global\advance\nskips by 1$}%
+
+% Decrement indentation, succeeding lines will be left aligned to the tabstop 
+% preceding the current one.
+\def\decind{$\global\advance\nskips by -1$}
+
+% The active character ^^M (end of line) both formats a program line and
+% deliminates it. 
+\def\eatfirst#1{}
+\catcode`\^^M=\active %
+\def\programline#1{\ifx;#1\def\next##1^^M{\+\skipnmone\hfill$;\;$&$##1$\cr^^M}%
+  \else\ifx\eblock#1\def\next{\eblock}%
+  \else\ifx\cofl#1\def\next##1^^M{\+\skipn$\cofl{##1}$\cr^^M}%
+  \else\ifx\od#1\def\next##1^^M{\+\skipnmone\hfill$\rawod$&$##1$\decind\cr^^M}%
+  \else\ifx\FI#1\def\next##1^^M{\+\skipnmone\hfill$\rawfi$&$##1$\decind\cr^^M}%
+  \else\ifx\|#1\def\next##1^^M{\+\skipnmone\hfill$\rawbar\;\;$&$##1$\cr^^M}%
+  \else\ifx\]#1\def\next##1^^M{\+\skipnmone\hfill$]\;$&$##1$&\decind\cr^^M}%
+  \else\def\next##1^^M{\+\skipn$#1##1$\cr^^M}\fi\fi\fi\fi\fi\fi\fi\next}%
+%
+% Enclose a block of program lines between \bblock and \eblock.
+\def\bblock{\doparskip\nskips=0\catcode`\^^M=\active \let^^M=\programline }%
+\def\eblock{\catcode`\^^M=5 \setcols }%
+\catcode`\^^M=5 %
+
+% Identation is controlled automatically be some tokens as follows:
+
+% `\[', `\do', and `\IF' set a tabstop right of them and increment
+% the indent level. The corresponding closing tokens decrement the
+% indent level. The `;', the `|', the \od and the \]| tokens at the
+% beginning of a new line are typeset slightly left of the current
+% identation level.
+
+% Tokens in our programming language
+% block
+\def\[{[\;\&}
+\def\nomenclature#1{\mathbin{\hbox{\bf#1}}\>}
+\def\glocon{\nomenclature{glocon}}
+\def\glovar{\nomenclature{glovar}}
+\def\vircon{\nomenclature{vircon}}
+\def\virvar{\nomenclature{virvar}}
+\def\pricon{\nomenclature{pricon}}
+\def\privar{\nomenclature{privar}}
+\def\]{\;]\decind}
+% primitive initializing statement
+\def\vir{${\bf\ vir }$}
+\def\array{${\bf\ array}$}
+% assignment
+\def\:#1{\mathord{\>\,:\!=\>\,}} % use as `\:='
+% guarded command list
+\def\-#1{\;\;\mathord{\rightarrow}\;\;} % use as '\->'
+\def\|{\;\rawbar\;}
+% if statement
+\def\IF{\rawif\&}
+\def\FI{\;\;\rawfi\decind}
+% do statement
+\def\do{\rawdo\&}
+\def\od{\;\;\rawod\decind}
+
+% internal use 
+\def\rawbar{|\hskip -1.4pt]}
+\def\rawdo{\hbox{\bf do}\;\;}
+\def\rawod{\hbox{\bf od}\;\;}
+\def\rawfi{\hbox{\bf fi}\;\;}
+\def\rawif{\hbox{\bf if}\;\;}
+
+% format definitions
+\parindent=0pt
+\parskip=6pt plus 2pt minus 2pt
+\def\unparskip{\vskip-\parskip}
+\def\doparskip{\vskip \parskip}
+\def\bi{\hfil\break\hbox{\qquad}}
+\setcols

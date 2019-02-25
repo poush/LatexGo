@@ -1,0 +1,152 @@
+%%
+%% This is file `termmenu.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% termmenu.dtx  (with options: `package')
+%% 
+%% IMPORTANT NOTICE:
+%% 
+%% For the copyright see the source file.
+%% 
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from termmenu.tex.
+%% 
+%% For distribution of the original source see the terms
+%% for copying and modification in the file termmenu.dtx.
+%% 
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
+%%
+%% File: termmenu.dtx Copyright(C) 2015 Sean Allred
+%%
+%% termmenu.dtx may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License (LPPL),
+%% either version 1.3c of this license or (at your option)
+%% any later version.  The latest version of this license is
+%% in the file
+%%
+%%    http://www.latex-project.org/lppl.txt
+%%
+%% The released version is available from CTAN.
+%%
+%% -----------------------------------------------------------------------
+%%
+%% The development version can be found at
+%%
+%%    http://www.github.com/vermiculus/tex-termmenu
+%%
+%% for those people who are interested.
+%%
+%% -----------------------------------------------------------------------
+%%
+\def\ExplFileName{termmenu}
+\def\ExplFileVersion{0.2}
+\def\ExplFileDate{2015-05-25}
+\def\ExplFileDescription{Terminal-driven menu support}
+\def\ExplFileExtension{dtx}
+\cs_set_eq:NN \termmenu_new:N \prop_new:N
+\cs_set_eq:NN \termmenu_show:N \prop_show:N
+\cs_new_nopar:Nn \termmenu_add:Nnnn
+  { \prop_put:Nnn #1 {#2} { {#3} #4 } }
+\tl_new:N \l__termmenu_tmp_tl
+\tl_new:N \l__termmenu_value_tl
+\cs_new_nopar:Nn \termmenu_do:NNNNN
+  {
+    \termmenu_display:N #1
+    \termmenu_prompt:NN #2 #3
+    \termmenu_entry:NVN #1 #2 #4
+    \termmenu_value:NVN #1 #4 #5
+  }
+\cs_new_nopar:Nn \termmenu_do:NNNN
+  {
+    \tl_clear:N \l__termmenu_value_tl
+    \termmenu_do:NNNNN #1 #2 #3 #4 \l__termmenu_value_tl
+    \tl_use:N \l__termmenu_value_tl
+  }
+\cs_new_nopar:Nn \termmenu_do:NNN
+  { \termmenu_do:NNNNN #1 #2 \choice \l__termmenu_tmp_tl #3 }
+\cs_new_nopar:Nn \termmenu_do:NN
+  { \termmenu_do:NNNN #1 \l__termmenu_tmp_tl #2 \l__termmenu_tmp_tl }
+\cs_new_nopar:Nn \termmenu_do:N
+  { \termmenu_do:NN #1 \choice }
+\tl_new:N \l__termmenu_tmp_tl
+\tl_new:N \l__termmenu_value_tl
+\tl_new:N \l__termmenu_spec_tl
+\cs_new_nopar:Nn \termmenu_value:NnN
+  {
+    \prop_get:NnN #1 {#2} \l__termmenu_spec_tl
+    \tl_set:Nf #3 { \tl_tail:N \l__termmenu_spec_tl } %@todo test expansion
+  }
+\cs_generate_variant:Nn \termmenu_value:NnN { NVN }
+\tl_new:N \l__termmenu_doc_tl
+\cs_new_nopar:Nn \termmenu_doc:NnN
+  {
+    \prop_get:NnN #1 {#2} \l__termmenu_spec_tl
+    \tl_set:Nf #3 { \tl_head:N \l__termmenu_spec_tl } %@todo test expansion
+  }
+\tl_new:N \g__termmenu_tmp_tl
+\bool_new:N \g__termmenu_opt_bool
+\cs_new_nopar:Nn \termmenu_entry:NnN
+  {
+    \prop_map_inline:Nn #1
+      {
+        \clist_if_in:nnT {##1} {#2}
+          {
+            \tl_gset:Nn \g__termmenu_tmp_tl {##1}
+            \bool_gset_true:N \g__termmenu_opt_bool
+            \prop_map_break:
+          }
+      }
+    \bool_if:NTF \g__termmenu_opt_bool
+      { \tl_set_eq:NN #3 \g__termmenu_tmp_tl }
+      { \tl_set:Nn #3 { \q_no_value } }
+    \bool_gset_false:N \g__termmenu_opt_bool
+  }
+\cs_generate_variant:Nn \termmenu_entry:NnN { NVN }
+\tl_new:N \l_termmenu_prompt_tl
+\tl_set:Nn \l_termmenu_prompt_tl
+ { The~following~commands~are~available: }
+\cs_new_nopar:Nn \termmenu_prompt:NN
+  {
+    \group_begin:
+      \termmenu_prompt:N #2
+    \exp_args:NNNV \group_end:
+    \tl_set:Nn #1 #2
+  }
+\cs_new_nopar:Nn \termmenu_prompt:N
+  { \ior_get_str:NN \c_term_ior #1 }
+\prop_new:N \g__termmenu_names_prop
+\cs_new_nopar:Nn \termmenu_get_name:NN
+ { \prop_get:NnN \g__termmenu_names_prop {#1} #2 }
+\cs_new_nopar:Nn \termmenu_set_name:Nn
+ { \prop_put:Nnn \g__termmenu_names_prop {#1} {#2} }
+\cs_generate_variant:Nn \iow_term:n { V }
+\cs_generate_variant:Nn \msg_term:n { V }
+\cs_new_nopar:Nn \termmenu_display:N
+  {
+    \termmenu_get_name:NN #1 \l__termmenu_spec_tl
+    \quark_if_no_value:NTF \l__termmenu_spec_tl
+      { \msg_term:n { Menu } }
+      { \msg_term:V \l__termmenu_spec_tl }
+    \iow_term:n { }
+    \iow_term:V \l_termmenu_prompt_tl
+    \iow_term:n { }
+    \prop_map_inline:Nn #1
+      {
+        \clist_set:Nn \l__termmenu_tmp_clist {##1}
+        \termmenu_doc:NnN #1 {##1} \l__termmenu_tmp_tl
+        \iow_wrap:nnnN
+          {
+            \prg_replicate:nn {4} { \iow_char:N \  }
+            > ~ \clist_use:Nn \l__termmenu_tmp_clist { ,~ } \\
+            \tl_use:N \l__termmenu_tmp_tl
+          } { \prg_replicate:nn {8} { \  } } { } \iow_term:n
+      }
+  }
+\endinput
+%%
+%% End of file `termmenu.tex'.

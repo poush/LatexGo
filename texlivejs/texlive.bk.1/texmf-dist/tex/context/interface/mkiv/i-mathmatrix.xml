@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definemathmatrix" level="style" category="mathematics tables" file="math-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathmatrix"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupmathmatrix" level="style" category="mathematics tables" file="math-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="strut">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="align">
+                    <cd:constant type="left"/>
+                    <cd:constant type="middle" default="yes"/>
+                    <cd:constant type="right"/>
+                    <cd:constant type="normal"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="simplecommand">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="location">
+                    <cd:constant type="top"/>
+                    <cd:constant type="bottom"/>
+                    <cd:constant type="high"/>
+                    <cd:constant type="low"/>
+                    <cd:constant type="lohi"/>
+                    <cd:constant type="normal" default="yes"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathmatrix" type="environment" generated="yes" variant="instance" level="document" category="mathematics tables" file="math-ali.mkiv">
+        <cd:sequence>
+            <cd:instance value="mathmatrix"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathmatrix"/>
+            </cd:assignments>
+        </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-mathmatrix"/>
+        </cd:instances>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="mathmatrix" type="environment" level="document" category="mathematics tables" file="math-ali.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmathmatrix"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="matrix" type="environment" level="document" category="mathematics tables" file="math-ali.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmathmatrix"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="mathmatrix" generated="yes" level="document" category="mathematics tables" file="math-ali.mkiv">
+        <cd:sequence>
+            <cd:variable value="mathmatrix"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="matrices" type="environment" level="document" category="mathematics tables" file="math-ali.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathmatrix"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="intertext" type="environment" level="document" category="mathematics" file="math-ali.mkiv"/>
+
+    <cd:command name="intertext" level="document" category="mathematics" file="math-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="substack" type="environment" level="document" category="mathematics" file="math-ali.mkiv"/>
+
+    <cd:command name="overset" level="document" category="mathematics" file="math-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="underset" level="document" category="mathematics" file="math-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="bordermatrix" level="document" category="mathematics tables" file="math-pln.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="bbordermatrix" level="document" category="mathematics tables" file="math-pln.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="bordermatrix" type="environment" level="document" category="mathematics tables" file="math-pln.mkiv"/>
+
+    <cd:command name="bbordermatrix" type="environment" level="document" category="mathematics tables" file="math-pln.mkiv"/>
+
+</cd:interface>

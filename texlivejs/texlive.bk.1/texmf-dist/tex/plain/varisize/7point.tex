@@ -1,0 +1,46 @@
+%%% This file is public domain.
+%%% Originally written 1992, Don Hosek.
+%%% This declaration added by Clea F. Rees 2008/11/16 with the permission of Dan Hosek.
+%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This file sets up an seven point environment for TeX. It can be initialized
+% with the '\sevenpoint' macro.
+% It also sets up a '\tenpoint' macro in case you want to go back down.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+\ifx\tenpoint\undefined\let\loadedfrommacro=Y
+         \input 10point
+         \let\loadedfrommacro=N\fi
+ 
+%%%
+%%% Load in the fonts
+%%%
+ 
+\font\sevenit=cmti7
+%
+% When reduced size fonts are available, they will be loaded here.
+% Instead, at present, necessary fonts are simulated using existing ones.
+%
+\let\sevensl=\sevenit        \let\seventt=\sevenrm
+ 
+\let\fourrm=\fiverm          \let\fouri=\fivei   \let\foursy=\fivesy
+\let\fourbf=\fivebf
+ 
+%%%
+%%% Set up the sevenpoint macros
+%%%
+\ifx\sevenpoint\undefined
+   \def\sevenpoint{\def\rm{\fam0\sevenrm} %switch to a 7-point type
+       \textfont0=\sevenrm  \scriptfont0=\fiverm \scriptscriptfont0=\fourrm
+       \textfont1=\seveni   \scriptfont1=\fivei  \scriptscriptfont1=\fouri
+       \textfont2=\sevensy  \scriptfont2=\fivesy \scriptscriptfont2=\foursy
+       \textfont3=\tenex    \scriptfont3=\tenex  \scriptscriptfont3=\tenex
+       \textfont\itfam=\sevenit   \def\it{\fam\itfam\sevenit}%
+       \textfont\slfam=\sevensl   \def\sl{\fam\slfam\sevensl}%
+       \textfont\ttfam=\seventt   \def\tt{\fam\ttfam\seventt}%
+       \textfont\bffam=\sevenbf   \scriptfont\bffam=\fivebf
+        \scriptscriptfont\bffam=\fourbf   \def\bf{\fam\bffam\sevenbf}%
+       \normalbaselineskip=10pt
+       \setbox\strutbox=\hbox{\vrule height7.5pt depth2.5pt width0pt}%
+       \normalbaselines\rm}
+   \fi

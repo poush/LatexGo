@@ -1,0 +1,3233 @@
+% This file is a part of the e-French package.
+% For more details please read efrench.pdf and faq.pdf
+%\expandafter\ifx\csname frenchTeXmods\endcsname\relax%   ---??
+%\else \endinput \fi%                                     ---??
+\def\frenchname{french}%
+\def\frenchpack{e-french}%          eFrench
+\def\ds@french{}%
+\def\ds@pmfrench{\pmfrench}%
+{\catcode`\@=11{%
+ \ifx\@unexpandable@protect\undefined\let\protect\empty%
+ \else\let\protect\@unexpandable@protect%
+ \fi%
+                           \xdef\FSfd{7 janvier 2019}%          eFrench
+                           \xdef\FSfv{V6,02}% 
+                           \xdef\frenchstyleid{\FSfv\space-- \FSfd\space --}%
+}}%
+                           \edef\FSfd{2019/01/07}%
+\NeedsTeXFormat{LaTeX2e}[1996/12/01]%
+% > utf8 and NoEncode specialities
+\newif\ifeF@NoEnc    %No encoding (XeTex, LuaLaTex)
+\expandafter\expandafter
+\expandafter\ifx\csname XeTeXrevision\endcsname\relax
+\else
+  \eF@NoEnctrue
+\fi
+%
+\newif\ifeF@LuaTeX
+\expandafter\ifx\csname lualatexversion\endcsname\relax
+\else
+  \eF@LuaTeXtrue \eF@NoEnctrue
+\fi
+% In order having no encoding by messages declare this :
+  \let\kbencoding\@gobble
+% < utf8 and NoEncode specialities
+\let\auxWARNINGi=\@gobble%
+\def\@txt@msg#1{#1}%
+\def\@gobbleopt[#1]{}%
+\def\f@issue#1#2{#1{#2}\@ifnextchar[{\@gobbleopt}{}%
+                }%
+\def\@tempc{%
+\def\f@issue##1##2{\f@issue@[##1]##2\void}%
+                                      %
+                                      %
+                                      %
+                                      %
+\def\f@issue@[##1]##2-##3-##4\void{\issuemsg[##1]##3(french)}%
+\PassOptionsToPackage{french}{msg}%
+\ifx\LdfInit\@undefined%
+     \RequirePackage{msg}%
+\else%
+     \let\@GOfrench\@currname%
+     \xdef\@currname{msg}%
+     \def\intern@lc@llfrom{\frenchpack}%
+     \let\fp@languagename\languagename%
+       \ifx\documentclass\@twoclasseserror%
+          \def\languagename{french}%
+       \fi
+       \@@input msg.sty%
+     \let\languagename\fp@languagename%
+     \let\fp@languagename\undefined%
+     \let\intern@lc@llfrom\undefined%
+     \let\@currname\@GOfrench%
+\fi%
+           }%
+\def\@tempd{\def\f@issue##1##2{\@ifnextchar[{\@gobbleopt}{}%
+                            }%
+           }%
+\edef\@tempa{\expandafter\noexpand\csname str-\jobname\endcsname}%
+\edef\@tempb{\expandafter\noexpand\csname str-frlicense\endcsname}%
+\ifx\@tempa\@tempb%
+\IfFileExists{msg.sty}{\@tempc}{\@tempd}\else%
+\IfFileExists{msg.sty}{\@tempc}{%
+          \typeout{^^J -81- WARNING: "msg" package not found;%
+^^J\space\space\space\space\space\space continuing without message texts.}%
+                               }%
+\fi%
+\newif\ifECM%
+\def\ErrFrench{\f@issue\@fW{-26- %
+                       %
+                       %
+                       }}%
+\def\ifFTY{\ErrFrench}\def\ifFTR{\ErrFrench}\def\ifFG{\ErrFrench}%
+\def\ifFLA{\ErrFrench}\def\ifFMA{\ErrFrench}\def\ifFH{\ErrFrench}%
+\def\ifArG{\ErrFrench}\def\ifFTSW{\ErrFrench}\def\ifFW{\ErrFrench}%
+\edef\GOfrench{`\string @}%
+\ifnum\catcode\GOfrench=11%
+       \let\resetat\relax%
+  \else\edef\resetat{\noexpand\catcode\GOfrench=\the\catcode\GOfrench}%
+       \makeatletter\fi%
+\let\@currnameORI\@currname%
+\xdef\@currname{\frenchname}%
+{\def\'{\string\'}%
+    \ProvidesPackage{\frenchname}%
+                    [\FSfd\space The \frenchpack\space package /\FSfv/]%
+}%
+\def\GOfrench{babel}\ifx\@currnameORI\GOfrench%
+                    \ifx\undefined\babel@core@loaded\input babel.def\relax\fi%
+                    \ifx\undefined\babel@core@loaded%
+                              \let\babel@core@loaded\main@language\fi%
+                    \fi%
+\def\@tempa#1V#2,#3\@nil{\def\@FSfv{#2}}\expandafter\@tempa\FSfv\@nil%
+\let\FSfv=\undefined%
+\IfFileExists{frpatch.sty}{\def\FSfd@patch{unknown}}{\let\FSfd@patch\FSfd}%
+\if@compatibility%
+    \f@issue\typeout{^^J -68- 
+             %
+             %
+            }\expandafter\stop%
+\fi%
+\ifeF@LuaTeX\relax\else
+\ifx\l@french\undefined\f@issue\typeout{^^J -20- 
+         %
+             %
+                               }%
+   \fi%
+\fi%
+\fontencoding{\encodingdefault}\selectfont%
+      \def\@temp@{OT1}\ifx\@temp@\f@encoding%
+                           \def\@temp@{\global\ECMfalse}%
+                      \else\def\@temp@{LO1}\ifx\@temp@\f@encoding%
+                                                \def\@temp@{\global\ECMfalse}%
+                                           \else%
+                                                \def\@temp@{\global\ECMtrue}%
+                                           \fi%
+                      \fi%
+\@temp@%
+\def\@tempa{\let\ifEightBitOutput\iffalse}%
+\ifx\EightBitOutputfalse\undefined\expandafter\@tempa\fi%
+\ifECM\else\ifx\charsubdef\undefined%
+    \def\@tempa{\noexpand\dGs}%
+    \ifx\@tempa\dGs\else%
+       \ifx\@kb@msgXXIX\relax\else%
+           \f@issue\typeout{^^J -29- %
+     %
+     %
+     %
+                 }%
+           \let\@kb@msgXXIX\relax%
+       \fi%
+    \fi%
+\fi\fi%
+\ifx\undefined\@dblarg%
+\long\def\@dblarg#1{\@ifnextchar[{#1}{\@xdblarg{#1}}}}%
+\long\def\@xdblarg#1#2{#1[{#2}]{#2}}%
+\fi%
+\newdimen\@FrDimen%
+\def\usualmessages{\let\ifEightBitOutput\iftrue}%
+      \ifnum\inputlineno=-1\def\@o@l{.}%
+         \else\def\@o@l{ (\`a la ligne \the\inputlineno).}\fi%
+  \expandafter\let\expandafter\@aiguORI\expandafter=%
+               \csname OT\string1\string\'\endcsname%
+  \expandafter\let\expandafter\@gravORI\expandafter=%
+               \csname OT\string1\string\`\endcsname%
+  \expandafter\let\expandafter\@acchORI\expandafter=%
+               \csname OT\string1\string\^\endcsname%
+  \expandafter\let\expandafter\@tremORI\expandafter=%
+               \csname OT\string1\string\"\endcsname%
+  \expandafter\let\expandafter\@cediORI\expandafter=%
+               \csname OT\string1\string\c\endcsname%
+\def\@PreserveBraces[#1#2]%
+                    {\ifcat\noexpand#1$ #1#2\def\@temp@{}%
+                       \else\def\@temp@{#2}%
+                            \ifx\@temp@\empty\def\@temp@{#1}%
+                                        \else\def\@temp@{{#1#2}}\fi%
+                     \fi\expandafter\@temp@}%
+\def\@temp@{lplain-bilingual}%
+\ifx\fmtname\@temp@\f@issue\typeout{-64- %
+                \@txt@msg{ERROR: invalid \string\fmtname\space in lplain.tex}%
+                            }\stop\fi%
+%% code to test the shareware licence suppressed    eFrench
+\let\@tempc\relax%
+\ifx\today\undefined\let\today\cejour\fi%
+\ifx\today\undefined\f@issue\typeout{^^J -52- %
+ %
+ %
+                            }\expandafter\stop%
+\fi%
+{\def\GOfrench{\global\let\ifEightBitOutput\iffalse}%
+ \let\add@accent\@gobble\edef\@tempa{\`{}}%
+ \def\@tempb{{\setbox \@tempboxa \hbox {}\accent 18 }}%
+ \ifx\@tempa\@tempb%
+      \expandafter%
+      \GOfrench%
+ \fi%
+}%
+\def\@fW#1{{\let\@nobraces\@firstofone%
+        \ifEightBitOutput%
+            \setbox\@tempboxa\hbox{\`\space}%
+              \ifx\charsubdef\undefined\else%
+                 \let\add@accent\@gobble%
+                 \def\'##1{\expandafter\@nobraces\@aiguORI##1}%
+                 \def\`##1{\expandafter\@nobraces\@gravORI##1}%
+                 \def\^##1{\expandafter\@nobraces\@acchORI##1}%
+              \fi%
+        \else%
+          \let\protect\string\let\add@accent\@gobble%
+        \fi%
+        \edef\@tempa{#1}\typeout{\@tempa}}}%
+{\def\ier{er}%
+\f@issue%
+\@fW{^^J -23- %
+              %
+    }%
+}%
+\let\ifFW\iftrue%
+\def\@fw#1{{\let\@NoFr\relax%
+           \ifFW\kbtypeout%
+                     {^^J \frenchname.sty \string : #1\@o@l}%
+           \fi%
+          }}%
+            %
+\ifx\kbtypeout\undefined%
+\def\@kbtypeout[#1]#2{\ifEightBitOutput\let\@typeset@protect\protect\fi%
+                \let\@inpenc@undefined@\@gobble%
+                \edef\f@tempa{#2\empty}%
+                #1{\f@tempa}\egroup}%
+\def\kbtypeout{\kbIO[\typeout]}%
+\def\kbIO{\bgroup%
+        \ifECM\fontencoding{OT1}\selectfont\fi%
+        %
+        \let\@nobraces\@firstofone%
+        \let\protect\string%
+        \ifEightBitOutput%
+             \def\'##1{\expandafter\@nobraces\@aiguORI##1}%
+             \def\`##1{\expandafter\@nobraces\@gravORI##1}%
+             \def\^##1{\expandafter\@nobraces\@acchORI##1}%
+             \def\"##1{\expandafter\@nobraces\@tremORI##1}%
+             \def\c##1{\expandafter\@nobraces\@cediORI##1}%
+        \csname @kbspecials\endcsname%
+        \else%
+          \let\add@accent\@gobble%
+          \def\set@display@protect{\let\protect\noexpand}%
+        \fi%
+        \@kbtypeout}%
+\fi%
+\ifx\@kbtypeout\undefined%
+     \def\@kbtypeout[#1]#2{#1{#2}\egroup}%
+\fi%
+\def\@tempb{\let\ifEightBitOutput\iffalse}%
+\ifx\kbtypeout\typeout%
+ \long\def\@tempa{\add@accent{19}}%
+ \ifx\@tempa\@aiguORI\expandafter\@tempb\fi%
+\def\@fw#1{\ifFW\bgroup\let\@nobraces\@firstofone%
+            \ifEightBitOutput%
+                   \ifx\charsubdef\undefined\else%
+                     \def\'##1{\expandafter\@nobraces\@aiguORI##1}%
+                     \def\`##1{\expandafter\@nobraces\@gravORI##1}%
+                   \fi%
+            \else%
+              \let\protect\string\let\add@accent\@gobble%
+            \fi%
+            \@kbtypeout[\typeout]{^^J \frenchname.sty \string : #1\@o@l}%
+           \fi%
+          }%
+\fi
+\def\@Ffnt#1{\f@issue\@fw{-2- %
+                         }[#1]}%
+\def\@finput#1{\InputIfFileExists{#1}{}{\@Ffnt{#1}}}%
+\def\@NoFr{\f@issue\@fw{-3- %
+           %
+          }}%
+\let\ifFrench\iffalse%
+\ifx\addto\undefined%
+ \def\addto#1#2{\ifx#1\@undefined\def#1{#2}%
+                \else\ifx#1\relax\def #1{#2}%
+                     \else{\toks@\expandafter{#1#2}%
+                           \xdef#1{\the\toks@}}%
+                     \fi%
+                \fi%
+               }%
+\fi%
+\def\fraddto#1#2{\addto{#1}{#2}%
+                 \ifFrench\french\else\english\fi}%
+\ifx\MakeRobustCommand\undefined%
+\def\MakeRobustCommand#1{\expandafter\expandafter\expandafter%
+                         \let\expandafter\expandafter\csname #1 fp\endcsname%
+                         \csname #1\endcsname%
+                         \expandafter%
+         \edef\csname #1\endcsname{\expandafter\protect%
+                                   \expandafter\noexpand\csname #1 fp\endcsname}
+                        }%
+\fi%
+\ifx\DocInput\undefined\else%
+     \let\fr@di\DocInput\def\DocInput#1{%
+                         \ifFrench\english\fr@di{#1}\french%
+                          \else\fr@di{#1}%
+                         \fi\relax}%
+\fi%
+\ifx\url\undefined\else%
+     \let\fr@ul\url\def\url#1{%
+                         \ifFrench\english\fr@ul{#1}\french%
+                          \else\fr@ul{#1}%
+                         \fi\relax}%
+\fi%
+\ifx\xy\undefined\else%
+     \let\fr@xy\xy\def\xy{%
+                          \ifFrench\nofrenchguillemets\DFPdp\fi\fr@xy}%
+\fi%
+\ifx\hyper@n@rmalise\undefined\else%
+     \let\fr@hne\hyper@n@rmalise\def\fr@hnr#1#2{\fr@hne{#1}{#2}}%
+      \def\hyper@n@rmalise{\ifFrench\english\expandafter\fr@hnr%
+                            \else\expandafter\fr@hne\fi}%
+\fi%
+\ifx\PDFSCR@Info\undefined\else%
+  \def\@seccntformat#1{\protect\textcolor{section\thesection@level}%
+     {\expandafter\upshape\csname the#1\endcsname}\quad}%
+\fi%
+\ifx\listing\undefined\else%
+     \let\fr@li\listing%
+\edef\listing{\noexpand\@protected@testopt\noexpand\listing%
+               \expandafter\noexpand\csname\string\listing\endcsname {1}}%
+     \ifx\fr@li\listing%
+            \def\listing{%
+                         \ifFrench\expandafter\english\expandafter\fr@li%
+                          \else\expandafter\fr@li%
+                         \fi}%
+     \else%
+       \long\def\listing{%
+                         \ifFrench\expandafter\english\expandafter\fr@li%
+                          \else\expandafter\fr@li%
+                         \fi\relax}%
+     \fi%
+\fi%
+\ifx\inputlisting\undefined\else%
+     \let\fr@PL\lst@ProcessListing\def\lst@ProcessListing[#1]{%
+                         \ifFrench\english\fr@PL[#1]\french%
+                          \else\fr@PL[#1]%
+                         \fi\relax}%
+\fi%
+\ifx\lstlisting\undefined\else%
+     \let\fr@lsi\lstlisting\long\def\lstlisting{%
+                         \ifFrench\expandafter\english\expandafter\fr@lsi%
+                          \else\expandafter\fr@lsi%
+                         \fi}%
+\fi%
+\ifx\lstinputlisting\undefined\else%
+     \let\fr@PL\lst@ProcessListing\def\lst@ProcessListing[#1]{%
+                         \ifFrench\english\fr@PL[#1]\french%
+                          \else\fr@PL[#1]%
+                         \fi}%
+\fi%
+\def\ifFrench#1\fi{\@NoFr}%
+                          %
+\def\originalinput#1{\ifFrench\english\@finput{#1}\french%
+                                \else\@finput{#1}\fi\relax}%
+\def\originaloutput[#1]{%       <BG
+     \ifFrench\english\fi%
+     \def\@riginalout##1##2{\immediate\write##1{##2}}%
+     \@riginalout{#1}}%      >BG
+% ou moins souple d'emploi : RJ
+%\def\originaloutput#1#2{\ifFrench\english\fi\immediate\write#1{#2}}% RJ
+\let\ifFLA\iffalse%
+\@ifundefined{printindex}{%
+    \def\see#1#2{\seename%
+              \/ {#1}}%
+    \def\printindex{\clearpage%
+                    \ifx\hyper@refstepcounter\undefined\else%
+                     \stepcounter{subparagraph}%
+                      \hyper@refstepcounter{subparagraph}%
+                    \fi%
+                    \addcontentsline{toc}{chapter}%
+                    {\protect\indexname}%
+                    {\let\@ti\theindex%
+                     \def\theindex{\@ti\ifFLA\thispagestyle{french}\fi}%
+                    \@finput{\jobname.ind}}}}{}%
+\ifx\printnomenclature\undefined\else%
+\let\@pne\printnomenclature%
+\def\printnomenclature{\nofrenchwarnings\@pne}%
+\fi%
+\ifx\thebibliography\undefined\else%
+\let\@tbs\thebibliography%
+\let\fr@savebib\thebibliography%
+\long\def\thebibliography#1{%
+                \ifFLA%
+                             \ifx\hyper@refstepcounter\undefined\else%
+                              \stepcounter{subparagraph}%
+                              \hyper@refstepcounter{subparagraph}%
+                             \fi%
+\ifx\bibname\undefined%
+                            \addcontentsline{toc}{chapter}{\refname}%
+\else%
+                            \addcontentsline{toc}{chapter}{\bibname}%
+\fi%
+                            \fi%
+                            \@tbs{#1}%
+                           }%
+\ifx\bt@stepcnt\undefined%
+\else%
+\let\thebibliography\@tbs%
+\let\bt@saveitem\bibitem%
+\AtBeginDocument{\let\bt@savebib\fr@savebib}%
+\def\@tempd#1#2#3#4\void{\def\@tempa{\noexpand#1}\def\@tempb{\noexpand#2}%
+                         \def\@tempc{\noexpand#3}\def\@@tbs##1{#4}}%
+\expandafter\@tempd\thebibliography{\string#1}\void%
+\edef\thebibliography#1{\@tempa\@tempb\@tempc%
+                                  \noexpand\@@tbs{#1}\noexpand\@tbs}%
+\def\@tbs{\ifFLA%
+             \ifx\hyper@refstepcounter\undefined\else%
+                  \stepcounter{subparagraph}%
+                   \hyper@refstepcounter{subparagraph}%
+             \fi%
+             \ifx\bibname\undefined%
+                  \addcontentsline{toc}{chapter}{\refname}%
+             \else%
+                  \addcontentsline{toc}{chapter}{\bibname}%
+             \fi%
+          \fi%
+         }%
+\fi%
+\fi%
+\def\ifFLA{\ErrFrench}%
+\@ifundefined{disableindex}{}%
+                           {%
+               \def\see#1#2{\seename\/ {#1}}%
+                           }%
+\@ifundefined{seealso}{%
+   \def\subsee#1#2{\seealsoname%
+                    \/ {#1}}%
+   \let\nosee\@gobble%
+   \def\seealso{\bgroup\edef\@temp@{}\@ifNextNB[{\see@@so}%
+                                                          {\see@lso}}%
+   \def\see@lso#1#2{\expandafter%
+                    \index\@temp@{#1!zzzzz@\protect\subsee{#2}|nosee}\egroup}%
+   \def\see@@so[#1]{\edef\@temp@{[#1]}\see@lso}}{}%
+ \def\@ifFTYfalse{\let\ifFTY\iffalse}%
+ \def\@ifFTYback{\let\ifFTY\if@Back}%
+ \let\if@PMF\iffalse%
+\newif\if@PMF\@PMFfalse%
+\def\pmfrench{\@PMFtrue\f@issue\@fw{-4- %
+                        %
+                           }%
+              \def\frenchname{pmfrench}}%
+\f@issue%
+\@fW{ -24- %
+    %
+    %
+    }%
+\f@issue%
+\@fW{ -25- %
+    }%
+\def\CheckSevenBits/#1{\def\@tempa##1##2/##3{\ifx##2\empty\else%
+ \f@issue%
+ \@fw{-51- %
+      %
+     }%
+  \expandafter ##3\fi}\expandafter\@tempa\noexpand#1}%
+\@ifundefined{tt}{\def\tt{\fontfamily{\ttdefault}\selectfont}}{}%
+\let\ifGIAF\iftrue%
+\@ifundefined{ly}%
+  {%
+           \ifx\symlasy\undefined%
+              \ifx\undefined\babel@core@loaded%
+                  \RequirePackage{latexsym}%
+              \else%
+                  \xdef\@currname{latexsym}%
+                  \@@input latexsym.sty\@@input ulasy.fd%
+              \fi%
+           \fi%
+           \def\@ly{\fontencoding{U}\fontfamily{lasy}%
+           \ifGIAF\else\fontseries{m}\fontshape{n}\fi\selectfont}%
+     \def\ly{\ifFG\ifECM\rm\else\@ly\fi\fi}%
+   }{}%
+\ifx\guillemetsfont\undefined%
+\def\guillemetsfont{\fontfamily{\rmdefault}%
+                    \fontseries{m}\fontshape{n}\selectfont}%
+\fi%
+\def\@gfnt{\guillemetsfont}%
+\edef\lq{\string`}\edef\rq{\string'}%
+\let\@cilq='%
+\edef\lqq{\string`\string`}\edef\rqq{\string'\string'}%
+\edef\pointvirgule{\string;}%
+\edef\deuxpoints{\string:}%
+\let\@cidp=:%
+\edef\pointexclamation{\string!}%
+\edef\pointinterrogation{\string?}%
+\edef\inferieura{\string<}%
+\edef\superieura{\string>}%
+\edef\dittomark{\string"}%
+\let\f@par\par%
+\let\@SLQ\lq%
+\def\@SRQ@{^\bgroup\prim@s}%
+\def\@SRQ{\ifmmode\expandafter\@SRQ@\else\rq\fi}%
+\let\@gotl\guillemotleft%
+\let\@gotr\guillemotright%
+\def\@temp@{LO1}\ifx\@temp@\f@encoding%
+                 \else\edef\@temp@{OT1}\fi%
+\def\@tempa#1{\expandafter\relax%
+               \expandafter\global%
+                \expandafter\def%
+                 \csname\@temp@\string#1\endcsname}%
+\@tempa{\guillemotleft}{\let\ifECM\iffalse%
+                        \ifFG\ly(\kern-0.20em(\else<<\fi}%
+\@tempa{\guillemotright}{\let\ifECM\iffalse%
+                         \ifFG\unskip%
+                               \ly\kern+0.20em)\kern-0.20em)%
+                         \else>>%
+                         \fi}%
+\let\@LSG\inferieura\def\@DOG{\inferieura\inferieura}%
+\let\@RSG\superieura\def\@DFG{\superieura\superieura}%
+\def\@SOC{\string[%
+         }%
+\def\@SFC{%
+          \string]}%
+\edef\@LP{\ifECM023\else(\fi%
+         }%
+\edef\@RP{%
+          \ifECM024\else)\fi}%
+\newif\ifFH%
+\let\@noBDfr\@nodocument%
+\def\frenchhyphenation{\@noBDfr}%
+\def\nofrenchhyphenation{\@noBDfr}%
+\def\frenchtypography{\@noBDfr}%
+\def\regularmathcomma{\@noBDfr}%
+\def\frenchmathcomma{\@noBDfr}%
+\def\frenchwarnings{\@noBDfr}%
+\def\nofrenchwarnings{\@noBDfr}%
+\def\nofrenchtypography{\@noBDfr}%
+\def\nofrenchtranslation{\@noBDfr}%
+\def\frenchtranslation{\@noBDfr}%
+\ifx\RIfM@\undefined%
+\def\nofrenchguillemets{\@noBDfr}%
+\def\frenchguillemets{\@noBDfr}%
+\def\nofrenchbguillemets{\@noBDfr}%
+\def\frenchbguillemets{\@noBDfr}%
+\fi%
+\global\let\ifCLAfrench\iffalse%
+\def\ConstantLayout{\@noBDfr}%
+\def\originalmathcomma{\@noBDfr}%
+\def\everyparguillemetsremoved{\@noBDfr}%
+\def\Numeros{\@noBDfr}%
+\def\order{\@noBDfr}%
+\def\endorder{\@noBDfr}%
+\def\sommairename{\@noBDfr}%
+\def\versatim{\@noBDfr}%
+\def\endversatim{\@noBDfr}%
+\def\nofrenchmacros{\@noBDfr}%
+\def\frenchmacros{\@noBDfr}%
+\def\automaticlettrine{\@noBDfr}%
+\def\noautomaticlettrine{\@noBDfr}%
+\def\noeveryparguillemets{\@noBDfr}%
+\def\everyparguillemets{\@noBDfr}%
+\def\nofrenchlayout{\@noBDfr}%
+\def\frenchlayout{\@noBDfr}%
+\def\indentfirst{\@noBDfr}%
+\def\nonindentfirst{\@noBDfr}%
+\def\NouveauLangage{\@noBDfr}%
+\def\letpunctutionactivefor{\@noBDfr}%
+\def\@tempa{\let\ifarticle\iffalse}%
+\ifx\ifarticle\undefined\expandafter\@tempa\fi%
+\ifx\@seminarerr\undefined\else\ifarticle\else%
+\let\@soORI\shipout%
+\def\shipout#1#2{\def\@tempa{slide}\def\@tempb{slide*}%
+                 {\ifx\@tempa\@currenvir\let\protect\noexpand%
+                  \else\ifx\@tempb\@currenvir\let\protect\noexpand\fi%
+                  \fi%
+                 \@soORI#1#2}%
+                 \global\let\shipout\@soORI%
+                 }%
+\fi\fi%
+\let\h@yphenation\hyphenation%
+\long\def\f@hyphenation#1{\bgroup%
+          \let\par\space%
+           \def\-{ }%
+            \let\allowhyphens\undefined%
+             \csname accenthyphcodes\endcsname%
+              \lowercase{\edef\@tempa{#1}}%
+               \h@yphenation{\@tempa}\egroup}%
+\def\@tempa{\let\iffrenchbibliography\iftrue}%
+\ifx\iffrenchbibliography\undefined\expandafter\@tempa\fi%
+\ifx\nombre\undefined\else\let\@nomORI\nombre\fi%
+\begingroup\obeyspaces%
+\gdef\@@nombre{\ifFTY\@mathcomma\obeyspaces\let =\,\fi}%
+\endgroup%
+\def\@nombre#1{\bgroup\let\ifFTY\iftrue\def\@tempa{#1}%
+ \def\,{\ifmmode\mskip\thinmuskip\fi}%
+ \if@filesw{\immediate\openout\@inputcheck=\jobname.tmp%
+    \let\protect\noexpand%
+    \ifmmode%
+            \immediate\write\@inputcheck{\protect\makeatletter%
+                                         \protect\@@nombre%
+                                         \@tempa\ignorespaces}%
+    \else%
+            \immediate\write\@inputcheck{\protect\makeatletter%
+                                         \protect\@@nombre%
+                                         $\@tempa$\ignorespaces}%
+    \fi%
+            \immediate\closeout\@inputcheck%
+            }%
+            \immediate\openin\@inputcheck=\jobname.tmp%
+            \immediate\read\@inputcheck to\@tempa%
+            \immediate\closein\@inputcheck%
+            \def\@tempa{{\input{\jobname.tmp}}}%
+ \fi%
+            \@tempa\egroup%
+           }%
+\ifx\nombre\undefined\DeclareRobustCommand*{\nombre}{\@nombre}\fi%
+\ifx\WindowsUnits\undefined%
+     \def\WindowsUnits{\@wu}\fi%
+\def\FileName{\bgroup%
+              \def\@FNenc@loop##1##2{\@tempcnta`##1\relax%
+                                      \loop\catcode\@tempcnta=11%
+                                      \ifnum\@tempcnta<`##2\relax%
+                                      \advance\@tempcnta\@ne%
+                                      \repeat}%
+              \@FNenc@loop\^^A\^^H%
+              \@FNenc@loop\^^K\^^K%
+              \@FNenc@loop\^^N\^^_%
+              \@FNenc@loop\^^?\^^ff%
+              \@FileName}%
+\def\@FileName#1{\gdef\theFileName{#1}\egroup}%
+\let\og\empty\let\fg\empty%
+   \def\FrenchGuillemetsFrom#1#2#3#4{%
+     \DeclareFontEncoding{#1}{}{}%
+     \DeclareFontSubstitution{#1}{#2}{m}{n}%
+     \DeclareTextCommand{\guillemotleft}{OT1}{%
+        {\fontencoding{#1}\fontfamily{#2}\selectfont\char#3}}%
+     \DeclareTextCommand{\guillemotright}{OT1}{%
+        {\fontencoding{#1}\fontfamily{#2}\selectfont\char#4}}}
+   \def\CyrillicGuillemets{\FrenchGuillemetsFrom{OT2}{wncyr}{60}{62}}
+   \def\PolishGuillemets{\FrenchGuillemetsFrom{T1}{lmr}{19}{20}}
+   \def\LasyGuillemets{%
+     \DeclareTextCommand{\guillemotleft}{OT1}{\hbox{%
+        \fontencoding{U}\fontfamily{lasy}\selectfont(\kern-0.20em(}}%
+     \DeclareTextCommand{\guillemotright}{OT1}{\hbox{%
+        \fontencoding{U}\fontfamily{lasy}\selectfont)\kern-0.20em)}}}
+\ifeF@NoEnc\else
+   \IfFileExists{t1lmr.fd}{\PolishGuillemets}{\LasyGuillemets}
+\fi
+   \DeclareTextSymbolDefault{\guillemotleft}{OT1}
+   \DeclareTextSymbolDefault{\guillemotright}{OT1}
+   \def\guill@spacing{\penalty\@M\hskip.8\fontdimen2\font
+                               plus.3\fontdimen3\font
+                               minus.8\fontdimen4\font}
+   \DeclareRobustCommand*{\begin@guill}{\leavevmode
+                             \guillemotleft\penalty\@M\guill@spacing}
+   \DeclareRobustCommand*{\end@guill}{\ifdim\lastskip>\z@\unskip\fi
+                     \penalty\@M\guill@spacing\guillemotright\xspace}
+   \AtBeginDocument{\ifx\xspace\@undefined\let\xspace\relax\fi}
+   \def\bbl@frenchguillemets{\renewcommand{\og}{\begin@guill}%
+                             \renewcommand{\fg}{\end@guill}}
+   \def\bbl@nonfrenchguillemets{\renewcommand{\og}{``}%
+            \renewcommand{\fg}{\ifdim\lastskip>\z@\unskip\fi ''}}
+\def\@ifo{%
+\def\kbIO{\bgroup%
+        \ifECM\fontencoding{OT1}\selectfont\fi%
+        \ifFTY\expandafter\nofrenchtypography\fi%
+        \let\@nobraces\@firstofone%
+        \let\protect\string%
+        \ifEightBitOutput%
+             \def\'####1{\expandafter\@nobraces\@aiguORI####1}%
+             \def\`####1{\expandafter\@nobraces\@gravORI####1}%
+             \def\^####1{\expandafter\@nobraces\@acchORI####1}%
+             \def\"####1{\expandafter\@nobraces\@tremORI####1}%
+             \def\c####1{\expandafter\@nobraces\@cediORI####1}%
+        \csname @kbspecials\endcsname%
+        \else%
+          \let\add@accent\@gobble%
+          \def\set@display@protect{\let\protect\noexpand}%
+        \fi%
+        \@kbtypeout}%
+\let\s@owhyphens\showhyphens%
+\let\@dsORI\dospecials%
+\@ifundefined{@sanitize}{\def\@sanitize{\relax}}{}%
+\let\@saORI\@sanitize%
+\def\frenchhyphenation{%
+                       \ifFH\else\FHtrue%
+                       \edef\@uchORI{\the\uchyph}%
+                       \def\@Hif{\ifFH}\let\@Hfi\fi%
+                       \lccode `\'=`\'%
+     \ifx\flowercase\undefined\else\def\lowercase{\flowercase}\fi%
+     \@ifundefined{allowhyphens}{%
+          \def\allowhyphens{\ifhmode\nobreak\hskip\z@skip\fi}}{}%
+     \@ifundefined{lefthyphenmin}{}%
+                 {\lefthyphenmin=2\righthyphenmin=3}%
+                       \@whatUCH%
+                      \def\@tempa####1{{\accenthyphcodes\h@yphenation{####1}}}%
+                       \ifx\@tempa\hyphenation\f@issue%
+                           \@fw{-41- %
+                                %
+                               }\stop%
+                       \fi%
+                       \def\accenthyphcodes{%
+                            \let\@typeset@protect\protect%
+                            \ifx\protect\noexpand\else%
+                               \ifECM\else\fontencoding{T1}%
+                                \let\pickup@font\@gobble%
+                                 \let\size@update\relax\selectfont%
+                            \fi\fi}%
+                       \let\hyphenation\f@hyphenation%
+                       \def\showhyphens####1{\bgroup%
+                            \csname accenthyphcodes\endcsname%
+                             \protected@edef\@tempa{####1}%
+                              \s@owhyphens{\@tempa}\egroup}%
+                       \fi}%
+\def\nofrenchhyphenation{%
+                         \ifFH\FHfalse%
+                        \lccode`\'=0%
+          \let\hyphenation\h@yphenation%
+          \let\showhyphens\s@owhyphens%
+          \ifx\lowercaseORI\undefined\else\let\lowercase\lowercaseORI\fi%
+          \@ifundefined{lefthyphenmin}{}%
+                 {\lefthyphenmin=2\righthyphenmin=3}%
+          \uchyph=\@uchORI%
+                       \fi}%
+\edef\originalmathcomma%
+            {\noexpand\mathcode`,=\the\mathcode`,}%
+\@tempcnta=\the\mathcode`,\@tempcntb=\the\mathcode`,%
+\divide\@tempcnta by 4096\relax%
+\multiply\@tempcnta by -4096\relax%
+\advance\@tempcntb by \@tempcnta%
+\edef\@tempb{\noexpand\mathcode`,=\the\@tempcntb}%
+\advance\@tempcntb by 24576\relax%
+\edef\@tempa{\noexpand\mathcode`,=\the\@tempcntb}%
+\edef\regularmathcomma{%
+                       \noexpand\def\noexpand\@mathcomma{\@tempa}%
+                       \noexpand\@mathcomma}%
+\def\@tempa{\if\space\next\else\mathord\fi\mathcomma}%
+\let\ifFTY\iftrue%
+\ifx\@tempa\sm@rtcomma%
+ \def\frenchmathcomma{%
+                      \def\@mathcomma{\ifFTY\mathcode`\,="8000\fi}%
+                      \@mathcomma}%
+\else%
+\edef\frenchmathcomma{%
+                       \noexpand\def\noexpand\@mathcomma%
+                       {\noexpand\ifFTY\@tempb\noexpand\fi}%
+                       \noexpand\@mathcomma}%
+\fi%
+\frenchmathcomma%
+\def\ifFTY{\ErrFrench}%
+\def\nofrenchtypography{%
+                        \let\ifFTY\iffalse\let\if@Back\ifFTY%
+\expandafter\let\csname OT1\string\textbackslash \endcsname\undefined%
+                        \notabbingaccents%
+                        \nofrenchguillemets%
+                        \nofrenchbguillemets%
+                        \sloppy%
+                        \nonfrenchspacing%
+                        \regularmathcomma%
+                       }%
+\def\frenchtypography{%
+                      \let\ifFTY\iftrue\let\if@Back\ifFTY%
+\expandafter\let\csname OT1\string\textbackslash \endcsname\@boiORI%
+                      \let\ifLPA\iffalse%
+                      \typedspaces%
+                      \nowrongtypedspaces%
+                      \tabbingaccents%
+                      \englishquote\englishdoublequotes%
+                      \nolabelsinmargin%
+                      \frenchguillemets%
+                      \frenchbguillemets%
+                      \normalbrackets\todayguillemets%
+                      \guillemetsinroman\guillemetsinarrays%
+                      \edef\@tempa{\the\vfuzz}%
+                      \fussy%
+                      \vfuzz=\@tempa%
+                      \frenchspacing%
+                      \frenchmathcomma%
+                     }%
+\def\nofrenchtranslation{%
+                         \let\ifFTR\iffalse\@cORI}%
+\def\frenchtranslation{%
+                       \let\ifFTR\iftrue\captionsfrench}%
+\let\frenchguillemets\relax\let\nofrenchguillemets\relax%
+\let\frenchbguillemets\bbl@frenchguillemets%
+\let\nofrenchbguillemets\bbl@nonfrenchguillemets%
+\def\frenchguillemets{%
+                      \let\ifFG\iftrue%
+                      \let\guillemets\@LG%
+                      \let\endguillemets\RG@%
+                      \let\guillemotleft\f@guillemets%
+                      \let\guillemotright\endf@guillemets%
+                      \AFPinfsup}%
+\def\nofrenchguillemets{%
+                      \let\ifFG\iffalse%
+                      \let\guillemotleft\@gotl%
+                      \let\guillemotright\@gotr%
+                      \let\guillemets\f@guillemets%
+                      \let\endguillemets\endf@guillemets%
+                      \DFPinfsup}%
+\def\noeveryparguillemets{\let\ifEPG\iffalse%
+                          \@desarm\let\@desarm\relax%
+                          \def\guillemets{%
+                           \f@issue%
+                           \@fw{-53- %
+                                     %
+                                     %
+                                     %
+                               }%
+                                          \bgroup\bgroup%
+                                          \def\guillemets{\bgroup%
+                                               \let\endguillemets\egroup}}%
+                         }%
+\def\everyparguillemets{\let\ifEPGR\iffalse%
+                        \let\ifEPG\iftrue%
+                        \let\guillemets\@LG%
+                        \let\endguillemets\RG@%
+                       }%
+\def\everyparguillemetsremoved{%
+                        \let\ifEPGR\iftrue}%
+\def\@tempa{\global\let\ifCLA\iffalse}%
+\ifx\ifCLA\undefined\expandafter\@tempa\fi%
+\def\ConstantLayout{\global\let\ifCLA\iftrue%
+     \expandafter\let\csname ifCLA\languagename\endcsname\iftrue%
+     \def\@tempa{\let\ifbbbbfixlanguage\iftrue}%
+     \ifx\ifbbbbfixlanguage\undefined\@tempa\fi%
+     \def\@tempa{\ifbbbbfixlanguage\else%
+             \f@issue%
+             \@fw{-85- %
+                       %
+                 }\fi%
+                }%
+     \ifx\@nodocument\relax\@tempa%
+     \else\ifx\btxselectlanguage\undefined%
+               \PassOptionsToPackage{fixlanguage}{babelbib}%
+          \else\@tempa%
+          \fi%
+     \fi%
+     \let\ConstantLayout\relax}%
+\def\nofrenchlayout{\nofrenchtrivsep%
+                    \let\ifFLA\iffalse\@EIM}%
+\def\frenchlayout{%
+                  \let\ifFLA\iftrue\everyparguillemets%
+                  \@FIM\@FL\let\@FL\empty\noautomaticlettrine%
+                  \frenchtrivsep}%
+\def\frenchwarnings{\let\ifFW\iftrue%
+                    \frenchtrivsepwarnings}%
+\def\nofrenchwarnings{\let\ifFW\iffalse%
+                     }%
+\def\nofrenchmacros{\let\ifFMA\iffalse}%
+\def\frenchmacros{\let\ifFMA\iftrue\@ifm%
+                  \let\@ifm\relax}%
+}%
+\long\def\usersfrenchoptions%
+                              {\bgroup\makeatletter%
+                               \expandafter\egroup%
+                               \g@addto@macro\@ufo}%
+\ifx\@ufo\undefined%
+ \let\@ufo\empty%
+\fi%
+  \def\prim@s{\prime\futurelet\@let@token\pr@m@s}%
+  \def\pr@m@s{\ifx\@cilq\@let@token\expandafter\pr@@@s%
+              \else\ifx^\@let@token\expandafter\expandafter\expandafter\pr@@@t%
+                   \else\egroup\fi%
+              \fi}%
+\let\@fsORI\frenchspacing%
+\def\frenchspacing{\@fsORI\ifECM\sfcode`\(=0\sfcode`\)=1000\fi}%
+\catcode`<=\active\catcode`>=\active\catcode`'=\active%
+\catcode`:=\active\catcode``=\active%
+\let<=\inferieura\let>=\superieura%
+\def\@Fstr{\def<{\@LSG}\def>{\@RSG}\def`{\@SLQ}\def'{\@SRQ}%
+           \def:{\deuxpoints}%
+           \let\dGs\empty}%
+\def\@LiN{\let\@sogORI<\let\@sfgORI>\let\@lqORI`\let\@rqORI'%
+          \let\@dpORI:\@Fstr\@ifFTYfalse}%
+\def\@LiB{\let<\@sogORI\let>\@sfgORI\let`\@lqORI\let'\@rqORI%
+          \let:\@dpORI\@ifFTYback}%
+\catcode\lq:=12%
+\let\@s@ORI\special%
+\ifx\eTeXversion\undefined%             
+\def\newcount{\alloc@0\count\countdef\insc@unt}%
+\def\newdimen{\alloc@1\dimen\dimendef\insc@unt}%
+\def\newbox{\alloc@4\box\chardef\insc@unt}%
+\fi%
+\let\ifFTY\iffalse%
+\ifx\vref\undefined\else%
+\@ifpackageloaded{varioref}{\def\@vrfCode{%
+                 \@gG{vr}{vref}{/}{1}%
+                 \@gG{vpr}{vpageref}{1}{1}%
+                 \@gG{vprr}{vpagerefrange}{1}{2}%
+                 \def\reftextpagerange##1##2{%
+                   pages~\pageref{##1}\ifFTY -\else --\fi\pageref{##2}}%
+                                         }%
+                           }{}%
+\fi%
+\def\ifFTY{\ErrFrench}%
+\@ifclassloaded{beamer}{\let\l@chapter\empty%
+                        \def\beamer@captiontemplate{\small\structure%
+                            {\insertcaptionname\captionseparator\space}%
+                            \insertcaption}
+                       }{}%
+\def\GOfrench{%
+              \def\special##1{\@ifFTYfalse\bgroup\@Fstr\@s@ORI{##1}%
+                               \egroup\@ifFTYback}%
+              \let\@noBDfr\relax%
+              {\catcode\lq\<=\active\ifx<\undefined\else\global%
+               \let\@mLSG<\global%
+               \def\@LSG{\ifmmode\@mLSG\else\inferieura\fi}\fi}%
+              {\catcode\lq\>=\active\ifx>\undefined\else\global%
+               \let\@mRSG>\global%
+               \def\@RSG{\ifmmode\@mRSG\else\superieura\fi}\fi}%
+\if@PMF\def\pmfrench{}\def\noeveryparguillemets{}\def\@stared{}%
+       \def\@desarm{}\def\@qquotes{}\def\@staring{}\def\@fniv2{}\fi%
+\def\sm@llerthree{\protect\sm@ller\protect\sm@ller\protect\sm@ller}
+\@ifundefined{smaller}{\def\sm@ller{\small}%
+                       \let\sm@llerthree\scriptsize%
+                       \def\l@rger{\large}}%
+                      {\def\RSsmallest{4pt}%
+                       \ifx\undefined\sm@ller%
+                       \let\sm@ller\smaller\fi}%
+\@ifundefined{footnotesize}{%
+                       \def\footnotesize{\sm@ller\sm@ller}}{}%
+\@ifundefined{Huge}{%
+                    \def\Huge{\l@rger\l@rger\l@rger\l@rger\l@rger}}{}%
+\@ifundefined{lettrinefont}{\let\lettrinefont\Huge}{}%
+\let\sv@lf=\lettrinefont%
+\ifx\@pdfcreator\undefined%
+ \else\addto\@pdfcreator{, with \frenchpack\space package}\fi%
+\def\noresetatpart{\ifFLA\let\cl@part\empty\fi}%
+\def\noresetatchapter{\ifFLA\let\cl@chapter\empty\fi}%
+\@ifundefined{chapter}{}{}%
+\@ifundefined{c@chapter}{\newcounter{chapter}}{\@addtoreset{chapter}{part}}%
+\@ifundefined{quotation}{\def\quotation{}}{}%
+\ifx\tableofcontents\undefined%
+     \else\let\@tocORI\tableofcontents\fi%
+\ifx\pdfstringdef\undefined%
+ \else\let\contentslineORI\contentsline\fi%
+\@ifundefined{l@chapter}{%
+\def\@tempa{%
+   \def\l@chapter####1####2{\addpenalty{-\@highpenalty}%
+   \vskip 1.0em plus\p@\@tempdima 1.5em%
+   \begingroup%
+     \parindent \z@ \rightskip \@pnumwidth \parfillskip -\@pnumwidth%
+     \bfseries \leavevmode \advance\leftskip\@tempdima \hskip -\leftskip%
+     ####1\nobreak\hfil \nobreak\hbox to\@pnumwidth{\hss ####2}\par%
+     \penalty\@highpenalty%
+   \endgroup}}%
+\ifx\RIfM@\undefined\@tempa%
+ \else%
+  \ifx\fr@RIfM@cls\undefined\@tempa
+\fi%
+\fi}{}%
+\@ifundefined{theHchapter}{}%
+ {\renewcommand{\theHchapter}{\arabic{part}.\arabic{chapter}}}%
+    \def\@gG##1##2##3##4{%
+         \def\@temp@{\expandafter\let\csname @##1@ORI\endcsname=}%
+         \expandafter\@temp@\csname ##2\endcsname%
+         \if##3\empty%
+              \if2##4%
+                      \expandafter\def\csname ##2\endcsname####1####2%
+                                    {\protect\atgG{##1}{{####1}{####2}}}%
+                \else%
+                 \if3##4%
+                       \expandafter\def\csname ##2\endcsname####1####2####3%
+                                   {\protect\atgG{##1}{{####1}{####2}{####3}}}%
+                 \else%
+                      \expandafter\def\csname ##2\endcsname####1%
+                                      {\protect\atgG{##1}{{####1}}}%
+                 \fi%
+              \fi%
+         \else%
+           \if/##3\expandafter\def\csname ##2\endcsname{\protect\atgH{##1}}%
+            \else%
+              \if2##4\expandafter\def\csname ##2\endcsname{\protect\atgN{##1}}%
+               \else\expandafter\def\csname ##2\endcsname{\protect\atgM{##1}}%
+              \fi%
+           \fi%
+         \fi}%
+    \def\atgG##1##2{\bgroup\@ifFTYfalse\@Fstr%
+                    \expandafter\csname @##1@ORI\endcsname##2\egroup}%
+    \def\atgH##1##2{\bgroup\@ifFTYfalse\@Fstr%
+                    \expandafter\csname @##1@ORI\endcsname{##2}\egroup}%
+    \def\atgM##1{\@ifNextNB[{\@gM@@{##1}}{\@gM@@{##1}[\empty]}%
+                }%
+    \def\atgN##1{\@ifNextNB[{\@gM@@@{##1}}{\@gM@@@{##1}[\empty]}%
+                }%
+    \def\@gM@@##1[##2]##3{\@gM@@@{##1}[##2]{##3}{}}%
+    \def\@gM@@@##1[##2]##3##4{\bgroup\@ifFTYfalse\@Fstr%
+                           \xdef\@temp@{\noexpand\@gG@{##3}{##4}}\egroup%
+                           \ifx\empty##2\let\@gG@=\empty%
+                            \else\protected@edef\@gG@{[##2]}\fi%
+                           \let\@typeset@protect\protect%
+                           \protected@edef\@temp@{\noexpand\expandafter%
+                                                  \noexpand\expandafter%
+                           \noexpand\csname @##1@ORI\noexpand\endcsname%
+                           \@temp@}\@temp@}%
+\ifx\babel@sanitize@arg\undefined\else%
+\def\babel@sanitize@arg##1{##1}%
+\wlog{\frenchname.sty\string: use of the babel package force me to nullify %
+      \noexpand\babel@sanitize@arg.}%
+\fi%
+\ifx\ifthenelse\undefined\else\let\@iTeORI\ifthenelse%
+ \long\def\ifthenelse##1##2##3{\@ifFTYfalse\@iTeORI{##1}%
+                               {\@ifFTYback##2}{\@ifFTYback##3}}%
+\fi%
+\ifx\texttt\undefined\else\@gG{xt}{texttt}{/}{1}%
+     \MakeRobustCommand{texttt}\fi%
+\ifx\hyperbaseurl\undefined\else\@gG{hl}{hyperbaseurl}{/}{1}\fi%
+\ifx\Ginclude@graphics\undefined\else\@gG{ig}%
+                 {Ginclude@graphics}{/}{1}\fi%
+\ifx\NAT@citex\undefined%
+  \ifx\cite\undefined\else\@gG{c}{cite}{1}{1}\fi%
+  \ifx\citeyear\undefined\else\@gG{cy}{citeyear}{/}{1}\fi%
+\else%
+     \let\@cxORI\@citex%
+     \def\@citex[##1][##2]##3{\@ifFTYfalse%
+                 \let\mbox\mboxORI%
+                 \@cxORI[##1][##2]{##3}\aftergroup\@ifFTYback}%
+\@gG{cin}{citation}{/}{1}%
+  \ifx\ifjb@index@bib\undefined\let\ifjb@index@bib\iffalse\fi%
+  \ifx\jb@lbibitem\undefined\else%
+  %
+  %
+  \def\jb@lbibitem[##1]##2{%
+      \gdef\jb@tempb{##1}%
+      \protected@xdef\jb@key{##2}%
+      \ifjb@index@bib%
+         \jb@call@index{aut}{##2}%
+         \jb@call@index{ed}{##2}%
+         \jb@call@index{org}{##2}%
+      \fi%
+    \endgroup}%
+  \@gG{fc}{fullcite}{1}{1}%
+  \fi%
+\fi%
+\ifx\nocite\undefined\else\@gG{nc}{nocite}{/}{1}\fi%
+\ifx\backcite\undefined\else\@gG{bkc}{backcite}{//}{2}\fi%
+\ifx\bibitem\undefined\else\let\@biORI\bibitem%
+     \def\bibitem{\@LiN\@ifNextNB[{\@bi@cb}{\@bi@ca}%
+                 }%
+     \def\@bi@ca##1{\@biORI{##1}\@LiB}%
+     \def\@bi@cb[##1]##2{\@biORI[##1]{##2}\@LiB}%
+\fi%
+\expandafter\ifx\string\bt@@item\undefined%
+             \else\@gG{bti}{\string\bt@@item}{1}{1}%
+            \fi%
+\ifx\vref\undefined\else%
+   \ifx\reftextvario\undefined\let\@vrfCode\undefined%
+\fi\fi%
+\ifx\ref\undefined\else\@gG{r}{ref}{/}{1}\fi%
+\ifx\tag\undefined\else\@gG{tG}{tag}{/}{1}\fi%
+\ifx\pageref\undefined\else\let\pageref@ORI\pageref%
+    \let\f@pageref\pageref\@gG{fpr}{f@pageref}{/}{1}%
+    \def\pageref{\ifFTY\expandafter\f@pageref\else%
+                       \expandafter\pageref@ORI\fi}%
+\fi%
+\csname @vrfCode\endcsname%
+\xdef\@lim{}\let\ifMOVING\iffalse%
+\ifx\sf@@sub@label\undefined\else\@gG{ss}{sf@@sub@label}{/}{1}\fi%
+\def\@temp@{%
+     \def\label{\protect\@LabeL}%
+\def\r@LabeL{\ifx\@lim\empty%
+               \else\marginpar{\@lim@}\xdef\@lim{}%
+             \fi}%
+\def\m@LabeL{\def\@setMGtrue{\let\ifMOVING\iftrue}%
+             \ifmmode\@setMGtrue%
+               \aftergroup\r@LabeL%
+             \fi%
+             \expandafter\t@LabeL}%
+\def\@LabeL{\ifMOVING\expandafter\t@LabeL%
+            \else\m@LabeL%
+            \fi}%
+     \def\t@LabeL####1{\@ifFTYfalse\if@labelsinmargin\ifMOVING%
+         \xdef\@lim{\ifx\@lim\empty\else\@lim\@@par\relax\fi[####1]}%
+         \gdef\@lim@{\@ifFTYfalse\hbadness=\@M\tt\@lim\@ifFTYback}%
+         \else\marginpar{%
+                    \@ifFTYfalse\hbadness=\@M\tt[####1]\@ifFTYback}\fi\fi%
+                         %
+     \bgroup\@Fstr\@lORI{####1}\egroup\@ifFTYback}%
+           }%
+\ifx\fr@RIfM@cls\undefined\else%
+\let\@mtORI\maketitle%
+\def\maketitle{{\@mtORI}}%
+\fi%
+\ifx\label\undefined\else\let\@lORI\label%
+                         \@temp@%
+                         \let\ltx@label\label%
+\fi%
+\ifx\@newl@bel\undefined\else\@gG{nl}{@newl@bel}{//}{3}\fi%
+\def\@temp@{%
+     \let\@aclORI\addcontentsline%
+     \global\let\ifCG\iftrue%
+     \def\addcontentsline####1####2####3{\@ifFTYfalse\bgroup\@Fstr%
+                 \@aclORI{####1}{####2}{####3}\egroup\@ifFTYback}%
+           }%
+\@ifundefined{addcontentsline}{\gdef\addcontentsline##1##2##3{}}%
+                              {\@temp@}%
+\let\ifFrench\iffalse%
+\def\@temp@{%
+            \def\index{\bgroup\ifFrench\@DFP\fi%
+                       \expandafter\egroup\@iORI}%
+           }%
+\ifx\index\undefined\else\let\@iORI\index%
+                         \@temp@%
+\fi%
+\ifx\list\undefined\else%
+            \let\@liORI\list%
+\fi%
+            \let\@topsepORI\topsep%
+            \let\@partopsepORI\partopsep%
+            \let\@itemsepORI\itemsep%
+            \let\@parsepORI\parsep%
+\def\warn@seps{\def\topsep{\@w@s{\string\topsep}\@topsepORI}%
+               \def\partopsep{\@w@s{\string\partopsep}\@partopsepORI}%
+               \def\itemsep{\@w@s{\string\itemsep}\@itemsepORI}%
+               \def\parsep{\@w@s{\string\parsep}\@parsepORI}%
+               \def\@tempa{verse}\def\@tempb{quotation}%
+               \ifx\@tempa\@currenvir\let\@w@s\@gobble\else%
+                \ifx\@tempb\@currenvir\let\@w@s\@gobble\fi%
+               \fi%
+              }%
+\def\@w@s##1{\ifFTSW\f@issue%
+             \@fw{-58- %
+                        }[##1]\fi}%
+\def\org@seps{\let\topsep\@topsepORI%
+              \let\partopsep\@partopsepORI%
+              \let\itemsep\@itemsepORI%
+              \let\parsep\@parsepORI%
+             }%
+\def\list##1##2{\def\@inAlist{}\@liORI{##1}{%
+    \ifx\@trivlist\@tlORI\else\warn@seps\fi%
+    ##2\org@seps}}%
+\ifx\@makecaption\undefined\else\let\@mcORI\@makecaption\fi%
+\ifx\captionseparator\undefined%
+     \def\captionseparator{~--}%
+\fi%
+\let\ifFTY\iffalse%
+\ifx\@contdelim\undefined\else%
+  \ifx\@memerror\undefined%
+   \let\@cdORI\@contdelim%
+   \def\@contdelim{\ifFTY\space\else\@cdORI\fi}%
+  \else%
+   \let\captionseparator\empty%
+   \let\captionfont\@conttfont%
+  \fi%
+\fi%
+\def\ifFTY{\ErrFrench}%
+\ifx\captionfont\undefined%
+                          \let\captionfont\emph%
+ \else\let\@cfORI\captionfont%
+       \def\captionlabelfont{\upshape}%
+        \def\captionfont{\itshape\@cfORI}%
+         \ifx\captionlabeldelim\undefined\else%
+             \let\captionlabeldelim\captionseparator%
+             \let\captionseparator\empty%
+         \fi%
+\fi%
+\def\@makecaption##1##2{\ifFTY%
+                         \def\@secondofmany####1####2\void{####2}%
+                         \def\@tempa{\@secondofmany##2\void}%
+                           \ifx\@tempa\empty%
+                               \let\captionseparator\empty%
+                           \fi%
+                         \@mcORI{##1}{\relax%
+                                      \captionfont{##2}}%
+                        \else\@mcORI{##1}{##2}\fi}%
+\def\@temp@{%
+   \def\thanks####1{\global\let\@makefntext\fr@makefntext%
+    \bgroup%
+     \ifFTY\ifhmode\ifdim\lastskip>\z@\unskip\fi\nobreak\fi%
+      \def\@footnotemark{\hbox{\@textsuperscript{\normalfont\,\@thefnmark}}}%
+       \fi\let\ifFTY\iffalse\@thORI{####1}%
+        \egroup}%
+           }%
+\ifx\thanks\undefined\else\let\@thORI\thanks\@temp@\fi%
+\let\ifFTY\iffalse%
+\ifx\@makefnmark\undefined\else\let\@mfnmORI\@makefnmark%
+\def\@makefnmark{\ifFTY\hbox{\@textsuperscript{\normalfont%
+                           \ifx\thefootnote\relax\else\,\fi%
+                                               \@thefnmark}}%
+                 \else\@mfnmORI\fi}%
+\fi%
+\def\@temp@{\long\def\fr@makefntext####1{%
+                                \bgroup%
+       \ifFTY\def\@tempa{footnote}\let\@tfnORI\@thefnmark%
+        \ifx\@tempa\@mpfn%
+           \def\@thefnmark{%
+                           %
+                           \egroup\egroup%
+                       \long\def\@tempa{\fnsymbol{footnote}}%
+                       \ifx\@tempa\thefootnote%
+                        \expandafter\raise+0.55ex%
+                       \fi%
+                           \hbox\bgroup\textnormal\bgroup%
+                           \def\@temp@{%
+\ifx\fr@RIfM@cls\undefined%
+\ifx\thanks\relax\else\kern-1.1\parindent\fi%
+\else       \kern-\parindent%
+\fi%
+                     \@ifnextchar\relax{\def\@temp@{\hphantom{.}\kern+0.25em}}%
+                                       {\def\@temp@{.\kern+0.25em}}%
+                                      }%
+                                \expandafter\@temp@\@tfnORI\@temp@%
+                               }%
+            \leavevmode\kern+0.5em%
+        \else\def\@thefnmark{\@tfnORI\,}\fi%
+       \fi\@mfntORI{####1}\egroup}%
+           }%
+     \let\@mfntORI\@makefntext\@temp@%
+     \let\@makefntext\fr@makefntext%
+\def\ifFTY{\ErrFrench}%
+\let\@fntORI\@footnotetext%
+\long\def\@footnotetext##1{\bgroup\let\if@labelsinmargin\iffalse%
+                                   \@fntORI{##1}\egroup}%
+\let\@fnORI\footnote%
+\def\footnote{\bgroup%
+              \def\index{\@ifnextchar[{\f@index}%
+                                      {\f@index@}%
+                        }%
+              \def\f@index[####1]####2{\@ifFTYfalse\@iORI[####1]{####2}%
+                                       \@ifFTYback}%
+              \def\f@index@####1{\@ifFTYfalse\@iORI{####1}\@ifFTYback}%
+              \ifFTY\ifhmode\ifdim\lastskip>\z@\unskip\fi%
+                            \nobreak\fi\fi%
+              \ifmmode\let\@fnORI\fr@footnote\fi%
+              \@ifNextNB[%
+                         \@Footnote\@Fntnorm}%
+\long\def\@Footnote[##1]##2{\@fnORI[##1]{##2}%
+                             \egroup\@ifNextNBc\footnote\refmark\@Fntcoma{}}%
+\long\def\@Fntnorm##1{\@fnORI{##1}%
+                       \egroup\@ifNextNBc\footnote\refmark\@Fntcoma{}}%
+\def\@Fntcoma{\ifFLA\@textsuperscript{,}\nobreak\fi}%
+\def\@Fxloat##1[##2]{\@xfORI{##1}[##2]\csname @Fend\@currenvir\endcsname}%
+\let\@fgeORI\figure\let\@efgeORI\endfigure%
+\def\@temp@{\let\@fgeORI\figure%
+            \def\figure{\let\ifMOVING\iftrue%
+                        \let\if@minipage\iftrue%
+                        \@set@fr@fn@%
+                        \ifx\@xfORI\undefined%
+                            \let\@xfORI\@xfloat\let\@xfloat\@Fxloat%
+                        \fi%
+                        \@fgeORI}}%
+\ifx\figure\undefined\let\@temp@\relax\fi\@temp@%
+\def\@Fendfigure{\let\@efgeORI\endfigure%
+            \def\endfigure{\@efgeORI%
+                           \ifx\@lim\empty\else\marginpar{\@lim@}%
+                            \xdef\@lim{}\fi\let\ifMOVING\iffalse}}%
+\ifx\endfigure\undefined\let\@Fendfigure\relax\fi%
+\let\@cnORI\caption%
+\def\@tablescaption{\@dblarg\@t@blescaption}%
+\let\mboxORI\mbox%
+\def\mbox##1{\leavevmode\hbox{\protect\@set@fr@fn@##1}}%
+\def\@set@fr@fn@{\ifFrench\let\footnote\fr@footnote\fi}%
+\def\fr@footnote{\@ifNextNB[\fr@fn@{\fr@fn@[]}%
+                }%
+\def\fr@fn@[##1]##2{\footnotemark%
+              \f@issue%
+              \@fw{-8- %
+                   %
+                  }[##2]%
+                   }%
+\def\@t@blescaption[##1]##2{\let\cur@fn\footnote%
+                            \let\footnote\fr@footnote%
+                       \@cnORI[##1]{##2}\let\footnote\cur@fn}%
+\def\@temp@{%
+            \let\@tbeORI\table%
+            \def\table{\let\ifMOVING\iftrue%
+                       \let\if@minipage\iftrue%
+            \ifFLA\begingroup%
+            \def\@mpfn{mpfootnote}%
+            \def\thempfn{\thempfootnote}\c@mpfootnote\z@%
+            \ifx\@captype\undefined\def\@captype{table}\fi%
+            \let\caption\@tablescaption%
+            \let\@footnotetext\@mpfootnotetext\fi%
+            \ifx\@xfORI\undefined%
+                       \let\@xfORI\@xfloat\let\@xfloat\@Fxloat%
+            \fi%
+            \@tbeORI}%
+            \expandafter\let%
+            \expandafter\@dbtbeORI\csname table*\endcsname%
+            \expandafter\def\csname table*\endcsname{\let\ifMOVING\iftrue%
+                       \let\if@minipage\iftrue%
+            \ifFLA\begingroup%
+            \def\@mpfn{mpfootnote}%
+            \def\thempfn{\thempfootnote}\c@mpfootnote\z@%
+            \ifx\@captype\undefined\def\@captype{table}\fi%
+            \let\caption\@tablescaption%
+            \let\@footnotetext\@mpfootnotetext\fi%
+            \ifx\@xfORI\undefined%
+                       \let\@xfORI\@xfloat\let\@xfloat\@Fxloat%
+            \fi%
+            \@dbtbeORI}%
+           }%
+\ifx\table\undefined\let\@temp@\relax\fi\@temp@%
+\def\@Fendtable{%
+            \let\@etORI\endtable%
+            \def\endtable{\ifFLA\par%
+                          \vskip-\lastskip%
+                          \ifvoid\@mpfootins\else\vskip\skip\@mpfootins%
+                            \footnoterule\unvbox\@mpfootins\fi%
+                          \fi\@etORI\ifFLA\endgroup\fi%
+                          \ifx\@lim\empty\else\marginpar{\@lim@}%
+                             \xdef\@lim{}\fi\let\ifMOVING\iffalse}%
+               }%
+\ifx\endtable\undefined\let\@Fendtable\relax\fi%
+\def\@temp@{\def\endtable{\ifFLA\endgroup%
+            \expandafter\let\csname endtable*\endcsname\endtable%
+                          \fi}%
+           }%
+\ifx\endtable\relax\@temp@%
+\fi%
+\expandafter\def\csname @Fendtable*\endcsname{%
+            \expandafter\let%
+            \expandafter\@dbetORI\csname endtable*\endcsname%
+            \expandafter\def%
+            \csname endtable*\endcsname{\ifFLA\par%
+                          \vskip-\lastskip%
+                          \ifvoid\@mpfootins\else\vskip\skip\@mpfootins%
+                            \footnoterule\unvbox\@mpfootins\fi%
+                          \fi\@dbetORI\ifFLA\endgroup\fi%
+                          \ifx\@lim\empty\else\marginpar{\@lim@}%
+                             \xdef\@lim{}\fi\let\ifMOVING\iffalse}%
+                                              }%
+\expandafter\ifx\csname endtable*\endcsname\relax%
+ \expandafter\let\csname endtable*\endcsname\endtable%
+\fi%
+\expandafter\ifx\csname\string\table\endcsname\undefined\else%
+   \expandafter\let\expandafter\BfigureORI\csname\string\figure\endcsname%
+   \expandafter\def\csname\string\figure\endcsname{\@Fendfigure\BfigureORI}%
+   \expandafter\let\expandafter\BtableORI\csname\string\table\endcsname%
+   \expandafter\def\csname\string\table\endcsname{\@Fendtable\BtableORI}%
+\fi%
+\def\drapeaufg{\ifFLA%
+               \raggedright\hbadness=6000%
+               \rightskip=0.3em plus 0.75em\hfuzz=0.4em\relax%
+               \let\enddrapeaufg\par\fi}%
+\def\drapeaufgIN{\ifFLA%
+                 \raggedright\hbadness=6000%
+                 \rightskip=0.3em plus 0.75em\hfuzz=6em%
+                 \lefthyphenmin=12\righthyphenmin=10\relax%
+                 \let\enddrapeaufgIN\par\fi}%
+\def\drapeaufd{\ifFLA\raggedleft%
+               \let\enddrapeaufd\par\fi}%
+\def\drapeaufdIN{\ifFLA%
+                 \raggedleft\hfuzz=6em%
+                 \lefthyphenmin=12\righthyphenmin=10\relax%
+                 \let\enddrapeaufdIN\par\fi}%
+\ifx\undefined\Hy@PDFDef\let\Hy@PDFDef\pdfstringdef\fi%
+\ifx\undefined\Hy@PDFDef\else%
+   \let\@hpdORI\Hy@PDFDef%
+   \def\Hy@PDFDef##1##2{\@ifFTYfalse\afterassignment%
+                        \@Fstr\@hpdORI{##1}{##2}\@ifFTYback}%
+\fi%
+\ifx\pdfstringdef\undefined\else%
+               \let\pdfstringdef\Hy@PDFDef%
+\fi%
+               \let\@lti\labelitemi\let\@ltii\labelitemii%
+               \let\@ltiii\labelitemiii\let\@ltiv\labelitemiv%
+               \@ifo%
+               \let\@ifo\undefined%
+               \@doFh%
+               \let\@doFh\undefined%
+               \let\hyphex\undefined\let\frhyphex\undefined%
+               \let\@temp@\undefined%
+               \let\ifFTY\iffalse\let\ifFTR\iffalse%
+               \let\ifFLA\iffalse\let\ifFMA\iffalse\let\ifFH\iffalse%
+\def\@tempa##1{\o@everypar{\rl@everypar##1}}%
+\ifx\@tempa\everypar\let\TeXeverypar\o@everypar%
+\else\let\TeXeverypar=\everypar%
+\fi%
+               \ifx \TeXXeTstate \undefined%
+                        \edef \next {\ifx \beginL \undefined 00\else 01\fi}%
+               \else%
+                        \edef \next {\ifnum \TeXXeTstate = 0 00\else 01\fi}%
+               \fi%
+               \if \next\let\beginL\relax\let\beginR\relax%
+                \else%
+                   \edef\@fepORI{{\the\TeXeverypar}}%
+                   \def\@SetBFWdirection{\csname begin%
+                                       \beginFWdirection\endcsname}%
+                   \TeXeverypar={\@SetBFWdirection%
+                                 \let\@SetBFWdirection\relax%
+                                 {\let\@nodocument\relax%
+                                 \@fepORI}}%
+               \fi%
+               \let\ErrFrench\@Ffnt\def\@Ffnt##1{}%
+\ifx\undefined\babel@core@loaded%
+\protected@write\@auxout{}{\protect%
+\csname auxWARNINGi\protect\endcsname{\protect\typeout%
+            {-34- this file and other auxiliary files require to %
+                  use the following}}}%
+\protected@write\@auxout{}{\protect%
+\csname auxWARNINGi\protect\endcsname{\protect\typeout%
+            {-34- LaTeX packages: \frenchpack!}}}%
+\protected@write\@auxout{}{\protect%
+\csname auxWARNINGi\protect\endcsname{\protect\typeout%
+            {-34- check \protect\protect\protect\usepackage%
+                  \protect\space or remove these files. %
+                  Typesetting is aborted!}%
+            \protect\stop}}%
+\fi%
+\ifeF@NoEnc
+\@finput{efrenchu.tex}
+\fi
+\@finput{frpatch.sty}%
+ \ifx\FSfd@patch\FSfd\else
+  \f@issue%
+  \@fw{-42- %
+   %
+   %
+      }%
+   \batchmode\@@end%
+ \fi%
+               \let\@Ffnt\ErrFrench\let\ErrFrench\undefined%
+               \IfFileExists{\frenchname.cfg}{%
+                                  \f@issue%
+                                  \@fw{-48- %
+                                      %
+                                      }%
+                             \@finput{\frenchname.cfg}}{}%
+               \beginlanguage}%
+     \let\@dORI\document%
+     \def\document{%
+                   \ifx\noxcomment\undefined\else%
+                       \global\let\@x@hk\xcomment@hook\global\noxcomment\fi%
+     \ifx\btxselectlanguage\undefined%
+     \else\ifx\babel@savevariable\undefined%
+      \f@issue\@fw{-87- %
+        %
+        %
+                  }%
+      \stop%
+          \fi%
+     \fi%
+     \ifx\@bglngpk\babel@savevariable%
+     \else%
+      \f@issue\@fw{-71- %
+        %
+        %
+                  }%
+     \fi\let\@bglngpk\undefined%
+                   \@dORI%
+                   \GOfrench%
+                   \let\GOfrench\undefined%
+                   \ifx\noxcomment\undefined\else\let\xcomment@hook\@x@hk%
+                       \expandafter\xcomment@hook\fi}%
+\@makeother`\@makeother<\@makeother>\@makeother'%
+\let\enddocumentasusual\enddocument%
+     \def\enddocument{\def\@tempa{\AtEndDocument{\french\f@clearpage%
+                    \global\let\ifCLA\iffalse%
+                      \let\ifCLAfrench\iffalse%
+                      \endfrench}}%
+                     \csname f@lastpage\endcsname%
+                     \@CGroup%
+                     \ifFLA%
+                        \@tempa%
+                        \def\@tempa{empty}\ifx\@specialstyle\@tempa%
+                                          \else\gdef\@specialstyle{french}\fi%
+                     \fi%
+                     \let\GOfrench\relax%
+                     \switchtolanguage\englishTeXmods%
+                \let\f@clearpage\clearpage%
+\ifx\lastpage@putlabel\undefined%
+\else\let\clearpage\relax%
+     \let\lastpage@putlabelORI\lastpage@putlabel%
+     \def\lastpage@putlabel{\addtocounter{page}{+1}\lastpage@putlabelORI%
+                            \addtocounter{page}{-1}}%
+\fi%
+                     %
+                     \ifx\undefined\babel@core@loaded\else%
+                      \ifx\@testdef\undefined\else%
+                           \@gG{@td}{@testdef}{//}{3}\fi%
+                     \fi%
+                     %
+\ifx\ConfigureToc\undefined\else%
+                     \let\@ifFTYfalse\relax\let\@ifFTYback\relax%
+                     \@Fstr\let\@Fstr\relax%
+\fi%
+                     \enddocumentasusual%
+                     }%
+\let\@whatUCH\relax%
+\def\allowfulluchyph{\@noBDfr%
+                     \uchyph=1\let\@whatUCH\allowfulluchyph%
+                     \let\@uchbox\empty}%
+\def\allowuchyph{\@noBDfr%
+                 \uchyph=1\let\@whatUCH\allowuchyph%
+                 \let\@uchbox\hbox}%
+\def\disallowuchyph{\@noBDfr%
+                    \uchyph=-1%
+                    \let\@whatUCH\disallowuchyph\let\@uchbox\hbox}%
+\def\notthyphenation{\@noBDfr%
+                     {\tt\hyphenchar\font=-1}%
+                     \let\ifTTH\iffalse}%
+\def\tthyphenation{\@noBDfr%
+                   {\tt\hyphenchar\font=`\-}%
+                   \let\ifTTH\iftrue}%
+\let\@whatUCH\allowuchyph%
+\let\ifTTH\iffalse%
+\let\ifFH\iffalse%
+\def\hyphex#1{%
+              \if#1\empty%
+                \else%
+                 \edef\@excn{#1}\fi%
+                 \let\if@FE\iftrue}%
+\def\frhyphex{%
+              \if@PMF\else\hyphex{\frenchname}\fi}%
+\def\@eatDP{\@ifNextNB:{\@gobble}{}}%
+\def\f@ffrench{\ifx\listoffigures\relax\else%
+               \figurename~\thefigure\ifFTY\captionseparator\fi\fi%
+               \ifFTY\expandafter\@eatDP\fi}%
+\def\f@tfrench{\ifx\listoftables\relax\else%
+               \tablename~\thetable\ifFTY\captionseparator\fi\fi%
+               \ifFTY\expandafter\@eatDP\fi}%
+\def\unnumberedcaptions#1{\@noBDfr%
+                          %
+     \expandafter\let\csname listof#1s\endcsname\relax%
+     \ifx\listoffigures\relax\ifx\listoftables\relax%
+          \let\unnumberedcaptions\undefined%
+     \fi\fi%
+                          }%
+\@ifundefined{captionsnames}{\def\captionsnames{\relax}\let\@tempa\@currname%
+\xdef\@currname{fenglish}\@finput{fenglish.sty}\let\@currname\@tempa}{}%
+\def\languagename{french}%
+\let\ifnonenglishheadings\iftrue%
+\def\tocreduite#1#2{}%
+\def\@sEAT#1#2{\@sORI*{\sommairename}}%
+\def\@cEAT#1#2{\@chORI*{\sommairename}}%
+\def\@smr[#1]{\let\@tempa\contentsname%
+              \let\contentsname\sommairename%
+     \ifx\tableofcontents\undefined\else%
+              \begingroup\ifcase #1 0%
+     \or   \let\l@paragraph\tocreduite%
+           \let\l@subparagraph\tocreduite%
+     \or   \let\l@subsubsection\tocreduite%
+           \let\l@paragraph\tocreduite%
+           \let\l@subparagraph\tocreduite%
+     \or   \let\l@subsection\tocreduite%
+           \let\l@subsubsection\tocreduite%
+           \let\l@paragraph\tocreduite%
+           \let\l@subparagraph\tocreduite%
+     \else \let\l@section\tocreduite%
+           \let\l@subsection\tocreduite%
+           \let\l@subsubsection\tocreduite%
+           \let\l@paragraph\tocreduite%
+           \let\l@subparagraph\tocreduite%
+                         \fi%
+     \let\@sORI\section\let\@chORI\chapter%
+     \let\section\@sEAT\let\chapter\@sEAT%
+     \let\@ToCisNOT\relax%
+     \def\@starttoc##1{%
+         \ifx\fr@RIfM@cls\undefined%
+          \else\chapter*{\sommairename}%
+         \fi%
+         \begingroup\makeatletter%
+         \immediate\openin\@inputcheck \jobname.##1 %
+         \if@filesw \expandafter\newwrite\csname tf@##1\endcsname\fi%
+         \ifeof\@inputcheck \@Ffnt{\jobname.##1}%
+                     \if@filesw\immediate\openout \csname tf@##1\endcsname%
+                               \jobname.##1\relax\fi%
+         \else\immediate\closein\@inputcheck \relax\@@input \jobname.##1 %
+              \@ifundefined{@ToCisNOT}{%
+                     \if@filesw\immediate\openout \csname tf@##1\endcsname%
+                               \jobname.##1\relax\fi}{}%
+         \fi\global\@nobreakfalse \endgroup}%
+     \ifx\fr@RIfM@cls\undefined%
+      \else\def\contentsname{}%
+     \fi%
+     \tableofcontents\endgroup%
+     \def\tableofcontents{%
+         \ifx\pdfstringdef\undefined%
+          \else\let\contentsline\contentslineORI\fi%
+         \addtocontents{toc}{\protect%
+                             \let%
+                             \protect\@ToCisNOT\protect\empty}%
+     \begingroup%
+          \def\@starttoc####1{\begingroup%
+                      \makeatletter\@input{\jobname.####1}%
+                      \if@filesw\immediate\openout \csname tf@####1\endcsname%
+                                \jobname.####1\relax\fi%
+                      \global\@nobreakfalse \endgroup}%
+     \@tocORI\endgroup}%
+      \fi%
+     \let\contentsname\@tempa%
+              }%
+\def\sommaire{\@ifNextNB[{\@smr}{\@smr[3]}%
+             }%
+\def\@temp@{\let\if@twocolumn\iffalse}%
+\@ifundefined{if@twocolumn}{\@temp@}{}%
+\@ifundefined{abstract}{%
+    \def\abstract{\let\@w@s\@gobble%
+                  \if@twocolumn\section*{\abstractname}%
+                 \else\sm@ller\begin{center}%
+                 \textbf{\abstractname\vspace*{-.5em}\vspace*{\z@}}%
+                 \end{center}\quotation\fi}%
+    \def\endabstract{\if@twocolumn\else\endquotation\fi}}{}%
+\@ifundefined{resume}{%
+\def\resume{%
+            \let\@w@s\@gobble%
+            \abstract}%
+\let\endresume\endabstract%
+                     }{}%
+\def\@tempa{%
+\def\endkeywords{\@noBDfr}%
+\def\keywords{\@noBDfr%
+              \let\@w@s\@gobble%
+              \quotation\noindent\sm@ller{%
+              \ifx\fr@RIfM@cls\undefined%
+                \else\let\textbf\textsc\fi%
+                                  \kwname}%
+              \let\endkeywords=\endquotation}%
+           }%
+\@ifundefined{keywords}{\@tempa}%
+                       {\ifx\fr@RIfM@cls\undefined%
+                         \else\@tempa%
+                        \fi%
+                       }%
+\@ifundefined{endkeywords}{\let\endkeywords\relax}{}%
+\def\motsclef{\keywords\relax%
+              \def\endmotsclef{\endkeywords}}%
+\let\ifFTR\iftrue%
+\ifx\texteuro\undefined\else%
+ \let\textcurrencyORI\textcurrency%
+ \def\textcurrency{\ifFTR\expandafter\texteuro%
+                   \else\expandafter\textcurrencyORI%
+                   \fi}%
+\fi%
+\def\annexe {\@ann{\appendixname}}%
+\def\annexes{\@ann{\appendixname s}}%
+\def\@ann#1{\@noBDfr\leavevmode%
+            \ifx\fr@RIfM@cls\undefined\else%
+             \let\chaptername\appendixname%
+            \fi%
+            \ifx\chapter\undefined\else%
+            \par\setcounter{chapter}{0}\setcounter{section}{0}%
+       \def\@chapapp{\appendixname}\def\thechapter{\Alph{chapter}}%
+       \addcontentsline{toc}{chapter}{\protect#1}%
+            \fi}%
+\@ifundefined{@restonecolfalse}{\def\@restonecolfalse{}%
+                                \def\@restonecoltrue{}}{}%
+\@ifundefined{@mkboth}{\def\@mkboth#1#2{}}{}%
+\def\glossaire{\@glo{%
+                     \glossaryname}}%
+\def\glossaires{\@glo{%
+                      \glossaryname s}}%
+\def\@glo#1{\ifx\chapter\undefined\else%
+            \setcounter{chapter}{0}\setcounter{section}{0}%
+          \@restonecolfalse\if@twocolumn\@restonecoltrue\onecolumn\fi%
+                    \hbox{}%
+                    \clearpage%
+                    \ifx\fr@RIfM@cls\undefined%
+                     \chapter*{#1%
+                      \@mkboth{\MakeUppercase{#1}}{\MakeUppercase{#1}}%
+                              }%
+                     \addcontentsline{toc}{chapter}{\protect#1}%
+                    \else\chapter*{#1}%
+                    \fi%
+          \ifx\undefined\@glossaryfile\else%
+                   \immediate\closeout\@glossaryfile%
+                    \ifx\undefined\glossaryentry%
+                         \long\def\glossaryentry##1##2{\noindent-- ##1\par}%
+                    \fi%
+                    \ifx\undefined\theglossary%
+                         \let\theglossary\description%
+                         \let\endtheglossary\enddescription%
+                         \let\scan@allowedfalse\makeatother%
+                         \def\pfill##1 {}%
+                         \def\@pgf[##1]{\@finput{##1}}%
+                         \def\printglossary{\@ifNextNB[%
+                                           {\@pgf}{\@pgf[\jobname.gls]}}%
+                    \fi%
+          \fi\fi}%
+\def\datefrench{%
+\def\todayfrench{\ifx\ier\undefined\def\ier{er}\fi%
+                 \ifnum\day=1\relax 1\ier%
+                 \else \number\day\fi%
+                 \space\ifcase\month\or janvier\or f\'evrier\or mars\or %
+                 avril\or mai\or juin\or juillet\or ao\^ut\or septembre\or %
+                 octobre\or novembre\or d\'ecembre\fi \space\number\year}%
+}\datefrench%
+\if@filesw
+   \def\ordinalSecondNam{{s}econd}%
+   \def\ordinalSecondName{{s}econde}%
+\else%
+   \def\ordinalSecondNam{{d}euxi\`eme}%
+   \let\ordinalSecondName\ordinalSecondNam%
+\fi%
+   \def\@osn#1#2{\expandafter\ifx\csname#1osn\endcsname%
+                 \relax#2\else\csname#1osn\endcsname\fi}%
+   \def\ordinal#1{\ifcase\value{#1}\or {p}remier%
+                  \or\@osn{#1}{\ordinalSecondNam}\else\ordin@l{#1}\fi}%
+   \def\ordin@l#1{\ifcase\value{#1}\or\or\or %
+     {t}roisi\`eme\if@filesw{\protected@write\@auxout{}{%
+                             \protect\expandafter%
+                             \protect\gdef\protect\csname#1osn%
+                                         \protect\endcsname%
+                             {{d}euxi\`eme}}}%
+                  \fi%
+     \or {q}uatri\`eme\or {c}inqui\`eme\or {s}ixi\`eme\or %
+     {s}epti\`eme\or {h}uiti\`eme\or {n}euvi\`eme\or {d}ixi\`eme\or %
+     {o}nzi\`eme\or {d}ouzi\`eme\or {t}reizi\`eme\or {q}uatorzi\`eme\or %
+     {q}uinzi\`eme\or {s}eizi\`eme\or {d}ix-septi\`eme\or {d}ix-huiti\`eme\or %
+     {d}ix-neuvi\`eme\or {v}ingti\`eme\fi}%
+   \def\ordinale#1{\ifcase\value{#1}\or {p}remi\`ere%
+                   \or\@osn{#1}{\ordinalSecondName}\else\ordin@l{#1}\fi}%
+   \def\Ordinal{\expandafter\uppercase\ordinal}%
+   \def\Ordinale{\expandafter\uppercase\ordinale}%
+\def\captionsfrench{%
+ \ifFTR%
+  \ifx\captionsnames\captionsfrench\else%
+   \let\@tdORI\today%
+   \let\f@fORI\fnum@figure%
+   \let\f@tORI\fnum@table%
+   \let\@cnsORI\captionsnames%
+   \def\pagename{page}%
+   \def\refname{R\'ef\'erences}%
+   \def\abstractname{R\'esum\'e}%
+\ifx\bibname\undefined\else%
+   \def\bibname{Bibliographie}%
+\fi%
+\ifx\btxselectlanguage\undefined%
+   \csname bibsfrench\endcsname%
+\fi%
+   \def\contentsname{Table des mati\`eres}%
+   \def\listfigurename{Table des figures}%
+   \def\listtablename{Liste des tableaux}%
+\ifx\listalgorithmname\undefined\else%
+   \def\ALG@name{algorithme}%
+   \def\listalgorithmname{Liste des \ALG@name s}%
+\fi%
+   \def\indexname{Index}%
+   \def\seename{\emph{voir}}%
+   \def\seealsoname{\emph{voir aussi}}%
+   \def\figurename{\textsc{Fig.}}%
+   \def\tablename{\textsc{Tab.}}%
+   \def\sommairename{Sommaire}%
+   \def\partname{%
+                 \ignorespaces\Ordinale{part}\space partie%
+                 \@RPtNoInDoc\noexpand\@RPtNoInToc}%
+   \def\glossaryname{Glossaire}%
+   \def\kwname{\textbf{Mots-cl\'e} : }%
+   \def\draftname{- \noexpand\351preuve -}%
+   \def\prefacename{Pr\'eface}%
+\ifx\proofname\undefined\else\def\proofname{D\'emonstration}\fi%
+\ifx\fr@RIfM@cls\undefined%
+   \let\fnum@figure\f@ffrench%
+   \let\fnum@table\f@tfrench%
+   \def\@RPtNoInToc{}%
+   \def\@RPtNoInDoc{\def\thepart{}}%
+   \else\def\@RPtNoInToc##1.{.}%
+        \def\@RPtNoInDoc##1\thepart{}%
+\fi%
+\ifx\opening\undefined\else%
+   \def\headtoname{}%
+   \def\ccname{c.c. }%
+   \def\enclname{P.j. }%
+   \def\PSname{P.-S. :}%
+   \def\Objectname{Objet :}%
+   \def\YourRefname{v/r\'ef. :}%
+   \def\OurRefname{n/r\'ef. :}%
+   \def\emailname{m.\'el. :}%
+\fi%
+\ifx\slidename\undefined\else%
+   \def\slidename{Transparent}%
+   \def\listslidename{Liste des transparents}%
+\fi%
+\ifx\notesname\undefined\else%
+   \def\notesname{Notes}%
+\fi%
+   \def\chaptername{Chapitre}%
+   \def\appendixname{Annexe}%
+   \let\captionsnames\captionsfrench%
+  \fi%
+   \let\today\todayfrench%
+\def\@cORI{\@cnsORI%
+            \let\today\@tdORI%
+            \let\fnum@figure\f@fORI%
+            \let\fnum@table\f@tORI}%
+\fi%
+}%
+\iffrenchbibliography%
+  \ifx\@rbibstyid\undefined%
+    \let\@rbibstyid\empty%
+    \ifx\jb@pkg@name\undefined\else%
+      \def\@rbibstyid{jb}%
+    \fi%
+  \fi%
+  \ifx\bibsfrench\undefined%
+    \edef\@tempa{fr\@rbibstyid bib.ldf}%
+    \IfFileExists{\@tempa}{%
+\f@issue%
+\@fW{ -65- %
+           %
+           %
+    }\@finput{\@tempa}}{}%
+  \fi%
+  \ifx\bibsenglish\relax%
+    \edef\@tempa{en\@rbibstyid bib.ldf}%
+    \InputIfFileExists{\@tempa}{}{}%
+  \fi%
+\fi%
+\let\@tlORI\@trivlist%
+\def\frenchtrivsepwarnings{\let\ifFTSW\iftrue}%
+\def\nofrenchtrivsepwarnings{\let\ifFTSW\iffalse}%
+\long\def\frtrivseplengths#1{%
+                             \nofrenchtrivsepwarnings%
+                             \long\def\fr@tsl{#1}%
+                            }%
+\def\fr@tsl{\setlength{\parsep}{0.2ex plus 0.1ex minus 0.1ex}%
+            \setlength{\itemsep}{0.2ex plus 0.1ex minus 0.1ex}%
+            \setlength{\topsep}{0.4ex plus 0.2ex minus 0.2ex}%
+            \setlength{\partopsep}{1.6ex plus 0.8ex minus 0.8ex}%
+           }%
+\def\frenchtrivsep{\ifFLA\def\@trivlist{%
+                   \fr@tsl\@tlORI}%
+                   \fi}
+\def\nofrenchtrivsep{\let\@trivlist\@tlORI}%
+\@ifundefined{@afterindenttrue}{\let\@afterindenttrue\relax%
+                                \let\@afterindentfalse\relax}{}%
+\let\@aifORI\@afterindentfalse%
+\edef\@piORI{\the\parindent}%
+\begingroup \catcode `| =0  \catcode `[ = 1 \catcode`] =2%
+            \catcode `\{=12 \catcode `\}=12 \catcode`\\=12%
+            |gdef|@xversatim#1\end{versatim}[#1|end[versatim]]%
+            |endgroup%
+\let\@FIM@\relax%
+\def\@FIM@{\ifCG\else\ifFLA\ifEPG\ifEPGR\else\leftguillemets\fi\fi\fi\fi}%
+\let\checkitemguillemets\@FIM@%
+\def\fr@idf{\let\@afterindentfalse\@afterindenttrue\@afterindenttrue}%
+\def\fr@nidf{\let\@afterindentfalse\@aifORI\@afterindentfalse}%
+\ifx\titlespacing\undefined%
+     \let\which@indent\fr@idf%
+\else\let\which@indent\fr@nidf%
+\fi%
+\def\fr@lbi{\def\labelitemi{\@FIM@--}\def\labelitemii{\@FIM@--}%
+            \def\labelitemiii{\@FIM@--}\def\labelitemiv{\@FIM@--}%
+           }%
+\long\def\frlabelitems#1{\ifFLA\long\def\fr@lbi{#1}%
+                         \fr@lbi\fi}%
+\def\@FIM{%
+           \fr@lbi%
+           \def\indentfirst{\ifFLA\fr@idf\fi}%
+           \def\nonindentfirst{\ifFLA\fr@nidf\fi}%
+           \which@indent%
+           %
+           \def\labelfrenchenumi{\@FIM@\quando={\arabic{enumi}}}%
+           \def\labelfrenchenumii{\@FIM@\quando={\arabic{enumii}}}%
+           \def\labelfrenchenumiii{\@FIM@\quando={\arabic{enumiii}}}%
+           \def\labelfrenchenumiv{\@FIM@\quando={\arabic{enumiv}}}%
+           \def\order{\ifnum \@enumdepth >3 \@toodeep\else%
+           \advance\@enumdepth \@ne%
+           \edef\@enumctr{enum\romannumeral\the\@enumdepth}\list%
+           {\csname labelfrench\@enumctr\endcsname}%
+           {\usecounter{\@enumctr}%
+     \ifFLA%
+           \addtolength{\leftmargin}{0.9em}%
+     \fi%
+           \def\makelabel####1{\hss\llap{####1}}}\fi}%
+           \let\endorder =\endlist%
+          %
+          %
+          \def\versatim{\bgroup\let\@w@s\@gobble%
+                               \ifFLA%
+              \let\dospecials\@dsversa%
+              \def\@xobeysp{\leavevmode{}\space}%
+              \ifx\verbatim@font\undefined\let\verbatim@font=\tt\fi%
+              \let\@ttORI\verbatim@font%
+              \def\verbatim@font{\@ttORI%
+                  \verse%
+                  \vskip-2\parskip%
+                  \vskip-1\partopsep\vskip-\topsep%
+                  \leavevmode%
+                  \leftskip=-2\itemindent%
+                  \parindent=2\itemindent%
+                  \parskip\z@%
+                  \pretolerance=\@M\tolerance=\@M\hbadness=\@M%
+                  \hyphenchar\the\font=`\-}%
+              \let\tt=\verbatim@font%
+                               \fi%
+              \let\@xverbatim\@xversatim%
+              \verbatim}%
+          \def\endversatim{\endverse%
+                        \ifTTH\else\hyphenchar\the\font=-1\fi%
+                        \endverbatim\ifFLA\vskip+1\partopsep\fi\egroup}%
+          \@ifundefined{vers}{%
+              \def\@vers##1{\def\@tempa ####1##1{\leavevmode\null####1%
+                           \endgroup}\@tempa}%
+              \def\vers{%
+                  \begingroup%
+                  \def\@xobeysp{\ifFLA\else\penalty\@M\fi\space}%
+                  \catcode``=13 \@noligs \tt%
+                  %
+                  \ifFLA\let\dospecials\@dsversa\fi%
+                  \let\do\@makeother\dospecials\@vobeyspaces \frenchspacing%
+                  \@vers}}{}%
+          \@ifundefined{verbatimfile}%
+                  {\def\verbatimfile##1{\begingroup\@verbatim\frenchspacing
+                    \@vobeyspaces\input ##1\endgroup}}{}%
+}%
+\def\@temp@{%
+\let\@ps@fp\ps@firstpage%
+\def\@opening{%
+\let\@wideletter\relax%
+\let\emailadd\@empty\let\@yourref\@empty\let\@ourref\@empty%
+\let\@object\@empty%
+  \@ifundefined{wideletter}{%
+  \def\@wideletter{}\def\wideletter{%
+                     \def\@wideletter{\leftskip-0.25\indentedwidth}}}{}%
+  \@ifundefined{email}{%
+  \def\email####1{\def\emailadd{\texttt{####1}}}}{}%
+       \@ifundefined{emailadd}{\def\emailadd{}}{}%
+  \@ifundefined{yourref}{%
+  \def\yourref####1{\def\@yourref{####1}}}{}%
+       \@ifundefined{@yourref}{\def\@yourref{}}{}%
+  \@ifundefined{ourref}{%
+  \def\ourref####1{\def\@ourref{####1}}}{}%
+       \@ifundefined{@ourref}{\def\@ourref{}}{}%
+  \@ifundefined{object}{%
+  \def\object####1{\def\@object{####1}}}{}%
+       \@ifundefined{@object}{\def\@object{}}{}%
+  \@ifundefined{PS}{%
+  \def\PS####1{{\raggedright\PSname\space ####1}}}{}%
+  \def\ps@firstpage{\ifFLA%
+                     \advance\topmargin by -20\p@%
+                     %
+                     \def\@oddhead{\ifx\undefined\formhead\else%
+                                        \bgroup\hss\formhead\hss\egroup\fi}%
+                     \def\@oddfoot{\raisebox{-45\p@}[\z@]%
+                                  {\hbox to \textwidth{%
+                     \ifcase \@ptsize\relax%
+                              \normalsize%
+                     \or      \sm@ller%
+                     \or      \footnotesize%
+                     \fi%
+                     %
+                     \ifx\undefined\formfoot\hfill\else%
+                         \bgroup\hss\formfoot\hss\egroup\fi%
+                    }}\hss}%
+                    \def\@evenhead{}\def\@evenfoot{}%
+                    \else\@ps@fp\fi}%
+  \long\def\opening####1{%
+     \ifFLA%
+          \advance\indentedwidth   by -0.25\longindentation%
+          \advance\longindentation by  0.22\textwidth%
+          \advance\parindent       by  1.5em%
+          %
+          \let\nopagenumbers\relax%
+          \thispagestyle{firstpage}%
+                                   %
+          \raggedbottom%
+          \ifx\@empty\fromlocation\location{Le}\fi%
+          \ifx\@empty\fromaddress\let\fromaddress\space\fi%
+            {\raggedright\hspace*{-0.25\indentedwidth}%
+                         \parbox[t]{0.5\textwidth}{\ignorespaces%
+                                    \vbox to 0\p@{\fromaddress\vss}}%
+              \\*[1.75\baselineskip]%
+             \par}%
+          \ifx\@empty\toname%
+                            %
+            {\raggedleft\bgroup\fromlocation\space\@date\egroup\par}%
+          \else%
+            {\raggedleft\begin{tabular}{l}\ignorespaces%
+              \toname\\ \toaddress\\*[6\parskip]%
+              \fromlocation\space\@date\end{tabular}\par}%
+          \fi%
+          \ifx\@empty\@ourref\else%
+            {\raggedright \hspace*{-0.25\indentedwidth}%
+                          \OurRefname\space\@ourref \par}%
+          \fi%
+          \ifx\@empty\@yourref\else%
+            {\raggedright \hspace*{-0.25\indentedwidth}%
+                          \YourRefname\space\@yourref \par}%
+          \fi%
+          \ifx\@empty\@object\else%
+            {\raggedright \hspace*{-0.25\indentedwidth}%
+                          \textbf{\Objectname}\space\@object \par}%
+          \fi%
+          \par\vspace*{3\parskip}%
+          \noindent####1\hfill\vspace*{3\parskip}%
+          \@wideletter%
+    \else\@oORI{####1}%
+    \fi}}%
+\def\@closing{%
+   \def\closing{\fclosing@[9]}%
+   \def\fclosing{\@ifNextNB[{\fclosing@}{\fclosing@[9]}%
+               }%
+   \long\def\fclosing@[####1]####2{%
+   \ifFLA%
+                        \par%
+                        \vspace{\parskip}\stopbreaks%
+                        \ignorespaces ####2\\[####1\medskipamount]%
+                        \ifx\@empty\fromaddress\else%
+                             \hspace*{-0.25\indentedwidth}%
+                             \hspace*{\longindentation}\fi%
+                             {\raggedright\begin{tabular}{l}\ignorespaces%
+                        \ifx\@empty\fromsig%
+                             \fromname%
+                        \else \fromsig \fi%
+                        \ifx\@empty\emailadd\else\\{\footnotesize%
+                                             \emph{\emailname} \emailadd}\fi%
+                        \strut\end{tabular}}\par%
+                        \vskip 0pt plus 1fil%
+   \else\@cloORI{####2}%
+   \fi}%
+   \def\endletter{\ifFLA\vskip 0pt plus 3fil\fi%
+                  \@elORI}}%
+\@ifundefined{opening}{\def\@opening{}\def\@closing{}}%
+                      {\let\@oORI\opening\let\@cloORI\closing%
+                       \let\@elORI\endletter%
+                       \@opening\@closing}%
+}%
+\ifx\opening\undefined\let\@temp@\relax\fi%
+\@temp@%
+\let\ifFLA\iffalse%
+\def\@temp@{%
+\def\figurette{\@noBDfr%
+               \ifx\@fgeORI\undefined\figure\fi%
+               \ifFLA\bgroup%
+                \def\@xfloat####1[h]{%
+                \expandafter\let\csname end####1\endcsname\endfigurette%
+                \vskip\intextsep\def\@captype{####1}\parindent\z@}%
+                \@fgeORI[h]\else\figure[h]\fi}%
+\def\endfigurette{\@noBDfr%
+                  %
+                      \ifFLA\vskip\intextsep\egroup\else\@efgeORI\fi%
+                      \ifx\@lim\empty\else\marginpar{\@lim@}\xdef\@lim{}\fi%
+                  \let\ifMOVING\iffalse}%
+           }%
+\ifx\figure\undefined\def\@temp@{}\fi%
+\@temp@%
+\def\@tempa{\let\fr@RIfM@cls\undefined}%
+\let\fr@RIfM@cls\RIfM@%
+ \ifx\RIfM@\undefined\else%
+  \expandafter\ifx\csname @classname\endcsname\relax\@tempa%
+               \else\def\@tempb#1#2#3#4\@nil{%
+                                      \if#1a\if#2m\if#3s\else\@tempa\fi%
+                                             \else\@tempa\fi\else\@tempa\fi}%
+                    \expandafter\@tempb\@classname\@nil%
+              \fi%
+ \fi%
+\def\@temp@{\def\ps@french{\if@fancyplain\ps@plain@fancy\else\ps@plain\fi}}%
+\ifx\ps@fancyplain\undefined%
+  \ifx\fr@RIfM@cls\undefined\def\ps@french{}%
+  \else\def\ps@french{\global\topskip\normaltopskip}%
+  \fi%
+\else\@temp@%
+\fi%
+\let\ps@frenchORI\ps@french%
+\let\@sdORI\secdef%
+\def\nofrenchpagestyle{\let\secdef\@sdORI}%
+\def\frenchpagestyle{%
+   \def\secdef{\ifFLA\thispagestyle{french}\fi\@sdORI}%
+                    }%
+\frenchpagestyle%
+\ifx\aliaspagestyle\undefined%
+\def\nobeginingfolio{\let\ps@french\ps@empty}%
+\else%
+\def\nobeginingfolio{\let\ps@french\ps@empty%
+                     \aliaspagestyle{chapter}{empty}%
+                    }%
+\fi%
+\def\beginingfolio{\let\ps@french\ps@frenchORI%
+                   \frenchpagestyle}%
+\@ifundefined{nopagenumbers}{%
+                             \def\nopagenumbers{\ifFLA\pagestyle{empty}%
+                                                \thispagestyle{empty}\fi}%
+                            }{}%
+\def\ifFLA{\ErrFrench}%
+     \newif\ifnonvoid%
+\def\@desarm{%
+     \newbox\@FrBoxi\newbox\@FrBoxii\newbox\@FrBoxiii%
+     \newbox\@FrBoxiiii\newbox\@FrBoxvi\newbox\@FrBoxvii\newbox\@FrBoxQuotes%
+     \ifx\@FrDimenS\undefined\newdimen\@FrDimenS\fi%
+     \def\@setpartozero{\widowpenalty=\z@\clubpenalty=\z@%
+         \interlinepenalty=\z@\brokenpenalty=\z@\displaywidowpenalty=\z@}%
+     \def\nonvoidtrue{\let\ifnonvoid\iftrue}%
+     \def\nonvoidfalse{\let\ifnonvoid\iffalse}%
+     \def\@transfervbox##1##2{\nonvoidtrue%
+          \loop%
+          \setbox\@FrBoxi=\vbox{\unvbox##1\global\setbox\@FrBoxiii=\lastbox%
+                 \unskip}%
+          \ifvoid\@FrBoxiii\nonvoidfalse\fi%
+          \ifnonvoid%
+          \setbox\@FrBoxii=\vbox{\unvbox##2\box\@FrBoxiii}%
+          \setbox##1=\box\@FrBoxi\setbox##2=\box\@FrBoxii%
+          \repeat}%
+     \def\@transferaddvbox##1##2{\nonvoidtrue%
+          \setbox\@FrBoxi=\vbox{\unvbox##1\global\setbox\@FrBoxiii=\lastbox%
+                \unskip}%
+          \setbox##2=\vbox{\box\@FrBoxiii}%
+          \setbox##1=\box\@FrBoxi%
+          \loop%
+          \setbox\@FrBoxi=\vbox{\unvbox##1\global\setbox\@FrBoxiii=\lastbox%
+                 \unskip}%
+          \ifvoid\@FrBoxiii\nonvoidfalse\setbox##1=\box\@FrBoxi\fi%
+          \ifnonvoid%
+          \setbox\@FrBoxii=\vbox{\unvbox##2%
+                 \hbox to \@FrDimen{\copy\@FrBoxQuotes\unhbox\@FrBoxiii}}%
+          \setbox##1=\box\@FrBoxi\setbox##2=\box\@FrBoxii%
+          \repeat}%
+    \def\@sendtopage##1{\nonvoidtrue%
+          \loop%
+          \setbox\@FrBoxi=\vbox{\unvbox##1\global\setbox\@FrBoxiii=\lastbox%
+                 \unskip}%
+          \ifvoid\@FrBoxiii\nonvoidfalse\setbox##1=\box\@FrBoxi\fi%
+          \ifnonvoid%
+          \unhbox\@FrBoxiii\unskip\break%
+          \setbox##1=\box\@FrBoxi%
+          \repeat}%
+    \def\@stared{\egroup%
+          \@transfervbox\@FrBoxvi\@FrBoxvii%
+          \@transferaddvbox\@FrBoxvii\@FrBoxvi%
+          \setbox\@FrBoxvii=\vbox{\unvbox\@FrBoxvi%
+                 \global\setbox\@FrBoxiiii=\lastbox\unskip}%
+          \@transfervbox\@FrBoxvii\@FrBoxvi%
+          \noindent \@sendtopage\@FrBoxvi%
+          \unhbox\@FrBoxiiii\unskip\unskip\unpenalty}%
+    \def\@fniv2{\egroup%
+          \@transfervbox\@FrBoxvi\@FrBoxvii%
+          \@transferaddvbox\@FrBoxvii\@FrBoxvi%
+          \setbox\@FrBoxvii=\vbox{\unvbox\@FrBoxvi%
+                 \global\setbox\@FrBoxiiii=\lastbox\unskip}%
+          \@transfervbox\@FrBoxvii\@FrBoxvi%
+          \noindent \@sendtopage\@FrBoxvi%
+          \setbox\@FrBoxvii=\vbox\bgroup\@setpartozero%
+          \noindent \unhbox\@FrBoxiiii\unskip\unskip\unpenalty}%
+    \def\@qqguill{\relax}%
+   \def\@staring{\global\setbox\@FrBoxQuotes=\hbox to 0.81em{\@qqguill}\egroup%
+          \setbox\@FrBoxvi=\vbox{\unvbox\@FrBoxvii%
+                 \global\setbox\@FrBoxiiii=\lastbox\unskip}%
+          \@transfervbox\@FrBoxvi\@FrBoxvii%
+          \noindent\@sendtopage\@FrBoxvii%
+          \setbox\@FrBoxvi=\vbox\bgroup\@setpartozero%
+          \hangindent=\wd\@FrBoxQuotes\hangafter=1%
+          \setbox\@FrBoxvii=\hbox{\unhcopy\@FrBoxiiii\unskip\unskip%
+                 \unpenalty}%
+          \@FrDimenS=\@FrDimen \advance\@FrDimenS by -2em%
+          \ifvoid\@FrBoxiiii\indent\copy\@FrBoxQuotes%
+          \else%
+          \parindent=\z@%
+          \ifdim \wd\@FrBoxvii>\@FrDimenS \unhbox\@FrBoxvii\break%
+          \else \unhbox\@FrBoxvii%
+      \fi\fi}%
+    \def\@qquotes{\setbox\@FrBoxvii=\vbox\bgroup\@setpartozero}%
+}%
+\def\@EIM{\def\labelitemi{\@lti}\def\labelitemii{\@ltii}%
+          \def\labelitemiii{\@ltiii}\def\labelitemiv{\@ltiv}%
+          \let\@afterindentfalse\@aifORI\@afterindentfalse%
+          \parindent\@piORI}%
+\let\@FL\relax%
+{\catcode`.=12\catcode`p=12\catcode`t=12\gdef\auTo@gf#1.#2pt{#1}}%
+\def\@FL{%
+\def\automaticlettrine{%
+                       \ifx\lettrinefontname\undefined%
+                           \def\@tempa####1 ####2\@@{%
+                               \def\lettrinefontname{####1}}%
+                           \edef\@tempb{ }%
+                           \expandafter\@tempa\fontname%
+                           \expandafter\font\@tempb\@@\fi%
+                       \let\sv@lf=\lettrinefont}%
+\def\noautomaticlettrine{%
+                         \let\lettrinefontname=\undefined%
+                         \let\lettrinefont=\sv@lf}%
+\ifx\lettrine\undefined%
+\def\lettrine{\par%
+              \let\@tempa\relax%
+              \def\@tempa{\def\@fbr{\fboxrule=\z@}%
+                                   \protect\@lettrineS%
+                                  }%
+              \@tempa}%
+\if@PMF\def\@Ettrine[##1]{##1}\let\@ettrine\relax\else%
+    \def\@ettrine##1##2\par{\bgroup\parskip=\z@%
+                           {\ly\xdef\bef@ly{\the\font}}%
+                           \let\newpage=\relax\let\clearpage=\relax%
+                           \let\cleardoublepage=\relax%
+                                    \edef\bef@fnt{\the\font}%
+                           \ifCG\def\bef@let{}%
+                           \else\def\bef@let{\bef@fnt\def\ly{\bef@ly}%
+                                             \leftguillemets\space}%
+                           \fi\@@ttrine{##1}{##2}\egroup}%
+    \def\@@ttrine##1##2{\ifFLA\def\@@ttrnxt{\@@@trine##1\@@{##2}}%
+                             \else\def\@@ttrnxt{##1\space\ignorespaces##2}%
+                            \fi%
+                       \@@ttrnxt\unskip\par%
+                       \f@par%
+                       \@nobreakfalse}%
+    \def\@@@trine##1##2\@@##3{\@fbr\TeXeverypar{}%
+    \ifx\lettrinefontname\undefined\let\auTo@lh\undefined%
+               \else\let\auTo@lh\lettrinehang%
+               \ifx\auTo@lh\undefined\def\auTo@lh{2}\fi%
+               \bgroup%
+               \ifx\@htfreq\undefined\newdimen\@htfreq\newdimen\@htfbase\fi%
+               \setbox0=\hbox{M}\@htfreq=\ht0%
+               \def\dimentocount####1{\expandafter\auTo@gf\the####1}%
+               \font\@fontreq=\lettrinefontname%
+               \setbox0=\hbox{\@fontreq ##1}\@htfbase=\ht0%
+               \advance\@htfreq by \auTo@lh\baselineskip%
+               \advance\@htfreq by \lineskip%
+               \advance\@htfreq by -\baselineskip%
+               \multiply\@htfreq by 100 %
+               \multiply\@htfbase by 100 %
+               \divide\@htfreq by \dimentocount\@htfbase%
+               \multiply\@htfreq by \@m%
+\global\font\lettrinefont=\lettrinefontname\space scaled \dimentocount\@htfreq%
+               \egroup%
+    \fi%
+         \setbox0\hbox{%
+                       {\shortstack{\bef@let{\lettrinefont##1}\relax%
+                        \ifdim\fontdimen\@ne\font>\z@\/\space\fi}}}%
+         \@FrDimenH=\ht0\advance\@FrDimenH by\dp0%
+         \@FrDimenS=\@FrDimenH\advance\@FrDimenS by\fboxsep%
+         \ifdim\baselineskip\superieura0pt%
+           \divide\@FrDimenS by\baselineskip%
+         \fi\@FrCount=\@FrDimenS%
+         \@FrDimen=\baselineskip\multiply\@FrDimen by-\@FrCount%
+         \advance\@FrDimen by\@FrDimenH%
+         \ifdim\@FrDimen>0.025\baselineskip \advance\@FrCount by 1\fi%
+         \ifx\auTo@lh\undefined\else\@FrCount=\auTo@lh\fi%
+         \ifx\lettrinehang\undefined\else\@FrCount=\lettrinehang\fi%
+         \@FrDimenI=\wd0%
+         \ifdim\fboxrule=\z@\else\advance\@FrDimenI by2\fboxrule%
+                                 \advance\@FrDimenI by2\fboxsep\fi%
+         \@FrDimenS=\fontdimen2\font\advance\@FrDimenI by+3\@FrDimenS%
+         \ifdim\fboxrule=\z@\advance\@FrDimenI by-0.30\@FrDimenS\fi%
+         \advance\@FrCount by -1%
+                 \@FrDimen=\@FrCount\baselineskip%
+         \advance\@FrCount by 1%
+         \ifdim\fboxrule=\z@\else\advance\@FrDimen by -\fboxrule\fi%
+         \@FrDimenH=-\dp0%
+         \setbox0\hbox{\ifdim\fboxrule=\z@\kern-\fboxsep\fi%
+                       \fbox{\shortstack{{%
+                      \def\@LSG{\f@issue\@fw{-5- %
+                               %
+                                    }}%
+                          \let\@RSG=\@LSG\bef@let%
+                          \lettrinefont\raise-\@FrDimen\hbox{##1}\relax%
+                          \ifdim\fontdimen\@ne\font>\z@\/\space\fi}}}}%
+         \box0\@FrDimen=\@FrDimenH%
+              \advance\@FrDimenH by-\@FrCount\baselineskip%
+              \advance\@FrDimenH by \lineskip%
+              \ifdim\fboxrule=\z@\else\advance\@FrDimenH by -\fboxrule\fi%
+         \vspace*{\@FrDimenH}%
+         \hangindent=\@FrDimenI%
+\ifx\lettrinehang\undefined%
+         \ifdim\@FrDimen<-0.025\baselineskip%
+               \advance\@FrCount by\@ne%
+               \divide\@FrDimen by-\baselineskip%
+               \advance\@FrCount by\@FrDimen%
+         \fi%
+\fi%
+         \ifnum\@FrCount=1\f@issue\@fw{-6- %
+                                      }\fi%
+         \hangafter=-\@FrCount%
+         \noindent\kern-2.5\@FrDimenS%
+         \def\@temp@{##2}%
+         \ifx\empty\@temp@\f@issue\@fw{-7- %
+                             %
+                                      }%
+                      \else{\scshape ##2}\fi\def\@temp@{##3}%
+                         \ifx\@temp@\empty\else\space\ignorespaces##3\fi%
+                           }%
+    \def\@Ettrine[##1 ##2 ##3]##4\par{\bgroup\parskip=0pt%
+                                      {\ly\xdef\bef@ly{\the\font}}%
+                                      \let\newpage=\relax%
+                                      \edef\bef@fnt{\the\font}\@gN%
+                  \ifFLA\def\bef@let{\bef@fnt\def\ly{\bef@ly}##1\space}%
+                        \else ##1\space\fi%
+                  \@@ttrine{##2}{{\def\@aft@let{##3}\ifx\@aft@let\empty%
+                                                     \else##3\space\fi%
+                                  \ignorespaces ##4}}\egroup}%
+\fi%
+\def\flettrine{\par%
+               \let\@tempa\relax%
+               \def\@tempa{\def\@fbr{}\protect\@lettrineS}%
+               \@tempa}%
+\def\@lettrineS{\ifx\@FrDimenH\undefined%
+                              \newdimen\@FrDimenH\newdimen\@FrDimenI\fi%
+                \ifx\@FrDimenS\undefined\newdimen\@FrDimenS\fi%
+                \@ifNextNB[{\@Ettrine}{\@ettrine}%
+               }%
+\fi%
+          }%
+\def\nonfrench{\ifFrench\@DFP%
+               \def\@temp@{\@AFP}%
+               \else\@NoFr\def\@temp@{\relax}\fi%
+               \def\endnonfrench{\@temp@\ignorespaces}%
+               \ignorespaces}%
+\def\@dospecialsfrench{\do\`\do'\@dsversa}%
+\def\@dsversa{%
+  \do\ \do\\\do\{\do\}\do\$\do\&\do\#\do\|\do\^^K\do\_\do\^^A\do\%\do\~%$emacs
+  \do\!\do\?\do\;\do\:\do\<\do\>\do\^\do\"}%
+\def\@sanitizefrench{%
+     \@saORI%
+     \@makeother\!\@makeother\?\@makeother\;\@makeother\:%
+     \@makeother\`\@makeother'\@makeother\<\@makeother\>%
+     \@makeother\^\@makeother\"}%
+\def\@ifNextNB#1#2#3{\let\@tempe=#1\def\@tempa{#2}\def\@tempb{#3}\futurelet%
+     \@tempc\@Fifnch}%
+     \def\@Fifnch{\ifx \@tempc \@tempe\let\@tempd\@tempa%
+         \else\let\@tempd\@tempb\fi\@tempd}%
+\def\@ifNextNBc#1#2#3#4{\let\@tempe=#1\let\@tempf=#2%
+                       \def\@tempa{#3}\def\@tempb{#4}\futurelet%
+     \@tempc\@Fifnchc}%
+     \def\@Fifnchc{\ifx\@tempc\@tempf\@tempa\else\@Fifnch\fi}%
+\def\@skiplastspace{\ifdim\lastskip>\z@\unskip\penalty\@M\fi}%
+\let\ifFrench\iftrue%
+\def\@AFP{%
+          \let\dospecials\@dospecialsfrench%
+          \let\@sanitize\@sanitizefrench%
+          \AFPdp\AFPinfsup}%
+\def\AFPdp{\ifFrench\catcode`\!=\active\catcode`\?=\active%
+              \catcode`\;=\active\catcode`\:=\active\fi}%
+\let\AFPinfsup\relax%
+\def\AFPinfsup{\ifFrench\ifFG\catcode`\<=\active\catcode`\>=\active\fi\fi}%
+\def\AFPq{\ifFrench\catcode`'=\active\catcode``=\active\fi}%
+\def\AFPdq{\catcode`"=\active}%
+\def\@DFP{%
+           \DFPq\DFPinfsup\ifLPA\else\DFPdp%
+                                     \let\dospecials\@dsORI%
+                                     \let\@sanitize\@saORI\fi}%
+\def\DFPq{\ifFrench\catcode``=12\catcode`'=12\fi}%
+\let\DFPinfsup\relax%
+\def\DFPinfsup{\ifFrench\catcode`<=12\catcode`>=12\fi}%
+\def\DFPdp{\ifFrench\catcode`;=12\catcode`:=12%
+                    \catcode`!=12\catcode`?=12\fi}%
+\def\DFPdq{\catcode`"=12}%
+\let\@doORI\dots\let\@ldoORI\ldots%
+\def\TeXdots{\@noBDfr%
+             \ifFTY\let\dots\@doORI\let\ldots\@ldoORI\fi}%
+\def\noTeXdots{\@noBDfr%
+               \ifFTY\def\dots{...}\def\ldots{...}\fi}%
+\let\@hatORI\^\let\@treORI\"%
+\def\idotless{\@noBDfr%
+              \ifFTY%
+                    \def\^##1{{\expandafter\@hatORI\ifx ##1i\i\else##1\fi}}%
+                    \def\"##1{{\expandafter\@treORI\ifx ##1i\i\else##1\fi}}%
+              \fi}%
+\def\iwithdot{\@noBDfr%
+              \let\^\@hatORI\let\"\@treORI}%
+\let\ifLPA\iffalse%
+\let\ifFG\iffalse%
+\def\@tempa#1{\f@issue%
+              \@fw{-13- %
+                  }[#1]%
+              \let\@tempb\next\let\@tempc\empty}%
+\let\@tempb\empty%
+\AFPdp%
+\let\ifWTS\iffalse%
+\def\@WTS{\relax\ifmmode\else\ifhmode%
+                                   \ifdim\lastskip>\z@\unskip\fi%
+                        \fi\fi}%
+\def\@tempc{%
+\def;{\ifFTY\protect\@PV%
+       \else\ifWTS\@WTS\fi\string;\fi}%
+           }%
+\def\@tempd{\@tempa{\string;}}%
+\ifx;\undefined\def\@tempd{}\fi\@tempd\@tempc%
+\def\@PV{\relax\ifmmode\string;\else%
+                              \ifhmode\ifUSP\unskip\space\fi%
+                              \ifdim\lastskip>\z@\unskip\penalty\@M\,\fi%
+                         \fi\string;\fi}%
+\def\@tempc{%
+\def:{\ifFTY\protect\@DP%
+       \else\ifWTS\@WTS\fi\string:\fi}%
+           }%
+\def\@tempd{\@tempa{\string:}}%
+\ifx:\undefined\def\@tempd{}\fi\@tempd\@tempc%
+\@ifundefined{@beginparpenalty}{\def\@beginparpenalty=#1{\penalty#1}}{}%
+\def\@DP{\relax\ifmmode\string:\else%
+                              \ifhmode\ifUSP\unskip\space\fi%
+                                    \ifdim\lastskip>\z@\unskip\penalty\@M\,\fi%
+                              \fi%
+                         \string:%
+         \@beginparpenalty=\@M\relax%
+         \fi}%
+\def\@wu#1{\@@wu#1,\void}%
+\def\@@wu#1,#2{\ifx#1\empty\else\@@@wu #1\fi%
+              \def\@tempa{\@@wu#2}%
+              \ifx#2\void\else\expandafter\@tempa\fi%
+             }%
+\def\@@@wu#1=#2{\expandafter\edef\csname #1\endcsname:{#2\string:}}%
+\ifx\hhline\undefined\else\let\@hhlORI\hhline%
+                         \def\hhline{\omit\ifFrench\let:\@cidp\fi%
+                                     \expandafter\@gobble\@hhlORI}%
+\fi%
+\def\@tempc{%
+\def!{\ifFTY\protect\@PE%
+       \else\ifWTS\@WTS\fi\string!\fi}%
+           }%
+\def\@tempd{\@tempa{\string!}}%
+\ifx!\undefined\def\@tempd{}\fi\@tempd\@tempc%
+\def\@PE{\ifmmode\string!\else%
+                              \ifhmode\ifUSP\unskip\space\fi%
+                                 \ifdim\lastskip>\z@\unskip\penalty\@M\,\fi%
+                              \fi%
+                              \string!\fi}%
+\def\@tempc{%
+\def?{\ifFTY\protect\@PI%
+       \else\ifWTS\@WTS\fi\string?\fi}%
+           }%
+\def\@tempd{\@tempa{\string?}}%
+\ifx?\undefined\def\@tempd{}\fi\@tempd\@tempc%
+\def\@PI{\relax\ifmmode\string?\else%
+                            \ifhmode\ifUSP\unskip\space\fi%
+                               \ifdim\lastskip>\z@\unskip\penalty\@M%
+                               \hskip +0.09em plus 0.07667em%
+                               \fi%
+                            \fi%
+                            \string?\fi}%
+\ifx\@tempb\next\let\AFPdp\empty\f@issue%
+                \@fw{-13b- %
+                \@txt@msg{la double ponctuation est alors d\'esactiv\'ee}}\fi%
+\let\ifLPA\ErrFrench%
+\let\ifFG\ErrFrench%
+\let\@aORI\@array%
+\def\@array{}%
+\DFPdp\AFPdp%
+\ifx\AFPdp\empty\else%
+\def\@array{\let\noexpand\@tempa=\noexpand!%
+              \def\noexpand!{\noexpand\string\noexpand!}%
+               \edef\noexpand\@tempb{##1}%
+                \let\noexpand!=\noexpand\@tempa}%
+\fi%
+\catcode`<=13\catcode`>=13%
+\let\ifArG\iftrue%
+\edef\@array[#1]{\edef\noexpand\@tempb{#1}%
+                 \noexpand\ifArG\noexpand\else%
+                  \noexpand\ifnum\catcode`\noexpand<=\active%
+                   \noexpand\ifmmode\let\noexpand<\noexpand\inferieura%
+                                    \let\noexpand>\noexpand\superieura%
+                  \noexpand\fi\noexpand\fi\@array%
+                 \noexpand\fi%
+                 \noexpand\@aORI[{\noexpand\@tempb}]}%
+\let\@eaORI\eqnarray%
+\def\eqnarray{\ifArG\else\ifnum\catcode`<=\active%
+                          \let<\inferieura\let>\superieura%
+              \fi\fi\@eaORI}%
+\ifx\@@array\undefined\else%
+ \let\@@aORI\@@array%
+\def\@@array{\ifArG\else\ifnum\catcode`<=\active%
+                          \let<\inferieura\let>\superieura%
+             \fi\fi\@@aORI}%
+\fi%
+\catcode`<=12\catcode`>=12%
+\DFPdp%
+\let\@CGroup\relax\let\@@FG\relax%
+\let\@LG\relax%
+\def\@og{\leavevmode\ifdim\lastskip>\z@\unskip%
+                           \penalty-9\hskip0.35em minus 0.35em\fi%
+          \raise0.27ex\hbox{$\scriptscriptstyle\ll$}\,\nobreak\ignorespaces}%
+\def\@cg{\@skiplastspace\nobreak\,\leavevmode\raise0.27ex%
+          \hbox{$\scriptscriptstyle\gg$}}%
+\let\ifFG\iftrue%
+\AFPinfsup%
+\def\@gN{\def<##1{\ifx ##1<\leftguillemets\else\@LSG##1\fi}%
+         \def>##1{\ifx ##1>\rightguillemets\else\@RSG##1\fi}}%
+\let\@oldog\<\let\@oldcg\>%
+\def\@ogx<{\ifFTY\@og\else\@DOG\fi}%
+\def\@cgx>{\ifFTY\@cg\else\@DFG\fi}%
+\def\@@LFG{\ifFTY\ifmmode\protect\@LSG\else%
+                          \ifIEB\@SOC\else\@LSG\fi%
+                 \fi%
+            \else\@LSG\fi}%
+\global\let\ifCG\iftrue%
+\let\inside@an@expand\empty%
+\def\if@mid@expandable#1#2{\let\inside@an@expand\relax\relax%
+                           \ifx\inside@an@expand\relax%
+                                \let\inside@an@expand\empty%
+                                \expandafter#2%
+                           \else\expandafter#1%
+                           \fi}%
+\def\stop@mid@expandable{\if@mid@expandable{%
+                         \errmessage{This macro is not expandable, please %
+                                     \string\protect \space it.}\stop}{}%
+                        }%
+\def\@LG{\relax\if@mid@expandable{\@@@LG}{\@@LG}}%
+\def\@@LG{\ifFTY\ifmmode\@DOG\else\@@@OG\fi\else\@DOG\fi}%
+\def\@@@LG{\relax\noexpand <<\relax}
+\def\@SifDOGon{\global\let\ifDOG\iftrue}%
+\def\@SifDOGoff{\global\let\ifDOG\iffalse}\@SifDOGoff%
+\def\@@@OG{\ifCG\ifFLA\ifEPG\else%
+       \hbadness=10000%
+       \ifhmode\newline\fi%
+       \bgroup\def\par{}%
+       \@FrDimen=\textwidth%
+                   \if@twocolumn\tolerance=5000\pretolerance=5000%
+                                \advance\@FrDimen by -\columnsep%
+                                \divide\@FrDimen by 2\fi%
+       \@ifundefined{@inAlist}{}{%
+       \advance\@FrDimen by -\leftmargin\advance\@FrDimen by -\rightmargin%
+       \advance\@FrDimen by -\listparindent\hsize=\@FrDimen}%
+       \@qquotes\fi\fi\fi%
+     \@oguills%
+       \ifFLA\ifEPG\bgroup\def\@currenvir{guillemets}%
+                   \let\@CGroup\egroup\fi\fi%
+       \ifCG\ifFLA\ifEPG%
+                 \xdef\@epORI{{\the\TeXeverypar}}%
+                 \TeXeverypar={\@epORI%
+                            \ifEPGR\else%
+                            \@oguills%
+                            \@ifundefined{@OuvOpen}{%
+                            \,%
+                                                   }{}%
+                            \fi}%
+            \fi\fi%
+       \else\@SifDOGon\@AG%
+       \ifFLA\ifEPG\else\def\@qqguill{\@oguills}\@staring\fi\fi\fi%
+       \global\let\ifCG\iffalse%
+       \ifUSP\kern+0.13em\penalty\@M\ignorespaces%
+             \else\kern-0.19em\relax\penalty\@M\fi}%
+\def\@AG{\ifAG\let\@LP\@RP\let\@gotl\@gotr%
+         \fi}%
+\def\f@guillemets{<<}%
+\def\@oguills{%
+     \bgroup\@ifundefined{@OuvOpen}{\def\@OuvOpen{}%
+     \@ifundefined{ly}{\@og}%
+          {\leavevmode\ifECM\hbox{{\ifGIAF\else\@gfnt\fi%
+                                   \ifx\@gotl\undefined\char\rq\@LP%
+                                    \else\@gotl\fi\kern+0.20em}}%
+                      \else\hbox{{\ly\@LP\kern-0.20em\@LP\kern+0.20em}}\fi%
+           \nobreak}}{}\egroup}%
+\def\@@RFG{\ifFTY\ifmmode\protect\@RSG\else%
+                         \ifIEB\@SFC\else\@RSG\fi%
+                 \fi%
+           \else\@RSG\fi}%
+\def\@SifFTY{\let\ifFTY\iffalse}%
+\def\@RG{\relax\if@mid@expandable{\@@@RG}{\@@RG}}%
+\def\@@RG{\ifmmode\@SifFTY\fi\ifFTY\@@FG\else\@DFG\fi}%
+\def\@@@RG{\relax\noexpand >>\relax}
+\def\endf@guillemets{>>}%
+\ifx\RIfM@\undefined\else%
+  \edef\@emORI{\the\everymath\relax}%
+  \edef\@edORI{\the\everydisplay\relax}%
+  \f@issue\@fW{^^J -18- %
+    %
+    %
+              }%
+           %
+           \everymath={\csname nofrenchguillemets\endcsname\@emORI}%
+           \everydisplay={\csname nofrenchguillemets\endcsname\@edORI}%
+\fi%
+\DFPinfsup%
+\ifx\grammar\undefined%
+ \else\let\@grORI\grammar\def\grammar{\nofrenchguillemets\@grORI}%
+\fi%
+
+\def\@@FG{\ifCG\f@issue%
+               \@fw{-14- %
+                   }\fi%
+          \ifUSP\unskip\kern+0.13em\else%
+                 \ifdim\lastskip>\z@\unskip%
+                             \penalty\@M%
+                             \space%
+                             \penalty\@M%
+                 \fi%
+                 \kern-0.19em%
+          \fi%
+      \xdef\@tempd{\@currenvir}\def\@tempe{guillemets}%
+     \ifx\@tempd\@tempe%
+               \@CGroup\@fguills%
+     \else\ifEPG%
+               \@fguills%
+               \def\@CGroup{\egroup\@gobble}%
+           \ifFLA%
+               \f@issue%
+               \@fw{-49- %
+                   }%
+           \fi%
+          \else\@CGroup\@fguills%
+          \fi%
+     \fi%
+     \ifDOG\ifFLA\ifEPG\else\@fniv2\fi\fi%
+           \@SifDOGoff\else\@@@FG\fi%
+          }%
+\let\guillemets\@LG%
+\def\RG@{\ifFTY\ifCG%
+                \else\@RG%
+               \fi%
+               \@CGroup\@@@FG\relax\fi}%
+\let\endguillemets\RG@%
+\def\@@@FG{\ifFLA\ifEPG\ifx\@epORI\undefined\else%
+                           \expandafter\TeXeverypar=\@epORI\fi%
+                       \xdef\@epORI{{}}%
+                       \else\@staring\@stared\egroup\fi\fi%
+           \global\let\ifCG\iftrue\let\@CGroup\relax}%
+\def\@fguills{\@ifundefined{ly}{\@cg}%
+       {\nobreak\leavevmode\ifECM\hbox{{\ifGIAF\else\@gfnt\fi\kern+0.20em%
+                                        \ifx\@gotr\undefined\char\rq\@RP%
+                                        \else\@gotr\fi}}%
+                        \else\hbox{{\ly\kern+0.20em\@RP\kern-0.20em\@RP}}\fi}%
+\ifGIAF\else\ifdim\fontdimen\@ne\font>\z@\/\fi\fi%
+             }%
+\def\@normalrq{\relax\ifmmode^\prime\else\@frq\fi}%
+\def\@frq{{\catcode`'=12{\ifNEQ\ifECM\char\rq001%
+                                \else\char\rq023\hbox{}\fi%
+                         \else\string'\fi}}}%
+\AFPq%
+\def`{\protect\@PLQ}%
+      \let\@PLQ@\lq%
+      \def\@PLQ{\ifmmode\string`\let\@PLQ@\relax%
+                \else\ifNED\let\@PLQ@\@PLQn\fi%
+                     \ifhmode\let\@PLQ@\@PLQn\fi%
+                \fi\@PLQ@}%
+      \def\@PLQn{\@ifNextNB`{\protect\@OQ}%
+                         {\ifNEQ\ifECM\char\rq000\hbox{}%
+                                 \else\char\rq022\hbox{}\fi%
+                          \else\string`\fi}%
+                }%
+      \def\@OQ`{\ifNED\protect\@LG\else\string``\fi}%
+\def'{\protect\@PRQ}%
+       \let\@PRQ@\rq%
+       \def\@PRQ{\ifmmode\let\@PRQ@\@SRQ@%
+                 \else\ifhmode\let\@PRQ@\@PRQn\fi%
+                 \fi\@PRQ@}%
+       \def\@@FGp'{\@@FG}%
+       \def\@PRQn{\let\@PRQ@\rq%
+                  \@ifNextNB'{\ifNED\let\@PRQn@\@@FGp%
+                              \else\let\@PRQn@\relax\string'\fi\@PRQn@}%
+                             {\protect\@normalrq}}%
+\let\ifNED\iffalse%
+\let\ifNEQ\iffalse%
+\def\noenglishdoublequotes{\@noBDfr%
+                           \AFPq\let\ifNED\iftrue%
+                           \ifFrench\let\@cilq='\fi}%
+\def\noenglishquote{\@noBDfr%
+                    \AFPq\let\ifNEQ\iftrue%
+                    \ifFrench\let\@cilq='\fi}%
+\DFPq%
+\def\untypedspaces{\@noBDfr%
+                   \let\ifUSP\iftrue}%
+\def\typedspaces{\@noBDfr%
+                 \let\ifUSP\iffalse}%
+\let\if@labelsinmargin\iffalse%
+\def\englishdoublequotes{\@noBDfr%
+                         \let\ifNED\iffalse%
+                         \DFPq\ifFrench\let\@cilq='\fi}%
+\def\englishquote{\@noBDfr%
+                  \let\ifNEQ\iffalse\DFPq%
+                  \ifFrench\let\@cilq='\fi}%
+\def\labelsinmargin{\@noBDfr%
+                    \let\if@labelsinmargin\iftrue}%
+\def\nolabelsinmargin{\@noBDfr%
+                      \let\if@labelsinmargin\iffalse}%
+\def\letpunctuationactivefor{\@noBDfr%
+                             %
+                             \global\let\ifLPA\iftrue%
+ \def\wrongtypedspaces{\@noBDfr%
+                       \global\let\ifWTS\iftrue}%
+                            }%
+\def\wrongtypedspaces{\f@issue\@fw{-17- %
+                           %
+                           %
+                                  }}%
+\def\nowrongtypedspaces{\@noBDfr%
+                        \global\let\ifWTS\iffalse%
+     \ifLPA\DFPdp%
+     \fi\global\let\ifLPA\iffalse}%
+\def\tabbingaccents{\@noBDfr%
+                    \let\@ifTA\iffalse}%
+\def\notabbingaccents{\@noBDfr%
+                      \let\@ifTA\iftrue}%
+\AFPq%
+\def\@temp@{%
+      \def\tabbing{\def\@tempa{\let`=\lq\let'=\@normalrq}%
+                   \ifNED\@tempa\fi\ifNEQ\@tempa\fi%
+                   \def\@tempa{\let\@ifTA\iftrue}%
+                   \ifFTY\else\expandafter\@tempa\fi%
+                   \ifFTY\@ifTA\else%
+      \let\@trjORI\@tabrj\let\@tlabORI\@tablab%
+      \let\@ORIrj=\`\let\@ORIlab=\'%
+      \def\@@tabrj{\ifcat\@tempc\space\let\@tempa=\@trjORI%
+                         \else\let\@tempa=\@ORIrj\fi\@tempa}%
+      \def\@@tablab{\ifcat\@tempc\space\let\@tempa=\@tlabORI%
+                         \else\let\@tempa=\@ORIlab\fi\@tempa}%
+      \def\@tabrj{\futurelet\@tempc\@@tabrj}%
+      \def\@tablab{\futurelet\@tempc\@@tablab}%
+                   \fi\fi\@tgORI}%
+           }%
+\ifx\tabbing\undefined%
+     \else\let\@tgORI\tabbing%
+          \@temp@%
+\fi%
+\DFPq%
+\AFPinfsup%
+\def\EBCDICbrackets{\@noBDfr%
+                    \let\ifIEB\iftrue%
+                  \ifFG%
+                  \def<{\protect\@LFG}%
+                  \def\@LFG{\@ifNextNB<{\protect\@OG}{\@@LFG}}%
+                  \def\@OG<{\ifnum\catcode`< =\active\expandafter\@LG%
+                             \else\@@LFG\@@LFG\fi}%
+                  \def>{\protect\@RFG}%
+                  \def\@RFG{\@ifNextNB>{\protect\@FG}{\@@RFG}}%
+                  \def\@FG>{\ifnum\catcode`> =\active\expandafter\@RG%
+                             \else\@@RFG\@@RFG\fi}%
+                  \fi}%
+\long\def\@BracesOrNot[#1]{\ifmmode\@PreserveBraces[#1]%
+                            \else\expandafter#1\fi}%
+\let\@fobeyspaces\empty%
+\long\def\@genG#1#2#3{\@fobeyspaces%
+                 \ifx#2#3\expandafter\protect\csname @#1G\endcsname%
+                  \else\csname @@#1FG\endcsname\expandafter\@BracesOrNot%
+                                \expandafter[\expandafter{%
+                                \expandafter#3\expandafter}\expandafter]%
+                 \fi}%
+\edef\@genGL{\noexpand\@genG{L}\noexpand<}%
+\edef\@genGR{\noexpand\@genG{R}\noexpand>}%
+\let\@bobeyspaces\empty
+\def\normalbrackets{\@noBDfr%
+                    \let\ifIEB\iffalse%
+                \ifFG%
+     \def<{\ifnum\catcode`< =\active\@bobeyspaces\expandafter\expandafter%
+                                    \expandafter\@genGL\ifmmode\relax\fi%
+           \else\@LSG\fi}%
+     \def>{\ifnum\catcode`> =\active\@bobeyspaces\expandafter\expandafter%
+                                    \expandafter\@genGR\ifmmode\relax\fi%
+           \else\@RSG\fi}%
+                \fi}%
+\DFPinfsup%
+\let\ifFG\iffalse%
+\def\ancientguillemets{\@noBDfr%
+                       \let\ifAG\iftrue}%
+\def\todayguillemets{\@noBDfr%
+                     \let\ifAG\iffalse}%
+\def\guillemetsinarrays{\@noBDfr%
+                        \let\ifArG\iftrue}%
+\def\noguillemetsinarrays{\@noBDfr%
+                          \let\ifArG\iffalse}%
+\def\guillemetsinallfonts{\@noBDfr%
+                          \let\ifGIAF\iftrue}%
+\def\guillemetsinroman{\@noBDfr%
+                       \let\ifGIAF\iffalse}%
+\def\overfullhboxmark{\@noBDfr%
+                      \ifFLA\overfullrule=5pt\fi}%
+\def\nooverfullhboxmark{\@noBDfr%
+                        \ifFLA\overfullrule=0pt\fi}%
+\let\ifFrench\iffalse%
+{\def\@genMLhyph{\@ifundefined{french}{}{\gdef\fhyph{\french}}%
+                 \@ifundefined{english}{}{\gdef\ehyph{\english}}}%
+\@ifundefined{fhyph}{\@genMLhyph}{}%
+}%
+\gdef\frenchTeXmods{%
+     \global\let\ifFrench\iftrue%
+\ifCLA%
+     \ifCLAfrench%
+     \@AFP%
+     \frenchtypography\frenchtranslation\frenchlayout%
+     \fi%
+\else%
+     \@AFP%
+     \frenchtypography\frenchtranslation\frenchlayout%
+\fi%
+     \frenchmacros\frenchwarnings%
+     \let\@HifORI\@Hif\let\@HfiORI\@Hfi%
+     \frenchhyphenation%
+     \csname @xtrasfrench\endcsname%
+     \ifx\GOfrench\undefined%
+       \csname beginL\endcsname%
+     \fi%
+     \def\languagename{french}%
+     \@ufo%
+     \let\switchtolanguage\endfrench%
+     \ignorespaces%
+                   }%
+\ifx\undefined\babel@core@loaded%
+ \edef\extrasfrench{}\def\@xtrasfrench{\extrasfrench}%
+     \DeclareOption{french}{\def\beginlanguage{%
+                                  \ifx\babel@savevariable%
+                                    \undefined\french%
+                                  \else\endenglish\selectlanguage{french}\fi}%
+                           }%
+     \DeclareOption{english}{\def\beginlanguage{%
+                                  \ifx\babel@savevariable%
+                                    \undefined\english%
+                                  \else\selectlanguage{english}\fi}%
+                            }%
+\else\let\extrasfrench\frenchTeXmods%
+     \AtBeginDocument{%
+        \def\@tempa{\protect\@LabeL}%
+        \ifx\@tempa\label\else%
+        \let\@lORI\label\let\label\@tempa\fi%
+        \def\@tempa{\protect\atgH{r}}%
+        \ifx\@tempa\ref\else\@gG{r}{ref}{/}{1}\fi%
+                     }%
+\fi%
+\@ifundefined{switchtolanguage}{%
+    \def\switchtolanguage#1{#1}}{}%
+\let\@stlORI\switchtolanguage
+\def\@DFPtestANDset{%
+     \ifx\ifFrench\iffalse%
+      \f@issue\@fw{-71- %
+        %
+        %
+                  }%
+     \fi%
+                    \let\@DFPtestANDset\@DFP%
+                    \@DFP}%
+\def\endfrench{%
+\ifCLAfrench\else%
+     \@DFPtestANDset%
+     \nofrenchtypography\nofrenchtranslation\nofrenchlayout%
+\fi%
+     \nofrenchmacros%
+     \nofrenchhyphenation%
+     \let\@Hif\@HifORI\let\@Hfi\@HfiORI%
+     \let\switchtolanguage\@stlORI%
+     \let\ifFrench\iffalse\@stlORI%
+     \ignorespaces}%
+\let\noextrasfrench\endfrench%
+\def\frenchtest{\@finput{french.tst}}%
+\def\frenchdoc{\@finput{frdoc.tex}}%
+\@ifundefined{englishTeXmods}{\gdef\englishTeXmods{}}{}%
+\global\let\@Hif\empty\global\let\@Hfi\empty%
+\global\let\if@FE\iffalse%
+\newif\if@more\@moretrue%
+\def\@doFh{%
+\def\f@ERRdat{\f@issue%
+              \errmessage{-9- %
+                         }\global\let\french\@@end%
+             }%
+           \bgroup%
+           \let\ORIGfrench\french%
+           \newcount\@FrCount%
+\def\tl@ng##1{}%
+\def\@rhef##1/##2 /{\def\@tempa{##2}%
+           \def\@tempb{##1}%
+           \def\@tempc{\ifx\space\@tempa\else%
+                        \expandafter\gdef\csname ##1@hefn\endcsname{##2\relax}%
+                        \if@FE\expandafter\@@input##2\relax\fi\fi}%
+           \ifx\undefined\@excn\@tempc%
+            \else\ifx\@tempb\@excn\@tempc\fi\fi}%
+\gdef\NouveauLangage[##1]##2{%
+   \expandafter\@ifundefined{l@##2}{}%
+   {%
+    \chardef\l@no##1\expandafter\if\csname l@##2\endcsname\l@no\else%
+    \edef\l@no{##1}\expandafter%
+    %
+   \ifx\csname l@##2\endcsname\l@no%
+   \else\f@issue\typeout{^^J \frenchname.sty \string: -27- %
+       %
+       %
+                        }[##2]\f@ERRdat%
+   \fi\fi}%
+         \expandafter\tl@ng\csname##2TeXmods\endcsname%
+         \expandafter\gdef\csname##2 \endcsname%
+          {\expandafter\switchtolanguage\csname ##2TeXmods\endcsname%
+           \@Hif\language=##1\@Hfi\relax}%
+         \expandafter\gdef\csname##2\endcsname%
+                          {\protect\csname##2 \endcsname}%
+                          }%
+\def\Nouveau@Langage[##1]##2{%                              > def nouveau langage 1
+%arabic as a language should not change the definition of \arabic  
+% the same is valid for future similar cases         > -- arabic prepare 
+    \expandafter\@ifundefined{##2}{\lang@defifalse}% 
+                {\lang@defitrue}%                           
+    \expandafter\@ifundefined{mlp##2}{\langmlp@defifalse}% 
+                {\langmlp@defitrue}%                           
+    \def\l@n@test{##2}
+% here only the choises french or english, excluding arabic as language
+   \ifx \l@n@fre\l@n@test\langok@defitrue\fi %               \def\l@n@fre{french}%
+   \ifx \l@n@eng\l@n@test\langok@defitrue\fi %               \def\l@n@eng{english}%
+%    \iflangok@defi \typeout{ ##1 : ##2}\fi% 
+%                                                    < -- arabic prepare
+    \expandafter\@ifundefined{l@##2}{}%
+         \iflangok@defi 
+         {%            
+          \expandafter\tl@ng\csname##2TeXmods\endcsname%
+        \iflang@defi%                                                      ++ test langue existe ?
+          \expandafter\gdef\csname##2Lang \endcsname%
+          {\expandafter\switchtolanguage\csname ##2TeXmods\endcsname%
+           \@Hif\language=##1\@Hfi\relax}%
+          \expandafter\gdef\csname##2Lang\endcsname% 
+                           {\protect\csname##2Lang \endcsname}% 
+            \typeout{eFrench Info : % 
+               \\##2Lang commute sur langue ##2 }% 
+            \typeout{eFrench Info : % 
+                et \\##2TeXmods pour ses extensions }%
+            \typeout{eFrench Info : % 
+                avec \\ = une seule barre oblique inverse ===}%
+           \else%                                                             ** langue n'existe pas  encore
+          \expandafter\gdef\csname##2 \endcsname%
+          {\expandafter\switchtolanguage\csname ##2TeXmods\endcsname%
+           \@Hif\language=##1\@Hfi\relax}%
+          \expandafter\gdef\csname##2\endcsname%
+                           {\protect\csname##2 \endcsname}%
+        \fi% 
+           }%                                             % -- test langue existe
+        \fi%                                              % -- test langok@defi 
+                            }%                             < def nouveau langage 1 
+\edef\@temp@{=}%
+\def\@langue##1##2 ##3 ##4/##5{\def\@tempa{=}\def\@tempb{##1}%
+    \ifx\@tempa\@tempb%
+            \ifnum\@FrCount > 0 \advance\@FrCount by -1\fi%
+            \relax%
+            \expandafter\Nouveau@Langage\expandafter[\the\@FrCount]{##2}%
+                      \ifnum\@FrCount \@temp@ 0 \@FrCount= -1\fi%
+    \else\langok@defifalse\edef\@temp@{<}\@l@ngue##1##2 ##3 ##4/{##5}%
+    \fi}%
+\def\@l@ngue##1 ##2 ##3/##4{\Nouveau@Langage[##4]{##1}%
+         %
+              \@rhef##1/##3/%
+                            }%
+\let\hyphenation\f@hyphenation%
+\openin\@inputcheck = language.dat \def\@tempb{}%                        > language.dat
+\ifeof\@inputcheck\@Ffnt{language.dat}%
+       \ifx\undefined\french %
+           \else\xdef\@PrevF{\french}%
+                \gdef\french{\switchtolanguage\frenchTeXmods\@PrevF}%
+                {\@PrevF\f@issue\@fw{-15- %
+                    %
+                    %
+                            }}%
+       \fi%
+       \ifx\undefined\l@english %
+           \def\l@english{0}%
+       \fi%
+       \ifx\undefined\english %
+           \else\xdef\@PrevE{\language=\l@english}%
+                \gdef\english{\switchtolanguage\englishTeXmods\@PrevE}%
+                {\@PrevE\f@issue\@fw{-16 %
+                           %
+                           %
+                            }}%
+       \fi
+\else\@FrCount=-1%
+\newif\iflang@defi% 
+\newif\iflangmlp@defi%
+\newif\iflangok@defi%
+\def\l@n@fre{french}%
+\def\l@n@eng{english}%
+\let\englishORI\english%  
+\let\english\undefined%  
+\loop  \endlinechar=-1  \read\@inputcheck to \@lineD  \endlinechar`\^^M%
+  \ifx\@lineD\empty  \else \advance\@FrCount by 1%
+    \edef\@lineD{\@lineD\space\space/{\the\@FrCount}}%
+    \expandafter\@langue\@lineD%                                    aller voir \@langue 
+  \fi%
+  \ifeof\@inputcheck \@morefalse \fi%
+  \if@more\repeat%
+\fi\closein\@inputcheck%                                               < language.dat
+\ifx\undefined\english\let\english\englishORI\fi%  !
+\let\hyphenation\@hyphenation%
+\def\@MLtst{\@ifundefined{fhyph}%
+     {\if@PMF\gdef\french{\switchtolanguage\frenchTeXmods}%
+          \f@issue%
+          \@fw{-19- %
+             %
+              }%
+          \else\f@issue%
+               \typeout{^^J \frenchname.sty: -20b- 
+                        %
+                       }\f@ERRdat\fi}%
+     {\gdef\french{\switchtolanguage\frenchTeXmods\fhyph}%
+      \gdef\english{\switchtolanguage\englishTeXmods\ehyph}%
+     }%
+           }%
+\@ifundefined{french}{\@MLtst}{}%
+\@ifundefined{endenglish}{\global\let\endenglish\french}{}%
+\gdef\tl@ng##1{\ifx ##1\relax\f@issue%
+                             \@fw{-21- %
+                                 }[##1]\fi}%
+\ifx\ORIGfrench\french\f@ERRdat\fi%
+          \egroup%
+          }%
+\ifx\vert\undefined\else\let\@bvORI\vert\fi%
+\def\@fwVIIIII{\f@issue%
+               \kbtypeout{^^J  -73- %
+                 %
+                         }\stop}%
+\ifx\RIfM@\undefined%
+\def\vert{\ifx\RIfM@\undefined\expandafter\@bvORI\else\expandafter%
+           \@fwVIIIII\fi}%
+\else%
+\def\vert{\@bvORI}%
+\fi%
+\def\@abbf[#1]{\def\abbrevfilename{#1}}%
+\AFPdq%
+\def\abbreviations{\if@PMF\else\AFPdq\fi%
+                   \@abbdefs\let\@abbdefs\relax%
+                   \@ifNextNB[%
+                   {\@abbf}{\@abbf[frabbrev.tex]}}%
+\def\f@protect{\ifx\protect\@typeset@protect%
+                \else\f@x@protect\fi}%
+\def\f@x@protect\fi#1{\fi\protect"}%
+\def\@eatprotect#1\protect#2\@nil{#1}%
+\if@PMF\let\f@protect\undefined\let\f@x@protect\undefined%
+       \let\@eatprotect\undefined%
+\fi%
+\def\@abbdefs{%
+   \def\ABBfound{\global\let\ifABBfound\iftrue}%
+   \let\ifABBfound\iffalse%
+   \def\@abbrev##1##2 ##3##4 ##5/{%
+                       \let\ifFMA\iftrue%
+                       \edef\@tempa{##1##2}%
+                       \ifx##3*\edef\@tempb{##4}\edef\@tempc{##4s}%
+                        \else\edef\@tempb{##3##4}\edef\@tempc{}%
+                       \fi%
+                       \ifx\@tempa\@tempb##5\ABBfound%
+                        \else\ifx\@tempc\empty%
+                              \else\ifx\@tempa\@tempc##5\ABBfound\fi%
+                             \fi%
+                       \fi%
+                       \ifABBfound%
+                        \else\edef\@tempa{##2}\edef\@tempb{##4}%
+                              \ifx\@tempa\@tempb##5\ABBfound%
+                               \else\ifx\@tempc\empty%
+                                     \else\ifx\@tempa\@tempc##5\ABBfound\fi%
+                                    \fi%
+                              \fi%
+                       \fi}%
+   \def\@openabbrev##1{\openin\@inputcheck=##1 %
+                       \ifeof\@inputcheck\@Ffnt{##1}\fi}%
+   \def"{\f@protect\AbbrevName}%
+   \def\AbbrevName##1"{\def\@tempa{##1}\ifx\@tempa\space``\space''%
+                                        \else\@@bbrev##1"\fi}%
+   \def\@@bbrev##1{\expandafter\@@@bbrev\@eatprotect##1\protect\@nil}%
+   \def\@@@bbrev##1"{\begingroup%
+                     \def\ABBMfalse{\global\let\ifABBM\iffalse}%
+                     \let\ifABBM\iftrue\global\let\ifABBfound\iffalse%
+                     \@openabbrev{\abbrevfilename}%
+   \ifeof\@inputcheck\else%
+   \loop\endlinechar=-1\read\@inputcheck to \@lineD\endlinechar`\^^M%
+     \ifx\@lineD\empty%
+        \else\edef\@lineD{##1 \@lineD/}\expandafter\@abbrev\@lineD\fi%
+     \ifABBfound\ABBMfalse\fi%
+     \ifeof\@inputcheck \ABBMfalse\ifABBfound\else%
+       \f@issue%
+       \@fw{-22- %
+            %
+           }[##1]%
+     \fi\fi%
+     \ifABBM\repeat%
+   \fi\closein\@inputcheck%
+   \ifABBfound\else``##1''\fi\endgroup}%
+             }%
+\if@PMF\let\@abbdefs\relax\fi%
+\DFPdq%
+\def\noabbreviations{\if@PMF\else\DFPdq\fi}%
+   \let\@atORI\at%
+   \let\@bsORI\backslash%
+\catcode`\/=0{\catcode`/\=12%
+/gdef/@boiORI{{/protect/string\}}}%
+/catcode`/\=0\catcode`\/=12%
+   \let\@boi\textbackslash%
+   \let\@chapORI\chap%
+   \let\@tildeORI\tilde%
+   \let\@etcORI\etc%
+   \let\@numORI\numero%
+   \let\@numsORI\numeros%
+   \let\@NumORI\Numero%
+   \let\@NumsORI\Numeros%
+   \let\@degreORI\degre%
+   \let\@degresORI\degres%
+   \let\@iemeORI\ieme%
+   \let\@iemesORI\iemes%
+   \let\@ierORI\ier%
+   \let\@iersORI\iers%
+   \let\@iereORI\iere%
+   \let\@ieresORI\ieres%
+   \let\@fscORI\fsc%
+   \let\@lscORI\lsc%
+   \let\@ntsORI\!%
+   \let\@hntscORI\halfnegthinspace%
+\def\@ifm{%
+   \def\at{\ifFMA\string @\else\@atORI\fi}%
+\ifx\RIfM@\undefined%
+   \def\vert{\ifx\RIfM@\undefined%
+                \ifmmode\expandafter\@bvORI%
+                \else\ifFMA\string |\else\@bvORI\fi\fi%
+              \else\expandafter\@fwVIIIII%
+              \fi}%
+\else%
+   \def\vert{\ifmmode\expandafter\@bvORI%
+                \else\ifFMA\string |\else\@bvORI\fi\fi}%
+\fi%
+   \def\backslash{\ifmmode\@bsORI%
+                  \else\ifFMA%
+                        \protect\@boi%
+                       \else\@bsORI%
+                       \fi%
+                  \fi}%
+   \def\chap{\ifFMA\string ^\else\@chapORI\fi}%
+   \def\tilde{\relax\ifFMA\ifmmode\expandafter%
+                           \expandafter\expandafter\@tildeORI%
+                    \else\string~\fi\else\expandafter\@tildeORI\fi}%
+   \def\@Fsp##1{\ifFMA\ifmmode^{\mathrm{##1}}%
+                        \else$^{\mathrm{##1}}$\fi%
+                \else##1\fi}%
+   \def\@umer##1{\protect\@Fsp{##1}\kern.2em\ignorespaces}%
+   \long\def\etc{\def\@tempa{}%
+                 \ifFMA%
+                  \ifhmode\ifUSP\unskip\space\fi%
+                          \ifdim\lastskip>\z@\unskip\penalty\@M~\fi%
+                  \fi%
+                  etc\def\@tempa{\@ifNextNB.{}{%
+                                 \@fw{-60- %
+                               %
+                                     }}}%
+                 \else\@etcORI%
+                 \fi\@tempa}%
+\let\nombre\undefined%
+\DeclareRobustCommand*{\nombre}%
+              {\ifFMA\expandafter\@nombre%
+                \else\expandafter\@nomORI%
+               \fi}%
+   \def\numero{\ifFMA n\@umer{o}\else\@numORI\fi}%
+   \def\Numero{\ifFMA N\@umer{o}\else\@NumORI\fi}%
+   \def\numeros{\ifFMA n\@umer{os}\else\@numsORI\fi}%
+   \def\Numeros{\ifFMA N\@umer{os}\else\@NumsORI\fi}%
+   \def\degre{\ifFMA\r{}\space%
+            \else\expandafter\@degreORI\fi}%
+   \def\degres{\ifFMA\@Fsp{o}\else\@degresORI\fi}%
+   \def\leftguillemets{\@noBDfr%
+                       \ifFMA\@oguills%
+                             \else<<\fi}%
+   \def\rightguillemets{\@noBDfr%
+                        \ifFMA\@fguills%
+                             \else>>\fi}%
+   \def\fup{\@noBDfr\ifFTY%
+                     \expandafter\@fup\fi}\MakeRobustCommand{fup}%
+   \def\@fup{\@ifstar{\csname\string\!\endcsname\@@fup}{\@@fup}}%
+   \def\@@fup##1{\def\@tempa{\leavevmode\raise+0.80ex%
+                             \hbox{\protect\sm@llerthree%
+                             \MakeLowercase{##1}}%
+                             \@ifNextNB\bgroup{\@@@fup}{\kern+.17em}}%
+                 \ifFMA\expandafter\@tempa\else##1\fi%
+                }%
+   \def\@@@fup##1{\ifx\empty##1\else\kern+.17em{##1}\fi}%
+   \def\@tgifFMA##1##2{\ifFMA\expandafter\protect\expandafter##1%
+                       \else\expandafter\protect\expandafter##2\fi%
+                      }%
+   \def\ieme{\@tgifFMA\@Ieme\@iemeORI}%
+   \def\@Ieme{\@ifstar{\@ieme}{\@@eme}}%
+   \def\@ieme{\fup*{e}}%
+   \def\@@eme{\fup{e}}\MakeRobustCommand{ieme}%
+   \def\iemes{\@tgifFMA\@Iemes\@iemesORI}%
+   \def\@Iemes{\@ifstar{\@iemes}{\@@emes}}%
+   \def\@iemes{\fup*{es}}\MakeRobustCommand{iemes}%
+   \def\@@emes{\fup{es}}%
+   \def\ier{\@tgifFMA\@ier\@ierORI}%
+   \def\@ier{\fup*{er}}\MakeRobustCommand{ier}%
+   \def\iers{\@tgifFMA\@iers\@iersORI}%
+   \def\iers{\fup*{ers}}\MakeRobustCommand{iers}%
+   \def\iere{\@tgifFMA\@iere\@iereORI}%
+   \def\iere{\fup*{re}}\MakeRobustCommand{iere}%
+   \def\ieres{\@tgifFMA\@ieres\@ieresORI}%
+   \def\@ieres{\fup*{res}}\MakeRobustCommand{ieres}%
+   \def\fsc{\@noBDfr\Fsc@@}%
+   \MakeRobustCommand{fsc}%
+   \def\Fsc@@{\@ifNextNB*{\let\Fsc@F\@sc@F\FSC@}{\let\Fsc@F\relax\FSC@*}}%
+   \def\@sc@F{\rmfamily\mdseries}%
+   \def\FSC@*##1{\fsc@##1\@@}%
+   \def\fsc@##1##2\@@{\ifFMA\leavevmode{\ifECM\Fsc@F\else\@sc@F\fi%
+                                \textsc{%
+                         \@uchbox{\let\protect\@empty%
+                                  \let\@typeset@protect\@empty%
+                                  \let\@changed@x\@changed@x@mouth%
+                                  \if\relax\noexpand##1\fsc@@@##1##2\@@%
+                                   \else\edef\@tempa{##1}%
+                                       \expandafter\fsc@@\@tempa##2\@@%
+                                  \fi}}}%
+                      \else\@fscORI##1\fi}%
+   \def\fsc@@##1##2\@@{\MakeUppercase{##1}\lsc@*{##2}}%
+   \def\fsc@@@##1##2##3\@@{\MakeUppercase{##1{##2}}\lsc@*{##3}}%
+   \def\lsc{\@noBDfr\Lsc@@}%
+   \MakeRobustCommand{lsc}%
+   \def\Lsc@@{\@ifNextNB*{\let\Fsc@F\@sc@F\lsc@}{\let\Fsc@F\relax\lsc@*}}%
+   \def\lsc@*##1{\ifFMA\leavevmode{\ifECM\Fsc@F\else\@sc@F\fi%
+                                   \textsc{\@uchbox{\MakeLowercase{##1}}}}%
+                 \else\@lscORI##1\fi}%
+   \def\@FE{\@noBDfr%
+             \@ifNextNB){\@@FPE}{\@@FE}}%
+   \def\@@FE{\the\@FrCount$^{\mathrm o}$\kern+.29em}%
+   \def%
+        \@@FPE){\setbox0=\hbox{\degre}\@FrDimen=\wd0\multiply\@FrDimen by 10%
+                \divide\@FrDimen by 45\leavevmode%
+                \the\@FrCount\kern-\@FrDimen%
+                \setbox0=\hbox{\the\@FrCount}\@tempdima=\ht0%
+                \setbox0=\hbox{\degre}\@tempdimb=\ht0%
+                \advance\@tempdimb by -\@tempdima%
+                \lower\@tempdimb\hbox{\degre}%
+                \multiply\@FrDimen by 45%
+                \divide\@FrDimen by 20%
+                \kern-\@FrDimen%
+                )\kern+.3em}%
+   \def\quando=##1{\@FrCount=##1\@FE}%
+   \MakeRobustCommand{quando}%
+   \def\primo{\@FrCount=1\@FE}%
+   \def\secundo{\@FrCount=2\@FE}%
+   \def\tertio{\@FrCount=3\@FE}%
+   \def\quarto{\@FrCount=4\@FE}%
+\def\frenchalias##1##2{%
+   \ifx##1\undefined\let##1 ##2\relax%
+          \else\f@issue%
+               \@fw{-1- %
+                   }[\string##1]%
+               \expandafter\stop%
+   \fi}%
+\@ifundefined{refmark}%
+            {\def\refmark##1{\@noBDfr%
+                             \ifFTY\ifhmode%
+                                    \ifdim\lastskip>\z@\unskip\fi\fi\fi%
+                             \hbox{%
+                               $^{\,%
+                               \let\itshape\relax%
+\textrm{\scriptsize%
+                               \ref{##1}%
+       }%
+                                        }$}}}{}%
+\def\!{\relax\ifFMA\ifmmode%
+                           \mskip-\thinmuskip\else\negthinspace\fi%
+             \else\@ntsORI\fi}%
+\expandafter\def\csname\string\!\endcsname{\kern-.083335em}%
+\def\halfnegthinspace{\ifFMA\expandafter%
+                            \csname\string\!\endcsname%
+                      \else\expandafter\@hntsORI\fi}%
+\@ifundefined{moretolerance}{\def\moretolerance{%
+              \@noBDfr%
+              \advance\tolerance by \the\tolerance%
+              \advance\pretolerance by \the\pretolerance}}{}%
+\@ifundefined{I}{\def\I{I}}{}%
+   \def\Sauter##1Lignes{\@noBDfr%
+                        \vspace*{##1\baselineskip}}%
+              }%
+\@ifundefined{AllTeX}{%
+\def\AllTeX{(\kern-.075em L\kern-.36em{\sbox\z@ T\vbox to\ht\z@{\hbox{%
+             \check@mathfonts\fontsize\sf@size\z@\math@fontsfalse%
+             \selectfont A}\vss}}\kern-.15em)\kern-.075em\TeX}%
+\MakeRobustCommand{AllTeX}%
+                     }{}%
+\let\@currname\@currnameORI%
+\def\languagename{english}%
+\def\beginlanguage{%
+                    \ifx\babel@savevariable%
+                         \undefined\french%
+                    \else\endenglish\selectlanguage{french}\fi%
+                   }%
+\let\@bglngpk\babel@savevariable%
+\ifx\pg@add@to\undefined\else%
+\def\pg@begin{\begingroup}%
+\def\pg@end{\endgroup}%
+\fi%
+\edef\beginFWdirection{L}%
+\ifx\undefined\babel@core@loaded\ProcessOptions*%
+ \else%
+     \PackageInfo{\frenchname}%
+      {Initialisation de l'option \frenchname\space pour Babel}%
+      \GOfrench\let\GOfrench\relax%
+\fi%
+\let\@FW\undefined%
+\resetat%
+\PassOptionsToPackage{french}{varioref}%
+\PassOptionsToPackage{french}{pdfscreen}%
+\endinput%

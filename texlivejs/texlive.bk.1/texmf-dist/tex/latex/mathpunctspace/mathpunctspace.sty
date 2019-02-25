@@ -1,0 +1,136 @@
+\NeedsTeXFormat{LaTeX2e}[1995/12/01]
+\ProvidesPackage{mathpunctspace}
+   [2018/02/27 v1.1 style file ``mathpunctspace.sty''^^J
+    by Yuwsuke Kieda]
+
+\RequirePackage{xkeyval}
+
+\newif\ifm@th@p@s@postspace@comma@natural \m@th@p@s@postspace@comma@naturaltrue
+\newif\ifm@th@p@s@postspace@colon@natural \m@th@p@s@postspace@colon@naturaltrue
+\newif\ifm@th@p@s@postspace@semicolon@natural \m@th@p@s@postspace@semicolon@naturaltrue
+\newif\ifm@th@p@s@unit@mu \m@th@p@s@unit@mutrue
+\DeclareOptionX{comma}[natural]{\def\m@th@p@s@comma@postskip{#1}}
+\DeclareOptionX{colon}[natural]{\def\m@th@p@s@colon@postskip{#1}}
+\DeclareOptionX{semicolon}[natural]{\def\m@th@p@s@semicolon@postskip{#1}}
+\DeclareOptionX{unit}[mu]{\def\m@th@p@s@unit@space{#1}}
+\DeclareOptionX{latexorg}{\endinput}
+
+\ProcessOptionsX
+
+\@ifundefined{m@th@p@s@comma@postskip}{\def\m@th@p@s@comma@postskip{natural}}{}
+\@ifundefined{m@th@p@s@colon@postskip}{\def\m@th@p@s@colon@postskip{natural}}{}
+\@ifundefined{m@th@p@s@semicolon@postskip}{\def\m@th@p@s@semicolon@postskip{natural}}{}
+\@ifundefined{m@th@p@s@unit@space}{\def\m@th@p@s@unit@space{mu}}{}
+
+\def\@tmpm@th@p@s@unit@mu{mu}
+\ifx\m@th@p@s@unit@space\@tmpm@th@p@s@unit@mu\m@th@p@s@unit@mutrue\else\m@th@p@s@unit@mufalse\fi
+
+\setbox\@tempboxa\hbox{$\mskip\thinmuskip$}%
+\def\m@th@p@s@comma@postskip@natural{natural}
+\ifx\m@th@p@s@comma@postskip\m@th@p@s@comma@postskip@natural
+  \newskip\m@th@p@s@postspace@comma
+  \def\m@th@p@s@comma@postskip{%
+    \dimexpr\fontdimen2\the\font-\wd\@tempboxa\relax
+    plus  \fontdimen3\the\font
+    minus \fontdimen4\the\font}
+\else
+  \m@th@p@s@postspace@comma@naturalfalse
+  \ifm@th@p@s@unit@mu
+    \newmuskip\m@th@p@s@postspace@comma
+  \else
+    \newskip\m@th@p@s@postspace@comma
+  \fi
+\fi
+
+\setbox\@tempboxa\hbox{$\mskip\thinmuskip$}%
+\def\@colon@postskip@natural{natural}
+\ifx\m@th@p@s@colon@postskip\@colon@postskip@natural
+  \newskip\m@th@p@s@postspace@colon
+  \def\m@th@p@s@colon@postskip{%
+    \dimexpr\fontdimen2\the\font-\wd\@tempboxa\relax
+    plus  \fontdimen3\the\font
+    minus \fontdimen4\the\font}
+\else
+  \m@th@p@s@postspace@colon@naturalfalse
+  \ifm@th@p@s@unit@mu
+    \newmuskip\m@th@p@s@postspace@colon
+  \else
+    \newskip\m@th@p@s@postspace@colon
+  \fi
+\fi
+
+\setbox\@tempboxa\hbox{$\mskip\thinmuskip$}%
+\def\@semicolon@postskip@natural{natural}
+\ifx\m@th@p@s@semicolon@postskip\@semicolon@postskip@natural
+  \newskip\m@th@p@s@postspace@semicolon
+  \def\m@th@p@s@semicolon@postskip{%
+    \dimexpr\fontdimen2\the\font-\wd\@tempboxa\relax
+    plus  \fontdimen3\the\font
+    minus \fontdimen4\the\font}
+\else
+  \m@th@p@s@postspace@semicolon@naturalfalse
+  \ifm@th@p@s@unit@mu
+    \newmuskip\m@th@p@s@postspace@semicolon
+  \else
+    \newskip\m@th@p@s@postspace@semicolon
+  \fi
+\fi
+
+\m@th@p@s@postspace@comma\m@th@p@s@comma@postskip\relax
+\m@th@p@s@postspace@colon\m@th@p@s@colon@postskip\relax
+\m@th@p@s@postspace@semicolon\m@th@p@s@semicolon@postskip\relax
+
+\begingroup
+\catcode`\,=\active
+\ifm@th@p@s@postspace@comma@natural
+  \def\@x@{\def,{\normalcomma\hskip\m@th@p@s@postspace@comma}}
+\else
+  \ifm@th@p@s@unit@mu
+    \def\@x@{\def,{\thinmuskip\m@th@p@s@postspace@comma\normalcomma}}
+  \else
+    \def\@x@{\def,{\normalcomma\hskip\m@th@p@s@postspace@comma}}
+  \fi
+\fi
+\expandafter\endgroup\@x@%
+% *only* in math-mode are made active...
+\mathcode`\,="8000
+% last space is *necessary*
+\def\normalcomma{\mathchar"613B }
+
+\begingroup
+\catcode`\;=\active
+\ifm@th@p@s@postspace@semicolon@natural
+  \def\@x@{\def;{\normalsemicolon\hskip\m@th@p@s@postspace@semicolon}}
+\else
+  \ifm@th@p@s@unit@mu
+    \def\@x@{\def;{\normalsemicolon\mskip\m@th@p@s@postspace@semicolon}}
+  \else
+    \def\@x@{\def;{\normalsemicolon\hskip\m@th@p@s@postspace@semicolon}}
+  \fi
+\fi
+\expandafter\endgroup\@x@%
+% *only* in math-mode are made active...
+\mathcode`\;="8000
+% last space is *necessary*
+\def\normalsemicolon{\mathchar"603B }
+
+\begingroup
+\catcode`\:=\active
+\ifm@th@p@s@postspace@colon@natural
+  \def\@x@{\def:{\normalcolon\hskip\m@th@p@s@postspace@colon}}
+\else
+  \ifm@th@p@s@unit@mu
+    \def\@x@{\def:{\normalcolon\mskip\m@th@p@s@postspace@colon}}
+  \else
+    \def\@x@{\def:{\normalcolon\hskip\m@th@p@s@postspace@colon}}
+  \fi
+\fi
+\expandafter\endgroup\@x@%
+% *only* in math-mode are made active...
+\mathcode`\:="8000
+% last space is *necessary*
+\def\normalcolon{\mathchar"603A }
+
+\renewcommand\colon{\mathpunct{:}}
+
+\endinput

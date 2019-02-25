@@ -1,0 +1,87 @@
+%%
+%% This is file `lualatex-truncate.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lualatex-truncate.dtx  (with options: `lualatex-truncate.sty,package')
+%%  lualatex-truncate.dtx
+%%  Copyright 2018 Sebastian Friedl
+%% 
+%%  This work may be distributed and/or modified under the
+%%  conditions of the LaTeX Project Public License, either version 1.3c
+%%  of this license of (at your option) any later version.
+%%  The latest version of this license is in
+%%    http://www.latex-project.org/lppl.txt
+%%  and version 1.3c or later is part of all distributions of LaTeX
+%%  version 2008/05/04 or later.
+%% 
+%%  This work has the LPPL maintenance status 'maintained'.
+%%  Current maintainer of the work is Sebastian Friedl
+%% 
+%%  This work consists of the files lualatex-truncate.dtx, lualatex-truncate.ins,
+%%  lualatex-truncate-doc.dtx and the derived file lualatex-truncate.sty
+%% 
+%% \CharacterTable
+%%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%%   Digits        \0\1\2\3\4\5\6\7\8\9
+%%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%%   Dollar        \$     Percent       \%     Ampersand     \&
+%%   Acute accent  \'     Left paren    \(     Right paren   \)
+%%   Asterisk      \*     Plus          \+     Comma         \,
+%%   Minus         \-     Point         \.     Solidus       \/
+%%   Colon         \:     Semicolon     \;     Less than     \<
+%%   Equals        \=     Greater than  \>     Question mark \?
+%%   Commercial at \@     Left bracket  \[     Backslash     \\
+%%   Right bracket \]     Circumflex    \^     Underscore    \_
+%%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%%   Right brace   \}     Tilde         \~}
+\ProvidesPackage{lualatex-truncate}%
+    [2018/08/22 v1.1 LuaLaTeX wrapper for the truncate package]
+\NeedsTeXFormat{LaTeX2e}
+\newif\if@lualtxtruncate@hackhyphen
+\@lualtxtruncate@hackhyphenfalse
+\newif\if@lualtxtruncate@breakall
+\@lualtxtruncate@breakallfalse
+\DeclareOption{breakwords}{%
+    \@lualtxtruncate@hackhyphentrue%
+    \PassOptionsToPackage{breakwords}{truncate}}
+\DeclareOption{breakall}{%
+    \@lualtxtruncate@breakalltrue%
+    \@lualtxtruncate@hackhyphentrue%
+    \PassOptionsToPackage{breakall}{truncate}}
+\DeclareOption*{\PassOptionsToPackage{\CurrentOption}{truncate}}
+\ProcessOptions
+\@ifpackageloaded{truncate}{%
+    \PackageError{lualatex-truncate}%
+        {Don't load the truncate package when using lualatex-truncate!}%
+        {Don't load the truncate package and pass all package options
+         to lualatex-truncate! Otherwise, the wrapper mechanism won't
+         be able to understand what you want.}%
+}{\RequirePackage{truncate}}
+\RequirePackage{iftex}
+\ifLuaTeX\else%
+    \PackageWarningNoLine{lualatex-truncate}%
+        {Whoops! You don't want to use LuaLaTeX?}%
+    \endinput%
+\fi%
+\RequirePackage{letltxmacro}
+\LetLtxMacro\lualtxtruncate@truncate\truncate
+\renewcommand{\truncate}[3][\TruncateMarker]{{% two braces -> scope changes
+    \if@lualtxtruncate@breakall%
+        \language\z@% force US english
+    \fi%
+    \newcount\lualtxtruncate@tmp%
+    \lualtxtruncate@tmp=\the\prehyphenchar% remember current hyphen char
+    \if@lualtxtruncate@hackhyphen%
+        \prehyphenchar=0% invisible hyphen
+    \fi%
+    \lualtxtruncate@truncate[#1]{#2}{#3}% run the original \truncate macro
+    \if@lualtxtruncate@hackhyphen%
+        \prehyphenchar=\the\lualtxtruncate@tmp% restore hyphen
+    \fi%
+}}
+\endinput
+%%
+%% End of file `lualatex-truncate.sty'.

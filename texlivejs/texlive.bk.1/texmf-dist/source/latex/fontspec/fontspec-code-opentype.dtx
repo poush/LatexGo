@@ -1,0 +1,478 @@
+%%^^A%%  fontspec-code-opentype.dtx -- part of FONTSPEC <wspr.io/fontspec>
+
+% \section{OpenType definitions code}
+%
+% \iffalse
+%    \begin{macrocode}
+%<*fontspec>
+%    \end{macrocode}
+% \fi
+%
+%
+%
+% \begin{macro}{\@@_define_opentype_feature_group:n}
+%    \begin{macrocode}
+\cs_new:Nn \@@_define_opentype_feature_group:n
+  {
+    \keys_define:nn {fontspec-opentype} { #1 .multichoice: , .groups:n = {opentype} }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_define_opentype_feature:nnnnn}
+% \darg{Feature key}
+% \darg{Feature option val}
+% \darg{Check feature --- leave empty for no check}
+% \darg{Exact tag string to activate --- leave empty for disable only}
+% \darg{Tags to remove (clist)}
+%    \begin{macrocode}
+\cs_new:Nn \@@_feat_prop_add:nn
+  {
+    \tl_if_empty:nF {#1}
+     {
+      \prop_if_in:NnF \g_@@_OT_features_prop {#1}
+        {
+          \prop_gput:Nnn \g_@@_OT_features_prop {#1} {#2}
+        }
+     }
+  }
+\cs_new:Nn \@@_define_opentype_feature:nnnnn
+  {
+    \@@_feat_prop_add:nn {#3} {#1\,=\,#2}
+      \tl_if_empty:nTF {#4}
+        {
+          \keys_define:nn {fontspec-opentype}
+            {
+              #1/#2 .code:n =
+                { \@@_remove_clashing_featstr:n {#5} } ,
+              #1/#2 .groups:n = {opentype}
+            }
+        }
+        {
+          \keys_define:nn {fontspec-opentype}
+            {
+              #1/#2 .code:n =
+                {
+%<debug>          \typeout{::::::::fontspec-opentype~#1/#2~=~#3/#4/#5}
+                  \@@_make_OT_feature:nnn {#3} {#4} {#5}
+                } ,
+              #1/#2 .groups:n = {opentype}
+            }
+        }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_define_opentype_onoffreset:nnnnn}
+% \darg{Feature key}
+% \darg{Feature option val}
+% \darg{Check feature}
+% \darg{Tag prefix to activate: \texttt{+\#4} = on, \texttt{-\#4} = off.}
+% \darg{Tags to remove in the on case (clist)}
+%    \begin{macrocode}
+\cs_new:Nn \@@_feat_off:n {#1Off}
+\cs_new:Nn \@@_feat_reset:n {#1Reset}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_define_opentype_onoffreset:nnnnn
+  {
+    \exp_args:Nnx \@@_define_opentype_feature:nnnnn {#1} {#2} {#3} {+#4} {#5}
+    \exp_args:Nnx \@@_define_opentype_feature:nnnnn {#1} { \@@_feat_off:n   {#2} } {#3} {-#4} {}
+    \exp_args:Nnx \@@_define_opentype_feature:nnnnn {#1} { \@@_feat_reset:n {#2} } {} {} {+#4,-#4}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_define_opentype_onreset:nnnnn}
+% \darg{Feature key}
+% \darg{Feature option val}
+% \darg{Check feature}
+% \darg{Exact tag string to activate}
+% \darg{Tags to remove (clist)}
+%    \begin{macrocode}
+\cs_new:Nn \@@_define_opentype_onreset:nnnnn
+  {
+    \exp_args:Nnx \@@_define_opentype_feature:nnnnn {#1} {#2} {#3} {#4} {#5}
+    \exp_args:Nnx \@@_define_opentype_feature:nnnnn {#1} { \@@_feat_reset:n {#2} } {} {} {#4}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Adding features when loading fonts}
+%
+% When remove clashing features,
+% \begin{enumerate}
+% \item remove the feature being added (to avoid duplicates);
+% \item remove the inverse of the feature (to avoid cancellation);
+% \item finally remove all clashing features.
+% \end{enumerate}
+%    \begin{macrocode}
+\cs_new:Nn \@@_make_OT_feature:nnn
+  {
+%<debug>  \typeout{:: @@_make_OT_feature:nnn \exp_not:n { {#1}{#2}{#3} } }
+
+    \bool_set_true:N \l_@@_proceed_bool
+
+    \tl_if_empty:nF {#1}
+      {
+        \exp_args:No \@@_check_ot_feat:NnF \l_@@_fontface_cs_tl {#1}
+          {
+            \@@_warning:nx {icu-feature-not-exist-in-font} {#1}
+            \bool_set_false:N \l_@@_proceed_bool
+          }
+      }
+
+    \@@_remove_clashing_featstr:x { #2 , \@@_swap_plus_minus:n {#2} , #3 }
+
+    \bool_if:NT \l_@@_proceed_bool { \@@_update_featstr:n {#2} }
+  }
+\cs_generate_variant:Nn \@@_make_OT_feature:nnn {xxx}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_swap_plus_minus:n { \@@_swap_plus_minus_aux:Nq #1 \q_nil }
+\cs_new:Npn \@@_swap_plus_minus_aux:Nq #1#2 \q_nil
+  { \str_case:nn {#1} { {+} {-#2} {-} {+#2} } }
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\@@_check_script:NnTF}
+% This macro takes an OpenType script tag and checks if it exists in the current
+% font. \cmd\l_@@_script_int\ is used to store
+% the number corresponding to the script tag string.
+%    \begin{macrocode}
+\prg_new_conditional:Nnn \@@_check_script:Nn {TF,T}
+  {
+%<debug>\typeout{:: _check_script:Nn~#1~/~#2}
+    \bool_if:NTF \l_@@_never_check_bool
+      { \prg_return_true: }
+      {
+    \bool_if:nTF { \tl_if_empty_p:e {#2} }
+      { \prg_return_false: }
+      {
+%<*XE>
+%<debug>\typeout{::::~ checking~ script~ #2}
+        \@@_iv_str_to_num:Nx \l_@@_strnum_int {#2}
+        \int_set:Nn \l_tmpb_int { \XeTeXOTcountscripts #1 }
+        \int_zero:N \l_tmpa_int
+        \bool_set_false:N \l__fontspec_check_bool
+        \bool_until_do:nn { \int_compare_p:nNn \l_tmpa_int = \l_tmpb_int }
+          {
+            \ifnum \XeTeXOTscripttag #1 \l_tmpa_int = \l_@@_strnum_int
+              \bool_set_true:N \l__fontspec_check_bool
+              \int_set:Nn \l_tmpa_int {\l_tmpb_int}
+            \else
+              \int_incr:N \l_tmpa_int
+            \fi
+          }
+        \bool_if:NTF \l__fontspec_check_bool \prg_return_true: \prg_return_false:
+%</XE>
+%<*LU>
+        \@@_ot_validate_tag:x {#2}
+        \cs_if_eq:NNTF #1 \font
+          { \tl_set:Nx \l_@@_tmp_tl {\curr@fontshape/\f@size} }
+          { \tl_set:Nx \l_@@_tmp_tl {\cs_to_str:N #1} }
+%<debug>\typeout{::::~ checking:~"\l_@@_tmp_tl",~ "#2"}
+        \lua_now:e { fontspec.check_ot_script("\l_@@_tmp_tl", "#2") }
+        \bool_if:NTF \l__fontspec_check_bool
+          {
+%<debug>\typeout{::::::~ TRUE}
+            \prg_return_true:
+          }
+          {
+%<debug>\typeout{::::::~ FALSE}
+            \prg_return_false:
+          }
+%</LU>
+      }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_check_lang:NnnTF}
+% \begin{macro}{\@@_check_lang:NnTF}
+% This macro takes an OpenType language tag and checks if it exists in the current
+% font/script. \cmd\l_@@_language_int\ is used to store
+% the number corresponding to the language tag string.
+% The script used is whatever's held in \cmd\l_@@_script_int. By default, that's the
+% number corresponding to `|latn|'.
+%    \begin{macrocode}
+\prg_new_conditional:Nnn \@@_check_lang:Nn {TF}
+  {
+    \@@_check_lang:NnnTF #1 {#2} {\l_@@_script_tl} {\prg_return_true:} {\prg_return_false:}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\prg_new_conditional:Nnn \@@_check_lang:Nnn {TF}
+  {
+%<debug>\typeout{:: _check_lang:Nn~#1~/~#2~/~#3~/}
+    \bool_if:NTF \l_@@_never_check_bool
+      { \prg_return_true: }
+      {
+    \bool_if:nTF { \tl_if_empty_p:e {#3} }
+      { \prg_return_false: }
+      {
+%<*XE>
+        \@@_iv_str_to_num:Nx \l_@@_strnum_int {#2}
+        \@@_iv_str_to_num:Nx \l_@@_script_int {#3}
+        \int_set:Nn \l_@@_tmpb_int
+          { \XeTeXOTcountlanguages #1 \l_@@_script_int }
+        \int_zero:N \l_@@_tmpa_int
+        \bool_set_false:N \l__fontspec_check_bool
+        \bool_until_do:nn { \int_compare_p:nNn \l_@@_tmpa_int = \l_@@_tmpb_int }
+          {
+            \int_set:Nn \l_@@_tmpc_int
+              { \XeTeXOTlanguagetag #1 \l_@@_script_int \l_@@_tmpa_int }
+
+            \int_compare:nNnTF \l_@@_tmpc_int = \l_@@_strnum_int
+              {
+                \bool_set_true:N \l__fontspec_check_bool
+                \int_set:Nn \l_@@_tmpa_int {\l_@@_tmpb_int}
+              }
+              {
+                \int_incr:N \l_@@_tmpa_int
+              }
+          }
+        \bool_if:NTF \l__fontspec_check_bool \prg_return_true: \prg_return_false:
+%</XE>
+%<*LU>
+        \@@_ot_validate_tag:x {#2}
+        \@@_ot_validate_tag:x {#3}
+        \cs_if_eq:NNTF #1 \font
+          { \tl_set:Nx \l_@@_tmp_tl {\curr@fontshape/\f@size} }
+          { \tl_set:Nx \l_@@_tmp_tl {\cs_to_str:N #1} }
+        \@@_lua_function:neee {check_ot_lang} {\l_@@_tmp_tl} {#2} {#3}
+        \bool_if:NTF \l__fontspec_check_bool \prg_return_true: \prg_return_false:
+%</LU>
+      }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\@@_check_ot_feat:NnTF}
+% \begin{macro}{\@@_check_ot_feat:NnnnTF}
+% This macro takes an OpenType feature tag and checks if it exists in the current
+% font/script/language.
+% \cmd\l_@@_strnum_int\ is used to store the number corresponding to the feature tag string.
+% The script used is whatever's held in \cmd\l_@@_script_int. By default, that's the
+% number corresponding to `|latn|'. The language used is \cmd\l_@@_language_int,
+% by default |0|, the `default language'.
+%    \begin{macrocode}
+\prg_new_conditional:Nnn \@@_check_ot_feat:Nn {TF,F}
+  {
+    \@@_check_ot_feat:NnnnTF #1 {#2} {\l_@@_lang_tl} {\l_@@_script_tl}
+      {\prg_return_true:} {\prg_return_false:}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\prg_new_conditional:Nnn \@@_check_ot_feat:Nnnn {TF,F}
+  {
+    \bool_if:NTF \l_@@_never_check_bool
+      { \prg_return_true: }
+      {
+    \bool_if:nTF { \tl_if_empty_p:e {#3} || \tl_if_empty_p:e {#4} }
+      { \prg_return_false: }
+      {
+%<*XE>
+%<debug>\typeout{::~ fontspec_check_ot_feat:nnn~ {#2}{#3}{#4}}
+        \@@_iv_str_to_num:Nx \l_@@_strnum_int   {#2}
+        \@@_iv_str_to_num:Nx \l_@@_language_int {#3}
+        \@@_lang_dflt_correct:N \l_@@_language_int
+        \@@_iv_str_to_num:Nx \l_@@_script_int   {#4}
+        \int_set:Nn \l_tmpb_int
+        {
+          \XeTeXOTcountfeatures #1
+                                \l_@@_script_int
+                                \l_@@_language_int
+        }
+        \int_zero:N \l_tmpa_int
+        \bool_set_false:N \l_@@_check_bool
+        \bool_until_do:nn { \int_compare_p:nNn \l_tmpa_int = \l_tmpb_int }
+        {
+          \ifnum\XeTeXOTfeaturetag #1 \l_@@_script_int \l_@@_language_int
+              \l_tmpa_int =\l_@@_strnum_int
+            \bool_set_true:N \l_@@_check_bool
+            \int_set:Nn \l_tmpa_int {\l_tmpb_int}
+          \else
+            \int_incr:N \l_tmpa_int
+          \fi
+        }
+        \bool_if:NTF \l_@@_check_bool \prg_return_true: \prg_return_false:
+%</XE>
+%<*LU>
+%<debug>\typeout{::~ fontspec_check_ot_feat:n~ {#1}}
+        \@@_ot_validate_tag:x {#2}
+        \@@_ot_validate_tag:x {#3}
+        \@@_ot_validate_tag:x {#4}
+        \cs_if_eq:NNTF #1 \font
+          { \tl_set:Nx \l_@@_tmp_tl {\curr@fontshape/\f@size} }
+          { \tl_set:Nx \l_@@_tmp_tl {\cs_to_str:N #1} }
+        \@@_lua_function:neeee {check_ot_feat} {\l_@@_tmp_tl} {#2} {#3} {#4}
+        \bool_if:NTF \l_@@_check_bool \prg_return_true: \prg_return_false:
+%</LU>
+      }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{OpenType feature information}
+%
+%    \begin{macrocode}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {aalt}{Access~All~Alternates}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {abvf}{Above-base~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {abvm}{Above-base~Mark~Positioning}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {abvs}{Above-base~Substitutions}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {afrc}{Alternative~Fractions}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {akhn}{Akhands}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {blwf}{Below-base~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {blwm}{Below-base~Mark~Positioning}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {blws}{Below-base~Substitutions}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {calt}{Contextual~Alternates}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {case}{Case-Sensitive~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {ccmp}{Glyph~Composition~/~Decomposition}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {cfar}{Conjunct~Form~After~Ro}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {cjct}{Conjunct~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {clig}{Contextual~Ligatures}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {cpct}{Centered~CJK~Punctuation}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {cpsp}{Capital~Spacing}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {cswh}{Contextual~Swash}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {curs}{Cursive~Positioning}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {cvNN}{Character~Variant~$N$}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {c2pc}{Petite~Capitals~From~Capitals}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {c2sc}{Small~Capitals~From~Capitals}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {dist}{Distances}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {dlig}{Discretionary~Ligatures}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {dnom}{Denominators}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {dtls}{Dotless~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {expt}{Expert~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {falt}{Final~Glyph~on~Line~Alternates}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {fin2}{Terminal~Forms~\#2}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {fin3}{Terminal~Forms~\#3}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {fina}{Terminal~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {flac}{Flattened~accent~forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {frac}{Fractions}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {fwid}{Full~Widths}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {half}{Half~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {haln}{Halant~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {halt}{Alternate~Half~Widths}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {hist}{Historical~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {hkna}{Horizontal~Kana~Alternates}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {hlig}{Historical~Ligatures}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {hngl}{Hangul}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {hojo}{Hojo~Kanji~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {hwid}{Half~Widths}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {init}{Initial~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {isol}{Isolated~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {ital}{Italics}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {jalt}{Justification~Alternates}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {jp78}{JIS78~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {jp83}{JIS83~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {jp90}{JIS90~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {jp04}{JIS2004~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {kern}{Kerning}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {lfbd}{Left~Bounds}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {liga}{Standard~Ligatures}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {ljmo}{Leading~Jamo~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {lnum}{Lining~Figures}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {locl}{Localized~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {ltra}{Left-to-right~alternates}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {ltrm}{Left-to-right~mirrored~forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {mark}{Mark~Positioning}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {med2}{Medial~Forms~\#2}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {medi}{Medial~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {mgrk}{Mathematical~Greek}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {mkmk}{Mark~to~Mark~Positioning}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {mset}{Mark~Positioning~via~Substitution}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {nalt}{Alternate~Annotation~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {nlck}{NLC~Kanji~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {nukt}{Nukta~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {numr}{Numerators}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {onum}{Oldstyle~Figures}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {opbd}{Optical~Bounds}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {ordn}{Ordinals}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {ornm}{Ornaments}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {palt}{Proportional~Alternate~Widths}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {pcap}{Petite~Capitals}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {pkna}{Proportional~Kana}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {pnum}{Proportional~Figures}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {pref}{Pre-Base~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {pres}{Pre-base~Substitutions}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {pstf}{Post-base~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {psts}{Post-base~Substitutions}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {pwid}{Proportional~Widths}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {qwid}{Quarter~Widths}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {rand}{Randomize}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {rclt}{Required~Contextual~Alternates}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {rkrf}{Rakar~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {rlig}{Required~Ligatures}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {rphf}{Reph~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {rtbd}{Right~Bounds}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {rtla}{Right-to-left~alternates}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {rtlm}{Right-to-left~mirrored~forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {ruby}{Ruby~Notation~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {rvrn}{Required~Variation~Alternates}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {salt}{Stylistic~Alternates}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {sinf}{Scientific~Inferiors}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {size}{Optical~size}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {smcp}{Small~Capitals}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {smpl}{Simplified~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {ssNN}{Stylistic~Set~$N$}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {ssty}{Math~script~style~alternates}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {stch}{Stretching~Glyph~Decomposition}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {subs}{Subscript}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {sups}{Superscript}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {swsh}{Swash}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {titl}{Titling}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {tjmo}{Trailing~Jamo~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {tnam}{Traditional~Name~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {tnum}{Tabular~Figures}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {trad}{Traditional~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {twid}{Third~Widths}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {unic}{Unicase}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {valt}{Alternate~Vertical~Metrics}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {vatu}{Vattu~Variants}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {vert}{Vertical~Writing}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {vhal}{Alternate~Vertical~Half~Metrics}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {vjmo}{Vowel~Jamo~Forms}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {vkna}{Vertical~Kana~Alternates}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {vkrn}{Vertical~Kerning}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {vpal}{Proportional~Alternate~Vertical~Metrics}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {vrt2}{Vertical~Alternates~and~Rotation}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {vrtr}{Vertical~Alternates~for~Rotation}
+\prop_gput:Nnn \g_@@_all_opentype_feature_names_prop {zero}{Slashed~Zero}
+%    \end{macrocode}
+% TODO: move the above elsewhere!!
+%
+% \iffalse
+%    \begin{macrocode}
+%</fontspec>
+%    \end{macrocode}
+% \fi
+
+
+
+\endinput
+
+% /©
+% ------------------------------------------------
+% The FONTSPEC package  <wspr.io/fontspec>
+% ------------------------------------------------
+% Copyright  2004-2019  Will Robertson, LPPL "maintainer"
+% Copyright  2009-2015  Khaled Hosny
+% Copyright  2013       Philipp Gesang
+% Copyright  2013-2016  Joseph Wright
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% ©/

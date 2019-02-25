@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="molecule" level="document" file="chem-ini.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="chem" level="document" file="chem-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupchemical" level="style" category="graphics" file="chem-str.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="strut">
+                    <cd:resolve name="value-strut"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="fit" default="yes"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="fit" default="yes"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="fit" default="yes"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="fit" default="yes"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="top">
+                    <cd:constant type="fit" default="yes"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="bottom">
+                    <cd:constant type="fit" default="yes"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="scale">
+                    <cd:constant type="small"/>
+                    <cd:constant type="medium"/>
+                    <cd:constant type="big"/>
+                    <cd:constant type="normal" default="yes"/>
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="rotation">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="symalign">
+                    <cd:constant type="auto" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="axis">
+                    <cd:constant type="on"/>
+                    <cd:constant type="off" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="framecolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="rulethickness">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="offset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="unit">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="factor">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="frame">
+                    <cd:constant type="on"/>
+                    <cd:constant type="off"/>
+                </cd:parameter>
+                <cd:parameter name="rulecolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="bodyfont">
+                    <cd:inherit name="setupbodyfont"/>
+                </cd:parameter>
+                <cd:parameter name="size">
+                    <cd:constant type="small"/>
+                    <cd:constant type="medium" default="yes"/>
+                    <cd:constant type="big"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="setupchemicals" level="style" category="graphics" file="chem-str.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setupchemical"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setupchemicalframed" level="style" category="graphics" file="chem-str.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupframed"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definechemical" level="style" category="graphics" file="chem-str.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definechemicalsymbol" level="style" category="graphics" file="chem-str.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="chemicalsymbol" level="document" category="graphics" file="chem-str.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="chemicaltext" level="document" category="graphics" file="chem-str.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="chemical" type="environment" level="document" category="graphics" file="chem-str.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupchemical"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="structurechemical" type="environment" level="document" category="graphics" file="chem-str.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupchemical"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="chemical" level="document" category="graphics" file="chem-str.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="keyword-text-list"/>
+            <cd:resolve name="keyword-text-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="structurechemical" level="document" category="graphics" file="chem-str.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:resolve name="keyword-text-list"/>
+                <cd:resolve name="keyword-text-list-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="chemicaltoptext" level="document" category="graphics" file="chem-str.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="chemicalbottext" level="document" category="graphics" file="chem-str.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="chemicalmidtext" level="document" category="graphics" file="chem-str.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="toptext" level="document" category="graphics" file="chem-str.mkiv">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="bottext" level="document" category="graphics" file="chem-str.mkiv">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="midtext" level="document" category="graphics" file="chem-str.mkiv">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="definechemicals" level="style" category="graphics" file="chem-str.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupchemical"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

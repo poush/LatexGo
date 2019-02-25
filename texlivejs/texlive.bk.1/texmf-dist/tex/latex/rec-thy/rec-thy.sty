@@ -1,0 +1,1646 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{rec-thy}[2019/02/17 v3.01  Provides commands for writing up recursion theory papers]
+\makeatletter
+% \newcommand*{\@curpack}{\@currname} %rec-thy.sty
+\newcommand*{\@packinfo}[1]{\PackageInfo{rec-thy}{#1}}
+\newcommand*{\recthy@strip}[1]{%
+\ifcsname #1\endcsname%
+\else%
+\expandafter\edef\csname #1\endcsname{\expandafter\noexpand\csname @recthy@#1\endcsname}
+\fi
+}
+%leaves us a command \arg defined to do \@recthy@arg
+% \ProvidesPackage{\@curpack}  %file name is package name
+
+% Release Notes
+% Version 1.2
+% Added mrref option
+% Fixed horrific option processing bug
+\RequirePackage{ltxcmds}
+\RequirePackage{ifxetex,ifpdf}
+\RequirePackage{suffix}
+\RequirePackage{ifmtarg}
+\RequirePackage{xifthen}
+\RequirePackage{xkeyval}
+\RequirePackage{etoolbox}
+\robustify\(
+\robustify\)
+\RequirePackage{xparse}
+\RequirePackage{ifxetex}
+\AtBeginDocument{
+\ltx@ifpackageloaded{amsmath}{}{\RequirePackage{amsmath}}
+\ltx@ifpackageloaded{amssymb}{}{\RequirePackage{amssymb}}
+\ltx@ifpackageloaded{amsfonts}{}{\RequirePackage{amsfonts}}
+\ltx@ifpackageloaded{mathtools}{}{\RequirePackage{mathtools}}
+\ltx@ifpackageloaded{unicode-math}{}{\RequirePackage{mathrsfs}\RequirePackage{mathbbol}}
+\ltx@ifpackageloaded{undertilde}{}{\RequirePackage{undertilde}}
+}
+
+% \ifxetex  %workaround for bug...hopefully can dispense on later
+% \gdef\symbf#1{\symbf{#1}}
+% \fi
+% \global\let\symbf=\symbf
+\ifxetex
+\else
+    \def\symbf#1{\mathbf{#1}}
+\fi
+
+
+
+% \DeclareMathAlphabet{\mathbrush}{T1}{pbsi}{xl}{n}
+% \newcommand*{\mathbrush}[1]{\mathsfit{#1}}
+% \ifxetex
+%   \RequirePackage{xltxtra}
+%   \RequirePackage{unicode-math}
+%   % \RequirePackage{fontspec,xunicode}
+%   % \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase} % To support LaTeX quoting style
+%   % \input{/Users/TruePath/Library/texmf/tex/headers/appearence.tex}
+% \else
+%   % \usepackage[utf8]{inputenc}
+%   % \usepackage[T1]{fontenc}
+%   % \RequirePackage{euscript}
+%   % \newcommand*{\matheu}{\EuScript}
+
+%   \ifpdf
+%   \RequirePackage{cmap} % you can search in the pdf for umlauts and ligatures
+%   \fi
+% \fi
+% \RequirePackage{stmaryrd}
+% \RequirePackage{marvosym}
+
+\def\PMG@arginit{\let\@PMG@parenarg\@PMG@undefined\let\@PMG@braketarg\@PMG@undefined}
+
+\def\@recthy@family{\@currname.\@currext} %The default family for this package...filename.ext
+%Define boolean options true if option passed false otherwise
+
+
+\newif\ifrecthy@nohyphenation       \recthy@nohyphenationfalse
+\newif\ifrecthy@mrref           \recthy@mrreffalse
+\newif\ifrecthy@nomath          \recthy@nomathfalse
+\newif\ifrecthy@nodelim         \recthy@nodelimfalse
+\newif\ifrecthy@nonames
+\recthy@nonamesfalse
+\newif\ifrecthy@nosets
+\recthy@nosetsfalse
+\newif\ifrecthy@noquants\recthy@noquantsfalse
+\newif\ifrecthy@nospaces        \recthy@nospacesfalse
+\newif\ifrecthy@nostrings       \recthy@nostringsfalse
+\newif\ifrecthy@notrees         \recthy@notreesfalse
+\newif\ifrecthy@nopair          \recthy@nopairfalse
+\newif\ifrecthy@nonames         \recthy@nonamesfalse
+\newif\ifrecthy@nosetrels       \recthy@nosetrelsfalse
+\newif\ifrecthy@noordinalnotations  \recthy@noordinalnotationsfalse
+\newif\ifrecthy@nosyntax        \recthy@nosyntaxfalse
+\newif\ifrecthy@nodegclasses        \recthy@nodegclassesfalse
+\newif\ifrecthy@noforcing       \recthy@noforcingfalse
+\newif\ifrecthy@nodegrees       \recthy@nodegreesfalse
+\newif\ifrecthy@nocomputations      \recthy@nocomputationsfalse
+\newif\ifrecthy@nostructresets \recthy@nostructresetsfalse
+\newif\ifrecthy@noreqhelper \recthy@noreqhelperfalse
+\newif\ifrecthy@nosubfun \recthy@nosubfunfalse
+\newif\ifrecthy@nopfcases \@ifclassloaded{beamer}{\recthy@nopfcasestrue}{\recthy@nopfcasesfalse}
+\newif\ifrecthy@noprioritytrees \recthy@noprioritytreesfalse
+\newif\ifrecthy@nosuppprioritytrees \recthy@nosuppprioritytreestrue
+\newif\ifrecthy@hyperreqs \recthy@hyperreqstrue
+\newif\ifrecthy@nooperators \recthy@nooperatorsfalse
+%\newif\ifrecthy@nomodule \recthy@nomodulefalse
+
+\DeclareOptionX{nohyphenation}{\recthy@nohyphenationtrue}
+\DeclareOptionX{mrref}{\recthy@mrreftrue}
+\DeclareOptionX{nomath}{\recthy@nomathtrue}
+\DeclareOptionX{nodelim}{\recthy@nodelimtrue}
+\DeclareOptionX{nonames}{\recthy@nonamestrue}
+\DeclareOptionX{nosets}{\recthy@nosetstrue}
+\DeclareOptionX{noquants}{\recthy@noquantstrue}
+\DeclareOptionX{nospaces}{\recthy@nospacestrue}
+\DeclareOptionX{nostrings}{\recthy@nostringstrue}
+\DeclareOptionX{notrees}{\recthy@notreestrue}
+\DeclareOptionX{nopair}{\recthy@nopairtrue}
+\DeclareOptionX{nosetrels}{\recthy@nosetrelstrue}
+\DeclareOptionX{noordinalnotations}{\recthy@noordinalnotationstrue}
+\DeclareOptionX{nosyntax}{\recthy@nosyntaxtrue}
+\DeclareOptionX{nodegclasses}{\recthy@nodegclassestrue}
+\DeclareOptionX{noforcing}{\recthy@noforcingtrue}
+\DeclareOptionX{nodegrees}{\recthy@nodegreestrue}
+\DeclareOptionX{nocomputations}{\recthy@nocomputationstrue}
+\DeclareOptionX{nostructresets}{\recthy@nostructresetstrue}
+\DeclareOptionX{noreqhelper}{\recthy@noreqhelpertrue}
+\DeclareOptionX{nosubfun}{\recthy@nosubfuntrue}
+\DeclareOptionX{nopfcases}{\recthy@nopfcasestrue}
+\DeclareOptionX{noprioritytrees}{\recthy@noprioritytreestrue}
+\DeclareOptionX{suppPriorityTrees}{\recthy@nosuppprioritytreesfalse}
+\DeclareOptionX{nohyperreqs}{\recthy@hyperreqsfalse}
+\DeclareOptionX{nooperators}{\recthy@nooperatorstrue}
+%\DeclareOptionX{nomodule}{\recthy@nomoduletrue}
+
+\DeclareOptionX{degjoin}{\def\Tjoin{\Tdegjoin}}
+
+\let\@recthy@modulescr\mathcal
+\DeclareOptionX{modulescr}[mathcal]{\letcs{\@recthy@modulescr}{#1}}
+
+\def\@recthy@ballsymb@default{\mathscr{B}}
+\let\@recthy@ballsymb\@recthy@ballsymb@default
+\DeclareOptionX{ballsymb}[@recthy@ballsymb@default]{\letcs{\@recthy@ballsymb}{#1}}
+
+\AtEndOfPackage{
+    \ifrecthy@noprioritytrees
+        \@packinfo{Not loading Priority Tree Helper}
+    \else
+        \@packinfo{Loading Priority Tree Helper.}
+        \providecommand{\PriorityTree}{\mathbb{T}}
+        \providecommand{\tpath}[1][]{\ifthenelse{\isempty{#1}}{\symbf{f}}{\mathbb{f}_{#1}}}
+        \providecommand{\leftof}{\mathbin{<_L}}
+        \providecommand{\leftofeq}{\mathbin{\leq_L}}
+        \providecommand{\rightof}{\mathbin{>_L}}
+        \providecommand{\rightofeq}{\mathbin{\geq_L}}
+        \providecommand{\nleftof}{\mathbin{\nless_L}}
+        \providecommand{\nleftofeq}{\mathbin{\nleq_L}}
+        \providecommand{\nrightof}{\mathbin{\ngtr_L}}
+        \providecommand{\nrightofeq}{\mathbin{\ngeq_L}}
+        \NewDocumentCommand{\PriorityTreeModule}{mO{}m}{\ensuremath{{\@recthy@modulescr{#1}}^{#2}_{#3} }}
+        \let\module=\PriorityTreeModule
+        \providecommand{\ball}[3][]{{\@recthy@ballsymb}^{#1}(#2, #3)}
+    \fi
+
+}
+
+
+\AtEndOfPackage{
+    \ifrecthy@nosuppprioritytrees
+        \@packinfo{Not loading Priority Tree Supplemental Helper}
+    \else
+        \providecommand*{\Astages}[1]{\mathcal{A}({#1})}
+        \providecommand*{\Vstages}[1]{\mathcal{V}(#1)}
+        \providecommand{\reqof}[2][]{\mathbb{r}(#2)}
+        \let\modof=\reqof
+        \providecommand{\ancestor}{\succ}
+        \providecommand{\descendant}{\prec}
+        \providecommand{\ancestoreq}{\succeq}
+        \providecommand{\descendanteq}{\preceq}
+        \let\ances=\ancestor
+        \let\anceseq=\ancestoreq
+        \let\desc=\descendant
+        \let\desceq=\descendanteq
+    \fi
+
+}
+
+\let\pmg@casefont\textsc
+\DeclareOptionX{pfcasefont}[textsc]{\letcs{\pmg@casefont}{#1}}
+
+\AtEndOfPackage{
+    \ifrecthy@nopfcases
+        \@packinfo{Not loading Proof Cases Helper}
+    \else
+        \@packinfo{Loading Proof Cases Helper.}
+        \RequirePackage{enumitem}
+        \ltx@ifpackageloaded{cleveref}{
+        \crefformat{pfcasesnonumi}{#2case~#1#3}
+        \Crefformat{pfcasesnonumi}{#2Case~#1#3}
+        \crefformat{pfcasesnonumii}{#2subcase~#1#3}
+        \Crefformat{pfcasesnonumii}{#2Subcase~#1#3}
+        \crefformat{pfcasesnonumiii}{#2subsubcase~#1#3}
+        \Crefformat{pfcasesnonumiii}{#2Subsubcase~#1#3}
+        \crefformat{pfcasesnumberedi}{#2case~#1#3}
+        \Crefformat{pfcasesnumberedi}{#2Case~#1#3}
+        \crefformat{pfcasesnumberedii}{#2case~#1#3}
+        \Crefformat{pfcasesnumberedii}{#2Case~#1#3}
+        \crefformat{pfcasesnumberediii}{#2case~#1#3}
+        \Crefformat{pfcasesnumberediii}{#2Case~#1#3}
+        }{}
+        \newlist{pfcasesnonum}{enumerate}{3}
+        \setlist[pfcasesnonum]{
+          label={\pmg@casefont{Case}}\protect\thiscase:~,
+          align=left,
+          labelsep=!,
+          itemindent=-1em,
+          leftmargin=2em,
+          labelindent=0pt,
+          labelwidth=0pt
+        }
+        \setlist[pfcasesnonum,1]{
+            before=\def\pfcasecounter@pmg{pfcasesnonumi},
+        }
+        \setlist[pfcasesnonum,2]{
+            before=\def\pfcasecounter@pmg{pfcasesnonumii},
+        }
+        \setlist[pfcasesnonum,3]{
+            before=\def\pfcasecounter@pmg{pfcasesnonumiii},
+        }
+        \newlist{pfcasesnumbered}{enumerate}{3}
+        \setlist[pfcasesnumbered]{
+          align=left,
+          labelsep=!,
+          itemindent=-1em,
+          leftmargin=2em,
+          labelindent=0pt,
+          labelwidth=0pt
+        }
+        \setlist[pfcasesnumbered,1]{
+            before=\def\pfcasecounter@pmg{pfcasesnumberedi},
+          label={{\pmg@casefont{Case}}~\arabic*\protect\thiscase:~},
+          ref={\arabic*},
+        }
+        \setlist[pfcasesnumbered,2]{
+            before=\def\pfcasecounter@pmg{pfcasesnumberedii},
+          label={{\pmg@casefont{Case}}~\arabic{pfcasesnumberedi}\alph*:\protect\thiscase.~},
+          ref={\arabic{pfcasesnumberedi}\alph*},
+        }
+        \setlist[pfcasesnumbered,3]{
+            before=\def\pfcasecounter@pmg{pfcasesnumberediii},
+          label={{\pmg@casefont{Case}}~\arabic{pfcasesnumberedi}\alph{pfcasesnumberedii}.\roman*:\protect\thiscase.~},
+          ref={\arabic{pfcasesnumberedi}\alph{pfcasesnumberedii}.\roman*},
+        }
+        \newenvironment{pfcases*}{
+            \ProvideDocumentCommand{\case}{o}{
+                \IfNoValueTF{##1}{
+                    \def\thiscase{}%
+                }{
+                    \def\thiscase{~##1}%
+                }
+                \item  \ltx@ifpackageloaded{cleveref}{%
+                \cref@constructprefix{pfcases}{\cref@result}%
+                \protected@xdef\cref@currentlabel{[\pfcasecounter@pmg][][\cref@result]##1}}{}  \protected@edef\@currentlabel{##1}%
+        }
+        \begin{pfcasesnonum}
+        }
+        {\end{pfcasesnonum}}
+
+        \newenvironment{pfcases}{
+            \ProvideDocumentCommand{\case}{o}{
+                \IfNoValueTF{##1}{
+                    \def\thiscase{}%
+                }{
+                    \def\thiscase{~##1}%
+                }
+                \item \ltx@ifpackageloaded{cleveref}{%
+                \cref@constructprefix{\pfcasecounter@pmg}{\cref@result}
+                \protected@xdef\cref@currentlabel{[\pfcasecounter@pmg][][\cref@result] \csname the\pfcasecounter@pmg \endcsname}}{}%
+        }
+        \begin{pfcasesnumbered}}{\end{pfcasesnumbered}}
+    \fi
+}
+
+\AtEndOfPackage{
+\ifrecthy@nosubfun
+    \@packinfo{Not loading subfun defs.}
+\else
+    \@packinfo{Loading subfun defs.}
+    %DOCUMENT ME
+    \NewDocumentCommand{\subfun}{o}{\prec\IfNoValueTF{#1}{}{_{#1}}}
+    \NewDocumentCommand{\supfun}{o}{\succ\IfNoValueTF{#1}{}{_{#1}}}
+    \NewDocumentCommand{\nsubfun}{o}{\nprec\IfNoValueTF{#1}{}{_{#1}}}
+    \NewDocumentCommand{\nsupfun}{o}{\nsucc\IfNoValueTF{#1}{}{_{#1}}}
+    \NewDocumentCommand{\subfuneq}{o}{\preceq\IfNoValueTF{#1}{}{_{#1}}}
+    \NewDocumentCommand{\supfuneq}{o}{\succeq\IfNoValueTF{#1}{}{_{#1}}}
+    \NewDocumentCommand{\nsubfuneq}{o}{\npreceq\IfNoValueTF{#1}{}{_{#1}}}
+    \NewDocumentCommand{\nsupfuneq}{o}{\nsucceq\IfNoValueTF{#1}{}{_{#1}}}
+    \NewDocumentCommand{\subfunneq}{o}{\precneq\IfNoValueTF{#1}{}{_{#1}}}
+    \NewDocumentCommand{\supfunneq}{o}{\succneq\IfNoValueTF{#1}{}{_{#1}}}
+\fi
+}
+
+
+
+\let\@recthy@reqscr\mathscr
+\DeclareOptionX{reqscr}[mathscr]{\letcs{\@recthy@reqscr}{#1}}
+
+
+\AtEndOfPackage{
+\ifrecthy@noreqhelper
+    \@packinfo{Not loading requirement assist.}
+\else
+    \@packinfo{Loading requirement assist.}
+    \newcommand*{\req@orig}[3][]{\ensuremath{\ifthenelse{\isempty{#1}}{\@recthy@reqscr{#2}_{#3}}{\@recthy@reqscr{#2}^{#1}_{#3}}}}
+
+    \NewDocumentCommand{\req@href}{O{}mO{}m}{\@ifundefined{hyperref}{\req@orig[#1#3]{#2}{#4}}{\hyperref[\detokenize{req:#2@#1#3}]{\req@orig[#1#3]{#2}{#4}}}}
+    \NewDocumentCommand{\req@nohref}{O{}mO{}m}{\req@orig[#1#3]{#2}{#4}}
+    \ifrecthy@hyperreqs
+        \let\req=\req@href
+    \else
+        \let\req=\req@nohref
+    \fi
+    \WithSuffix\def\req*{\req@nohref}
+    % \newsavebox{\@recthy@reqbox}
+    % \def\defreq#1#2\par{
+    %   \begin{equation}\let\veqno\@@leqno%
+    %       \tag*{#1}%
+    %       \begin{lrbox}{\@recthy@reqbox}%
+ %   \begin{minipage}{\textwidth}#2\end{minipage}%
+ %   \end{lrbox}%
+ %   \makebox[0pt]{\usebox{\@recthy@reqbox}}%
+    %   \end{equation}}
+    \newtagform{colon}{}{:}
+    \newenvironment{requirement}[1]{
+        \let\@origif@fleqn@pmg=\if@fleqn
+        \let\@origiftagsleft@pmg=\iftagsleft@
+        \@fleqntrue
+        \setlength\@mathmargin{1.5cm}
+        \tagsleft@true
+        \usetagform{colon}
+        % \let\maketag@@@orig@pmg=\maketag@@@
+        % \def\maketag@@@#1{\hbox{\m@th\normalfont#1:}}
+        \begin{equation}\tag{#1}
+    }{
+        \end{equation}
+        \let\if@fleqn=\@origif@fleqn@pmg
+        \let\iftagsleft@=\@origiftagsleft@pmg
+        \usetagform{default}
+        % \let\maketag@@@=\maketag@@@orig@pmg  
+    }
+
+    \NewDocumentEnvironment{require}{O{}mO{}m}{
+        \begin{requirement}{\req@nohref[#1#3]{#2}{#4}} \label{\detokenize{req:#2@#1#3}}%
+    }{
+        \end{requirement}%
+    }
+    % \NewDocumentEnvironment{require*}{O{}mO{}m}{
+    %     \begin{requirement}{\req@nohref[#1#3]{#2}{#4}}%
+    % }{
+    %     \end{requirement}%
+    % }
+    \NewDocumentCommand{\refreq}{O{}mO{}}{\ref{\detokenize{req:#2@#1#3}}}
+
+    \NewDocumentCommand{\require@nested}{sO{}mO{}m}{
+        \IfBooleanTF{#1}{\tag{\req@nohref[#2#4]{#3}{#5}}}{\tag{\req@nohref[#2#4]{#3}{#5}}\label{\detokenize{req:#3@#2#4}}}
+    }
+    % \newcommand*{\require@nested}{\require@nested@href}
+    % \WithSuffix\def\require@nested*{\require@nested@nohref}
+        % \NewDocumentEnvironment{require*}{O{}mO{}m}{
+        %     \tag{\req@nohref[#1#3]{#2}{#4}}%
+        % }{}
+
+
+    \NewDocumentEnvironment{requirements}{}{
+        \let\@origif@fleqn@pmg=\if@fleqn
+        \let\@origiftagsleft@pmg=\iftagsleft@
+        \@fleqntrue
+        \setlength\@mathmargin{1.5cm}
+        \tagsleft@true
+        \usetagform{colon}
+        \let\require=\require@nested
+        % \let\maketag@@@orig@pmg=\maketag@@@
+        % \def\maketag@@@#1{\hbox{\m@th\normalfont#1:}}
+        \gather
+    }{
+        \endgather
+        \let\if@fleqn=\@origif@fleqn@pmg
+        \let\iftagsleft@=\@origiftagsleft@pmg
+        \usetagform{default}
+        % \let\maketag@@@=\maketag@@@orig@pmg  
+    }
+
+\fi
+}
+
+
+
+\AtEndOfPackage{
+\ifrecthy@nostructresets
+    \@packinfo{Not loading r.e. set structs w/ containment.}
+\else
+    \@packinfo{Loading r.e. set structs w/ containment.}
+\let\@orig@setminus=\setminus
+\newcommand*{\promptdif}{\@orig@setminus_{\downarrow}}
+\let\setbefore=\promptdif
+\let\promptminus=\promptdif
+\let\promptsetminus=\promptdif
+
+\newcommand*{\StrcE}{\ensuremath{\mathscr{E}}}
+\WithSuffix\def\StrcE*{\ensuremath{\mathscr{E}^{*}}}
+\let\strucE\StrcE
+\newcommand*{\StrcL}[1]{\mathscr{L}(#1)}
+\newcommand*{\StrcStarL}[1]{\mathscr{L}^{*}(#1)}
+\WithSuffix\def\StrcL*{\StrcStarL}
+\newcommand*{\splitof}{\sqsubset}
+\newcommand*{\splitby}{\sqsupset}
+\newcommand*{\StrcR}{\ensuremath{\mathcal{R}}}
+\newcommand*{\StrcD}{\ensuremath{\mathcal{D}}}
+
+
+\fi
+}
+
+\AtEndOfPackage{
+\ifrecthy@nohyphenation
+    \@packinfo{No hyphenation loading.}
+\else
+\hyphenation{ra-tion-als ra-tion-al Harrington Slaman Cholak Knight Gerdes Lange}
+\fi
+}
+
+
+\AtEndOfPackage{
+\ifrecthy@mrref
+    \@packinfo{MRref helper loading}
+    \RequirePackage{hyperref}
+    \def\recthy@checkMR MR#1#2#3 #4\relax%
+      {\ifx#1M%
+         \ifx#2R\recthy@MR{#3}\else\recthy@MR{#1#2#3}\fi
+       \else
+         \recthy@MR{#1#2#3}%
+       \fi}
+    \def\MR#1{\recthy@checkMR MR#1 \relax}
+    \newcommand{\recthy@MR}[1]{\recthy@MRhref{#1}{MR #1}}
+    % % \MRhref is called by the amsart/book/proc definition of \MR.
+    \newcommand{\recthy@MRhref}[2]{\href{http://www.ams.org/mathscinet-getitem?mr=#1}{#2}}
+\else
+    \@packinfo{MRref helper not loading}
+\fi
+}
+
+\newcommand*{\@recthy@abs}[1]{\lvert#1\rvert}
+\newcommand*{\@recthy@ensuretext}[1]{\ensuremath{\text{#1}}}
+\AtEndOfPackage{
+\ifrecthy@nomath
+    \@packinfo{No math loading.}
+\else
+    \@packinfo{math loading.}
+    \providecommand*{\eqdef}{\stackrel{\text{\tiny def}}{=}} %\newcommand*{\eqdef}{\ensuremath{=\limits_{\text{\tiny def}}}}
+    \providecommand*{\iffdef}{\stackrel{\text{\tiny def}}{\iff}}
+    \ifdefined\aut
+    \else
+        \DeclareMathOperator{\aut}{Aut}
+    \fi
+    \ifdefined\Ord
+    \else
+        \DeclareMathOperator{\Ord}{Ord}
+    \fi
+
+
+    \recthy@strip{abs}
+    \ifdefined\dom
+    \else
+        \DeclareMathOperator{\dom}{dom}
+    \fi
+    \ifdefined\rng
+    \else
+        \DeclareMathOperator{\rng}{rng}
+    \fi
+    \providecommand*{\restr}[1]{\mathpunct{\restriction_{#1}}}
+    \providecommand*{\ordpair}[2]{\left( #1, #2 \right) }
+    %%%%%%%%Function commands
+    \providecommand*{\map}[2]{:#1\mapsto #2}
+    \providecommand*{\functo}[3]{#1\map{#2}{#3}}
+    \providecommand*{\compfunc}{\mathbin{\circ}}
+    \ifdefined\compose
+    \else
+        \let\compose=\compfunc
+    \fi
+    \ifdefined\funcomp
+    \else
+        \let\funcomp=\compfunc
+    \fi
+    \recthy@strip{ensuretext}
+\fi
+}
+
+
+\AtEndOfPackage{
+\ifrecthy@nooperators
+    \@packinfo{No operators loading.}
+\else
+    \@packinfo{Operators loading.}
+        \providecommand*{\meet}{\mathbin{\wedge}}
+    \providecommand*{\join}{\mathbin{\vee}}
+    \providecommand*{\Meet}{\mathop{\bigwedge}}
+    \let\MnJoin=\Join
+    \renewcommand*{\Join}{\mathop{\bigvee}}
+    \ifdefined\xor
+    \else
+        \DeclareMathOperator{\xor}{xor}
+    \fi
+\fi
+}
+
+\newcommand*{\@recthy@llangle}{\mathopen{\langle\!\langle}}
+\newcommand*{\@recthy@rrangle}{\mathclose{\rangle\!\rangle}}
+
+
+
+\AtEndOfPackage{
+\ifrecthy@nodelim
+    \@packinfo{No delimiters loading.}
+\else
+    \ltx@ifpackageloaded{MnSymbol}{}{ 
+    \DeclareFontFamily{OMX}{MnSymbolE}{}
+    \DeclareSymbolFont{MnLargeSymbols}{OMX}{MnSymbolE}{m}{n}
+    \SetSymbolFont{MnLargeSymbols}{bold}{OMX}{MnSymbolE}{b}{n}
+    \DeclareFontShape{OMX}{MnSymbolE}{m}{n}{
+        <-6>  MnSymbolE5
+       <6-7>  MnSymbolE6
+       <7-8>  MnSymbolE7
+       <8-9>  MnSymbolE8
+       <9-10> MnSymbolE9
+      <10-12> MnSymbolE10
+      <12->   MnSymbolE12
+    }{}
+    \DeclareFontShape{OMX}{MnSymbolE}{b}{n}{
+        <-6>  MnSymbolE-Bold5
+       <6-7>  MnSymbolE-Bold6
+       <7-8>  MnSymbolE-Bold7
+       <8-9>  MnSymbolE-Bold8
+       <9-10> MnSymbolE-Bold9
+      <10-12> MnSymbolE-Bold10
+      <12->   MnSymbolE-Bold12
+    }{}
+    \DeclareMathDelimiter{\ulcorner}
+        {\mathopen}{MnLargeSymbols}{'036}{MnLargeSymbols}{'036}
+    \DeclareMathDelimiter{\urcorner}
+        {\mathclose}{MnLargeSymbols}{'043}{MnLargeSymbols}{'043}
+}
+    \newcommand*{\godelnum}[1]{\left\ulcorner #1 \right\urcorner}
+    \let\cornerquote=\godelnum
+    \let\gcode=\godelnum
+    \recthy@strip{llangle}
+    \recthy@strip{rrangle}
+\fi
+}
+
+\newcommand*{\@recthy@re}{\@recthy@ensuretext{r.e.\ }}
+\newcommand*{\@recthy@ce}{\@recthy@ensuretext{c.e.\ }}
+\newcommand*{\@recthy@RE}{\@recthy@ensuretext{R.E.\ }}
+\newcommand*{\@recthy@CE}{\@recthy@ensuretext{C.E.\ }}
+\newcommand*{\@recthy@Re}{\@recthy@ensuretext{R.e.\ }}
+\newcommand*{\@recthy@Ce}{\@recthy@ensuretext{C.e.\ }}
+\newcommand*{\@recthy@recursive}{\@recthy@ensuretext{recursive}}
+\newcommand*{\@recthy@computable}{\@recthy@ensuretext{computable}}
+\newcommand*{\@recthy@recursivelyEnumerable}{\@recthy@ensuretext{recursively enumerable}}
+\newcommand*{\@recthy@computablyEnumerable}{\@recthy@ensuretext{computably enumerable}}
+\newcommand*{\@recthy@Recursive}{\@recthy@ensuretext{Recursive}}
+\newcommand*{\@recthy@Computable}{\@recthy@ensuretext{Computable}}
+\newcommand*{\@recthy@RecursivelyEnumerable}{\@recthy@ensuretext{Recursively enumerable}}
+\newcommand*{\@recthy@ComputablyEnumerable}{\@recthy@ensuretext{Computably enumerable}}
+\newcommand*{\@recthy@REA}{\ensuremath{\text{REA}}}
+\WithSuffix\def\@recthy@REA[#1]{#1-\@recthy@REA\relax}
+\newcommand*{\@recthy@CEA}{\ensuremath{\text{CEA}}}
+\WithSuffix\def\@recthy@CEA[#1]{#1-\@recthy@CEA\relax}
+
+\DeclareOptionX{reterms}{%
+    \let\@recthy@ce=\@recthy@re
+    \let\@recthy@computable=\@recthy@recursive
+    \let\@recthy@computablyEnumerable=\@recthy@recursivelyEnumerable
+    \let\@recthy@ComputablyEnumerable=\@recthy@RecursivelyEnumerable
+    } %Make all references to ce change to re
+
+    \DeclareOptionX{reaterms}{%
+        \let\@recthy@CEA=\@recthy@REA
+        }
+
+\DeclareOptionX{ceterms}{%
+    \let\@recthy@re=\@recthy@ce
+    \let\@recthy@recursive=\@recthy@computable
+    \let\@recthy@recursivelyEnumerable=\@recthy@computablyEnumerable
+    \let\@recthy@RecursivelyEnumerable=\@recthy@ComputablyEnumerable
+    } %Make all references to re change to ce
+
+\DeclareOptionX{ceaterms}{%
+            \let\@recthy@REA=\@recthy@CEA
+            }
+\DeclareOptionX{reaterms}{%
+            \let\@recthy@CEA=\@recthy@REA
+            }
+
+
+
+\AtEndOfPackage{
+\ifrecthy@nonames
+    \@packinfo{No names loading.}
+\else
+    \@packinfo{Names loading.}
+    \recthy@strip{re}
+    \recthy@strip{ce}
+    \recthy@strip{RE}
+    \recthy@strip{CE}
+    \recthy@strip{Re}
+    \recthy@strip{Ce}
+    \recthy@strip{REA}
+    \recthy@strip{CEA}
+    \recthy@strip{recursive}
+    \recthy@strip{computable}
+    \recthy@strip{recursivelyEnumerable}
+    \recthy@strip{computablyEnumerable}
+    \recthy@strip{Recursive}
+    \recthy@strip{Computable}
+    \recthy@strip{RecursivelyEnumerable}
+    \recthy@strip{ComputablyEnumerable}
+\fi
+}
+
+
+% Set stuff
+
+
+
+\NewDocumentCommand{\@recthy@set}{mg}{\left \{ #1 \IfNoValueTF{#2}{}{\middle | #2} \right \}}
+
+% \def\@recthy@set#1{\def\@set@argi@pmg{#1}\@ifnextchar\bgroup\@setst@pmg\@setplain@pmg}
+% \newcommand*{\@setst@pmg}[1]{\ifthenelse{\isempty{#1}}{\@setplain@pmg}{\left \{ \@set@argi@pmg \middle | #1\right \}}}
+% \newcommand*{\@setplain@pmg}{\left \{ \@set@argi@pmg \right \}}
+% \newcommand*{\@recthy@set}[2]{\ifthenelse{\isempty{#2}}{\left \{  #1 \right \}}{\left \{ #1 \middle | #2\right \}} }
+% \DeclareOptionX{setminussym}[@recthy@defaultsetminusSYM]{\edef\@recthy@setminusSYM{\expandafter\noexpand\csname #1 \endcsname}}
+
+
+\newcommand*{\@recthy@card}[1]{\lvert#1\rvert}
+\newcommand*{\@recthy@union}{\mathbin{\cup}}
+\newcommand*{\@recthy@Union}{\mathop{\bigcup}}
+\newcommand*{\@recthy@isect}{\mathbin{\cap}}
+\newcommand*{\@recthy@Isect}{\mathop{\bigcap}}
+\newcommand*{\@recthy@nin}{\notin}
+\newcommand*{\@recthy@powset}[1]{\mathcal{P}\left(#1\right)}
+\newcommand*{\@recthy@eset}{\emptyset}
+% \newcommand*{\@recthy@setcmpminusSYM}{\backsim}
+% \newcommand*{\@recthy@setminuscmp}[1]{\mathop{\@recthy@setcmpminusSYM} #1}
+\newcommand*{\@recthy@setovercmp}[1]{\overline{#1}}
+\let\@recthy@setcmp=\@recthy@setovercmp
+\def\@recthy@setdiffSYM{-}
+\newcommand*{\@recthy@setdiff}{\mathbin{\@recthy@setdiffSYM}}
+
+\DeclareOptionX{setdiffsym}{\edef\@recthy@setdiffSYM{\expandafter\noexpand\csname #1 \endcsname}}
+
+
+
+
+
+\AtEndOfPackage{
+\WithSuffix\def\@recthy@setcmp[#1]#2{#1\@recthy@setminus#2}
+\ifrecthy@nosets
+    \@packinfo{No set cmds loading.}
+\else
+    \@packinfo{Set cmds loading.}
+    \recthy@strip{set}
+    \recthy@strip{card}
+    \recthy@strip{union}
+    \recthy@strip{Union}
+    \recthy@strip{isect}
+    \recthy@strip{Isect}
+    \recthy@strip{powset}
+    \recthy@strip{eset}
+    \recthy@strip{nin}
+    \recthy@strip{setcmp}
+    % \recthy@strip{setovercmp}
+    % \recthy@strip{setminuscmp}
+    \recthy@strip{setdiff}
+    \let\crossOrig=\cross
+    \def\cross{}
+    \renewcommand*{\cross}{\mathbin{\times}}
+    \let\CrossOrig=\Cross
+    \def\Cross{}
+    \renewcommand*{\Cross}{\mathop{\Pi}}
+    \providecommand*{\symdiff}{\mathbin{\Delta}}
+    % \ifdefined\interior
+    % \else
+    %     \DeclareMathOperator{\interior}{int}
+    % \fi
+    % \ifdefined\closure
+    % \else
+        % \DeclareMathOperator{\clos}{cl}
+    % \fi
+\fi
+}
+
+\AtEndOfPackage{
+\ifrecthy@noquants
+    \@packinfo{No quants loading.}
+\else
+    \@packinfo{Quants loading.}
+    \AtBeginDocument{
+        \let\exists@orig@recthy=\exists
+        \let\forall@orig@recthy=\forall
+        \newcommand*{\exists@recthy}{\exists@orig@recthy}
+        \newcommand*{\forall@recthy}{\forall@orig@recthy}
+        \let\nexists@orig@recthy=\nexists
+        \newcommand*{\nexists@recthy}{\nexists@orig@recthy}
+        \let\nforall@orig@recthy=\nforall
+        \newcommand*{\nforall@recthy}{\nforall@orig@recthy}
+        \newcommand*{\existsuniq}{\exists@orig@recthy !}
+        \newcommand*{\nexistsuniq}{\nexists@orig@recthy !}
+        \WithSuffix\def\existsuniq(#1){\left(\existsuniq #1 \right)\!}
+        \WithSuffix\def\nexistsuniq(#1){\left(\nexistsuniq #1 \right)\!}
+        \WithSuffix\def\existsuniq[#1]{\left[\existsuniq #1 \right]\!}
+        \WithSuffix\def\nexistsuniq[#1]{\left[\nexistsuniq #1 \right]\!}
+
+        \newcommand*{\forallae}{\forall@orig@recthy^{*}}
+        \WithSuffix\def\forallae(#1){\left(\forallae #1\right)\!}
+        \WithSuffix\def\forallae[#1]{\left[\forallae #1\right]\!}
+
+        \newcommand*{\nforallae}{\nforall@orig@recthy^{*}}
+        \WithSuffix\def\nforallae(#1){\left(\nforallae #1\right)\!}
+        \WithSuffix\def\nforallae[#1]{\left[\nforallae #1\right]\!}
+
+        \providecommand*{\existsinf}{\exists@orig@recthy^{\infty}}
+        \WithSuffix\def\existsinf(#1){\left(\existsinf #1\right)\!}
+        \WithSuffix\def\existsinf[#1]{\left[\existsinf #1\right]\!}
+
+        \providecommand*{\nexistsinf}{\nexists^{\infty}}
+        \WithSuffix\def\nexistsinf(#1){\left(\nexistsinf #1\right)\!}
+        \WithSuffix\def\nexistsinf[#1]{\left[\nexistsinf #1\right]\!}
+
+        \WithSuffix\def\exists@recthy(#1){\left(\exists #1 \right)\!}
+        \WithSuffix\def\forall@recthy(#1){\left(\forall #1 \right)\!}
+        \WithSuffix\def\nexists@recthy(#1){\left(\nexists #1 \right)\!}
+        \WithSuffix\def\exists@recthy[#1]{\left[\exists #1 \right]\!}
+        \WithSuffix\def\forall@recthy[#1]{\left[\forall #1 \right]\!}
+        \WithSuffix\def\nexists@recthy[#1]{\left[\nexists #1 \right]\!}
+        \WithSuffix\def\forall@recthy*{\forallae}
+        \WithSuffix\def\nforall@recthy*{\nforallae}
+        \WithSuffix\def\exists@recthy*{\existsinf}
+        \WithSuffix\def\nexists@recthy*{\nexistsinf}
+        \WithSuffix\def\exists@recthy!{\existsuniq}
+        \let\exists=\exists@recthy
+        \let\forall=\forall@recthy
+        \let\nexists=\nexists@recthy
+        \let\nforall=\nforall@recthy
+    }
+
+
+
+    \providecommand*{\True}{\top}
+    \providecommand*{\False}{\bot}
+
+    \providecommand*{\Land}{\mathop{\bigwedge}}
+    \providecommand*{\Lor}{\mathop{\bigvee}}
+    \providecommand*{\LLand}{\mathop{\bigwedge\mkern-15mu\bigwedge}}
+    \providecommand*{\LLor}{\mathop{\bigvee\mkern-15mu\bigvee}}
+
+    \providecommand*{\liff}{\ensuremath{\leftrightarrow}}
+    \providecommand*{\limplies}{\ensuremath{\rightarrow}}
+
+\fi
+}
+
+
+
+
+\AtEndOfPackage{
+\ifrecthy@nospaces
+    \@packinfo{No spaces loading.}
+\else
+    \@packinfo{Spaces loading.}
+
+    \providecommand*{\bstrs}{2^{<\omega}}
+    \providecommand*{\wstrs}{\omega^{<\omega}}
+
+    \providecommand*{\cantor}{2^{\omega}}
+    % \WithSuffix\def\cantor*{\left(2\union \diverge \right)^{\omega}}
+    \providecommand*{\baire}{\omega^{\omega}}
+    % \WithSuffix\def\baire*{\left(\omega \union \diverge \right)^{\omega}}
+    \providecommand*{\Baire}{\mathcal{N}}
+\fi
+}
+
+
+%Strings
+\def\@recthy@concatSYM@Default{\widehat{\phantom{X}}}
+\def\@recthy@EmptyStr@Default{\mathopen{\langle}\mathclose{\rangle}}
+\let\@recthy@concatSYM\@recthy@concatSYM@Default
+\let\@recthy@EmptyStr\@recthy@EmptyStr@Default
+
+\DeclareOptionX{emptystr}[@recthy@EmptyStr@Default]{\letcs{\@recthy@EmptyStr}{#1}}
+\DeclareOptionX{concatsym}[@recthy@concatSYM@Default]{\letcs{\@recthy@concatSYM}{#1}}
+\newcommand*{\@recthy@pair}[2]{\mathopen{\@recthy@llangle} #1, #2 \mathclose{\@recthy@rrangle}}
+
+\NewDocumentCommand{\incompat@recthy}{o}{\mathrel{\mid}\IfValueTF{#1}{_{#1}}{}}
+\NewDocumentCommand{\compat@recthy}{o}{\mathrel{\not\mid}\IfValueTF{#1}{_{#1}}{}}
+
+\AtEndOfPackage{
+\ifrecthy@nostrings
+    \@packinfo{No strings loading.}
+\else
+    \@packinfo{Strings loading.}
+        \newcommand*{\closedn}[1]{{#1}^\blacktriangledown}
+    \newcommand*{\str}[1]{\mathopen{\langle}#1\mathclose{\rangle}}
+    \newcommand*{\code}[1]{\mathopen{\@recthy@llangle}#1\mathclose{\@recthy@rrangle}}
+    \newcommand*{\EmptyStr}{\@recthy@EmptyStr}
+    \newcommand*{\estr}{\EmptyStr}
+    \newcommand*{\decode}[2]{(#1)_{#2}}
+    \let\godelpair=\@recthy@pair
+    \let\gpair=\@recthy@pair
+    \newcommand*{\concat}{\@recthy@concatSYM}
+    \WithSuffix\def\concat[#1]{\concat\str{#1}}
+    \newcommand*{\strpred}[1]{{#1}^{-}}
+    \providecommand*{\lh}[2][]{\@recthy@abs{#2}_{#1}} %% Gives length of a string
+
+    \providecommand*{\incompat}{\incompat@recthy} %incompatible stringes FIX SPACING
+    \providecommand*{\incomp}{\incompat@recthy}
+    \providecommand*{\compat}{\compat@recthy}
+    \providecommand*{\nincompat}{\compat@recthy}
+    \providecommand*{\nincomp}{\compat@recthy}
+    \newcommand*{\setcol}[2]{{#1}^{[#2]}}
+    \ifrecthy@nopair
+        \@packinfo{No redefining pair.}
+    \else
+        \@packinfo{pair=godelpair.}
+        \let\pair=\@recthy@pair
+    \fi
+\fi
+}
+
+\AtEndOfPackage{
+\ifrecthy@notrees
+    \@packinfo{No trees loading.}
+\else
+    \@packinfo{Trees loading.}
+    \newcommand*{\CBderiv}[2][1]{#2^{\langle#1\rangle}}
+    \newcommand*{\pruneTree}[1]{\CBderiv[\infty]{#1}}
+    \newcommand*{\hgt}[1]{\lVert #1 \rVert}
+\fi
+}
+
+
+
+
+
+% Tree arguments
+
+% \newcommand*{\truepath}[2][]{\Gamma_{#1}\ifthenelse{\isempty{#2}}{}{(#2)}}
+% \newcommand*{\Tpath}{\truepath}
+
+
+
+
+%re set relations
+\AtEndOfPackage{
+\ifrecthy@nosetrels
+    \@packinfo{No setrels loading.}
+\else
+    \@packinfo{setrels loading.}
+    \AtBeginDocument{
+        \providecommand*{\nsupset}{\not\supset@recthy@orig}
+        \providecommand*{\nsubset}{\not\subset@recthy@orig}
+        \let\nsubset@recthy@orig=\nsubset
+        \let\nsupset@recthy@orig=\nsupset
+        \let\subset@recthy@orig=\subset
+        \let\supset@recthy@orig=\supset
+        \let\subseteq@recthy@orig=\subseteq
+        \let\supseteq@recthy@orig=\supseteq
+        \let\subsetneq@recthy@orig=\subsetneq
+        \let\supsetneq@recthy@orig=\supsetneq
+        \newcommand*{\subset@recthy}{\subset@recthy@orig}
+        \newcommand*{\supset@recthy}{\supset@recthy@orig}
+        \newcommand*{\subseteq@recthy}{\subseteq@recthy@orig}
+        \newcommand*{\supseteq@recthy}{\supseteq@recthy@orig}
+        \newcommand*{\nsubset@recthy}{\nsubset@recthy@orig}
+        \newcommand*{\nsupset@recthy}{\nsupset@recthy@orig}
+        \newcommand*{\nsubseteq@recthy}{\nsubseteq@recthy@orig}
+        \newcommand*{\nsupseteq@recthy}{\nsupseteq@recthy@orig}
+        \WithSuffix\def\subset@recthy*{\subset@recthy@orig^{*}}
+        \WithSuffix\def\supset@recthy*{\supset@recthy@orig^{*}}
+        \WithSuffix\def\subseteq@recthy*{\subseteq@recthy@orig^{*}}
+        \WithSuffix\def\supseteq@recthy*{\supseteq@recthy@orig^{*}}
+        \WithSuffix\def\subsetneq@recthy*{\subsetneq@recthy@orig^{*}}
+        \WithSuffix\def\supsetneq@recthy*{\supsetneq@recthy@orig^{*}}
+        \WithSuffix\def\nsubset@recthy*{\nsubset^{*}}
+        \WithSuffix\def\nsupset@recthy*{\nsupset^{*}}
+        \WithSuffix\def\nsubseteq@recthy*{\nsubseteq^{*}}
+        \WithSuffix\def\nsupseteq@recthy*{\nsupseteq^{*}}
+        \let\subset=\subset@recthy
+        \let\supset=\supset@recthy
+        \let\subseteq=\subseteq@recthy
+        \let\supseteq=\supseteq@recthy
+        \let\subsetneq=\subsetneq@recthy
+        \let\supsetneq=\supsetneq@recthy
+        \let\nsubset=\nsubset@recthy
+        \let\nsupset=\nsupset@recthy
+        \let\nsubseteq=\nsubseteq@recthy
+        \let\nsupseteq=\nsupseteq@recthy
+
+
+        \newcommand*{\eq}{=}
+        \WithSuffix\def\eq*{=^{*}}
+        \newcommand*{\eqae}{=^{*}}
+            \newcommand*{\neqae}{\neq^{*}}
+        \WithSuffix\def\neq*{\neq^{*}}
+
+        \newcommand*{\infsubset}{\subset_{\infty}}
+        \WithSuffix\def\infsubset*{\infsubset^{*}}
+        \let\subsetnaeq=\infsubset
+        \newcommand*{\infsupset}{\supset_{\infty}}
+        \WithSuffix\def\infsupset*{\infsupset^{*}}
+        \let\supsetnaeq=\infsupset
+        \newcommand*{\majsubset}{\subset_{m}}
+        \newcommand*{\majsupset}{\supset_{m}}
+    }
+\fi
+}
+
+
+
+
+
+
+
+
+
+
+
+%%% ORdinal notations
+% constructive/recursive ordinals
+
+\AtEndOfPackage{
+\ifrecthy@noordinalnotations
+    \@packinfo{No ordinal notations loading.}
+\else
+    \@packinfo{ordinal notations loading.}
+
+\providecommand*{\wck}{\ensuremath{\omega^{ck}_1}}
+  % \newcommand*{\ordtype}[1]{\ensuremath{\@recthy@abs{#1}_{\kleeneO}}}
+    \newcommand*{\ordzero}{\ensuremath{0}}
+  \def\kleeneOSYM{\mathcal{O}}
+    \newcommand*{\kleeneO}{\let\@PMG@parenarg\@PMG@undefined\let\@PMG@braketarg\@PMG@undefined\@kleeneObody}
+    \newcommand*{\@kleeneObody}{\kleeneOSYM\ifdefined\@PMG@parenarg
+    ^{\@PMG@parenarg}%
+    \fi%
+    \ifdefined\@PMG@braketarg
+    _{\abs{\@PMG@braketarg}}%
+    \fi}
+    \WithSuffix\def\@kleeneObody(#1){\def\@PMG@parenarg{#1}\@kleeneObody}
+    \WithSuffix\def\@kleeneObody[#1]{\def\@PMG@braketarg{#1}\@kleeneObody}
+    \WithSuffix\def\@kleeneObody*{\def\kleeneOSYM{\overline{\mathcal{O}}}\@kleeneObody}
+
+\newcommand*{\kleeneObelow}[2][]{\kleeneOSYM_{<#2\ifthenelse{\isempty{#1}}{}{, #1}}}
+\let\kleeneOless\kleeneObelow
+
+    \newcommand*{\kleeneOuniq}{\kleeneO*}
+    \let\ordNotations=\kleeneO
+    \let\uniqOrdNotations=\kleeneOuniq
+    \NewDocumentCommand{\kleeneless}{o}{<_{\kleeneO\IfNoValueTF{#1}{}{,#1}}}
+    \let\kleenel=\kleeneless
+    \NewDocumentCommand{\kleeneleq}{o}{\leq_{\kleeneO\IfNoValueTF{#1}{}{,#1}}}
+    \NewDocumentCommand{\kleenenless}{o}{\nless_{\kleeneO\IfNoValueTF{#1}{}{,#1}}}
+    \let\kleenenl=\kleenenless
+    \NewDocumentCommand{\kleenenleq}{o}{\nleq_{\kleeneO\IfNoValueTF{#1}{}{,#1}}}
+    \NewDocumentCommand{\kleenegtr}{o}{>_{\kleeneO\IfNoValueTF{#1}{}{,#1}}}
+    \let\kleeneg=\kleenegtr
+    \NewDocumentCommand{\kleenegeq}{o}{\geq_{\kleeneO\IfNoValueTF{#1}{}{,#1}}}
+    \NewDocumentCommand{\kleenengtr}{o}{\ngtr_{\kleeneO\IfNoValueTF{#1}{}{,#1}}}
+    \let\kleeneng=\kleenengtr
+    \NewDocumentCommand{\kleenengeq}{o}{\ngeq_{\kleeneO\IfNoValueTF{#1}{}{,#1}}}
+    \newcommand*{\kleenePlus}{\mathbin{+_{\kleeneO}}}
+    \newcommand*{\kleeneMul}{\cdot_{\kleeneO}}
+    \newcommand*{\kleenehgt}[1]{\lVert #1\rVert_{\kleeneO}}
+    \let\hgtO=\kleenehgt
+    \newcommand*{\kleenelim}[2]{{#1}_{[#2]}}
+    \newcommand*{\kleenepred}[1]{{#1}^{-}}
+
+\fi
+}
+
+
+
+
+% \newcommand*{\axiom}{2}{#1}
+%alpha REA stuff
+% \newcommand*{\alphaREA}[1][\alpha]{\ensuremath{ #1 \text{-REA}} }
+
+
+\newcommand*{\@PMG@VdashStar}{{\Vdash\smash{\mkern-12mu\raise4\p@\hbox{\text{\tiny*}}}\mkern2mu}}
+
+% Forcing
+\AtEndOfPackage{
+\ifrecthy@noforcing
+    \@packinfo{No forcing loading.}
+\else
+    \@packinfo{forcing loading.}
+    \providecommand*{\forces}{\def\@PMG@frcparenarg{}\def\@PMG@frcbraketarg{}\def\@PMG@curfrcsym{\Vdash}\@forcesBody}
+    \newcommand*{\@forcesBody}{\mathrel{{\@PMG@curfrcsym}^{\@PMG@frcparenarg}_{\@PMG@frcbraketarg}}}
+    \WithSuffix\def\@forcesBody(#1){\def\@PMG@frcparenarg{#1}\@forcesBody}
+    \WithSuffix\def\@forcesBody[#1]{\def\@PMG@frcbraketarg{#1}\@forcesBody}
+    \WithSuffix\def\@forcesBody*{\let\@PMG@curfrcsym=\@PMG@VdashStar\@forcesBody}
+
+    % \long\def\forces@[#1][#2]{\Vdash^{#2}_{#1}}
+    % \newcommand{\forces}{\optparams{\forces@}{[][]}%
+    % }
+    \providecommand*{\frc}{\forces}
+\fi
+}
+
+
+%%%%%%%%% Formula Classes
+
+\newcommand*{\@recthy@CDelta@default}{\prescript{\mathcal{C}}{}{\Delta}}
+\newcommand*{\@recthy@CSigma@default}{\prescript{\mathcal{C}}{}{\Sigma}}
+\newcommand*{\@recthy@CPi@default}{\prescript{\mathcal{C}}{}{\Pi}}
+\let\@recthy@CDelta=\@recthy@CDelta@default
+\let\@recthy@CSigma=\@recthy@CSigma@default
+\let\@recthy@CPi=\@recthy@CPi@default
+
+\DeclareOptionX{cdeltasym}[@recthy@CDelta@default]{\letcs{\@recthy@CDelta}{#1}}
+\DeclareOptionX{csigmasym}[@recthy@CSigma@default]{\letcs{\@recthy@CSigma}{#1}}
+\DeclareOptionX{cpisym}[@recthy@CPi@default]{\letcs{\@recthy@CPi}{#1}}
+
+% \DeclareOptionX<\@recthy@family>{cdeltasym}[]{\def\@recthy@CDelta{#1}}
+% \DeclareOptionX<\@recthy@family>{csigmasym}[]{\def\@recthy@CSigma{#1}}
+% \DeclareOptionX<\@recthy@family>{cpisym}[]{\def\@recthy@CPi{#1}}
+
+\AtEndOfPackage{
+\ifrecthy@nosyntax
+    \@packinfo{No syntax loading.}
+\else
+    \@packinfo{syntax loading.}
+    \recthy@strip{CDelta}
+    \recthy@strip{CSigma}
+    \recthy@strip{CPi}
+    \newcommand*{\deltan}[1]{\Delta_{#1}}
+    \WithSuffix\def\deltan[#1]#2{\Delta^{#1}_{#2}}
+    % \WithSuffix\def\deltan(#1)#2{\deltan{#2}\!\left(#1\right)}
+    \newcommand*{\deltaZeroN}[1]{\Delta^{0}_{#1}}
+    \WithSuffix\def\deltaZeroN[#1]#2{\Delta^{0,#1}_{#2}}
+    % \WithSuffix\def\deltaZeroN(#1)#2{\deltaZeroN{#2}\!\left(#1\right)}
+    \newcommand*{\deltaZeroTwo}{\deltaZeroN{2}}
+    \WithSuffix\def\deltaZeroTwo[#1]{\deltaZeroN[#1]{2}}
+    % \WithSuffix\def\deltaZeroTwo(#1){\deltaZeroN[#1]{2}}
+    \newcommand*{\deltaZeroThree}{\deltaZeroN{3}}
+    \WithSuffix\def\deltaZeroThree[#1]{\deltaZeroN[#1]{3}}
+    % \WithSuffix\def\deltaZeroThree(#1){\deltaZeroN[#1]{3}}
+    \newcommand*{\deltaZeroOne}{\deltaZeroN{1}}
+    \WithSuffix\def\deltaZeroOne[#1]{\deltaZeroN[#1]{1}}
+    % \WithSuffix\def\deltaZeroOne(#1){\deltaZeroN[#1]{1}}
+    \newcommand*{\deltaZeroZero}{\deltaZeroN{0}}
+    \WithSuffix\def\deltaZeroZero[#1]{\deltaZeroN[#1]{0}}
+    % \WithSuffix\def\deltaZeroZero(#1){\deltaZeroN[#1]{0}}
+
+
+    \newcommand*{\deltaOneN}[1]{\deltan{#1}^1}
+    \WithSuffix\def\deltaOneN[#1]#2{\Delta^{1,#1}_{#2}}
+    % \WithSuffix\def\deltaOneN(#1)#2{\deltaOneN{#2}\!\left(#1\right)}
+    \newcommand*{\deltaOneOne}{\deltaOneN{1}}
+    \WithSuffix\def\deltaOneOne[#1]{\deltaOneN[#1]{1}}
+    % \WithSuffix\def\deltaOneOne(#1){\deltaOneN[#1]{1}}
+    \newcommand*{\deltaOneTwo}{\deltaOneN{2}}
+    \WithSuffix\def\deltaOneTwo[#1]{\deltaOneN[#1]{2}}
+    % \WithSuffix\def\deltaOneTwo(#1){\deltaOneN[#1]{2}}
+    \newcommand*{\deltaOneThree}{\deltaOneN{3}}
+    \WithSuffix\def\deltaOneThree[#1]{\deltaOneN[#1]{3}}
+    % \WithSuffix\def\deltaOneThree(#1){\deltaOneN[#1]{3}}
+
+
+
+    \newcommand*{\sigman}[1]{\Sigma_{#1}}
+    \WithSuffix\def\sigman[#1]#2{\Sigma^{#1}_{#2}}
+    % \WithSuffix\def\sigman(#1)#2{\sigman{#2}\!\left(#1\right)}
+    \newcommand*{\sigmaZeroN}[1]{\Sigma^{0}_{#1}}
+    \WithSuffix\def\sigmaZeroN[#1]#2{\Sigma^{0,#1}_{#2}}
+    % \WithSuffix\def\sigmaZeroN(#1)#2{\sigmaZeroN{#2}\!\left(#1\right)}
+    \newcommand*{\sigmaZeroOne}{\sigmaZeroN{1}}
+    \WithSuffix\def\sigmaZeroOne[#1]{\sigmaZeroN[#1]{1}}
+    % \WithSuffix\def\sigmaZeroOne(#1){\sigmaZeroN[#1]{1}}
+    \newcommand*{\sigmaZeroTwo}{\sigmaZeroN{2}}
+    \WithSuffix\def\sigmaZeroTwo[#1]{\sigmaZeroN[#1]{2}}
+    % \WithSuffix\def\sigmaZeroTwo(#1){\sigmaZeroN[#1]{2}}
+    \newcommand*{\sigmaZeroThree}{\sigmaZeroN{3}}
+    \WithSuffix\def\sigmaZeroThree[#1]{\sigmaZeroN[#1]{3}}
+    % \WithSuffix\def\sigmaZeroThree(#1){\sigmaZeroN[#1]{3}}
+
+
+
+    \newcommand*{\sigmaOneN}[1]{\Sigma^1_{#1}}
+    \WithSuffix\def\sigmaOneN[#1]#2{\Sigma^{1,#1}_{#2}}
+    % \WithSuffix\def\sigmaOneN(#1)#2{\sigmaOneN{#2}\!\left(#1\right)}
+    \newcommand*{\sigmaOneOne}{\sigmaOneN{1}}
+    \WithSuffix\def\sigmaOneOne[#1]{\sigmaOneN[#1]{1}}
+    % \WithSuffix\def\sigmaOneOne(#1){\sigmaOneN[#1]{1}}
+    \newcommand*{\sigmaOneTwo}{\sigmaOneN{2}}
+    \WithSuffix\def\sigmaOneTwo[#1]{\sigmaOneN[#1]{2}}
+    % \WithSuffix\def\sigmaOneTwo(#1){\sigmaOneN[#1]{2}}
+    \newcommand*{\sigmaOneThree}{\sigmaOneN{3}}
+    \WithSuffix\def\sigmaOneThree[#1]{\sigmaOneN[#1]{3}}
+    % \WithSuffix\def\sigmaOneThree(#1){\sigmaOneN[#1]{3}}
+
+
+
+    \newcommand*{\pin}[1]{\Pi_{#1}}
+    \WithSuffix\def\pin[#1]#2{\Pi^{#1}_{#2}}
+    % \WithSuffix\def\pin(#1)#2{\pin{#2}\!\left(#1\right)}
+    \newcommand*{\piZeroN}[1]{\Pi^0_{#1}}
+    \WithSuffix\def\piZeroN[#1]#2{\Pi^{0,#1}_{#2}}
+    % \WithSuffix\def\piZeroN(#1)#2{\piZeroN{#2}\left(#1\right)}
+    \newcommand*{\piZeroOne}{\piZeroN{1}}
+    \WithSuffix\def\piZeroOne[#1]{\piZeroN[#1]{1}}
+    % \WithSuffix\def\piZeroOne(#1){\piZeroN[#1]{1}}
+    \newcommand*{\piZeroTwo}{\piZeroN{2}}
+    \WithSuffix\def\piZeroTwo[#1]{\piZeroN[#1]{2}}
+    % \WithSuffix\def\piZeroTwo(#1){\piZeroN[#1]{2}}
+    \newcommand*{\piZeroThree}{\piZeroN{3}}
+    \WithSuffix\def\piZeroThree[#1]{\piZeroN[#1]{3}}
+    % \WithSuffix\def\piZeroThree(#1){\piZeroN[#1]{3}}
+
+    \newcommand*{\piOneN}[1]{\Pi^1_{#1}}
+    \WithSuffix\def\piOneN[#1]#2{\Pi^{1,#1}_{#2}}
+    % \WithSuffix\def\piOneN(#1)#2{\piOneN{#2}\!\left(#1\right)}
+    \newcommand*{\piOneOne}{\piOneN{1}}
+    \WithSuffix\def\piOneOne[#1]{\piOneN[#1]{1}}
+    % \WithSuffix\def\piOneOne(#1){\piOneN[#1]{1}}
+    \newcommand*{\piOneTwo}{\piOneN{2}}
+    \WithSuffix\def\piOneTwo[#1]{\piOneN[#1]{2}}
+    % \WithSuffix\def\piOneTwo(#1){\piOneN[#1]{2}}
+    \newcommand*{\piOneThree}{\piOneN{3}}
+    \WithSuffix\def\piOneThree[#1]{\piOneN[#1]{3}}
+    % \WithSuffix\def\piOneThree(#1){\piOneN[#1]{3}}
+
+
+
+    %%%ABREVIATIONS
+    \newcommand*{\deltaz}{\deltaN{0}}
+    \newcommand*{\deltazn}{\deltaZeroN}
+    \newcommand*{\deltazii}{\deltaZeroTwo}
+    \newcommand*{\deltazi}{\deltaZeroOne}
+    \newcommand*{\deltazz}{\deltaZeroZero}
+    \newcommand*{\deltaziii}{\deltaZeroThree}
+    \newcommand*{\deltaIn}{\deltaOneN}
+    \newcommand*{\deltaIi}{\deltaOneOne}
+    \newcommand*{\deltaoneone}{\deltaOneOne}
+    \newcommand*{\deltaIii}{\deltaOneTwo}
+    \newcommand*{\deltaIiii}{\deltaOneThree}
+    \newcommand*{\sigmazn}{\sigmaZeroN}
+    \newcommand*{\sigmazi}{\sigmaZeroOne}
+    \newcommand*{\sigmazii}{\sigmaZeroTwo}
+    \newcommand*{\sigmaziii}{\sigmaZeroThree}
+    \newcommand*{\sigmaIn}{\sigmaOneN}
+    \newcommand*{\sigmaIi}{\sigmaOneOne}
+    \newcommand*{\sigmaIii}{\sigmaOneTwo}
+    \newcommand*{\sigmaIiii}{\sigmaOneThree}
+    \newcommand*{\pizn}{\piZeroN}
+    \newcommand*{\pizi}{\piZeroOne}
+    \newcommand*{\pizii}{\piZeroTwo}
+    \newcommand*{\piziii}{\piZeroThree}
+    \newcommand*{\piIn}{\piOneN}
+    \newcommand*{\piIi}{\piOneOne}
+    \newcommand*{\piIii}{\piOneTwo}
+    \newcommand*{\piIiii}{\piOneThree}
+
+    %%%%%%%%%%%%%
+    % \newcommand*{\sigmapizn}[1]{\sigmazn{#1} \union \pizn{#1}}
+    % \WithSuffix\def\sigmapizn[#1]#2{\sigmazn[#1]{#2} \union \pizn[#1]{#2}}
+    % \WithSuffix\def\sigmapizn(#1)#2{\sigmazn[#1]{#2} \union \pizn[#1]{#2}}
+    % \let\pisigmazn=\sigmapizn
+    %%%%%%%%%%%%%%
+
+    %%%%%%%%
+    % Logics
+    %\newcommand*{\equiv}
+    \newcommand*{\logic}[2]{\mathcal{L}_{#1,#2}}
+    % \newcommand*{\logicwiw}{\logic{\omega_{1}}{\omega}}
+    % \newcommand*{\Clogic}[2]{\mathcal{CL}_{#1,#2}}
+    % \newcommand*{\FOlogic}{\logic{\omega}{\omega}}
+    % \NewDocumentCommand{\hyplogic}{o}{\Clogic{\omega_{1}}{\omega}\ifthenelse{\isempty{#1}}{}{\left(#1\right)} }
+
+
+
+    %May never use...specific notation for computable formulas...supplanted by \( \sigmazn{\alpha} \) notation.
+    %%%%%%%%%%%
+
+
+
+
+
+    \newcommand*{\Cdeltan}[1]{\CDelta_{#1}}
+    \WithSuffix\def\Cdeltan[#1]#2{\Cdeltan{#2}^{#1}}
+    \newcommand*{\Cpin}[1]{\CPi_{#1}}
+    \WithSuffix\def\Cpin[#1]#2{\Cpin{#2}^{#1}}
+    \newcommand*{\Csigman}[1]{\CSigma_{#1}}
+    \WithSuffix\def\Csigman[#1]#2{\CSigma_{#2}^{#1}}
+
+        \newcommand*{\CdeltaZeroN}[1]{\Cdeltan[0]{#1}}
+    \newcommand*{\CdeltaZeroTwo}{\CdeltaZeroN{2}}
+    \newcommand*{\CdeltaZeroThree}{\CdeltaZeroN{3}}
+    \newcommand*{\CdeltaZeroOne}{\CdeltaZeroN{1}}
+    \newcommand*{\CdeltaZeroZero}{\CdeltaZeroN{0}}
+    \newcommand*{\CdeltaOneN}[1]{\Cdeltan[1]{#1}}
+    \newcommand*{\CdeltaOneOne}{\CdeltaOneN{1}}
+    \newcommand*{\CdeltaOneTwo}{\CdeltaOneN{2}}
+    \newcommand*{\CdeltaOneThree}{\CdeltaOneN{3}}
+        \newcommand*{\CpiZeroN}[1]{\Cpin[0]{#1}}
+    \newcommand*{\CpiOneN}[1]{\Cpin[1]{#1}}
+    \newcommand*{\CpiOneOne}{\CpiOneN{1}}
+    \newcommand*{\CpiOneThree}{\CpiOneN{3}}
+    \newcommand*{\CpiOneTwo}{\CpiOneN{2}}
+    \newcommand*{\CpiZeroOne}{\CpiZeroN{1}}
+    \newcommand*{\CpiZeroThree}{\CpiZeroN{3}}
+    \newcommand*{\CpiZeroTwo}{\CpiZeroN{2}}
+    \newcommand*{\CsigmaOneN}[1]{\Csigman[1]{#1}}
+    \newcommand*{\CsigmaOneOne}{\CsigmaOneN{1}}
+    \newcommand*{\CsigmaOneThree}{\CsigmaOneN{3}}
+    \newcommand*{\CsigmaOneTwo}{\CsigmaOneN{2}}
+    \newcommand*{\CsigmaZeroN}[1]{\Csigman[0]{#1}}
+    \newcommand*{\CsigmaZeroOne}{\CsigmaZeroN{1}}
+    \newcommand*{\CsigmaZeroThree}{\CsigmaZeroN{3}}
+    \newcommand*{\CsigmaZeroTwo}{\CsigmaZeroN{2}}
+
+
+    \WithSuffix\def\CsigmaOneN[#1]#2{\Csigma[1,#1]{#2}}
+    \WithSuffix\def\CsigmaOneOne[#1]{\CsigmaOneN[#1]{1}}
+    \WithSuffix\def\CsigmaOneThree[#1]{\CsigmaOneN[#1]{3}}
+    \WithSuffix\def\CsigmaOneTwo[#1]{\CsigmaOneN[#1]{2}}
+    \WithSuffix\def\CsigmaZeroN[#1]#2{\Csigma[0,#1]{#2}}
+    \WithSuffix\def\CsigmaZeroOne[#1]{\CsigmaZeroN[#1]{1}}
+    \WithSuffix\def\CsigmaZeroThree[#1]{\CsigmaZeroN[#1]{3}}
+    \WithSuffix\def\CsigmaZeroTwo[#1]{\CsigmaZeroN[#1]{2}}
+        \WithSuffix\def\CpiOneN[#1]#2{\Cpi[1,#1]{#2}}
+    \WithSuffix\def\CpiOneOne[#1]{\CpiOneN[#1]{1}}
+    \WithSuffix\def\CpiOneThree[#1]{\CpiOneN[#1]{3}}
+    \WithSuffix\def\CpiOneTwo[#1]{\CpiOneN[#1]{2}}
+    \WithSuffix\def\CpiZeroN[#1]#2{\Cpi[0,#1]{#2}}
+    \WithSuffix\def\CpiZeroOne[#1]{\CpiZeroN[#1]{1}}
+    \WithSuffix\def\CpiZeroThree[#1]{\CpiZeroN[#1]{3}}
+    \WithSuffix\def\CpiZeroTwo[#1]{\CpiZeroN[#1]{2}}
+        \WithSuffix\def\CdeltaOneN[#1]#2{\Cdelta[1,#1]{#2}}
+    \WithSuffix\def\CdeltaOneOne[#1]{\CdeltaOneN[#1]{1}}
+    \WithSuffix\def\CdeltaOneTwo[#1]{\CdeltaOneN[#1]{2}}
+    \WithSuffix\def\CdeltaOneThree[#1]{\CdeltaOneN[#1]{3}}
+        \WithSuffix\def\CdeltaZeroZero[#1]{\CdeltaZeroN[#1]{0}}
+    \WithSuffix\def\CdeltaZeroN[#1]#2{\Cdelta[0,#1]{#2}}
+        \WithSuffix\def\CdeltaZeroTwo[#1]{\CdeltaZeroN[#1]{2}}
+        \WithSuffix\def\CdeltaZeroThree[#1]{\CdeltaZeroN[#1]{3}}
+        \WithSuffix\def\CdeltaZeroOne[#1]{\CdeltaZeroN[#1]{1}}
+
+
+    %%%ABREVIATIONS
+    \newcommand*{\Cdeltaz}{\CdeltaN{0}}
+    \newcommand*{\Cdeltazn}{\CdeltaZeroN}
+    \newcommand*{\Cdeltazii}{\CdeltaZeroTwo}
+    \newcommand*{\Cdeltazi}{\CdeltaZeroOne}
+    \newcommand*{\Cdeltazz}{\CdeltaZeroZero}
+    \newcommand*{\Cdeltaziii}{\CdeltaZeroThree}
+    \newcommand*{\CdeltaIn}{\CdeltaOneN}
+    \newcommand*{\CdeltaIi}{\CdeltaOneOne}
+    \newcommand*{\Cdeltaoneone}{\CdeltaOneOne}
+    \newcommand*{\CdeltaIii}{\CdeltaOneTwo}
+    \newcommand*{\CdeltaIiii}{\CdeltaOneThree}
+    \newcommand*{\Csigmazn}{\CsigmaZeroN}
+    \newcommand*{\Csigmazi}{\CsigmaZeroOne}
+    \newcommand*{\Csigmazii}{\CsigmaZeroTwo}
+    \newcommand*{\Csigmaziii}{\CsigmaZeroThree}
+    \newcommand*{\CsigmaIn}{\CsigmaOneN}
+    \newcommand*{\CsigmaIi}{\CsigmaOneOne}
+    \newcommand*{\CsigmaIii}{\CsigmaOneTwo}
+    \newcommand*{\CsigmaIiii}{\CsigmaOneThree}
+    \newcommand*{\Cpizn}{\CpiZeroN}
+    \newcommand*{\Cpizi}{\CpiZeroOne}
+    \newcommand*{\Cpizii}{\CpiZeroTwo}
+    \newcommand*{\Cpiziii}{\CpiZeroThree}
+    \newcommand*{\CpiIn}{\CpiOneN}
+    \newcommand*{\CpiIi}{\CpiOneOne}
+    \newcommand*{\CpiIii}{\CpiOneTwo}
+    \newcommand*{\CpiIiii}{\CpiOneThree}
+
+%%%BOLDFACE
+
+    \newcommand*{\Deltan}[1]{\utilde{\symbf{\Delta}}_{#1}}
+    \WithSuffix\def\Deltan[#1]#2{\utilde{\symbf{\Delta}}^{#1}_{#2}}
+    % \WithSuffix\def\Deltan(#1)#2{\deltan{#2}\!\left(#1\right)}
+    \newcommand*{\DeltaZeroN}[1]{\utilde{\symbf{\Delta}}^{0}_{#1}}
+    \WithSuffix\def\DeltaZeroN[#1]#2{\utilde{\symbf{\Delta}}^{0,#1}_{#2}}
+    % \WithSuffix\def\DeltaZeroN(#1)#2{\DeltaZeroN{#2}\!\left(#1\right)}
+    \newcommand*{\DeltaZeroTwo}{\DeltaZeroN{2}}
+    \WithSuffix\def\DeltaZeroTwo[#1]{\DeltaZeroN[#1]{2}}
+    % \WithSuffix\def\DeltaZeroTwo(#1){\DeltaZeroN[#1]{2}}
+    \newcommand*{\DeltaZeroThree}{\DeltaZeroN{3}}
+    \WithSuffix\def\DeltaZeroThree[#1]{\DeltaZeroN[#1]{3}}
+    % \WithSuffix\def\DeltaZeroThree(#1){\DeltaZeroN[#1]{3}}
+    \newcommand*{\DeltaZeroOne}{\DeltaZeroN{1}}
+    \WithSuffix\def\DeltaZeroOne[#1]{\DeltaZeroN[#1]{1}}
+    % \WithSuffix\def\DeltaZeroOne(#1){\DeltaZeroN[#1]{1}}
+    \newcommand*{\DeltaZeroZero}{\DeltaZeroN{0}}
+    \WithSuffix\def\DeltaZeroZero[#1]{\DeltaZeroN[#1]{0}}
+    % \WithSuffix\def\DeltaZeroZero(#1){\DeltaZeroN[#1]{0}}
+
+
+    \newcommand*{\DeltaOneN}[1]{\Deltan{#1}^1}
+    \WithSuffix\def\DeltaOneN[#1]#2{\utilde{\symbf{\Delta}}^{1,#1}_{#2}}
+    % \WithSuffix\def\DeltaOneN(#1)#2{\DeltaOneN{#2}\!\left(#1\right)}
+    \newcommand*{\DeltaOneOne}{\DeltaOneN{1}}
+    \WithSuffix\def\DeltaOneOne[#1]{\DeltaOneN[#1]{1}}
+    % \WithSuffix\def\DeltaOneOne(#1){\DeltaOneN[#1]{1}}
+    \newcommand*{\DeltaOneTwo}{\DeltaOneN{2}}
+    \WithSuffix\def\DeltaOneTwo[#1]{\DeltaOneN[#1]{2}}
+    % \WithSuffix\def\DeltaOneTwo(#1){\DeltaOneN[#1]{2}}
+    \newcommand*{\DeltaOneThree}{\DeltaOneN{3}}
+    \WithSuffix\def\DeltaOneThree[#1]{\DeltaOneN[#1]{3}}
+    % \WithSuffix\def\DeltaOneThree(#1){\DeltaOneN[#1]{3}}
+
+
+
+    \newcommand*{\Sigman}[1]{\utilde{\symbf{\Sigma}}_{#1}}
+    \WithSuffix\def\Sigman[#1]#2{\utilde{\symbf{\Sigma}}^{#1}_{#2}}
+    % \WithSuffix\def\Sigman(#1)#2{\sigman{#2}\!\left(#1\right)}
+    \newcommand*{\SigmaZeroN}[1]{\utilde{\symbf{\Sigma}}^{0}_{#1}}
+    \WithSuffix\def\SigmaZeroN[#1]#2{\utilde{\symbf{\Sigma}}^{0,#1}_{#2}}
+    % \WithSuffix\def\SigmaZeroN(#1)#2{\SigmaZeroN{#2}\!\left(#1\right)}
+    \newcommand*{\SigmaZeroOne}{\SigmaZeroN{1}}
+    \WithSuffix\def\SigmaZeroOne[#1]{\SigmaZeroN[#1]{1}}
+    % \WithSuffix\def\SigmaZeroOne(#1){\SigmaZeroN[#1]{1}}
+    \newcommand*{\SigmaZeroTwo}{\SigmaZeroN{2}}
+    \WithSuffix\def\SigmaZeroTwo[#1]{\SigmaZeroN[#1]{2}}
+    % \WithSuffix\def\SigmaZeroTwo(#1){\SigmaZeroN[#1]{2}}
+    \newcommand*{\SigmaZeroThree}{\SigmaZeroN{3}}
+    \WithSuffix\def\SigmaZeroThree[#1]{\SigmaZeroN[#1]{3}}
+    % \WithSuffix\def\SigmaZeroThree(#1){\SigmaZeroN[#1]{3}}
+
+
+
+    \newcommand*{\SigmaOneN}[1]{\utilde{\symbf{\Sigma}}^1_{#1}}
+    \WithSuffix\def\SigmaOneN[#1]#2{\utilde{\symbf{\Sigma}}^{1,#1}_{#2}}
+    % \WithSuffix\def\SigmaOneN(#1)#2{\SigmaOneN{#2}\!\left(#1\right)}
+    \newcommand*{\SigmaOneOne}{\SigmaOneN{1}}
+    \WithSuffix\def\SigmaOneOne[#1]{\SigmaOneN[#1]{1}}
+    % \WithSuffix\def\SigmaOneOne(#1){\SigmaOneN[#1]{1}}
+    \newcommand*{\SigmaOneTwo}{\SigmaOneN{2}}
+    \WithSuffix\def\SigmaOneTwo[#1]{\SigmaOneN[#1]{2}}
+    % \WithSuffix\def\SigmaOneTwo(#1){\SigmaOneN[#1]{2}}
+    \newcommand*{\SigmaOneThree}{\SigmaOneN{3}}
+    \WithSuffix\def\SigmaOneThree[#1]{\SigmaOneN[#1]{3}}
+    % \WithSuffix\def\SigmaOneThree(#1){\SigmaOneN[#1]{3}}
+
+
+
+    \newcommand*{\Pin}[1]{\utilde{\symbf{\Pi}}_{#1}}
+    \WithSuffix\def\Pin[#1]#2{\utilde{\symbf{\Pi}}^{#1}_{#2}}
+    % \WithSuffix\def\Pin(#1)#2{\pin{#2}\!\left(#1\right)}
+    \newcommand*{\PiZeroN}[1]{\utilde{\symbf{\Pi}}^0_{#1}}
+    \WithSuffix\def\PiZeroN[#1]#2{\utilde{\symbf{\Pi}}^{0,#1}_{#2}}
+    % \WithSuffix\def\PiZeroN(#1)#2{\PiZeroN{#2}\left(#1\right)}
+    \newcommand*{\PiZeroOne}{\PiZeroN{1}}
+    \WithSuffix\def\PiZeroOne[#1]{\PiZeroN[#1]{1}}
+    % \WithSuffix\def\PiZeroOne(#1){\PiZeroN[#1]{1}}
+    \newcommand*{\PiZeroTwo}{\PiZeroN{2}}
+    \WithSuffix\def\PiZeroTwo[#1]{\PiZeroN[#1]{2}}
+    % \WithSuffix\def\PiZeroTwo(#1){\PiZeroN[#1]{2}}
+    \newcommand*{\PiZeroThree}{\PiZeroN{3}}
+    \WithSuffix\def\PiZeroThree[#1]{\PiZeroN[#1]{3}}
+    % \WithSuffix\def\PiZeroThree(#1){\PiZeroN[#1]{3}}
+
+    \newcommand*{\PiOneN}[1]{\utilde{\symbf{\Pi}}^1_{#1}}
+    \WithSuffix\def\PiOneN[#1]#2{\utilde{\symbf{\Pi}}^{1,#1}_{#2}}
+    % \WithSuffix\def\PiOneN(#1)#2{\PiOneN{#2}\!\left(#1\right)}
+    \newcommand*{\PiOneOne}{\PiOneN{1}}
+    \WithSuffix\def\PiOneOne[#1]{\PiOneN[#1]{1}}
+    % \WithSuffix\def\PiOneOne(#1){\PiOneN[#1]{1}}
+    \newcommand*{\PiOneTwo}{\PiOneN{2}}
+    \WithSuffix\def\PiOneTwo[#1]{\PiOneN[#1]{2}}
+    % \WithSuffix\def\PiOneTwo(#1){\PiOneN[#1]{2}}
+    \newcommand*{\PiOneThree}{\PiOneN{3}}
+    \WithSuffix\def\PiOneThree[#1]{\PiOneN[#1]{3}}
+    % \WithSuffix\def\PiOneThree(#1){\PiOneN[#1]{3}}
+
+
+
+    %%%ABREVIATIONS
+    \newcommand*{\Deltaz}{\deltaN{0}}
+    \newcommand*{\Deltazn}{\DeltaZeroN}
+    \newcommand*{\Deltazii}{\DeltaZeroTwo}
+    \newcommand*{\Deltazi}{\DeltaZeroOne}
+    \newcommand*{\Deltazz}{\DeltaZeroZero}
+    \newcommand*{\Deltaziii}{\DeltaZeroThree}
+    \newcommand*{\DeltaIn}{\DeltaOneN}
+    \newcommand*{\DeltaIi}{\DeltaOneOne}
+    \newcommand*{\Deltaoneone}{\DeltaOneOne}
+    \newcommand*{\DeltaIii}{\DeltaOneTwo}
+    \newcommand*{\DeltaIiii}{\DeltaOneThree}
+    \newcommand*{\Sigmazn}{\SigmaZeroN}
+    \newcommand*{\Sigmazi}{\SigmaZeroOne}
+    \newcommand*{\Sigmazii}{\SigmaZeroTwo}
+    \newcommand*{\Sigmaziii}{\SigmaZeroThree}
+    \newcommand*{\SigmaIn}{\SigmaOneN}
+    \newcommand*{\SigmaIi}{\SigmaOneOne}
+    \newcommand*{\SigmaIii}{\SigmaOneTwo}
+    \newcommand*{\SigmaIiii}{\SigmaOneThree}
+    \newcommand*{\Pizn}{\PiZeroN}
+    \newcommand*{\Pizi}{\PiZeroOne}
+    \newcommand*{\Pizii}{\PiZeroTwo}
+    \newcommand*{\Piziii}{\PiZeroThree}
+    \newcommand*{\PiIn}{\PiOneN}
+    \newcommand*{\PiIi}{\PiOneOne}
+    \newcommand*{\PiIii}{\PiOneTwo}
+    \newcommand*{\PiIiii}{\PiOneThree}
+
+
+
+
+
+
+\fi
+}
+
+
+\def\@recthy@recfSYM@default{\phi}
+\let\@recthy@recfSYM=\@recthy@recfSYM@default
+\def\@recthy@recfnlSYM@default{\Phi}
+\let\@recthy@recfnlSYM=\@recthy@recfnlSYM@default
+\def\@recthy@useSYM@default{\ltx@ifpackageloaded{unicode-math}{\symbffrak{u}}{\mathfrak{u}}}
+\let\@recthy@useSYM=\@recthy@useSYM@default
+%%%ABREVIATIONS
+\DeclareOptionX{recfnlsym}[@recthy@recfnlSYM@default]{\letcs{\@recthy@recfnlSYM}{#1}}
+\DeclareOptionX{recfsym}[@recthy@recfSYM@default]{\letcs{\@recthy@recfSYM}{#1}}
+\DeclareOptionX{usesym}[@recthy@useSYM@default]{\letcs{\@recthy@useSYM}{#1}}
+
+
+%Degree Classes
+\AtEndOfPackage{
+\ifrecthy@nodegclasses
+    \@packinfo{No degree classes loading.}
+\else
+    \@packinfo{Degree classes loading.}
+    \newcommand{\Low}[1][]{\ensuremath{ \text{Low}^{#1} }}
+    \newcommand{\LowN}[2][]{\ensuremath{ \text{Low}^{#1}_{#2} }}
+    \newcommand{\lowN}[2][]{\ensuremath{ \mathcal{L}^{#1}_{#2} }}
+\fi
+}
+
+\AtEndOfPackage{
+\ifrecthy@nocomputations
+    \@packinfo{No computations loading.}
+\else
+%%%%%%
+    \newcommand*{\murec}[2]{\ensuremath{\mu#1\left( #2 \right) }}
+
+    %\newcommand*{\brecfSYM}{\phi}
+
+    % \newcommand*{\recf}[3][]{\@recthy@recfSYM^{#1}_{#2}\ifthenelse{\isempty{#3}}{}{\left(#3\right)}} %If give an empty arg just print function no parens
+    %\newcommand*{\brecf}[3][]{\brecfSYM^{#1}_{#2}\ifthenelse{\isempty{#3}}{}{\left(#3\right)}}
+    %\recfnl[d]{i}{Y}{x} gives i-th d-recursive functional operating on set Y and integer x
+    \newcommand*{\recfnl}[4][]{\@recthy@recfnlSYM_{#2\ifthenelse{\isempty{#1}}{}{,{#1}} }%
+        \ifthenelse{\isempty{#4}}%
+        {\ifthenelse{\isempty{#3}}%
+            {}% No args then print no parents
+            {(#3)}
+        }%If no oracle we just refer to the functional without any arguments
+        {\ifthenelse{\isempty{#3}}{(#4)}{(#3;#4)}%
+    }}
+    \NewDocumentCommand{\recf}{od()md()}{
+        \@recthy@recfSYM_{#3\IfNoValueTF{#1}{}{\ifthenelse{\isempty{#3}}{}{, }{#1}}}\IfNoValueTF{#2}{}{^{#2}}\IfNoValueTF{#4}{}{(#4)}
+    }
+
+
+    % \newcommand*{\thetafnl}[4][]{\Theta_{#2\ifthenelse{\isempty{#1}}{}{,#1} }%
+    %     \ifthenelse{\isempty{#4}}%
+    %     {\ifthenelse{\isempty{#3}}%
+    %         {}% No args then print no parents
+    %         {(#3)}
+    %     }%If no oracle we just refer to the functional without any arguments
+    %     {\ifthenelse{\isempty{#3}}{(#4)}{(#3;#4)}%
+    % }}
+
+    % \newcommand*{\psifnl}[4][]{\Psi_{#2\ifthenelse{\isempty{#1}}{}{,#1} }%
+    %     \ifthenelse{\isempty{#4}}%
+    %     {\ifthenelse{\isempty{#3}}%
+    %         {}% No args then print no parents
+    %         {(#3)}
+    %     }%If no oracle we just refer to the functional without any arguments
+    %     {\ifthenelse{\isempty{#3}}{(#4)}{(#3;#4)}%
+    % }}
+
+    % \newcommand*{\phifnl}[4][]{\Phi_{#2\ifthenelse{\isempty{#1}}{}{,#1} }%
+    %     \ifthenelse{\isempty{#4}}%
+    %     {\ifthenelse{\isempty{#3}}%
+    %         {}% No args then print no parents
+    %         {(#3)}
+    %     }%If no oracle we just refer to the functional without any arguments
+    %     {\ifthenelse{\isempty{#3}}{(#4)}{(#3;#4)}%
+    % }}
+
+    % \newcommand*{\upsilonfnl}[4][]{\Upsilon_{#2\ifthenelse{\isempty{#1}}{}{,#1} }%
+    %     \ifthenelse{\isempty{#4}}%
+    %     {\ifthenelse{\isempty{#3}}%
+    %         {}% No args then print no parents
+    %         {(#3)}
+    %     }%If no oracle we just refer to the functional without any arguments
+    %     {\ifthenelse{\isempty{#3}}{(#4)}{(#3;#4)}%
+    % }}
+
+
+    \newcommand*{\cequiv}{\mathrel{\simeq}}
+    \newcommand*{\ncequiv}{\mathrel{\not\simeq}}
+    \NewDocumentCommand{\conv}{O{}}{\mathpunct{\downarrow}_{#1}}
+    \let\converge=\conv
+    %\newcommand*{\convs}[1]{\ensuremath{\conv_{#1}}}
+%   \NewDocumentCommand{\nconv}{o}{\mathpunct{\mkern-4mu{\arrownot\mkern 4mu \downarrow}_{#1}}}
+    \NewDocumentCommand{\nconv}{O{}}{\mathpunct{\mkern-4mu{\smallsetminus\mkern 4mu \downarrow}_{#1}}}
+    \newcommand*{\diverge}{\mathpunct{\uparrow}}
+    % \newcommand*{\use}[2]{\mathscr{u}(#1\ifthenelse{\isempty{#2}}{}{,#2})}
+    \newcommand*{\use}[1]{\mathop{\@recthy@useSYM}[#1]}
+% \newcommand*{\use}[1]{\ltx@ifpackageloaded{unicode-math}{\symbffrak{u}}{\mathfrak{u}}\left(#1\right)}
+    % \NewDocumentCommand{\REset}{omd()}{
+    % W_{#2\IfNoValueTF{#1}{}{, #1}}\IfNoValueTF{#3}{}{^{#3}}
+    % }
+
+    \newcommand*{\REset}{\let\@PMG@parenarg\@PMG@undefined\let\@PMG@braketarg\@PMG@undefined\@REsetbody}
+    \newcommand*{\@REsetbody}[1]{W\ifdefined\@PMG@parenarg
+    ^{\@PMG@parenarg}%
+    \fi%
+    \ifdefined\@PMG@braketarg
+    _{#1, {\@PMG@braketarg}}%
+    \else
+    _{#1}
+    \fi}
+    \WithSuffix\def\@REsetbody(#1){\def\@PMG@parenarg{#1}\@REsetbody}
+    \WithSuffix\def\@REsetbody[#1]{\def\@PMG@braketarg{#1}\@REsetbody}
+    \newcommand*{\alphaREAop}[2][]{\mathcal{J}^{#2}_{#1}}
+    \let\aREAop=\alphaREAop
+    \let\reaop=\alphaREAop
+    \newcommand*{\oneREAop}[1]{J_{#1}}
+    \let\iREAop=\oneREAop
+    \WithSuffix\def\reaop*#1{\oneREAop{#1}}
+    %converges
+
+\fi
+
+
+
+\ifrecthy@nodegrees
+    \@packinfo{No degrees loading.}
+\else
+
+
+    %%%%%%Turing Degrees
+    \def\firsttokof@pmg#1{\first@pmg@rdmxs(#1)}
+    \def\first@pmg@rdmxs(#1#2){#1}
+
+    \providecommand*{\Tdegvar}[1]{\symbf{#1}}
+    \providecommand*{\Tdegof}[1]{\utilde{#1}}
+    \providecommand*{\Tdeg}[1]{\ifthenelse{
+    % \equal{\detokenize{\Tzero}}{\futurelet\next@pmg\discard#1\@nil\expandafter\detokenize{\next@pmg}}
+                                        \equal{\detokenize{\Tzero}}{\detokenize{#1}} \OR  
+                                        \equal{\detokenize{\Tzero}}{\detokenize{#1}} \OR 
+                                        \equal{\detokenize{\zeroj}}{\detokenize{#1}} \OR 
+                                        \equal{\detokenize{\zerojj}}{\detokenize{#1}} \OR 
+                                        \equal{\detokenize{\zerojjj}}{\detokenize{#1}} \OR 
+                                        \equal{\string \zeron }{\expandafter\string \first@pmg@rdmxs(#1)}  
+                                       }{\Tdegof{#1}}{\Tdegvar{#1}}}
+
+    \providecommand*{\Tjump}[1]{#1'}
+    \let\jump=\Tjump
+    \providecommand*{\jumpn}[2]{#1^{(#2)}}
+    \providecommand*{\jjump}[1]{#1''}
+    % \newcommand*{\Tzerosym}{\MVZero}
+    \newcommand*{\Tzerosym}{\mathbb{0}}
+    \providecommand*{\Tzero}{{\Tzerosym}}
+    \providecommand*{\zeron}[1]{{\Tzerosym}^{(#1)}}
+    \providecommand*{\zeroj}{\jump{{\Tzerosym}}}
+    \let\Tzeroj=\zeroj
+    \providecommand*{\zerojj}{\jump{\jump{{\Tzerosym}}}}
+    \providecommand*{\zerojjj}{\jump{\jump{\jump{{\Tzerosym}}}}}
+    \let\Tzerojj=\zerojj
+    \let\Tzerojjj=\zerojjj
+
+    %%Misc Recursion theory stuff
+    %turing equivalent
+    \newcommand*{\@recthy@TSYM}{\symbf{T}}
+    \providecommand*{\Tequiv}{\mathrel{\equiv_{\@recthy@TSYM}}}
+    \providecommand*{\Teq}{\Tequiv}
+    \providecommand*{\nTequiv}{\mathrel{\ncong_{\@recthy@TSYM}}}
+    \providecommand*{\nTeq}{\nTequiv}
+    %turing below
+
+    \providecommand*{\Tlneq}{\lneq_{\@recthy@TSYM}}
+    \providecommand*{\Tleq}{\leq_{\@recthy@TSYM}}
+    \providecommand*{\Tgneq}{\gneq_{\@recthy@TSYM}}
+    \providecommand*{\Tgeq}{\geq_{\@recthy@TSYM}}
+    \providecommand*{\Tgtr}{>_{\@recthy@TSYM}}
+    \providecommand*{\Tless}{<_{\@recthy@TSYM}}
+    \providecommand*{\nTleq}{\nleq_{\@recthy@TSYM}}
+    \providecommand*{\nTgeq}{\ngeq_{\@recthy@TSYM}}
+
+    \providecommand*{\Tdegjoin}{\mathbin{\vee_{\@recthy@TSYM}}}
+    \providecommand*{\Tdegmeet}{\mathbin{\wedge_{\@recthy@TSYM}}}
+    \providecommand*{\Tmeet}{\Tdegmeet}
+    \providecommand*{\Tsetjoin}{\mathbin{\oplus}}
+    \providecommand*{\TsetJoin}{\mathop{\bigoplus}}
+    \providecommand*{\Tplus}{\Tsetjoin}
+    \providecommand*{\TPlus}{\TsetJoin}
+    \providecommand*{\Tjoin}{\Tsetjoin}
+    \providecommand*{\TJoin}{\TsetJoin}
+    \providecommand*{\Tincompat}{\incompat@recthy[\@recthy@TSYM]}
+    \providecommand*{\Tincomp}{\Tincompat}
+    \providecommand*{\Tcompat}{\compat@recthy[\@recthy@TSYM]}
+    \providecommand*{\nTincompat}{\Tcompat}
+    \providecommand*{\nTincomp}{\Tcompat}
+
+
+
+    \newcommand*{\@recthy@ttSYM}{\ensuremath{\tiny \mathtt{tt}}}
+    \newcommand*{\ttSYM}{\@recthy@ttSYM}
+    \newcommand*{\ttlneq}{\lneq_{\@recthy@ttSYM}}
+    \newcommand*{\ttleq}{\leq_{\@recthy@ttSYM}}
+    \newcommand*{\ttgneq}{\gneq_{\@recthy@ttSYM}}
+    \newcommand*{\ttgeq}{\geq_{\@recthy@ttSYM}}
+    \newcommand*{\ttgtr}{>_{\@recthy@ttSYM}}
+    \newcommand*{\ttless}{<_{\@recthy@ttSYM}}
+    \newcommand*{\ttnleq}{\nleq_{\@recthy@ttSYM}}
+    \newcommand*{\ttngeq}{\ngeq_{\@recthy@ttSYM}}
+\fi
+
+}
+
+
+
+% \ProcessOptions*
+% \ProcessOptionsX<\@recthy@family>
+\ProcessOptionsX
+
+
+
+
+
+
+

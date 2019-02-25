@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="pushattribute" category="attribute" level="system" file="attr-ini.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="popattribute" category="attribute" level="system" file="attr-ini.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installattributestack" category="attribute" level="system" file="attr-ini.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="defineattribute" category="attribute" level="system" file="attr-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="local" default="yes"/>
+                <cd:constant type="global"/>
+                <cd:constant type="public" default="yes"/>
+                <cd:constant type="private"/>
+                <cd:constant type="pickup"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definesystemattribute" category="attribute" level="system" file="attr-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="local" default="yes"/>
+                <cd:constant type="global"/>
+                <cd:constant type="public"/>
+                <cd:constant type="private" default="yes"/>
+                <cd:constant type="pickup"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="newattribute" category="attribute" level="system" file="attr-ini.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="dosetattribute" category="attribute" level="system" file="attr-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doresetattribute" category="attribute" level="system" file="attr-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="dogetattribute" category="attribute" level="system" file="attr-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="dogetattributeid" category="attribute" level="system" file="attr-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resetallattributes" category="attribute" level="system" file="attr-ini.mkiv"/>
+
+    <cd:command name="savecurrentattributes" category="attribute" level="system" file="attr-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="restorecurrentattributes" category="attribute" level="system" file="attr-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showattributes" category="attribute" level="document" file="attr-ini.mkiv"/>
+
+</cd:interface>

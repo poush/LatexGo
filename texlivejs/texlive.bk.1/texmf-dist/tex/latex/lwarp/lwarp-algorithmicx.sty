@@ -1,0 +1,53 @@
+%%
+%% This is file `lwarp-algorithmicx.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `algorithmicx')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+\LWR@ProvidesPackagePass{algorithmicx}[2005/04/27]
+\begin{warpHTML}
+
+\AtBeginEnvironment{algorithmic}{%
+\let\origALG@doentity\ALG@doentity%
+\renewcommand*{\ALG@doentity}{%
+\origALG@doentity%
+\LWR@htmltagc{%
+span style="width:\LWR@printlength{\ALG@thistlm}; display:inline-block;"%
+}%
+\ifbool{FormatWP}{%
+\setlength{\LWR@templengthone}{\the\ALG@thistlm}%
+\whiledo{\lengthtest{\LWR@templengthone>1em}}{%
+\quad%
+\addtolength{\LWR@templengthone}{-1em}%
+}%
+}{}%
+\LWR@htmltagc{/span}%
+}%
+
+\let\LWR@origComment\Comment%
+
+\renewcommand{\Comment}[1]{%
+    \InlineClass{floatright}{\LWR@origComment{#1}}%
+}%
+}
+
+\renewcommand\algorithmiccomment[1]{%
+\hfill\HTMLunicode{25B7} #1% white right triangle
+}%
+
+\end{warpHTML}
+
+\endinput
+%%
+%% End of file `lwarp-algorithmicx.sty'.

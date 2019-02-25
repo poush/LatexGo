@@ -1,0 +1,29 @@
+%% tetragonos.sty
+%% Copyright 2019 Yuchang Yang < yang.yc.allium@gmail.com >
+%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+% 
+% The Current Maintainer of this work is Yuchang Yang.
+%
+% This work consists of the files tetragonos.sty and tetragonos-database.def
+% and the associated example file tetragonos-example.tex
+%%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tetragonos}[2019/01/15 v1 package tetragonos]
+\newcommand{\saveTG}[2]{\expandafter\gdef\csname TG-#1\endcsname{#2}}
+\newcommand{\loadTG}[1]{\csname TG-#1\endcsname}
+\makeatletter
+\newcommand{\get@first@char}[1]{\loadTG{#1}\iffalse}
+\newcommand{\getTG}[1]{\get@first@char#1\fi}
+\makeatother
+\input{tetragonos-database.def}
+%%
+%% End of file `tetrogonos.sty'

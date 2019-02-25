@@ -1,0 +1,2946 @@
+% author: Jean-François Burnol
+% License: LPPL 1.3c (author-maintained)
+\ProvidesPackage{polexpr}%
+  [2019/02/12 v0.7.4 Polynomial expressions with rational coefficients (JFB)]%
+\RequirePackage{xintexpr}[2018/06/17]% xint 1.3c for \ifxintglobaldefs boolean
+\edef\POL@restorecatcodes
+    {\catcode`\noexpand\_ \the\catcode`\_ %
+     \catcode`\noexpand\! \the\catcode`\! %
+     \catcode`\noexpand\* \the\catcode`\* %
+     \catcode0 \the\catcode0\relax}%
+\catcode`\_ 11 \catcode0 12 \catcode`\* 12
+\long\def\xint_stop_atfirstoftwo  #1#2{ #1}% not yet in xint 1.3c
+\long\def\xint_stop_atsecondoftwo #1#2{ #2}%
+
+%% PATCH xintexpr TO AUTHORIZE ' IN NAMES (0.5.1)
+\catcode`\! 11
+\def\POL@XINT_expr_scanfunc_b #1%
+{%
+  \ifx !#1\xint_dothis{(_}\fi
+  \ifcat \relax#1\xint_dothis{(_}\fi
+  \if (#1\xint_dothis{\xint_firstoftwo{(`}}\fi
+  \if '#1\xint_dothis \XINT_expr_scanfunc_a \fi
+  \if @#1\xint_dothis \XINT_expr_scanfunc_a \fi
+  \if _#1\xint_dothis \XINT_expr_scanfunc_a \fi
+  \ifnum \xint_c_ix<1\string#1 \xint_dothis \XINT_expr_scanfunc_a \fi
+  \ifcat a#1\xint_dothis \XINT_expr_scanfunc_a \fi
+  \xint_orthat {(_}%
+    #1%
+}%
+
+%% AUXILIARIES
+\catcode`! 3
+%% added at 0.7
+\newcommand\polexprsetup[1]{\POL@setup_parsekeys #1,=!,\xint_bye}%
+\def\POL@setup_parsekeys #1=#2#3,{%
+    \ifx!#2\expandafter\xint_bye\fi
+    \csname POL@setup_setkey_\xint_zapspaces #1 \xint_gobble_i\endcsname
+    \xint_firstoftwo
+    {\PackageWarning{polexpr}{The \detokenize{#1} key is unknown! ignoring}}%
+    {\xintZapLastSpaces{#2#3}}%
+    \POL@setup_parsekeys
+}%
+\catcode`! 11 
+\def\POL@setup_setkey_norr     #1#2{\edef\POL@norr}%
+\def\POL@setup_setkey_sqfnorr  #1#2{\edef\POL@sqfnorr}%
+\polexprsetup{norr=_norr, sqfnorr=_sqf_norr}
+
+\newcount\POL@count
+\newif\ifPOL@pol
+\newif\ifxintveryverbose
+\newif\ifpoltypesetall
+\newif\ifPOL@tosturm@makefirstprimitive
+\POL@tosturm@makefirstprimitivetrue
+\newif\ifPOL@isolz@nextwillneedrefine
+\newif\ifpoltoexprall
+%% the main exchange structure (stored in macros \POLuserpol@<name>)
+%% is: degree.\empty{coeff0}{coeff1}....{coeffN}
+%% (degree=N except zero polynomial recognized from degree set to -1
+%%  but it has always the {0/1[0]} coeff0.)
+\def\POL@ifZero#1{\expandafter\POL@ifZero@aux#1;}%
+\def\POL@ifZero@aux #1#2;{\if-#1\expandafter\xint_firstoftwo
+                             \else\expandafter\xint_secondoftwo
+                          \fi}%
+\def\POL@split#1.#2;#3#4% separates degree and list of coefficients
+% The \expandafter chain removes the \empty token
+   {\def#3{#1}\expandafter\def\expandafter#4\expandafter{#2}}%
+%
+\def\POL@resultfromarray #1{% ATTENTION, **MUST** be executed with
+% \count@ set to 1 + degree (\count@ = 0 for zero polynomial)
+    \edef\POL@result{\ifnum\count@>\z@
+      \the\numexpr\count@-\@ne.\noexpand\empty
+      \xintiloop [1+1]%
+      \expandafter\POL@braceit\csname POL@array#1\xintiloopindex\endcsname
+      \ifnum\xintiloopindex<\count@
+      \repeat
+      \else-1.\noexpand\empty{0/1[0]}\fi}%
+}%
+\def\POL@braceit#1{{#1}}% needed as \xintiloopindex can not "see" through braces
+
+
+\newcommand\PolDef[3][x]{\poldef #2(#1):=#3;}%
+\def\poldef{\edef\POL@restoresemicolon{\catcode59=\the\catcode59\relax}%
+                \catcode59 12 \POL@defpol}%
+\def\POL@defpol #1(#2)#3=#4;{%
+   \POL@restoresemicolon
+   \edef\POL@tmp{\ifxintverbose1\else0\fi}%
+   \unless\ifxintveryverbose\xintverbosefalse\fi
+   \let\POL@originalXINT_expr_scanfunc_b\XINT_expr_scanfunc_b
+   \let\XINT_expr_scanfunc_b\POL@XINT_expr_scanfunc_b
+   \xintdeffunc __pol(#2):=0+(#4);% force conversion to raw if a constant
+   \if1\POL@tmp\xintverbosetrue\fi
+   \edef\POL@polname{\xint_zapspaces #1 \xint_gobble_i}%
+   \let\XINT_expr_scanfunc_b\POL@originalXINT_expr_scanfunc_b
+   \begingroup
+     \setbox0\hbox{%
+     \let\xintScalarAdd\xintAdd
+     \let\xintScalarSub\xintSub
+     \let\xintScalarMul\xintMul
+     \let\xintScalarDiv\xintDiv
+     \let\xintScalarPow\xintPow
+     \let\xintScalarOpp\xintOpp
+     \let\xintAdd\POL@add
+     \let\xintMul\POL@mul
+     \let\xintDiv\POL@div
+     \let\xintPow\POL@pow
+     \let\xintOpp\POL@opp
+     \def\xintSub ##1##2{\xintAdd{##1}{\xintOpp{##2}}}%
+     % \xintAdd{0} to get \POL@result defined even if numerical only expression
+     % I could also test \ifPOL@pol, but this is anyhow small overhead
+     \xintAdd{0}%
+       {\csname XINT_expr_userfunc___pol\endcsname
+        {\global\POL@poltrue\def\POL@result{1.\empty{0/1[0]}{1/1[0]}}}}%
+     \expandafter}\expandafter
+   \endgroup\expandafter
+   \def\csname POLuserpol@\POL@polname\expandafter\endcsname
+        \expandafter{\POL@result}%
+   \expandafter\POL@newpol\expandafter{\POL@polname}%
+}%
+%%
+\def\POL@newpol#1{%
+   \expandafter\POL@ifZero\csname POLuserpol@#1\endcsname
+      {\@namedef{XINT_expr_userfunc_#1}##1{0/1[0]}}%
+      {\POL@newpolhorner{#1}}%
+   \expandafter\XINT_expr_defuserfunc
+     \csname XINT_expr_func_#1\endcsname{#1}{expr}%
+   \expandafter\let\csname XINT_flexpr_func_#1\endcsname\@undefined
+   \ifxintverbose\POL@info{#1}\fi
+}%
+\def\POL@newfloatpol#1{%
+   \expandafter\POL@ifZero\csname POLuserpol@#1\endcsname
+      {\@namedef{XINT_flexpr_userfunc_#1}##1{0[0]}}%
+      {\POL@newfloatpolhorner{#1}}%
+   \expandafter\XINT_expr_defuserfunc
+     \csname XINT_flexpr_func_#1\endcsname{#1}{flexpr}%
+   \ifxintverbose\POL@floatinfo{#1}\fi
+}%
+\def\POL@info #1{%
+   \xintMessage {polexpr}{Info}%
+        {Function #1 for the \string\xintexpr\space parser is
+         associated to \string\XINT_expr_userfunc_#1\space
+         whose meaning uses Horner scheme:
+         \expandafter\meaning
+         \csname XINT_expr_userfunc_#1\endcsname}%
+}%
+\def\POL@floatinfo #1{%
+   \xintMessage {polexpr}{Info}%
+        {Function #1 for the \string\xintfloatexpr\space parser is
+         associated to \string\XINT_flexpr_userfunc_#1\space
+         whose meaning uses Horner scheme:
+         \expandafter\meaning
+         \csname XINT_flexpr_userfunc_#1\endcsname}%
+}%
+%
+\def\POL@newpolhorner#1{%
+   %% redefine function to expand by Horner scheme. Is this useful?
+   %% perhaps bad idea for numerical evaluation of thing such as (1+x)^10?
+% note: I added {0/1[0]} item to zero polynomial also to facilitate this
+   \expandafter\expandafter\expandafter\POL@split
+      \csname POLuserpol@#1\endcsname;\POL@var@deg\POL@var@coeffs
+   \edef\POL@var@coeffs{\xintRevWithBraces{\POL@var@coeffs}}%
+   \begingroup
+      \expandafter\POL@newpol@horner\POL@var@coeffs\relax
+   \expandafter
+   \endgroup
+   \expandafter\def\csname XINT_expr_userfunc_#1\expandafter\endcsname
+      \expandafter##\expandafter1\expandafter{\POL@tmp{##1}}%
+}%
+\def\POL@newfloatpolhorner#1{%
+   %% redefine function to expand by Horner scheme. Is this useful?
+   %% perhaps bad idea for numerical evaluation of thing such as (1+x)^10?
+% note: I added {0/1[0]} item to zero polynomial also to facilitate this
+   \expandafter\expandafter\expandafter\POL@split
+      \csname POLuserpol@#1\endcsname;\POL@var@deg\POL@var@coeffs
+   \edef\POL@var@coeffs{\xintRevWithBraces{\POL@var@coeffs}}%
+   \begingroup
+      \expandafter\POL@newpol@floathorner\POL@var@coeffs\relax
+   \expandafter
+   \endgroup
+   \expandafter\def\csname XINT_flexpr_userfunc_#1\expandafter\endcsname
+      \expandafter##\expandafter1\expandafter{\POL@tmp{##1}}%
+}%
+\def\POL@newpol@horner#1{\let\xintAdd\relax\let\xintMul\relax
+                  \def\POL@tmp##1{#1}\POL@newpol@horner@loop.}%
+\def\POL@newpol@horner@loop.#1{%
+  \if\relax#1\expandafter\xint_gob_til_dot\fi
+  \edef\POL@tmp##1{\xintiiifZero{#1}
+                    {\@firstofone}{\xintAdd{#1}}%
+                    {\xintMul{##1}{\POL@tmp{##1}}}}%
+  \POL@newpol@horner@loop.%
+}%
+\def\POL@newpol@floathorner#1{\let\XINTinFloatAdd\relax\let\XINTinFloatMul\relax
+                  \def\xintAdd{\XINTinFloatAdd}\def\xintMul{\XINTinFloatMul}%
+                  \edef\POL@tmp##1{\XINTinFloatdigits{#1}}%
+                  \POL@newpol@floathorner@loop.}%
+\def\POL@newpol@floathorner@loop.#1{%
+  \if\relax#1\expandafter\xint_gob_til_dot\fi
+  \edef\POL@tmp##1{\xintiiifZero{#1}
+                    {\@firstofone}{\xintAdd{\XINTinFloatdigits{#1}}}%
+                    {\xintMul{##1}{\POL@tmp{##1}}}}%
+  \POL@newpol@floathorner@loop.%
+}%
+
+
+\newcommand\PolGenFloatVariant[1]{\POL@newfloatpol{#1}}%
+
+
+\newcommand\PolLet[2]{\if=\noexpand#2\expandafter\xint_firstoftwo
+                      \else\expandafter\xint_secondoftwo\fi
+                      \POL@@let\POL@let{#1}{#2}}%
+\def\POL@@let#1#2#3{\POL@let{#1}{#3}}%
+\def\POL@let#1#2{%
+    \expandafter\let\csname POLuserpol@#1\expandafter\endcsname
+                    \csname POLuserpol@#2\endcsname
+    \expandafter\let\csname XINT_expr_userfunc_#1\expandafter\endcsname
+                    \csname XINT_expr_userfunc_#2\endcsname
+    \expandafter\XINT_expr_defuserfunc
+       \csname XINT_expr_func_#1\endcsname{#1}{expr}%
+    \ifxintverbose\POL@info{#1}\fi
+}%
+\newcommand\PolGlobalLet[2]{\begingroup
+    \globaldefs\@ne
+    \if=\noexpand#2\expandafter\xint_firstoftwo
+    \else\expandafter\xint_secondoftwo\fi
+% do I need to check something here relative to \xintNewExpr?
+    \POL@@globallet\POL@globallet {#1}{#2}}%
+\def\POL@@globallet#1#2#3{\POL@globallet{#1}{#3}}%
+\def\POL@globallet#1#2{\POL@let{#1}{#2}\endgroup}%
+
+\newcommand\PolAssign[1]{\def\POL@polname{#1}\POL@assign}% zap spaces in #1?
+\def\POL@assign#1\toarray#2{%
+    \expandafter\expandafter\expandafter\POL@split
+    \csname POLuserpol@\POL@polname\endcsname;\POL@var@deg\POL@var@coeffs
+    \xintAssignArray\POL@var@coeffs\to#2%
+    % modify \#200 macro to return 0/1[0] for out of range indices
+    \@namedef{\xint_arrayname00}##1##2##3{%
+    \@namedef{\xint_arrayname00}####1{%
+        \ifnum####1>##1 \xint_dothis{ 0/1[0]}\fi
+        \ifnum####1>\m@ne \xint_dothis
+                {\expandafter\expandafter\expandafter##3%
+                 \csname##2####1\endcsname}\fi
+        \unless\ifnum-####1>##1 \xint_dothis
+                {\expandafter\expandafter\expandafter##3%
+                 \csname##2\the\numexpr##1+####1+\@ne\endcsname}\fi
+        \xint_orthat{ 0/1[0]}}% space stops a \romannumeral0
+    }%
+    \csname\xint_arrayname00\expandafter\expandafter\expandafter\endcsname
+      \expandafter\expandafter\expandafter
+      {\csname\xint_arrayname0\expandafter\endcsname\expandafter}\expandafter
+      {\xint_arrayname}{ }%
+}%
+
+
+\newcommand\PolGet{}%
+\def\PolGet#1#2\fromarray#3{%
+    \begingroup % closed in \POL@getfromarray
+    \POL@getfromarray{#1}{#3}%
+    \POL@newpol{#1}%
+}%
+\def\POL@getfromarray#1#2{%
+        \count@=#2{0} %<- intentional space
+  \ifnum\count@=\z@
+     \def\POL@result{-1.\empty{0/1[0]}}% 0.5 fix for empty array
+  \else
+        \xintloop
+          \edef\POL@tmp{#2{\count@}}%
+          \edef\POL@tmp{\xintRaw{\POL@tmp}}%
+% sadly xinttools (current 1.3a) arrays have no setters for individual items... 
+          \expandafter\let\csname POL@tmparray\the\count@\endcsname\POL@tmp
+        \if0\xintiiSgn{\POL@tmp}%
+            \advance\count@\m@ne
+        \repeat
+% dans le cas particulier d'un array avec que des éléments nuls, \count@ est
+% ici devenu 0 et la boucle s'est arrêtée car #2{0} était au moins 1. De plus
+% \POL@tmparray1 est bien 0/1[0] donc ok pour polynôme nul dans \POL@result
+        \count\tw@\count@
+        \xintloop
+% on mouline tous les coeffs via \xintRaw
+        \ifnum\count@>\@ne
+          \advance\count@\m@ne
+          \edef\POL@tmp{#2{\count@}}%
+          \edef\POL@tmp{\xintRaw{\POL@tmp}}%
+          \expandafter\let\csname POL@tmparray\the\count@\endcsname\POL@tmp
+        \repeat
+        \count@\count\tw@          
+        \def\POL@tmp##1.{{\csname POL@tmparray##1\endcsname}}%
+        \edef\POL@result{\the\numexpr\count@-\@ne.\noexpand\empty
+                         \xintiloop[1+1]%
+                         \expandafter\POL@tmp\xintiloopindex.%
+                         \ifnum\xintiloopindex<\count@
+                         \repeat}%
+  \fi
+    \expandafter
+    \endgroup
+    \expandafter
+    \def\csname POLuserpol@#1\expandafter\endcsname
+        \expandafter{\POL@result}%
+}%
+
+
+\newcommand\PolFromCSV[2]{%
+    \begingroup % closed in \POL@getfromarray
+    \xintAssignArray\xintCSVtoList{#2}\to\POL@arrayA
+    \POL@getfromarray{#1}\POL@arrayA
+    \POL@newpol{#1}%
+% semble un peu indirect et sous-optimal
+% mais je veux élaguer les coefficients nuls. Peut-être à revoir.
+}%
+
+
+\newcommand\PolTypesetCmdPrefix[1]{\xintiiifSgn{#1}{}{+}{+}}%
+\newcommand\PolTypesetCmd[1]{\xintifOne{\xintiiAbs{#1}}%
+                               {\ifnum\PolIndex=\z@\xintiiSgn{#1}\else
+                                \xintiiifSgn{#1}{-}{}{}\fi
+                                \let\PolIfCoeffIsPlusOrMinusOne\@firstoftwo}%
+                               {\PolTypesetOne{#1}%
+                                \let\PolIfCoeffIsPlusOrMinusOne\@secondoftwo}%
+                             }%
+\newcommand\PolTypesetOne{\xintSignedFrac}%
+\newcommand\PolTypesetMonomialCmd{%
+  \ifcase\PolIndex\space
+  %
+  \or\PolVar
+  \else\PolVar^{\PolIndex}%
+  \fi
+}%
+\newcommand\PolTypeset{\@ifstar
+  {\def\POL@ts@ascending{1}\POL@Typeset}%
+  {\def\POL@ts@ascending{0}\POL@Typeset}%
+}%
+\newcommand\POL@Typeset[2][x]{% LaTeX \newcommand forces optional argument first
+   \ensuremath{%
+        \expandafter\expandafter\expandafter\POL@split
+        \csname POLuserpol@#2\endcsname;\POL@var@deg\POL@var@coeffs
+        \if\POL@ts@ascending1%
+           \def\PolIndex{0}%
+           \let\POL@ts@reverse\@firstofone
+           \let\POL@@ne@or@m@ne\@ne
+        \else
+           \let\PolIndex\POL@var@deg
+           \ifnum\PolIndex<\z@\def\PolIndex{0}\fi
+           \let\POL@ts@reverse\xintRevWithBraces
+           \let\POL@@ne@or@m@ne\m@ne
+        \fi
+        \def\PolVar{#1}%
+        \ifnum\POL@var@deg<\z@
+            \PolTypesetCmd{0/1[0]}\PolTypesetMonomialCmd
+        \else
+         \ifnum\POL@var@deg=\z@
+           \expandafter\PolTypesetCmd\POL@var@coeffs\PolTypesetMonomialCmd
+         \else
+           \def\POL@ts@prefix##1{\let\POL@ts@prefix\PolTypesetCmdPrefix}%
+           \expandafter\POL@ts@loop
+              \romannumeral-`0\POL@ts@reverse{\POL@var@coeffs}\relax
+         \fi
+        \fi
+   }%
+}%
+\def\POL@ts@loop{\ifpoltypesetall\expandafter\xint_firstoftwo
+                 \else\expandafter\xint_secondoftwo\fi
+    {\POL@ts@nocheck}{\POL@ts@check}.%
+}%
+\def\POL@ts@check.#1{%
+  \if\relax#1\expandafter\xint_gob_til_dot\fi
+  \xintiiifZero{#1}%
+      {}%
+      {\POL@ts@prefix{#1}\PolTypesetCmd{#1}\PolTypesetMonomialCmd}%
+  \edef\PolIndex{\the\numexpr\PolIndex+\POL@@ne@or@m@ne}\POL@ts@check.%
+}%
+\def\POL@ts@nocheck.#1{%
+  \if\relax#1\expandafter\xint_gob_til_dot\fi
+  \POL@ts@prefix{#1}\PolTypesetCmd{#1}\PolTypesetMonomialCmd
+  \edef\PolIndex{\the\numexpr\PolIndex+\POL@@ne@or@m@ne}\POL@ts@nocheck.%
+}%
+
+
+\newcommand\PolMapCoeffs[2]{% #1 = macro, #2 = name
+    \POL@mapcoeffs{#1}{#2}%
+    \POL@newpol{#2}%
+}%
+\def\POL@mapcoeffs#1#2{%
+    \begingroup
+       \def\POL@mapcoeffs@macro{#1}%
+       \expandafter\expandafter\expandafter\POL@split
+         \csname POLuserpol@#2\endcsname;\POL@mapcoeffs@deg\POL@mapcoeffs@coeffs
+% ATTENTION à ne pas faire un \expandafter ici, car brace removal si 1 item
+       \xintAssignArray\POL@mapcoeffs@coeffs\to\POL@arrayA
+       \def\index{0}%
+       \count@\z@
+       \expandafter\POL@map@loop\expandafter.\POL@mapcoeffs@coeffs\relax
+       \xintloop
+% this abuses that \POL@arrayA0 is never 0.
+       \xintiiifZero{\csname POL@arrayA\the\count@\endcsname}%
+         {\iftrue}%
+         {\iffalse}%
+       \advance\count@\m@ne
+       \repeat
+% donc en sortie \count@ est 0 ssi pol nul.
+       \POL@resultfromarray A%
+     \expandafter
+    \endgroup
+    \expandafter
+    \def\csname POLuserpol@#2\expandafter\endcsname\expandafter{\POL@result}%
+}%
+\def\POL@map@loop.#1{\if\relax#1\expandafter\xint_gob_til_dot\fi
+    \advance\count@\@ne
+    \edef\POL@map@coeff{\POL@mapcoeffs@macro{#1}}%
+    \expandafter
+    \let\csname POL@arrayA\the\count@\endcsname\POL@map@coeff
+    \edef\index{\the\numexpr\index+\@ne}%
+    \POL@map@loop.}%
+\def\POL@xintIrr#1{\xintIrr{#1}[0]}%
+\newcommand\PolReduceCoeffs{\@ifstar\POL@sreducecoeffs\POL@reducecoeffs}%
+\def\POL@reducecoeffs#1{\PolMapCoeffs{\POL@xintIrr}{#1}}%
+\def\POL@sreducecoeffs#1{\PolMapCoeffs{\xintPIrr}{#1}}%
+
+
+%% EUCLIDEAN DIVISION
+\newcommand\PolDivide[4]{% #3=quotient, #4=remainder of #1 by #2
+    \POL@divide{#1}{#2}%
+    \expandafter\let\csname POLuserpol@#3\endcsname\POL@Q
+    \POL@newpol{#3}%
+    \expandafter\let\csname POLuserpol@#4\endcsname\POL@R
+    \POL@newpol{#4}%
+}%
+\newcommand\PolQuo[3]{% #3=quotient of #1 by #2
+    \POL@divide{#1}{#2}%
+    \expandafter\let\csname POLuserpol@#3\endcsname\POL@Q
+    \POL@newpol{#3}%
+}%
+\newcommand\PolRem[3]{% #3=remainder of #1 by #2
+    \POL@divide{#1}{#2}%
+    \expandafter\let\csname POLuserpol@#3\endcsname\POL@R
+    \POL@newpol{#3}%
+}%
+\newcommand\POL@divide[2]{%
+    \begingroup
+      \let\xintScalarSub\xintSub
+      \let\xintScalarAdd\xintAdd
+      \let\xintScalarMul\xintMul
+      \let\xintScalarDiv\xintDiv
+      \expandafter\let\expandafter\POL@A\csname POLuserpol@#1\endcsname
+      \expandafter\let\expandafter\POL@B\csname POLuserpol@#2\endcsname
+      \POL@div@c
+      \let\POL@Q\POL@result
+      \ifnum\POL@degQ<\z@
+          \let\POL@R\POL@A
+      \else
+        \count@\numexpr\POL@degR+\@ne\relax
+        \POL@resultfromarray R%
+        \let\POL@R\POL@result
+      \fi
+    \expandafter
+    \endgroup
+    \expandafter
+    \def\csname POL@Q\expandafter\expandafter\expandafter\endcsname
+        \expandafter\expandafter\expandafter{\expandafter\POL@Q\expandafter}%
+        \expandafter
+    \def\csname POL@R\expandafter\endcsname\expandafter{\POL@R}%
+}%
+
+
+%% GCD
+\newcommand\PolGCD[3]{% sets #3 to the (unitary) G.C.D. of #1 and #2
+    \POL@GCD{#1}{#2}{#3}%
+    \POL@newpol{#3}%
+}%
+\def\POL@GCD #1#2#3{%
+    \begingroup
+      \let\xintScalarSub\xintSub
+      \let\xintScalarAdd\xintAdd
+      \let\xintScalarMul\xintMul
+      \let\xintScalarDiv\xintDiv
+      \expandafter\let\expandafter\POL@A\csname POLuserpol@#1\endcsname
+      \expandafter\let\expandafter\POL@B\csname POLuserpol@#2\endcsname
+      \expandafter\POL@split\POL@A;\POL@degA\POL@polA
+      \expandafter\POL@split\POL@B;\POL@degB\POL@polB
+      \ifnum\POL@degA<\z@
+        \expandafter\xint_firstoftwo\else\expandafter\xint_secondoftwo
+      \fi
+        {\ifnum\POL@degB<\z@
+          \expandafter\xint_firstoftwo\else\expandafter\xint_secondoftwo
+        \fi
+          {\def\POL@result{-1.\empty{0/1[0]}}}%
+          {\xintAssignArray\POL@polB\to\POL@arrayB
+           \POL@normalize{B}%
+           \POL@gcd@exit BA}}%
+        {\ifnum\POL@degB<\z@
+          \expandafter\xint_firstoftwo\else\expandafter\xint_secondoftwo
+        \fi
+          {\xintAssignArray\POL@polA\to\POL@arrayA
+           \POL@normalize{A}%
+           \POL@gcd@exit AB}%
+          {\ifnum\POL@degA<\POL@degB\space
+             \let\POL@tmp\POL@B\let\POL@B\POL@A\let\POL@A\POL@tmp
+             \let\POL@tmp\POL@degB\let\POL@degB\POL@degA\let\POL@degA\POL@tmp
+             \let\POL@tmp\POL@polB\let\POL@polB\POL@polA\let\POL@polA\POL@tmp
+           \fi
+           \xintAssignArray\POL@polA\to\POL@arrayA
+           \xintAssignArray\POL@polB\to\POL@arrayB
+           \POL@gcd AB%
+           }}%
+    \expandafter
+    \endgroup
+    \expandafter\def\csname POLuserpol@#3\expandafter\endcsname
+        \expandafter{\POL@result}%
+}%
+\def\POL@normalize#1{%
+    \expandafter\def\expandafter\POL@tmp\expandafter
+        {\csname POL@array#1\csname POL@array#10\endcsname\endcsname}%
+    \edef\POL@normalize@leading{\POL@tmp}%
+    \expandafter\def\POL@tmp{1/1[0]}%
+    \count@\csname POL@deg#1\endcsname\space
+    \xintloop
+    \ifnum\count@>\z@
+      \expandafter\edef\csname POL@array#1\the\count@\endcsname
+      {\xintIrr{\xintScalarDiv
+                   {\csname POL@array#1\the\count@\endcsname}%
+                   {\POL@normalize@leading}}[0]}%
+    \advance\count@\m@ne
+    \repeat
+}%
+\def\POL@gcd#1#2{%
+    \POL@normalize{#2}%
+    \edef\POL@degQ{\the\numexpr\csname POL@deg#1\endcsname
+                              -\csname POL@deg#2\endcsname}%
+    \count@\numexpr\csname POL@deg#1\endcsname+\@ne\relax
+    \count\tw@\numexpr\POL@degQ+\@ne\relax
+    \xintloop
+      \POL@gcd@getremainder@loopbody#1#2%
+    \ifnum\count\tw@>\z@
+    \repeat
+    \expandafter\def\csname POL@array#10\endcsname{1}%
+    \xintloop
+    \xintiiifZero{\csname POL@array#1\the\count@\endcsname}%
+      {\iftrue}%
+      {\iffalse}%
+    \advance\count@\m@ne
+    \repeat
+    \expandafter\edef\csname POL@deg#1\endcsname{\the\numexpr\count@-\@ne}%
+    \ifnum\count@<\@ne
+      \expandafter\POL@gcd@exit
+    \else
+      \expandafter\edef\csname POL@array#10\endcsname{\the\count@}%
+      \expandafter\POL@gcd
+    \fi{#2}{#1}%
+}%
+\def\POL@gcd@getremainder@loopbody#1#2{%
+  \edef\POL@gcd@ratio{\csname POL@array#1\the\count@\endcsname}%
+  \advance\count@\m@ne
+  \advance\count\tw@\m@ne
+  \count4 \count@
+  \count6 \csname POL@deg#2\endcsname\space
+  \xintloop
+  \ifnum\count6>\z@
+    \expandafter\edef\csname POL@array#1\the\count4\endcsname
+      {\xintScalarSub
+          {\csname POL@array#1\the\count4\endcsname}%
+          {\xintScalarMul
+            {\POL@gcd@ratio}%
+            {\csname POL@array#2\the\count6\endcsname}}}%
+    \advance\count4 \m@ne
+    \advance\count6 \m@ne
+  \repeat
+}%
+\def\POL@gcd@exit#1#2{%
+    \count@\numexpr\csname POL@deg#1\endcsname+\@ne\relax
+    \POL@resultfromarray #1%
+}%
+
+
+%% TODO: BEZOUT
+
+
+%% DIFFERENTIATION
+\def\POL@diff@loop@one #1/#2[#3]#4%
+  {\xintIrr{\xintiiMul{#4}{#1}/#2[0]}[#3]}%
+\def\POL@diff#1{\POL@diff@loop1.}%
+\def\POL@diff@loop#1.#2{%
+  \if\relax#2\expandafter\xint_gob_til_dot\fi
+  {\expandafter\POL@diff@loop@one\romannumeral0\xintraw{#2}{#1}}%
+  \expandafter\POL@diff@loop\the\numexpr#1+\@ne.%
+}%
+\newcommand\PolDiff[1][1]{%
+   % optional parameter is how many times to derivate
+   % first mandatory arg is name of polynomial function to derivate,
+   % same name as in \NewPolExpr
+   % second mandatory arg name of derivative
+   \edef\POL@iterindex{\the\numexpr#1\relax}%
+   \ifnum\POL@iterindex<\z@
+       \expandafter\@firstoftwo
+   \else
+       \expandafter\@secondoftwo
+   \fi
+   {\PolAntiDiff[-\POL@iterindex]}{\POL@Diff}%
+}%
+\def\POL@Diff{%
+   \ifcase\POL@iterindex\space
+      \expandafter\POL@Diff@no
+   \or\expandafter\POL@Diff@one
+   \else\xint_afterfi{\POL@Iterate\POL@Diff@one}%
+   \fi
+}%
+\def\POL@Diff@no #1#2{\POL@let{#2}{#1}}%
+\def\POL@Diff@one #1#2{\POL@Diff@@one {#1}{#2}\POL@newpol{#2}}%
+\def\POL@Diff@@one#1#2{%
+   \expandafter\expandafter\expandafter\POL@split
+      \csname POLuserpol@#1\endcsname;\POL@var@deg\POL@var@coeffs
+   \ifnum\POL@var@deg<\@ne
+      \@namedef{POLuserpol@#2}{-1.\empty{0/1[0]}}%
+   \else
+     \edef\POL@var@coeffs{\expandafter\POL@diff\POL@var@coeffs\relax}%
+     \expandafter\edef\csname POLuserpol@#2\endcsname
+        {\the\numexpr\POL@var@deg-\@ne.\noexpand\empty\POL@var@coeffs}%
+   \fi
+}%
+% lazy way but allows to share with AntiDiff
+\def\POL@Iterate#1#2#3{%
+    \begingroup
+    \xintverbosefalse
+        #1{#2}{#3}%
+        \xintloop
+        \ifnum\POL@iterindex>\tw@
+          #1{#3}{#3}%
+          \edef\POL@iterindex{\the\numexpr\POL@iterindex-\@ne}%
+        \repeat
+   \expandafter
+   \endgroup\expandafter
+   \def\csname POLuserpol@#3\expandafter\endcsname
+       \expandafter{\romannumeral`^^@\csname POLuserpol@#3\endcsname}%
+   #1{#3}{#3}%
+}%
+
+
+%% ANTI-DIFFERENTIATION
+\def\POL@antidiff@loop@one #1/#2[#3]#4%
+  {\xintIrr{#1/\xintiiMul{#4}{#2}[0]}[#3]}%
+\def\POL@antidiff{\POL@antidiff@loop1.}%
+\def\POL@antidiff@loop#1.#2{%
+  \if\relax#2\expandafter\xint_gob_til_dot\fi
+  {\expandafter\POL@antidiff@loop@one\romannumeral0\xintraw{#2}{#1}}%
+  \expandafter\POL@antidiff@loop\the\numexpr#1+\@ne.%
+}%
+\newcommand\PolAntiDiff[1][1]{%
+   % optional parameter is how many times to derivate
+   % first mandatory arg is name of polynomial function to derivate,
+   % same name as in \NewPolExpr
+   % second mandatory arg name of derivative
+   \edef\POL@iterindex{\the\numexpr#1\relax}%
+   \ifnum\POL@iterindex<\z@
+       \expandafter\@firstoftwo
+   \else
+       \expandafter\@secondoftwo
+   \fi
+   {\PolDiff[-\POL@iterindex]}{\POL@AntiDiff}%
+}%
+\def\POL@AntiDiff{%
+   \ifcase\POL@iterindex\space
+      \expandafter\POL@AntiDiff@no
+   \or\expandafter\POL@AntiDiff@one
+   \else\xint_afterfi{\POL@Iterate\POL@AntiDiff@one}%
+   \fi
+}%
+\let\POL@AntiDiff@no\POL@Diff@no
+\def\POL@AntiDiff@one #1#2{\POL@AntiDiff@@one{#1}{#2}\POL@newpol{#2}}%
+\def\POL@AntiDiff@@one#1#2{%
+   \expandafter\expandafter\expandafter\POL@split
+      \csname POLuserpol@#1\endcsname;\POL@var@deg\POL@var@coeffs
+   \ifnum\POL@var@deg<\z@
+      \@namedef{POLuserpol@#2}{-1.\empty{0/1[0]}}%
+   \else
+     \edef\POL@var@coeffs{\expandafter\POL@antidiff\POL@var@coeffs\relax}%
+     \expandafter\edef\csname POLuserpol@#2\endcsname
+         {\the\numexpr\POL@var@deg+\@ne.\noexpand\empty{0/1[0]}\POL@var@coeffs}%
+   \fi
+}%
+
+%% IContent and \PolMakePrimitive (0.5)
+\def\POL@aux@mgcd@loop#1#2{%
+    \if\relax#2\expandafter\POL@aux@mgcd@exit\fi
+    \expandafter
+    \POL@aux@mgcd@loop\romannumeral0\POL@aux@gcd#1.#2.%
+}%
+\def\POL@aux@mgcd@exit
+    \expandafter
+    \POL@aux@mgcd@loop\romannumeral0\POL@aux@gcd#1.\relax.{\xintiiabs{#1}}%
+\def\POL@aux@gcd#1.#2.{%
+    \if0\xintiiSgn{#1}\expandafter\POL@aux@gcd@exit\fi
+    \expandafter\POL@aux@gcd\romannumeral0\xintmod {#2}{#1}.#1.}%
+\def\POL@aux@gcd@exit
+    \expandafter\POL@aux@gcd\romannumeral0\xintmod #1#2.#3.{{#1}}%
+
+\def\POL@icontent #1{\romannumeral0\expandafter
+    \POL@aux@mgcd@loop\romannumeral`^^@#1\relax}%
+
+\newcommand\PolIContent[1]{\romannumeral0\expandafter
+    \POL@aux@mgcd@loop\romannumeral`^^@\PolToList{#1}\relax}%
+
+
+\def\POL@makeprim@macro#1%
+   {\xintREZ{\xintNum{\xintDiv{#1}{\POL@makeprim@icontent}}}}%
+\newcommand\PolMakePrimitive[1]{%
+    % This does not need a full user declared polynomial on input, only
+    % a \POLuserpol@name macro, but on output it is fully declared
+    \edef\POL@makeprim@icontent{\PolIContent{#1}}%
+    \PolMapCoeffs\POL@makeprim@macro{#1}%
+}%
+\def\POL@makeprimitive#1{%
+    % Avoids declaring the polynomial, internal usage in \PolToSturm
+    \edef\POL@makeprim@icontent{\PolIContent{#1}}%
+    \POL@mapcoeffs\POL@makeprim@macro{#1}%
+}%
+
+
+%% Sturm Algorithm (polexpr 0.4)
+%% 0.5 uses primitive polynomials for faster evaluations afterwards
+%% 0.6 corrects misuse of \@ifstar! (mumble). \PolToSturm* was broken.
+%% 0.6's \PolToSturm* defines both normalized and unnormalized, the
+%%       unnormalized using two underscores, so both are available
+%%       Sole difference is that \PolToSturm* also declares them as 
+%%       user polynomials, whereas the non-starred only keeps the macros
+%%       holding the coefficients in memory
+%% 0.6 fixes the case of a constant polynomial P which caused division
+%%     by zero error from P'.
+\newcommand\PolToSturm{\@ifstar{\PolToSturm@@}{\PolToSturm@}}%
+\def\POL@aux@toint#1{\xintREZ{\xintNum{#1}}}% for polynomials with int. coeffs!
+%% Attention that some macros rely upon this one setting \POL@sturmname
+%% and \POL@sturm@N as it does
+\def\PolToSturm@#1#2{%
+  \edef\POL@sturmname{#2}%
+  % 0.6 uses 2 underscores (one before index, one after) to keep in memory
+  % the unnormalized chain
+  % This supposes #1 to be a genuine polynomial, not only a name with
+  % a \POLuserpol@#1 macro
+  \POL@let{\POL@sturmname _0_}{#1}%
+  \ifnum\PolDegree{#1}=\z@
+     \def\POL@sturm@N{0}%
+     \POL@count\z@
+     % if I applied the same as for positive degree, I should make it -1
+     % if constant is negative. I also don't worry if polynomial is zero.
+     \@namedef{POLuserpol@\POL@sturmname _0}{0.\empty{1/1[0]}}%
+  \else
+     \ifPOL@tosturm@makefirstprimitive\POL@makeprimitive{\POL@sturmname _0_}\fi
+     \POL@tosturm@dosturm
+  \fi
+  \expandafter
+  \let\csname PolSturmChainLength_\POL@sturmname\endcsname\POL@sturm@N
+  % declare the normalized ones as full-fledged polynomials
+  % \POL@count\z@
+  \xintloop
+    \POL@newpol{\POL@sturmname _\the\POL@count}%
+  \unless\ifnum\POL@sturm@N=\POL@count
+    \advance\POL@count\@ne
+  \repeat
+}%
+\def\PolToSturm@@#1#2{\PolToSturm@{#1}{#2}\POL@tosturm@declareunnormalized}%
+\def\POL@tosturm@declareunnormalized{%
+  % optionally declare also the unnormalized ones
+  \POL@count\z@
+  \xintloop
+      \POL@newpol{\POL@sturmname _\the\POL@count _}%
+  \unless\ifnum\POL@sturm@N=\POL@count
+      \advance\POL@count\@ne
+  \repeat
+}%
+\def\POL@tosturm@dosturm{%
+  \POL@Diff@@one{\POL@sturmname _0_}{\POL@sturmname _1_}%
+  % re-utiliser \POL@varcoeffs directement?
+  \POL@makeprimitive{\POL@sturmname _1_}% does not do \POL@newpol
+  \POL@count\@ne
+  \xintloop
+    \POL@divide{\POL@sturmname _\the\numexpr\POL@count-\@ne\relax _}%
+               {\POL@sturmname _\the\POL@count _}%
+    \expandafter\POL@split\POL@R;\POL@degR\POL@polR
+  \unless\ifnum\POL@degR=\m@ne
+    \advance\POL@count\@ne
+    \expandafter\let
+    \csname POLuserpol@\POL@sturmname _\the\POL@count _\endcsname\POL@R
+    \edef\POL@makeprim@icontent{-\POL@icontent\POL@polR}%
+    % this avoids the \POL@newpol from \PolMapCoeffs
+    \POL@mapcoeffs\POL@makeprim@macro{\POL@sturmname _\the\POL@count _}%
+  \repeat
+  \edef\POL@sturm@N{\the\POL@count}%
+  % normalize (now always done even by starred variant)
+  \ifnum\PolDegree{\POL@sturmname _\POL@sturm@N _}>\z@
+    % \POL@count\POL@sturm@N\relax
+    \xintloop
+      \advance\POL@count\m@ne
+      \POL@divide{\POL@sturmname _\the\POL@count _}%
+                 {\POL@sturmname _\POL@sturm@N _}%
+      \expandafter
+       \let\csname POLuserpol@\POL@sturmname _\the\POL@count\endcsname\POL@Q
+      % quotient actually belongs to Z[X] and is primitive
+      \POL@mapcoeffs\POL@aux@toint{\POL@sturmname _\the\POL@count}%    
+    \ifnum\POL@count>\z@
+    \repeat
+    \@namedef{POLuserpol@\POL@sturmname _\POL@sturm@N}{0.\empty{1/1[0]}}%
+  \else % they are already normalized
+    \advance\POL@count\@ne % attention to include last one also
+    \xintloop
+      \advance\POL@count\m@ne
+      \expandafter\let
+       \csname POLuserpol@\POL@sturmname _\the\POL@count\expandafter\endcsname
+       \csname POLuserpol@\POL@sturmname _\the\POL@count _\endcsname
+    \ifnum\POL@count>\z@
+    \repeat
+  \fi
+  % Back to \PolToSturm@, \POL@count holds 0
+}%
+\newcommand\PolSturmChainLength[1]
+    {\romannumeral`^^@\csname PolSturmChainLength_#1\endcsname}%
+
+\newcommand\PolSetToSturmChainSignChangesAt[4][\global]{%
+  \edef\POL@sturmchain@X{\xintREZ{#4}}%
+  \edef\POL@sturmname{#3}%
+  \edef\POL@sturmlength{\PolSturmChainLength{\POL@sturmname}}%
+  \POL@sturmchain@getSV@at\POL@sturmchain@X
+  #1\let#2\POL@sturmchain@SV
+}%
+\def\POL@sturmchain@getSV@at#1{% ATTENTION USES \POL@count
+  \def\POL@sturmchain@SV{0}%
+  \edef\POL@sturmchain@sign{\xintiiSgn{\POL@eval{\POL@sturmname _0}{#1}}}%
+  \let\POL@isolz@lastsign\POL@sturmchain@sign
+  \POL@count \z@
+  \ifnum\POL@isolz@lastsign=\z@
+    \edef\POL@isolz@lastsign
+        {\xintiiSgn{\POL@eval{\POL@sturmname _1}{#1}}}%
+    \POL@count \@ne
+  \fi
+  \xintloop
+  \unless\ifnum\POL@sturmlength=\POL@count
+  \advance\POL@count \@ne
+    \edef\POL@isolz@newsign
+      {\xintiiSgn{\POL@eval{\POL@sturmname _\the\POL@count}{#1}}}%
+    \ifnum\POL@isolz@newsign=\numexpr-\POL@isolz@lastsign\relax
+      \edef\POL@sturmchain@SV{\the\numexpr\POL@sturmchain@SV+\@ne}%
+      \let\POL@isolz@lastsign=\POL@isolz@newsign
+    \fi
+  \repeat
+}%
+\newcommand\PolSetToNbOfZerosWithin[5][\global]{%
+  \edef\POL@tmpA{\xintREZ{#4}}%
+  \edef\POL@tmpB{\xintREZ{#5}}%
+  \edef\POL@sturmname{#3}%
+  \edef\POL@sturmlength{\PolSturmChainLength{\POL@sturmname}}%
+  \POL@sturmchain@getSV@at\POL@tmpA
+  \let\POL@SVA\POL@sturmchain@SV
+  \POL@sturmchain@getSV@at\POL@tmpB
+  \let\POL@SVB\POL@sturmchain@SV
+  \ifnum\POL@SVA<\POL@SVB\space
+    #1\edef#2{\the\numexpr\POL@SVB-\POL@SVA}%
+  \else
+    #1\edef#2{\the\numexpr\POL@SVA-\POL@SVB}%
+  \fi
+}%
+
+
+% 0.6 added starred variant to count multiplicities
+% 0.7 added double starred variant to locate all rational roots
+\newcommand\PolSturmIsolateZeros{\@ifstar
+      {\PolSturmIsolateZerosAndGetMultiplicities}%
+      {\PolSturmIsolateZeros@}%
+}%
+\newcommand\PolSturmIsolateZerosAndGetMultiplicities{\@ifstar
+      {\PolSturmIsolateZerosGetMultiplicitiesAndRationalRoots}%
+      {\PolSturmIsolateZerosAndGetMultiplicities@}%
+}%
+% on aurait besoin de ça dans xint, mais il aurait un \xintRaw{#1} alors
+\def\POL@xintfrac@getNDE #1%
+   {\expandafter\POL@xintfrac@getNDE@i\romannumeral`^^@#1}%
+\def\POL@xintfrac@getNDE@i #1/#2[#3]#4#5#6{\def#4{#1}\def#5{#2}\def#6{#3}}%
+\newcommand\PolSturmIsolateZerosGetMultiplicitiesAndRationalRoots[2][\empty]{%
+  \PolSturmIsolateZerosAndFindRationalRoots[#1]{#2}%
+  \ifnum\POL@isolz@NbOfRoots>\z@
+     % get multiplicities of irrational (real) roots, if any
+     \ifnum\POL@findrat@nbofirrroots>\z@
+        \POL@findrat@getirrmult
+     \fi
+     \POL@isolzmult@defvar@M
+  \fi
+}%
+% added at 0.7
+\newcommand\PolSturmIsolateZerosAndFindRationalRoots[2][\empty]{%
+  % #1 optional E such that roots are searched in -10^E < x < 10^E
+  % both -10^E and +10^E must not be roots!
+  % #2 name of Sturm chain (already pre-computed)
+  \edef\POL@sturmname{#2}%
+  \edef\POL@sturm@N{\@nameuse{PolSturmChainLength_\POL@sturmname}}%
+  % isolate the roots (detects case of constant polynomial)
+  \PolSturmIsolateZeros@{\POL@sturmname}%
+  \ifnum\POL@isolz@NbOfRoots=\z@
+     % no real roots, define empty arrays nevertheless
+     \begingroup\globaldefs\@ne
+     \expandafter\xintAssignArray\expandafter\to\csname POL_ZM\POL@sturmname*\endcsname
+     \expandafter\xintAssignArray\expandafter\to\csname POL_RI\POL@sturmname*\endcsname
+     \endgroup
+  \else
+     % all we currently know is that multiplicities are at least one
+     \begingroup\globaldefs\@ne
+     \expandafter\POL@initarray\csname POL_ZM\POL@sturmname*\endcsname{1}%
+     \endgroup
+     % on ne va pas utiliser de Horner, mais des divisions par X - x, et ces
+     % choses vont évoluer, ainsi que le coefficient dominant entier
+     % (pour \POL@divide entre autres if faut des noms de user pol)
+     \expandafter\let
+         \csname POLuserpol@\POL@sturmname\POL@sqfnorr\expandafter\endcsname
+         \csname POLuserpol@\POL@sturmname _0\endcsname
+     \expandafter\let
+         \csname POLuserpol@\POL@sturmname\POL@norr\expandafter\endcsname
+         \csname POLuserpol@\POL@sturmname _0_\endcsname
+     % attention formé avec\xintREZ d'où le \xintAbs pas \xintiiAbs
+     % D and its exponent E will get updated along the way
+     \edef\POL@findrat@D{\xintAbs{\PolLeadingCoeff{\POL@sturmname _0}}}%
+     \POL@xintfrac@getNDE\POL@findrat@D\POL@findrat@Dint\POL@_\POL@findrat@Dexp
+     \xintiiifOne{\POL@findrat@Dint}
+        {\let\POL@findrat@E\POL@findrat@Dexp} % aussi ok pour 1[0]
+        {\edef\POL@findrat@E{\the\numexpr\xintLen{\POL@findrat@Dint}%
+                                                 +\POL@findrat@Dexp}}%
+% ATTENTION QUE LA CONVENTION DE SIGNE POUR \POL@findrat@E EST OPPOSÉE À CELLE
+% POUR LE CODE PLUS ANCIEN FAISANT "REFINE"
+     \POL@initarray\POL@IfMultIsKnown\xint_secondoftwo
+     \let\POL@findrat@nbofirrroots\POL@isolz@NbOfRoots
+     % find all rational roots, and their multiplicities,
+     % factor them out in passing from original (Sturm root) polynomial
+     \ifnum\POL@findrat@E<7
+         \def\POL@findrat@index{1}%
+         \POL@findrat@loop@secondpass@direct
+     \else
+     % we do a first pass scanning for "small" roots p/q (i.e. q < 1000)
+         \def\POL@findrat@index{1}%
+         \POL@findrat@loop@firstpass
+     % and now we do the final pass finding them all
+         \def\POL@findrat@index{1}%
+         \POL@findrat@loop@secondpass
+     \fi
+     % declare the new polynomials
+     \POL@newpol{\POL@sturmname\POL@sqfnorr}%  without multiplicities
+     \POL@newpol{\POL@sturmname\POL@norr}% with multiplicities
+     % declare the array holding the interval indices for the rational roots
+     \expandafter\POL@findrat@doRRarray\csname POL_RI\POL@sturmname*\endcsname
+  \fi
+}%
+\def\POL@findrat@doRRarray#1{%
+  % il faudrait un \xintAssignArray* qui fasse même expansion que \xintFor*
+  \edef\POL@temp{%
+    \xintiloop[1+1]
+    \romannumeral0\csname POL_ZK\POL@sturmname*\xintiloopindex\endcsname
+    \xintbracediloopindex % I should have named it \xintiloopbracedindex...
+    {}%
+    \ifnum\xintiloopindex<\POL@isolz@NbOfRoots\space
+    \repeat }%
+  \begingroup\globaldefs\@ne
+  % attention de ne surtout pas faire un \expandafter ici, car en cas d'un
+  % seul item, \xintAssignArray l'unbraces...
+  \xintAssignArray\POL@temp\to#1%
+  \endgroup
+}%
+\def\POL@findrat@loop@firstpass{%
+  \PolSturmIfZeroExactlyKnown{\POL@sturmname}{\POL@findrat@index}%
+     \POL@findrat@loop@decimal% get its multiplicity
+     \POL@findrat@loop@aa     % refine interval and check
+  \edef\POL@findrat@index{\the\numexpr\POL@findrat@index+\@ne}%
+  \ifnum\POL@findrat@index>\POL@isolz@NbOfRoots
+  \else
+    \expandafter\POL@findrat@loop@firstpass
+  \fi
+}%
+\def\POL@findrat@loop@aa{%
+  % we do a first pass to identify roots with denominators < 1000
+  \PolEnsureIntervalLength{\POL@sturmname}{\POL@findrat@index}{-6}%
+  % attention that perhaps now the root is known!
+  \PolSturmIfZeroExactlyKnown{\POL@sturmname}{\POL@findrat@index}%
+      \POL@findrat@loop@decimal
+      \POL@findrat@loop@a
+}%
+\def\POL@findrat@loop@decimal{% we have an already found decimal root
+  % we do not go via @storeit, as it is already stored
+  % j'ai beaucoup hésité néanmoins, car je pourrais faire \xintIrr ici,
+  % mais attention aussi à l'interaction avec le \PolDecToString. Les racines
+  % trouvées directement (qui peuvent être des nombres décimaux) sont elles
+  % stockées comme fraction irréductibles (modulo action additionnelle de 
+  % \PolDecToString). 
+  \POL@xintfrac@getNDE
+    {\xintIrr{\POL@xintexprGetVar{\POL@sturmname L_\POL@findrat@index}}[0]}%
+    \POL@findrat@xN\POL@findrat@xD\POl@_
+  % we can't move this to updatequotients because other branch will
+  % need to do the division first anyhow
+  \edef\POLuserpol@_findrat@oneterm{1.\noexpand\empty
+        {\xintiiOpp\POL@findrat@xN/1[0]}{\POL@findrat@xD/1[0]}}%
+  \POL@divide{\POL@sturmname\POL@sqfnorr}{_findrat@oneterm}% the one without mult.
+  %\expandafter\POL@split\POL@R;\POL@degR\POL@polR
+  \POL@findrat@loop@updatequotients
+  \POL@findrat@loop@getmultiplicity
+}%
+% lacking from xint 1.3c, but \xintSgn has overhead, so we define ii version
+\def\xintiiifNeg{\romannumeral0\xintiiifneg }%
+\def\xintiiifneg #1%
+{%
+    \ifcase \xintiiSgn{#1}
+               \expandafter\xint_stop_atsecondoftwo
+            \or\expandafter\xint_stop_atsecondoftwo
+          \else\expandafter\xint_stop_atfirstoftwo
+    \fi
+}%
+\def\POL@findrat@getE #1/1[#2]{#2}% /1 as it should be there.
+% so an error will arise if not but cf \POL@refine@getE where I did not put it
+\def\POL@findrat@loop@a{%
+  % attention that the width may have been already smaller than 10^{-6}
+  \POL@get@IsoLeft@rawin
+  \POL@get@IsoRight@rawin
+  \edef\POL@findrat@localW
+      {\the\numexpr-\expandafter\POL@findrat@getE
+  % do I really need the \xintREZ?
+       \romannumeral0\xintrez
+         {\xintSub{\POL@IsoRight@rawin}{\POL@IsoLeft@rawin}}%
+      }% at least 6, maybe larger
+  \expandafter\POL@get@Int@aux
+              \POL@IsoLeft@rawin\POL@IsoLeft@Int{-\POL@findrat@localW}%
+  \expandafter\POL@get@Int@aux
+              \POL@IsoRight@rawin\POL@IsoRight@Int{-\POL@findrat@localW}%
+  % in case of odd, some waste here
+  \edef\POL@findrat@halflocalW{\the\numexpr(\POL@findrat@localW+1)/2-1}%
+  % Legendre Theorem will be used now but we separate a branch where
+  % everything can be done with \numexpr
+  \ifnum\POL@findrat@localW>9
+    % not implemented yet by lazyness!
+    % this root will be handled in second pass only
+  \else
+    \POL@findrat@gcdloop
+  \fi
+}%
+\def\POL@findrat@gcdloop{%
+  % we must be careful with sign
+  % but we are certain no extremity is a root
+  \let\POL@findrat@ifnegative\xint_secondoftwo
+  \xintiiifSgn\POL@IsoLeft@Int
+    \POL@findrat@gcdloop@n
+    \POL@error@thisisimpossible
+    \POL@findrat@gcdloop@p
+}%
+\def\POL@findrat@gcdloop@n{%
+  \let\POL@findrat@ifnegative\xint_firstoftwo
+  \let\POL@temp\POL@IsoRight@Int
+  \edef\POL@IsoRight@Int{\xintiiOpp{\POL@IsoLeft@Int}}%
+  \edef\POL@IsoLeft@Int{\xintiiOpp{\POL@temp}}%
+  \POL@findrat@gcdloop@p
+}%
+\def\POL@findrat@gcdloop@p{%
+  \edef\POL@findrat@gcdloop@Ap{\xintDec{\xintDouble\POL@IsoRight@Int}}%
+  \edef\POL@findrat@gcdloop@A
+  % at most 2e9: this is acceptable to \numexpr
+      {2\romannumeral\xintreplicate\POL@findrat@localW{0}}%
+  \xintAssign
+    \xintiiDivision\POL@findrat@gcdloop@Ap\POL@findrat@gcdloop@A
+  \to\POL@findrat@gcdloop@B\POL@findrat@gcdloop@An
+  % on fait de la tambouille pour n'utiliser que \numexpr par la suite
+  % le reste @An est < 2.10^9 au pire donc ok pour \numexpr
+  % we will drop integral part in our updating P
+  \let\POL@findrat@gcdloop@Binitial\POL@findrat@gcdloop@B
+  \def\POL@findrat@gcdloop@B{0}%  do as if B1 = 0
+  \def\POL@findrat@gcdloop@Pp{1}% P0
+  \def\POL@findrat@gcdloop@P{0}%  P1
+  \def\POL@findrat@gcdloop@Qp{0}% Q0
+  \def\POL@findrat@gcdloop@Q{1}%  Q1
+  % A2=An can not be zero, as Ap (=A0) is odd and A (=A1=200...000) is even
+  % first Binitial + P1/Q1 ( = Binitial) can not be root
+  \let\POL@findrat@gcdloop@Ap\POL@findrat@gcdloop@A % A1
+  \let\POL@findrat@gcdloop@A\POL@findrat@gcdloop@An % A2
+  \def\next{\POL@findrat@gcdloop@update}%
+  \def\POL@findrat@gcdloop@done{0}%
+  \POL@findrat@gcdloop@body
+}%
+\def\POL@findrat@gcdloop@body{%
+    % annoying that \numexpr has no divmod... use counts? but groups annoying
+    \edef\POL@findrat@gcdloop@B
+        {\the\numexpr(\POL@findrat@gcdloop@Ap+\POL@findrat@gcdloop@A/2)/%
+                      \POL@findrat@gcdloop@A - \@ne}%
+    \edef\POL@findrat@gcdloop@An
+        {\the\numexpr\POL@findrat@gcdloop@Ap-%
+                     \POL@findrat@gcdloop@B*\POL@findrat@gcdloop@A}%
+    \edef\POL@findrat@gcdloop@Pn
+        {\the\numexpr\POL@findrat@gcdloop@Pp+%
+                     \POL@findrat@gcdloop@B*\POL@findrat@gcdloop@P}%
+    \edef\POL@findrat@gcdloop@Qn
+        {\the\numexpr\POL@findrat@gcdloop@Qp+%
+                     \POL@findrat@gcdloop@B*\POL@findrat@gcdloop@Q}%
+    \ifnum\expandafter\xintLength\expandafter{\POL@findrat@gcdloop@Qn}%
+          >\POL@findrat@halflocalW\space
+       \let\next\empty % no solution was found
+    \else
+    % with these conditions on denom, only candidates are by Legendre
+    % theorem among the convergents as computed here
+       \ifnum\POL@findrat@gcdloop@Qn>\POL@findrat@gcdloop@An\space
+         % means that P/Q is in interval and is thus a candidate
+         % it is automatically irreducible
+         \edef\POL@findrat@x{\xintiiAdd
+           {\xintiiMul{\POL@findrat@gcdloop@Qn}{\POL@findrat@gcdloop@Binitial}}%
+           {\POL@findrat@gcdloop@Pn}/\POL@findrat@gcdloop@Qn[0]}%
+         \POL@findrat@gcdloop@testit
+         \if1\POL@findrat@gcdloop@done
+            \let\next\empty % a solution was found
+         \fi
+       \fi
+    \fi
+    \next
+}%
+\def\POL@findrat@gcdloop@update{%
+    \ifnum\POL@findrat@gcdloop@An>\z@
+        \let\POL@findrat@gcdloop@Ap\POL@findrat@gcdloop@A
+        \let\POL@findrat@gcdloop@A\POL@findrat@gcdloop@An
+        \let\POL@findrat@gcdloop@Pp\POL@findrat@gcdloop@P
+        \let\POL@findrat@gcdloop@P\POL@findrat@gcdloop@Pn
+        \let\POL@findrat@gcdloop@Qp\POL@findrat@gcdloop@Q
+        \let\POL@findrat@gcdloop@Q\POL@findrat@gcdloop@Qn
+    \expandafter\POL@findrat@gcdloop@body
+    \fi
+}%
+\def\POL@findrat@gcdloop@testit{%
+  % zero should never occur here
+  \POL@findrat@ifnegative{\edef\POL@findrat@x{-\POL@findrat@x}}{}%
+  \POL@xintfrac@getNDE\POL@findrat@x\POL@findrat@xN\POL@findrat@xD\POL@_
+  \edef\POLuserpol@_findrat@oneterm{1.\noexpand\empty
+      {\xintiiOpp{\POL@findrat@xN}/1[0]}{\POL@findrat@xD/1[0]}}%
+  \POL@divide{\POL@sturmname\POL@sqfnorr}{_findrat@oneterm}% the one without mult.
+  \expandafter\POL@split\POL@R;\POL@degR\POL@polR
+  \ifnum\POL@degR=\m@ne % found a root
+    \POL@findrat@loop@storeit
+    \POL@findrat@loop@updatequotients
+    \POL@findrat@loop@getmultiplicity % will continue updating the mult. one
+    \def\POL@findrat@gcdloop@done{1}%
+  \fi
+}%            
+% This is second phase
+\def\POL@findrat@loop@secondpass{%
+  \PolSturmIfZeroExactlyKnown{\POL@sturmname}{\POL@findrat@index}%
+     {}% nothing more to be done, already stored
+     \POL@findrat@loop@bb % refine interval and check
+  \edef\POL@findrat@index{\the\numexpr\POL@findrat@index+\@ne}%
+  \ifnum\POL@findrat@index>\POL@isolz@NbOfRoots
+  \else
+     \expandafter\POL@findrat@loop@secondpass
+  \fi
+}%
+\def\POL@findrat@loop@secondpass@direct{%
+  \PolSturmIfZeroExactlyKnown{\POL@sturmname}{\POL@findrat@index}%
+     \POL@findrat@loop@decimal
+     \POL@findrat@loop@bb
+  \edef\POL@findrat@index{\the\numexpr\POL@findrat@index+\@ne}%
+  \ifnum\POL@findrat@index>\POL@isolz@NbOfRoots
+  \else
+     \expandafter\POL@findrat@loop@secondpass@direct
+  \fi
+}%
+\def\POL@findrat@loop@bb{%
+  \PolEnsureIntervalLength{\POL@sturmname}{\POL@findrat@index}{-\POL@findrat@E}%
+  % ATTENTION THAT PERHAPS NOW THE ROOT IS KNOWN!
+  \PolSturmIfZeroExactlyKnown{\POL@sturmname}{\POL@findrat@index}%
+      \POL@findrat@loop@decimal
+      \POL@findrat@loop@b
+}%
+\def\POL@findrat@loop@b{%
+  \edef\POL@findrat@Lscaled{\xintMul{\POL@findrat@D}%
+       {\POL@xintexprGetVar{\POL@sturmname L_\POL@findrat@index}}}%
+  \edef\POL@findrat@Rscaled{\xintMul{\POL@findrat@D}%
+       {\POL@xintexprGetVar{\POL@sturmname R_\POL@findrat@index}}}%
+  \xintiiifNeg{\POL@findrat@Lscaled}% using ii version is an abuse
+    {% negative interval (right bound possibly zero!)
+     % truncate towards zero (i.e. to the right) the left bound
+     \edef\POL@findrat@Num{\xintNum{\POL@findrat@Lscaled}/1[0]}%
+     % interval boundaries are not root hence in case that was exact
+     % this will not be found as a root; check if in interval
+     \xintifLt\POL@findrat@Num\POL@findrat@Rscaled
+         \POL@findrat@loop@c
+         {}% iterate
+    }%
+    {% positive interval (left bound possibly zero!)
+     % truncate towards zero (i.e. to the left) the right bound
+     \edef\POL@findrat@Num{\xintNum{\POL@findrat@Rscaled}/1[0]}%
+     % check if in interval
+     \xintifGt\POL@findrat@Num\POL@findrat@Lscaled
+         \POL@findrat@loop@c
+         {}% iterate
+    }%
+}%
+\def\POL@findrat@loop@c{%
+  % safer to do the edef as \POL@findrat@x used later in storeit
+  \edef\POL@findrat@x{\xintIrr{\xintDiv\POL@findrat@Num\POL@findrat@D}[0]}%
+  \POL@xintfrac@getNDE\POL@findrat@x\POL@findrat@xN\POL@findrat@xD\POL@_
+  \edef\POLuserpol@_findrat@oneterm{1.\noexpand\empty
+      {\xintiiOpp{\POL@findrat@xN}/1[0]}{\POL@findrat@xD/1[0]}}%
+  \POL@divide{\POL@sturmname\POL@sqfnorr}{_findrat@oneterm}% the one without mult.
+  \expandafter\POL@split\POL@R;\POL@degR\POL@polR
+  \ifnum\POL@degR=\m@ne % found a root
+    \POL@findrat@loop@storeit
+    \POL@findrat@loop@updatequotients
+    \POL@findrat@loop@getmultiplicity % will continue updating the mult. one
+  \fi
+  % iterate
+}%
+\def\POL@findrat@loop@storeit{%
+  % update storage, I can not use storeleftandright here (due to rawout etc...)
+  \expandafter
+  \xdef\csname POL_ZL\POL@sturmname*\POL@findrat@index\endcsname
+                                     {\PolDecToString{\POL@findrat@x}}%
+  \global\expandafter
+  \let\csname POL_ZR\POL@sturmname*\POL@findrat@index\expandafter\endcsname
+       \csname POL_ZL\POL@sturmname*\POL@findrat@index\endcsname
+  \global\expandafter
+  \let\csname POL_ZK\POL@sturmname*\POL@findrat@index\endcsname
+        \xint_stop_atfirstoftwo
+  \begingroup\xintglobaldefstrue
+    % skip some overhead of \xintdefvar...
+    \XINT_expr_defvar_one{\POL@sturmname L_\POL@findrat@index}%
+       {\csname .=\POL@findrat@x\endcsname}%
+    \XINT_expr_defvar_one{\POL@sturmname R_\POL@findrat@index}%
+       {\csname .=\POL@findrat@x\endcsname}%
+    \XINT_expr_defvar_one{\POL@sturmname Z_\POL@findrat@index _isknown}%
+       {\csname .=1\endcsname}%
+  \endgroup
+}%
+\def\POL@findrat@loop@updatequotients{%
+  % attention last division must have been one testing vanishing of\POL@sqfnorr
+  \expandafter\let\csname POLuserpol@\POL@sturmname\POL@sqfnorr\endcsname\POL@Q
+  % quotient belongs to Z[X] and is primitive
+  \POL@mapcoeffs\POL@aux@toint{\POL@sturmname\POL@sqfnorr}%
+  % update the one with multiplicities
+  \POL@divide{\POL@sturmname\POL@norr}{_findrat@oneterm}%
+  \expandafter\let\csname POLuserpol@\POL@sturmname\POL@norr\endcsname\POL@Q
+  \POL@mapcoeffs\POL@aux@toint{\POL@sturmname\POL@norr}
+  % updating of \POL@findrat@D at end of execution of getmultiplicity
+}%
+\def\POL@findrat@loop@getmultiplicity{%
+  % the one without multiplicity must not be divided again!
+  % check if we have remaining multiplicity
+  \POL@divide{\POL@sturmname\POL@norr}{_findrat@oneterm}%
+  \expandafter\POL@split\POL@R;\POL@degR\POL@polR
+  \ifnum\POL@degR=\m@ne % yes
+    \expandafter\let\csname POLuserpol@\POL@sturmname\POL@norr\endcsname\POL@Q
+    \POL@mapcoeffs\POL@aux@toint{\POL@sturmname\POL@norr}%
+    \expandafter
+    \xdef
+    \csname POL_ZM\POL@sturmname*\POL@findrat@index\endcsname
+      {\the\numexpr
+       \csname POL_ZM\POL@sturmname*\POL@findrat@index\endcsname+\@ne}%
+    \expandafter\POL@findrat@loop@getmultiplicity
+  \else 
+  % done with multiplicity for this rational root, update stuff
+    \edef\POL@findrat@nbofirrroots
+         {\the\numexpr\POL@findrat@nbofirrroots-\@ne}%
+    \@namedef{POL@IfMultIsKnown\POL@findrat@index}{\xint_firstoftwo}%
+    \edef\POL@findrat@D{\xintAbs{\PolLeadingCoeff{\POL@sturmname\POL@sqfnorr}}}%
+    \POL@xintfrac@getNDE\POL@findrat@D\POL@findrat@Dint\POL@_\POL@findrat@Dexp
+    \xintiiifOne{\POL@findrat@Dint}
+        {\let\POL@findrat@E\POL@findrat@Dexp} % aussi ok pour 1[0]
+        {\edef\POL@findrat@E{\the\numexpr\xintLen{\POL@findrat@Dint}%
+                                                 +\POL@findrat@Dexp}}%
+  \fi
+}%
+\def\POL@findrat@getirrmult{%
+  % first get the GCD of remaining pol with its derivative
+  \POL@divide{\POL@sturmname\POL@norr}{\POL@sturmname\POL@sqfnorr}%
+  \expandafter\let
+    % attention au _ (cf. grosse astuce pour \POL@isolzmult@loop)
+    \csname POLuserpol@@_1\POL@sturmname _\endcsname\POL@Q
+  \ifnum\PolDegree{@_1\POL@sturmname _}>\z@
+    % il reste des multiplicités (mais peut-être pour des racines complexes)
+    % (ou pour des racines en-dehors de l'intervalle optionnel)
+    % attention recyclage ici de \POL@isolzmult@loop qui dépend de
+    % la  grosse astuce avec \@gobble
+    \POL@makeprimitive{@_1\POL@sturmname _}%
+    \let\POL@originalsturmname\POL@sturmname
+    % trick to get isolzmult@loop to define @@lastGCD to @_1sturmname_
+    % because it will do \POL@sturmname _\POL@sturm@N _
+    \edef\POL@sturmname{@_1\POL@sturmname}%
+    \let\POL@sturm@N\@gobble% !
+    \let\POL@isolz@NbOfRoots@with_unknown_mult\POL@findrat@nbofirrroots
+    \POL@tosturm@makefirstprimitivefalse
+    \POL@isolzmult@loop
+    \POL@tosturm@makefirstprimitivetrue
+    \let\POL@sturmname\POL@originalsturmname
+  \fi
+}%
+
+
+\newcommand\PolSturmIsolateZerosAndGetMultiplicities@[2][\empty]{%
+  % #1 optional E such that roots are searched in -10^E < x < 10^E
+  % both -10^E and +10^E must not be roots!
+  % #2 name of Sturm chain (already pre-computed)
+  \edef\POL@sturmname{#2}%
+  \edef\POL@sturm@N{\@nameuse{PolSturmChainLength_\POL@sturmname}}%
+  % isolate the roots (detects case of constant polynomial)
+  \PolSturmIsolateZeros@{\POL@sturmname}%
+  \ifnum\POL@isolz@NbOfRoots=\z@
+  % no roots, define empty array nevertheless
+     \begingroup\globaldefs\@ne
+     \expandafter\xintAssignArray\expandafter\to\csname POL_ZM\POL@sturmname*\endcsname
+     \endgroup
+  \else
+     % all we currently know is that multiplicities are at least one
+     \begingroup\globaldefs\@ne
+     \expandafter\POL@initarray\csname POL_ZM\POL@sturmname*\endcsname{1}%
+     \endgroup
+     % check if GCD had positive degree (hence some roots, maybe complex, have
+     % multiplicity)
+     \ifnum\PolDegree{\POL@sturmname _\POL@sturm@N _}>\z@
+         % scratch array of flags to signal known multiplicities
+         \POL@initarray\POL@IfMultIsKnown\xint_secondoftwo
+         % this count has utility for the case there are other roots
+         % either complex or outside interval (in case of optional argument)
+         \let\POL@isolz@NbOfRoots@with_unknown_mult\POL@isolz@NbOfRoots
+         % store Sturm chain name, it is needed and altered in isolzmult@loop
+         \let\POL@originalsturmname\POL@sturmname
+         \POL@tosturm@makefirstprimitivefalse
+         \POL@isolzmult@loop
+         \POL@tosturm@makefirstprimitivetrue
+         \let\POL@sturmname\POL@originalsturmname
+     \fi
+     \POL@isolzmult@defvar@M
+  \fi
+}%
+\def\POL@isolzmult@defvar@M{%
+  % Attention that is used not only in ...GetMultiplicities@ but also
+  % in FindRationalRoots
+  \begingroup\xintglobaldefstrue
+  % added at 0.7
+  \let\x\POL@isolz@NbOfRoots
+    \xintloop
+    % skip some overhead of \xintdefvar...
+      \XINT_expr_defvar_one{\POL@sturmname M_\x}%
+         {\csname .=\csname POL_ZM\POL@sturmname*\x\endcsname\endcsname}%
+    \edef\x{\the\numexpr\x-\@ne}%
+    \ifnum\x>\z@
+    \repeat
+  \endgroup
+}%
+\def\POL@isolzmult@loop{%
+   % we are here only if last iteration gave a new GCD still of degree > 0
+   % \POL@sturm@N is the one from last iteration
+   % Attention to not use \POL@sturmname directly in first arg. of \PolToSturm
+   % Attention that we need for the case of known roots also to have the last
+   % GCD (with its multiplicities) known as a genuine polynomial
+   % - because of usage of \POL@eval in @isknown branch
+   % - because \PolToSturm@ does a \POL@let which would be anomalous
+   %   if the extended structure is not existing
+   \edef\POL@isolzmult@lastGCD{\POL@sturmname _\POL@sturm@N _}%
+   \edef\POL@isolzmult@newsturmname{@_1\POL@sturmname}%
+   \POL@newpol{\POL@isolzmult@lastGCD}%
+   \PolToSturm@{\POL@isolzmult@lastGCD}{\POL@isolzmult@newsturmname}%
+   % now both \POL@sturmname and \POL@sturm@N have changed
+   \edef\POL@isolzmult@newGCDdegree{\PolDegree{\POL@sturmname _\POL@sturm@N _}}%
+   \let\POL@isolzmult@index\POL@isolz@NbOfRoots
+   \xintloop
+     % ATTENTION that this executes macros which also modifies \POL@sturmname!
+     % (but not \POL@sturm@N)
+     \POL@isolzmult@doone
+     \edef\POL@isolzmult@index{\the\numexpr\POL@isolzmult@index-\@ne}%
+   \if1\ifnum\POL@isolz@NbOfRoots@with_unknown_mult=\z@ 0\fi
+       \ifnum\POL@isolzmult@index=\z@ 0\fi 1%
+   \repeat
+   \let\POL@sturmname\POL@isolzmult@newsturmname
+   \if1\ifnum\POL@isolz@NbOfRoots@with_unknown_mult=\z@ 0\fi
+       % (if new GCD is constant, time to abort)
+       \ifnum\POL@isolzmult@newGCDdegree=\z@ 0\fi 1%
+     \expandafter\POL@isolzmult@loop
+   \fi
+}%
+\def\POL@isolzmult@doone{%
+   \csname POL@IfMultIsKnown\POL@isolzmult@index\endcsname
+     {}% nothing to do
+     {\POL@SturmIfZeroExactlyKnown{\POL@originalsturmname}%
+                                  {\POL@isolzmult@index}%
+           \POL@isolzmult@loop@isknown
+           \POL@isolzmult@loop@isnotknown
+      \POL@isolzmult@loop@sharedbody
+     }%
+}%
+\def\POL@isolzmult@loop@isknown{%
+   \xintifZero
+   % attention that \POL@eval requires a declared polynomial
+     {\POL@eval{\POL@isolzmult@lastGCD}%
+               {\POL@xintexprGetVar{\POL@originalsturmname L_\POL@isolzmult@index}}}%
+   {\let\POL@isolzmult@haszero\@ne}%
+   {\let\POL@isolzmult@haszero\z@}%
+}%
+\def\POL@isolzmult@loop@isnotknown{%
+   \edef\POL@isolzmult@loop@A 
+        {\POL@xintexprGetVar{\POL@originalsturmname L_\POL@isolzmult@index}}
+   \edef\POL@isolzmult@loop@B
+        {\POL@xintexprGetVar{\POL@originalsturmname
+            R_\POL@isolzmult@index}}
+   % attention that \PolSetToNbOfZerosWithin sets \POL@sturmname to 2nd argument
+   \PolSetToNbOfZerosWithin
+      \POL@isolzmult@haszero  % nb of zeros A < x <= B, here 0 or 1
+      \POL@isolzmult@newsturmname
+      \POL@isolzmult@loop@A
+      \POL@isolzmult@loop@B
+}%
+\def\POL@isolzmult@loop@sharedbody{%
+   \ifnum\POL@isolzmult@haszero>\z@
+     \expandafter
+     \xdef
+     \csname POL_ZM\POL@originalsturmname*\POL@isolzmult@index\endcsname
+       {\the\numexpr
+        \csname POL_ZM\POL@originalsturmname
+                            *\POL@isolzmult@index\endcsname+\@ne}%
+   \else
+     % multiplicity now known, no need to check this index in future
+     \@namedef{POL@IfMultIsKnown\POL@isolzmult@index}{\xint_firstoftwo}%
+     \edef\POL@isolz@NbOfRoots@with_unknown_mult
+       {\the\numexpr\POL@isolz@NbOfRoots@with_unknown_mult-\@ne}%
+   \fi
+}%
+
+
+\newcommand\PolSturmIsolateZeros@[2][\empty]{%
+  % #1 optional E such that roots are searched in -10^E < x < 10^E
+  % both -10^E and +10^E must not be roots!
+  % #2 name of Sturm chain (already pre-computed from a given polynomial)
+  % For reasons I have forgotten (no time now) this code **must** be used
+  % with a *normalized* Sturm chain.
+  \edef\POL@sturmname{#2}%
+  \edef\POL@sturmlength{\PolSturmChainLength{#2}}%
+  % attention to constant polynomial, we must redefine the arrays then
+  \ifnum\POL@sturmlength>\z@
+   \ifx\empty#1\relax
+    \POL@isolz@getsignchanges@plusinf
+    \POL@isolz@getsignchanges@minusinf
+   \else
+    \edef\POL@isolz@E{\the\numexpr\xint_zapspaces #1 \xint_gobble_i\relax}%
+    \POL@sturmchain@getSV@at{1[\POL@isolz@E]}%
+    \let\POL@isolz@plusinf@SV  \POL@sturmchain@SV
+    \let\POL@isolz@plusinf@sign\POL@sturmchain@sign
+    \POL@sturmchain@getSV@at{-1[\POL@isolz@E]}%
+    \let\POL@isolz@minusinf@SV  \POL@sturmchain@SV
+    \let\POL@isolz@minusinf@sign\POL@sturmchain@sign
+    \ifnum\POL@isolz@plusinf@sign=\z@
+        \PackageError{polexpr}%
+{The polynomial #2 vanishes at set upper bound 10^\POL@isolz@E}%
+{Compile again with a bigger exponent in source. (X to abort).}%
+    \fi
+    \ifnum\POL@isolz@minusinf@sign=\z@
+        \PackageError{polexpr}%
+{The polynomial #2 vanishes at set lower bound -10^\POL@isolz@E}%
+{Compile again with a bigger exponent in source. (X to abort).}%
+    \fi
+   \fi
+   \edef\POL@isolz@NbOfRoots
+      {\the\numexpr\POL@isolz@minusinf@SV-\POL@isolz@plusinf@SV}%
+  \else
+    % constant polynomial
+   \def\POL@isolz@NbOfRoots{0}%
+  \fi
+  \ifnum\POL@isolz@NbOfRoots=\z@
+     \begingroup\globaldefs\@ne
+     \expandafter\xintAssignArray\expandafter\to\csname POL_ZL#2*\endcsname
+     \expandafter\xintAssignArray\expandafter\to\csname POL_ZR#2*\endcsname
+     \expandafter\xintAssignArray\expandafter\to\csname POL_ZK#2*\endcsname
+     \endgroup
+  \else
+     \begingroup\globaldefs\@ne
+     \expandafter\POL@initarray\csname POL_ZL#2*\endcsname{0}%
+     \expandafter\POL@initarray\csname POL_ZR#2*\endcsname{0}%
+     \expandafter\POL@initarray\csname POL_ZK#2*\endcsname
+                 \xint_stop_atsecondoftwo
+     \endgroup
+     \ifx\empty#1\relax\expandafter\POL@isolz@getaprioribound\fi
+     \expandafter\POL@isolz@main
+  \fi
+}%
+\def\POL@initarray#1#2{%
+% ATTENTION, if only one item, \xintAssignArray UNBRACES IT
+% so we use an \empty trick to avoid that. Maybe considered a bug of xinttools?
+  \expandafter\xintAssignArray\expandafter\empty
+    \romannumeral\xintreplicate{\POL@isolz@NbOfRoots}{{#2}}\to#1%
+}%
+\def\POL@isolz@getsignchanges@plusinf{%
+  % Count number of sign changes at plus infinity in Sturm sequence
+  \def\POL@isolz@plusinf@SV{0}%
+  \edef\POL@isolz@lastsign{\xintiiSgn{\PolLeadingCoeff{\POL@sturmname _0}}}%
+  \let\POL@isolz@plusinf@sign\POL@isolz@lastsign
+  \POL@count\@ne
+  \xintloop
+    \edef\POL@isolz@newsign
+        {\xintiiSgn{\PolLeadingCoeff{\POL@sturmname _\the\POL@count}}}%
+    \unless\ifnum\POL@isolz@newsign=\POL@isolz@lastsign
+       \edef\POL@isolz@plusinf@SV{\the\numexpr\POL@isolz@plusinf@SV+\@ne}%
+    \fi
+    \let\POL@isolz@lastsign=\POL@isolz@newsign
+  \ifnum\POL@sturmlength>\POL@count
+    \advance\POL@count\@ne
+  \repeat
+}%
+\def\POL@isolz@getsignchanges@minusinf{%
+  % Count number of sign changes at minus infinity in Sturm sequence
+  \def\POL@isolz@minusinf@SV{0}%
+  \edef\POL@isolz@lastsign{\xintiiSgn{\PolLeadingCoeff{\POL@sturmname _0}}}%
+  \ifodd\PolDegree{\POL@sturmname _0}
+      \edef\POL@isolz@lastsign{\xintiiOpp{\POL@isolz@lastsign}}%
+  \fi
+  \let\POL@isolz@minusinf@sign\POL@isolz@lastsign
+  \POL@count\@ne
+  \xintloop
+    \edef\POL@isolz@newsign
+      {\xintiiSgn{\PolLeadingCoeff{\POL@sturmname _\the\POL@count}}}%
+    \ifodd\PolDegree{\POL@sturmname _\the\POL@count}
+      \edef\POL@isolz@newsign{\xintiiOpp{\POL@isolz@newsign}}%
+    \fi
+    \unless\ifnum\POL@isolz@newsign=\POL@isolz@lastsign
+       \edef\POL@isolz@minusinf@SV{\the\numexpr\POL@isolz@minusinf@SV+\@ne}%
+    \fi
+    \let\POL@isolz@lastsign=\POL@isolz@newsign
+  \ifnum\POL@sturmlength>\POL@count
+    \advance\POL@count\@ne
+  \repeat
+}%
+% utility macro for a priori bound on root decimal exponent, via Float Rounding
+\def\POL@isolz@updateE #1e#2;%
+  {\unless\ifnum#2<\POL@isolz@E\space\edef\POL@isolz@E{\the\numexpr#2+\@ne}\fi}%
+\def\POL@isolz@getaprioribound{%
+  \PolAssign{\POL@sturmname _0}\toarray\POL@arrayA
+  \edef\POL@isolz@leading{\POL@arrayA{\POL@arrayA{0}}}%
+  \POL@count\z@
+  \xintloop
+  \advance\POL@count\@ne
+  \ifnum\POL@arrayA{0}>\POL@count
+     \expandafter\edef\csname POL@arrayA\the\POL@count\endcsname
+        {\xintDiv{\POL@arrayA\POL@count}\POL@isolz@leading}%
+  \repeat
+  \def\POL@isolz@E{1}% WE SEEK SMALLEST E SUCH HAT -10^E < roots < +10^E
+  \advance\POL@count\m@ne
+  \xintloop
+  \ifnum\POL@count>\z@
+     \expandafter\POL@isolz@updateE
+     % use floating point to get decimal exponent
+     \romannumeral0\xintfloat[4]% should I use with [2] rather? (should work)
+       {\xintAdd{1/1[0]}{\xintAbs{\POL@arrayA\POL@count}}};%
+  \advance\POL@count\m@ne
+  \repeat
+  % \ifxintverbose\xintMessage{polexpr}{Info}%
+  %   {Roots a priori bounded in absolute value by 10 to the \POL@isolz@E.}%
+  % \fi
+}%
+\def\POL@IsoRight@raw{\POL@IsoRight@Int/1[\POL@isolz@E]}%
+\def\POL@IsoLeft@raw {\POL@IsoLeft@Int/1[\POL@isolz@E]}%
+\def\POL@IsoRight@rawout{%
+    \ifnum\POL@IsoRightSign=\z@\expandafter\xintREZ\fi\POL@IsoRight@raw
+}%
+\def\POL@IsoLeft@rawout{%
+    \ifnum\POL@IsoRightSign=\z@
+       \expandafter\xint_firstoftwo\else\expandafter\xint_secondoftwo
+    \fi{\xintREZ\POL@IsoRight@raw}%
+       {\POL@IsoLeft@Int/1[\POL@isolz@E]}%
+}%
+\def\POL@isolz@main {%
+% NOTE 2018/02/16. THIS WILL PRESUMABLY BE RE-ORGANIZED IN FUTURE TO DO
+% FIRST POSITIVE ROOTS THEN NEGATIVE ROOTS VIA CHANGE OF VARIABLE TO OPPOSITE.
+  \global\POL@isolz@nextwillneedrefinefalse
+  \def\POL@IsoRight@Int{0}%
+  \POL@sturmchain@getSV@at\POL@IsoRight@raw
+  \let\POL@IsoRightSV  \POL@sturmchain@SV
+  \let\POL@IsoRightSign\POL@sturmchain@sign
+  \let\POL@IsoAtZeroSV  \POL@IsoRightSV
+  \let\POL@IsoAtZeroSign\POL@IsoRightSign
+  \ifnum\POL@IsoAtZeroSign=\z@
+    \xdef\POL@isolz@IntervalIndex
+      {\the\numexpr\POL@isolz@minusinf@SV-\POL@IsoRightSV}%
+    \POL@refine@storeleftandright % store zero root, \POL@IsoRightSign is zero
+    \edef\POL@IsoRightSV{\the\numexpr\POL@IsoRightSV+\@ne}%
+% subtlety here if original polynomial had multiplicities, but ok. I checked!
+    \edef\POL@IsoRightSign % evaluated twice, but that's not so bad
+      {\xintiiOpp{\xintiiSgn{\POL@eval{\POL@sturmname _1}{0/1[0]}}}}%
+  \fi
+  \def\POL@IsoLeft@Int{-1}% -10^E isn't a root!
+  \let\POL@IsoLeftSV  \POL@isolz@minusinf@SV
+  \let\POL@IsoLeftSign\POL@isolz@minusinf@sign
+  % \POL@IsoRight@SV was modified if zero is a root
+  \edef\POL@isolz@NbOfNegRoots{\the\numexpr\POL@IsoLeftSV-\POL@IsoRightSV}%
+  \gdef\POL@isolz@IntervalIndex{0}%
+  \let\POL@isolz@@E\POL@isolz@E
+  \ifnum\POL@isolz@NbOfNegRoots>\z@
+% refactored at 0.7 to fix cases leading to an intervals with zero as end-point
+    \POL@isolz@findroots@neg
+  \fi
+  \let\POL@isolz@E\POL@isolz@@E
+  \def\POL@IsoLeft@Int{0}%
+  \let\POL@IsoLeftSV  \POL@IsoAtZeroSV  % véritable SV en zéro
+  \let\POL@IsoLeftSign\POL@IsoAtZeroSign% véritable signe en zéro
+  \ifnum\POL@IsoLeftSign=\z@
+    \xdef\POL@isolz@IntervalIndex{\the\numexpr\POL@isolz@IntervalIndex+\@ne}%
+  \fi
+  \let\POL@@IsoRightSV  \POL@isolz@plusinf@SV
+  \let\POL@@IsoRightSign\POL@isolz@plusinf@sign % 10^E not a root!
+  \edef\POL@isolz@NbOfPosRoots
+    {\the\numexpr\POL@IsoLeftSV-\POL@@IsoRightSV}% attention @@
+  \ifnum\POL@isolz@NbOfPosRoots>\z@
+    % always do that to avoid zero as end-point whether it is a root or not
+    \global\POL@isolz@nextwillneedrefinetrue
+    \POL@isolz@findroots@pos
+  \fi
+}%
+\def\POL@isolz@findroots@neg{%
+  \def\POL@IsoRight@Int{-1}%
+  \POL@isolz@findnextzeroboundeddecade@neg
+  \def\POL@IsoLeft@Int{-10}%
+  \let\POL@@IsoRightSign\POL@IsoRightSign % a zero there is possible
+  \let\POL@@IsoRightSV  \POL@IsoRightSV
+  % this will do possibly recursive \POL@isolz@check's
+  \POL@isolz@explorenexteightsubdecades@neg
+  \ifnum\POL@isolz@IntervalIndex<\POL@isolz@NbOfNegRoots\space
+    % above did not explore -2, -1 for this optimization (SV known at Right)
+    \def\POL@IsoRight@Int{-1}%
+    \let\POL@IsoRightSign\POL@@IsoRightSign
+    \let\POL@IsoRightSV  \POL@@IsoRightSV
+    \POL@isolz@check
+    \ifnum\POL@isolz@IntervalIndex<\POL@isolz@NbOfNegRoots\space
+      \def\POL@IsoLeft@Int{-1}%
+      \let\POL@IsoLeftSign\POL@@IsoRightSign
+      \let\POL@IsoLeftSV  \POL@@IsoRightSV
+      % I don't like being inside TeX conditionals
+      \expandafter\expandafter\expandafter\POL@isolz@findroots@neg
+    \fi
+  \fi
+}%
+\def\POL@isolz@findnextzeroboundeddecade@neg{%
+  \xintloop
+    \edef\POL@isolz@E{\the\numexpr\POL@isolz@E-\@ne}%
+    \POL@sturmchain@getSV@at\POL@IsoRight@raw
+    \let\POL@IsoRightSV  \POL@sturmchain@SV
+    \let\POL@IsoRightSign\POL@sturmchain@sign
+    % would an \ifx test be quicker? (to be checked)
+  \ifnum\POL@IsoRightSV=\POL@IsoLeftSV\space
+  % no roots in-between, iterate
+  \repeat
+}%
+\def\POL@isolz@explorenexteightsubdecades@neg{%
+  \xintloop
+    \edef\POL@IsoRight@Int{\the\numexpr\POL@IsoLeft@Int+\@ne}%
+     % we could arguably do a more efficient dichotomy here
+    \POL@sturmchain@getSV@at\POL@IsoRight@raw
+    \let\POL@IsoRightSV  \POL@sturmchain@SV
+    \let\POL@IsoRightSign\POL@sturmchain@sign
+    \POL@isolz@check % may recurse if multiple roots are to be found
+    \ifnum\POL@isolz@IntervalIndex=\POL@isolz@NbOfNegRoots\space
+      \expandafter\xintbreakloop
+    \fi
+    \let\POL@IsoLeft@Int\POL@IsoRight@Int
+    \let\POL@IsoLeftSign\POL@IsoRightSign
+    \let\POL@IsoLeftSV\POL@IsoRightSV
+  \ifnum\POL@IsoRight@Int < -\tw@
+  \repeat
+}%
+\def\POL@isolz@findroots@pos{%
+  % remark (2018/12/08), this needs some refactoring, I hardly understand
+  % the logic and it hides most into the recursion done by \POL@isolz@check
+  % It would probably make more sense to proceed like done for the negative
+  % but here finding the largest roots first.
+  \def\POL@IsoRight@Int{1}%
+  \POL@isolz@findnextzeroboundeddecade@pos
+  \unless\ifnum\POL@IsoRightSV=\POL@IsoLeftSV\space
+    % this actually explores the whole of some interval (0, 10^{e-1}]
+    % in a context where some roots are known to be in (10^{e-1}, 10^{e}]
+    % and none are larger
+    \POL@isolz@check % will recurse inside groups if needed with modified E
+  \fi
+  % we know get the roots in the last 9 decades from 10^{e-1} to 10^{e}
+  % we should arguably do a more efficient dichotomy here
+  \def\POL@IsoLeft@Int{1}%
+  \let\POL@IsoLeftSV\POL@IsoRightSV
+  \let\POL@IsoLeftSign\POL@IsoRightSign
+  \xintloop
+    \edef\POL@IsoRight@Int{\the\numexpr\POL@IsoLeft@Int+\@ne}%
+    \POL@sturmchain@getSV@at\POL@IsoRight@raw
+    \let\POL@IsoRightSV  \POL@sturmchain@SV
+    \let\POL@IsoRightSign\POL@sturmchain@sign
+    \POL@isolz@check % recurses in needed
+    \let\POL@IsoLeft@Int\POL@IsoRight@Int
+    \let\POL@IsoLeftSign\POL@IsoRightSign
+    \let\POL@IsoLeftSV\POL@IsoRightSV
+    \ifnum\POL@isolz@IntervalIndex=\POL@isolz@NbOfRoots\space
+      \expandafter\xintbreakloop
+    \fi
+    \ifnum\POL@IsoLeft@Int < \xint_c_ix
+  \repeat
+  \ifnum\POL@isolz@IntervalIndex<\POL@isolz@NbOfRoots\space
+  % get now the last, rightmost, root (or roots)
+    \def\POL@IsoRight@Int{10}%
+    \let\POL@IsoRightSign\POL@@IsoRightSign
+    \let\POL@IsoRightSV\POL@@IsoRightSV
+    \POL@isolz@check
+  \fi
+}%
+\def\POL@isolz@findnextzeroboundeddecade@pos{%
+  \xintloop
+    \edef\POL@isolz@E{\the\numexpr\POL@isolz@E-\@ne}%
+    \POL@sturmchain@getSV@at\POL@IsoRight@raw
+    \let\POL@IsoRightSV  \POL@sturmchain@SV
+    \let\POL@IsoRightSign\POL@sturmchain@sign
+  \ifnum\POL@IsoRightSV=\POL@@IsoRightSV\space
+    \let\POL@@IsoRightSign\POL@IsoRightSign % root here possible!
+  \repeat
+}%
+\def\POL@isolz@check{% \POL@IsoRightSign must be ready for use here
+% \ifxintverbose
+%   \xintMessage{polexpr}{Info}%
+%   {\the\numexpr\POL@IsoLeftSV-\POL@IsoRightSV\relax\space roots
+%    in (\POL@IsoLeft@raw,\POL@IsoRight@raw] (E = \POL@isolz@E)}%
+% \fi
+    \ifcase\numexpr\POL@IsoLeftSV-\POL@IsoRightSV\relax
+    % no root in ]left, right]
+      \global\POL@isolz@nextwillneedrefinefalse
+    \or
+    % exactly one root in ]left, right]
+     \xdef\POL@isolz@IntervalIndex{\the\numexpr\POL@isolz@IntervalIndex+\@ne}%
+     \ifnum\POL@IsoRightSign=\z@
+       % if right boundary is a root, ignore previous flag
+       \global\POL@isolz@nextwillneedrefinefalse
+     \fi
+     % if left boundary is known to have been a root we refine interval
+     \ifPOL@isolz@nextwillneedrefine
+       \expandafter\expandafter\expandafter\POL@isolz@refine
+     \else
+       % \POL@IsoRightSign is zero iff root now exactly known
+       \POL@refine@storeleftandright
+       \ifnum\POL@IsoRightSign=\z@
+        \global\POL@isolz@nextwillneedrefinetrue
+       \fi
+     \fi
+    \else
+    % more than one root, we need to recurse
+     \expandafter\POL@isolz@recursedeeper
+    \fi
+}%
+\def\POL@isolz@recursedeeper{%
+% NOTE 2018/02/16. I SHOULD DO A REAL BINARY DICHOTOMY HERE WHICH ON AVERAGE
+% SHOULD BRING SOME GAIN (LIKE WHAT IS ALREADY DONE FOR THE "refine" MACROS.
+% THUS IN FUTURE THIS MIGHT BE REFACTORED.
+\begingroup
+  \edef\POL@isolz@E{\the\numexpr\POL@isolz@E-\@ne}%
+  \edef\POL@@IsoRight@Int{\xintDSL{\POL@IsoRight@Int}}%
+  \let\POL@@IsoRightSign  \POL@IsoRightSign
+  \let\POL@@IsoRightSV    \POL@IsoRightSV
+  \edef\POL@IsoLeft@Int  {\xintDSL{\POL@IsoLeft@Int}}%
+  \xintiloop[1+1]
+    \edef\POL@IsoRight@Int{\xintInc{\POL@IsoLeft@Int}}%
+    \POL@sturmchain@getSV@at\POL@IsoRight@raw
+    \let\POL@IsoRightSV  \POL@sturmchain@SV
+    \let\POL@IsoRightSign\POL@sturmchain@sign
+    \POL@isolz@check
+    \let\POL@IsoLeft@Int\POL@IsoRight@Int
+    \let\POL@IsoLeftSV\POL@IsoRightSV
+    \let\POL@IsoLeftSign\POL@IsoRightSign% not used, actually
+  \ifnum\POL@IsoLeftSV=\POL@@IsoRightSV\space
+     \expandafter\xintbreakiloop
+  \fi
+  \ifnum\xintiloopindex < \xint_c_ix
+  \repeat
+  \let\POL@IsoRight@Int\POL@@IsoRight@Int
+  \let\POL@IsoRightSign\POL@@IsoRightSign
+  \let\POL@IsoRightSV  \POL@@IsoRightSV
+   % if we exited the loop via breakiloop this is superfluous
+   % but it only costs one \ifnum
+  \POL@isolz@check
+\endgroup
+}%
+\def\POL@isolz@refine{%
+  % starting point is first root = left < unique second root < right
+  % even if we hit exactly via refinement second root, we set flag false as
+  % processing will continue with original right end-point, which isn't a root
+  \global\POL@isolz@nextwillneedrefinefalse
+\begingroup
+  \let\POL@@IsoRightSign\POL@IsoRightSign % already evaluated
+  \xintloop
+    \edef\POL@isolz@E{\the\numexpr\POL@isolz@E-\@ne}%
+    \edef\POL@IsoLeft@Int {\xintDSL{\POL@IsoLeft@Int}}%
+    \edef\POL@IsoRight@Int{\xintInc{\POL@IsoLeft@Int}}%
+    \edef\POL@IsoRightSign
+        {\xintiiSgn{\POL@eval{\POL@sturmname _0}{\POL@IsoRight@raw}}}%
+  \ifnum\POL@IsoRightSign=\POL@@IsoRightSign\space
+  \repeat
+  % now second root has been separated from the one at left end point
+% we update the storage of the root at left for it to have the same number
+% of digits in mantissa. No, I decided not to do that to avoid complications.
+  % \begingroup
+  %   \let\POL@IsoRight@Int\POL@IsoLeft@Int
+  %   \def\POL@IsoRightSign{0}%
+  %   \edef\POL@isolz@IntervalIndex{\the\numexpr\POL@isolz@IntervalIndex-\@ne}%
+  %   \POL@refine@storeleftandright
+  % \endgroup
+  \edef\POL@@IsoRight@Int{\xintDSL{\xintInc{\xintDSR{\POL@IsoLeft@Int}}}}%
+  \let\POL@IsoLeft@Int\POL@IsoRight@Int
+  \let\POL@IsoLeftSign\POL@IsoRightSign
+  \ifnum\POL@IsoRightSign=\z@ % check if new Left is actually a root
+  \else
+    \edef\POL@IsoRight@Int{\xintDec{\POL@@IsoRight@Int}}%
+    \edef\POL@IsoRightSign
+      {\xintiiSgn{\POL@eval{\POL@sturmname _0}{\POL@IsoRight@raw}}}%
+    \ifnum\POL@IsoRightSign=\POL@@IsoRightSign\space
+      \POL@refine@doonce % we need to locate in interval (1, 9) in local scale
+    \else
+    \let\POL@IsoLeft@Int\POL@IsoRight@Int
+    \ifnum\POL@IsoRightSign=\z@
+      \def\POL@IsoLeftSign{0}%
+    \else
+      \let\POL@IsoRight@Int\POL@@IsoRight@Int
+      % the IsoRightSign is now wrong but here we don't care
+    \fi\fi
+  \fi
+  % on exit, exact root found iff \POL@IsoRightSign is zero
+  \POL@refine@storeleftandright
+\endgroup
+}%
+\def\POL@refine@doonce{% if exact root is found, always in IsoRight on exit
+% NOTE: FUTURE REFACTORING WILL GET RID OF \xintiiAdd WHICH ARE A BIT COSTLY
+% BUT BASICALLY NEEDED TO HANDLE BOTH NEGATIVE AND POSITIVE HERE.
+% I WILL RE-ORGANIZE THE WHOLE THING IN FUTURE TO GET ROOTS STARTING FROM
+% THE ORIGIN AND SIMPLY RE-LABEL THE NEGATIVE ONE AT THE END. 2018/02/16.
+  \let\POL@@IsoRight@Int\POL@IsoRight@Int % 9
+  \let\POL@@IsoRightSign\POL@IsoRightSign
+  \edef\POL@IsoRight@Int{\xintiiAdd{4}{\POL@IsoLeft@Int}}% 5
+  \edef\POL@IsoRightSign
+      {\xintiiSgn{\POL@eval{\POL@sturmname _0}{\POL@IsoRight@raw}}}%
+  \ifnum\POL@IsoRightSign=\POL@IsoLeftSign\space
+    \let\POL@IsoLeft@Int\POL@IsoRight@Int % 5
+    \edef\POL@IsoRight@Int{\xintiiAdd{2}{\POL@IsoLeft@Int}}%
+    \edef\POL@IsoRightSign
+        {\xintiiSgn{\POL@eval{\POL@sturmname _0}{\POL@IsoRight@raw}}}%
+    \ifnum\POL@IsoRightSign=\POL@IsoLeftSign\space
+      \let\POL@IsoLeft@Int\POL@IsoRight@Int % 7
+      \edef\POL@IsoRight@Int{\xintInc{\POL@IsoLeft@Int}}%
+      \edef\POL@IsoRightSign
+          {\xintiiSgn{\POL@eval{\POL@sturmname _0}{\POL@IsoRight@raw}}}%
+      \ifnum\POL@IsoRightSign=\POL@IsoLeftSign\space
+        \let\POL@IsoLeft@Int\POL@IsoRight@Int % 8
+        \let\POL@IsoRight@Int\POL@@IsoRight@Int % 9
+        \let\POL@IsoRightSign\POL@@IsoRightSign % opposite of one at left
+      \fi % else 7, 8 with possible root at 8
+    \else
+    \ifnum\POL@IsoRightSign=\z@
+      \let\POL@IsoLeft@Int\POL@IsoRight@Int % root at 7
+      \def\POL@IsoLeftSign{0}%
+    \else
+      \let\POL@@IsoRight@Int\POL@IsoRight@Int % 7
+      \edef\POL@IsoRight@Int{\xintInc{\POL@IsoLeft@Int}}% 6
+      \edef\POL@IsoRightSign
+          {\xintiiSgn{\POL@eval{\POL@sturmname _0}{\POL@IsoRight@raw}}}%
+      \ifnum\POL@IsoRightSign=\POL@IsoLeftSign\space
+          \let\POL@IsoLeft@Int\POL@IsoRight@Int   % 6
+          \let\POL@IsoRight@Int\POL@@IsoRight@Int % 7
+          \let\POL@IsoRightSign\POL@@IsoRightSign
+      \fi % else 5, 6 with possible root at 6
+    \fi\fi
+  \else
+  \ifnum\POL@IsoRightSign=\z@
+    \let\POL@IsoLeft@Int\POL@IsoRight@Int % root at 5
+    \def\POL@IsoLeftSign{0}%
+  \else
+    \let\POL@@IsoRight@Int\POL@IsoRight@Int % 5
+    \edef\POL@IsoRight@Int{\xintiiAdd{2}{\POL@IsoLeft@Int}}%
+    \edef\POL@IsoRightSign
+        {\xintiiSgn{\POL@eval{\POL@sturmname _0}{\POL@IsoRight@raw}}}%
+    \ifnum\POL@IsoRightSign=\POL@IsoLeftSign\space
+      \let\POL@IsoLeft@Int\POL@IsoRight@Int % 3
+      \edef\POL@IsoRight@Int{\xintInc{\POL@IsoLeft@Int}}% 4
+      \edef\POL@IsoRightSign
+          {\xintiiSgn{\POL@eval{\POL@sturmname _0}{\POL@IsoRight@raw}}}%
+      \ifnum\POL@IsoRightSign=\POL@IsoLeftSign\space
+          \let\POL@IsoLeft@Int\POL@IsoRight@Int   % 4
+          \let\POL@IsoRight@Int\POL@@IsoRight@Int % 5
+          \let\POL@IsoRightSign\POL@@IsoRightSign
+      \fi % else 3, 4 with possible root at 4
+    \else
+    \ifnum\POL@IsoRightSign=\z@
+      \let\POL@IsoLeft@Int\POL@IsoRight@Int % root at 3
+      \def\POL@IsoLeftSign{0}%
+    \else
+      \let\POL@@IsoRight@Int\POL@IsoRight@Int % 3
+      \edef\POL@IsoRight@Int{\xintInc{\POL@IsoLeft@Int}}% 2
+      \edef\POL@IsoRightSign
+          {\xintiiSgn{\POL@eval{\POL@sturmname _0}{\POL@IsoRight@raw}}}%
+      \ifnum\POL@IsoRightSign=\POL@IsoLeftSign\space
+          \let\POL@IsoLeft@Int\POL@IsoRight@Int   % 2
+          \let\POL@IsoRight@Int\POL@@IsoRight@Int % 3
+          \let\POL@IsoRightSign\POL@@IsoRightSign
+      \fi % else 1, 2 with possible root at 2
+    \fi\fi
+  \fi\fi
+}%
+\def\POL@refine@storeleftandright{%
+    \expandafter
+    \xdef\csname POL_ZL\POL@sturmname*\POL@isolz@IntervalIndex\endcsname
+         {\PolDecToString{\POL@IsoLeft@rawout}}%
+    \expandafter
+    \xdef\csname POL_ZR\POL@sturmname*\POL@isolz@IntervalIndex\endcsname
+         {\PolDecToString{\POL@IsoRight@rawout}}%
+    % added at 0.6
+    \ifnum\POL@IsoRightSign=\z@
+      \global
+      \expandafter
+      \let\csname POL_ZK\POL@sturmname*\POL@isolz@IntervalIndex\endcsname
+          \xint_stop_atfirstoftwo
+    \fi
+    \begingroup\xintglobaldefstrue
+    % skip some overhead of \xintdefvar...
+      \XINT_expr_defvar_one{\POL@sturmname L_\POL@isolz@IntervalIndex}%
+         {\csname .=\POL@IsoLeft@rawout\endcsname}%
+      \XINT_expr_defvar_one{\POL@sturmname R_\POL@isolz@IntervalIndex}%
+         {\csname .=\POL@IsoRight@rawout\endcsname}%
+      % added at 0.7
+      \XINT_expr_defvar_one{\POL@sturmname Z_\POL@isolz@IntervalIndex _isknown}%
+         {\csname .=\ifnum\POL@IsoRightSign=\z@ 1\else 0\fi\endcsname}%
+    \endgroup
+}%
+%% \PolRefineInterval
+\def\POL@xintexprGetVar#1{\expandafter\expandafter\expandafter
+    \XINT_expr_unlock\csname XINT_expr_var_#1\endcsname}%
+% attention, also used by \POL@findrat@loop@a
+\def\POL@get@IsoLeft@rawin{%
+    \edef\POL@IsoLeft@rawin
+     {\POL@xintexprGetVar{\POL@sturmname L_\POL@isolz@IntervalIndex}}%
+}%
+% attention, also used by \POL@findrat@loop@a
+\def\POL@get@IsoRight@rawin{%
+    \edef\POL@IsoRight@rawin
+     {\POL@xintexprGetVar{\POL@sturmname R_\POL@isolz@IntervalIndex}}%
+}%
+% attention, also used by \POL@findrat@loop@a
+\def\POL@get@Int@aux #1/1[#2]#3#4{\edef#3{\xintDSH{#4-#2}{#1}}}%
+\def\POL@get@IsoLeft@Int{%
+    \expandafter\POL@get@Int@aux\POL@IsoLeft@rawin\POL@IsoLeft@Int\POL@isolz@E
+}%
+\newcommand\PolRefineInterval{\@ifstar\POL@srefine@start\POL@refine@start}%
+\newcommand\POL@refine@start[3][1]{%
+  \edef\POL@isolz@IntervalIndex{\the\numexpr#3}%
+  \edef\POL@sturmname{#2}%
+  \expandafter\POL@refine@sharedbody\expandafter
+    {\expandafter\POL@refine@loop\expandafter{\the\numexpr#1}}%
+}%
+\def\POL@srefine@start#1#2{%
+  \edef\POL@isolz@IntervalIndex{\the\numexpr#2}%
+  \edef\POL@sturmname{#1}%
+  \POL@refine@sharedbody
+    {\let\POL@refine@left@next\POL@refine@main  % we want to recurse if needed
+     \let\POL@refine@right@next\POL@refine@main % we want to recurse if needed
+     \POL@refine@main}%
+}%
+\def\POL@refine@sharedbody#1{%
+  \POL@get@IsoLeft@rawin
+  \edef\POL@IsoLeftSign
+      {\xintiiSgn{\POL@eval{\POL@sturmname _0}{\POL@IsoLeft@rawin}}}%
+  \ifnum\POL@IsoLeftSign=\z@
+  % do nothing if that interval was already a singleton
+  \else
+  % else both end-points are not roots and there is a single one in-between
+    \POL@get@IsoRight@rawin
+    \edef\POL@IsoRightSign{\the\numexpr-\POL@IsoLeftSign}%
+    \edef\POL@isolz@E{\expandafter\POL@refine@getE
+         % je pense que le xintrez ici est superflu
+         \romannumeral0\xintrez{\xintSub{\POL@IsoRight@rawin}{\POL@IsoLeft@rawin}}}%
+    \POL@get@IsoLeft@Int
+    \edef\POL@IsoRight@Int{\xintInc{\POL@IsoLeft@Int}}%
+    #1%
+    \POL@refine@storeleftandright % \POL@IsoRightSign not zero
+  \fi
+}%
+\def\POL@refine@loop#1{%
+    \let\POL@refine@left@next \@empty % no recursion at end sub-intervals
+    \let\POL@refine@right@next\@empty
+    \xintiloop[1+1]
+      \POL@refine@main
+      \ifnum\POL@IsoRightSign=\z@
+        \expandafter\xintbreakiloop
+      \fi
+    \ifnum\xintiloopindex<#1
+    \repeat
+}%
+\def\POL@refine@main{%
+  \edef\POL@isolz@E{\the\numexpr\POL@isolz@E-\@ne}%
+  \edef\POL@IsoLeft@Int{\xintDSL{\POL@IsoLeft@Int}}%
+  \edef\POL@IsoRight@Int{\xintDSL{\POL@IsoRight@Int}}%
+  \let\POL@@IsoRight@Int\POL@IsoRight@Int
+  \let\POL@@IsoRightSign\POL@IsoRightSign
+  \edef\POL@IsoRight@Int{\xintInc{\POL@IsoLeft@Int}}%
+  \edef\POL@IsoRightSign
+      {\xintiiSgn{\POL@eval{\POL@sturmname _0}{\POL@IsoRight@raw}}}%
+  \ifnum\POL@IsoRightSign=\z@
+   \let\POL@IsoLeft@Int\POL@IsoRight@Int % root at 1
+   \def\POL@IsoLeftSign{0}%
+   \let\POL@next\@empty
+  \else
+  \ifnum\POL@IsoRightSign=\POL@@IsoRightSign\space
+    \let\POL@next\POL@refine@left@next % may be \@empty or \POL@refine@main for recursion
+    \let\POL@refine@right@next\@empty
+  \else
+    \let\POL@IsoLeft@Int\POL@IsoRight@Int
+    \edef\POL@IsoRight@Int{\xintDec{\POL@@IsoRight@Int}}%
+    \edef\POL@IsoRightSign
+      {\xintiiSgn{\POL@eval{\POL@sturmname _0}{\POL@IsoRight@raw}}}%
+    \ifnum\POL@IsoRightSign=\z@
+     \let\POL@IsoLeft@Int\POL@IsoRight@Int % root at 9
+     \def\POL@IsoLeftSign{0}%
+     \let\POL@next\@empty
+    \else
+     \ifnum\POL@IsoRightSign=\POL@@IsoRightSign\space
+      \let\POL@next\POL@refine@doonce
+     \else
+      \let\POL@IsoLeft@Int\POL@IsoRight@Int
+      \let\POL@IsoRight@Int\POL@@IsoRight@Int
+      \let\POL@IsoRightSign\POL@@IsoRightSign
+      \let\POL@next\POL@refine@right@next
+      \let\POL@refine@left@next\@empty
+     \fi
+    \fi
+  \fi\fi
+  \POL@next
+}%
+% lacking pre-defined xintfrac macro here (such as an \xintRawExponent)
+\def\POL@refine@getE#1[#2]{#2}% \xintREZ already applied, for safety
+
+
+\newcommand\PolIntervalWidth[2]{%
+% le \xintRez est à cause des E positifs, car trailing zéros explicites
+% si je travaillais à partir des variables xintexpr directement ne devrait
+% pas être nécessaire, mais trop fragile par rapport à chgt internes possibles
+     \romannumeral0\xintrez{\xintSub{\@nameuse{POL_ZR#1*}{#2}}%
+                                    {\@nameuse{POL_ZL#1*}{#2}}}
+}%
+
+
+\newcommand\PolEnsureIntervalLengths[2]{% #1 = Sturm chain name,
+   % localize roots in intervals of length at most 10^{#2}
+   \edef\POL@sturmname{#1}%
+   \edef\POL@ensure@targetE{\the\numexpr#2}%
+   \edef\POL@nbofroots{\csname POL_ZL\POL@sturmname*0\endcsname}%
+   \ifnum\POL@nbofroots>\z@
+      \expandafter\POL@ensureintervallengths
+   \fi
+}%
+\def\POL@ensureintervallengths{%
+   \POL@count\z@
+   % \POL@count used by \POL@sturmchain@getSV@at but latter not used
+   \xintloop
+     \advance\POL@count\@ne
+     \edef\POL@isolz@IntervalIndex{\the\POL@count}%
+     \POL@ensure@one
+   \ifnum\POL@nbofroots>\POL@count
+   \repeat
+}%
+\newcommand\PolEnsureIntervalLength[3]{% #1 = Sturm chain name,
+   % #2 = index of interval
+   % localize roots in intervals of length at most 10^{#3}
+   \edef\POL@sturmname{#1}%
+   \edef\POL@ensure@targetE{\the\numexpr#3}%
+   \edef\POL@isolz@IntervalIndex{\the\numexpr#2}%
+% peut-être autoriser -1, -2, ... ?
+   \ifnum\POL@isolz@IntervalIndex>\z@
+% 0.7, add this safeguard but attention means this structure must be in place
+   \ifnum\csname POL_ZL\POL@sturmname*0\endcsname>\z@
+% je ne fais pas les \expandafter mais je préfèrerai ne pas être à l'intérieur
+     \POL@ensure@one
+   \fi
+   \fi
+}%
+\def\POL@ensure@one{%
+    \POL@get@IsoLeft@rawin
+    \POL@get@IsoRight@rawin
+    \edef\POL@ensure@delta{\xintREZ{\xintSub{\POL@IsoRight@rawin}{\POL@IsoLeft@rawin}}}%
+    \xintiiifZero{\POL@ensure@delta}
+      {}
+      {\edef\POL@isolz@E{\expandafter\POL@refine@getE\POL@ensure@delta}%
+       \POL@get@IsoLeft@Int
+       \edef\POL@IsoRight@Int{\xintInc{\POL@IsoLeft@Int}}%
+       \ifnum\POL@isolz@E>\POL@ensure@targetE\space
+         \edef\POL@IsoLeftSign
+          {\xintiiSgn{\POL@eval{\POL@sturmname _0}{\POL@IsoLeft@raw}}}%
+          % at start left and right are not roots, and values of opposite signs
+         % \edef\POL@IsoRightSign{\the\numexpr-\POL@IsoLeftSign}%
+         \xintloop
+           \POL@ensure@Eloopbody % decreases E by one at each iteration
+          % if separation level is still too coarse we recurse at deeper level
+         \ifnum\POL@isolz@E>\POL@ensure@targetE\space
+         \repeat
+         % will check if right is at a zero, it needs \POL@IsoRightSign set up
+         \POL@refine@storeleftandright
+       \fi
+      }%
+}%
+\def\POL@ensure@Eloopbody {%
+    \edef\POL@isolz@E{\the\numexpr\POL@isolz@E-\@ne}%
+    \edef\POL@IsoLeft@Int{\xintDSL{\POL@IsoLeft@Int}}%
+    % this will loop at most ten times
+    \xintloop
+      \edef\POL@IsoRight@Int{\xintInc{\POL@IsoLeft@Int}}%
+      \edef\POL@IsoRightSign
+          {\xintiiSgn{\POL@eval{\POL@sturmname _0}{\POL@IsoRight@raw}}}%
+          % if we have found a zero at right boundary the \ifnum test will fail
+          % and we exit the loop
+          % else we exit the loop if sign at right boundary is opposite of
+          % sign at left boundary (the latter is +1 or -1, never 0)
+    % this is a bit wasteful if we go ten times to the right, because
+    % we know that there the sign will be opposite, evaluation was superfluous
+    \ifnum\POL@IsoLeftSign=\POL@IsoRightSign\space
+      \let\POL@IsoLeft@Int\POL@IsoRight@Int
+    \repeat
+          % check for case when we exited the inner loop because we actually
+          % found a zero, then we force exit from the main (E decreasing) loop
+    \ifnum\POL@IsoRightSign=\z@
+      \expandafter\xintbreakloop
+    \fi
+}%
+
+
+\catcode`_ 8
+\newcommand\PolPrintIntervals
+           {\@ifstar{\PolPrintIntervals@@}{\PolPrintIntervals@}}%
+\newcommand\PolPrintIntervals@@{%
+ \begingroup
+   \def\POL@AfterPrintIntervals{\endgroup}%
+   \def\arraystretch{2}%
+   \let\PolPrintIntervalsPrintExactZero\POL@@PrintIntervalsPrintExactZero
+   \let\PolPrintIntervalsUnknownRoot\POL@@PrintIntervalsUnknownRoot
+   \let\PolPrintIntervalsKnownRoot\POL@@PrintIntervalsKnownRoot
+   \def\PolPrintIntervalsBeginEnv{\[\begin{array}{cl}}%\]
+   \def\PolPrintIntervalsEndEnv{\end{array}\]}%
+ \PolPrintIntervals@
+}%
+\newcommand\PolPrintIntervals@[2][Z]{\POL@PrintIntervals{#1}{#2}}%
+\newcommand\POL@PrintIntervals[2]{%
+   \def\PolPrintIntervalsTheVar{#1}%
+   \def\PolPrintIntervalsTheSturmName{#2}%
+   \ifnum\@nameuse{POL_ZL#2*}{0}=\z@
+     \PolPrintIntervalsNoRealRoots
+   \else
+     \gdef\PolPrintIntervalsTheIndex{1}%
+     \POL@PrintIntervals@DoDefs
+     \begingroup\edef\POL@tmp{\endgroup
+       \unexpanded\expandafter{\PolPrintIntervalsBeginEnv}%
+       \unexpanded\expandafter{\POL@PrintIntervals@Loop}%
+       \unexpanded\expandafter{\PolPrintIntervalsEndEnv}%
+     }\POL@tmp
+   \fi
+   \POL@AfterPrintIntervals
+   \def\PolPrintIntervalsTheVar{#1}%
+   \def\PolPrintIntervalsTheSturmName{#2}%
+}%
+\let\POL@AfterPrintIntervals\@empty
+\newcommand\PolPrintIntervalsNoRealRoots{}%
+\newcommand\PolPrintIntervalsBeginEnv{\[\begin{array}{rcccl}}%
+\newcommand\PolPrintIntervalsEndEnv{\end{array}\]}%
+\newcommand\PolPrintIntervalsKnownRoot{%
+  &&\PolPrintIntervalsTheVar_{\PolPrintIntervalsTheIndex}%
+  &=&\PolPrintIntervalsPrintExactZero
+}%
+\newcommand\PolPrintIntervalsUnknownRoot{%
+  \PolPrintIntervalsPrintLeftEndPoint&<&%
+  \PolPrintIntervalsTheVar_{\PolPrintIntervalsTheIndex}&<&%
+  \PolPrintIntervalsPrintRightEndPoint
+}%
+\newcommand\PolPrintIntervalsPrintExactZero    {\PolPrintIntervalsTheLeftEndPoint}%
+\newcommand\PolPrintIntervalsPrintLeftEndPoint {\PolPrintIntervalsTheLeftEndPoint}%
+\newcommand\PolPrintIntervalsPrintRightEndPoint{\PolPrintIntervalsTheRightEndPoint}%
+\newcommand\PolPrintIntervalsPrintMultiplicity{(\mbox{mult. }\PolPrintIntervalsTheMultiplicity)}%
+%
+\newcommand\POL@@PrintIntervalsKnownRoot{%
+   \PolPrintIntervalsPrintMultiplicity&%
+   \PolPrintIntervalsTheVar_{\PolPrintIntervalsTheIndex}=%
+   \PolPrintIntervalsPrintExactZero
+}%
+\newcommand\POL@@PrintIntervalsPrintExactZero{%
+   \displaystyle
+   \xintSignedFrac{\PolPrintIntervalsTheLeftEndPoint}%
+}%
+\newcommand\POL@@PrintIntervalsUnknownRoot{%
+   \PolPrintIntervalsPrintMultiplicity&%
+   \xintifSgn{\PolPrintIntervalsTheLeftEndPoint}%
+     {\xintifSgn{\PolPrintIntervalsTheRightEndPoint}
+       {\PolPrintIntervalsTheVar_{\PolPrintIntervalsTheIndex}=%
+        \PolPrintIntervalsPrintRightEndPoint\dots}%
+      {0>\PolPrintIntervalsTheVar_{\PolPrintIntervalsTheIndex}>%
+        \PolPrintIntervalsPrintLeftEndPoint}%
+      {\PolErrorThisShouldNotHappenPleaseReportToAuthorA}}%
+    {\xintifSgn{\PolPrintIntervalsTheRightEndPoint}
+      {\PolErrorThisShouldNotHappenPleaseReportToAuthorB}%
+      {\PolErrorThisShouldNotHappenPleaseReportToAuthorC}%
+      {0<\PolPrintIntervalsTheVar_{\PolPrintIntervalsTheIndex}<%
+        \PolPrintIntervalsPrintRightEndPoint}}%
+    {\xintifSgn{\PolPrintIntervalsTheRightEndPoint}
+      {\PolErrorThisShouldNotHappenPleaseReportToAuthorD}%
+      {\PolErrorThisShouldNotHappenPleaseReportToAuthorE}%
+      {\PolPrintIntervalsTheVar_{\PolPrintIntervalsTheIndex}=%
+        \PolPrintIntervalsPrintLeftEndPoint\dots}}%
+}%
+%
+\catcode`_ 11
+\def\POL@PrintIntervals@Loop{%
+  \POL@SturmIfZeroExactlyKnown\PolPrintIntervalsTheSturmName
+                              \PolPrintIntervalsTheIndex
+    \PolPrintIntervalsKnownRoot
+    \PolPrintIntervalsUnknownRoot
+  \xdef\PolPrintIntervalsTheIndex{\the\numexpr\PolPrintIntervalsTheIndex+\@ne}%
+  \unless\ifnum\PolPrintIntervalsTheIndex>
+               \@nameuse{POL_ZL\PolPrintIntervalsTheSturmName*0}
+     \POL@PrintIntervals@DoDefs
+     \xint_afterfi{\\\POL@PrintIntervals@Loop}%
+  \fi
+}%
+\def\POL@PrintIntervals@DoDefs{%
+  \xdef\PolPrintIntervalsTheLeftEndPoint{%
+     \csname POL_ZL\PolPrintIntervalsTheSturmName*\PolPrintIntervalsTheIndex
+     \endcsname
+  }%
+  \xdef\PolPrintIntervalsTheRightEndPoint{%
+     \csname POL_ZR\PolPrintIntervalsTheSturmName*\PolPrintIntervalsTheIndex
+     \endcsname
+  }%
+  \xdef\PolPrintIntervalsTheMultiplicity{%
+     \ifcsname POL_ZM\PolPrintIntervalsTheSturmName*\PolPrintIntervalsTheIndex
+     \endcsname
+     \csname POL_ZM\PolPrintIntervalsTheSturmName*\PolPrintIntervalsTheIndex
+     \endcsname
+     \else
+     ?% or use 0 ?
+     \fi
+  }%
+}%
+
+
+\newcommand\PolSturmIfZeroExactlyKnown[2]{% #1 = sturmname, #2=index
+    \romannumeral0\csname POL_ZK#1*\endcsname{#2}%
+}%
+\newcommand\POL@SturmIfZeroExactlyKnown[2]{% #1 = sturmname, #2=index
+    \romannumeral0\csname POL_ZK#1*\the\numexpr#2\endcsname
+}%
+\newcommand\PolSturmIsolatedZeroMultiplicity[2]{%
+    \romannumeral`^^@\csname POL_ZM#1*\endcsname{#2}%
+}%
+\newcommand\PolSturmIsolatedZeroLeft[2]{%
+    \romannumeral`^^@\csname POL_ZL#1*\endcsname{#2}%
+}%
+\newcommand\PolSturmIsolatedZeroRight[2]{%
+    \romannumeral`^^@\csname POL_ZR#1*\endcsname{#2}%
+}%
+\newcommand\PolSturmNbOfIsolatedZeros[1]{%
+    \romannumeral`^^@\csname POL_ZL#1*0\endcsname
+}%
+\newcommand\PolSturmRationalRoot[2]{%
+    \romannumeral`^^@\csname POL_ZL#1*%
+                     \csname POL_RI#1*\endcsname{#2}\endcsname
+}%
+\newcommand\PolSturmRationalRootIndex[2]{%
+    \romannumeral`^^@\csname POL_RI#1*\endcsname{#2}%
+}%
+\newcommand\PolSturmRationalRootMultiplicity[2]{%
+    \romannumeral`^^@\csname POL_ZM#1%
+                     *\csname POL_RI#1*\endcsname{#2}\endcsname
+}%
+\newcommand\PolSturmNbOfRationalRoots[1]{%
+    \romannumeral`^^@\csname POL_RI#1*0\endcsname
+}%
+\newcommand\PolSturmNbOfRationalRootsWithMultiplicities[1]{%
+% means the \POL@norr must not have been changed in-between...
+    \the\numexpr\PolDegree{#1}-\PolDegree{#1\POL@norr}\relax
+}%
+
+
+\let\PolDecToString\xintDecToString
+
+
+\newcommand\PolMakeMonic[1]{%
+    \edef\POL@leadingcoeff{\PolLeadingCoeff{#1}}%
+    \edef\POL@leadingcoeff@inverse{\xintDiv{1/1[0]}{\POL@leadingcoeff}}%
+    \PolMapCoeffs{\xintMul{\POL@leadingcoeff@inverse}}{#1}%
+}%
+
+
+%% CORE ALGEBRA MACROS
+%% We do this non-expandably, but in a nestable way... this is the whole
+%% point because \xintdeffunc as used by \poldef creates a big nested macro.
+%% The idea is to execute it with another meaning given to \xintAdd etc..,
+%% so that it operates on "polynomials". This is a mixture of expandable
+%% and non-expandable techniques.
+\def\POL@get#1#2#3{%
+    \global\POL@polfalse
+    \begingroup
+        \def\POL@result{#3}%
+        #3%
+        \expandafter
+    \endgroup
+    \expandafter\def\expandafter#1\expandafter{\POL@result}%
+    \unless\ifPOL@pol
+        % avoid expanding more than twice #3
+        \edef#1{#3}%
+        \xintiiifZero{#1}%
+            {\def#1{-1.\empty{0/1[0]}}}%
+            {\edef#1{0.\noexpand\empty{#1}}}%
+    \fi
+    #2%
+}%
+%% ADDITION
+\def\POL@add  {\POL@get\POL@A\POL@add@b}%
+\def\POL@add@b{\POL@get\POL@B\POL@add@c}%
+\def\POL@add@c{%
+    \global\POL@poltrue
+    \POL@ifZero\POL@A
+        {\let\POL@result\POL@B}%
+        {\POL@ifZero\POL@B
+             {\let\POL@result\POL@A}%
+             {\POL@@add}}%
+}%
+\def\POL@@add{%
+  \expandafter\POL@split\POL@A;\POL@degA\POL@polA
+  \expandafter\POL@split\POL@B;\POL@degB\POL@polB
+  \ifnum\POL@degA>\POL@degB\relax
+    \xintAssignArray\POL@polA\to\POL@arrayA
+    \xintAssignArray\POL@polB\to\POL@arrayB
+  \else
+    \xintAssignArray\POL@polB\to\POL@arrayA
+    \xintAssignArray\POL@polA\to\POL@arrayB
+    \let\POL@tmp\POL@degB\let\POL@degB\POL@degA\let\POL@degA\POL@tmp
+  \fi
+  \count@\z@
+  \xintloop
+     \advance\count@\@ne
+     \expandafter\edef\csname POL@arrayA\the\count@\endcsname
+          {\xintScalarAdd{\@nameuse{POL@arrayA\the\count@}}%
+                         {\@nameuse{POL@arrayB\the\count@}}}%
+  \unless\ifnum\POL@degB<\count@
+  \repeat
+  \count@\@nameuse{POL@arrayA0} % 1+\POL@degA
+  % trim zero leading coefficients (we could check for equal degrees,
+  % but would not bring much as anyhow loop exists immediately if not)
+  \xintloop
+   % this abuses that \POL@arrayA0 is never zero
+   \xintiiifZero{\@nameuse{POL@arrayA\the\count@}}%
+      {\iftrue}%
+      {\iffalse}%
+  \advance\count@\m@ne
+  \repeat
+  \POL@resultfromarray A% attention that \POL@arrayA0 not updated
+}%
+
+%% MULTIPLICATION
+\def\POL@mul  {\POL@get\POL@A\POL@mul@b}%
+\def\POL@mul@b{\POL@get\POL@B\POL@mul@c}%
+\def\POL@mul@c{%
+    \global\POL@poltrue
+    \POL@ifZero\POL@A
+        {\def\POL@result{-1.\empty{0/1[0]}}}%
+        {\POL@ifZero\POL@B
+             {\def\POL@result{-1.\empty{0/1[0]}}}%
+             {\POL@@mul}}%
+}%
+\def\POL@@mul{%
+  \expandafter\POL@split\POL@A;\POL@degA\POL@polA
+  \expandafter\POL@split\POL@B;\POL@degB\POL@polB
+  \ifnum\POL@degA>\POL@degB\relax
+    \xintAssignArray\POL@polA\to\POL@arrayA
+    \xintAssignArray\POL@polB\to\POL@arrayB
+  \else
+    \xintAssignArray\POL@polB\to\POL@arrayA
+    \xintAssignArray\POL@polA\to\POL@arrayB
+    \let\POL@tmp\POL@degB
+    \let\POL@degB\POL@degA
+    \let\POL@degA\POL@tmp
+  \fi
+  \count@\z@
+  \xintloop
+    \POL@@mul@phaseIloopbody
+  \unless\ifnum\POL@degB<\count@
+  \repeat
+  \xintloop
+  \unless\ifnum\POL@degA<\count@ % car attention au cas de mêmes degrés
+    \POL@@mul@phaseIIloopbody
+  \repeat
+  \edef\POL@degC{\the\numexpr\POL@degA+\POL@degB}%
+  \xintloop
+  \unless\ifnum\POL@degC<\count@
+    \POL@@mul@phaseIIIloopbody
+  \repeat
+  %\count@\the\numexpr\POL@degC+\@ne\relax % never zero polynomial here
+  \POL@resultfromarray C%
+}%
+\def\POL@@mul@phaseIloopbody{%
+    \advance\count@\@ne
+    \def\POL@tmp{0[0]}%
+    \count\tw@\z@
+    \xintloop
+       \advance\count\tw@\@ne
+       \edef\POL@tmp{%
+         \xintScalarAdd
+           {\POL@tmp}%
+           {\xintScalarMul
+             {\@nameuse{POL@arrayA\the\count\tw@}}%
+             {\@nameuse{POL@arrayB\the\numexpr\count@+\@ne-\count\tw@}}%
+           }%
+          }%
+    \ifnum\count\tw@<\count@
+    \repeat
+    \expandafter\let\csname POL@arrayC\the\count@\endcsname\POL@tmp
+}%
+\def\POL@@mul@phaseIIloopbody{%
+    \advance\count@\@ne
+    \def\POL@tmp{0[0]}%
+    \count\tw@\count@
+    \advance\count\tw@-\@nameuse{POL@arrayB0} %
+    \xintloop
+    \ifnum\count\tw@<\count@
+      \advance\count\tw@\@ne
+      \edef\POL@tmp{%
+        \xintScalarAdd
+          {\POL@tmp}%
+          {\xintScalarMul
+            {\@nameuse{POL@arrayA\the\count\tw@}}%
+            {\@nameuse{POL@arrayB\the\numexpr\count@+\@ne-\count\tw@}}%
+          }%
+         }%
+    \repeat
+    \expandafter\let\csname POL@arrayC\the\count@\endcsname\POL@tmp
+}%
+\def\POL@@mul@phaseIIIloopbody{%
+    \advance\count@\@ne
+    \def\POL@tmp{0[0]}%
+    \count\tw@\count@
+    \advance\count\tw@-\@nameuse{POL@arrayB0} %
+    \xintloop
+      \advance\count\tw@\@ne
+      \edef\POL@tmp{%
+        \xintScalarAdd{\POL@tmp}%
+          {\xintScalarMul
+            {\@nameuse{POL@arrayA\the\count\tw@}}%
+            {\@nameuse{POL@arrayB\the\numexpr\count@+\@ne-\count\tw@}}%
+          }%
+         }%
+    \ifnum\@nameuse{POL@arrayA0}>\count\tw@
+    \repeat
+    \expandafter\let\csname POL@arrayC\the\count@\endcsname\POL@tmp
+}%
+
+%% POWERS (SCALAR EXPONENT...)
+\def\POL@pow #1#2{%
+    \global\POL@polfalse
+    \begingroup
+        \def\POL@result{#1}%
+        #1%
+        \expandafter
+    \endgroup
+    \expandafter\def\expandafter\POL@A\expandafter{\POL@result}%
+    \unless\ifPOL@pol
+        \edef\POL@A{\xintScalarPow{#1}{#2}}% no error check
+        \xintiiifZero{\POL@A}%
+            {\def\POL@result{-1.\empty{0/1[0]}}}%
+            {\edef\POL@result{0.\noexpand\empty{\POL@A}}}%
+    \else
+      \edef\POL@B{\numexpr\xintNum{#2}\relax}% no check on exponent >= 0
+      \ifcase\POL@B
+        \def\POL@result{0.\empty{1/1[0]}}%
+      \or
+        \let\POL@result\POL@A
+      \else
+        \POL@@pow@check
+      \fi
+    \fi
+    \global\POL@poltrue
+}%
+\def\POL@@pow@check {%
+% no problem here with leftover tokens!
+% should I have used that I-don't-care technique more elsewhere?
+    \ifnum\@ne>\POL@A
+    % polynomial is a constant, must get rid of dot and \empty
+        \edef\POL@A{\expandafter\xintScalarPow\romannumeral`^^@%
+                    \expandafter\xint_gob_til_dot\POL@A{\POL@B}}%
+        \xintiiifZero{\POL@A}%
+            {\def\POL@result{-1.\empty{0/1[0]}}}%
+            {\edef\POL@result{0.\noexpand\empty{\POL@A}}}%
+    \else
+    \ifnum\@ne=\POL@A
+    % perhaps a constant times X, check constant term
+        \xintiiifZero
+        {\expandafter\xint_firstoftwo\romannumeral`^^@%
+         \expandafter\xint_gob_til_dot\POL@A}
+        {\edef\POL@result
+          {\the\POL@B.% here at least 2.
+           \noexpand\empty
+           \romannumeral\xintreplicate{\POL@B}{{0/1[0]}}%
+           {\xintScalarPow
+             {\expandafter\xint_secondoftwo\romannumeral`^^@%
+              \expandafter\xint_gob_til_dot\POL@A}%
+             {\POL@B}}}}%
+        {\POL@@pow}% not constant times X, use general recursion
+    \else
+        \POL@@pow% general recursion
+    \fi\fi
+}%
+\def\POL@@pow@recurse#1#2{%
+    \begingroup
+        #1%
+        \expandafter
+    \endgroup
+    \expandafter\def\expandafter\POL@A\expandafter{\POL@result}%
+    \edef\POL@B{\numexpr\xintNum{#2}\relax}%
+    \ifcase\POL@B
+        \POL@thisshouldneverhappen
+    \or
+        \let\POL@result\POL@A
+    \else
+        \expandafter\POL@@pow
+    \fi
+}%
+\def\POL@@pow {%
+    \let\POL@pow@exp\POL@B
+    \let\POL@B\POL@A
+    \POL@@mul
+    \let\POL@sqA\POL@result
+    \ifodd\POL@pow@exp\space
+       \expandafter\POL@@pow@odd
+          \the\numexpr(\POL@pow@exp+\@ne)/\tw@-\@ne\expandafter.%
+    \else
+       \expandafter\POL@@pow@even
+          \the\numexpr(\POL@pow@exp+\@ne)/\tw@-\@ne\expandafter.%
+    \fi
+}%
+\def\POL@@pow@even#1.{%
+    \expandafter\POL@@pow@recurse\expandafter
+       {\expandafter\def\expandafter\POL@result\expandafter{\POL@sqA}}%
+       {#1}%
+}%
+\def\POL@@pow@odd#1.{%
+    \expandafter\POL@@pow@odd@i\expandafter{\POL@A}{#1}%
+}%
+\def\POL@@pow@odd@i #1#2{%
+    \expandafter\POL@@pow@recurse\expandafter
+       {\expandafter\def\expandafter\POL@result\expandafter{\POL@sqA}}%
+       {#2}%
+    \expandafter\POL@mul\expandafter
+        {\expandafter\def\expandafter\POL@result\expandafter
+         {\POL@result}\global\POL@poltrue}%
+        {\def\POL@result{#1}\global\POL@poltrue}%
+}%
+
+%% DIVISION
+%% no check on divisor being non-zero
+\def\POL@div  {\POL@get\POL@A\POL@div@b}%
+\def\POL@div@b{\POL@get\POL@B\POL@div@c}%
+\def\POL@div@c{%
+    \global\POL@poltrue
+    \expandafter\POL@split\POL@A;\POL@degA\POL@polA
+    \expandafter\POL@split\POL@B;\POL@degB\POL@polB
+    \ifnum\POL@degA<\POL@degB\space
+       \@namedef{POL@arrayQ1}{0/1[0]}%
+       \def\POL@degQ{-1}%
+    \else
+       \xintAssignArray\POL@polA\to\POL@arrayR
+       \xintAssignArray\POL@polB\to\POL@arrayB
+       \POL@@div
+    \fi
+    \count@\numexpr\POL@degQ+\@ne\relax
+    \POL@resultfromarray Q%
+}%
+\def\POL@@div{%
+    \xintAssignArray\POL@polA\to\POL@arrayR
+    \xintAssignArray\POL@polB\to\POL@arrayB
+    \edef\POL@B@leading{\csname POL@arrayB\the\numexpr\POL@degB+\@ne\endcsname}%
+    \edef\POL@degQ{\the\numexpr\POL@degA-\POL@degB}%
+    \count@\numexpr\POL@degA+\@ne\relax
+    \count\tw@\numexpr\POL@degQ+\@ne\relax
+    \xintloop
+      \POL@@div@loopbody
+    \ifnum\count\tw@>\z@
+    \repeat
+    %%\expandafter\def\csname POL@arrayR0\endcsname{1}%
+    \xintloop
+    \xintiiifZero{\csname POL@arrayR\the\count@\endcsname}%
+      {\iftrue}%
+      {\iffalse}%
+    \advance\count@\m@ne
+    \repeat
+    \edef\POL@degR{\the\numexpr\count@-\@ne}%
+}%
+\def\POL@@div@loopbody{%
+    \edef\POL@@div@ratio{%
+          \xintScalarDiv{\csname POL@arrayR\the\count@\endcsname}%
+                        {\POL@B@leading}}%
+    \expandafter\let\csname POL@arrayQ\the\count\tw@\endcsname
+          \POL@@div@ratio
+    \advance\count@\m@ne
+    \advance\count\tw@\m@ne
+    \count4 \count@
+    \count6 \POL@degB\space
+    \xintloop
+    \ifnum\count6>\z@
+      \expandafter\edef\csname POL@arrayR\the\count4\endcsname
+        {\xintScalarSub
+            {\csname POL@arrayR\the\count4\endcsname}%
+            {\xintScalarMul
+              {\POL@@div@ratio}%
+              {\csname POL@arrayB\the\count6\endcsname}}}%
+      \advance\count4 \m@ne
+      \advance\count6 \m@ne
+    \repeat
+}%
+
+%% MINUS SIGN AS UNARY OPERATOR
+\def\POL@opp #1{%
+    \global\POL@polfalse
+    \begingroup
+        \def\POL@result{#1}%
+        #1%
+        \expandafter
+    \endgroup
+    \expandafter\def\expandafter\POL@A\expandafter{\POL@result}%
+    \unless\ifPOL@pol
+        \edef\POL@A{\xintScalarOpp{#1}}%
+        \xintiiifZero{\POL@A}%
+            {\def\POL@result{-1.\empty{0/1[0]}}}%
+            {\edef\POL@result{0.\noexpand\empty{\POL@A}}}%
+    \else
+      \edef\POL@B{0.\noexpand\empty{-1/1[0]}}%
+      \POL@@mul
+    \fi
+    \global\POL@poltrue
+}%
+
+
+%% EXPANDABLE MACROS
+\def\POL@eval@fork#1\At#2#3\krof{#2}%
+\newcommand\PolEval[3]{\romannumeral`^^@\POL@eval@fork
+     #2\PolEvalAt
+     \At\PolEvalAtExpr\krof {#1}{#3}%
+}%
+\newcommand\PolEvalAt[2]
+    {\xintpraw{\csname XINT_expr_userfunc_#1\endcsname{#2}}}%
+\newcommand\POL@eval[2]
+    {\csname XINT_expr_userfunc_#1\endcsname{#2}}%
+\newcommand\PolEvalAtExpr[2]{\xinttheexpr #1(#2)\relax}%
+%
+\newcommand\PolEvalReduced[3]{\romannumeral`^^@\POL@eval@fork
+     #2\PolEvalReducedAt
+     \At\PolEvalReducedAtExpr\krof {#1}{#3}%
+}%
+\newcommand\PolEvalReducedAt[2]{%
+    \xintpraw % in order not to print denominator if the latter equals 1
+    {\xintIrr{\csname XINT_expr_userfunc_#1\endcsname{#2}}[0]}%
+}%
+\newcommand\PolEvalReducedAtExpr[2]{%
+    \xintpraw
+    {\xintIrr{\romannumeral`^^@\xintthebareeval#1(#2)\relax}[0]}%
+}%
+%
+\newcommand\PolFloatEval[3]{\romannumeral`^^@\POL@eval@fork
+     #2\PolFloatEvalAt
+     \At\PolFloatEvalAtExpr\krof {#1}{#3}%
+}%
+\newcommand\PolFloatEvalAt[2]
+    {\xintpfloat{\csname XINT_flexpr_userfunc_#1\endcsname{#2}}}%
+\newcommand\PolFloatEvalAtExpr[2]{\xintthefloatexpr #1(#2)\relax}%
+
+
+\newcommand\PolSturmIntervalIndex[3]{\the\numexpr\POL@eval@fork
+     #2\PolSturmIntervalIndexAt
+     \At\PolSturmIntervalIndexAtExpr\krof {#1}{#3}%
+}%
+\newcommand\PolSturmIntervalIndexAtExpr[2]
+    {\PolSturmIntervalIndexAt{#1}{\xinttheexpr#2\relax}}%
+\newcommand\PolSturmIntervalIndexAt[2]
+    {\expandafter\POL@sturm@index@at\romannumeral`^^@#2!{#1}\xint_bye\relax}%
+\def\POL@sturm@index@at#1!#2%
+{%
+    \expandafter\POL@sturm@index@at@iloop 
+    \romannumeral`^^@\PolSturmNbOfIsolatedZeros{#2}!{#2}{#1}%
+}%
+% implementation is sub-optimal as it should use some kind of binary tree
+% search rather than comparing to the intervals from right to left as here
+\def\POL@sturm@index@at@iloop #1!%
+{%
+    \ifnum #1=\z@ 0\expandafter\xint_bye\fi
+    \POL@sturm@index@at@iloop@a #1!%
+}%
+\def\POL@sturm@index@at@iloop@a #1!#2#3%
+{% #1 = index, #2 = sturmname, #3 value
+    \PolSturmIfZeroExactlyKnown{#2}{#1}
+    {\xintifCmp{#3}{\POL@xintexprGetVar{#2L_#1}}%
+       {}%
+       {#1\xint_bye}%
+       {0\xint_bye}%
+    }%
+    {\xintifGt{#3}{\POL@xintexprGetVar{#2L_#1}}%
+       {\xintifLt{#3}{\POL@xintexprGetVar{#2R_#1}}%
+        {#1\xint_bye}%
+        {0\xint_bye}%
+       }%
+       {}%
+    }%
+    % catcode of ! is 11 in polexpr.sty
+    \expandafter\POL@sturm@index@at@iloop\the\numexpr#1-\@ne !{#2}{#3}%
+}%
+
+
+\def\POL@leq@fork#1\LessThanOrEqualTo#2#3\krof{#2}%
+\newcommand\PolSturmNbOfRootsOf[3]{\romannumeral`^^@\POL@leq@fork
+     #2\PolNbOfRootsLessThanOrEqualTo
+     \LessThanOrEqualTo\PolNbOfRootsLessThanOrEqualToExpr\krof {#1}{#3}%
+}%
+\newcommand\PolNbOfRootsLessThanOrEqualToExpr[2]
+    {\PolNbOfRootsLessThanOrEqualTo{#1}{\xinttheexpr#2\relax}}%
+\newcommand\PolNbOfRootsLessThanOrEqualTo[1]{%
+    \ifnum\PolSturmNbOfIsolatedZeros{#1}=\z@
+      \expandafter\xint_firstofthree\expandafter0%
+    \else
+      \expandafter\PolNbOfRootsLessThanOrEqualTo@%
+    \fi {#1}%
+}%
+\def\PolNbOfRootsLessThanOrEqualTo@ #1#2%
+{%
+    \expandafter\POL@nbofrootsleq@prep\romannumeral`^^@#2!{#1}%
+}%
+\def\POL@nbofrootsleq@prep#1!#2%
+{%
+    \expandafter\POL@nbofrootsleq@iloop\expandafter 1\expandafter !%
+    \romannumeral0\xintsgn{\POL@eval{#2_0}{#1}}!%
+    #1!{#2}%
+}%
+\def\POL@nbofrootsleq@iloop#1!#2!#3!#4%
+{% #1 = index, #2 = sign of evaluation at value, #3 = value, #4 = sturmname
+    \xintifCmp{#3}{\POL@xintexprGetVar{#4L_#1}}%
+      {\POL@nbofrootsleq@return #1-\@ne !}%
+      {\POL@nbofrootsleq@return
+       \PolSturmIfZeroExactlyKnown{#4}{#1}{#1}{#1-\@ne}!%
+      }%
+      % in third branch we are sure that if root is exactly known
+      % the test \xintifLt will be negative
+      {\xintifLt{#3}{\POL@xintexprGetVar{#4R_#1}}%
+         {\POL@nbofrootsleq@return
+            #1\ifnum#2=\xintSgn{\POL@eval{#4_0}{\POL@xintexprGetVar{#4L_#1}}}
+              -\@ne\fi !%
+         }%
+         {\ifnum#1=\PolSturmNbOfIsolatedZeros{#4}
+            \expandafter\POL@nbofrootsleq@rightmost
+          \fi \expandafter\POL@nbofrootsleq@iloop \the\numexpr\@ne+%
+         }%
+       }%
+    #1!#2!#3!{#4}%
+}%
+\def\POL@nbofrootsleq@return #1!#2!#3!#4!#5{\the\numexpr #1\relax}%
+\def\POL@nbofrootsleq@rightmost\expandafter\POL@nbofrootsleq@iloop 
+    \the\numexpr\@ne+#1!#2!#3!#4{#1}%
+
+
+\newcommand\PolSturmNbWithMultOfRootsOf[3]
+{\the\numexpr0\POL@leq@fork
+     #2\PolNbWithMultOfRootsLessThanOrEqualTo
+     \LessThanOrEqualTo\PolNbWithMultOfRootsLessThanOrEqualToExpr\krof {#1}{#3}%
+}%
+\newcommand\PolNbWithMultOfRootsLessThanOrEqualToExpr[2]
+    {\PolNbWithMultOfRootsLessThanOrEqualTo{#1}{\xinttheexpr#2\relax}}%
+\newcommand\PolNbWithMultOfRootsLessThanOrEqualTo[1]{%
+    \ifnum\PolSturmNbOfIsolatedZeros{#1}=\z@
+      \expandafter\POL@nbwmofroots@noroots
+    \else
+      \expandafter\PolNbWithMultOfRootsLessThanOrEqualTo@%
+    \fi {#1}%
+}%
+\def\POL@nbwmofroots@noroots#1#2{\relax}%
+\def\PolNbWithMultOfRootsLessThanOrEqualTo@ #1#2%
+{%
+    \expandafter\POL@nbwmofrootsleq@prep\romannumeral`^^@#2!{#1}%
+}%
+\def\POL@nbwmofrootsleq@prep#1!#2%
+{%
+    \expandafter\POL@nbwmofrootsleq@iloop\expandafter 1\expandafter !%
+    \romannumeral0\xintsgn{\POL@eval{#2_0}{#1}}!%
+    #1!{#2}%
+}%
+\def\POL@nbwmofrootsleq@iloop#1!#2!#3!#4%
+{% #1 = index, #2 = sign of evaluation at value, #3 = value, #4 = sturmname
+    \xintifCmp{#3}{\POL@xintexprGetVar{#4L_#1}}%
+      {\POL@nbwmofrootsleq@return !}%
+      {\POL@nbwmofrootsleq@return
+       \PolSturmIfZeroExactlyKnown{#4}{#1}%
+        {+\PolSturmIsolatedZeroMultiplicity{#4}{#1}}{}!%
+      }%
+      % in third branch we are sure that if root is exactly known
+      % the test \xintifLt will be negative
+      {\xintifLt{#3}{\POL@xintexprGetVar{#4R_#1}}%
+         {\POL@nbwmofrootsleq@return
+            \unless
+            \ifnum#2=\xintSgn{\POL@eval{#4_0}{\POL@xintexprGetVar{#4L_#1}}}
+            +\PolSturmIsolatedZeroMultiplicity{#4}{#1}\fi !%
+         }%
+         {+\PolSturmIsolatedZeroMultiplicity{#4}{#1}%
+          \ifnum#1=\PolSturmNbOfIsolatedZeros{#4}
+             \expandafter\POL@nbwmofrootsleq@return\expandafter !%
+          \fi
+          \expandafter\POL@nbwmofrootsleq@iloop \the\numexpr\@ne+%
+         }%
+       }%
+    #1!#2!#3!{#4}%
+}%
+\def\POL@nbwmofrootsleq@return #1!#2!#3!#4!#5{#1\relax}%
+
+
+\newcommand\PolLeadingCoeff[1]{%
+    \romannumeral`^^@\expandafter\expandafter\expandafter\xintlastitem
+                     \expandafter\expandafter\expandafter
+                     {\csname POLuserpol@#1\endcsname}%
+}%
+%
+\newcommand\PolNthCoeff[2]{\romannumeral`^^@%
+    \expandafter\POL@nthcoeff
+    \romannumeral0\xintnthelt{\ifnum\numexpr#2<\z@#2\else(#2)+1\fi}%
+                  {\expandafter\expandafter\expandafter
+                        \xint_gob_til_dot\csname POLuserpol@#1\endcsname}@%
+}%
+\def\POL@nthcoeff#1@{\if @#1@\expandafter\xint_firstoftwo
+                  \else\expandafter\xint_secondoftwo\fi
+                  {0/1[0]}{#1}}%
+%
+% returns -1 for zero polynomial for context of numerical expression
+% should it return -\infty?
+\newcommand\PolDegree[1]{\romannumeral`^^@\expandafter\expandafter\expandafter
+                         \POL@degree\csname POLuserpol@#1\endcsname;}%
+\def\POL@degree #1.#2;{#1}%
+%
+\newcommand\PolToList[1]{\romannumeral`^^@\expandafter\expandafter\expandafter
+                         \xint_gob_til_dot\csname POLuserpol@#1\endcsname}%
+%
+\newcommand\PolToCSV[1]{\romannumeral0\xintlistwithsep{, }{\PolToList{#1}}}%
+
+
+\newcommand\PolToExprCmd[1]{\xintPRaw{\xintRawWithZeros{#1}}}%
+\newcommand\PolToFloatExprCmd[1]{\xintFloat{#1}}%
+\let\PolToExprTermPrefix\PolTypesetCmdPrefix
+\newcommand\PolToExprOneTermStyleA[2]{%
+    \ifnum#2=\z@
+      \PolToExprCmd{#1}%
+    \else
+      \xintifOne{\xintiiAbs{#1}}
+        {\xintiiifSgn{#1}{-}{}{}}% + from \PolToExprTermPrefix
+        {\PolToExprCmd{#1}\PolToExprTimes}%
+    \fi
+    \ifcase\xintiiAbs{#2} %<-- space here mandatory
+         \or\PolToExprVar
+       \else\PolToExprVar^\xintiiAbs{#2}%
+    \fi
+}%
+\let\PolToExprOneTerm\PolToExprOneTermStyleA
+\newcommand\PolToExprOneTermStyleB[2]{%
+    \ifnum#2=\z@
+      \xintNumerator{#1}%
+    \else
+      \xintifOne{\xintiiAbs{\xintNumerator{#1}}}
+        {\xintiiifSgn{#1}{-}{}{}}% + from \PolToExprTermPrefix
+        {\xintNumerator{#1}\PolToExprTimes}%
+    \fi
+    \ifcase\xintiiAbs{#2} %<-- space here mandatory
+         \or\PolToExprVar
+       \else\PolToExprVar^\xintiiAbs{#2}%
+    \fi
+    \xintiiifOne{\xintDenominator{#1}}{}{/\xintDenominator{#1}}%
+}%
+\newcommand\PolToFloatExprOneTerm[2]{%
+    \ifnum#2=\z@
+      \PolToFloatExprCmd{#1}%
+    \else
+      \PolToFloatExprCmd{#1}\PolToExprTimes
+    \fi
+    \ifcase\xintiiAbs{#2} %<-- space here mandatory
+         \or\PolToExprVar
+       \else\PolToExprVar^\xintiiAbs{#2}%
+    \fi
+}%
+\newcommand\PolToExprTimes{*}%
+\newcommand\PolToExprVar{x}%
+\newcommand\PolToExpr[1]{%
+    \if*\noexpand#1\expandafter\xint_firstoftwo\else
+    \expandafter\xint_secondoftwo\fi
+    \PolToExprAscending\PolToExprDescending{#1}}%
+\newcommand\PolToFloatExpr[1]{%
+    \if*\noexpand#1\expandafter\xint_firstoftwo\else
+    \expandafter\xint_secondoftwo\fi
+    \PolToFloatExprAscending\PolToFloatExprDescending{#1}}%
+\newcommand\PolToExprAscending[2]{%
+   \expandafter\POL@toexpr\csname POLuserpol@#2\endcsname
+   \PolToExprOneTerm\POL@toexprA}%
+\newcommand\PolToFloatExprAscending[2]{%
+   \expandafter\POL@toexpr\csname POLuserpol@#2\endcsname
+   \PolToFloatExprOneTerm\POL@toexprA}%
+\newcommand\PolToExprDescending[1]{%
+   \expandafter\POL@toexpr\csname POLuserpol@#1\endcsname
+   \PolToExprOneTerm\POL@toexprD}%
+\newcommand\PolToFloatExprDescending[1]{%
+   \expandafter\POL@toexpr\csname POLuserpol@#1\endcsname
+   \PolToFloatExprOneTerm\POL@toexprD}%
+%
+\def\POL@toexpr#1#2#3{\expandafter\POL@toexpr@
+                      \expandafter#3\expandafter#2#1\relax}%
+\def\POL@toexpr@#1#2#3.{%
+    \ifnum#3<\z@
+       #2{0/1[0]}{0}\expandafter\xint_gobble_v
+    \else
+       \expandafter#1%
+    \fi {#3}#2}%
+%
+\def\POL@toexprA #1#2\empty#3{%
+    \ifpoltoexprall\expandafter\POL@toexprall@b
+              \else\expandafter\POL@toexpr@b
+    \fi {#3}#2{0}1.%
+}%
+\def\POL@toexprD #1#2#3\relax{% #3 has \empty to prevent brace removal
+    \expandafter\POL@toexprD@a\expandafter#2%
+    \the\numexpr #1\expandafter.\romannumeral0\xintrevwithbraces{#3}\relax
+}%
+\def\POL@toexprD@a #1#2.#3{%
+    \ifpoltoexprall\expandafter\POL@toexprall@b
+              \else\expandafter\POL@toexpr@b
+    \fi{#3}#1{-#2}\the\numexpr\@ne+-#2.%
+}%
+\def\POL@toexpr@b #1#2#3{%
+    \xintiiifZero{#1}%
+      {\expandafter\POL@toexpr@loop\expandafter\POL@toexpr@b}%
+      {#2{#1}{#3}%
+      \expandafter\POL@toexpr@loop\expandafter\POL@toexpr@c}%
+   \expandafter#2%
+}%
+\def\POL@toexpr@c #1#2#3{%
+    \xintiiifZero{#1}%
+      {}%
+      {\PolToExprTermPrefix{#1}#2{#1}{#3}}%
+    \expandafter\POL@toexpr@loop\expandafter\POL@toexpr@c
+    \expandafter#2%
+}%
+\def\POL@toexprall@b #1#2#3{%
+    #2{#1}{#3}%
+    \expandafter\POL@toexpr@loop\expandafter\POL@toexprall@c
+    \expandafter#2%
+}%
+\def\POL@toexprall@c #1#2#3{%
+    \PolToExprTermPrefix{#1}#2{#1}{#3}%
+    \expandafter\POL@toexpr@loop\expandafter\POL@toexprall@c
+    \expandafter#2%
+}%
+\def\POL@toexpr@loop#1#2#3.#4{%
+  \if\relax#4\expandafter\xint_gob_til_dot\fi
+  #1{#4}#2{#3}\the\numexpr\@ne+#3.%
+}%
+
+
+\POL@restorecatcodes
+\endinput

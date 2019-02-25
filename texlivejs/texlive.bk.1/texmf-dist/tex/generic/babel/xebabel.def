@@ -1,0 +1,219 @@
+%%
+%% This is file `xebabel.def',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% babel.dtx  (with options: `xetex')
+%% 
+%%
+%% Copyright (C) 2012-2018 Javier Bezos and Johannes L. Braams.
+%% Copyright (C) 1989-2012 Johannes L. Braams and
+%%           any individual authors listed elsewhere in this file.
+%% All rights reserved.
+%%
+%% This file is part of the Babel system.
+%% --------------------------------------
+%%
+%% It may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2003/12/01 or later.
+%%
+%% This work has the LPPL maintenance status "maintained".
+%%
+%% The Current Maintainer of this work is Javier Bezos.
+%%
+%% The list of derived (unpacked) files belonging to the distribution
+%% and covered by LPPL is defined by the unpacking scripts (with
+%% extension |.ins|) which are part of the distribution.
+%%
+
+\def\BabelStringsDefault{unicode}
+\let\xebbl@stop\relax
+\AddBabelHook{xetex}{encodedcommands}{%
+  \def\bbl@tempa{#1}%
+  \ifx\bbl@tempa\@empty
+    \XeTeXinputencoding"bytes"%
+  \else
+    \XeTeXinputencoding"#1"%
+  \fi
+  \def\xebbl@stop{\XeTeXinputencoding"utf8"}}
+\AddBabelHook{xetex}{stopcommands}{%
+  \xebbl@stop
+  \let\xebbl@stop\relax}
+\def\bbl@intraspace#1 #2 #3\@@{%
+  \bbl@csarg\gdef{xeisp@\bbl@cs{sbcp@\languagename}}%
+    {\XeTeXlinebreakskip #1em plus #2em minus #3em\relax}}
+\def\bbl@intrapenalty#1\@@{%
+  \bbl@csarg\gdef{xeipn@\bbl@cs{sbcp@\languagename}}%
+    {\XeTeXlinebreakpenalty #1\relax}}
+\AddBabelHook{xetex}{loadkernel}{%
+  \begingroup
+      % Reset chars "80-"C0 to category "other", no case mapping:
+    \catcode`\@=11 \count@=128
+    \loop\ifnum\count@<192
+      \global\uccode\count@=0 \global\lccode\count@=0
+      \global\catcode\count@=12 \global\sfcode\count@=1000
+      \advance\count@ by 1 \repeat
+      % Other:
+    \def\O ##1 {%
+      \global\uccode"##1=0 \global\lccode"##1=0
+      \global\catcode"##1=12 \global\sfcode"##1=1000 }%
+      % Letter:
+    \def\L ##1 ##2 ##3 {\global\catcode"##1=11
+      \global\uccode"##1="##2
+      \global\lccode"##1="##3
+      % Uppercase letters have sfcode=999:
+      \ifnum"##1="##3 \else \global\sfcode"##1=999 \fi }%
+      % Letter without case mappings:
+    \def\l ##1 {\L ##1 ##1 ##1 }%
+    \l 00AA
+    \L 00B5 039C 00B5
+    \l 00BA
+    \O 00D7
+    \l 00DF
+    \O 00F7
+    \L 00FF 0178 00FF
+  \endgroup
+  \input #1\relax}
+\ifx\DisableBabelHook\@undefined\endinput\fi
+\AddBabelHook{babel-fontspec}{afterextras}{\bbl@switchfont}
+\DisableBabelHook{babel-fontspec}
+\bbl@trace{Font handling with fontspec}
+\@onlypreamble\babelfont
+\newcommand\babelfont[2][]{%  1=langs/scripts 2=fam
+  \edef\bbl@tempa{#1}%
+  \def\bbl@tempb{#2}%
+  \ifx\fontspec\@undefined
+    \usepackage{fontspec}%
+  \fi
+  \EnableBabelHook{babel-fontspec}% Just calls \bbl@switchfont
+  \bbl@bblfont}
+\newcommand\bbl@bblfont[2][]{% 1=features 2=fontname
+  \bbl@ifunset{\bbl@tempb family}{\bbl@providefam{\bbl@tempb}}{}%
+  % For the default font, just in case:
+  \bbl@ifunset{bbl@lsys@\languagename}{\bbl@provide@lsys{\languagename}}{}%
+  \expandafter\bbl@ifblank\expandafter{\bbl@tempa}%
+    {\bbl@csarg\edef{\bbl@tempb dflt@}{<>{#1}{#2}}% save bbl@rmdflt@
+     \bbl@exp{%
+       \let\<bbl@\bbl@tempb dflt@\languagename>\<bbl@\bbl@tempb dflt@>%
+       \\\bbl@font@set\<bbl@\bbl@tempb dflt@\languagename>%
+                      \<\bbl@tempb default>\<\bbl@tempb family>}}%
+    {\bbl@foreach\bbl@tempa{% ie bbl@rmdflt@lang / *scrt
+       \bbl@csarg\def{\bbl@tempb dflt@##1}{<>{#1}{#2}}}}}%
+\def\bbl@providefam#1{%
+  \bbl@exp{%
+    \\\newcommand\<#1default>{}% Just define it
+    \\\bbl@add@list\\\bbl@font@fams{#1}%
+    \\\DeclareRobustCommand\<#1family>{%
+      \\\not@math@alphabet\<#1family>\relax
+      \\\fontfamily\<#1default>\\\selectfont}%
+    \\\DeclareTextFontCommand{\<text#1>}{\<#1family>}}}
+\def\bbl@switchfont{%
+  \bbl@ifunset{bbl@lsys@\languagename}{\bbl@provide@lsys{\languagename}}{}%
+  \bbl@exp{%  eg Arabic -> arabic
+    \lowercase{\edef\\\bbl@tempa{\bbl@cs{sname@\languagename}}}}%
+  \bbl@foreach\bbl@font@fams{%
+    \bbl@ifunset{bbl@##1dflt@\languagename}%    (1) language?
+      {\bbl@ifunset{bbl@##1dflt@*\bbl@tempa}%   (2) from script?
+         {\bbl@ifunset{bbl@##1dflt@}%           2=F - (3) from generic?
+           {}%                                  123=F - nothing!
+           {\bbl@exp{%                          3=T - from generic
+              \global\let\<bbl@##1dflt@\languagename>%
+                         \<bbl@##1dflt@>}}}%
+         {\bbl@exp{%                            2=T - from script
+            \global\let\<bbl@##1dflt@\languagename>%
+                       \<bbl@##1dflt@*\bbl@tempa>}}}%
+      {}}%                               1=T - language, already defined
+  \def\bbl@tempa{%
+    \bbl@warning{The current font is not a standard family:\\%
+      \fontname\font\\%
+      Script and Language are not applied. Consider\\%
+      defining a new family with \string\babelfont.\\%
+      Reported}}%
+  \bbl@foreach\bbl@font@fams{%     don't gather with prev for
+    \bbl@ifunset{bbl@##1dflt@\languagename}%
+      {\bbl@cs{famrst@##1}%
+       \global\bbl@csarg\let{famrst@##1}\relax}%
+      {\bbl@exp{% order is relevant
+         \\\bbl@add\\\originalTeX{%
+           \\\bbl@font@rst{\bbl@cs{##1dflt@\languagename}}%
+                          \<##1default>\<##1family>{##1}}%
+         \\\bbl@font@set\<bbl@##1dflt@\languagename>% the main part!
+                        \<##1default>\<##1family>}}}%
+  \bbl@ifrestoring{}{\bbl@tempa}}%
+\def\bbl@font@set#1#2#3{% eg \bbl@rmdflt@lang \rmdefault \rmfamily
+  \bbl@xin@{<>}{#1}%
+  \ifin@
+    \bbl@exp{\\\bbl@fontspec@set\\#1\expandafter\@gobbletwo#1}%
+  \fi
+  \bbl@exp{%
+    \def\\#2{#1}%        eg, \rmdefault{\bbl@rmdflt@lang}
+    \\\bbl@ifsamestring{#2}{\f@family}{\\#3\let\\\bbl@tempa\relax}{}}}
+\def\bbl@fontspec@set#1#2#3{% eg \bbl@rmdflt@lang fnt-opt fnt-nme
+  \let\bbl@tempe\bbl@mapselect
+  \let\bbl@mapselect\relax
+  \bbl@exp{% TODO - should be global, but even local does its job
+        % I'm still not sure -- must investigate
+    \<keys_if_exist:nnF>{fontspec-opentype}%
+        {Script/\bbl@cs{sname@\languagename}}%
+      {\\\newfontscript{\bbl@cs{sname@\languagename}}%
+        {\bbl@cs{sotf@\languagename}}}%
+    \<keys_if_exist:nnF>{fontspec-opentype}%
+        {Language/\bbl@cs{lname@\languagename}}%
+      {\\\newfontlanguage{\bbl@cs{lname@\languagename}}%
+        {\bbl@cs{lotf@\languagename}}}%
+    \<fontspec_set_family:Nnn>\\#1%
+      {\bbl@cs{lsys@\languagename},#2}}{#3}% ie \bbl@exp{..}{#3}
+  \let\bbl@mapselect\bbl@tempe
+  \bbl@toglobal#1}%
+\def\bbl@font@rst#1#2#3#4{%
+  \bbl@csarg\def{famrst@#4}{\bbl@font@set{#1}#2#3}}
+\def\bbl@font@fams{rm,sf,tt}
+\newcommand\babelFSstore[2][]{%
+  \bbl@ifblank{#1}%
+    {\bbl@csarg\def{sname@#2}{Latin}}%
+    {\bbl@csarg\def{sname@#2}{#1}}%
+  \bbl@provide@dirs{#2}%
+  \bbl@csarg\ifnum{wdir@#2}>\z@
+    \let\bbl@beforeforeign\leavevmode
+    \EnableBabelHook{babel-bidi}%
+  \fi
+  \bbl@foreach{#2}{%
+    \bbl@FSstore{##1}{rm}\rmdefault\bbl@save@rmdefault
+    \bbl@FSstore{##1}{sf}\sfdefault\bbl@save@sfdefault
+    \bbl@FSstore{##1}{tt}\ttdefault\bbl@save@ttdefault}}
+\def\bbl@FSstore#1#2#3#4{%
+  \bbl@csarg\edef{#2default#1}{#3}%
+  \expandafter\addto\csname extras#1\endcsname{%
+    \let#4#3%
+    \ifx#3\f@family
+      \edef#3{\csname bbl@#2default#1\endcsname}%
+      \fontfamily{#3}\selectfont
+    \else
+      \edef#3{\csname bbl@#2default#1\endcsname}%
+    \fi}%
+  \expandafter\addto\csname noextras#1\endcsname{%
+    \ifx#3\f@family
+      \fontfamily{#4}\selectfont
+    \fi
+    \let#3#4}}
+\let\bbl@langfeatures\@empty
+\def\babelFSfeatures{% make sure \fontspec is redefined once
+  \let\bbl@ori@fontspec\fontspec
+  \renewcommand\fontspec[1][]{%
+    \bbl@ori@fontspec[\bbl@langfeatures##1]}
+  \let\babelFSfeatures\bbl@FSfeatures
+  \babelFSfeatures}
+\def\bbl@FSfeatures#1#2{%
+  \expandafter\addto\csname extras#1\endcsname{%
+    \babel@save\bbl@langfeatures
+    \edef\bbl@langfeatures{#2,}}}
+\input txtbabel.def
+\endinput
+%%
+%% End of file `xebabel.def'.

@@ -1,0 +1,55 @@
+%% Copyright 2017 Apostolos Syropoulos
+%%
+%% This file is part of the `philokalia' package.
+%% You are not allowed to modify its contents.
+%%
+\def\filedate{2017/09/20}
+\def\batchfile{philokalia.ins}
+\input docstrip.tex
+
+{\ifx\generate\undefined
+\Msg{**********************************************}
+\Msg{*}
+\Msg{* This installation requires docstrip}
+\Msg{* version 2.3c or later.}
+\Msg{*}
+\Msg{* An older version of docstrip has been input}
+\Msg{*}
+\Msg{**********************************************}
+\errhelp{Move or rename old docstrip.tex.}
+\errmessage{Old docstrip in input path}
+\batchmode
+\csname @@end\endcsname
+\fi}
+
+\preamble
+
+ (c) Copyright 2007-2017 Apostolos Syropoulos 
+ This program can be redistributed and/or modified under the 
+ terms of the LaTeX Project Public License Distributed from 
+ http://www.latex-project.org/lppl.txt; either
+ version 1.3c of the License, or any later version.
+  
+ This work has the LPPL maintenance status `maintained'.
+
+ Please report errors or suggestions for improvement to
+
+    Apostolos Syropoulos  (asyropoulos@yahoo.com)
+
+\endpreamble
+
+
+\keepsilent
+ 
+\generate{\generateFile{philokalia.sty}{f}{\from{philokalia.dtx}{philokalia}}
+          \generateFile{tuplk.fd}{f}{\from{philokalia.dtx}{TUplk}}}
+\postamble
+\endpostamble
+\Msg{**********************************************************}
+\Msg{* To finish installation you have to copy}
+\Msg{* the .fd file and the .sty file }
+\Msg{* in the appropriate directories and to}
+\Msg{* rehash your TeX, if it is required to do so.}
+\Msg{*                  Happy XeTeXing!}
+\Msg{**********************************************************}
+\endinput

@@ -1,0 +1,204 @@
+\ProvidesFile{catcodes.tex}[2015/11/14 documenting catcodes files]
+\title{\pkg{catcodes}\\---\\``Generic" Switching of Category Codes}
+% \listfiles
+{ \RequirePackage{makedoc} \ProcessLineMessage{}
+  \renewcommand\mdSectionLevelOne  {\string\subsection}
+  \renewcommand\mdSectionLevelTwo  {\string\subsubsection}
+  \MainDocParser{\SectionLevelTwoParseInput}
+  \HeaderLines{18}              %% 18 2012/08/26
+  \MakeSingleDoc{stacklet.sty}
+  \MakeSingleDoc{actcodes.sty}  %% 2012/08/26
+  \MakeSingleDoc{catchdq.sty}   %% 2012/09/16
+}
+% \RequirePackage[ir]{inputtrc}                 %% 2015/11/14
+\documentclass[fleqn]{article}%% TODO paper dimensions!?
+\input{makedoc.cfg} %% shared formatting settings
+% \ReadPackageInfos{stacklet}
+\MDkeywords{Macro programming, category codes, private letters, 
+            active characters, double quotes}
+\newcommand*{\headersec}{%
+    \subsection{Package File Header---\pkg{plainpkg} and Legalese}}
+\usepackage{ngerman} \originalTeX
+\usepackage{catchdq}    %% try it more often! TODO 2012/11/07
+\usepackage{langcode}                           %% 2012/11/07
+\usepackage{filedate}                           %% 2012/11/06
+\sloppy
+% \flushbottom                                    %% 2012/11/07
+\begin{document}
+\maketitle
+\begin{MDabstract}
+The 'catcodes' bundle provides small packages for switching
+category codes, usable both with \LaTeX\ and without. \ 
+(i)\enspace \pkg{stacklet.sty} maintains stacks for ``private letters," 
+needed for 'plainpkg.tex''s minimal framework for ``generic" 
+packages. \ 
+(ii)\enspace \pkg{actcodes.sty} deals with ``active characters," 
+switching their category codes and assigning meanings to 
+``active-character tokens." \ 
+(iii)\enspace
+%% 2012/09/16:
+\pkg{catchdq.sty} uses the 
+``\acro{ASCII}                          %% 2012/11/06
+double quote" as an active character 
+for simplified access to typographical double quotes.---These 
+packages are ``generic" in the sense that they should 
+be usable at least both with \LaTeX\ and Plain \TeX, 
+based on 'plainpkg.tex'.
+
+\MDaddtoabstract{Required Packages}
+\ctanpkgref{plainpkg}, 'stacklet'
+\MDaddtoabstract{Related Packages} 
+\ctanpkgref{catoptions}, 'pcatcode' from \ctanpkgref{amsrefs}, 
+\ctanpkgref{texapi}, 
+\ctanpkgref{csquotes}.  %% 2012/09/16
+\end{MDabstract}
+\tableofcontents
+\section{Overview}
+Sorry, \dots, the abstract and the table of contents 
+must suffice for today (2012-11-07) \TODO
+
+\section{Shared Features of Usage}
+%%% rm. 2012/09/17:
+% \section{General Background---Usage, Required}
+% The packages of this bundle are part of a certain family of 
+% ``generic" packages: They should work \emph{with} \LaTeX\ 
+% as well as \emph{without} \LaTeX, aiming at 
+% ``independency of format"---actully too much now~...
+% most importantly, they require \ctanpkgref{plainpkg}. 
+%%% rm 2012/09/16:
+% , 
+% and the latter's documentation should tell you about 
+% how to use the present packages.
+%
+All the packages of the bundle are ``\pkg{plainpkg} packages" 
+in the sense of the 
+\ctanpkgref{plainpkg}\foothttpurlref{ctan.org/pkg/plainpkg}
+documentation that exhibits details of what is summarized here. 
+Therefore:
+\pagebreak[2]                               %% 2012/11/07
+\begin{itemize}
+  \item All of them require that \TeX\ finds `plainpkg.tex' 
+        as well as `stackrel.sty'.
+  \item In order to load `<catcodes>.sty'
+        (where <catcodes> is `stacklet', `actcodes', or `catchdq'), 
+        type \ |\usepackage{<catcodes>}| \ within a \LaTeX\ document 
+        preamble, \ |\RequirePackage{<catcodes>}| \ in a 
+        ``\pkg{plainpkg} package", or \ |\input <catcodes>.sty| \
+        $\dots$ \ or perhaps `\input{<catcodes>.sty}'? 
+\end{itemize}
+
+\section{'actcodes.sty'---Active Characters}
+%% intro 2012/11/07:
+\subsection{Introduction}
+Active characters can simplify syntax often, i.e., the code 
+may be very pleasant to type and read. But sometimes something 
+may fail. See Section~\ref{sec:actcodes-cmds} for how to cope
+with possibilities and difficulties.
+\headersec
+\input{actcodes.doc}
+
+\section{'catchdq.sty'---Typographical Double Quotes}
+%% <- TODO cf. morgan.sty 2012/11/06 ->
+% \section{'catchdq.sty'---Automatic Typographical Double Quotes by Toggling}
+% \section{'catchdq.sty'---Proper Double Quotes by Toggling}
+%% <- morgan.sty 2012/11/06 ->
+\subsection{Introduction}
+\catchdqs
+The 'catchdq' package allows getting typographical double quotes 
+by just using the "\acro{ASCII} double quote" |"|. A more precise overview:
+\begin{enumerate}
+  \item Typically, "typographical" quotation marks mean distinguishing 
+        between "opening" and "closing" quotation marks. 
+        Usually, you must enter different characters or commands for 
+        the distinction, such as |``| for "opening" and |''| for 
+        \emph{closing}---in \emph{English} with \emph{\TeX}. 
+        For \emph{English} with \emph{Plain~\TeX}, even |"| suffices for "closing."
+  \item There are much different conventions especially for \emph{German} 
+        and \emph{French}. They require different characters or \TeX~commands
+        than for \emph{English}. The packages \ctanpkgref{german}, 
+        \ctanpkgref{ngerman}, and \ctanpkgref{babel} have dealt with 
+        such conventions. 
+  \item Understanding the ideas mentioned before has been difficult 
+        for a long time, probably because typewriter and computer \emph{keyboards} 
+        never have offered the appropriate keys. Rather, they only offered 
+        the "\acro{ASCII} double quote" that produced an approximation 
+        ("neutral quotation marks")
+        \emph{not} making the difference. Many users and readers 
+        have not realized the difference, they have not realized 
+        how their screen or printer output differed from double quotes 
+        in books and newspapers. Cf.~the 
+        \wikienref{Quotation mark}{Wikipedia article}\footnote{%
+            \urlhttpref{en.wikipedia.org/wiki/Quotation mark}} 
+  \item The idea of the 'catchdq' package is that the user indeed should 
+        not worry about that difference and just type 
+        "\acro{ASCII} double quotes", and they should be "converted" 
+        into the appropriate typographical quotation marks \emph{automatically}. 
+        This should work by "toggling," i.e., the first 
+        "\acro{ASCII} double quote" is interpreted as "opening," 
+        the second as "closing," the next one as "opening"~\dots
+        ---Word processors have provided this feature (as an option) 
+        as well.
+  \item Language-dependency of the feature currently is managed 
+        through the \ctanpkgref{langcode} package.
+  \item The feature may cause problems sometimes. 
+        Therefore, explicit switching the feature "on" 
+        and "off" is required.
+  \item The \ctanpkgref{csquotes} package addresses the issue 
+        in a more comprehensive and perhaps more stable way.
+\end{enumerate}
+See Section~\ref{sec:catchdq-cmds} for 
+% the commands provided.
+% Note that the \ctanpkgref{csquotes} 
+% provides more comprehensive functionality.
+additional details.                         %% 2012/11/06
+\MakeOther\"                                %% TODO 2012/11/06
+
+\headersec
+\input{catchdq.doc}
+
+\pagebreak
+\section{'stacklet.sty'---Private Letters}
+\subsection{Introduction}
+\catchdqs           %% 2012/11/07
+\uselangcode{en}    %% 2012/11/07, \dedqtd above
+"Private letters" \emph{here} are meant to be 
+characters that belong to the "letter" 
+category only within packages. A package typically provides 
+user commands as well as internal commands, and the latter 
+are characterized by containing funny letters in commands such 
+as `\@gobble.' This is to avoid conflicts.
+See Section~\ref{sec:stacklet-cmds} for the commands provided.
+\MakeOther\"        %% 2012/11/07
+\headersec
+\input{stacklet.doc}
+
+%% 'filedate' check 2012/11/06:
+\noNiceVerb 
+\input{fdatechk.tex}
+\end{document}
+
+VERSION HISTORY
+
+2012/08/24   for stacklet v0.1  very first
+2012/08/26   for stacklet v0.2   increased \HeaderLines, abstract; 
+             for actcodes v0.1  added ...
+2012/09/16f. for catchdq  v0.2  added ...
+2012/09/19                      "plainpkg packages", \pagebreaks, 
+                                Roman numbers in abstract, \headersec
+2012/09/19                      trying ngerman.sty
+
+             UPLOADED with `catcodes' r0.1 2012-09-20
+
+2012/11/06                      supplementing missing word; 
+                                TODO on catchdq, `filedate' checks, 
+                                typeset with recent `niceverb';
+                                more accurate about `catchdq', 
+                                long introduction
+2012/11/07                      final formatting, some more info on 
+                                `stacklet' and `actcodes', TODOs, 
+                                some \catchdqs, `Overview',
+                                2 more \subsec...Intro... 
+
+             UPLOADED with `catcodes' r0.1a 2012-11-07
+
+2015/11/14   for catchdq v0.21  debugging

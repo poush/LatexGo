@@ -1,0 +1,513 @@
+\documentclass[letterpaper,11pt,x11names,english,french]{memoir}
+  \usepackage{natbib,url,bibentry}
+  \usepackage{babel}
+  \usepackage[autolanguage]{numprint}
+  \usepackage{amsmath,amsthm}
+  \usepackage[shortlabels]{enumitem}
+  \usepackage{graphicx}
+  \usepackage{framed}                  % environnement titled-frame
+  \usepackage{manfnt}                  % \mantriangleright (puce)
+  \usepackage{dirtree}                 % arbre pour exercice sur \include
+  \usepackage{metalogo}                % logo de \XeLaTeX logo
+  \usepackage{mflogo}                  % logo de Metafont
+  \usepackage{fontawesome}             % plusieurs icônes
+  \usepackage{applekeys}               % touches Mac
+  \usepackage{answers}                 % exercices et solutions
+  \usepackage{listings}                % code informatique
+  \usepackage[absolute]{textpos}       % disposition d'images
+  \usepackage{pgf}                     % transparence pour couverture avant
+  \usepackage{ifthen}                  % exécution conditionnelle
+
+
+  %%% =============================
+  %%%  Informations de publication
+  %%% =============================
+  \renewcommand{\year}{2016}
+  \renewcommand{\month}{11-3}
+  \newcommand{\ISBN}{978-2-9811416-7-5}
+  \newcommand{\ctanurl}{https://ctan.org/pkg/formation-latex-ul/}
+
+  %%% ===================
+  %%%  Style du document
+  %%% ===================
+
+  %% Polices de caractères
+  \usepackage{fontspec}
+  \usepackage[bold-style=ISO]{unicode-math}
+  \defaultfontfeatures{Scale=0.92}
+  \setmainfont[Ligatures=TeX,Numbers=OldStyle]{Lucida Bright OT}
+  \setmathfont{Lucida Bright Math OT}
+  \setmonofont{Lucida Grande Mono DK}
+  \setsansfont[Scale=1.0,Numbers=OldStyle]{Myriad Pro}
+  \newfontfamily\fullcaps[Letters=Uppercase,Numbers=Uppercase]{Myriad Pro}
+  \usepackage[babel=true]{microtype}
+  \usepackage{icomma}
+
+  %% Polices additionnelles pour le chapitre trucs et astuces
+  \newfontfamily\CM{cmunrm.otf}                       % Computer Modern
+  \newfontfamily\Times{texgyretermes-regular.otf}     % Times
+  \newfontfamily\Palatino{texgyrepagella-regular.otf} % Palatino
+  \newfontfamily\Bookman{texgyrebonum-regular.otf}    % Bookman
+  \newfontfamily\NewCent{texgyreschola-regular.otf}   % New Cent. Sch.
+  \newfontfamily\Charter{XCharter-Roman.otf}          % Charter
+  \newfontfamily\Helvet{texgyreheros-regular.otf}     % Helvetica
+
+  %% Couleurs
+  \usepackage{xcolor}
+  \definecolor{comments}{rgb}{0.7,0,0}    % rouge foncé
+  \definecolor{link}{rgb}{0,0.4,0.6}      % ~RoyalBlue de dvips
+  \definecolor{url}{rgb}{0.6,0,0}         % rouge-brun
+  \definecolor{citation}{rgb}{0,0.5,0}    % vert foncé
+  \definecolor{ULlinkcolor}{rgb}{0,0,0.3} % de ulthese.cls
+  \definecolor{rouge}{rgb}{0.85,0,0.07}   % rouge bandeau identitaire
+  \definecolor{or}{rgb}{1,0.8,0}          % or bandeau identitaire
+
+  %% Hyperliens
+  \usepackage{hyperref}
+  \hypersetup{%
+    pdfauthor = {Vincent Goulet},
+    pdftitle = {Rédaction avec LaTeX},
+    colorlinks = {true},
+    linktocpage = {true},
+    urlcolor = {url},
+    linkcolor = {link},
+    citecolor = {citation},
+    pdfpagemode = {UseOutlines},
+    pdfstartview = {Fit},
+    bookmarksopen = {true},
+    bookmarksnumbered = {true},
+    bookmarksdepth = {subsubsection}}
+  \setlength{\XeTeXLinkMargin}{1pt}
+
+  %% Étiquettes de \autoref (redéfinitions compatibles avec babel).
+  %% Attention! Les % à la fin des lignes sont importants sinon des
+  %% blancs apparaissent dès que la commande \selectlanguage est
+  %% utilisée, notamment dans la bibliographie.
+  \addto\extrasfrench{%
+    \def\subsectionautorefname{section}%
+    \def\figureautorefname{figure}%
+    \def\tableautorefname{tableau}%
+    \def\exempleautorefname{exemple}%
+    \def\exerciceautorefname{exercice}%
+    \def\appendixautorefname{annexe}%
+  }
+
+  %% Table des matières (inspirée de classicthesis.sty)
+  \renewcommand{\cftchapterleader}{\hspace{1.5em}}
+  \renewcommand{\cftchapterafterpnum}{\cftparfillskip}
+  \renewcommand{\cftsectionleader}{\hspace{1.5em}}
+  \renewcommand{\cftsectionafterpnum}{\cftparfillskip}
+
+  %% Titres des chapitres
+  \chapterstyle{hangnum}
+  \renewcommand{\chaptitlefont}{\normalfont\Huge\sffamily\bfseries\raggedright}
+
+  %% Marges, entêtes et pieds de page
+  \setlength{\marginparsep}{7mm}
+  \setlength{\marginparwidth}{20mm}
+  \setlength{\headwidth}{\textwidth}
+  \addtolength{\headwidth}{\marginparsep}
+  \addtolength{\headwidth}{\marginparwidth}
+  \addtolength{\marginparwidth}{15mm} % plus d'espace pour titres de documentation
+
+  %% Titres des sections et sous-sections
+  \setsecheadstyle{\normalfont\Large\sffamily\bfseries\raggedright}
+  \setsubsecheadstyle{\normalfont\large\sffamily\bfseries\raggedright}
+  \maxsecnumdepth{subsection}
+  \setsecnumdepth{subsection}
+
+  %% Listes. Paramétrage avec enumitem.
+  \setlist[enumerate]{leftmargin=*,align=left}
+  \setlist[enumerate,2]{label=\alph*),labelsep=*,leftmargin=1.5em}
+  \setlist[enumerate,3]{label=\roman*),labelsep=*,leftmargin=1.5em,align=right}
+  \setlist[itemize]{leftmargin=*,align=left}
+
+  %% Paramétrage de babel
+  \frenchbsetup{%
+    StandardItemizeEnv=true,       % format standard des listes
+    ThinSpaceInFrenchNumbers=true, % espace fine dans les nombres
+    ItemLabeli=\mantriangleright,  % puce premier niveau
+    ItemLabelii=\textendash,       % puce second niveau
+    og=«, fg=»                     % caractères « et » sont les guillemets
+  }
+  \def\frenchfigurename{{\scshape Fig.}}
+  \def\frenchtablename{{\scshape Tab.}}
+
+  %% Sections de code source
+  \lstloadlanguages{[LaTeX]TeX}
+  \lstset{language=[LaTeX]TeX,
+    basicstyle=\ttfamily\NoAutoSpacing,
+    keywordstyle=\mdseries,
+    commentstyle=\color{comments}\slshape,
+    emphstyle=\bfseries,
+    escapeinside=`',
+    extendedchars=true,
+    showstringspaces=false,
+    backgroundcolor=\color{LightYellow1},
+    frame=lr, rulecolor=\color{LightYellow1},
+    xleftmargin=3.4pt, xrightmargin=3.4pt}
+
+  %%% =========================
+  %%%  Nouveaux environnements
+  %%% =========================
+
+  %% Exemples
+  \theoremstyle{definition}
+  \newtheorem{exemple}{Exemple}[chapter]
+
+  %% Exercices et réponses
+  \Newassociation{sol}{solution}{solutions}
+  \newcounter{exercice}[chapter]
+  \renewcommand{\theexercice}{\thechapter.\arabic{exercice}}
+  \newenvironment{exercice}[1][]{%
+    \begin{list}{}{%
+        \refstepcounter{exercice}
+        \ifthenelse{\equal{#1}{nosol}}{%
+          \renewcommand{\makelabel}{\bfseries\theexercice}}{%
+          \hypertarget{ex:\theexercice}{}
+          \Writetofile{solutions}{\protect\hypertarget{sol:\theexercice}{}}
+          \renewcommand{\makelabel}{%
+            \bfseries\protect\hyperlink{sol:\theexercice}{\theexercice}}}
+        \settowidth{\labelwidth}{\bfseries\theexercice}
+        \setlength{\leftmargin}{\labelwidth}
+        \addtolength{\leftmargin}{\labelsep}
+        \setlist[enumerate,1]{label=\alph*),labelsep=*,leftmargin=1.5em}
+        \setlist[enumerate,2]{label=\roman*),labelsep=0.5em,align=right}}
+      \item}
+    {\end{list}}
+  \renewenvironment{solution}[1]{%
+    \begin{list}{}{%
+        \renewcommand{\makelabel}{%
+          \bfseries\protect\hyperlink{ex:#1}{#1}}
+        \settowidth{\labelwidth}{\bfseries #1}
+        \setlength{\leftmargin}{\labelwidth}
+        \addtolength{\leftmargin}{\labelsep}
+        \setlist[enumerate,1]{label=\alph*),labelsep=*,leftmargin=1.5em}
+        \setlist[enumerate,2]{label=\roman*),labelsep=0.5em,align=right}}
+      \item}
+    {\end{list}}
+
+  %% Démo de code LaTeX. Le code de 'texample' et 'eqxample' est
+  %% repris de amsldoc.tex avec des petits ajustements.
+  \newenvironment{demo}{%
+    \begin{trivlist}\item}{%
+    \end{trivlist}}
+  \newenvironment{texample}[1][0.5\linewidth]{%
+    \noindent\begin{minipage}{#1}%
+      \def\producing{\end{minipage}\hfill\begin{minipage}{\dimexpr0.97\linewidth-#1}%
+        \hbox\bgroup\kern-.2pt%
+        \vbox\bgroup\parindent0pt\relax
+        % The 3pt is to cancel the -\lineskip from \displ@y
+        \abovedisplayskip3pt \abovedisplayshortskip\abovedisplayskip
+        \belowdisplayskip0pt \belowdisplayshortskip\belowdisplayskip
+        \noindent}
+    }{%
+      \par
+      % Ensure that a lonely \[\] structure doesn't take up width less than
+      % \hsize.
+      \hrule height0pt width\hsize
+      \egroup\kern-.2pt\egroup
+    \end{minipage}%
+    \par
+  }
+  \newenvironment{eqxample}{%
+    \noindent\begin{minipage}{.5\columnwidth}%
+      \def\producing{\end{minipage}\hfill\begin{minipage}{.45\columnwidth}%
+        \hbox\bgroup\kern-.2pt\vrule width.2pt%
+        \vbox\bgroup\parindent0pt\relax
+        % The 3pt is to cancel the -\lineskip from \displ@y
+        \abovedisplayskip3pt \abovedisplayshortskip\abovedisplayskip
+        \belowdisplayskip0pt \belowdisplayshortskip\belowdisplayskip
+        \noindent}
+    }{%
+      \par
+      % Ensure that a lonely \[\] structure doesn't take up width less than
+      % \hsize.
+      \hrule height0pt width\hsize
+      \egroup\vrule width.2pt\kern-.2pt\egroup
+    \end{minipage}%
+    \par
+  }
+
+  %% Un exemple du chapitre Trucs et astuces nécessite des
+  %% environnements 'lstlisting' imbriqués, ce que ne digère pas
+  %% LaTeX. La ruse consiste à définir un environnement équivalent qui
+  %% porte simplement un autre nom.
+  \lstnewenvironment{vglisting}{\lstset{deletetexcs={int,include}}}{}
+
+  %% Exemples de notices bibliographiques
+  \newenvironment{bibexample}[1][\linewidth]{%
+    \begin{minipage}[t]{#1}%
+      \begin{trivlist}}
+      {\end{trivlist}\end{minipage}}
+
+  %% Encadré générique pour les remarques importantes et autres
+  %% comportant une icône sur la gauche. Argument: symbole à
+  %% placer sur la gauche (obligatoire).
+  \newenvironment{infobox}[1]{%
+    \setlength{\FrameRule}{1pt}
+    \begin{table}[h]%
+      \begin{framed}%
+        \noindent
+        \begin{minipage}{0.1\linewidth}
+          \raisebox{-1.5em}[0em][0em]{\HUGE#1}
+        \end{minipage}
+        \begin{minipage}[t]{0.88\linewidth}}%
+        {\end{minipage}\end{framed}\end{table}}
+
+  %% Remarques importantes
+  \newenvironment{important}{%
+    \begin{infobox}{\faExclamationCircle}}%
+    {\end{infobox}}
+
+  %% Informations
+  \newenvironment{information}{%
+    \begin{infobox}{\faInfoCircle}}%
+    {\end{infobox}}
+
+  %% Encadré avec titre (basé sur 'titled-frame' de framed pour les
+  %% conseils du TeXpert. Cet environnement est laissé flottant.
+  \newenvironment{conseil}{%
+    \colorlet{TFFrameColor}{black}%
+    \colorlet{TFTitleColor}{white}%
+    \begin{table}%
+      \begin{titled-frame}{\sffamily Conseil du {\TeX}pert}%
+        \noindent
+        \begin{minipage}{0.1\linewidth}
+          \raisebox{-1.5em}[0em][0em]{\HUGE\faThumbsOUp}
+        \end{minipage}
+        \begin{minipage}[t]{0.88\linewidth}}%
+        {\end{minipage}\end{titled-frame}\end{table}}
+
+  %%% =======
+  %%%  Index
+  %%% =======
+  \renewcommand{\preindexhook}{%
+    Cet index contient des références aux commandes et environnements
+    {\LaTeX}, ainsi qu'aux noms de paquetages et de classes. %
+    Le premier numéro indique habituellement, mais pas toujours,
+    la page où un concept est introduit, défini ou expliqué.%
+    \vskip\onelineskip}
+  \lstset{language=[AlLaTeX]TeX,
+    morekeywords={align,align*,aligned,bmatrix,cases,equation*,%
+      figure,gather,lstlisting,multline,quote,split,%
+      table,tabular,tabularx},
+    deletekeywords={document},   % répéter dans deletetexcs
+    moretexcs={toprule,midrule,bottomrule,%
+      includegraphics,reflectbox,resizebox,rotatebox,scalebox,%
+      includepdf,frenchfigurename,frenchtablename,%
+      newsubfloat,subcaption,%
+      bm,dfrac,tfrac,iint,text,mathcal,mathbb,eqref,symbf,%
+      citet,citep,citeauthor,citeyear,%
+      setmainfont,setsansfont,setmonofont,setmathfont,%
+      color,textcolor,definecolor,colorlet,hypersetup},
+    deletetexcs={document,documentclass,usepackage,begin,end,LaTeX,TeX,%
+      normalfont,bfseries,textbf,itshape,scshape,sffamily,ttfamily,texttt,%
+      emph,small,Huge,raggedright,%
+      hfill,def,a,b,c,d,em,i,j,l,r,t},
+    index=[1][keywords],        % environnements
+    indexstyle=[1]\ixenv,
+    index=[2][texcs],           % commandes
+    indexstyle=[2]\ixcmd}
+  \newcommand{\ixenv}[1]{\index{#1 env@\Pe{#1} (environnement)}%
+    \index{environnement!#1@\Pe{#1}}}
+  \newcommand{\ixcmd}[1]{\index{#1@\string\cs{#1}}}
+  \makeindex
+
+  %%% =====================
+  %%%  Nouvelles commandes
+  %%% =====================
+
+  %% Noms de fonctions, code, environnement, etc.
+  \newcommand{\code}[1]{\texttt{#1}}
+  \newcommand{\fichier}[1]{\texttt{#1}}
+  \newcommand{\class}[1]{\textsf{#1}\index{#1 class@\textsf{#1} (classe)}%
+    \index{classe!#1}}
+  \newcommand{\pkg}[1]{\textbf{#1}\index{#1 pkg@\textbf{#1} (paquetage)}%
+    \index{paquetage!#1}}
+  \newcommand{\Pe}[1]{\code{#1}}         % tiré de la doc de memoir
+  \newcommand{\Ie}[1]{\Pe{#1}\ixenv{#1}} % idem
+  \newcommand{\mat}[1]{\symbf{#1}}       % en mode mathématique
+
+  %% Modification de commandes tirées de memoir.cls servant à afficher
+  %% des noms de commandes.
+  %% - \cmdprint est modifiée pour que le nom de la commande ne soit
+  %%   pas en italique;
+  %% - \cmd est modifiée pour utiliser @ comme séparateur dans \index
+  %%   et pour utiliser \cs plutôt que \cmdprint pour afficher le nom de
+  %%   la commande (afin d'obtenir le même format d'entrée d'index
+  %%   qu'avec \ixcmd ci-dessus);
+  %% - \pixbsbs et \pixabang servent respectivement à afficher et
+  %%   indexer \\ et \! ;
+  %% - \pixbar sert à afficher et indexer \| avec un hack pour
+  %%   contourner un problème d'insertion de l'hyperlien vers le
+  %%   numéro de page: l'entrée est triée sur le symbole [ plutôt que
+  %%   sur |.
+  \renewcommand{\cmdprint}[1]{\textup{\texttt{\string#1}}}
+  \makeatletter
+  \renewcommand{\cmd}[1]{\cmdprint{#1}%
+    \index{\expandafter\@gobble\string#1@\string\cs{\expandafter\@gobble\string#1}}}
+  \makeatother
+  \newcommand*{\pixbsbs}{\cmdprint{\\}\index{"\ @\string\cs{}\bs}}
+  \newcommand*{\pixabang}{\cmdprint{\!}\index{"!@\string\cs{}\texttt{"!}}}
+  \newcommand*{\pixbar}{\cmdprint{\|}\index{[@\string\cs{}\texttt{\textbar}}}
+
+  %% Indications de capsule vidéo
+  \newcommand{\capsule}[2]{\href{#1}{#2~\raisebox{-0.2ex}{\Large\faYoutubePlay}}}
+
+  %% Hyperlien avec symbole de lien externe juste après
+  \newcommand{\link}[2]{\href{#1}{#2~\raisebox{-0.2ex}{\faExternalLink}}}
+
+  %% Lien vers documentation dans la marge
+  %% usage: \doc[documentation]{nom_fichier}{url}
+  \newcommand{\doc}[3][documentation]{\link{#3}{#1}%
+    \ifthenelse{\equal{#2}{}}{}{\marginpar%
+      [\hfill\faBookmark~\fichier{#2}]%
+      {\faBookmark~\fichier{#2}}}}
+
+  %% Suppression de l'hyperlien
+  \newcommand{\nolink}[1]{\begin{NoHyper}#1\end{NoHyper}}
+
+  %% «Bouton» de la page de copyright
+  \newcommand{\browsebutton}{%
+    \setlength{\fboxrule}{1pt}%
+    \framebox[40mm][c]{%
+      \rule[-5pt]{0mm}{16pt}%
+      \makebox[7mm]{\raisebox{-2pt}{\LARGE\faGithub}}\;%
+      {\sffamily Voir sur GitHub}}}
+
+  %% Pour le tableau des commandes d'espacement en mode mathématique.
+  %% Pris de la doc de amsmath.
+  \newcommand{\lspx}{\mathord{\dashv\mkern-3mu}}
+  \newcommand{\rspx}{\mathord{\mkern-2mu\vdash}}
+  \newcommand{\spx}[1]{$\lspx #1\rspx$}
+
+  %% Logo BIBTeX; tiré de http://bit.ly/1RQqUnG
+  \newcommand{\BibTeX}{\rmfamily B\kern-.05em{\scshape i\kern-.025em b}\kern-.08em \TeX}
+
+  %% Chapitre sur les bibliographies: des références bibliographiques
+  %% sont insérées dans le texte avec \bibentry. Certaines commandes
+  %% de francaisbst.tex sont alors utilisées, mais non encore
+  %% définies. Répétées ici. De plus, il faut définir ici la commande
+  %% \enquote plutôt que dans francais.bst. C'est pourquoi il y a une
+  %% version modifiée de ce fichier dans ces sources.
+  %% Voir http://bit.ly/1MORZmp
+  \global\def\bbland{et}
+  \global\def\bbledn{\'ed.}
+  \global\def\bblfourtho{4{\ieme}}
+  \global\def\bblth{{\ieme}}
+  \global\def\bblvol{vol.}
+  \def\bblno{\no{}}
+  \def\bblpp{p.}
+  \newcommand{\enquote}[1]{\guillemotleft#1\guillemotright}
+
+  %%% =======
+  %%%  Varia
+  %%% =======
+
+  %% Style de la bibliographie
+  \bibliographystyle{francais}
+
+  %% Longueurs pour la composition des pages couvertures avant et
+  %% arrière.
+  \newlength{\banderougewidth} \newlength{\banderougeheight}
+  \newlength{\bandeorwidth}    \newlength{\bandeorheight}
+  \newlength{\imageheight}
+  \newlength{\logoheight}
+  \newlength{\gapwidth}
+
+
+  %%% ============
+  %%%  Page titre
+  %%% ============
+  \title{\protect\raggedright%
+    \sffamily\bfseries
+    \fontsize{40}{40}\selectfont
+    Rédaction avec \\
+    \rmfamily\mdseries
+    \fontsize{45}{45}\selectfont
+    \raisebox{10pt}{{\textbackslash}title}%
+    \fontsize{80}{80}\selectfont%
+    \{%
+    \fontsize{70}{70}\selectfont%
+    \LaTeX
+    \fontsize{80}{80}\selectfont%
+    \}}
+  \author{\protect\raggedright%
+    \sffamily\bfseries
+    \fontsize{17}{20}\selectfont
+    Vincent Goulet \\
+    \mdseries
+    \fontsize{15}{20}\selectfont
+    Professeur titulaire \textbar\ École d'actuariat}
+  \date{%
+    \sffamily\mdseries\fontsize{15}{20}\selectfont
+    Édition {\fullcaps\year}.\month}
+
+%  \includeonly{couverture-avant,frontispice}
+
+\begin{document}
+
+\frontmatter
+
+%% Page couverture avant.
+\pagestyle{empty}
+\input{couverture-avant}
+\null\cleardoublepage           % cf. section 2.2 textpos.pdf
+
+%% Page frontispice
+\include{frontispice}
+\null\clearpage                 % idem
+
+%% Page de copyright
+\include{licence}
+\clearpage
+
+%% Corps du document
+\pagestyle{companion}
+
+\include{introduction}
+
+\cleartorecto
+\tableofcontents*
+
+\mainmatter
+
+\include{presentation}
+\include{bases}
+\include{organisation}
+\include{apparence}
+\include{boites}
+\include{tableaux+figures}
+\include{mathematiques}
+\include{bibliographie}
+\include{commandes}
+\include{trucs+astuces}
+
+\appendix
+\include{ulthese}               % éléments spécifiques à ulthese
+\include{solutions}
+
+\bibliography{formation-latex-ul}
+
+\cleardoublepage
+\printindex
+
+\cleartoverso
+
+\input{colophon}
+
+\cleartoverso
+
+%% Page couverture arrière.
+\pagestyle{empty}
+\input{couverture-arriere}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-engine: xetex
+%%% TeX-master: t
+%%% coding: utf-8
+%%% End:

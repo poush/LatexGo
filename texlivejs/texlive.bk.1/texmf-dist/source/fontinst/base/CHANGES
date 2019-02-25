@@ -1,0 +1,648 @@
+--- CHANGES ---
+
+This is the old changes log for the fontinst font installation package. 
+As of v1.9, changes in the core are recorded using the \changes 
+mechanism of the doc package, and appear as a section in the typeset form 
+of the source (fisource.dvi). Changes to supporting files are typically 
+recorded in each file, at the end.
+
+Feb 4 1993, v0.01: Created the file, wrote an afm and enc parser,
+   started on a vpl writer.
+
+Feb 10 1993, v0.02: Rewrote the enc parser, generally hacked around,
+   imported trig.tex to convert Adobe's italic slope (expressed in
+   angles!) into a font dimension (expressed as a ratio!) grrrrrr...
+
+Feb 12 1993, v0.03: Tidied up the comments a bit, moved the
+   \fontlist out of \readafm, added \writepl (as well as \writevpl).
+   Replaced \fake{CHARACTER} by having the .fd file give default
+   definitions for \char-CHARACTER.  Added the \map and
+   \ligtable entries to \char-CHARACTER.  Redefined \ligtable,
+   \map and \codingscheme as token lists.  Moved the \kernpair's
+   into \ligtable.
+
+Feb 16 1993, v0.04: Added FontName, FullName, UnderlineThickness and
+   Notice.  Added the source font encodings, and MAPFONT.
+   Discovered a seriousish bug---if a character exists in the afm
+   file but is not in the source encoding, then the fake character
+   is still overwritten, since we don't know what the source
+   encoding is going to be until later.  Fixed this by reading in
+   the source encoding first, and looking to see if there is a
+   character in the source encoding for the one in the afm file.
+   Added \topaccent.
+
+17 Feb 1993, v0.05: Added the visual centre parameter to \topaccent,
+   and added \botaccent and \doublechar.  Fixed a bug where the
+   default \missingchar had a horizontal rather than a vertical
+   rule.  Added \settoken.
+
+19 Feb 1993, v0.06: Fixed a bug whereby a character which was in the
+   source encoding but not in the afm file overwrote it's faked
+   version.  Changed the default \missingchar to be independent of
+   the values parsed from the afm file (so it doesn't matter when
+   you set a \missingchar).  Added \parameter and \ligatures.  Added
+   \kernalikes and \copykern, which meant I had to split \ligtable
+   back into \ligtable and \kerntable, since when you say \copykern
+   you only want the \kerntable copied, not the \ligtable.
+   Redefined \map so that it's more portable---the contents of \map
+   are allowed to assume they start in font \startfont, should move
+   and should finish having moved right by \charwd and in font
+   \stopfont.  This makes it possible to have composite characters
+   within composite characters---for example to make <ffi> out of
+   <f><fi> and <fi> is in turn made out of <f><i>.
+
+23 Feb 1993, v0.07: Introduced the \character token list (previously
+   all of the variables had been set by \char-FOO).  \botaccent,
+   \topaccent, etc are now commands to be used inside \defchar, so
+   you can say something like \defchar{FOO}{\ifblah ... \botaccent
+   ... \else ... \topaccent ... \fi}.  Added \cramchar.  Added
+   the shift-left argument to \doublechar.
+
+24 Feb 1993, v0.08: Replaced \charic by \leftbearing and
+   \rightbearing.  Made the assingments in a \char-FOO command
+   global, so we can protect local variables.  Fixed a bug with
+   \getchar{FOO} which used to end up calling \the\character.
+   However, \the\character may contain other \getchar{BAZ} calls,
+   which will override the values of \kernalike, \source, \target,
+   etc.  So \getchar can't call \the\character.  Added \shrinkfont.
+   Made all the AFM variables counts rather than dimens.  Added
+   \afmunits, and did all the conversion between AFM units and TeX
+   units as late as possible (which means we can alter \afmunits
+   locally and perform scaling).  Added \getfont so fonts are now
+   loaded dynamically, and can be scaled.  Added \shrinkchar for
+   producing c&sc fonts.
+
+3 Mar 1993, v0.09: Added \fractionchar, \inferiorchar and
+   \superiorchar.  No character is produced for characters called
+   .notdef in the target encoding.  Produced a first bash at a
+   complement encoding to Cork, containing the Adobe standard and
+   Expert characters missing from Cork.
+
+9 Mar 1993, v0.10: A major spring clean.  Introduced ATX and ETX
+   files, so the parser for AFM files now reads an AFM file and writes
+   out the same information in a TeX-friendly fashion as an ATX file.
+   Similarly, an ETX file contains the same information as an ENC file.
+   Introduced \inputatx, \inputetx and \inputenc to input an ATX, ETX
+   or ENC file if it already exists and to make it otherwise.
+
+14 Mar 1993, v0.11: A continuation of the spring clean.  Redefined
+   \getchars to define everything locally.  Redefined \writechars to
+   read the encoding from a .etx file.  Discovered I'd used the command
+   \afmchar twice(!) so I redefined one of them to be \rawchar.
+   Rewrote the LIGTABLE section.
+
+15 Mar 1993, v0.12: Finished the spring clean of the file generation.
+   Redid \writevpl and \writepl.  Read the FUD file in after the ATX
+   files, so the FUD file can use the parameters read in by the ATX
+   file.  Fixed a bug with \afmchar that wrote incorrect values
+   to \charactersize in the ATX file.  Rewrote \fontdimens to write the
+   PARAMETERs out immediately (since we are now writing the VPL file
+   when reading the FUD file).  Finished the LIGTABLE section, redid
+   \copykern.
+
+22 Mar 1993, v0.13: Rewrote the generation of ATX files, so kern table
+   information is gathered together as in a LIGTABLE.  Renamed
+   \defchars to \readafm.  Renamed \writevpl to \makevpl ... \endvpl,
+   and rewrote it to cope with the new syntax of ATX files.
+
+24 Mar 1993, v0.14: Added \lkern and \rkern entries to ATX files,
+   replacing \copykern.  Added kern copying to LIGTABLEs.
+
+29 Mar 1993, v0.15: Added \boundarychar, \nextlarger and \varchar.
+   Fixed a bug with \lrkern.
+
+30 Mar 1993, v0.16: Fixed a bug whereby FONTDIMENS was being output
+   rather than FONTDIMEN.  Also \writepl was generating a VPL file.
+   And I discovered a bug with dvips that means that fonts generated
+   with designsize and designunits R 9.9945 cause a rounding error
+   and dvips complains about a design size mismatch.  Grr...  Fixed
+   a bug with outputting ligatures for characters without
+   kernings---previously I output a LABEL without checking that
+   there were actually going to be any LIG instructions (which there
+   might not be if, for example, it was a monoweight font).
+
+4 Apr 1993, v0.17: Added the interactive prompt.  Generated the .fd
+   file.  \makevpl and \makepl don't overwrite files any
+   longer---they give a message saying `FILENAME.(v)pl already
+   exists.'
+
+17 Apr 1993, v0.18: Added \makefamily, \maketexfont and \makerawfont.
+
+27 Apr 1993, v0.19: Fixed a bug with \finishligs, which caused
+   multiple LABEL instructions to be put down (I had a \labelfalse
+   where I should have had a \labeltrue).
+
+4 Aug 1993, v1.00: Ripped it up and started again... v1.00 is going
+   to be a fairly complete rewrite from the ground up.  I can keep:
+
+    * the AFM parser
+    * the ENC parser
+    * much of the VPL and PL writer
+
+   but the fud engine is going to be replaced by the notion of a
+   glyphbase.  The idea will be that all of the information kept in
+   the ATX and FUD files will be put into one file called a
+   `glyphbase'.  Then we'll have two utilities:
+
+    * \makerawfont{ENCODING}{AFMFILE}{FONTNAME}
+      will convert an AFM file into a glyphbase and a property list.
+
+    * \maketexfont{ENCODING}{GLYPHBASES}{FONTNAME}
+      will convert a collection of glyphbases into a virtual font.
+
+   For example:
+
+      \makerawfont{adobe}{Times-Roman}{ptmr0}
+      \maketexfont{T1ulc}{ptmr0,cork}{ptmrq}
+
+   makes the raw font ptmr0.pl, the glyphbase ptmr0.gly, and then
+   converts the glyphbases ptmr0 and cork into the font ptmrq.  This
+   notion of glyphbase will also allow users to modify fonts easily,
+   for example you could write a little ptmhax glyphbase, which
+   would override the default cork glyphbase by saying:
+
+      \maketexfont{T1ulc}{ptmr0,ptmhax,cork}{ptmrq}
+
+   This will make it much easier to tweak fonts.  I'll also specify
+   the glyphbase syntax, and do my best to make everything upwardly
+   compatible.
+
+   On the 4th of August I started on the above.  I wrote
+   \makeglyphbase, which converts an AFM file into a glyphbase, and
+   I wrote the glyphbase commands to store the glyphbase information
+   in TeX.  The main thing that's missing is the PL and VPL writers,
+   and the ligature, nextlarger and varchar entries.
+
+10 Aug 1993, v1.01: Edited trig.tex to remove uses of \then.  Separated
+   \maketexfont into \inputglyphbase and \makevirtualfont.  Added the
+   ability to write CHARACTER instructions, (OK, but not the MAPFONTs
+   yet).
+
+11 Aug 1993, v1.02: Only output CHARDP, CHARHT and CHARIC when they
+   are positive.  Added the MAPFONT and \mapfont instructions.
+
+12 Aug 1993, v1.03: Corrected a bug where I was calling \inputetx 
+   *after* an \openout\outfile, which caused the \outfile to be closed, 
+   if the etx file had to be generated.
+
+22 Aug 1993, v1.04: Added the concept of variable and number expression.  
+   Included trig.tex as part of this file.  Changed design size to an 
+   integer.  Renamed `glyphbase' to `metric file', and changed the 
+   syntax of ETX files.  Only write out SELECTFONT instructions when 
+   necessary.
+
+23 Aug 1993, v1.05: Added the font dimensions.
+
+24 Aug 1993, v1.06: Made the slot of each glyph an int variable like 
+   any other.  Added dim variables.  Made designsize a dim variable, 
+   which should cure a bug that was causing design sizes not to match 
+   up.  Added the LIGTABLE.  Fixed a bug with \inputetx and \inputmtx 
+   which caused the redefinition of \relax to survive past the 
+   \inputFOO command.  Fixed a bug with \vplrule, since I'd got the 
+   arguments to SETRULE the wrong way round (again!).
+
+25 Aug 1993, v1.07: Added the VARCHAR and NEXTLARGER entries.  Added 
+   the encoding documentation commands.  Renamed the file to 
+   fontinst.sty. 
+
+26 Aug 1993, v1.08: Added the documentation of MTX files.
+
+27 Aug 1993, v1.09: Corrected a bug with \comment.  Added \tfmtomtx.  
+   Removed the SCALE argument to \setrawglyph.  Added \convertafm to 
+   convert integer AFM units to a dimen, trying to minimize rounding 
+   errors whilst avoiding rounding errors.  Renamed \leftkerning and 
+   \rightkerning to \setleftkerning and \setrightkerning.
+
+30 Aug 1993, v1.10: Added \resetwidth, \resetheight, \resetdepth and 
+   \resetitalic.  Added the ability to use \width{GLYPH} etc. inside 
+   \setglyph{GLYPH}.  Added everyglyph and everyendglyph.
+
+10 Sep 1993, v1.11: Discovered a bug with the VPL glyphs which was
+   causing it never to write out a SELECTFONT instruction.
+
+13 Sep 1993, v1.12: Added the \familyinst...\endfamilyinst commands.
+   Added commands to zero the fonts between calls of \makefont, so
+   one document can make a large number of fonts.
+
+14 Sep 1993, v1.13: FIRST ALPHA-RELEASE OF V1.
+   Changed the syntax of \useafm and \useetx to use
+   the same parameters as LaTeX NFSS.  Removed the prefix f0 from
+   the beginning of the font names, in a pathetic attempt to fit 
+   MS-DOS 8+3 filenames.  Added the \tempfile command.
+
+4 Oct 1993, v1.14: Removed a spurious \let in \docnextslot.  Thanks
+   to Damian Cugley for spotting that one.  Added \usetfm to \familyinst. 
+
+5 Oct 1993, v1.15: Fixed a bug with \dotfm, which was causing it to
+   generate a PL file, even though the font was already in TFM
+   format!  Thanks again to Damian.  Also changed
+   \let\Input=\@@input to a catcode hack, just in case fontinst.sty
+   is read in by LaTeX when @ isn't a letter.  That one was spotted
+   by Paul Thompson.
+
+6 Oct 1993, v1.16: Replaced Phil Taylor's trig macros with David
+   Carlisle's.  Added the PL parser.  Fixed a bug with the bug fix
+   for \dotfm, where I'd removed an \inputmtx command that was
+   needed...  And I fixed a bug which was causing the VPL files to
+   be generated once for each font that contributed to the VPL file.
+   Damian got those ones as well.
+
+11 Oct 1993, v1.17: Added the SIZE argument to \useafm and \usepl,
+   and redid the FD generation to use the size info.  This should
+   allow fonts like Malvern to be generated at different design
+   sizes and still have a sensible FD file.  NOTE: This means old
+   fontinst files will no longer work!  I also made \pltomtx create
+   a \setdim{designsize} command.
+
+13 Oct 1993, v1.18: Fixed a bug with \calculateitslant which caused
+   it to bomb if the italic angle didn't have a decimal... this was
+   caused by allowing extraneous spaces at the end of the angle.
+   These have now been stripped away.  Thanks to Paul Thompson for
+   spotting that one!
+
+15 Oct 1993, v1.19: Discovered a bug with \familyinst, which caused
+   only one ETX file to be loaded.  This one was introduced when I
+   added the SIZE arguments, since I reorganized the main
+   \endfamilyinst loop.  Serves me right!  This is now fixed, but
+   I'm left with the problem that the sensible order to generate VPL
+   files is not the sensible order to generate FD lines in.  FD
+   files need the SIZE parameter inside the SERIES and SHAPE,
+   whereas if a font is contributing to a number of SERIES and
+   SHAPEs but only one SIZE, then it's sensible to have it outside
+   the SERIES and SHAPE parameters.  Oh dear...
+
+19 Oct 1993, v1.20: Added the glyph `missingglyph' which is produced
+   whenever a glyph is missing.
+
+3 Nov 1993, v1.21: Corrected a bug with \kerning, which was causing
+   \kerning{A}{V} to give the kerning between V and A!  And I added
+   the PL names for the math font parameters NUM1--AXISHEIGHT.
+   Damian spotted those ones.  Rewrote the main loop as I said I
+   would have to in the note on v1.19, so there's no useless
+   regeneration of fonts now.
+
+17 Nov 1993, v1.22: Restored the final parameter to
+   \DeclareFontShape which had disappeared somehow!  Rob Hutchings
+   spotted this one.  And I stopped trying to be clever about
+   checking to see if a glyph has been defined before using it.
+   This means you get a horrible error message if you try to use an
+   undeclared glyph, but hey ho.  Trying to trap this has caused so
+   many problems with other things breaking that I think I'll give
+   up :-)  Added the \glyphwarning command, and removed the
+   `missingglyph' glyph.  Docstripped David's trig.doc into
+   trig.sty, so I don't have to worry about trig.doc generating the
+   trig.sty file.  Saved the catcodes of ` ', `@', `~' `_' and NL so I
+   so I can use @ and _ for internal macro names, space and NL
+   for ignored white space, and ~ for `real' white space.  Renamed
+   all the internal commands (apart from the documentation ones) to
+   have _ in their names.
+
+29 Nov 1993, v1.23: Added a check that a glyph exists before writing
+   it to a (V)PL file... this was causing fontinst to crash if there
+   was a glyph missing from an AFM file.  Yannis Haralambous and Paul 
+   Thompson spotted this one.
+
+23 Dec 1993, v1.24: Removed the \familyinst...\endfamilyinst interface, 
+   and replaced it by \installfonts ... \endinstallfonts, which makes 
+   it easier to generate FD files that look like standard LaTeX2e FD 
+   files.  Removed (I'm not sure if this is a great idea) the ability 
+   to specify an encoding for an AFM file, since I'm not sure every 
+   dvi-to-ps converter can re-encode raw fonts.  I added the 
+   \declarefamily command to specify which encoding string corresponds 
+   to which ETX file.
+
+24 Dec 1993, v1.25: Redid the \declare... commands, and replaced 
+   everyglyh and everyendglyph by sidebearings.
+
+25 Dec 1993, v1.26: Drank a lot.
+
+26 Dec 1993, v1.27: Added \setcommand, \resetcommand and \ifiscommand.
+
+27 Dec 1993, v1.28: Bug-fixes in \setcommand and \resetcommand.  Redid 
+   \pltomtx so that it can read the encoding from the CODINGSCHEME line 
+   in the file.  Moved the documentation and tables into fontdoc and 
+   fonttab.tex.
+
+28 Dec 1993, v1.29: Removed the fd-commands argument from \makefont, 
+   since the FD syntax is to allow FD-commands dependent on
+   encoding/family/series/shape but not on size.  This means we can't 
+   generate font-specific FD-commands, but I've never seen those used, 
+   so I'm not too worried...  Fixed a bug with the CC commands, which 
+   was producing a glyph with a different width than its horizontal 
+   escapement, and I'm not sure what every DVI driver would do with 
+   that.  Replaced \etxtopl with \mtxtopl.  Replaced the GLYPH COMMAND 
+   \rawglyph with the MTX COMMAND \setrawglyph.
+
+29 Dec 1993, v1.30: Fixed a bug with \setrawglyph, which wasn't 
+   checking to see if the glyph was already defined.  Added 
+   \unsetglyph.  Corrected the spelling of `\immedaite' (sic) in 
+   \vpl_nextlarger.
+
+3 Jan 1994, v1.301: The glyph warning message is now only produced when 
+   the glyph is used, rather than when it is defined.  And I've moved 
+   over to three-digit version numbers, since I was going through the 
+   two-digit ones quite rapidly.  Added \bye, so fontinst documents can 
+   run under LaTeX as well as plain TeX.  Added \unsetint, \unsetstr, 
+   \unsetdim and \unsetcommand.  Renamed \makefont and \makefamily to 
+   \installfont and \installfamily.
+
+4 Jan 1994, v1.302: Fixed a bug with the definition of \bye.
+
+6 Jan 1994, v1.303: Added the FONTNAME argument to \installfont.
+   Actually got rid of everyglyph.
+
+8 Jan 1994, v1.304: Added minimumkern and \resetglyph.  Fixed a bug 
+   with \vpl_kerning, which was swapping the left- and right-kerns.  
+   Surprising I never spotted this before...
+
+9 Jan 1994, v1.305: Worked on the MTX and ETX files.
+
+10 Jan 1994, v1.306: Worked on the MTX and ETX files.
+
+12 Jan 1994, v1.307: Edited the documentation.
+
+20 Jan 1994, v1.308: Added the rawscale integer variable, and the 
+  \setnotglyph command.  Redid the way that CC instructions are 
+  processed, to use the dimensions stored in the glyph-not variables.  
+  Set all of the saved VPL commands to \relax so that they can be 
+  \edef'ed on without having to protect them.  Replaced some \def\foo{} 
+  by \let\foo\empty_command's.  Replaced a large definition that was 
+  being made by \CHARACTER (when parsing PL files) by a \let.  Redid 
+  the datatype used to store kerning so it uses control sequences as a 
+  compact representation of glyph names.  All in all, fontinst now runs 
+  in 79% of the time and 77% of the space that it did last week.
+
+21 Jan 1994, v1.309: Saved some more time and space on the kern table.
+
+22 Jan 1994, v1.310: Added the `FONT scaled AMOUNT', made \setkern take 
+   account of \int{rawscale}.  Moved the change log into a separate 
+   CHANGES file.  Redid \samesize and \resetwidth so that the width is 
+   adjusted by a MOVERIGHT, so the glyph will have the correct horizontal 
+   escapement.  Corrected a typo which had renamed \resetint to \setint 
+   (oops!).  Corrected a typo of `itslant' rather than `italicslant'.  
+   Added the \transformfont command and \mtxtomtx.  Changed the 
+   definition of \unfakable{foo} in latin.mtx to look to see if there's a 
+   glyph <foo-not> to get the dimensions for.  Added a fake <space> and a 
+   fake <dotlessj> which is a missing glyph rule with the dimensions 
+   combined from <j> and <dotlessi>.  Changed the default interword 
+   stretch to be 1/3 of interword space, rather than zero.  Removed the 
+   checks for the existence of <space> and <x> in OT1.etx and T1.etx, 
+   since these are now faked in latin.mtx.  Renamed the PS/CM math fonts, 
+   after a discussion with Karl Berry, added the OMS and OMX math fonts.  
+   Added the Greek letters, digits and other humanists to unsetalf.mtx.  
+   Added the DEFAULTRULETHICKNESS and BIGOPSPACING commands to the PL 
+   parser.  Fixed a bug I'd introduced by giving \vartop, \varmid, 
+   \varrep and \varbot no parameters.  Oops.  Created timesmat.sty and 
+   testmath.tex.  All in all, a reasonable day's work...
+   
+23 Jan 1994, v1.311: Added some more tests to testmath.tex.  Added the 
+   new math sizes to timesmat.sty.  Fixed a bug with fontstnd.tex which 
+   was causing it to generate the wrong FD entry for italic fonts.  Fixed 
+   a bug with CHARACTER parsing in \pltomtx which wasn't resetting the 
+   values of WIDTH, HEIGHT, DEPTH and CHARIC between glyphs.
+   
+24 Jan 1994, v1.312: Added the SEVENBITSSAFE command to the PL parser.
+
+25 Jan 1994, v1.313: Restored the catcode of ~, which I'd left as 10.
+   Made /, < and > in zptmcmrm come from cmmi rather than ptmri.  Added 
+   zptmcmr to fontptcm.tex, which is Adobe Times with +, =, (, ), [ and ] 
+   taken from CMR.  This means that [...] and (...) in text is different 
+   from in math, but means that the delimiters are the right size for 
+   math setting with CM symbols, and match the growing delimiters in cmex. 
+   Moved the files ptmcmhax.mtx and psycmhax.mtx to zrmhax.mtx and 
+   zrvhax.mtx.
+
+27 Jan 1994, v1.314: Took the textstyle and displaystyle big operators 
+   in zpsycmrv from cmex8 rather than cmex10, since they are more 
+   suitably sized for the <summation> and <product> from Adobe Symbol.  
+   Made all the accents in latin.mtx zero depth (which TeX's math accent 
+   placement requires).  Discovered that cmex8 doesn't have a 
+   CODINGSCHEME, so I added one by hand to the PL file.
+
+30 Jan 1994, v1.315: Replaced cmex8 in zpsycmrv by cmex9.  Added
+   <epsilon1>, <pi1> and <rho1> to unsethum.mtx.  Added the \skewchar
+   declaration for zptmcmrm.  Fixed a bug which was causing negative
+   mathchardefs.  Finished off the skewchar kerns for zptcmrm.
+   Renamed timesmat.sty to mathptm.sty, since there's already a
+   timesmat.sty. 
+
+7 Feb 1994, v1.316: Fixed the \ProvidesPackage line in mathptm.sty.
+
+8 Feb 1994, v1.317: Fixed a bug with fontptcm.tex where I'd put the
+   \skewchar command in the wrong argument!  Made the `size' argument
+   to \installfont an FD size specification.  Added fakes for <lslash>
+   and <Lslash> built from <lslashslash> to latin.mtx.  Added a check
+   that a ligature glyph exists before writing out the LIGTABLE entry.
+   Edited the documentation a bit---thanks to Karl Berry for comments.
+   Added the fontcmro example, inspired by Norman Walsh.  Fixed a bug
+   with .fd file generation which caused multiple \DeclareFontShape
+   entries to be produced.  Added \unfakable{endash} and
+   \unfakable{emdash} to latin.mtx.  Sebastian spotted that one.
+
+10 Feb 1994, v1.318: Added \unfakable{dotlessi} to latin.mtx.  Karl
+   Berry pointed that one out.
+
+1 Mar 1994, v1.319: Added the HEADER.  Karl Berry pointed that one out
+   too. 
+
+6 Apr 1994, v1.320: Write out a LABEL BOUNDARYCHAR ligable entry where
+   necessary.  Alan Hoenig pointed that one out.  Rewrote mathptm.sty
+   to remove some of the nastier hacks.
+
+7 Apr 1994, v1.321: Added the ability to generate font substitutions
+   in the FD files.
+
+8 Apr 1994, v1.322: Fixed a bug with font substitution which was
+   causing the font substitutions to be written out before the real
+   fonts.  Moved the mathptm package to standing on its own.
+
+17 Apr 1994, v1.323: Added the top-level \latinfamily commands, and
+   updated the example files and documentation to use them.  Added
+   OT1ci.etx.  Made the list of files in an \installfont command
+   expanded before running along the list, so you can have a macro
+   which expands out to a list of files now.  Added substitutions for
+   semibold and demibold, for upright italic, and for sc to nc.  Added
+   OT19.etx, OT1c9.etx, OT1ci9.etx, OT1i9.etx, T19.etx and T1c9.etx.
+   Removed OT1o.etx.
+
+19 Apr 1994, v1.324: Removed italic and oblique small caps.  Fixed a
+   bug which was causing the latin.mtx file to be read in inside a
+   group if a latin family without an expert font was created.
+
+25 Apr 1994, v1.325: Removed a bug which caused sc fonts to have the
+   same names as u&lc fonts.  Fixed a bug which was causing oblique
+   fonts not to be generated properly.  Fixed a bug with FD
+   generation which was producing too few arguments for
+   DeclareFontShape for substitutions.
+
+27 May 1994, v1.326: Made fontinst.tex a 2e document.  Fixed a bug
+   with generating slant which was generating slant in design size per
+   point rather than points per point.  Sigh.  Ciar\'an \'O Duibh\'in
+   spotted that one.  Declared this to be the first full release.
+
+1 Jun 1994, v1.327: Fixed bug with filename parsing which was losing
+   variants.  Rewrote the encoding files to use the OT1 tt encoding
+   whenever monoweight is set.  Removed the f-liagatures from the T1
+   encoding for monowidth fonts.  Sebastian spotted that one.
+
+2 Jun 1994, v1.328: Fixed a bug with FD generation: I'd added the
+   extra argument for series substitutions but not shape
+   substitutions.  Ta Sebastian again.
+
+3 Jun 1994, v1.329: Made Upsilon1 unfakable.
+
+15 Jun 1994, v1.330: Fixed a bug with font substitution which was
+   ignoring chains of substitutions such as bx -> b -> db.  Added the
+   m->l substitution.  Renamed the `mn' and `bn' series to `mc' and
+   'bc'.  Added the  `k' and `m' series.
+
+16 Jun 1994, v1.331: Sebastian spotted another problem with
+   substitutions.  If a font had both a series and a shape
+   substitution, the series was sometimes getting lost.
+   Steve Grathwohl pointed out that I'd forgotten to switch off
+   kerning before loading the math italic fonts in fontcmro.
+
+27 Jun 1994, v1.332: Added braces to \needsfontinstversion, which was
+   clobbering \a_dimen and \b_dimen.  Fixed a bug with compwordmark
+   which was causing it to get letterspacing added to it.  Added the
+   GLYPH-spacing variable to cope with this.  These were
+   spotted by Constantin Kahn.
+
+29 Jun 1994, v1.333: Added \ProvidesFile line to the .fd files.
+
+16 Aug 1994, v1.334: Added \frompl, fixed bugs with \resetdim and
+   <ccedilla>---all reported by Constantin Kahn.
+
+9 Sep 1994, v1.335: Fixed a bug with NEXTLARGER and VARCHAR generation
+   which was causing the entries to be printed out for nonexistent
+   glyphs---spotted by Alan Hoenig.  Updated the example installation
+   files for Times, Helvetica and Courier.  Updated to a more recent
+   trig.sty, and added the hacks to allow trig.sty to be used outside
+   LaTeX2e.   Made fontinst.sty initex processable, so you can save
+   memory by building your own fontinst format without plain.  Fixed
+   the names of `narrow' fonts, which used to clobber the non-narrow
+   fonts---spotted by Peter Busk Laursen.
+
+12 Sep 1994, v1.336: Fixed a bug with fontcmro, which was listing the
+   9pt font as being 10pt in the fd file---spotted by Steve Grathwohl.
+
+22 Sep 1994, v1.337: Corrected spelling mistake in \declareencoding in
+   error message of \CODINGSCHEME---spotted by Alan Hoenig.
+
+8 Oct 1994, v1.338: Corrected definition of \space in
+   fontinst.ini---spotted by Rob Hutchings.
+
+18 Nov 1994, v1.339: Added 8r.etx and 8r.enc from Sebastian.
+   Distributed a patched fontinst.rc file containing a reimplementation
+   of \latinfamily that uses the 8r encoding.
+
+21 Nov 1994, v1.400: Added missing \fi to 8r.etx---spotted by Steve
+   Grahthwohl.  Added \mtxtopl for expert fonts in
+   \latinfamily---spotted by Rob Hutchings.
+
+29 Nov 1994, v1.401: Added hyphen+hyphenchar = hyphenchar lig to
+   T1.etx (so that foo-bar words can be hyphenated as foo<hyphenchar>
+   bar)---spotted by Frank Mittelbach.  Made default stretch and
+   shrink 50% and 16.7% of <space> respectively.  Added \everyjob to
+   fontinst.ini to load the fontinst.rc file---spotted by Rob
+   Hutchings.
+
+7 Dec 1994, v1.402: Corrected typos with 8r.etx---spotted by
+   Constantin Kahn.
+
+12 May 1995, v1.403: Mentioned the pl files in fontinst.tex, and added
+   the encoding TEX TEXT WITHOUT F-LIGATURES.  Both spotted by John
+   Wells. 
+
+16 Sep 1995, v1.500: Incorporated changes by SPQR and CK in their
+   fontinst.rc file.   In detail...  Added the \NOFILES debugging
+   option.  Used SPQR and CK's complete reimplementation of
+   \latinfamily.  Added the TEXBASE1ENCODING.  Added \etxtopl and
+   \installrawfont.  Added the setting of \errorcontextlines.  Grabbed
+   T1i.etx from CTAN.  Added the setting of \newlinechar (pointed out
+   by Constantin).  Fixed bug with \resetcommand which stopped braces
+   around the csname from working (Contantin again).  Removed the
+   contrib/zd directory at Constantin's request.  Rewrote the
+   documentation.  Added fontinst.cls.
+
+[16 Sep 1995, v1.500 on CTAN with fonts/psfonts/tools]
+
+21 Sep 1995, v1.501: Corrected some typos in the documentation.
+   Added kerns for ng, Ng and hyphenchar.   Fixed spacing in faked
+   <FFsmall> and friends.  Fixed kerning of <dotlessJ>.  Raised the
+   <macron> in <dbar> to half-way between the xheight and the height of
+   <d>.  Added fake <ng> -> <eng>.  Made \cscbotaccent and
+   \csctopaccent look to see if both of the glyphs exist rather than just
+   the first.  Thanks to Hilmar Schlegel for all these points.   
+
+29 Sep 1995, v1.502: Renamed all the distributed afm files from
+   *0*.afm to *8a*.afm.  Updated the file header on 8r.etx.  
+   Renamed Karl's fontinst.rc to karl-fontinst.rc, to avoid it being
+   picked up by every punter.
+   All pointed out by Sebastian.
+
+24 Nov 1995, v1.503: Included Alan Hoenig's vfinst in contrib/vfinst.
+
+23 Jan 1996, v1.504: Included some of Sebastian's changes to OT1.etx: 
+   upped stretch and shrink to .6 and .24 of space; reduced extra
+   space after . to .24 of space; removed <endash> + <hyphen> =
+   <emdash> ligature from OT1 monowidth; made \setslot{grave}
+   etc. into \setslot{\lc{Grave}{grave}} etc; fixed a bug with T1c
+   `monoweight' -> `monowidth' (!); implemented Rob's changes to 
+   small caps and small accented caps; included fake kerning for
+   Udieresis; added hackery from spqr.rc for faking small caps and
+   faking widths.
+
+[28 Jan 1996, v1.504 on CTAN with:fonts/psfonts/tools]
+
+24 Jan 1996, v1.505: Updated fontptcm.tex to use ptmr8a rather than ptmr0.
+
+25 Jan 1996, v1.506: Added extra braces to \latinfamily to stop
+   setting of \digits in one run from affecting it in subsequent
+   runs.   Spotted by Richard Walker.
+
+23 Feb 1996, v1.507: Replaced vpltovf by vptovf.  Spotted by Sebastian.
+
+17 Jun 1996, v1.508: Added an \ifdim check to stop lots of MOVERIGHT R 0.0 
+   instructions being generated.  Spotted by Sebastian.
+
+18 Jun 1996, v1.509: Allow real numbers in .afm files.  Spotted by
+   Gintautas Grigelionis.  Made spaces before ; optional, in order to
+   parse v2.0 afm files (spaces before ; were made compulsory in v3.0).
+
+20 Jun 1996, v1.510: Added 9d and 9o encodings for fonts with
+   old-style digits. 
+
+21 Jun 1996, v1.511: Removed \endinput from the end of .fd files, so
+   that additions can be made more easily.
+
+24 Jul 1996, v1.512: Updated version of trig.sty.
+
+7 Aug 1996, v1.513: Moved unfakable glyphs eariler in latin.mtx so
+   that all-caps fonts will work.
+
+6 Feb 1997, v1.514: Added a zero-width rule to cwm in latin.mtx (to
+   stop the MAP entry from being empty).  Made cwm 1ex high.
+
+--- Copyright 1993, 1994, 1995, 1996 Alan Jeffrey ---
+ 
+11 Feb 1997, unofficial v1.6 SPQR on CTAN:fonts/psfonts/tools
+   Derived from v1.504 with minor hacks and fixes (not documented).  
+
+29 May 1998, unofficial v1.7 SPQR on CTAN:fonts/psfonts/tools
+   Derived from v1.6 with fixes by UV.  Corrected mapping of weights.
+   Added code for 8r-encoded AFM files (intended to cope with ttf2afm
+   limitations, but taken out again after ttf2afm was updated).
+   
+22 Jun 1998, unofficial v1.8 UV
+   Derived from v1.7 and v1.511.  Many .etx/.mtx files touched up.
+   fontinst.sty and fontdoc.sty now generated from fontinst.dtx.
+   \textcompfamily integrated into \latinfamily.  Reintroduced
+   oldstyle encodings (from v1.511).  8y.etx/8y.mtx added as an
+   alternative to 8r.etx/8r.mtx. ts1.etx and textcomp.mtx revised.
+
+30 Jun 1998, unofficial v1.800 UV on CTAN:fonts/utilities/fontinst
+   Several changes to examples/mathptm and examples/mathptmx.
+
+07 Jun 1998, v1.801: Fixed a bug when oldstyle small-caps fonts
+   are generated from <font>8r + <font>8x instead of <font>c8r.

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definebar" level="style" category="rules" file="node-rul.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupbar"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupbar" level="style" category="rules" file="node-rul.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="continue">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                    <cd:constant type="all"/>
+                </cd:parameter>
+                <cd:parameter name="empty">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="unit">
+                    <cd:constant type="ex" default="yes"/>
+                    <cd:constant type="em"/>
+                    <cd:constant type="pt"/>
+                    <cd:constant type="in"/>
+                    <cd:constant type="cm"/>
+                    <cd:constant type="mm"/>
+                    <cd:constant type="sp"/>
+                    <cd:constant type="bp"/>
+                    <cd:constant type="pc"/>
+                    <cd:constant type="dd"/>
+                    <cd:constant type="cc"/>
+                    <cd:constant type="nc"/>
+                </cd:parameter>
+                <cd:parameter name="order">
+                    <cd:constant type="foreground" default="yes"/>
+                    <cd:constant type="background"/>
+                </cd:parameter>
+                <cd:parameter name="rulethickness">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="method">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="offset">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="dy">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="max">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="foregroundstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="foregroundcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="mp">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupbars" level="style" category="rules" file="node-rul.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupbar"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="bar" generated="yes" variant="instance" level="document" category="rules" file="node-rul.mkiv">
+        <cd:sequence>
+            <cd:instance value="bar"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-bar"/>
+        </cd:instances>
+    </cd:command>
+
+    <cd:command name="bar" type="environment" level="document" category="rules" file="node-rul.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setbar" level="document" category="rules" file="node-rul.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="directsetbar" level="document" category="rules" file="node-rul.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="bar" type="environment" begin="push" end="pop" level="system" category="rules" file="node-rul.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="overbar" level="document" category="rules" file="node-rul.mkiv">
+            <cd:arguments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underbar" level="document" category="rules" file="node-rul.mkiv">
+            <cd:arguments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="hiddenbar" level="document" category="rules" file="node-rul.mkiv">
+            <cd:arguments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overstrike" level="document" category="rules" file="node-rul.mkiv">
+            <cd:arguments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="understrike" level="document" category="rules" file="node-rul.mkiv">
+            <cd:arguments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overbars" level="document" category="rules" file="node-rul.mkiv">
+            <cd:arguments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underbars" level="document" category="rules" file="node-rul.mkiv">
+            <cd:arguments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overstrikes" level="document" category="rules" file="node-rul.mkiv">
+            <cd:arguments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="understrikes" level="document" category="rules" file="node-rul.mkiv">
+            <cd:arguments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underrandom" level="document" category="rules" file="node-rul.mkiv">
+            <cd:arguments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underrandoms" level="document" category="rules" file="node-rul.mkiv">
+            <cd:arguments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underdash" level="document" category="rules" file="node-rul.mkiv">
+            <cd:arguments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underdashes" level="document" category="rules" file="node-rul.mkiv">
+            <cd:arguments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underdot" level="document" category="rules" file="node-rul.mkiv">
+            <cd:arguments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underdots" level="document" category="rules" file="node-rul.mkiv">
+            <cd:arguments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="nobar" level="document" category="rules" file="node-rul.mkiv">
+            <cd:arguments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="resetbar" level="style" category="rules" file="node-rul.mkiv"/>
+
+</cd:interface>

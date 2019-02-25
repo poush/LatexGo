@@ -1,0 +1,33 @@
+%%%%
+%%%% This file belongs to the ROEX package.
+%%%%
+%%% draw write_preamble write_postamble find_BB set_BB fill_C draw_C
+%%% draw fix_fill_cmyk fix_draw_cmyk
+% ROES-02.MF, ``DOORMAT'':
+%  Another example making use of both expanding stroke and removing overlaps;
+% ---
+input mftoeps; eps_mode_setup; input roex;
+tracingexpanding:=1; tracingremoving:=1;
+% ---
+beginchar("0",1in#,1in#,0);
+ path A[\\],B[\\];
+ A.n:=5; B.n:=5; % large values may cause exceedingly long processing...
+ A.b:=(1/(2A.n+1))*w; B.b:=(1/(2B.n+1))*h;
+ for i:=1 upto A.n:
+  A[i]:=((0,0)..(-1/2A.b,1/3h)..(1/2A.b,2/3h)..(0,h)) shifted ((2i-.5)*A.b,0);
+ endfor
+ for i:=1 upto B.n:
+  B[i]:=((0,0)..(1/3w,-1/2B.b)..(2/3w,1/2B.b)..(w,0)) shifted (0,(2i-.5)*B.b);
+ endfor
+ expand_stroke(make_list(1,A.n)A, make_list(1,B.n)B)(1/2A.b)R;
+ remove_overlap(make_list(1,R.num)R)()R;
+ find_BB make_list(1,R.num) R;
+ write_preamble jobname;
+ for i:=1 upto R.num:
+  fix_draw_cmyk if check_turn(R[i])>0: 0,1,1,0 else: 1,1,0,0 fi;
+  draw_C R[i];
+ endfor;
+ write_postamble;
+endchar;
+end.
+%%\end

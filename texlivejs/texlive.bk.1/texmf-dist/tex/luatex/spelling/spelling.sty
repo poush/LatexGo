@@ -1,0 +1,150 @@
+%%% spelling.sty
+%%% Copyright 2012, 2013 Stephan Hennig
+%%
+%% This work may be distributed and/or modified under the conditions of
+%% the LaTeX Project Public License, either version 1.3 of this license
+%% or (at your option) any later version.  The latest version of this
+%% license is in http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+%%
+%% See file README for more information.
+%%
+\ProvidesPackage{spelling}
+  [2013/05/25 v0.41 Support for spell-checking of LuaTeX documents (SH)]
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+% Test for the LuaTeX engine.
+\RequirePackage{ifluatex}
+\ifluatex
+\else
+\PackageError{spelling}{LuaTeX engine required}{You could try with the
+  `lualatex' command.}
+\fi
+% Lua module version management.
+\RequirePackage{luatexbase-modutils}
+% LuaTeX call-back management.
+\RequirePackage{luatexbase-mcb}
+% User-defined whatsit node ID allocation.
+\RequirePackage{luatexbase-attr}
+% Load main Lua file.
+\directlua name {spelling}{
+  % The main Lua file is not a module, so we must pass a full path to
+  % `dofile`.
+  local f = kpse.find_file('spelling-main.lua', 'lua')
+  dofile(f)
+}
+% Words are extracted after pages have been built.  In lack of a proper
+% Lua call-back, we're hooking into shipout from the LaTeX side.
+\RequirePackage{atbegshi}
+\AtBeginShipout{%
+  \directlua name {spelling-atbeginshipout}{
+    PKG_spelling.cb_AtBeginShipout(\the\AtBeginShipoutBox)
+  }%
+}
+% Provide command for reading-in a list of bad spellings.
+\newcommand*{\spellingreadbad}[1]{%
+  \directlua{
+    PKG_spelling.stage[1].parse_bad_plain_list_file('\luaescapestring{#1}')
+  }%
+}
+% Provide command for reading-in a list of good spellings.
+\newcommand*{\spellingreadgood}[1]{%
+  \directlua{
+    PKG_spelling.stage[1].parse_good_plain_list_file('\luaescapestring{#1}')
+  }%
+}
+% Provide command for reading bad spellings from a LanguageTool XML
+% file.
+\newcommand*{\spellingreadLT}[1]{%
+  \directlua{
+    PKG_spelling.stage[1].parse_XML_LanguageTool_file('\luaescapestring{#1}')
+  }%
+}
+% Provide command for reading match rules from a file.  Argument must be
+% a file name.
+\newcommand*{\spellingmatchrules}[1]{%
+  \directlua{
+    PKG_spelling.stage[1].read_match_rules('\luaescapestring{#1}')
+  }%
+}
+% Provide command for enabling/disabling visual feedback.
+\newcommand*{\spellinghighlight}[1]{%
+  \directlua{
+    if '\luaescapestring{#1}' == 'on' then
+      PKG_spelling.stage[2].enable_word_highlighting()
+    else
+      PKG_spelling.stage[2].disable_word_highlighting()
+    end
+  }%
+}
+% Provide command for setting visual feedback colour.
+\newcommand*{\spellinghighlightcolor}[1]{%
+  \directlua{
+    PKG_spelling.stage[2].set_highlight_color('\luaescapestring{#1}')
+  }%
+}
+% Provide command for enabling/disabling text ouput.
+\newcommand*{\spellingoutput}[1]{%
+  \directlua{
+    if '\luaescapestring{#1}' == 'on' then
+      PKG_spelling.stage[4].enable_text_output()
+    else
+      PKG_spelling.stage[4].disable_text_output()
+    end
+  }%
+}
+% Provide command for setting text output file name.
+\newcommand*{\spellingoutputname}[1]{%
+  \directlua{
+    PKG_spelling.stage[4].set_output_file_name('\luaescapestring{#1}')
+  }%
+}
+% Provide command for setting text output file line length.
+\newcommand*{\spellingoutputlinelength}[1]{%
+  \directlua{
+    PKG_spelling.stage[4].set_output_line_length(\luaescapestring{#1})
+  }%
+}
+% Provide command for enabling/disabling text extraction.
+\newcommand*{\spellingextract}[1]{%
+  \directlua{
+    if '\luaescapestring{#1}' == 'on' then
+      PKG_spelling.stage[2].enable_text_tagging()
+    else
+      PKG_spelling.stage[2].disable_text_tagging()
+    end
+  }%
+}
+% Provide command to declare code point mappings.
+\newcommand*{\spellingmapping}[2]{%
+  \directlua{
+    local r = PKG_spelling.stage[2].set_mapping(\luaescapestring{#1}, '\luaescapestring{#2}')
+    if r == false then
+      texio.write_nl('package spelling: invalid mapping: \luaescapestring{#1} => \luaescapestring{#2}')
+    end
+  }%
+}
+% Provide command to clear all existing code point mappings.
+\newcommand*{\spellingclearallmappings}{%
+  \directlua{
+    PKG_spelling.stage[2].clear_all_mappings()
+  }%
+}
+% Provide command to specify table paragraph behaviour.
+\newcommand*{\spellingtablepar}[1]{%
+  \directlua{
+    PKG_spelling.stage[3].set_table_paragraphs(\luaescapestring{#1})
+  }%
+}
+%
+% Read bad and good spellings from default sources.
+\directlua{
+  PKG_spelling.stage[1].parse_default_bad_and_good()
+}%
+%
+% Enable visual feedback.
+\spellinghighlight{on}
+% Enable text ouput at the end of the LuaTeX run.
+\spellingoutput{on}
+% Enable text extraction.
+\spellingextract{on}

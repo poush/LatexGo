@@ -1,0 +1,29 @@
+% After Bernard Gaulle's decease this work is now maintained as
+% the e-French project by a group of enthusiast users 
+% under LPPL copyright as declared in http://www.efrench.org/
+% mlp_doc.txt original file name.            An idea of Bernard Gaulle 97/10/31
+\ifnum\catcode`\@=11\else\expandafter\catcode`\@=11\fi%
+\ifx\@mlp@loaded\undefined\let\@mlp@loaded\relax%
+\else\expandafter\endinput\fi%
+\ProvidesPackage{mlp}[2004/06/25 The Multi-Lingual Package by --bg /V0.03/]%
+\def\@lastoption{}%
+\DeclareOption*{\edef\@lastoption{\CurrentOption}%
+                \PassOptionsToPackage{\CurrentOption}{mlp-opts}%
+               }%
+\ProcessOptions*%
+\edef\@required{}%
+\def\@requirepackage#1{\protected@edef\@required{\@required%
+                        \protect\RequirePackage{#1}}}%
+\def\addcaptionnames#1{\@nodocument#1\expandafter\g@addto@macro%
+                       \csname captions\languagename\endcsname{#1}}%
+\def\@tempa{}%
+\ifx\@lastoption\empty\input internat.mlp %
+ \def\@tempa{\ProcessOptions}%
+ \else%
+  \def\@tempa{\RequirePackage{mlp-opts}}%
+\fi%
+\@tempa%
+\@required%
+\let\@required\undefined\let\@requirepackage\undefined%
+\edef\beginlanguage{\expandafter\noexpand\csname \@lastoption\endcsname}%
+\endinput%

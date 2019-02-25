@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="installlanguage" level="system" category="language" file="lang-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setuplanguage"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installlanguage" variant="name" level="system" category="language" file="lang-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-language"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuplanguage" level="style" category="language" file="lang-ini.mkiv">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="cd:language"/>
+                <cd:constant type="default"/>
+            </cd:keywords>
+            <cd:assignments list="yes">
+                <cd:parameter name="default">
+                    <cd:constant type="cd:language"/>
+                </cd:parameter>
+                <cd:parameter name="state">
+                    <cd:constant type="start" default="yes"/>
+                    <cd:constant type="stop"/>
+                </cd:parameter>
+                <cd:parameter name="date">
+                    <cd:inherit name="currentdate"/>
+                </cd:parameter>
+                <cd:parameter name="time">
+                    <cd:inherit name="currenttime"/>
+                </cd:parameter>
+                <cd:parameter name="patterns">
+                    <cd:constant type="cd:file"/>
+                </cd:parameter>
+                <cd:parameter name="lefthyphenmin">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="righthyphenmin">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="lefthyphenchar">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="righthyphenchar">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="setups">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="spacing">
+                    <cd:constant type="broad" default="yes"/>
+                    <cd:constant type="packed"/>
+                </cd:parameter>
+                <cd:parameter name="font">
+                    <cd:constant type="auto"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="bidi">
+                    <cd:constant type="left"/>
+                    <cd:constant type="right"/>
+                    <cd:constant type="l2r"/>
+                    <cd:constant type="r2l"/>
+                </cd:parameter>
+                <cd:parameter name="text">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="limittext">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="hyphen">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="compoundhyphen">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="leftcompoundhyphen">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="rightcompoundhyphen">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="leftquote">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="rightquote">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="leftquotation">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="rightquotation">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="leftspeech">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="rightspeech">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="leftsentence">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="middlespeech">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="rightsentence">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="midsentence">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="leftsubsentence">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="rightsubsentence">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="factor">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelselanguage" level="system" category="language conditional" file="lang-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-language"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doiflanguageelse" level="system" category="language conditional" file="lang-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-language"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsepatterns" level="system" category="language conditional" file="lang-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-language"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifpatternselse" level="system" category="language conditional" file="lang-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-language"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="language" generated="yes" variant="example" level="document" category="language" file="lang-ini.mkiv">
+        <cd:sequence>
+            <cd:variable value="language"/>
+        </cd:sequence>
+    </cd:command>
+
+    <cd:command name="language" level="document" category="language" file="lang-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-language"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="language" type="environment" level="document" category="language" file="lang-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-language"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mainlanguage" level="style" category="language" file="lang-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-language"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="uselanguageparameter" level="system" category="language" file="lang-ini.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="exceptions" type="environment" level="style" category="language" file="lang-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-language"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="currentlanguage" level="system" category="language" file="lang-ini.mkiv"/>
+
+    <cd:command name="currentmainlanguage" level="system" category="language" file="lang-ini.mkiv"/>
+
+    <cd:command name="commalistsentence" level="document" category="language" file="lang-lab.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes">
+                <cd:constant type="cd:text"/>
+            </cd:keywords>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="cd:text"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

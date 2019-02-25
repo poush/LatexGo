@@ -1,0 +1,61 @@
+%%
+%% This is file `lwarp-relsize.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `relsize')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+\LWR@ProvidesPackagePass{relsize}[2013/03/29]
+\let\LWR@origrelsize\relsize
+\LetLtxMacro\LWR@origlarger\larger
+\LetLtxMacro\LWR@origsmaller\smaller
+\let\LWR@relscale\relscale
+\LetLtxMacro\LWR@origtextlarger\textlarger
+\LetLtxMacro\LWR@origtextsmaller\textsmaller
+\let\LWR@textscale\textscale
+
+\appto\LWR@restoreorigformatting{%
+\let\relsize\LWR@origrelsize%
+\LetLtxMacro\larger\LWR@origlarger%
+\LetLtxMacro\smaller\LWR@origsmaller%
+\let\relscale\LWR@relscale%
+\LetLtxMacro\textlarger\LWR@origtextlarger%
+\LetLtxMacro\textsmaller\LWR@origtextsmaller%
+\let\textscale\LWR@textscale%
+}
+
+\newcounter{LWR@relsizetemp}
+
+\renewcommand*{\relsize}[1]{}
+\renewcommand*{\larger}[1][]{}
+\renewcommand*{\smaller}[1][]{}
+\renewcommand*{\relscale}[1]{}
+
+\renewcommand*{\textlarger}[2][1]{%
+\setcounter{LWR@relsizetemp}{100+(#1*20)}%
+\InlineClass[font-size:\arabic{LWR@relsizetemp}\%]{textlarger}{#2}%
+}
+
+\renewcommand*{\textsmaller}[2][1]{%
+\setcounter{LWR@relsizetemp}{100-(#1*20)}%
+\InlineClass[font-size:\arabic{LWR@relsizetemp}\%]{textsmaller}{#2}%
+}
+
+\renewcommand*{\textscale}[2]{%
+\setcounter{LWR@relsizetemp}{100*\real{#1}}%
+\InlineClass[font-size:\arabic{LWR@relsizetemp}\%]{textscale}{#2}%
+}
+\endinput
+%%
+%% End of file `lwarp-relsize.sty'.

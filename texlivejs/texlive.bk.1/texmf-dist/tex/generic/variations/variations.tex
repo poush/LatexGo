@@ -1,0 +1,105 @@
+% Macros pour la composition des tableaux de variations
+% Version 0.3 du 13/09/06
+% Copyright (c) Christian Obrecht 2005-2006
+
+\catcode`@=11
+
+\font\lf@nt=line10
+
+\def\bvariations{\leavevmode\hbox\bgroup\vbox\bgroup
+
+\def\tc@{{\lf@nt\char0}}
+\def\fc@{{\lf@nt\char0}\kern-1em{\lf@nt\char18}}
+\def\td@{{\lf@nt\char64}}
+\def\fd@{{\lf@nt\char64}\kern-1em{\lf@nt\char82}}
+
+\def\tc@@{{\lf@nt\char8}}
+\def\fc@@{{\lf@nt\char8}\kern-1em{\lf@nt\char42}}
+\def\td@@{{\lf@nt\char72}}
+\def\fd@@{{\lf@nt\char72}\kern-1em{\lf@nt\char106}}
+
+\def\sk@p##1{\vrule height ##1 depth 2pt width 0pt}
+\let\@ils=\offinterlineskip
+
+\def\cb{
+\vbox{\offinterlineskip\halign{&####\cr
+&&\fc@@\cr
+&\tc@@\cr
+\tc@@\cr
+\sk@p{.5em}\cr}}}
+
+\def\db{
+\vbox{\@ils\halign{&####\cr
+\td@@\cr
+&\td@@\cr
+&&\fd@@\cr
+\sk@p{.5em}\cr}}}
+
+\def\ch{
+\vbox{\@ils\halign{&####\cr
+\sk@p{.5em}\cr
+&&\fc@@\cr
+&\tc@@\cr
+\tc@@\cr
+\sk@p{2.5em}\cr}}}
+
+\def\dh{
+\vbox{\@ils\halign{&####\cr
+\sk@p{.5em}\cr
+\td@@\cr
+&\td@@\cr
+&&\fd@@\cr
+\sk@p{2.5em}\cr}}}
+
+\def\c{
+\vbox{\@ils\halign{&####\cr
+&&\fc@\cr
+&\tc@\cr
+\tc@\cr
+\sk@p{.75em}\cr}}}
+
+\def\d{
+\vbox{\@ils\halign{&####\cr
+\td@\cr
+&\td@\cr
+&&\fd@\cr
+&&&\sk@p{.75em}\cr}}}
+
+\newdimen\@w
+\@w=.2pt
+\newdimen\@l
+\setbox100\hbox{0}
+\@l=\wd100
+\advance\@l by -\@w
+\divide\@l by 2
+\newdimen\@r
+\@r=\@l
+\advance\@r by \@w
+
+\def\str@t{\vrule height 10pt depth 4pt width 0pt}
+\def\c@##1{\hfil$\str@t##1$\hfil}
+\def\@n{\kern.5em}
+
+\def\z{\hbox to 1em{\hfil\str@t\kern\@l\vrule width\@w\kern-\@r0\hfil}}
+\def\l{\vrule width\@w}
+\def\bb{\vrule\kern1pt\vrule}
+\def\bg{\omit\kern1pt\vrule\hfil}
+\def\bd{\omit\hfil\vrule\kern1pt}
+\def\mI{\,-\infty\,}
+\def\pI{\,+\infty\,}
+
+\let\\=\cr
+\def\filet{\noalign{\hrule}}
+\def\dr##1{\omit\quad\hfil$##1$\hfil&\quad}
+\def\ga##1{\quad&\omit\hfil$##1$\hfil\quad}
+\def\m##1{\vbox{\@ils\halign{&####\cr$\smash{##1}$\cr\sk@p{2em}\cr}}}
+\def\h##1{\vbox{\@ils\halign{&####\cr\str@t${##1}$\cr\sk@p{3.5em}\cr}}}
+
+\hbox\bgroup\vrule\vbox\bgroup
+\halign\bgroup\c@{\@n##\@n}\vrule&&\c@{##}\cr\filet}
+
+\def\evariations{\filet\egroup\egroup\vrule\egroup\egroup\egroup}
+
+\catcode`@=12
+
+\endinput

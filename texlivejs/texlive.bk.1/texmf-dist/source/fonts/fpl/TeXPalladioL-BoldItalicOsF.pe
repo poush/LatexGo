@@ -1,0 +1,54 @@
+#!/usr/bin/env fontforge
+# Time-stamp: <2005-02-11 13:16:41 ralf> 
+# Copyright 2004, 2005 Ralf Stubner
+# See the file COPYING (GNU General Public License) for license
+# conditions. 
+
+Open("uplbi8a.pfb");
+# proper setup with names etc
+fontname="TeXPalladioL-BoldItalicOsF";
+fontfamily="TeX Palladio L";
+fullname="TeX Palladio L Bold Italic Old Style Figures";
+copyright=$copyright+", Copyright 2004, 2005 Ralf Stubner.";
+copyright=AddGPL(copyright);
+copyright=AddException(copyright);
+fontversion="1.003";
+
+SetFontNames(fontname,fontfamily,fullname,"",copyright,fontversion);
+# No UniqueID (needs recent ff to work properly)
+SetUniqueID(-1);
+# use OtherSubrs from URW (needs recent ff to work properly)
+ReadOtherSubrsFile("URW-OtherSubrs.ps");
+
+# copy OsF and SC
+Select("zero","nine");
+Clear();
+MergeFonts("Palladio-BoldItalicOsF.sfd");
+
+# underscore
+Select("underscore");
+Scale(100,116,0,0);
+Move(0,-15);
+
+# emdash
+Select("emdash");
+Scale(75,100,0,0);
+Move(125,0);
+SetWidth(1000);
+RoundToInt();
+
+# kerning
+RemoveAllKerns();
+MergeKern("pplbi9d-kern.afm");
+
+# hinting
+ChangePrivateEntry("StemSnapV","[114 138]");
+
+Save("TeXPalladioL-BoldItalicOsF.sfd");
+# generte Type1, scale generate TTF
+Generate("fplbij8a.pfb","",3); 
+# ScaleToEm(2048);
+# Generate("fplbij8a.ttf","",0x80); 
+
+Quit(0);
+

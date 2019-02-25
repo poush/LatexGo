@@ -1,0 +1,45 @@
+%%
+%% This is file `modulus.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% modulus.dtx  (with options: `package')
+%% This is a generated file.
+%% 
+%% This document is copyright 2018 by Donald P. Goodman, and is
+%% released publicly under the LaTeX Project Public License.  The
+%% distribution and modification of this work is constrained by the
+%% conditions of that license.  See
+%% http://www.latex-project.org/lppl.txt
+%% for the text of the license.  This document is released
+%% under version 1.3 of that license, and this work may be distributed
+%% or modified under the terms of that license or, at your option, any
+%% later version.
+%% 
+%% This work has the LPPL maintenance status 'maintained'.
+%% 
+%% The Current Maintainer of this work is Donald P. Goodman
+%% (dgoodmaniii@gmail.com).
+%% 
+%% This work consists of modulus.dtx, modulus.ins, and
+%% derived files modulus.sty and modulus.pdf.
+
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesPackage{modulus}[2018/05/07 v1.0 Modulus/modulo operator in plain TeX]
+\newcount\remainder%
+\def\modulo#1#2{%
+\remainder=#1%
+\divide\remainder by#2%
+\multiply\remainder by#2%
+\multiply\remainder by-1%
+\advance\remainder by#1\relax%
+}%
+\newcount\intquotient%
+\def\quotient#1#2{%
+\intquotient=#1%
+\divide\intquotient by#2%
+}%
+\endinput
+%%
+%% End of file `modulus.sty'.

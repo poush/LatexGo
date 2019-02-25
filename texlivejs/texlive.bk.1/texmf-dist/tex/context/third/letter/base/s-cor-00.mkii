@@ -1,0 +1,678 @@
+%D \module
+%D   [     file=s-cor-00,
+%D      version=2012.06.10,
+%D        title=\CONTEXT\ User Module,
+%D     subtitle=Correspondence,
+%D       author=Wolfgang Schuster,
+%D         date=\currentdate,
+%D    copyright=Wolfgang Schuster,
+%D      license=GNU General Public License]
+
+%C Copyright (C) 2011  Wolfgang Schuster
+%C
+%C This program is free software: you can redistribute it and/or modify
+%C it under the terms of the GNU General Public License as published by
+%C the Free Software Foundation, either version 3 of the License, or
+%C (at your option) any later version.
+%C
+%C This program is distributed in the hope that it will be useful,
+%C but WITHOUT ANY WARRANTY; without even the implied warranty of
+%C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%C GNU General Public License for more details.
+%C
+%C You should have received a copy of the GNU General Public License
+%C along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+\unprotect
+
+% Constants and variables
+ 
+\startinterface all
+  \setinterfaceconstant {whitespace}      {whitespace}
+  \setinterfaceconstant {backgroundimage} {backgroundimage}
+  \setinterfaceconstant {fromname}        {fromname}
+  \setinterfaceconstant {fromaddress}     {fromaddress}
+  \setinterfaceconstant {attention}       {attention}
+  \setinterfaceconstant {subject}         {subject}
+  \setinterfaceconstant {closing}         {closing}
+  \setinterfaceconstant {signature}       {signature}
+  \setinterfaceconstant {copy}            {copy}
+  \setinterfaceconstant {enclosure}       {enclosure}
+  \setinterfaceconstant {postscript}      {postscript}
+  \setinterfaceconstant {dispatch}        {dispatch}
+  \setinterfaceconstant {toname}          {toname}
+  \setinterfaceconstant {toaddress}       {toaddress}
+  \setinterfaceconstant {backaddress}     {backaddress}
+  \setinterfaceconstant {opening}         {opening}
+  \setinterfaceconstant {fromphone}       {fromphone}
+  \setinterfaceconstant {fromfax}         {fromfax}
+  \setinterfaceconstant {frommail}        {frommail}
+  \setinterfaceconstant {fromurl}         {fromurl}
+  \setinterfaceconstant {salutation}      {salutation}
+  \setinterfaceconstant {language}        {language}
+  \setinterfaceconstant {street}          {street}
+  \setinterfaceconstant {city}            {city}
+  \setinterfaceconstant {phone}           {phone}
+  \setinterfaceconstant {email}           {email}
+  \setinterfaceconstant {bankname}        {bankname}
+  \setinterfaceconstant {banknumber}      {banknumber}
+  \setinterfaceconstant {accountnumber}   {accountnumber}
+  \setinterfaceconstant {room}            {room}
+  \setinterfaceconstant {yourref}         {yourref}
+  \setinterfaceconstant {yourmail}        {yourmail}
+  \setinterfaceconstant {myref}           {myref}
+  \setinterfaceconstant {mymail}          {mymail}
+  \setinterfaceconstant {customer}        {customer}
+  \setinterfaceconstant {invoice}         {invoice}
+  \setinterfaceconstant {fax}             {fax}
+  \setinterfaceconstant {url}             {url}
+  \setinterfaceconstant {bank}            {bank}
+  \setinterfaceconstant {organization}    {organization}
+  \setinterfaceconstant {zip}             {zip}
+  \setinterfaceconstant {country}         {country}
+\stopinterface
+
+\startinterface all
+  % all
+  \setinterfacevariable {correspondence}  {correspondence}
+  \setinterfacevariable {nexthead}        {nexthead}
+  \setinterfacevariable {lefthead}        {lefthead}
+  \setinterfacevariable {righthead}       {righthead}
+  \setinterfacevariable {foot}            {foot}
+  \setinterfacevariable {nextfoot}        {nextfoot}
+  \setinterfacevariable {leftfoot}        {leftfoot}
+  \setinterfacevariable {rightfoot}       {rightfoot}
+  \setinterfacevariable {topmark}         {topmark}
+  \setinterfacevariable {botmark}         {botmark}
+  \setinterfacevariable {cutmark}         {cutmark}
+  \setinterfacevariable {endmark}         {endmark}
+  \setinterfacevariable {usermark}        {usermark}
+  % letter
+  \setinterfacevariable {lettermain}      {lettermain}
+  \setinterfacevariable {letternext}      {letternext}
+  \setinterfacevariable {letter}          {letter}
+  \setinterfacevariable {address}         {address}
+  \setinterfacevariable {backaddress}     {backaddress}
+  \setinterfacevariable {location}        {location}
+  \setinterfacevariable {opening}         {opening}
+  \setinterfacevariable {closing}         {closing}
+  \setinterfacevariable {secondpage}      {secondpage}
+  \setinterfacevariable {copy}            {copy}
+  \setinterfacevariable {enclosure}       {enclosure}
+  \setinterfacevariable {french}          {french}
+  \setinterfacevariable {specialnotation} {specialnotation}
+  \setinterfacevariable {e}               {e}
+  \setinterfacevariable {place}           {place}
+  \setinterfacevariable {gbrief}          {gbrief}
+  \setinterfacevariable {fullblock}       {fullblock}
+  \setinterfacevariable {semiblock}       {semiblock}
+  \setinterfacevariable {simplified}      {simplified}
+  \setinterfacevariable {modified}        {modified}
+  \setinterfacevariable {blockstyle}      {blockstyle}
+  \setinterfacevariable {knuth}           {knuth}
+  % memo
+  \setinterfacevariable {memo}            {memo}
+  \setinterfacevariable {memomain}        {memomain}
+  \setinterfacevariable {memonext}        {memonext}
+\stopinterface
+
+% Messages
+
+\definemessageconstant {correspondence}
+
+\startinterface all
+  \setinterfacemessage{correspondence}{title}{correspondence}
+  \setinterfacemessage{correspondence}{1}    {Undefined layer       '--' for the '--' environment}
+  \setinterfacemessage{correspondence}{2}    {Undefined section     '--' for the '--' environment}
+  \setinterfacemessage{correspondence}{3}    {Undefined description '--' for the '--' environment}
+\stopinterface
+
+% Namespaces
+
+\def\????correspondence                    {@@@@correspondence}
+\def\????correspondencebuffer              {@@@@correspondencebuffer}
+\def\????correspondencelayer               {@@@@correspondencelayer}
+\def\????correspondencelayerstate          {@@@@correspondencelayerstate}
+\def\????correspondenceframe               {@@@@correspondenceframe}
+\def\????correspondencesection             {@@@@correspondencesection}
+\def\????correspondenceoption              {@@@@correspondenceoption}
+\def\????correspondencedescription         {@@@@correspondencedescription}
+\def\????correspondencedescriptionlocation {@@@@correspondencedescriptionlocation}
+\def\????correspondencestyle               {@@@@correspondencestyle}
+\def\????correspondenceelement             {@@@@correspondenceelement}
+\def\????correspondencelayout              {@@@@correspondencelayout}
+
+% Environment
+
+\newtoks\everydefinecorrespondence
+
+\unexpanded\def\startcorrespondence[#1]%
+  {\starttext
+   \begingroup
+   \def\currentcorrespondence{#1}%
+   \dosingleempty\dostartcorrespondence}
+
+\def\dostartcorrespondence[#1]%
+  {\iffirstargument
+     \setupcurrentcorrespondence[#1]%
+   \fi
+   \dostartbuffer[\????correspondencebuffer\currentcorrespondence][\e!start\currentcorrespondence][\e!stop\currentcorrespondence]}
+
+\unexpanded\def\stopcorrespondence[#1]%
+  {\placecorrespondence[#1]%
+   \endgroup
+   \stoptext}
+
+\appendtoks
+  \normalprotected\expandafter\edef\csname\e!start\currentcorrespondence\endcsname{\startcorrespondence[\currentcorrespondence]}%
+  \normalprotected\expandafter\edef\csname\e!stop \currentcorrespondence\endcsname{\stopcorrespondence [\currentcorrespondence]}%
+\to \everydefinecorrespondence
+
+\unexpanded\def\startcorrespondencecontent[#1]%
+  {\begingroup
+   \def\currentcorrespondence{#1}%
+   \dostartbuffer[\????correspondencebuffer\currentcorrespondence][\e!start\currentcorrespondence\v!content][\e!stop\currentcorrespondence\v!content]}
+
+\unexpanded\def\stopcorrespondencecontent[#1]%
+  {\endgroup}
+
+\appendtoks
+  \normalprotected\expandafter\edef\csname\e!start\currentcorrespondence\v!content\endcsname{\startcorrespondencecontent[\currentcorrespondence]}%
+  \normalprotected\expandafter\edef\csname\e!stop \currentcorrespondence\v!content\endcsname{\stopcorrespondencecontent [\currentcorrespondence]}%
+\to \everydefinecorrespondence
+
+\unexpanded\def\correspondenceparameters#1#2#3%
+  {\def\currentcorrespondenceelement    {#1:#2}%
+   \def\currentcorrespondencecontent    {#1:#3:#2}%
+   \let\currentcorrespondencelayer      \currentcorrespondenceelement
+   \let\currentcorrespondenceframe      \currentcorrespondenceelement
+   \let\currentcorrespondencesection    \currentcorrespondenceelement
+   \let\currentcorrespondencedescription\currentcorrespondenceelement}
+
+\unexpanded\def\definecorrespondence[#1]%
+  {\def\currentcorrespondence{#1}%
+   \the\everydefinecorrespondence}
+
+% Setup
+
+\def\correspondenceparameter
+  {\namedcorrespondenceparameter\currentcorrespondence}
+
+\def\namedcorrespondenceparameter#1#2%
+  {\csname
+     \ifcsname\????correspondence#1#2\endcsname
+       \????correspondence#1#2%
+     \else
+       \s!empty
+     \fi
+   \endcsname}
+
+\unexpanded\def\setupcorrespondence[#1]%
+  {\def\currentcorrespondence{#1}%
+   \setupcurrentcorrespondence}
+
+\unexpanded\def\setupcurrentcorrespondence
+  {\getparameters[\????correspondence\currentcorrespondence]}
+
+\appendtoks
+  \normalprotected\expandafter\edef\csname\e!setup\currentcorrespondence\e!endsetup\endcsname{\noexpand\dodoubleargument\setupcorrespondence[\currentcorrespondence]}%
+\to \everydefinecorrespondence
+
+% Placement
+
+\newtoks\everybeforecorrespondence
+\newtoks\everyaftercorrespondence
+
+\unexpanded\def\placecorrespondence[#1]%
+  {\begingroup
+   \edef\currentcorrespondence{#1}%
+   \let \currentcorrespondenceoption\currentcorrespondence
+   \the\everybeforecorrespondence
+   \page
+   \setupheader[\c!state=\v!stop]%
+   \setupfooter[\c!state=\v!stop]%
+   \doifsomething{\correspondenceoptionparameter\c!bodyfont  }{\setupbodyfont  [\correspondenceoptionparameter\c!bodyfont  ]}%
+   \doifsomething{\correspondenceoptionparameter\c!whitespace}{\setupwhitespace[\correspondenceoptionparameter\c!whitespace]}%
+   \doifsomething{\correspondenceoptionparameter\c!language  }{\mainlanguage   [\correspondenceoptionparameter\c!language  ]}%
+   % backgroundcolor is applied to the paper background
+   \doifsomething{\correspondenceoptionparameter\c!backgroundcolor}%
+     {\setupbackgrounds[\v!paper][\c!background=\v!color,\c!backgroundcolor=\correspondenceoptionparameter\c!backgroundcolor]}
+   % layers
+   \let\correspondencebackgrounds\empty
+   \def\addcorrespondencelayertolist##1{\addtocommalist{\currentcorrespondence:##1}\correspondencebackgrounds}
+   \processcommacommand[\accesscorrespondenceelements\currentcorrespondence\v!layer,correspondence:backgroundimage,correspondence:background]\addcorrespondencelayertolist
+   \expanded{\setupbackgrounds[\v!page][\c!background={\correspondencebackgrounds}]}%
+   % layout
+   \setuppagenumbering[\c!alternative=\v!singlesided,\c!location=]%
+   \setupsubpagenumber[\c!way=\v!by\v!text,\c!state=\v!start]%
+   % sections
+   \expanded{\processcommalistwithparameters[\accesscorrespondenceelements\currentcorrespondence\v!section]}{\placecorrespondencesection[\currentcorrespondence]}%
+   \page
+   \resetsubpagenumber
+   \setuplayout[\v!reset]%
+   \the\everyaftercorrespondence
+   \endgroup}
+
+\appendtoks
+  \normalprotected\expandafter\edef\csname\e!place\currentcorrespondence\endcsname{\placecorrespondence[\currentcorrespondence]}%
+\to \everydefinecorrespondence
+
+% Layers
+
+\def\correspondencelayerparameter
+  {\namedcorrespondencelayerparameter\currentcorrespondencelayer}
+
+\def\namedcorrespondencelayerparameter#1#2%
+  {\csname
+     \ifcsname\????correspondencelayer#1#2\endcsname
+       \????correspondencelayer#1#2%
+     \else\ifcsname\????correspondencelayer#2\endcsname
+       \????correspondencelayer#2%
+     \else
+       \s!empty
+     \fi\fi
+   \endcsname}
+
+\def\correspondenceframeparameter
+  {\namedcorrespondenceframeparameter\currentcorrespondenceframe}
+
+\def\namedcorrespondenceframeparameter#1#2%
+  {\csname
+     \ifcsname\????correspondenceframe#1#2\endcsname
+       \????correspondenceframe#1#2%
+     \else\ifcsname\????correspondenceframe#2\endcsname
+       \????correspondenceframe#2%
+     \else
+       \s!empty
+     \fi\fi
+   \endcsname}
+
+\unexpanded\def\setupcorrespondencelayer[#1][#2][#3]%
+  {\def\dosetupcorrespondencelayer##1%
+     {\edef\currentcorrespondencelayer{#1:##1}%
+      \setupcurrentcorrespondencelayer[#3]%
+      \the\everysetupcorrespondencelayer}%
+   \processcommalist[#2]\dosetupcorrespondencelayer}
+
+\unexpanded\def\setupcurrentcorrespondencelayer
+  {\getparameters[\????correspondencelayer\currentcorrespondencelayer]}
+
+\unexpanded\def\setupcorrespondenceframe[#1][#2][#3]%
+  {\def\dosetupcorrespondenceframe##1%
+     {\edef\currentcorrespondenceframe{#1:##1}%
+      \setupcurrentcorrespondenceframe[#3]}%
+   \processcommalist[#2]\dosetupcorrespondenceframe}
+
+\unexpanded\def\setupcurrentcorrespondenceframe
+  {\getparameters[\????correspondenceframe\currentcorrespondenceframe]}
+
+\unexpanded\def\definecorrespondencelayer[#1][#2]%
+  {\def\currentcorrespondencelayer{#1:#2}%
+   \let\currentcorrespondenceframe\currentcorrespondencelayer
+   \copylocalframed[\????correspondenceframe\currentcorrespondenceframe][\????correspondenceframe]%
+   \expandafter\let\csname\????correspondencelayer\currentcorrespondencelayer\s!parent\endcsname\????correspondencelayer
+   \expandafter\let\csname\????correspondenceframe\currentcorrespondenceframe\s!parent\endcsname\????correspondenceframe
+   \definelayer  [#1:#2][\c!width=\overlaywidth,\c!height=\overlayheight]%
+   \defineoverlay[#1:#2][\placecorrespondencelayer{#1}{#2}]}
+
+\newtoks\everysetupcorrespondencelayer
+
+\appendtoks
+  \setuplayer
+    [\currentcorrespondencelayer]
+    [     \c!x=\correspondencelayerparameter\c!x,
+          \c!y=\correspondencelayerparameter\c!y,
+     \c!preset=\correspondencelayerparameter\c!preset]%
+\to \everysetupcorrespondencelayer
+
+\setvalue{\????correspondencelayerstate\v!start }{\!!doneatrue  \!!donebfalse \!!donecfalse}
+\setvalue{\????correspondencelayerstate\v!stop  }{\!!doneafalse \!!donebfalse \!!donecfalse}
+\setvalue{\????correspondencelayerstate\v!next  }{\!!doneafalse \!!donebtrue  \!!donectrue }
+\setvalue{\????correspondencelayerstate\v!repeat}{\!!doneatrue  \!!donebtrue  \!!donectrue }
+\setvalue{\????correspondencelayerstate\v!left  }{\!!doneafalse \!!donebfalse \!!donectrue }
+\setvalue{\????correspondencelayerstate\v!right }{\!!doneafalse \!!donebtrue  \!!donecfalse}
+\setvalue{\????correspondencelayerstate\v!even  }{\!!doneafalse \!!donebfalse \!!donectrue }
+\setvalue{\????correspondencelayerstate\v!odd   }{\!!doneafalse \!!donebtrue  \!!donecfalse}
+
+\unexpanded\def\placecorrespondencelayer#1#2%
+  {\correspondenceparameters{#1}{#2}\v!layer
+   \executeifdefined{\????correspondencelayerstate\correspondencelayerparameter\c!state}{\getvalue{\????correspondencelayerstate\v!stop}}
+   \ifnum\correspondencepage=\plusone
+     \if!!donea\doplacecorrespondencelayer{#1}{#2}\fi
+   \else\ifodd\correspondencepage
+     \if!!doneb\doplacecorrespondencelayer{#1}{#2}\fi
+   \else
+     \if!!donec\doplacecorrespondencelayer{#1}{#2}\fi
+   \fi\fi
+   \tightlayer[\currentcorrespondencelayer]}
+
+\unexpanded\def\doplacecorrespondencelayer#1#2%
+  {\setlayer
+     [\currentcorrespondencelayer]
+     {\localframed[\????correspondenceframe\currentcorrespondenceframe]
+        {\doadaptleftskip {\correspondencelayerparameter\c!leftmargin }%
+         \doadaptrightskip{\correspondencelayerparameter\c!rightmargin}%
+         \dostartattributes{\????correspondencelayer\currentcorrespondencelayer}\c!style\c!color
+         \doifsymboldefinedelse{\correspondencelayerparameter\c!symbol}%
+           {\symbol[\correspondencelayerparameter\c!symbol]}
+           {\placecorrespondenceelement[#1][\v!layer][#2][\correspondencelayerparameter\c!alternative]}%
+         \dostopattributes}}}
+
+\unexpanded\def\checkcorrespondencelayer[#1][#2]%
+  {\def\currentcorrespondencelayer{#1:#2}%
+   \ifcsname\????correspondencelayer\currentcorrespondencelayer\s!parent\endcsname \else
+     \showmessage\m!correspondence{2}{#1,#2}%
+   \fi}
+
+\getparameters
+  [\????correspondencelayer]
+  [      \c!state=\v!start,
+             \c!x=\zeropoint,
+             \c!y=\zeropoint,
+   \c!alternative=\s!default,
+      \c!distance=\lineheight,
+     \c!separator=\crlf]
+
+\presetlocalframed[\????correspondenceframe]
+
+\getparameters
+  [\????correspondenceframe]
+  [ \c!frame=\v!off,
+   \c!offset=\zeropoint,
+    \c!align=\v!right]
+
+% Sections
+
+\def\correspondencesectionparameter
+  {\namedcorrespondencesectionparameter\currentcorrespondencesection}
+
+\def\namedcorrespondencesectionparameter#1#2%
+  {\csname
+     \ifcsname\????correspondencesection#1#2\endcsname
+       \????correspondencesection#1#2%
+     \else\ifcsname\????correspondencesection#2\endcsname
+       \????correspondencesection#2%
+     \else
+       \s!empty
+     \fi\fi
+   \endcsname}
+
+\unexpanded\def\definecorrespondencesection[#1][#2]%
+  {\def\currentcorrespondencesection{#1:#2}%
+   \expandafter\let\csname\????correspondencesection\currentcorrespondencesection\s!parent\endcsname\????correspondencesection}
+
+\unexpanded\def\setupcorrespondencesection[#1][#2][#3]%
+  {\def\dosetupcorrespondencesection##1%
+     {\edef\currentcorrespondencesection{#1:##1}%
+      \setupcurrentcorrespondencesection[#3]}%
+   \processcommalist[#2]\dosetupcorrespondencesection}
+
+\unexpanded\def\setupcurrentcorrespondencesection
+  {\getparameters[\????correspondencesection\currentcorrespondencesection]}
+
+\unexpanded\def\placecorrespondencesection[#1][#2]%
+  {\begingroup
+   \correspondenceparameters{#1}{#2}\v!section
+   \ifcsname\????correspondencesection\currentcorrespondencesection\s!parent\endcsname
+     \doifsomethingelse{\correspondencesectionparameter\c!spacebefore}{\blank[\correspondencesectionparameter\c!spacebefore]}{\endgraf}%
+     \correspondencesectionparameter\c!before
+     \doadaptleftskip {\correspondencesectionparameter\c!leftmargin }%
+     \doadaptrightskip{\correspondencesectionparameter\c!rightmargin}%
+     \doifsomething{\correspondencesectionparameter\c!align    }{\setupalign    [\correspondencesectionparameter\c!align    ]}%
+     \doifsomething{\correspondencesectionparameter\c!indenting}{\setupindenting[\correspondencesectionparameter\c!indenting]}%
+     \dostartattributes{\????correspondencesection\currentcorrespondencesection}\c!style\c!color
+     \placecorrespondenceelement[#1][\v!section][#2][\correspondencesectionparameter\c!alternative]%
+     \dostopattributes
+     \correspondencesectionparameter\c!after
+     \doifsomethingelse{\correspondencesectionparameter\c!spaceafter }{\blank[\correspondencesectionparameter\c!spaceafter ]}{\endgraf}%
+   \else
+     \showmessage\m!correspondence{2}{#1,#2}%
+   \fi
+   \endgroup}
+
+\getparameters
+  [\????correspondencesection]
+  [   \c!spacebefore=\v!line,
+       \c!spaceafter=\v!line,
+   \c!spaceinbetween={\v!samepage,\v!line},
+      \c!alternative=\s!default,
+        \c!separator=\crlf]
+
+% Options
+
+\def\correspondenceoptionparameter
+  {\namedcorrespondenceoptionparameter\currentcorrespondenceoption}
+
+\def\namedcorrespondenceoptionparameter#1#2%
+  {\csname
+     \ifcsname\????correspondenceoption#1#2\endcsname
+       \????correspondenceoption#1#2%
+     \else\ifcsname\????correspondenceoption#2\endcsname
+       \????correspondenceoption#2%
+     \else
+       \s!empty
+     \fi\fi
+   \endcsname}
+
+\unexpanded\def\setupcorrespondenceoption[#1]%
+  {\edef\currentcorrespondenceoption{#1}%
+   \setupcurrentcorrespondenceoption}%
+
+\unexpanded\def\setupcurrentcorrespondenceoption
+  {\getparameters[\????correspondenceoption\currentcorrespondenceoption]}
+
+\defineoverlay
+  [\v!correspondence:\c!backgroundimage]
+  [\doifsomething{\correspondenceoptionparameter\c!backgroundimage}
+     {\overlayfigure{\correspondenceoptionparameter\c!backgroundimage}}]
+
+\defineoverlay
+  [\v!correspondence:\c!background]
+  [\correspondenceoptionparameter\c!background]
+
+% Descriptions
+
+\def\correspondencedescriptionparameter
+  {\namedcorrespondencedescriptionparameter\currentcorrespondencedescription}
+
+\def\namedcorrespondencedescriptionparameter#1#2%
+  {\csname
+     \ifcsname\????correspondencedescription#1#2\endcsname
+       \????correspondencedescription#1#2%
+     \else\ifcsname\????correspondencedescription#2\endcsname
+       \????correspondencedescription#2%
+     \else
+       \s!empty
+     \fi\fi
+   \endcsname}
+
+\unexpanded\def\definecorrespondencedescription[#1][#2]%
+  {\edef\currentcorrespondencedescription{#1:#2}%
+   \expandafter\let\csname\????correspondencedescription\currentcorrespondencedescription\s!parent\endcsname\????correspondencedescription}
+
+\unexpanded\def\setupcorrespondencedescription[#1][#2][#3]%
+  {\def\dosetupcorrespondencedescription##1%
+     {\edef\currentcorrespondencedescription{#1:##1}
+      \setupcurrentcorrespondencedescription[#3]}%
+   \processcommalist[#2]\dosetupcorrespondencedescription}
+
+\unexpanded\def\setupcurrentcorrespondencedescription
+  {\getparameters[\????correspondencedescription\currentcorrespondencedescription]}
+
+\unexpanded\def\placecorrespondencedescription#1#2%
+  {\begingroup
+   \edef\currentcorrespondencedescription{#1:#2}%
+   \ifcsname\????correspondencedescription\currentcorrespondencedescription\s!parent\endcsname
+     \doifsomethingelse{\correspondencedescriptionparameter\c!textcommand}\donetrue\donefalse
+     \ifdone
+       \doifsomethingelse{\correspondencedescriptionparameter\c!spacebefore}{\blank[\correspondencedescriptionparameter\c!spacebefore]}{\endgraf}%
+       \correspondencedescriptionparameter\c!before
+       \setbox\scratchbox\hbox
+         {\dostartattributes{\????correspondencedescription\currentcorrespondencedescription}\c!headstyle\c!headcolor
+          \correspondencedescriptionparameter\c!headcommand
+          \dostopattributes}%
+       \assignwidth
+         {\scratchdimen}
+         {\correspondencedescriptionparameter\c!width}
+         {\unhcopy\scratchbox}
+         {\correspondencedescriptionparameter\c!distance}%
+       \executeifdefined{\????correspondencedescriptionlocation\correspondencedescriptionparameter\c!location}{\getvalue{\????correspondencedescriptionlocation\v!left}}%
+       \correspondencedescriptionparameter\c!after
+       \doifsomethingelse{\correspondencedescriptionparameter\c!spaceafter}{\blank[\correspondencedescriptionparameter\c!spaceafter]}{\endgraf}%
+     \fi
+   \else
+     \showmessage\m!correspondence{3}{#1,#2}%
+   \fi
+   \endgroup}
+
+\setvalue{\????correspondencedescriptionlocation\v!left}%
+  {\EveryPar{\hangindent\scratchdimen\hangafter\zerocount}%
+   \setbox\scratchbox\hbox to \scratchdimen{\box\scratchbox\hss}%
+   \noindent\llap{\box\scratchbox}\correspondencedescriptionparameter\c!textcommand}
+
+\setvalue{\????correspondencedescriptionlocation\v!top}%
+  {\noindent\box\scratchbox
+   \doifsomethingelse{\correspondencedescriptionparameter\c!spaceinbetween}
+     {\blank[\correspondencedescriptionparameter\c!spaceinbetween]}
+     {\nobreak\endgraf}%
+   \correspondencedescriptionparameter\c!textcommand}
+
+\setvalue{\????correspondencedescriptionlocation\v!text}%
+  {\noindent\box\scratchbox\correspondencedescriptionparameter\c!textcommand}
+
+\getparameters
+  [\????correspondencedescription]
+  [\c!width=\v!fit,
+   \c!distance=1em,
+   \c!symbol=dash]
+
+% Elements
+
+\unexpanded\long\def\definecorrespondenceelement[#1][#2][#3][#4]#5%
+  {\long\setvalue{\????correspondenceelement:#1:#2:#3:#4}{#5}}
+
+\unexpanded\def\placecorrespondenceelement[#1][#2][#3][#4]%
+  {\correspondenceparameters{#1}{#3}{#2}%
+   \executeifdefined{\????correspondenceelement:#1:#2:#3:#4}{\getvalue{\????correspondenceelement:#1:#2:#3:\s!default}}}
+
+% Files
+
+\unexpanded\def\loadcorrespondencefile[#1][#2]%
+  {\processaction
+     [\currentcorrespondence]
+     [ \v!letter=>\let\doloadcorrespondencefile\doloadletterfile ,
+         \v!memo=>\let\doloadcorrespondencefile\doloadmemofile   ,
+      \s!unknown=>\let\doloadcorrespondencefile\gobbleoneargument]%
+   \processcommalist[#2]\doloadcorrespondencefile}
+
+\def\doloadletterfile#1%
+  {\donefalse
+   \def\dodoloadletterfile##1%
+     {\ifdone \else
+        \startreadingfile
+        \readfile{##1}\donetrue\donefalse
+        \stopreadingfile
+      \fi}%
+   \dodoloadletterfile{letter-imp-#1.mkii}%
+   \dodoloadletterfile{letter-imp-#1.tex}%
+   \dodoloadletterfile{letter-#1.mkii}%
+   \dodoloadletterfile{letter-#1.tex}%
+   \ifdone \else
+     % style not found
+   \fi}
+
+\def\doloadmemofile#1%
+  {\donefalse
+   \def\dodoloadmemofile##1%
+     {\ifdone \else
+        \startreadingfile
+        \readfile{##1}\donetrue\donefalse
+        \stopreadingfile
+      \fi}%
+   \dodoloadmemofile{memo-imp-#1.mkii}%
+   \dodoloadmemofile{memo-imp-#1.tex}%
+   \dodoloadmemofile{memo-#1.mkii}%
+   \dodoloadmemofile{memo-#1.tex}%
+   \ifdone \else
+     % style not found
+   \fi}
+
+% Style
+
+\def\correspondencestyleparameter
+  {\namedcorrespondencestyleparameter\currentcorrespondencestyle}
+
+\def\namedcorrespondencestyleparameter#1#2%
+  {\csname
+     \ifcsname\????correspondencestyle#1#2\endcsname
+       \????correspondencestyle#1#2%
+     \else\ifcsname\????correspondencestyle#2\endcsname
+       \????correspondencestyle#2%
+     \else
+       \s!empty
+     \fi\fi
+   \endcsname}
+
+\unexpanded\def\setupcorrespondencestyle[#1][#2][#3]%
+  {\def\dosetupcorrespondencestyle##1%
+     {\edef\currentcorrespondencestyle{#1:##1}%
+      \setupcurrentcorrespondencestyle[#3]}%
+   \processcommalist[#2]\dosetupcorrespondencestyle}
+
+\unexpanded\def\setupcurrentcorrespondencestyle
+  {\getparameters[\????correspondencestyle\currentcorrespondencestyle]}
+
+\unexpanded\def\correspondencestylewidth#1#2#3%
+  {\edef\currentcorrespondencestyle{#1:#2}%
+   \edef\currentcorrespondencestylewidth{\correspondencestyleparameter\c!width}%
+   \hbox \ifx\currentcorrespondencestylewidth\empty \else to \correspondencestyleparameter\c!width \fi{#3\hss}}
+
+%D \section{Layout}
+%D
+%D \startitemize[packed]
+%D \item firstpage and
+%D \item secondpage.
+%D \stopitemize
+
+\newcount\correspondencepage
+
+\appendtoks
+  \setuplayout[\????correspondencelayout\currentcorrespondence\v!firstpage]%
+  \global\correspondencepage\plusone
+\to \everybeforecorrespondence
+
+\appendtoks
+   \everyaftershipout\expandafter{\the\everyaftershipout\setuplayout[\????correspondencelayout\currentcorrespondence\v!secondpage]}%
+   \everyaftershipout\expandafter{\the\everyaftershipout\global\advance\correspondencepage\plusone                                }%
+\to \everybeforecorrespondence
+
+\unexpanded\def\definecorrespondencelayout[#1][#2]%
+  {\def\currentcorrespondencelayout{#1#2}%
+   \definelayout[\????correspondencelayout\currentcorrespondencelayout]}
+
+\unexpanded\def\setupcorrespondencelayout[#1][#2][#3]%
+  {\def\dosetupcorrespondencelayout##1%
+     {\def\currentcorrespondencelayout{#1##1}%
+      \setuplayout[\????correspondencelayout\currentcorrespondencelayout][#3]}%
+   \processcommalist[#2]\dosetupcorrespondencelayout}
+
+\appendtoks
+  \definecorrespondencelayout[\currentcorrespondence][\v!firstpage ]%
+  \definecorrespondencelayout[\currentcorrespondence][\v!secondpage]%
+\to \everydefinecorrespondence
+
+% Lists
+
+\unexpanded\def\definecorrespondenceelements[#1][#2][#3]%
+  {\setvalue{\????correspondenceelement:#1:#2}{#3}}
+
+\def\accesscorrespondenceelements#1#2%
+  {\executeifdefined{\????correspondenceelement:#1:#2}\empty}
+
+% Extras
+
+\definesymbol[\v!cutmark][{\blackrule[\c!width=4mm,\c!height=\linewidth]}]
+
+\defineblankmethod[\v!samepage]{\penalty\!!tenthousand}
+
+\protect \endinput

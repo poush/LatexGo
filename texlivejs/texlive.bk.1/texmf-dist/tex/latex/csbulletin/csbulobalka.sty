@@ -1,0 +1,548 @@
+\ProvidesPackage{csbulobalka}[2017/02/17 Obalka + tiraz]
+\PackageInfo{csbulobalka}{$Id$}
+%
+% 3/4/2003 pridal jsem vetveni pro novou adresu sdruzeni (PS)
+% 4/4/2003 oprava telefonu KONVOJe
+% 5/4/2003 kerning slova ZPRAVODAJ na obalce
+% 5/4/2003 oprava URL tak, aby koncila lomitkem
+%
+% \special{header=newcentfonts.ps}
+\RequirePackage{color}
+\RequirePackage{graphicx}
+
+% Color
+\newif\if@Web
+\newif\if@ColorObal
+\newif\if@twoColors
+\newif\if@CustomColors
+\DeclareOption{web}{\@Webtrue}
+\DeclareOption{color}{\@ColorObaltrue}
+\DeclareOption{twocolor}{\@ColorObaltrue\@twoColorstrue}
+\DeclareOption{custom}{\@CustomColorstrue}
+\ProcessOptions
+
+\newif\ifWOW
+
+% ====================== TUGboat through XML =============================
+
+\newif\if@xml@skip
+\newif\if@xml@aut
+
+\def\xmltugboat{\parindent\z@ \leftskip\z@ \rightskip=2em plus 1fil \parfillskip=-2em plus 1fil
+  \interlinepenalty\@M
+  \CSnosplit \par
+  \def\subtitle##1{\ifhmode\par\fi
+    \if@xml@skip \vb \else \@xml@skiptrue \fi
+    \leftskip\z@\parindent\z@
+    \textbf{##1}\par\nobreak}%
+    \def\Xauthors##1{\ifhmode \par \fi \@xml@auttrue
+      \leftskip 1.5em \parindent\z@ ##1}%
+    \def\Xcline##1{\ifhmode\par\if@xml@aut\nobreak\@xml@autfalse\fi\fi \@xml@skiptrue
+        \leftskip 4.5em \parindent=-1.5em ##1}%
+    \def\Xcpage##1{\unskip\hfill##1\par\leftskip\z@\parindent\z@}}
+
+\def\endxmltugboat{\ifhmode \par \fi}
+
+% ====================================================================================
+
+\def\cslogodir{/home/zw/CsBul/pictures} % Directory with logos, pictures, etc.
+
+% Local macros for cstug2k.sty
+
+\def\ISSN{1211-6661}
+\def\XISSN{1213-8185}
+
+%============================================= Obalka
+
+\DeclareRobustCommand\az{--}%  Pro specifikaci čísla typu \cislo{1\az2}
+
+\def\centerbox#1{\vbox to90mm{\hsize=64mm \vss\@@line{\hss#1\hss}\vss}}
+\def\Centerbox#1{\vbox to90mm{\hsize=64mm \vss
+  \begin{centering}#1\par\end{centering}\vss}}
+
+%
+% Zmena barev + definice jmena souboru s logem
+%
+% Prime barvy: CYAN -> Modra Pantone 3005, MAGENTA -> Cervena Pantone 485
+%
+\definecolor{Gray}{gray}{0.7}
+\def\White{\color{white}}
+\def\Gray{\color{Gray}}
+\if@ColorObal
+  \if@twoColors
+    \definecolor{modra}{gray}{0.0}
+  \else
+    \if@Web
+      \definecolor{modra}{RGB}{0,178,255}
+    \else
+      \if@CustomColors
+        \definecolor{modra}{cmyk}{1,0,0,0}
+      \else
+        \definecolor{modra}{cmyk}{1,0.3,0,0}
+      \fi
+    \fi
+  \fi
+  \if@Web
+    \definecolor{cervena}{RGB}{255,0,0}
+    \def\cstuglogo{rgblogo}
+  \else
+    \if@CustomColors
+      \definecolor{cervena}{cmyk}{0,1,0,0}
+      \def\cstuglogo{redlogo}
+    \else
+      \definecolor{cervena}{cmyk}{0,1,1,0}
+      \def\cstuglogo{cmyklogo}
+    \fi
+  \fi
+\else
+  \definecolor{modra}{gray}{0}
+  \definecolor{cervena}{gray}{0}
+  \def\cstuglogo{bwlogo}
+\fi
+
+\newcommand\Obalka[1][\relax]{\setcounter{page}{\m@ne}\begingroup
+  \def\az{--}%
+  \def\OB@Picture{#1}% Picture inside the frame
+%
+% fonty
+% ~~~~~
+\def\zw@fpal##1ppl##2##38z at ##4 {%
+  \def##1{\usefont{\encodingdefault}{ppl}{##2}{##3}
+  \fontsize{##4}{\f@baselineskip}\selectfont}}
+\zw@fpal\ftit pplbn8z at 58
+\zw@fpal\fNo pplbn8z at 40
+\zw@fpal\fsubtit pplbn8z at 18
+\zw@fpal\fISSN pplmn8z at 14.4
+\zw@fpal\fsixpt pplmit8z at 6
+\zw@fpal\fxx pplmn8z at 9
+
+%
+% cislovani...
+% ~~~~~~~~~~~~
+
+\gdef\Vol{??}
+\ifcat$\the\rok$\else
+  \count@ \the\rok \advance\count@ -1990
+  \expandafter\gdef\expandafter\Vol\expandafter{\the\count@}
+\fi
+
+\def\p(##1,##2)##3##4##5{\put(##1,##2){\makebox(0,0)[##3##4]{##5}}}
+\unitlength 1mm
+
+\enlargethispage{10cm}
+\thispagestyle{empty}
+
+\noindent \hskip -10.24mm
+\begin{picture}(0,197)
+%
+% kontrolni ohraniceni plochy (ve finale zakomentovat)
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% \p(0,0)bl{\framebox(148,210){}}
+%
+% logo CSTUG
+% ~~~~~~~~~~
+\p(10,198)tl{\includegraphics[width=50mm]{\cslogodir/\cstuglogo}}
+%
+% podtisk
+% ~~~~~~~
+\def\xstring{Z p r a v o d a j\sp  \v{C} e s k o s l o v e n s k \'e h o\sp
+     s d r u \v{z} e n \'{\i}\sp u \v{z} i v a t e l \r{u}\sp \TeX u\sp}
+\setbox1\vbox{\hsize 80mm\fsixpt\spaceskip0.1pt\baselineskip 7pt plus 1pt
+  \lineskip0pt\lineskiplimit-10pt
+  \def\sp{\hskip0.33em plus 0.15em minus0.01em}\newcount\n
+  \loop\advance\n1\relax\xstring\ifnum\n<100\repeat\par}
+\p(10,172)tl{\Gray{\vsplit1 to 150mm}}
+%
+% ramecek s ilustraci
+% ~~~~~~~~~~~~~~~~~~~
+\p(138,194)tr{\rule{64mm}{90mm}}
+\p(134,198)tr{\White{\rule{64mm}{90mm}}}
+\p(134,198)tr{\linethickness{1pt} % ??? {} removed for 2006/1
+              \framebox(64,90){\OB@Picture}}
+%
+% titul
+% ~~~~~
+\def\ZPRAVODAJ{{\ftit Z\kern1ptP\kern2ptR\kern1ptA\kern-11ptVODAJ}}
+\p(5,84)tl{\White{\rule{85mm}{17.5mm}}}
+\p(138,82)tr{\Gray{\ZPRAVODAJ}}
+\p(137,83)tr{\textcolor{cervena}{\ZPRAVODAJ}}
+\p(10,62)tl{\White{\rule{80mm}{7.5mm}}}
+\p(10,61.5)tl{\hbox to 128mm{\fsubtit \v{C}eskoslovensk\'eho sdru\v{z}en\'{\i}
+                                       u\v{z}ivatel\r{u} \TeX u}}
+%
+% cislo, rok, ISSN, rocnik
+% ~~~~~~~~~~~~~~~~~~~~~~~~
+\p(138,39)br{\textcolor{modra}{\fNo\the\cislo}}
+\p(138,22)br{\textcolor{cervena}{\fNo\the\rok}}
+\p(10,12)bl{\fISSN ISSN \ISSN}
+\p(90,12)br{\fISSN ISSN \XISSN}
+\p(27,8)bc{\fxx Ti\v{s}t\v{e}n\'{a} verze}
+\p(73,8)bc{\fxx Online verze}
+\p(138,12)br{\fISSN Ro\v{c}n\'{\i}k \Vol}
+
+\end{picture}\endgroup\clearpage}
+
+%============================================= Tiraz
+
+\def\CSBULilustrace#1{\def\csbul@ilustrace{Ilustrace na ob\'{a}lce:&#1\\}}
+\def\csbul@ilustrace{}
+
+\def\bul@doRR#1#2.{\expandafter\ifx\csname bul@RR#1\endcsname\relax \else
+    & \csname bul@RR#1\endcsname\\\fi
+    \ifcat$#2$\let\next\relax\else\def\next{\bul@doRR#2.}\fi\next}
+
+\def\RedakcniRada{\@tempcnta\z@ \bul@RedakcniRada}
+\def\bul@RedakcniRada #1/#2/{\ifnum\@tempcnta=\z@
+    \bul@rr@toks{Redak\v{c}n\'i rada & #1\\}\else
+    \bul@rr@toks\expandafter{\the\bul@rr@toks & #1\\}\fi
+    \advance\@tempcnta 1 \relax
+    \ifcat$#2$\let\next\relax\else\def\next{\bul@RedakcniRada #2/}\fi\next}
+
+\def\TechnickyRedaktor#{\def\bul@tech@red}\TechnickyRedaktor{}
+
+\newtoks\bul@rr@toks
+
+\def\tiraz{\ifhmode \par \fi\clearpage \thispagestyle{empty}
+\ifodd\c@page \else \null\clearpage\thispagestyle{empty}\fi
+%%% \expandafter\set@uzaverka\pdf@uzaverka
+\ifcat$\the\obalka$ \def\ob@lka{Ob\'alka: & Anton\'{\i}n Strejc\\}%
+\else
+  \def\ob@lka{Ob\'alka:      & \the\obalka\\}
+\fi
+
+\noindent
+\textbf{Zpravodaj \v Ceskoslovensk\'eho sdru\v zen\'i u\v zivatel\r u \TeX u}
+
+\noindent
+ISSN \ISSN\ (ti\v{s}t\v{e}n\'{a} verze),
+ISSN \XISSN\ (online verze)
+
+\medskip
+
+\ifcat$\bul@tech@red$\else
+  \bul@rr@toks\expandafter{\the\bul@rr@toks Technick\'y redaktor: & \bul@tech@red \\}%
+\fi
+\noindent
+\begin{tabular}{@{}ll@{}}
+Vydalo:      & \v Ceskoslovensk\'e sdru\v zen\'i u\v zivatel\r u \TeX u
+%%%            a Nad\'{a}cia Jura Hronca
+               vlastn\'im\\
+             & n\'akladem jako intern\'i publikaci\\
+\ob@lka \csbul@ilustrace
+Po\v cet v\'ytisk\r u:&\the\naklad\\
+\expandafter\if\expandafter\relax\the\@uzaverka\relax\else
+  Uz\'av\v erka:    &\the\@uzaverka\\
+\fi
+Odpov\v edn\'y redaktor: &
+\ifnum\the\rok>2015
+  Jan \v Sustek
+\else
+  Zden\v ek Wagner
+\fi \\
+\ifnum\the\rok>2010
+  \the\bul@rr@toks
+\else
+  \ifnum\the\rok>2001
+    Redak\v{c}n\'i rada: & Pavel St\v{r}\'{i}\v{z}, David Catto a v\'{y}bor \CSTUG{}u\\
+    %\ifnum\the\rok<2005
+      %& \RedakcniRadaC\\
+    %\fi
+  \fi
+\fi
+\iffalse
+Tisk: &Viaprint, V\'{a}clavsk\'{e} n\'{a}m. 17, 1. schodi\v{s}t\v{e},\\
+& 110\,00 Praha 1, mobil +420\,603\,814\,629\\
+Distribuce:&
+\fi
+\ifWOW
+Tisk: & WOW, s.\,r.\,o., Praha 1, Washingtonova 25\\
+\else
+\ifnum\the\rok>2015
+Tisk: & ASMETI, Kl\'{a}\v{s}tern\'{i} 1187, 735\,11 Orlov\'{a} \\
+\else
+Tisk a distribuce: &
+KONVOJ, spol. s r.\,o., Berkova 22, 612\,00 Brno,\\
+&tel.~+420\,541\,245\,548\\
+\fi
+\fi
+%Adresa:      &\CSTUG, M\'{U} UK, Sokolovsk\'{a} 83, 186\,00 Praha 8\\
+\ifnum\the\rok>2001
+  \ifnum\the\rok>2016
+  Adresa: &\CSTUG, Nejedl\'{e}ho 373/1, 638\,00\,Brno\\
+  \else
+  Adresa: &\CSTUG, c/o FEL \v{C}VUT, Technick\'{a} 2, 166\,27 Praha~6\\
+  %%%Tel:         &+420\,224\,353\,611\\
+  %%%Fax:         &+420\,233\,332\,938\\
+  \fi
+\else
+Adresa:      &\CSTUG, c/o FI MU, Botanick\'a 68a, 602\,00 Brno\\
+fax:         &05--412 125 68\\
+\fi
+Email:      &\path|cstug@cstug.cz|\\[3dd]
+% Korespondence:  &\CSTUG, M\'{U} AV \v{C}R, \v{Z}itn\'{a} 25, 115\,67 Praha 1\\
+\end{tabular}
+
+\medskip
+
+\enlargethispage{\footskip}
+
+\begingroup \parskip 2dd
+\def\tir@ni{\ifhmode \par \fi \noindent \hangindent 1em \hangafter1 \relax}
+
+\noindent
+Z\v r\'izen\'e po\v stovn\'i aliasy sdru\v zen\'i \CSTUG:
+
+\ifnum\the\rok>2001 \small\fi
+
+\tir@ni\path|bulletin@cstug.cz|, \path|zpravodaj@cstug.cz|\\
+ korespondence ohledn\v e Zpravodaje sdru\v zen\'i
+\tir@ni\path|board@cstug.cz|\\ korespondence \v clen\r um v\'yboru
+\tir@ni\path|cstug@cstug.cz|, \path|president@cstug.cz| \\
+   korespondence p\v redsedovi sdru\v zen\'i
+\tir@ni\path|gacstug@cstug.cz|\\
+  grantov\'{a} agentura \CSTUG u
+\tir@ni\path|secretary@cstug.cz|, \path|orders@cstug.cz|\\
+  korespondence administrativn\'i s\'ile sdru\v zen\'i, objedn\'avky CD a DVD
+\tir@ni\path|cstug-members@cstug.cz|\\  korespondence \v clen\r um sdru\v zen\'i
+\tir@ni\path|cstug-faq@cstug.cz|\\     \v re\v sen\'e ot\'azky s odpov\v e\v dmi navrhovan\'{e}
+   k~za\v razen\'i do dokumentu \CS FAQ
+\tir@ni\path|bookorders@cstug.cz|\\
+objedn\'{a}vky ti\v st\v en\'e \TeX ov\'e literatury na dob\'irku
+
+\tir@ni ftp server sdru\v zen\'i:\\
+%\pdfurl{ftp://ftp.cstug.cz/}{\path|ftp://ftp.cstug.cz/|}
+\texttt{ftp://ftp.cstug.cz}
+
+\tir@ni www server sdru\v zen\'i:\\
+%\pdfurl{http://www.cstug.cz/}{\path|http://www.cstug.cz/|}
+\texttt{http://www.cstug.cz}
+
+\endgroup
+
+\ifcat $\the\pristi@uzaverka$ \else
+\medskip
+\noindent Uz\'av\v{e}rka p\v{r}\'i\v{s}t\'iho \v{c}\'isla:
+\the\pristi@uzaverka\fi
+
+\ifnum\the\rok<2002
+\medskip
+\noindent
+% \ifdim\textwidth<27cc
+% Pod\'av\'an\'i novinov\'ych z\'asilek povoleno
+% Oblastn\'i spr\'avou po\v st\\
+% v~\v Cesk\'ych Bud\v ejovic\'ich, j.\,zn. P 3.202/94 ze dne 19.~\v cervence 1994
+% \v{R}editelstv\'{i}m po\v{s}t Praha \v{c}.\,j. NP 320/1994 ze dne 10. 2. 1994
+% \else
+Pod\'av\'an\'i novinov\'ych z\'asilek povoleno \v Ceskou po\v stou, s.\,p.
+OZJM \v Reditelstv\'i v~Brn\v e \v c.\,j.~P/2--1183/97 ze dne~11.~3.~1997.
+% \fi
+\par\fi
+}
+
+%============================================= OBSAH
+
+{\catcode`\_=11 \gdef\zw@usc{_}}
+
+% \html@setup needs basically the same as \pdf@setup
+\def\html@setup{\let\protect\noexpand \pdf@setup \csname pdf@hook\endcsname
+  \def\pdftoclink##1##2{##2}\def\pdfannot##1##2##3{##3}\let\PDFannot\pdfannot}
+
+\if@html
+\def\html@sections{%
+  \let\zw@l@section\l@section
+  \let\zw@l@subsection\l@subsection
+  \def\l@section##1{\begingroup \html@setup
+    \immediate\write\html@bsah{<b>##1</b><p>}\endgroup
+    \zw@l@section{##1}}%
+  \def\l@subsection##1{\begingroup \html@setup
+    \immediate\write\html@bsah{##1<p>}\endgroup
+    \zw@l@subsection{##1}}%
+}
+\fi
+
+%\newwrite\html@bsah
+\newwrite\zw@engtoc
+\DeclareRobustCommand\cl@nek[3][\@gobble]{\zw@prevskip #1\zw@authsep \zw@select{#2}{#3}}
+
+\def\zw@prevskip{}
+\def\zw@authsep{\unskip:\space\ignorespaces}
+\def\zw@select#1#2{#1}
+\def\zw@engselect#1#2{#2}
+
+\def\l@clanek#1#2{\if@html \begingroup \html@setup
+  \immediate\write\html@bsah{#1<p>}\endgroup \fi
+  \@ifundefined{PDF@#2@}% if PDF destination undefined
+    {\@dottedtocline{-2}{\z@}{2em}{#1}{#2}}% undefined
+    {\@dottedtocline{-2}{\z@}{2em}{#1}{\pdflink{\@nameuse{PDF@#2@}}{#2}}}% defined
+  }
+
+\def\l@clanek#1#2{\if@html \begingroup \html@setup
+  \immediate\write\html@bsah{#1<p>}\endgroup \fi
+  {\let\protect\@unexpandable@protect
+  \immediate\write\zw@engtoc{\protect\contentsline{clanek}{#1}{#2}}}%
+  \@dottedtocline{-2}{\z@}{2em}{#1}{#2}}
+
+\def\l@chapter{\@dottedtocline{\@M}{\z@}{\z@}} % for use with minitoc
+%\renewcommand*\l@section{\@dottedtocline{2}{0mm}{1.8em}}
+%\renewcommand*\l@subsection{\@dottedtocline{2}{1.8em}{2.3em}}
+
+{\catcode`\_=12
+\gdef\U@score{_}}
+
+\def\tableofcontents{\csname PDFlisting\endcsname
+\begingroup
+  \if@html
+  \def\az{-}
+  \edef\CS@cislo@rok{\the\cislo/\the\rok}
+  \def\MakePDFcislo 20##1.{\edef\cislopdf{pdf/bul\U@score ##1.pdf}}
+  \expandafter\MakePDFcislo\the\rok\the\cislo.
+  \immediate\openout\html@bsah bul\the\rok\the\cislo.shtml
+  \immediate\write\html@bsah{<!--\hash set var="title" value="Obsah Zpravodaje č. \CS@cislo@rok"}
+  \immediate\write\html@bsah{--><!--\hash include virtual="head.shtml" -->}
+  \fi
+  \immediate\openout\zw@engtoc \jobname.engtoc
+  \parindent \z@ \parskip 6pt
+  {\bfseries \fontsize{14.4}{15dd}\selectfont OBSAH\par}%
+  \vskip 15dd
+  \@starttoc{toc}\par
+  \immediate\closeout\zw@engtoc
+  \if@html
+  \immediate\write\html@bsah{<hr>}
+  \immediate\write\html@bsah{<!-- P><a href="\cislopdf">Elektronická verze</a>
+                            (??? KB) -->}
+  \immediate\write\html@bsah{<!-- P>Další číslo <a href="bul.shtml">?/????</a -->}
+  \immediate\write\html@bsah{<P>Minulé číslo <a href="bul.shtml">?/????</a>}
+  \immediate\write\html@bsah{<!--\hash include virtual="adresa.shtml" -->}
+  \immediate\write\html@bsah{</BODY>}
+  \immediate\write\html@bsah{</HTML>}
+  \immediate\closeout\html@bsah \fi
+ \endgroup \thispagestyle{empty}%
+ \vskip 15dd\relax}
+
+\def\EnglishTOC{\clearpage
+  \thispagestyle{empty}
+  \begin{otherlanguage}{english}
+  \makeatletter
+  \parindent \z@ \parskip 6pt
+  \let\zw@select\zw@engselect
+  {\bfseries \fontsize{14.4}{15dd}\selectfont \MakeUppercase{\contentsname}\par}%
+  \vskip 15dd
+  \InputIfFileExists{\jobname.engtoc}{}{}
+  \end{otherlanguage}}
+
+\def\TextPodObsah{% Sometimes requires \longer and/or \enlargethispage*{\footskip}
+\begin{small}
+\noindent
+Zpravodaj \v{C}eskoslovensk\'{e}ho sdru\v{z}en\'{i} u\v{z}ivatel\r{u} \TeX u je vyd\'{a}v\'{a}n v~ti\v{s}t\v{e}n\'{e} podob\v{e}
+a~distribuov\'{a}n zdarma \v{c}len\r{u}m sdru\v{z}en\'{i}. Po uplynut\'{i} dvan\'{a}cti m\v{e}s\'{i}c\r{u} od ti\v{s}t\v{e}n\'{e}ho vyd\'{a}n\'{i} je
+poskytov\'{a}n v~elektronick\'{e} podob\v{e} (PDF) ve ve\v{r}ejn\v{e} p\v{r}\'{i}stupn\'{e}m arch\'{i}vu dostupn\'{e}m p\v{r}es
+\PDFurl|http://www.cstug.cz/|\,.
+
+\medskip
+
+{\parindent 0pt
+Sv\'{e} p\v{r}\'{i}sp\v{e}vky do Zpravodaje m\r{u}\v{z}ete zas\'{i}lat v~elektronick\'{e} podob\v{e} anonymn\'{i}m ftp
+na \PDFannot{StartPDFurl}{(ftp://ftp.icpf.cas.cz/wagner/incoming/)}%
+{\texttt{ftp.icpf.cas.cz} do adres\'{a}\v{r}e
+\texttt{/wagner/incoming/}}, nejl\'{e}pe jako jeden archivn\'{i} soubor \texttt{(.zip,
+.arj, .tar.gz)}. Sou\v{c}asn\v{e} za\v{s}lete elektronickou po\v{s}tou upozorn\v{e}n\'{i} na
+\texttt{mailto:bulletin@cstug.cz}.
+Uveden\'{y} adres\'{a}\v{r} je p\v{r}\'{i}stupn\'{y} pouze pro z\'{a}pis. Pokud nem\'{a}te
+p\v{r}\'{i}stup na Internet, m\r{u}\v{z}ete zaslat p\v{r}\'{i}sp\v{e}vek na disket\v{e} na adresu:
+
+\medskip
+
+{\leftskip 3em
+Zden\v{e}k Wagner\\
+Vinohradsk\'{a} 114\\
+130 00 Praha 3\par
+}
+
+\medskip
+
+Disketu form\'{a}tujte nejl\'{e}pe pro DOS, form\'{a}ty Macintosh 1.44~MB a~EXT2 jsou t\'{e}\v{z} p\v{r}ijateln\'{e}.
+Nezapome\v{n}te p\v{r}ilo\v{z}it v\v{s}echny soubory, kter\'{e} dokument na\v{c}\'{i}t\'{a} (s~v\'{y}jimkou standardn\'{i}ch
+sou\v{c}\'{a}st\'{i} \cstex u), zejm\'{e}na v~p\v{r}\'{i}pad\v{e}, kdy v\'{a}s nelze kontaktovat e-mailem.
+\par}
+\end{small}
+
+\bigskip
+
+\noindent ISSN \ISSN\ (ti\v{s}t\v{e}n\'{a} verze)
+
+\noindent ISSN \XISSN\ (online verze)
+}
+
+\def\NovyTextPodObsah{% Sometimes requires \longer and/or \enlargethispage*{\footskip}
+\begin{small}
+\noindent
+Zpravodaj \v{c}eskoslovensk\'{e}ho sdru\v{z}en\'{i} u\v{z}ivatel\r{u} \TeX u je vyd\'{a}v\'{a}n v~ti\v{s}t\v{e}n\'{e} podob\v{e}
+a~distribuov\'{a}n zdarma \v{c}len\r{u}m sdru\v{z}en\'{i}. Po uplynut\'{i} dvan\'{a}cti m\v{e}s\'{i}c\r{u} od ti\v{s}t\v{e}n\'{e}ho vyd\'{a}n\'{i} je
+poskytov\'{a}n v~elektronick\'{e} podob\v{e} (PDF) ve ve\v{r}ejn\v{e} p\v{r}\'{i}stupn\'{e}m arch\'{i}vu dostupn\'{e}m p\v{r}es
+\texttt{http://www.cstug.cz/}\,.
+
+\iffalse
+\medskip
+
+\noindent
+Zpravodaj je za\v{r}azen do Seznamu recenzovan\'{y}ch neimpaktovan\'{y}ch periodik vyd\'{a}van\'{y}ch v~\v{c}esk\'{e}
+republice, viz \texttt{http://www.vyzkum.cz/}\,.
+\fi
+
+\medskip
+
+{\parindent 0pt
+Sv\'{e} p\v{r}\'{i}sp\v{e}vky do Zpravodaje m\r{u}\v{z}ete zas\'{i}lat v~elektronick\'{e} podob\v{e}, nejl\'{e}pe jako jeden archivn\'{i}
+soubor \texttt{(.zip, .arj, .tar.gz)}. Postupujte podle instrukc\'{i}, kter\'{e} najdete na str\'{a}nce
+\texttt{http://bulletin.cstug.cz/}\,.
+\iffalse
+
+Pokud nem\'{a}te
+p\v{r}\'{i}stup na Internet, m\r{u}\v{z}ete zaslat p\v{r}\'{i}sp\v{e}vek na disket\v{e}, CD, \v{c}i DVD na adresu:
+
+\medskip
+
+{\leftskip 3em
+Zden\v{e}k Wagner\\
+Vinohradsk\'{a} 114\\
+130 00 Praha 3\par \smallskip
+\texttt{zpravodaj@cstug.cz}\par
+}
+
+\medskip
+\fi
+Nezapome\v{n}te p\v{r}ilo\v{z}it v\v{s}echny soubory, kter\'{e} dokument na\v{c}\'{i}t\'{a} (s~v\'{y}jimkou standardn\'{i}ch
+sou\v{c}\'{a}st\'{i} \TeX~Live), zejm\'{e}na v~p\v{r}\'{i}pad\v{e}, kdy v\'{a}s nelze kontaktovat e-mailem.
+\par}
+\end{small}
+
+\bigskip
+
+\noindent ISSN \ISSN\ (ti\v{s}t\v{e}n\'{a} verze)
+
+\noindent ISSN \XISSN\ (online verze)
+}
+
+% Redak\v{c}n\'{i} rada pro tir\'{a}\v{z}
+
+\providecommand\RedakcniRadaA{%
+\ifnum\the\rok<2005
+  Petr Aubrecht,
+  Mat\v{e}j Cepl,
+  Ji\v{r}\'{i} Demel,\else
+  Petr Aubrecht,
+  Ji\v{r}\'{i} Demel,
+  Jarom\'{i}r Kuben,\fi}
+\providecommand\RedakcniRadaB{%
+\ifnum\the\rok<2005
+  Jana Chleb\'{i}kov\'{a},
+  Ji\v{r}\'{i} Kosek,
+  Jarom\'{i}r Kuben,\else
+  Petr Sojka,
+  Libor \v{S}karvada,
+  V\'{i}t Z\'{y}ka\fi}
+\providecommand\RedakcniRadaC{%
+\ifnum\the\rok<2005
+  Petr Sojka,
+  Martin Tkadl\v{c}\'{i}k\else
+  V\'{i}t Z\'{y}ka\fi}

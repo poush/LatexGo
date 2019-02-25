@@ -1,17 +1,3 @@
--- (Public domain.)
--- This texmfcnf.lua file should contain only your personal changes from the
--- original texmfcnf.lua (for example, as chosen in the installer).
---
--- That is, if you need to make changes to texmfcnf.lua, put your custom
--- settings in this file, which is .../texlive/YYYY/texmfcnf.lua, rather than
--- the distributed file (.../texlive/YYYY/texmf-dist/web2c/texmfcnf.lua).
--- And include *only* your changed values, not a copy of the whole thing!
-
-return { 
-  content = {
-    variables = {
-      TEXMFLOCAL = "selfautoparent:/texmf-local",
-      TEXMFVAR = "/home/poush/projects/latexgo/texlivejs/home/texmf-var",
-    },
-  },
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:20ea2667d3e1ad57b2318f0b59ad3cdec78a76d3b88579031501bfea2e10c2d2
+size 648

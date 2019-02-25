@@ -1,0 +1,762 @@
+%
+%
+%                                  The Rank 2 Roots package.
+%
+%                                            Version 1.0
+%
+%
+%               This package draws root and weight lattices for rank 2 root systems in LaTeX documents, 
+%               using the TikZ package.
+%               Please see the file ranktworoots.tex for examples of use of this package.
+%
+%                                          Benjamin McKay
+%                                          b.mckay@ucc.ie
+%
+%               Released under the LaTeX Project Public License v1.3c or later, see 
+%               http://www.latex-project.org/lppl.txt
+%
+%
+%
+%
+\NeedsTeXFormat{LaTeX2e}[1994/06/01]
+\ProvidesPackage{rank-2-roots}[2018/08/30 Rank 2 roots]
+\RequirePackage{tikz}
+\RequirePackage{xstring}
+\RequirePackage{xparse}
+\RequirePackage{etoolbox}
+\RequirePackage{expl3}
+\RequirePackage{pgfkeys}
+\RequirePackage{pgfopts}
+\usetikzlibrary{
+calc,
+arrows,
+arrows.meta,
+decorations.markings,
+positioning,
+fadings,
+backgrounds,
+decorations.pathreplacing,
+shadings,
+fadings
+}
+
+%% Style options; user can change them.
+\newlength\weightRadius
+\setlength\weightRadius{1.2pt}
+\newlength\weightLength
+\setlength\weightLength{.5cm}
+\newlength\gradingDot
+\setlength\gradingDot{2pt}
+\tikzstyle{weight lattice}=[gray!40]
+\tikzstyle{root}=[gray]
+\tikzstyle{root polygon}=[gray!40,opacity=.5]
+\tikzstyle{hyperplane}=[gray!50,fill opacity=.5]
+\tikzstyle{Weyl chamber}=[gray!60,fill opacity=.5]
+\tikzstyle{grading}=[line width=3pt,gray,opacity=0.5,line cap=round]
+
+\def\defaultWeightLatticeSize{0}
+\newif\ifAutoSizeWeightLattice
+\AutoSizeWeightLatticetrue
+
+\makeatletter
+\def\root@system{?}
+\def\parabolic@subalgebra{?}
+\def\weight@lattice@size{0}
+
+\def\sqrt@three{1.732050808}
+\def\sqrt@threeOverTwo{0.8660254038}
+\def\sqrt@threeOverFour{0.4330127019}
+
+
+% hexagonal coordinate system
+\define@key{hexkeys}{x}{\def\myx{#1}}
+\define@key{hexkeys}{y}{\def\myy{#1}}
+\tikzdeclarecoordinatesystem{hex}%
+{%
+\setkeys{hexkeys}{#1}%
+\ifAutoSizeWeightLattice\auto@stretch@hex{\myx}{\myy}\fi%
+\pgfmathparse{((\myx)+0.5*(\myy))*\weightLength}%
+\pgf@x=\pgfmathresult pt%
+\pgfmathparse{\sqrt@threeOverTwo*(\myy)*\weightLength}%
+\pgf@y=\pgfmathresult pt%
+}
+% square coordinate system
+\define@key{squarekeys}{x}{\def\myx{#1}}
+\define@key{squarekeys}{y}{\def\myy{#1}}
+\tikzdeclarecoordinatesystem{square}%
+{%
+\setkeys{squarekeys}{#1}%
+\ifAutoSizeWeightLattice\auto@stretch@square{\myx}{\myy}\fi%
+\pgfmathparse{\myx*\weightLength}%
+\pgf@x=\pgfmathresult pt%
+\pgfmathparse{\myy*\weightLength}%
+\pgf@y=\pgfmathresult pt%
+}
+
+\NewDocumentEnvironment{rootSystem}{m}%
+{%
+\xdef\weight@lattice@size{\defaultWeightLatticeSize}%
+\IfSubStr{ABCG}{#1}{}{\unrecognized@root@system{#1}}%
+\xdef\root@system{#1}%
+\check@root@system{}%
+\choose@weight@lattice{}%
+}%
+{%
+\IfStrEq{\weight@lattice@size}{0}%%
+{%%
+}%%
+{%%
+\weightLattice{\weight@lattice@size}%
+}%%
+\xdef\root@system{?}%
+\xdef\parabolic@subalgebra{?}%
+\xdef\weight@lattice@size{\defaultWeightLatticeSize}%
+}%
+
+\NewDocumentCommand\unrecognized@root@system{m}%
+{%
+\ClassError{Rank 2 roots}{Unrecognized root system: ``#1''. Allowed values are A,B,C,G}{}%
+}%
+
+\NewDocumentCommand\root@system@not@set{}%
+{%
+\ClassError{Rank 2 roots}{Error: root system not specified.}{}%
+}%
+
+\NewDocumentCommand\check@root@system{}%
+{%
+\IfSubStr{ABCG}{\root@system}{}{\root@system@not@set}%
+}%
+
+\NewDocumentCommand\A@weight@lattice{O{}}%
+{%
+\check@root@system%
+\hexgrid[#1]{\weight@lattice@size}%
+}%
+
+\NewDocumentCommand\G@weight@lattice{O{}}%
+{%
+\check@root@system%
+\hexgrid[#1]{\weight@lattice@size}%
+}%
+
+\NewDocumentCommand\B@weight@lattice{O{}}%
+{%
+\check@root@system%
+\begin{scope}[on background layer]%
+\draw[weight lattice,step=\weightLength,#1] 
+	({-\weight@lattice@size*\weightLength},{-\weight@lattice@size*\weightLength}) 
+	grid 
+	({\weight@lattice@size*\weightLength},{\weight@lattice@size*\weightLength});%
+\foreach \i in {-\weight@lattice@size,...,\weight@lattice@size}%
+{%
+\draw[weight lattice,#1]  ({\weightLength*\i},{\weightLength*\weight@lattice@size})
+	-- ({\weightLength*\weight@lattice@size},{\weightLength*\i});%
+\draw[weight lattice,#1] ({-\weightLength*\weight@lattice@size},{\weightLength*\i}) 
+	-- ({\weightLength*\i},{-\weightLength*\weight@lattice@size});%
+\draw[weight lattice,#1] ({-\weightLength*\i},{\weightLength*\weight@lattice@size}) 
+	-- ({-\weightLength*\weight@lattice@size},{\weightLength*\i});%
+\draw[weight lattice,#1] ({\weightLength*\weight@lattice@size},{\weightLength*\i}) 
+	-- ({-\weightLength*\i},{-\weightLength*\weight@lattice@size});%
+}%
+\end{scope}%
+}%
+
+\NewDocumentCommand\C@weight@lattice{O{}}%
+{%
+\B@weight@lattice[#1]%
+}%
+
+
+\NewDocumentCommand\weightLattice{O{}m}%
+{%
+\check@root@system%
+\xdef\weight@lattice@size{#2}%
+\IfStrEqCase{\root@system}%
+{%%
+{A}{\A@weight@lattice[#1]}%
+{B}{\B@weight@lattice[#1]}%
+{C}{\C@weight@lattice[#1]}%
+{G}{\G@weight@lattice[#1]}%
+{?}{\root@system@not@set}%
+}%%
+[\check@root@system]%
+}%
+
+\NewDocumentCommand\hexwt{O{}mm}%
+{%
+\check@root@system%
+\pgfkeys{/weight, default, #1}%
+\IfStrEq{\weight@multiplicity}{1}{}%
+{%%%
+\foreach \i in {2,...,\weight@multiplicity}%
+{%
+\draw[/weight,weight,#1,fill=none] (hex cs:x=#2,y=#3) circle ({\i*\weightRadius});%
+}%
+}%%%
+\fill[/weight,weight,#1] (hex cs:x=#2,y=#3) circle (\weightRadius);%
+}%
+
+\NewDocumentCommand\squarewt{O{}mm}%
+{%
+\check@root@system%
+\pgfkeys{/weight, default, #1}%
+\IfStrEq{\weight@multiplicity}{1}{}%
+{%%%
+\foreach \i in {2,...,\weight@multiplicity}%
+{%
+\draw[/weight,weight,#1,fill=none] (square cs:x=#2,y=#3) circle ({\i*\weightRadius});%
+}%
+}%%%
+\fill[/weight,weight,#1] (square cs:x=#2,y=#3) circle (\weightRadius);%
+}%
+
+\newif\if@decimals
+
+\NewDocumentCommand\make@weight@lattice@at@least{m}%
+{%
+\pgfmathless{\weight@lattice@size}{#1}%
+\IfStrEq{1}{\pgfmathresult}{\xdef\weight@lattice@size{#1}}{}
+}%
+
+\NewDocumentCommand\auto@stretch@hex{mm}%
+{%
+%% Can we fit this weight? If not, draw a bigger background.
+\@decimalsfalse
+\IfSubStr{#1}{.}{\global\@decimalstrue}{}%
+\IfSubStr{#2}{.}{\global\@decimalstrue}{}%
+\xdef\min@wls{0}
+\if@decimals%
+\IfStrEqCase{\root@system}%
+{%%
+{A}{\pgfmathint{ceil(max(abs(#1),abs(#2),abs(#1+#2)))}\xdef\min@wls{\pgfmathresult}}%
+{B}{\pgfmathint{ceil(max(abs((#1)+(#2)/2),abs(#2)))}\xdef\min@wls{\pgfmathresult}}%
+{C}{\pgfmathint{ceil(max(abs((#1)+(#2)),abs(#2)))}\xdef\min@wls{\pgfmathresult}}%
+{G}{\pgfmathint{ceil(max(abs(#1),abs(#2),abs(#1+#2)))}\xdef\min@wls{\pgfmathresult}}%
+{?}{\root@system@not@set}%
+}%%
+\else
+\IfStrEqCase{\root@system}%
+{%%
+{A}{\pgfmathint{max(abs(#1),abs(#2),abs(#1+#2))}\xdef\min@wls{\pgfmathresult}}%
+{B}{\pgfmathint{max(abs((#1)+(#2)/2),abs(#2))}\xdef\min@wls{\pgfmathresult}}%
+{C}{\pgfmathint{max(abs((#1)+(#2)),abs(#2))}\xdef\min@wls{\pgfmathresult}}%
+{G}{\pgfmathint{max(abs(#1),abs(#2),abs(#1+#2))}\xdef\min@wls{\pgfmathresult}}%
+{?}{\root@system@not@set}%
+}%%
+\fi%
+\make@weight@lattice@at@least{\min@wls}%
+}%
+
+
+\NewDocumentCommand\auto@stretch@square{mm}%
+{%
+%% Can we fit this weight? If not, draw a bigger background.
+\@decimalsfalse
+\IfSubStr{#1}{.}{\global\@decimalstrue}{}%
+\IfSubStr{#2}{.}{\global\@decimalstrue}{}%
+\if@decimals%
+\pgfmathint{ceil(max(abs(#1),abs(#2)))}\xdef\wls{\pgfmathresult}%
+\else
+\pgfmathint{max(abs(#1),abs(#2))}\xdef\wls{\pgfmathresult}%
+\fi
+\pgfmathless{\weight@lattice@size}{\wls}%
+\IfStrEq{1}{\pgfmathresult}%{}%
+{%%
+%\weightLattice{\wls}%
+\xdef\weight@lattice@size{\wls}%
+}%%
+{%%
+}%%
+}%
+
+
+\def\weight@multiplicity{1}
+\pgfkeys{
+/weight/.is family,
+/weight,
+weight/.style = {fill=gray,draw=gray},
+ default/.style = {
+	multiplicity/.estore in = \weight@multiplicity,
+ 	multiplicity = 1,
+  	},
+	.search also={/tikz},
+}
+
+\NewDocumentCommand\wt{O{}mm}%[tikz options,multiplicity=???]{x}{y}
+{%
+\check@root@system%
+\pgfkeys{/weight, default, #1}%
+\IfStrEq{\weight@multiplicity}{1}{}%
+{%%%
+\foreach \i in {2,...,\weight@multiplicity}%
+{%
+\draw[/weight,weight,#1,fill=none] \weight{#2}{#3} circle ({\i*\weightRadius});%
+}%
+}%%%
+\fill[/weight,weight,#1] \weight{#2}{#3} circle (\weightRadius);%
+%}%%
+}%
+
+\NewDocumentCommand\A@roots{O{}}%
+{%
+\begin{scope}[on background layer]%
+\fill[root polygon]
+(hex cs:x=1,y=1) -- 
+(hex cs:x=-1,y=2) -- 
+(hex cs:x=-2,y=1) -- 
+(hex cs:x=-1,y=-1) -- 
+(hex cs:x=1,y=-2) -- 
+(hex cs:x=2,y=-1) -- 
+cycle;%
+\end{scope}%
+\wt[root,#1]{1}{1}%
+\wt[root,#1]{-1}{2}%
+\wt[root,#1]{-2}{1}%
+\wt[root,#1]{-1}{-1}%
+\wt[root,#1]{1}{-2}%
+\wt[root,#1]{2}{-1}%
+}%
+
+\NewDocumentCommand\B@roots{O{}}%
+{%
+\begin{scope}[on background layer]%
+\fill[root polygon]
+(square cs:x=-1,y=-1) --
+(square cs:x=-1,y=1) --
+(square cs:x=1,y=1) --
+(square cs:x=1,y=-1) --
+cycle;%
+\end{scope}
+\foreach \i in {-1,0,1}%
+{%
+\foreach \j in {-1,0,1}%
+{%%
+\IfStrEq{\i}{0}%
+{%%%
+\IfStrEq{\j}{0}{}%
+{%%%%
+\squarewt[root,#1]{\i}{\j}%
+}%%%%
+}%%%
+{%%%
+\squarewt[root,#1]{\i}{\j}%
+}%%%
+}%%
+}%
+}%
+
+\NewDocumentCommand\C@roots{O{}}%
+{%
+\begin{scope}[on background layer]%
+\fill[root polygon]
+(square cs:x=2,y=0) --
+(square cs:x=0,y=2) --
+(square cs:x=-2,y=0) --
+(square cs:x=0,y=-2) --
+cycle;%
+\end{scope}
+\squarewt[root,#1]{2}{0}
+\squarewt[root,#1]{1}{1}
+\squarewt[root,#1]{0}{2}
+\squarewt[root,#1]{-1}{1}
+\squarewt[root,#1]{-2}{0}
+\squarewt[root,#1]{-1}{-1}
+\squarewt[root,#1]{0}{-2}
+\squarewt[root,#1]{1}{-1}
+}%
+
+\NewDocumentCommand\G@roots{O{}}%
+{%
+\begin{scope}[on background layer]%
+\fill[root polygon]
+(hex cs:x=1,y=0) -- 
+(hex cs:x=1,y=1) -- 
+(hex cs:x=0,y=1) -- 
+(hex cs:x=-1,y=2) -- 
+(hex cs:x=-1,y=1) -- 
+(hex cs:x=-2,y=1) -- 
+(hex cs:x=-1,y=0) -- 
+(hex cs:x=-1,y=-1) -- 
+(hex cs:x=0,y=-1) -- 
+(hex cs:x=1,y=-2) -- 
+(hex cs:x=1,y=-1) -- 
+(hex cs:x=2,y=-1) -- 
+cycle;%
+\end{scope}%
+\hexwt[root,#1]{1}{0}%
+\hexwt[root,#1]{0}{1}%
+\hexwt[root,#1]{-1}{0}%
+\hexwt[root,#1]{0}{-1}%
+\hexwt[root,#1]{1}{-1}%
+\hexwt[root,#1]{-1}{1}%
+\hexwt[root,#1]{1}{1}%
+\hexwt[root,#1]{2}{-1}%
+\hexwt[root,#1]{-1}{2}%
+\hexwt[root,#1]{1}{-2}%
+\hexwt[root,#1]{-2}{1}%
+\hexwt[root,#1]{-1}{-1}%
+}%
+
+\NewDocumentCommand\choose@weight@lattice{}%
+{%
+\IfStrEqCase{\root@system}%
+{%%
+{A}{\global\let\weight=\A@weight}%
+{B}{\global\let\weight=\B@weight}%
+{C}{\global\let\weight=\C@weight}%
+{G}{\global\let\weight=\G@weight}%
+}%%
+[\check@root@system]%
+}%
+
+\NewDocumentCommand\check@weight@lattice{}%
+{%
+\IfInteger{\weight@lattice@size}%
+{}%
+{\ClassError{Rank 2 roots}{Error in weight lattice size \weight@lattice@size.}{}}%
+}%
+
+\NewDocumentCommand\roots{O{}}%
+{%
+\check@root@system%
+\check@weight@lattice%
+\IfStrEqCase{\root@system}%
+{%%
+{A}{\A@roots[#1]}%
+{B}{\B@roots[#1]}%
+{C}{\C@roots[#1]}%
+{G}{\G@roots[#1]}%
+}%%
+[\check@root@system]%
+}%
+
+\NewDocumentCommand\Weyl@chamber{O{}m}%
+{%
+\begin{scope}[on background layer]
+\IfStrEqCase{\root@system}%
+{%%
+{A}{\fill[Weyl chamber,#1] \weight{0}{#2} -- \weight{0}{0} -- \weight{#2}{0} --cycle;}%
+{B}{\fill[Weyl chamber,#1] (square cs:x=#2,y=#2) -- (square cs:x=0,y=0)  --(square cs:x=#2,y=0) --cycle;}%
+{C}{\fill[Weyl chamber,#1] (square cs:x=#2,y=#2) -- (square cs:x=0,y=0)  --(square cs:x=#2,y=0) --cycle;}%
+{G}{\fill[Weyl chamber,#1] (hex cs:x={(.5*#2)},y={(.5*#2)}) -- (hex cs:x=0,y=0)  --(hex cs:x=#2,y=0) --cycle;}%
+}%%
+[\check@root@system]%
+\end{scope}
+}%
+
+\NewDocumentCommand\Weyl@chamber@to@root@polygon{O{}}%
+{%
+\begin{scope}[on background layer]
+\IfStrEqCase{\root@system}%
+{%%
+{A}{\fill[Weyl chamber,#1] (hex cs:x=0,y=1.5) -- (hex cs:x=0,y=0) -- (hex cs:x=1.5,y=0) -- (hex cs:x=1,y=1) -- cycle;}%
+{B}{\fill[Weyl chamber,#1] (square cs:x=1,y=1) -- (square cs:x=0,y=0)  --(square cs:x=1,y=0) --cycle;}%
+{C}{\fill[Weyl chamber,#1] (square cs:x=1,y=1) -- (square cs:x=0,y=0)  --(square cs:x=2,y=0) --cycle;}%
+{G}{\fill[Weyl chamber,#1] (hex cs:x=1,y=1) -- (hex cs:x=0,y=0)  --(hex cs:x=1,y=0) --cycle;}%
+}%%
+[\check@root@system]%
+\end{scope}
+}%
+
+
+\NewDocumentCommand\WeylChamber{O{}}%
+{%
+\check@root@system%
+\ifAutoSizeWeightLattice
+\Weyl@chamber[#1]{\weight@lattice@size}%
+\else
+\IfStrEq{\weight@lattice@size}{0}%
+{%%
+\Weyl@chamber@to@root@polygon[#1]%
+}%%
+{%%
+\Weyl@chamber[#1]{\weight@lattice@size}%
+}%%
+\fi
+}%
+
+\NewDocumentCommand\A@weight{mm}%
+{%
+(hex cs:x=#1,y=#2)%
+}%
+
+% B weight coordinate system
+\define@key{Bkeys}{x}{\def\myx{#1}}
+\define@key{Bkeys}{y}{\def\myy{#1}}
+\tikzdeclarecoordinatesystem{B weight}%
+{%
+\setkeys{Bkeys}{#1}%
+\ifAutoSizeWeightLattice\auto@stretch@square{(\myx+.5*(\myy))}{(.5*(\myy))}\fi%
+\pgfmathparse{((\myx)+.5*(\myy))*\weightLength}%
+\pgf@x=\pgfmathresult pt%
+\pgfmathparse{.5*(\myy)*\weightLength}%
+\pgf@y=\pgfmathresult pt%
+}
+
+\NewDocumentCommand\B@weight{mm}%
+{%
+(B weight cs:x=#1,y=#2)
+}%
+
+% C weight coordinate system
+\define@key{Ckeys}{x}{\def\myx{#1}}
+\define@key{Ckeys}{y}{\def\myy{#1}}
+\tikzdeclarecoordinatesystem{C weight}%
+{%
+\setkeys{Ckeys}{#1}%
+\ifAutoSizeWeightLattice\auto@stretch@square{(\myx+\myy)}{(\myy)}\fi%
+\pgfmathparse{(\myx+\myy)*\weightLength}%
+\pgf@x=\pgfmathresult pt%
+\pgfmathparse{\myy*\weightLength}%
+\pgf@y=\pgfmathresult pt%
+}
+
+\NewDocumentCommand\C@weight{mm}%
+{%
+(C weight cs:x=#1,y=#2)
+}%
+
+
+\NewDocumentCommand\G@weight{mm}%
+{%
+(hex cs:x={(#1+#2)},y=#2)
+}%
+
+\NewDocumentCommand\draw@hex@grid@line{O{}mmmm}%
+{%
+\draw[weight lattice,#1] (hex cs:x=#2,y=#3) -- (hex cs:x=#4,y=#5);%
+}%
+
+\NewDocumentCommand\hexgrid{O{}m}%
+{%
+\begin{scope}[on background layer]
+\foreach \i [evaluate=\i as \nsubi using #2-\i] in {0,...,#2}%
+{%
+\draw@hex@grid@line[#1]{\nsubi}{\i}{-\i-\nsubi}{\i}%
+}%
+\foreach \i [evaluate=\i as \nsubi using #2-\i] in {1,...,#2}%
+{%
+\draw@hex@grid@line[#1]{\i+\nsubi}{-\i}{-\nsubi}{-\i}%
+}%
+\foreach \i [evaluate=\i as \nsubi using #2-\i] in {0,...,#2}%
+{%
+\draw@hex@grid@line[#1]{\nsubi}{\i}{\nsubi}{-#2}%
+}%
+\foreach \i [evaluate=\i as \nsubi using #2-\i] in {1,...,#2}%
+{%
+\draw@hex@grid@line[#1]{-\i}{#2}{-\i}{-\nsubi}%
+}%
+\foreach \i [evaluate=\i as \nsubi using #2-\i] in {0,...,#2}%
+{%
+\draw@hex@grid@line[#1]{#2}{-\i}{-\i}{#2}%
+}%
+\foreach \i [evaluate=\i as \nsubi using #2-\i] in {0,...,#2}%
+{%
+\draw@hex@grid@line[#1]{\i}{-#2}{-#2}{\i}%
+}%
+\end{scope}
+}%
+
+\NewDocumentCommand\hexclip{}%
+{%
+\clip 
+	(hex cs:x=\weight@lattice@size,y=0) -- 
+	(hex cs:x=0,y=\weight@lattice@size) -- 
+	(hex cs:x=-\weight@lattice@size,y=\weight@lattice@size) -- 
+	(hex cs:x=-\weight@lattice@size,y=0) -- 
+	(hex cs:x=0,y=-\weight@lattice@size) -- 
+	(hex cs:x=\weight@lattice@size,y=-\weight@lattice@size) -- 
+	cycle;
+}%
+
+\NewDocumentCommand\A@positive@root@hyperplane{O{}}%
+{%
+\begin{scope}[on background layer]
+\fill[hyperplane,#1] (hex cs:x=-1.5,y=1.5) --(hex cs:x=-1,y=2) --(hex cs:x=1,y=1) --(hex cs:x=2,y=-1) --(hex cs:x=1.5,y=-1.5) --cycle;%
+\end{scope}
+}%
+
+
+\NewDocumentCommand\B@positive@root@hyperplane{O{}}%
+{%
+\begin{scope}[on background layer]%
+\fill[hyperplane,#1] (square cs:x=-1,y=.5) -- (square cs:x=-1,y=1) -- (square cs:x=1,y=1) -- (square cs:x=1,y=-.5) -- cycle;%
+\end{scope}%
+}%
+
+
+\NewDocumentCommand\C@positive@root@hyperplane{O{}}%
+{%
+\begin{scope}[on background layer]%
+\fill[hyperplane,#1] (square cs:x=-1.5,y=.5) -- (square cs:x=0,y=2) -- (square cs:x=2,y=0) -- (square cs:x=1.5,y=-.5) -- cycle;%
+\end{scope}%
+}%
+
+
+\NewDocumentCommand\G@positive@root@hyperplane{O{}}%
+{%
+\begin{scope}[on background layer]%
+\fill[hyperplane,#1] 
+	(hex cs:x=-1,y=1.5) -- 
+	(hex cs:x=-1,y=2) -- 
+	(hex cs:x=0,y=1) --
+	(hex cs:x=1,y=1) --
+	(hex cs:x=1,y=0) --
+	(hex cs:x=2,y=-1) --
+	(hex cs:x=1,y=-1) --
+	(hex cs:x=1,y=-1.5) -- cycle;%
+\end{scope}%
+}%
+
+\NewDocumentCommand\positiveRootHyperplane{O{}}%
+{%
+\IfStrEqCase{\root@system}%
+{%%
+{A}{\A@positive@root@hyperplane[#1]}%
+{B}{\B@positive@root@hyperplane[#1]}%
+{C}{\C@positive@root@hyperplane[#1]}%
+{G}{\G@positive@root@hyperplane[#1]}%
+}%%
+[\check@root@system]%
+}%
+
+\NewDocumentCommand\A@parabolic@one{O{}}%
+{%
+\begin{scope}[on background layer]%
+\fill[hyperplane,#1] (hex cs:x=-2,y=1) -- (hex cs:x=-1,y=2) -- (hex  cs:x=1,y=1) -- (hex cs:x=2,y=-1) -- cycle;%
+\end{scope}%
+}%
+
+\NewDocumentCommand\A@parabolic@two{O{}}%
+{%
+\begin{scope}[on background layer]%
+\fill[hyperplane,#1] (hex cs:x=-1,y=2) -- (hex cs:x=1,y=1) -- (hex cs:x=2,y=-1) -- (hex cs:x=1,y=-2) -- cycle;%
+\end{scope}%
+}%
+
+\NewDocumentCommand\B@parabolic@one{O{}}%
+{%
+\begin{scope}[on background layer]%
+\fill[hyperplane,#1] (square cs:x=-1,y=0) --(square cs:x=-1,y=1) --(square cs:x=1,y=1) --(square cs:x=1,y=0) --cycle;%
+\end{scope}%
+}%
+
+\NewDocumentCommand\B@parabolic@two{O{}}%
+{%
+\begin{scope}[on background layer]%
+\fill[hyperplane,#1] (square cs:x=-1,y=1) --(square cs:x=1,y=-1) --(square cs:x=1,y=1) --cycle;%
+\end{scope}%
+}%
+
+
+\NewDocumentCommand\C@parabolic@one{O{}}%
+{%
+\begin{scope}[on background layer]%
+\fill[hyperplane,#1] (square cs:x=-2,y=0) -- (square cs:x=0,y=2) -- (square cs:x=2,y=0) -- cycle;%
+\end{scope}%
+}%
+
+
+\NewDocumentCommand\C@parabolic@two{O{}}%
+{%
+\begin{scope}[on background layer]%
+\fill[hyperplane,#1] (square cs:x=-1,y=1) -- (square cs:x=0,y=2) -- (square cs:x=2,y=0) -- (square cs:x=1,y=-1) -- cycle;%
+\end{scope}%
+}%
+
+
+\NewDocumentCommand\G@parabolic@one{O{}}%
+{%
+\begin{scope}[on background layer]%
+\fill[hyperplane,#1] (hex cs:x=-1,y=1) -- (hex cs:x=-1,y=2) -- (hex  cs:x=0,y=1) -- (hex cs:x=1,y=1) -- (hex cs:x=1,y=0) -- (hex cs:x=2,y=-1) -- (hex cs:x=1,y=-1) -- cycle;%
+\end{scope}%
+}%
+
+
+\NewDocumentCommand\G@parabolic@two{O{}}%
+{%
+\begin{scope}[on background layer]%
+\fill[hyperplane,#1] (hex cs:x=-1,y=2) --(hex cs:x=0,y=1) --(hex cs:x=1,y=1) --(hex cs:x=1,y=0) --(hex cs:x=2,y=-1) --(hex cs:x=1,y=-1) --(hex cs:x=1,y=-2) --cycle;%
+\end{scope}%
+}%
+
+\NewDocumentCommand\parabolic{O{}m}%
+{%
+\xdef\parabolic@subalgebra{#2}%
+\IfStrEq{#2}{3}{\positiveRootHyperplane}%
+{%
+\IfStrEqCase{\root@system#2}%
+{%%
+{A1}{\A@parabolic@one[#1]}%
+{A2}{\A@parabolic@two[#1]}%
+{B1}{\B@parabolic@one[#1]}%
+{B2}{\B@parabolic@two[#1]}%
+{C1}{\C@parabolic@one[#1]}%
+{C2}{\C@parabolic@two[#1]}%
+{G1}{\G@parabolic@one[#1]}%
+{G2}{\G@parabolic@two[#1]}%
+}%%
+[\check@root@system%
+\ClassError{Rank 2 roots}{Parabolic subalgebra ``#2'' not recognized. Allowed values are 1,2,3.}{}]%
+}%
+}%
+
+\NewDocumentCommand\parabolicgrading{}%
+{%
+\IfStrEqCase{\root@system\parabolic@subalgebra}%
+{%%
+{A1}{\draw[grading] (hex cs:x=-1,y=2) -- (hex cs:x=1,y=1);}%
+{A2}{\draw[grading] (hex cs:x=1,y=1) -- (hex cs:x=2,y=-1);}%
+{A3}{\draw[grading] (hex cs:x=-1,y=2) -- (hex cs:x=2,y=-1);\draw[grading] (hex cs:x=0,y=2) -- (hex cs:x=2,y=0);}%
+{B1}{\draw[grading] (square cs:x=-1,y=1) -- (square cs:x=1,y=1);}%
+{B2}{\draw[grading] (square cs:x=0,y=1) -- (square cs:x=1,y=0);\draw[grading] (square cs:x=1,y=1) circle (\gradingDot);}%
+{B3}{\draw[grading] (square cs:x=-1,y=1) -- (square cs:x=1,y=0);%
+\draw[grading] (square cs:x=0,y=1) -- (square cs:x=1,y=.5);%
+\draw[grading] (square cs:x=1,y=1) circle (\gradingDot);}%
+{C1}{\draw[grading] (square cs:x=-2,y=1) -- (square cs:x=2,y=1);%
+\draw[grading] (square cs:x=-2,y=2) -- (square cs:x=2,y=2);}%
+{C2}{\draw[grading] (square cs:x=0,y=2) -- (square cs:x=2,y=0);}%
+{C3}{
+\begin{scope}
+\clip 
+	(square cs:x=-2,y=2) --
+	(square cs:x=2,y=2) --
+	(square cs:x=2,y=-2) --
+	(square cs:x=-2,y=-2) --
+	cycle;
+\draw[grading] (square cs:x=0,y=2) -- (square cs:x=2,y=1.333333);
+\draw[grading] (square cs:x=-2,y=1.3333333) -- (square cs:x=2,y=0);
+\draw[grading] (square cs:x=-2,y=2) -- (square cs:x=2,y=.666666);
+\end{scope}
+}%
+{G1}{\draw[grading] (hex cs:x=-1,y=2) -- (hex cs:x=2,y=-1);\draw[grading] (hex cs:x=0,y=2) -- (hex cs:x=2,y=0);}%
+{G2}{\begin{scope}[on background layer]
+\IfStrEq{\weight@lattice@size}{0}%
+{%
+\draw[grading] (square cs:x=1.5,y=\sqrt@three) -- (square cs:x=1.5,y=-\sqrt@three);
+\draw[grading] (hex cs:x=0,y=2) -- (hex cs:x=2,y=-2);
+\draw[grading] (hex cs:x=-.5,y=2) -- (hex cs:x=1.5,y=-2);
+}%
+{%
+\hexclip
+\draw[grading] (hex cs:x=1,y=1) -- (hex cs:x=2,y=-1);
+\draw[grading] (hex cs:x=0,y=2) -- (hex cs:x=2,y=-2);
+\draw[grading] (hex cs:x=-.5,y=2) -- (hex cs:x=1.5,y=-2);
+}%
+\end{scope}}%
+{G3}{\begin{scope}[on background layer]
+\IfStrEq{\weight@lattice@size}{0}{}{\hexclip}%
+\foreach \i in {1,...,5}%
+{%
+\draw[grading]
+	 (square cs:x={.333333333*(\i-1)},y=\sqrt@three) -- 
+	(square cs:x={.333333333*(\i+1)},y=-\sqrt@three);
+}%
+\end{scope}}%
+}%%
+}%
+
+
+\makeatother
+\endinput

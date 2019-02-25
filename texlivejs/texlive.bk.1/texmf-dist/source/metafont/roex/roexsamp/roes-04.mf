@@ -1,0 +1,91 @@
+%%%%
+%%%% This file belongs to the ROEX package.
+%%%%
+%%% draw find_BB fill_C fix_fill_cmyk write_preamble write_postamble
+%%% length cycle join
+%%% / //
+% ROES-04.MF, ``STAR FLOWERS'':
+%  An example of removing overlaps of a single self-intersecting curve;
+%  the sample curves (separate EPS files are generated for different
+%  curves) are based upon a regular star polygon backbone;
+%  the first curve is just such a polygon, the remaining two are
+%  smooth variations (observe setting |epsil.time:=1/500| in the third case);
+%  after removing overlaps objects are repositioned in such a way that
+%  the lower left corner of the bounding box coincides with the origin
+%  of coordinate system.
+%%%%
+%% % an innocent formatting trick: the underscore character ending a name
+%% % will be typeset as an superscript asterisk
+%% \let\oriunderscore\_
+%% \newif\ifbgroupopen\bgroupopenfalse
+%% \def\altdblbackslash#1{\bgroup\bgroupopentrue\it#1}
+%% \def\optegroup{\ifbgroupopen\egroup\fi}
+%% \def\underscoreasasterisk#1{%
+%%   \ifx#1\relax\optegroup^*\else\oriunderscore#1\fi}
+%% \def\\#1{%
+%%   \let\_\underscoreasasterisk
+%%   \altdblbackslash{#1\relax}\optegroup
+%%   \let\_\oriunderscore}
+% ---
+input mftoeps; eps_mode_setup; input roex; tracingremoving:=1;
+max_idx:=500; % better increase the default value
+% ---
+primarydef i // n =
+ (if n=0: 0 else: i/n fi) % why not to divide by 0?
+enddef;
+% ---
+h#=1in#; w#=1in#;
+% ---
+beginchar("0",w#,h#,0);
+ pickup pencircle scaled 1;
+ for case:=0,1,2:
+  path p, V[\\][\\]; pair R; save x,y; numeric N, K, A, twirl;
+  twirl:=180;
+% star polygons should fullfil |GCC(K,N)=1|, |1<K<N/2|
+% (|N| is the number of nodes, |K| is a `leap')
+  if case=0: % A
+   N=9; K=4; def join = -- enddef; twirl:=0;
+  elseif case=1: % B
+   N=7; K=2; def join = .. tension 3 .. enddef;
+  elseif case=2: % C
+   N=13; K=4; def join = .. tension 3 .. enddef; epsil.time:=1/500;
+  fi
+  A=180-(360/N)*K; R=1in*right; z0=origin;
+  for i:=1 upto N-1: z[i]=z[i-1]+R; R:=R rotated (180-A); endfor
+  p:=z0 for i:=1 upto N-1: join z[i] endfor join cycle;
+  if twirl<>0:
+   p:=z0{(direction 0 of p) rotated twirl}
+    for i:=1 upto N-1: join {(direction i of p) rotated twirl}z[i] endfor
+    join cycle;
+  fi
+  remove_overlap (p)()R; % dummy recombining
+  col_min:=infinity; col_max:=-infinity;
+  for i:=-EDGE_.num upto EDGE_.num: if i<>0:
+   col_min:=min(EDGE_.col[i],col_min); col_max:=max(EDGE_.col[i],col_max);
+  fi endfor;
+  find_BB p;
+  for k:=col_min upto col_max: if k<>0:
+   vardef good_colors(expr i,j) = (i=k) enddef;
+   message "recombine_edges: color=" & decimal(k);
+   recombine_edges(V[k]);
+   for l:=1 upto V[k]num: V[k][l]:=V[k][l] shifted -llxy; endfor
+  fi endfor;
+  xh_crd:=xh_crd-xl_crd; xl_crd:=0;
+  yh_crd:=yh_crd-yl_crd; yl_crd:=0;
+  write_preamble jobname & char(ASCII("a")+case);
+   for k:=col_min upto col_max: if k<>0:
+    if V[k]num>0:
+     if k>0:
+      fix_fill_cmyk 0,3/4(((k-1)//(col_max-1))**1/2)[1,0],1,0;
+     else:
+      fix_fill_cmyk 3/4(((1+k)//(1+col_min))**1/2)[1,0],1,0,0;
+     fi
+     fill_C make_list(1,V[k]num)V[k];
+    fi
+   fi endfor % |for k|
+  write_postamble;
+ endfor % |for case|
+endchar;
+% ---
+end.
+%%\end

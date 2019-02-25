@@ -1,0 +1,155 @@
+%%
+%% This is file `lwarp-fancybox.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `fancybox')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+\LWR@ProvidesPackagePass{fancybox}[2010/05/15]
+\AfterEndPreamble{
+\LWR@traceinfo{Patching fancybox.}
+\def\VerbatimFootnotes{%
+\let\@footnotetext\V@footnotetext%
+\let\LWR@footnotetext\V@footnotetext% lwarp
+}
+\def\V@@footnotetext{%
+\LWR@traceinfo{V@footnotetext}%
+\global\setbox\LWR@footnotes=\vbox\bgroup%
+    \unvbox\LWR@footnotes%
+    \protected@edef\@currentlabel{%
+        \csname p@footnote\endcsname\@thefnmark%
+    }% @currentlabel
+    \renewrobustcmd{\textsuperscript}[1]{\LWR@htmlspan{sup}{##1}}%
+    \ifthenelse{%
+        \boolean{LWR@doingstartpars} \AND%
+        \cnttest{\value{LWR@lateximagedepth}}{=}{0}%
+    }%
+    {}%
+    {\LWR@htmltagc{\LWR@tagregularparagraph}\LWR@orignewline}%
+    \@makefntext{}%
+  \bgroup%
+  \aftergroup{\V@@@footnotetext}%
+  \ignorespaces%
+}%
+}% AfterEndPreamble
+\renewcommand*{\@shadowbox}[1]{%
+\ifbool{FormatWP}%
+{\InlineClass[border:1px solid black]{shadowbox}{#1}}%
+{\InlineClass{shadowbox}{#1}}%
+}
+
+\renewcommand*{\@doublebox}[1]{%
+\ifbool{FormatWP}%
+{\InlineClass[border:1px double black]{doublebox}{#1}}%
+{\InlineClass{doublebox}{#1}}%
+}
+
+\renewcommand*{\@ovalbox}[2]{%
+\ifbool{FormatWP}%
+{\InlineClass[border:1px solid black; border-radius:1ex]{ovalbox}{#2}}%
+{%
+    \ifthenelse{\isequivalentto{#1}{\thinlines}}%
+    {\InlineClass{ovalbox}{#2}}%
+    {\InlineClass{Ovalbox}{#2}}%
+}%
+}
+\let\LWR@origSbox\Sbox
+
+\def\Sbox{\LWR@origSbox\LWR@nestspan}
+
+\let\LWR@origendSbox\endSbox
+
+\def\endSbox{\endLWR@nestspan\LWR@origendSbox}
+\RenewEnviron{Beqnarray}
+{\LWR@eqnarrayfactor}
+
+\csgpreto{Beqnarray*}{\boolfalse{LWR@numbereqnarray}}
+\renewcommand{\GenericCaption}[1]{%
+\LWR@figcaption%
+\LWR@isolate{#1}%
+\endLWR@figcaption%
+}
+\RenewDocumentEnvironment{Btrivlist}{m o}
+{%
+    \begin{BlockClass}{Btrivlist}%
+    \tabular{#1}%
+}
+{%
+    \endtabular%
+    \end{BlockClass}%
+}
+\AtBeginEnvironment{LWR@nestspan}{%
+\RenewDocumentEnvironment{Btrivlist}{m o}{}{}%
+}
+\let\LWRFB@origitemizeitem\LWR@itemizeitem
+\let\LWRFB@origdescitem\LWR@descitem
+
+\RenewDocumentCommand{\LWR@itemizeitem}{d()o}{%
+    \IfValueTF{#2}{%
+        \LWRFB@origitemizeitem[#2]%
+    }{%
+        \LWRFB@origitemizeitem%
+    }%
+}
+
+\RenewDocumentCommand{\LWR@descitem}{d()o}{%
+    \IfValueTF{#2}{%
+        \LWRFB@origdescitem[#2]~%
+    }{%
+        \LWRFB@origdescitem%
+    }%
+}
+\RenewDocumentCommand{\LWR@nestspanitem}{d()}{%
+\if@newlist\else{\LWR@htmltagc{br /}}\fi%
+\LWR@origitem%
+}
+\renewenvironment{Bitemize}[1][]{\begin{itemize}}{\end{itemize}}
+\renewenvironment{Benumerate}[1][]{\begin{enumerate}}{\end{enumerate}}
+\renewenvironment{Bdescription}[1][]{\begin{description}}{\end{description}}
+\RenewDocumentCommand{\boxput}{s d() m m}{%
+\IfBooleanTF{#1}{#3\quad#4}{#4\quad#3}%
+}
+\RenewDocumentCommand{\fancyput}{s d() m}{}
+\RenewDocumentCommand{\thisfancyput}{s d() m}{}
+
+\RenewDocumentCommand{\fancypage}{m m}{}
+\RenewDocumentCommand{\thisfancypage}{m m}{}
+
+\def\LandScape#1{}
+\def\endLandScape{}
+\def\@Landscape#1#2#3{}
+\def\endLandscape{}
+\let\LWRFB@UseVerbatim\UseVerbatim
+\renewcommand*{\UseVerbatim}[1]{%
+\LWR@atbeginverbatim{3}{Verbatim}%
+\LWRFB@UseVerbatim{#1}%
+\LWR@afterendverbatim{.5}%
+}
+
+\let\LWRFB@LUseVerbatim\LUseVerbatim
+
+\renewcommand*{\LUseVerbatim}[1]{%
+\LWR@atbeginverbatim{3}{LVerbatim}%
+\noindent%
+\LWRFB@LUseVerbatim{#1}%
+\LWR@afterendverbatim{.5}%
+}
+
+\def\@BUseVerbatim[#1]#2{%
+\LWR@atbeginverbatim{3}{BVerbatim}%
+\LWRFB@UseVerbatim{#2}%
+\LWR@afterendverbatim{.5}%
+}
+\endinput
+%%
+%% End of file `lwarp-fancybox.sty'.

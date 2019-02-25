@@ -1,0 +1,92 @@
+% This file is part of emf.
+
+% emf is free software: you can redistribute it and/or modify it under
+% the terms of the GNU General Public License as published by the Free
+% Software Foundation, either version 3 of the License, or (at your
+% option) any later version.
+
+% emf is distributed in the hope that it will be useful, but WITHOUT
+% ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+% or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+% License for more details.
+
+% You should have received a copy of the GNU General Public License
+% along with emf. If not, see <http://www.gnu.org/licenses/>.
+\ProvidesPackage{emf}[2016/09/09. V. 1. Support for EMF symbols (Palle Joergensen)]
+\RequirePackage{xkeyval}
+\DeclareOptionX{scale}{\def\emf@scale{#1}}
+
+\DeclareOptionX{boondox}{%
+  \ifx\emf@scale\@empty
+    \expandafter\def\csname BOONDOX-cal@scale\endcsname {1.1}%
+  \else
+    \expandafter\def\csname BOONDOX-cal@scale\endcsname {\emf@scale}%
+  \fi
+  \DeclareMathAlphabet{\mathemf}{U}{BOONDOX-cal}{m}{n}%
+  \SetMathAlphabet{\mathemf}{bold}{U}{BOONDOX-cal}{b}{n}%
+  \def\emf{\mathemf{E}}%
+}
+\DeclareOptionX{cmr}{%
+  \DeclareMathAlphabet{\mathemf}{OMS}{cmr}{m}{n}%
+  \SetMathAlphabet{\mathemf}{bold}{OMS}{cmr}{b}{n}%
+  \def\emf{\mathemf{E}}%
+}
+
+\DeclareOptionX{calligra}{%
+  \DeclareFontFamily{T1}{calligra}{}%
+  \ifx\emf@scale\@empty
+    \DeclareFontShape{T1}{calligra}{m}{n}{<->s*[1.07]callig15}{}%
+  \else
+    \DeclareFontShape{T1}{calligra}{m}{n}{<->s*[\emf@scale]callig15}{}%
+  \fi
+  \DeclareMathAlphabet{\mathemf}{T1}{calligra}{m}{n}%
+  \def\emf{\mathemf{\mkern-7muE\mkern4mu}}%
+}
+\DeclareOptionX{frcursive}{%
+  \DeclareMathAlphabet{\mathemf}{T1}{frc}{m}{sl}%
+  \def\emf{\mathemf{E}}%
+}
+\DeclareOptionX{fourier}{%
+  \DeclareFontEncoding{FMS}{}{}%
+  \DeclareFontSubstitution{FMS}{futm}{m}{n}%
+  \DeclareMathAlphabet{\mathemf}{FMS}{futm}{m}{n}%
+  \def\emf{\mathemf{E}}%
+}
+
+\DeclareOptionX{miama}{%
+  \ifx\emf@scale\@empty
+    \def\fmm@scale{0.85}%
+  \else
+    \def\fmm@scale{\emf@scale}%
+  \fi
+  \DeclareMathAlphabet{\mathemf}{OT1}{fmm}{m}{n}%
+  \def\emf{\mathemf{E}}%
+}
+\DeclareOptionX{chorus}{%
+  \ifx\emf@scale\@empty
+    \def\qzc@scale{1.22}%
+  \else
+    \def\qzc@scale{\emf@scale}%
+  \fi
+  \DeclareMathAlphabet{\mathemf}{OT1}{qzc}{m}{n}%
+  \def\emf{\mathemf{E}}%
+}
+\DeclareOptionX{rsfs}{%
+  \DeclareMathAlphabet{\mathemf}{OMS}{rsfs}{m}{n}%
+  \def\emf{\mathemf{E}}%
+}
+\DeclareOptionX{cal}{%
+  \def\emf{\mathcal{E}}%
+}
+\DeclareOptionX{U0}{%
+  \def\emf{U_0}%
+}
+\DeclareOptionX{u0}{%
+  \ExecuteOptionsX{U0}%
+}
+\DeclareOptionX{text}[EMF]{\def\emf{\mathit{#1}}}
+
+\ExecuteOptionsX{scale}
+\ExecuteOptionsX{boondox}
+\ProcessOptionsX*
+\endinput

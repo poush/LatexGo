@@ -1,0 +1,270 @@
+% This file is public domain.
+% Originally written 1992, Don Hosek.
+% This declaration added by Clea F. Rees 2008/11/16 with the permission of Dan Hosek.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%   Resume macro file for plain.TeX.
+%
+%   To Use:
+%     \input resumemac
+%     \magnification=\magstep0 % (Or whatever size is desired)
+%                              % Setting \magnification is optional.
+%     \name{Your Name Here}
+%     \address{Separated by \\
+%       Type your address\\
+%       In this space.}
+%     \date{Either type it yourself, or use \today}
+%     \tag{Whatever the category is}
+%         Information for this item...
+%                   .
+%                   .
+%                   .
+%     \endtag
+%     Repeat \tag...\endtag as necessary.
+%     Inside of \tag...\endtag, you may use \(dates)what happened then\\ for
+%     itemized lists.
+%
+%     To set the heading format say:
+%     \centerheading    (for centered headings)
+%     \leftheading      (for left justified headings)
+%     \rightheading     (for right justified headings) or
+%     \specialheading   (for a special ``letterhead'' style heading.)
+%     Before you enter the heading commands
+% 
+%     Use \magnification to modify text sizes.
+%
+%   Written By Don Hosek <DHOSEK@HMCVAX.BITNET>
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%
+%%% Initializations...
+%%%
+\catcode`\@=11
+
+\newskip\interTAGskip
+
+\newbox\TAGbox          \newbox\INFObox
+\newdimen\TAGboxhsize   \newdimen\INFOboxhsize  \newdimen\INFOboxlength
+\newdimen\DATEhsize     \newdimen\DATEINFOhsize \newdimen\@datesepamount
+\hsize=6.5truein        \vsize=9.0truein        \interTAGskip=12pt
+\parindent=0pt          
+\TAGboxhsize=0.9truein  \INFOboxhsize=5.3truein % Take care that TAGboxhsize +
+                                                % INFOboxhsize = hsize - 0.1in
+\DATEhsize=.75truein    \DATEINFOhsize=4.4truein % Take care that DATEhsize +
+\@datesepamount=.15truein                        % DATEINFOhsize is <=
+                                                 % INFOboxhsize
+\let\wheretoputit=c     \let\\=\cr
+\nopagenumbers
+
+%%%
+%%% Fonts...
+%%% Change am.. to cm.. if you are using that series of fonts.
+%%% System wizards may modify this section to conform to system needs and
+%%% user desires.
+%%%
+\font\NAMEfont=cmbx10 scaled 1200   \font\TAGfont=cmbxsl10
+\font\smallADDRESSfont=cmr9
+
+%%%
+%%% The top macros...
+%%%
+%%% First off is the ever-popular \today macro...
+%%% (cribbed from LaTeX's Letter format.) Basically a long \ifcase on the
+%%% \month register.
+%%%
+\def\today{\ifcase\month\or
+  January\or February\or March\or April\or May\or June\or
+  July\or August\or September\or October\or November\or December\fi
+  \ \number\day, \number\year}
+
+%%%
+%%% \specialline is a special version of \line that permits you to select
+%%% centered, right or left adjusting via an option in []s. We call this in
+%%% the right-, left-, and centerheadings styles.
+%%%
+\def\specialline[#1]#2{ 
+   \ifx#1l\leftline{#2}
+     \else\ifx#1r\rightline{#2}
+       \else\centerline{#2}
+       \fi
+     \fi}
+
+%%%
+%%% \name, \address, \date put the parameter information into \@ whatever
+%%%
+\def\name#1{\def\@name{#1}}
+\def\address#1{\ifx\@address\undefined   % allow multiple addresses...
+    \def\@address{#1}
+   \else
+    \def\@@address{#1}
+   \fi}
+\def\date#1{\def\@date{#1}}
+
+%%%
+%%% Now for the meat and potatoes macro: \tag...\endtag
+%%%
+%%% \tag
+%%%   Check to see if this is the first tag... If it is, then we want to
+%%%   print the header information at the top.
+%%%   We put the first parameter in \TAGinfo, to be used later, and then
+%%%   begin to put the remainder of the text in a box (the box will be removed
+%%%   later on for flexibility in making page breaks).
+%%%
+\def\tag#1{\ifx\@headerprinted\undefined % check to see if this is the first tag
+    \let\@headerprinted=X %change status of @headerprinted
+    \printheader % print the header
+    \fi
+   \def\TAGinfo{#1} % Communication to \endtag
+   \setbox\INFObox=\vbox\bgroup\hsize=\INFOboxhsize}
+
+%%%
+%%% \endtag
+%%%   \endtag finishes off the box begun by \tag and and prints the entry
+%%%   in the resume using valign. 
+%%%
+\def\endtag{\egroup
+   \vskip\interTAGskip
+   \setbox\TAGbox=\vbox{\hsize=\TAGboxhsize
+     \raggedright\hyphenchar\TAGfont=-1
+     \tolerance=20000 % Don't get uptight about lines.
+     \hbadness=10000 % And don't talk about it either.
+     \TAGfont \TAGinfo \vfill}
+   \valign{##\vfill\cr
+     \unvbox\TAGbox\cr
+     \noalign{\hfill}
+     \unvbox\INFObox\cr}}
+
+%%%
+%%% Now that wasn't too bad, now was it?
+%%% Next we create the \(...)... macro to make a few other things
+%%% easier
+%%%
+
+%%%
+%%% \(dates)
+%%% whatever happened during that time\\
+%%%   This macro also uses valign to align its text.
+%%%   
+\def\(#1)#2\\{\par
+   {\tabskip=0pt %change tabskip only inside this macro.
+   \vskip4pt plus 2pt minus3pt
+   \valign{##\vfill\cr
+     \vbox{\hsize=\DATEhsize\leftskip=0pt plus1fill#1}\cr
+     \noalign{\hskip\@datesepamount}
+     \vbox{\hsize=\DATEINFOhsize#2}\cr
+     \noalign{\hfill}}}
+   \par}
+
+%%%
+%%% Heading options:
+%%%
+%%% \leftheading
+%%%
+\def\leftheading{\let\@hstyle=l}
+
+%%%
+%%% \rightheading
+%%%
+\def\rightheading{\let\@hstyle=r}
+
+%%%
+%%% \centerheading
+%%%
+\def\centerheading{\let\@hstyle=c}
+
+%%%
+%%% \specialheading
+%%%
+\def\specialheading{\let\@hstyle=s}
+
+%%%
+%%% \heading{heading_type}
+%%% 
+%%% LaTeX-style command for specifying headig type... use something
+%%% along the lines of \heading{right} to set the heading type.
+\def\heading#1{\csname#1heading\endcsname}
+
+%%%
+%%% \printheader
+%%% internal macro for printing the header. Should not be called by user!
+%%% uses information set by the heading commands.
+%%%
+\def\printheader{\ifx\@date\undefined
+    \def\@date{\today} %if date was not specified, use today's date.
+    \fi
+   \ifx\@hstyle s
+    \begingroup
+     \def\\{, }
+     \line{{\NAMEfont\@name}\hfil{\smallADDRESSfont\@address}}
+     \ifx\@@address\undefined\relax\else %two addresses !
+      \line{\hfil{\smallADDRESSfont\@@address}}
+      \fi
+     \endgroup
+    \smallskip
+    \hrule
+    \smallskip
+    \rightline{\@date}
+   \else\ifx\@hstyle r
+    \begingroup
+     \let\\=\cr
+     \halign{\hbox to\hsize{\hfill##\hfil}\cr
+      \NAMEfont\@name\cr
+      \@address\cr
+      \noalign{\smallskip}
+      \ifx\@@address\undefined\relax\else
+       \@@addresscr
+       \noalign{\smallskip}
+       \fi
+      \@date\crcr}
+     \endgroup
+   \else\ifx\@hstyle l
+    \begingroup
+     \let\\=\cr
+     \halign{##\hfil\cr
+      \NAMEfont\@name\cr
+      \@address\cr
+      \noalign{\smallskip}
+      \ifx\@@address\undefined\relax\else
+       \@@addresscr
+       \noalign{\smallskip}
+       \fi
+      \@date\crcr}
+     \endgroup
+   \else\ifx\@hstyle c
+    \centerline{\NAMEfont\@name} % The easy way to do it.
+    \ifx\@@address\undefined
+     \centeroneaddress
+    \else
+     \centertwoaddresses
+    \fi
+    \centerline{\@date} 
+   \fi\fi\fi\fi}
+
+\def\@@addresscr{\@@address\cr} %hack to fool ifx
+
+\def\centeroneaddress{\begingroup
+   \let\\=\cr
+   \tabskip=0pt plus1fill
+   \halign to \hsize{\hfil##\hfil\cr
+    \@address\crcr}
+   \smallskip
+   \endgroup}
+
+\def\centertwoaddresses{\begingroup
+   \let\\=\cr
+   \tabskip=0pt
+   \valign{##\vfill\cr
+    \noalign{\hfill}
+    \vbox{\hsize=.4\hsize\tabskip=0ptplus1fill
+     \halign to\hsize{\hfil##\hfil\cr
+      \@address\crcr}}\cr
+    \vbox{\hsize=.4\hsize\tabskip=0ptplus1fill
+     \halign to\hsize{\hfil##\hfil\cr
+      \@@address\crcr}}\cr
+    \noalign{\hfill}}
+    \smallskip
+    \endgroup}
+
+\catcode`\@=12

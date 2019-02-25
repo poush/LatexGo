@@ -1,0 +1,59 @@
+% mlp-49n.sty (the "ngerman" interface for the mlp package)  
+%                                                        last mods 2000/09/06
+%%
+%%      checksum        = "63302 137 659 7109"
+%%
+\ProvidesFile{mlp-49n.sty}% 
+        [2000/09/06 new-german interface for the mlp package]
+\expandafter% If this coding is not alreadly loaded
+\ifx\csname ngermanTeXmods\endcsname\relax% define the basic cs,
+  \def\beginlanguage{\ngerman}% the language name cs and
+  \edef\beginFWdirection{L}% the direction of writing (write Left to right).
+\else%
+  \endinput% else do nothing at all.
+\fi%
+% A bypass required for other languages because
+\let\@SavedCF\captionsfrench% 1) ngerman.sty destroys french captions coding
+\let\@SavedCE\captionsenglish% 2) ngerman.sty destroys english captions coding.
+\RequirePackage{ngerman}% Load ngerman package.
+% The command to initialize all german tools except hyphenation:
+\@ifundefined{ngermanTeXmods}{%................................ \ngermanTeXmods
+    \gdef\ngermanTeXmods{\ngermanTeX% this is the cs for ngerman.sty
+                        \ifx\captionsnames\captionsngerman\else%
+                         \let\captionsnames\captionsngerman%
+                         \let\date\datengerman%
+                         \let\bibsnames\bibssngerman%
+                        \fi%
+                        \let\switchtolanguage\endngerman% 
+                        }%
+                            }{}%
+\DeclareOption{ngerman}{\def\beginlanguage{ngerman}}% First language to start.
+\ProcessOptions% Process that option (ngerman) defintely.
+% The command to set ngerman hyphenation:
+% (normally set at INITeX) it should equal to \language=x and nothing else
+\@ifundefined{ngerman}{\gdef\ngerman{\relax}}{}% Default............   \ngerman
+% The command to do extra things and switch to another language:
+\@ifundefined{switchtolanguage}{%............................ \switchtolanguage
+                                \gdef\switchtolanguage#1{#1}}{}%
+\let\@enstGORI\switchtolanguage% save original switchtolanguage if any.
+\let\ngermanORI\ngerman% assuming \language=x was set here
+\def\endngerman{\no@xtrasngerman%
+               \let\switchtolanguage\@enstGORI%
+%              \csname endL\endcsname%stop TeX--XeT 1st direction of writing
+               \ignorespaces}% but they are not after \end{english} !
+\let\no@xtrasngerman\noextrasngerman%
+% The final command to initialize ngerman stuff:
+\def\ngerman{\switchtolanguage\ngermanTeXmods\ngermanORI%...... Final \ngerman
+             \ignorespaces}% but they are not after \begin{ngerman} !
+%\ngerman% Don't activate language now, postpone until \begin{document}.
+\originalTeX% go back to original stuff
+\let\captionsfrench\@SavedCF% restore original \captionsfrench
+\let\captionsenglish\@SavedCE% restore original \captionsenglish
+\def\@lastoption{ngerman}% The option to start typesetting with.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Let few other packages know that ngerman is loaded.
+%
+\PassOptionsToPackage{german}{varioref}% 
+%
+\endinput%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 

@@ -1,0 +1,147 @@
+                                                 \input plainpkg
+\ProvidesPackage{actcodes}[2012/11/07 v0.2a active characters (UL)]
+%%
+%% Copyright (C) 2012 Uwe Lueck,
+%% http://www.contact-ednotes.sty.de.vu
+%% -- author-maintained in the sense of LPPL below --
+%%
+%% This file can be redistributed and/or modified under
+%% the terms of the LaTeX Project Public License; either
+%% version 1.3c of the License, or any later version.
+%% The latest version of this license is in
+%%     http://www.latex-project.org/lppl.txt
+%% There is NO WARRANTY (actually somewhat experimental).
+%%
+%% Please report bugs, problems, and suggestions via
+%%
+%%   http://www.contact-ednotes.sty.de.vu
+%%
+%%  == Purpose and Usage            ==
+%% The package derives from switching category codes 
+%% in the 'nicetext' and 'morehype' bundles and should 
+%% improve them. 
+%% 
+%% === Installing and Calling       ===
+%% The file `actcodes.sty' is provided ready, 
+%% installation only requires
+%% putting it somewhere where \TeX\ finds it
+%% (which may need updating the filename data
+%%  base).\urlfoot{ukfaqref}{inst-wlcf} 
+%% However, the files `plainpkg.tex' and `stacklet.sty' %% stacklet 2012/09/19
+%% must be installed likewise.
+%% 
+%% \emph{With} \LaTeX, the file should be loaded by `\RequirePackage{actcodes}'
+%% or `\usepackage{actcodes}'. 
+%% 
+%% \emph{Without} \LaTeX, load it by `\input actcodes.sty'.
+%%
+%% As explained in `plainpgk-doc.pdf', however, ``generic" 
+%% packages based on 'plainpkg' should load 'actcodes' by 
+%% `\RequirePackage{actcodes}'.
+%%
+%% === Commands and Syntax          ===
+%% \label{sec:actcodes-cmds}
+%% 'actcodes.sty' provides \ |\MakeActive|, |\MakeActiveAss|, 
+%% |\MakeActiveDef|, |\MakeActiveLet|, 
+%% |\MakeOther|, |\MakeActiveOther| \ with rather obvious 
+%% syntax---you find more detailed descriptions 
+%% mixed with implementation below ... TODO
+%% ---Without \LaTeX, the latter's internal |\@gobble<arg>|
+%% is provided as well.
+%% 
+%%  == The Code                     ==
+%% === Our Private Letters          ===
+\PushCatMakeLetterAt
+%%
+%% === The Core                     ===
+%% |\MakeActiveAss<ass-fun>\<char><ass-args>| ``activates" <char> 
+%% and then applies assignment function <ass-fun> with arguments 
+%% <ass-args> to it. The code derives from \LaTeX's
+%% `\@sverb' and `\do@noligs' and was also discussed 
+%% on the \acro{LATEX-L} mailing list September 2010
+%% (Will Robertson; Heiko Oberdiek). 
+%% The present definition generalizes 
+%% `\MakeActiveDef' and `\MakeActiveLet' of my earlier packages.
+\gdef\MakeActiveAss#1#2{%
+  \MakeActive#2%
+  \begingroup \lccode`\~`#2\relax \lowercase{\endgroup #1~}} 
+%% I was reluctant to provide |\MakeActive\<char>|, 
+%% but with 'catchdq.sty', it would be better ...   %% 2012/09/16
+\gdef\MakeActive#1{\catcode`#1\active}
+%% ... it just ``revives" the meaning that the corresponding 
+%% active-character token last time ...
+%%
+%% === \cs{def} and \cs{let}        ===
+%% |\MakeActiveDef\<char><parameters>{<replace>}| 
+%% has been employed in 'fifinddo' and 'blog' 
+%% (which is based on 'fifinddo') so far. 
+\gdef\MakeActiveDef{\MakeActiveAss\def}
+%% W.r.t.\ the definition of this `\MakeActiveDef', 
+%% Heiko Oberdiek remarked that it allows \emph{macro parameters}, 
+%% as opposed to my earlier definition in 'fifinddo'. 
+%% Without parameters, this kind of macro has been used for 
+%% conversion of text encodings ('atari.fdf', 
+%% and I thought this was the idea of \ctanpkgref{stringenc} ...).
+%% 
+%% |\MakeActiveLet\<char><cmd>| has been provided in 'niceverb' so far. 
+%% The present package has been made in order to have 
+%% `\MakeActiveLet' with 'blog.sty' as well, it was too annoying 
+%% to use `\MakeActiveDef' there so often.
+\gdef\MakeActiveLet{\MakeActiveAss\let}
+%% 
+%% === Switching Back \textellipsis ===
+%% Sometimes, the ``active" behaviour of <char> is too difficult, 
+%% and you may want to switch bach to its ``simple" way ... 
+%% This may work by |\MakeOther\<char>| ... 
+%% with \LaTeX, `\MakeOther' just is `\@makeother' ...
+\ifltx \global\let\MakeOther\@makeother
+\else  \gdef\MakeOther#1{\catcode`#112\relax}
+\fi
+%% But within a macro (or other) argument, you can't change the `\catcode'. 
+%% (I~lost some time by not realizing that it was within a large argument 
+%%  where I tried to switch the `\catcode'.)
+%% Anyway or in certain cases, it may be better to keep a character 
+%% ``active" throughout a document and just to change the \emph{expansion}
+%% of the ``active-character token." This can be done with 
+%% `\MakeActiveLet' and `\MakeActiveDef' in certain cases already. 
+%% E.g., when the \emph{``blank space"} has been ``activated" by 
+%% `\obeylines', `\MakeActiveLet\ \space' ``undoes" this half-way, 
+%% while it does not restore ``argument skipping" and 
+%% ``compressing blank spaces."
+%% 
+%% When character <char> should be ``active" for some time, 
+%% but for certain moments you prefer that it behaves like an 
+%% ``other character", you can switch to its ``other" expansion by 
+%% |\MakeActiveOther\<char>|:
+\gdef\MakeActiveOther#1{%
+    \MakeActiveAss\edef#1{\expandafter\@gobble\string#1}}
+%% `\MakeActiveOther' uses \LaTeX's |\@gobble<arg>|, 
+%% \emph{without} \LaTeX, 'actcodes' provides it:
+\ifltx\else \long\gdef\@gobble#1{} \fi
+% \show_ \MakeActiveOther\_ \show_ \expandafter\show_
+%% I am \emph{not} providing a version \emph{without}
+%% the `\catcode' change, although the latter is superfluous here
+%% TODO ...
+%% 
+%% `niceverb' also provides |\MakeNormal\<char>|, it may migrate %% |...| 2012/11/07
+%% to here in the future, and there may be |\MakeActiveNormal\<char>|
+%% extending the above `\MakeActiveOther' TODO ...
+%% 
+%% Also, a \emph{stack} might be used as in 'stacklet', 
+%% even to switch \emph{meanings} of active-character tokens ... 
+%% not sure TODO ...
+%% 
+%% \ctanpkgref{babel} does similar things, but I never have ... TODO
+%%
+%% === Leaving and Version History  ===
+\PopLetterCatAt
+\endinput
+%%
+%% VERSION HISTORY
+
+v0.1   2012/08/26   started, almost completed 
+       2012/08/27   completed; realizing \Push...At ..., bug fixes
+v0.2   2012/08/28   \global\let, \def -> \gdef
+       2012/09/16   \MakeActive
+       2012/09/19   doc.: stacklet
+v0.2a  2012/11/07   doc.: |...| on \MakeNormal

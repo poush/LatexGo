@@ -1,0 +1,166 @@
+%\iffalse
+%<*package>
+%% \CharacterTable
+%%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%%   Digits        \0\1\2\3\4\5\6\7\8\9
+%%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%%   Dollar        \$     Percent       \%     Ampersand     \&
+%%   Acute accent  \'     Left paren    \(     Right paren   \)
+%%   Asterisk      \*     Plus          \+     Comma         \,
+%%   Minus         \-     Point         \.     Solidus       \/
+%%   Colon         \:     Semicolon     \;     Less than     \<
+%%   Equals        \=     Greater than  \>     Question mark \?
+%%   Commercial at \@     Left bracket  \[     Backslash     \\
+%%   Right bracket \]     Circumflex    \^     Underscore    \_
+%%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%%   Right brace   \}     Tilde         \~}
+%</package>
+%\fi
+%\iffalse
+% Doc-Source file to use with LaTeX2e
+% Copyright (C) 2018 Sebastian Friedl
+%
+% This work is subject to the LaTeX Project Public License, Version 1.3c or -- at
+% your option -- any later version of this license.
+% The work consists of the files lualatex-truncate.dtx, lualatex-truncate.ins,
+% lualatex-truncate-doc.dtx and the derived file lualatex-truncate.sty
+%
+% This work has the LPPL maintenance status 'maintained'.
+% Current maintainer of the work is Sebastian Friedl.
+%\fi
+%
+%
+%
+% \changes{1.0}{2018/06/03}{Initial release}
+% \changes{1.1}{2018/08/22}{\textsc{\bfseries Bugfix:} visible hyphen char with \texttt{breakall} option and non-english language}
+%
+% \subsubsection*{Initialization}
+% Identify the package and require \LaTeXe:
+%    \begin{macrocode}
+\ProvidesPackage{lualatex-truncate}%
+    [2018/08/22 v1.1 LuaLaTeX wrapper for the truncate package]
+\NeedsTeXFormat{LaTeX2e}
+%    \end{macrocode}
+%
+%
+%
+% \subsubsection*{Internal variables}
+% This variable is used to remember whether messing with the hyphen char is required:
+%    \begin{macrocode}
+\newif\if@lualtxtruncate@hackhyphen
+\@lualtxtruncate@hackhyphenfalse
+%    \end{macrocode}
+%
+% Also, enable remembering whether the \opt{breakall} option has been used:
+%    \begin{macrocode}
+\newif\if@lualtxtruncate@breakall
+\@lualtxtruncate@breakallfalse
+%    \end{macrocode}
+%
+%
+%
+%
+% \subsubsection*{Package options}
+% The \opt{breakwords} and \opt{breakall} options require the hyphanation character to be hidden.
+% Therefore, we remember to \enquote{hack} the hyphen character before passing these options
+% to the \enquote{original} \sty{truncate} package:
+%    \begin{macrocode}
+\DeclareOption{breakwords}{%
+    \@lualtxtruncate@hackhyphentrue%
+    \PassOptionsToPackage{breakwords}{truncate}}
+%    \end{macrocode}
+%
+% In case of the \opt{breakall} option, we also need to remember the option's usage:
+%    \begin{macrocode}
+\DeclareOption{breakall}{%
+    \@lualtxtruncate@breakalltrue%
+    \@lualtxtruncate@hackhyphentrue%
+    \PassOptionsToPackage{breakall}{truncate}}
+%    \end{macrocode}
+%
+% \smallskip
+% Pass all other options (i.e. \opt{hyphenate} and \opt{fit}) directly to the \sty{truncate} package:
+%    \begin{macrocode}
+\DeclareOption*{\PassOptionsToPackage{\CurrentOption}{truncate}}
+%    \end{macrocode}
+%
+% \smallskip
+% Process all options passed to \sty{lualatex-truncate}:
+%    \begin{macrocode}
+\ProcessOptions
+%    \end{macrocode}
+%
+%
+%
+% \subsubsection*{Load the \sty{truncate} package}
+% Require the \sty{truncate} package. All package options have already been passed on. \\
+% If \sty{truncate} has been loaded already, a error message is printed to the log.
+%    \begin{macrocode}
+\@ifpackageloaded{truncate}{%
+    \PackageError{lualatex-truncate}%
+        {Don't load the truncate package when using lualatex-truncate!}%
+        {Don't load the truncate package and pass all package options
+         to lualatex-truncate! Otherwise, the wrapper mechanism won't
+         be able to understand what you want.}%
+}{\RequirePackage{truncate}}
+%    \end{macrocode}
+%
+%
+%
+% \subsubsection*{If the document is not compiled via \hologo{LuaLaTeX}\dots}
+% Don't wrap anything if the document isn't compiled by \hologo{LuaLaTeX}:
+%    \begin{macrocode}
+\RequirePackage{iftex}
+\ifLuaTeX\else%
+    \PackageWarningNoLine{lualatex-truncate}%
+        {Whoops! You don't want to use LuaLaTeX?}%
+    \endinput%
+\fi%
+%    \end{macrocode}
+%
+%
+%
+% \subsubsection*{Constructing the wrapper}
+% \begin{macro}{\lualtxtruncate@truncate}
+% Remember the original "\truncate" command's definition.
+% Since "\truncate" provides an optional argument, "\LetLtxMacro" has to be used
+% instead of the primitive "\let" command:
+%    \begin{macrocode}
+\RequirePackage{letltxmacro}
+\LetLtxMacro\lualtxtruncate@truncate\truncate
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\truncate}
+% \changes{1.1}{2018/08/22}{Remember previous hyphenation character}
+% Construct the wrapper by redefining the "\truncate" command
+% and -- if necessary -- modifying "\prehyphenchar". \\
+% "\prehyphenchar"'s value is stored inside the counter
+% "\lualtxtruncate@tmp". Also, the current language must be set to US english,
+% if the \opt{breakall} option has been used.
+%    \begin{macrocode}
+\renewcommand{\truncate}[3][\TruncateMarker]{{% two braces -> scope changes
+    \if@lualtxtruncate@breakall%
+        \language\z@% force US english
+    \fi%
+    \newcount\lualtxtruncate@tmp%
+    \lualtxtruncate@tmp=\the\prehyphenchar% remember current hyphen char
+    \if@lualtxtruncate@hackhyphen%
+        \prehyphenchar=0% invisible hyphen
+    \fi%
+    \lualtxtruncate@truncate[#1]{#2}{#3}% run the original \truncate macro
+    \if@lualtxtruncate@hackhyphen%
+        \prehyphenchar=\the\lualtxtruncate@tmp% restore hyphen
+    \fi%
+}}
+%    \end{macrocode}
+% \end{macro}
+%
+%
+%
+% \subsubsection*{Famous last words}
+% Enough code for this package. "\endinput".
+%    \begin{macrocode}
+\endinput
+%    \end{macrocode}

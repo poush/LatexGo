@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="defineblock" level="style" category="structure" file="strc-blk.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupblock"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupblock" level="style" category="structure" file="strc-blk.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:constant type="paragraph" default="yes"/>
+                    <cd:constant type="text"/>
+                </cd:parameter>
+                <cd:parameter name="inner">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="setups">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="align">
+                    <cd:resolve name="value-alignsimple"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="block" type="environment" generated="yes" variant="example" begin="begin" end="end" level="document" category="structure" file="strc-blk.mkiv">
+        <cd:sequence>
+            <cd:variable value="block"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="+"/>
+                <cd:constant type="-"/>
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
+            <cd:resolve name="assignment-userdata-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="hideblocks" level="style" category="structure" file="strc-blk.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list"/>
+            <cd:resolve name="keyword-name-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="keepblocks" level="style" category="structure" file="strc-blk.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list"/>
+            <cd:resolve name="keyword-name-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="useblocks" level="document" category="structure" file="strc-blk.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list"/>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="criterium">
+                    <cd:constant type="text" default="yes"/>
+                    <cd:constant type="cd:section"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="processblocks" level="document" category="structure" file="strc-blk.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list"/>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="criterium">
+                    <cd:constant type="text" default="yes"/>
+                    <cd:constant type="cd:section"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="selectblocks" level="document" category="structure" file="strc-blk.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list"/>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="criterium">
+                    <cd:constant type="text" default="yes"/>
+                    <cd:constant type="cd:section"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="blockuservariable" level="document" category="structure" file="strc-blk.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-key"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

@@ -1,0 +1,1215 @@
+%% fontch.tex Macros for easily changing fonts and sizes in plain TeX %%
+%% V2.2  2010/04/12 
+%% Copyright 2010 Rodrigo Medina rmedina@ivic.gob.ve
+%% Suggested location: .../texmf/tex/plain/fontch/
+%% Licence: LPPL
+%%
+%%%%%% Components
+%% The fontch V2.2 package is composed of the following files
+%% README         -- Explanation file (has essentially this information)
+%% fontch.tex     -- main macros
+%% bsymbols.tex   -- macros for boldface  symbols
+%% TS1mac.tex     -- macros for the TS1 companion symbols
+%% DSmac.tex      -- auxiliary file for the DStroke option
+%% fontch.pdf     -- manual to fontch
+%% fontch_doc.tex -- source of manual
+%%%%%% Description
+%%
+%%  Fontch implements a mechanism for changing type and size of fonts.  One
+%% can write text and math at main sizes of 8, 10, 12, 14, 20 and 24 points.
+%% Fonts of sizes 5, 6, 7 and 9 points are used in subscripts and subscripts of %% subscripts of other main sizes.
+%% A single command makes all the changes needed for changing font smoothly.
+%% In addition fontch gives support to:
+%%   - boldface math-italic and boldface math symbols,
+%%   - T1 Latin Modern fonts,
+%%   - TS1 companion symbol fonts.
+%%   - AMS fonts for boldface math,
+%%   - Double Stroke fonts for blackboard bold symbols
+%% 
+%%%%%% Usage
+%%
+%% For using fontch.tex with the original TeX OT1 fonts (Computer Modern)
+%% just put at the beginning of the document:
+%% \input fontch.tex
+%%
+%% The file bsymbols.tex provides macro definitions for boldface versions
+%% of math symbols. For using it just input the file where you need it.
+%%
+%% The fontch package has four options for handling different kinds of fonts:
+%%
+%%  -  LMTone     for Latin Modern T1 fonts.
+%%  -  LMTSone    for the TS1 companion symbol font.
+%%  -  AMSfont    for AMS fonts used for boldface math.
+%%  -  DStroke    for Doublestroke fonts providing blackboard-boldface symbols.
+%%
+%% The four options are independent. They are activated by setting the
+%% corresponding variable before calling  fontch.tex. For example for
+%% activating all the four options and using the macros for bold math
+%% put at the beginning of the document:
+%%
+%% \let\AMSfont\relax
+%% \let\DStroke\relax 
+%% \let\LMTone\relax
+%% \let\LMTSone\relax
+%% \input fontch.tex
+%% \input bsymbols.tex
+%%
+%%
+%%%%%% NOTES:
+%% (1) There is one modification of the standard behavior of plain TeX. Plain
+%%     TeX defines for the font #3 the same font (tenex) for text, script and
+%%     scriptscript. That is awfull. The fontch package uses sevenex for
+%%     script and fiveex for scriptscript, as for the other fonts.
+%%     
+%% (2) The use of files il1-t1.tcx or il2-t1.tcx is recommended together
+%%     with the LMT1 fonts.
+%%
+%% (3) Only the cmcs, cmmib, cmbsy and cmex AMS fonts are supported. These
+%%     are used for small caps and for boldface math-italic and boldface
+%%     greek symbols. The other AMS fonts like the Euler, Cyrillic and extra
+%%     symbols are not supported.
+%%
+%% (4) Only the roman Doublestroke font is supported. The sans serif version
+%%     is not supported.
+%%
+%% (5) There are two main uses of boldface math. One case is the use of
+%%     isolated bold  characters or symbols inside a formula. For this case
+%%     fontch provides bold versions of math synbols and the macro \mb for bold
+%%     math-italic characters.  The plain TeX macro "\bf" yields roman-bold
+%%     characters in math mode.  The name of the bold version of a math symbol
+%%     is obtained adding the prefix "bf" to the name of the normal symbol. For
+%%     example a boldface italic "a" is {\mb a}, a boldface roman "P" is
+%%     {\bf P}, a boldface \Sigma is \bfSigma, a boldface \iff is \bfiff.
+%%
+%%     The other case is when one wants to write a complete formula in
+%%     boldface, for example inside a title. For this case fontch has the
+%%     macro \setmathbold that changes the font families 1 (cmmi) and 2 (cmsy)
+%%     to the bold versions cmmib and cmmbsy. The macro  \unsetmathbold resets
+%%     the families 1 and 2 to their original values. These macros should be
+%%     put before and after the formula.
+%%
+%% (6) Usually the macro \setmathbold does not change the whole formula to
+%%     boldface. This is due to the fact that in math mode some symbols
+%%     come from family #0 (cmr) or #3 (cmex) such as "+" or \int. Fontch
+%%     provides macros for the symbols that come from family #0, For
+%%     example the bold version of "(" is \bflparen.
+%%
+%% (7) Math symbols of family #3 (cmex) do not have bold versions. In particular
+%%     \int, \sum and \prod. Nevertheless \smallint is of cmsy and does have
+%%     a bold version. 
+%%
+%%%%%%%%% Commands of fontch %%%%%%
+%%
+%%%%%% General Commands
+%  \rm  -- Roman
+%  \sl  -- Slanted
+%  \it  -- Italic
+%  \bf  -- Boldface
+%  \tt  -- Teletype
+%  \sf  -- Sans Serif
+%  \sc  -- Small Caps
+%  \cal -- Calligraphic
+%  \mit -- Math Italic
+%  \mb  -- Math Boldface
+%  \bcal          -- Boldface calligraphic
+%  \oldstyle      -- Old style digits
+%  \boldstyle     -- Boldface old style digits
+%  \setmathbold   -- set families 1 and 2 to cmmib and cmmbsy
+%  \unsetmathbold -- reset families 1 and 2 to cmmi and cmmsy
+%  \eightpoint    -- Change to small type
+%  \tenpoint      -- Change to normal type
+%  \twelvepoint   -- Change to large type
+%  \fourteenpoint -- Change to very large type
+%  \twentypoint   -- Change to huge type
+%  \twentyfourpoint -- Change to immense type
+%  \doublespace   -- Double space for ten & twelve points
+%
+%%%%%%   Macros of bold symbols
+%  Symbols that have a keyword 
+%   bold_keyword = bf + normal_keyword
+%
+%  Symbols that do not have a keyword
+%   \bfexcl        -- !
+%   \bflparen      -- (
+%   \bfrparen      -- )
+%   \bfplus        -- +
+%   \bfcomma       -- ,
+%   \bfcolon       -- :
+%   \bfsemicolon   -- ;
+%   \bfequal       -- =
+%   \bflbraket     -- [
+%   \bfrbraket     -- ]
+%   \bflt          -- <
+%   \bfslash       -- /
+%   \bfgt          -- >
+%   \bfminus       -- -
+%   \bfvert        -- |
+%   \bfVert        -- \|
+%
+%%%%%%   Command of the DStroke option
+%  \ds  -- Double Stroke
+%
+%%%%%%   Commands of the LMT1 option
+%% Redefined Plain TeX Commands
+%  \i , \j , \ae , \AE, \oe , \OE , \o , \O ,
+%  \ss , \SS , \aa , \AA , \l , \L ,
+%  \Gamma , \Delta , \Theta , \Lambda , \Xi , \Pi ,
+%  \Sigma , \Upsilon , \Phi , \Psi , \Omega, \hbar
+%%
+%% New T1 Commands for non-latin1 characters
+%  \lh  -- l'
+%  \Lh  -- L'
+%  \dh  -- d'
+%  \th  -- t'
+%  \dbar -- d slash
+%  \Edh
+%  \edh
+%  \ij
+%  \IJ
+%  \nj
+%  \NJ
+%  \thorn
+%  \Thorn
+%  \smallzero
+%  \lguille   -- left guillemot (does not appear in il1-t1.tcx)
+%  \rguille   -- right guillemot (does not appear in il1-t1.tcx)
+%  \vispace   -- visible space
+%%
+%% Redefined plain TeX accents
+%  \` , \' , \^ , \~ , \" , \H , \v , \u , \= , \. , \b , \c
+%% New T1 accents
+%  \r   -- ring accent
+%  \k   -- ogonek
+%%
+%% Redefined plain TeX math-accents
+% \acute,\grave,\ddot,\tilde,\bar,\breve,\check,\hat,\dot
+%% New T1 math-accent
+%  \ring
+%%
+%%%%% Commands of the LMTS1 option %%
+%% Text companion symbols TS1 %%
+%  \tcchar{#1} -- Character of TS1 table
+%% Redefined plain TeX commands
+%  \t{#1} --  tie-after-accent
+%  \P     --  pilcrow
+%  \S     --  section
+%  \dag   --  dagger
+%  \ddag  --  double dagger
+%  \copyright
+%% Most TS1 symbols (in increasing charcode order)
+%  \arrowl      -- left arrow
+%  \arrowr      -- right arrow
+%  \blank
+%  \dollar
+%  \caster      -- centered asterisk
+%  \sequals     -- short equals
+%  \anglel
+%  \angler
+%  \mho
+%  \bigcircle
+%  \Ohm
+%  \bbracketl   -- left double square bracket
+%  \bbracketr   -- right double square bracket
+%  \arrowu      -- up arrow
+%  \arrowd      -- down arrow
+%  \textstar    -- star
+%  \born
+%  \died
+%  \leaf
+%  \married
+%  \music
+%  \doublevert  -- Double vertical bar
+%  \perthousand
+%  \bull        -- bullet (is in manmac)
+%  \centigrade
+%  \olddollar
+%  \oldcent
+%  \florin
+%  \Colon
+%  \won
+%  \naira
+%  \guarani
+%  \peso
+%  \lira
+%  \recipe
+%  \interrobang -- Question+Exclamation
+%  \gnaborretni -- Question+Exclamation upsidedown
+%  \dong
+%  \TM
+%  \pertenth    -- per ten thousand
+%  \npilcrow    -- narrow pilcrow
+%  \baht
+%  \numero
+%  \abzueglich
+%  \aestimated  -- Big e
+%  \openbull
+%  \SM
+%  \qbrackl     -- left quill bracket
+%  \qbrackr     -- right quill bracket
+%  \cent
+%  \sterling
+%  \currency
+%  \yen
+%  \brokenvert  -- broken vertical bar
+%  \feminine
+%  \copyleft
+%  \lognot      -- logical not
+%  \circledP
+%  \registered
+%  \degree
+%  \plusminus
+%  \twoup
+%  \threeup
+%  \micro
+%  \centereddot
+%  \reference
+%  \oneup
+%  \masculine
+%  \root
+%  \onequarter
+%  \onehalf
+%  \threequarters
+%  \euro
+%  \texttimes
+%  \textdiv
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% Modifications from version 2.1
+%% Version 2.2 is a minor bug correction version.
+%% The main change is the inclusion of the fontch.pdf file.
+%%
+%% Modifications from version 2.0
+%% Version 2.1 is a bug correction version
+%% The main change is to conform with the new naming conventions
+%% of the LM fonts files. Fontch-2.1 is compatible with LM fonts
+%% of version 1.000 or larger.
+%%
+%% Modifications from version 1.3
+%%
+%% Version 2.0 is a mayor revision.
+%%
+%% There are many improvements such as
+%% -- Proper handling of smallcaps
+%% -- Support for bold-math
+%% -- Support for AMS fonts
+%% -- Support for blackboard boldface
+%% -- Correction of bugs and scaling.
+%%
+%%  The behavior should be compatible with V1.3 except for
+%%  case explained in Note (1).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\wlog{File: fontch.tex
+        [v2.2 (2010/04/12) font change package for plain TeX]}
+%
+%% Math fonts, valid for any option
+%% five points fonts (defined in plain.tex) %%
+%% six points fonts %%
+\font\sixi=cmmi6
+\font\sixsy=cmsy6
+\skewchar\sixi='177
+\skewchar\sixsy='60
+%% seven points fonts (defined in plain.tex) %%
+%% eight points fonts %%
+\font\eighti=cmmi8
+\font\eightsy=cmsy8
+\skewchar\eighti='177
+\skewchar\eightsy='60
+%% nine points fonts %%
+\font\ninei=cmmi9
+\font\ninesy=cmsy9
+\skewchar\ninei='177
+\skewchar\ninesy='60
+%% ten points fonts %%
+\font\tenmib=cmmib10
+\font\tenbsy=cmbsy10
+\skewchar\tenmib='177
+\skewchar\tenbsy='60
+%% twelve points fonts %%
+\font\twelvei=cmmi12
+\font\twelvesy=cmsy10 scaled 1200
+\font\twelveex=cmex10 scaled 1200
+\font\twelvemib=cmmib10 scaled 1200
+\font\twelvebsy=cmbsy10 scaled 1200
+\skewchar\twelvei='177
+\skewchar\twelvemib='177
+\skewchar\twelvesy='60
+\skewchar\twelvebsy='60
+%% fourteen points fonts %%
+\font\fourteeni=cmmi12 scaled 1167
+\font\fourteensy=cmsy10 scaled 1400
+\font\fourteenex=cmex10 scaled 1400
+\font\fourteenmib=cmmib10 scaled 1400
+\font\fourteenbsy=cmbsy10 scaled 1400
+\skewchar\fourteeni='177
+\skewchar\fourteenmib='177
+\skewchar\fourteensy='60
+\skewchar\fourteenbsy='60
+%% twenty points fonts %%
+\font\twentyi=cmmi12 scaled 1667
+\font\twentysy=cmsy10 scaled 2000
+\font\twentyex=cmex10 scaled 2000
+\font\twentymib=cmmib10 scaled 2000
+\font\twentybsy=cmbsy10 scaled 2000
+\skewchar\twentyi='177
+\skewchar\twentymib='177
+\skewchar\twentysy='60
+\skewchar\twentybsy='60
+%% twentyfour  points fonts %%
+\font\twentyfouri=cmmi12 scaled 2000
+\font\twentyfoursy=cmsy10 scaled 2400
+\font\twentyfourex=cmex10 scaled 2400
+\font\twentyfourmib=cmmib10 scaled 2400
+\font\twentyfourbsy=cmsy10 scaled 2400
+\skewchar\twentyfouri='177
+\skewchar\twentyfourmib='177
+\skewchar\twentyfoursy='60
+\skewchar\twentyfourbsy='60
+%%
+%% big... operators
+\newdimen\bigsize
+\newdimen\Bigsize
+\newdimen\biggsize
+\newdimen\Biggsize
+%% Make @ visible
+\catcode`\@=11
+\def\big#1{{\hbox{$\left#1\vbox to \bigsize{}\right.\n@space$}}}
+\def\Big#1{{\hbox{$\left#1\vbox to \Bigsize{}\right.\n@space$}}}
+\def\bigg#1{{\hbox{$\left#1\vbox to \biggsize{}\right.\n@space$}}}
+\def\Bigg#1{{\hbox{$\left#1\vbox to \Biggsize{}\right.\n@space$}}}
+%%
+\ifx\AMSfont\@undefined%
+{}
+\else
+\let\ifAMS=\relax
+\fi
+%%
+\ifx\DStroke\@undefined%
+{}
+\else
+\let\ifDS=\relax
+\fi
+%%
+\ifx\LMTone\@undefined%
+{}
+\else
+\let\ifLMT=\relax
+\fi
+\ifx\LMTSone\@undefined%
+{}
+\else
+\let\ifLMTS=\relax
+\fi
+%%
+%% Make @ invisible
+\catcode`\@=12
+%%
+\ifx\ifAMS\relax%
+%% AMS option activated %%
+\immediate\write16{*** AMS option activated. AMS fonts are used ***}
+%% extension font
+\font\sevenex=cmex7
+\font\eightex=cmex8
+\font\nineex=cmex9
+\font\fiveex=cmex7 scaled 714
+\font\sixex=cmex7 scaled 857
+%% math-italic boldface font
+\font\fivemib=cmmib5
+\font\sixmib=cmmib6
+\font\sevenmib=cmmib7
+\font\eightmib=cmmib8
+\font\ninemib=cmmib9
+%% boldface symbols fonts
+\font\fivebsy=cmbsy5
+\font\sixbsy=cmbsy6
+\font\sevenbsy=cmbsy7
+\font\eightbsy=cmbsy8
+\font\ninebsy=cmbsy9
+\else
+%% extension font
+\font\fiveex=cmex10 scaled 500
+\font\sixex=cmex10 scaled 600
+\font\sevenex=cmex10 scaled 700
+\font\eightex=cmex10 scaled 800
+\font\nineex=cmex10 scaled 900
+%% math-italic boldface font
+\font\fivemib=cmmib10 scaled 500
+\font\sixmib=cmmib10 scaled 600
+\font\sevenmib=cmmib10 scaled 700
+\font\eightmib=cmmib10 scaled 800
+\font\ninemib=cmmib10 scaled 900
+%% boldface symbols fonts
+\font\fivebsy=cmbsy10 scaled 500
+\font\sixbsy=cmbsy10 scaled 600
+\font\sevenbsy=cmbsy10 scaled 700
+\font\eightbsy=cmbsy10 scaled 800
+\font\ninebsy=cmbsy10 scaled 900
+\fi
+%% End of AMS option
+\skewchar\fivemib='177
+\skewchar\sixmib='177
+\skewchar\sevenmib='177
+\skewchar\eightmib='177
+\skewchar\ninemib='177
+\skewchar\fivebsy='60
+\skewchar\sixbsy='60
+\skewchar\sevenbsy='60
+\skewchar\eightbsy='60
+\skewchar\ninebsy='60
+%%
+\ifx\ifLMT\relax%
+%% T1 option activated %
+\immediate\write16{*** T1 option activated. cork-LM fonts are used ***}
+%% Replace CM text fonts %%
+%% ten points fonts %%
+\font\tenrm=ec-lmr10
+\font\tenbf=ec-lmbx10
+\font\tensl=ec-lmro10
+\font\tentt=ec-lmtt10
+\font\tenit=ec-lmri10
+\font\tenss=ec-lmss10
+\font\tencsc=ec-lmcsc10
+%% eight points fonts %%
+\font\eightrm=ec-lmr8
+\font\eightbf=ec-lmbx8
+\font\eightsl=ec-lmro8
+\font\eighttt=ec-lmtt8
+\font\eightit=ec-lmri8
+\font\eightss=ec-lmss8
+\font\eightcsc=ec-lmcsc10 at 8pt
+%% five points fonts %%
+\font\fiverm=ec-lmr5
+\font\fivebf=ec-lmbx5
+\font\fivess=ec-lmss8 scaled 625
+%% six points fonts %%
+\font\sixrm=ec-lmr6
+\font\sixbf=ec-lmbx6
+\font\sixss=ec-lmss8 scaled 750
+%% seven points fonts %%
+\font\sevenrm=ec-lmr7
+\font\sevenbf=ec-lmbx7
+\font\sevenss=ec-lmss8 scaled 875
+%% nine points fonts %%
+\font\ninerm=ec-lmr9
+\font\ninebf=ec-lmbx9
+\font\niness=ec-lmss9
+%% twelve points fonts %%
+\font\twelverm=ec-lmr12
+\font\twelvebf=ec-lmbx12
+\font\twelvesl=ec-lmro12
+\font\twelvett=ec-lmtt12
+\font\twelveit=ec-lmri12
+\font\twelvess=ec-lmss12
+\font\twelvecsc=ec-lmcsc10 scaled 1200
+%% fourteen points fonts %%
+\font\fourteenrm=ec-lmr12 scaled 1167
+\font\fourteenbf=ec-lmbx12 scaled 1167
+\font\fourteensl=ec-lmro12 scaled 1167
+\font\fourteentt=ec-lmtt12 scaled 1167
+\font\fourteenit=ec-lmri12 scaled 1167
+\font\fourteenss=ec-lmss12 scaled 1167
+\font\fourteencsc=ec-lmcsc10 scaled 1400
+%% twenty points fonts %%
+\font\twentyrm=ec-lmr12 scaled 1667
+\font\twentybf=ec-lmbx12 scaled 1667
+\font\twentysl=ec-lmro12 scaled 1667
+\font\twentytt=ec-lmtt12 scaled 1667
+\font\twentyit=ec-lmri12 scaled 1667
+\font\twentyss=ec-lmss12 scaled 1667
+\font\twentycsc=ec-lmcsc10 scaled 2000
+%% twentyfour  points fonts %%
+\font\twentyfourrm=ec-lmr12 scaled 2000
+\font\twentyfourbf=ec-lmbx12 scaled 2000
+\font\twentyfoursl=ec-lmro12 scaled 2000
+\font\twentyfourtt=ec-lmtt12 scaled 2000
+\font\twentyfourit=ec-lmri12 scaled 2000
+\font\twentyfourss=ec-lmss12 scaled 2000
+\font\twentyfourcsc=ec-lmcsc10 scaled 2400
+%%
+%% Redefinition of character commands %%
+\chardef\i="19 \chardef\j="1A
+\chardef\ae="E6 \chardef\AE="C6
+\chardef\oe="F7 \chardef\OE="D7
+\chardef\o="F8 \chardef\O="D8
+\chardef\ss="FF \chardef\SS="DF
+\chardef\aa="E5 \chardef\AA="C5
+\chardef\l="AA \chardef\L="8A
+\mathchardef\Gamma="0100
+\mathchardef\Delta="0101
+\mathchardef\Theta="0102
+\mathchardef\Lambda="0103
+\mathchardef\Xi="0104
+\mathchardef\Pi="0105
+\mathchardef\Sigma="0106
+\mathchardef\Upsilon="0107
+\mathchardef\Phi="0108
+\mathchardef\Psi="0109
+\mathchardef\Omega="010A
+\def\hbar{{\mathchar"7009\mkern-9muh}}
+
+%% New character commands %%
+\chardef\lh="A9 \chardef\Lh="89
+\chardef\dh="A4 \chardef\th="B4
+\chardef\dbar="9E
+\chardef\Edh="D0 \chardef\edh="F0
+\chardef\ij="BC \chardef\IJ="9C
+\chardef\nj="AD \chardef\NJ="8D
+\chardef\thorn="FE \chardef\Thorn="DE
+\chardef\smallzero="18
+\chardef\lguille="E \chardef\rguille="F
+\chardef\vispace="20
+
+%% Redefinition of accents and new accents%%
+\def\`#1{{\accent0 #1}}
+\def\'#1{{\accent1 #1}}
+\def\^#1{{\accent2 #1}}
+\def\~#1{{\accent3 #1}}
+\def\"#1{{\accent4 #1}}
+\def\H#1{{\accent5 #1}}
+%New ring accent
+\def\r#1{{\accent6 #1}}
+\def\v#1{{\accent7 #1}}
+\def\u#1{{\accent8 #1}}
+\def\=#1{{\accent9 #1}}
+\def\.#1{{\accent10 #1}}
+\def\b#1{\oalign{#1\crcr\hidewidth
+    \vbox to.2ex{\hbox{\char9}\vss}\hidewidth}}
+\def\c#1{\setbox0=\hbox{#1}\ifdim\ht0=1ex \accent"B #1%
+     \else{\ooalign{\unhbox0\crcr\hidewidth\char"B\hidewidth}}\fi}
+%New ogonek accent
+\def\k#1{\setbox0=\hbox{#1}\ifdim\ht0=1ex \accent"C #1%
+     \else{\ooalign{\unhbox0\crcr\hidewidth\char"C\hidewidth}}\fi}
+\def\textdiv{{\tcchar{"F6}}}
+%
+%% Redefinition of math-accents %%
+\def\acute{\mathaccent"7001 }
+\def\grave{\mathaccent"7000 }
+\def\ddot{\mathaccent"7004 }
+\def\tilde{\mathaccent"7003 }
+\def\bar{\mathaccent"7009 }
+\def\breve{\mathaccent"7008 }
+\def\check{\mathaccent"7007 }
+\def\hat{\mathaccent"7002 }
+\def\dot{\mathaccent"700A }
+%New ring math-accent
+\def\ring{\mathaccent"7006 }
+%
+%% Activate non-ascii letters %%
+% upper case 
+\catcode`\^^80=11 \uccode`\^^80=`\^^80 \lccode`\^^80=`\^^a0
+\catcode`\^^81=11 \uccode`\^^81=`\^^81 \lccode`\^^81=`\^^a1
+\catcode`\^^82=11 \uccode`\^^82=`\^^82 \lccode`\^^82=`\^^a2
+\catcode`\^^83=11 \uccode`\^^83=`\^^83 \lccode`\^^83=`\^^a3
+\catcode`\^^84=11 \uccode`\^^84=`\^^84 \lccode`\^^84=`\^^a4
+\catcode`\^^85=11 \uccode`\^^85=`\^^85 \lccode`\^^85=`\^^a5
+\catcode`\^^86=11 \uccode`\^^86=`\^^86 \lccode`\^^86=`\^^a6
+\catcode`\^^87=11 \uccode`\^^87=`\^^87 \lccode`\^^87=`\^^a7
+\catcode`\^^88=11 \uccode`\^^88=`\^^88 \lccode`\^^88=`\^^a8
+\catcode`\^^89=11 \uccode`\^^89=`\^^89 \lccode`\^^89=`\^^a9
+\catcode`\^^8a=11 \uccode`\^^8a=`\^^8a \lccode`\^^8a=`\^^aa
+\catcode`\^^8b=11 \uccode`\^^8b=`\^^8b \lccode`\^^8b=`\^^ab
+\catcode`\^^8c=11 \uccode`\^^8c=`\^^8c \lccode`\^^8c=`\^^ac
+\catcode`\^^8d=11 \uccode`\^^8d=`\^^8d \lccode`\^^8d=`\^^ad
+\catcode`\^^8e=11 \uccode`\^^8e=`\^^8e \lccode`\^^8e=`\^^ae
+\catcode`\^^8f=11 \uccode`\^^8f=`\^^8f \lccode`\^^8f=`\^^af
+\catcode`\^^90=11 \uccode`\^^90=`\^^90 \lccode`\^^90=`\^^b0
+\catcode`\^^91=11 \uccode`\^^91=`\^^91 \lccode`\^^91=`\^^b1
+\catcode`\^^92=11 \uccode`\^^92=`\^^92 \lccode`\^^92=`\^^b2
+\catcode`\^^93=11 \uccode`\^^93=`\^^93 \lccode`\^^93=`\^^b3
+\catcode`\^^94=11 \uccode`\^^94=`\^^94 \lccode`\^^94=`\^^b4
+\catcode`\^^95=11 \uccode`\^^95=`\^^95 \lccode`\^^95=`\^^b5
+\catcode`\^^96=11 \uccode`\^^96=`\^^96 \lccode`\^^96=`\^^b6
+\catcode`\^^97=11 \uccode`\^^97=`\^^97 \lccode`\^^97=`\^^b7
+\catcode`\^^98=11 \uccode`\^^98=`\^^98 \lccode`\^^98=`\^^b8
+\catcode`\^^99=11 \uccode`\^^99=`\^^99 \lccode`\^^99=`\^^b9
+\catcode`\^^9a=11 \uccode`\^^9a=`\^^9a \lccode`\^^9a=`\^^ba
+\catcode`\^^9b=11 \uccode`\^^9b=`\^^9b \lccode`\^^9b=`\^^bb
+\catcode`\^^9c=11 \uccode`\^^9c=`\^^9c \lccode`\^^9c=`\^^bc
+\catcode`\^^c0=11 \uccode`\^^c0=`\^^c0 \lccode`\^^c0=`\^^e0
+\catcode`\^^c1=11 \uccode`\^^c1=`\^^c1 \lccode`\^^c1=`\^^e1
+\catcode`\^^c2=11 \uccode`\^^c2=`\^^c2 \lccode`\^^c2=`\^^e2
+\catcode`\^^c3=11 \uccode`\^^c3=`\^^c3 \lccode`\^^c3=`\^^e3
+\catcode`\^^c4=11 \uccode`\^^c4=`\^^c4 \lccode`\^^c4=`\^^e4
+\catcode`\^^c5=11 \uccode`\^^c5=`\^^c5 \lccode`\^^c5=`\^^e5
+\catcode`\^^c6=11 \uccode`\^^c6=`\^^c6 \lccode`\^^c6=`\^^e6
+\catcode`\^^c7=11 \uccode`\^^c7=`\^^c7 \lccode`\^^c7=`\^^e7
+\catcode`\^^c8=11 \uccode`\^^c8=`\^^c8 \lccode`\^^c8=`\^^e8
+\catcode`\^^c9=11 \uccode`\^^c9=`\^^c9 \lccode`\^^c9=`\^^e9
+\catcode`\^^ca=11 \uccode`\^^ca=`\^^ca \lccode`\^^ca=`\^^ea
+\catcode`\^^cb=11 \uccode`\^^cb=`\^^cb \lccode`\^^cb=`\^^eb
+\catcode`\^^cc=11 \uccode`\^^cc=`\^^cc \lccode`\^^cc=`\^^ec
+\catcode`\^^cd=11 \uccode`\^^cd=`\^^cd \lccode`\^^cd=`\^^ed
+\catcode`\^^ce=11 \uccode`\^^ce=`\^^ce \lccode`\^^ce=`\^^ee
+\catcode`\^^cf=11 \uccode`\^^cf=`\^^cf \lccode`\^^cf=`\^^ef
+\catcode`\^^d0=11 \uccode`\^^d0=`\^^d0 \lccode`\^^d0=`\^^f0
+\catcode`\^^d1=11 \uccode`\^^d1=`\^^d1 \lccode`\^^d1=`\^^f1
+\catcode`\^^d2=11 \uccode`\^^d2=`\^^d2 \lccode`\^^d2=`\^^f2
+\catcode`\^^d3=11 \uccode`\^^d3=`\^^d3 \lccode`\^^d3=`\^^f3
+\catcode`\^^d4=11 \uccode`\^^d4=`\^^d4 \lccode`\^^d4=`\^^f4
+\catcode`\^^d5=11 \uccode`\^^d5=`\^^d5 \lccode`\^^d5=`\^^f5
+\catcode`\^^d6=11 \uccode`\^^d6=`\^^d6 \lccode`\^^d6=`\^^f6
+\catcode`\^^d7=11 \uccode`\^^d7=`\^^d7 \lccode`\^^d7=`\^^f7
+\catcode`\^^d8=11 \uccode`\^^d8=`\^^d8 \lccode`\^^d8=`\^^f8
+\catcode`\^^d9=11 \uccode`\^^d9=`\^^d9 \lccode`\^^d9=`\^^f9
+\catcode`\^^da=11 \uccode`\^^da=`\^^da \lccode`\^^da=`\^^fa
+\catcode`\^^db=11 \uccode`\^^db=`\^^db \lccode`\^^db=`\^^fb
+\catcode`\^^dc=11 \uccode`\^^dc=`\^^dc \lccode`\^^dc=`\^^fc
+\catcode`\^^dd=11 \uccode`\^^dd=`\^^dd \lccode`\^^dd=`\^^fd
+\catcode`\^^de=11 \uccode`\^^de=`\^^de \lccode`\^^de=`\^^fe
+\catcode`\^^df=11 \uccode`\^^df=`\^^df \lccode`\^^df=`\^^ff
+% Lower case
+\catcode`\^^a0=11 \uccode`\^^a0=`\^^80 \lccode`\^^a0=`\^^a0
+\catcode`\^^a1=11 \uccode`\^^a1=`\^^81 \lccode`\^^a1=`\^^a1
+\catcode`\^^a2=11 \uccode`\^^a2=`\^^82 \lccode`\^^a2=`\^^a2
+\catcode`\^^a3=11 \uccode`\^^a3=`\^^83 \lccode`\^^a3=`\^^a3
+\catcode`\^^a4=11 \uccode`\^^a4=`\^^84 \lccode`\^^a4=`\^^a4
+\catcode`\^^a5=11 \uccode`\^^a5=`\^^85 \lccode`\^^a5=`\^^a5
+\catcode`\^^a6=11 \uccode`\^^a6=`\^^86 \lccode`\^^a6=`\^^a6
+\catcode`\^^a7=11 \uccode`\^^a7=`\^^87 \lccode`\^^a7=`\^^a7
+\catcode`\^^a8=11 \uccode`\^^a8=`\^^88 \lccode`\^^a8=`\^^a8
+\catcode`\^^a9=11 \uccode`\^^a9=`\^^89 \lccode`\^^a9=`\^^a9
+\catcode`\^^aa=11 \uccode`\^^aa=`\^^8a \lccode`\^^aa=`\^^aa
+\catcode`\^^ab=11 \uccode`\^^ab=`\^^8b \lccode`\^^ab=`\^^ab
+\catcode`\^^ac=11 \uccode`\^^ac=`\^^8c \lccode`\^^ac=`\^^ac
+\catcode`\^^ad=11 \uccode`\^^ad=`\^^8d \lccode`\^^ad=`\^^ad
+\catcode`\^^ae=11 \uccode`\^^ae=`\^^8e \lccode`\^^ae=`\^^ae
+\catcode`\^^af=11 \uccode`\^^af=`\^^8f \lccode`\^^af=`\^^af
+\catcode`\^^b0=11 \uccode`\^^b0=`\^^90 \lccode`\^^b0=`\^^b0
+\catcode`\^^b1=11 \uccode`\^^b1=`\^^91 \lccode`\^^b1=`\^^b1
+\catcode`\^^b2=11 \uccode`\^^b2=`\^^92 \lccode`\^^b2=`\^^b2
+\catcode`\^^b3=11 \uccode`\^^b3=`\^^93 \lccode`\^^b3=`\^^b3
+\catcode`\^^b4=11 \uccode`\^^b4=`\^^94 \lccode`\^^b4=`\^^b4
+\catcode`\^^b5=11 \uccode`\^^b5=`\^^95 \lccode`\^^b5=`\^^b5
+\catcode`\^^b6=11 \uccode`\^^b6=`\^^96 \lccode`\^^b6=`\^^b6
+\catcode`\^^b7=11 \uccode`\^^b7=`\^^97 \lccode`\^^b7=`\^^b7
+\catcode`\^^b8=11 \uccode`\^^b8=`\^^98 \lccode`\^^b8=`\^^b8
+\catcode`\^^b9=11 \uccode`\^^b9=`\^^99 \lccode`\^^b9=`\^^b9
+\catcode`\^^ba=11 \uccode`\^^ba=`\^^9a \lccode`\^^ba=`\^^ba
+\catcode`\^^bb=11 \uccode`\^^bb=`\^^9b \lccode`\^^bb=`\^^bb
+\catcode`\^^e0=11 \uccode`\^^e0=`\^^c0 \lccode`\^^e0=`\^^e0
+\catcode`\^^e1=11 \uccode`\^^e1=`\^^c1 \lccode`\^^e1=`\^^e1
+\catcode`\^^e2=11 \uccode`\^^e2=`\^^c2 \lccode`\^^e2=`\^^e2
+\catcode`\^^e3=11 \uccode`\^^e3=`\^^c3 \lccode`\^^e3=`\^^e3
+\catcode`\^^e4=11 \uccode`\^^e4=`\^^c4 \lccode`\^^e4=`\^^e4
+\catcode`\^^e5=11 \uccode`\^^e5=`\^^c5 \lccode`\^^e5=`\^^e5
+\catcode`\^^e6=11 \uccode`\^^e6=`\^^c6 \lccode`\^^e6=`\^^e6
+\catcode`\^^e7=11 \uccode`\^^e7=`\^^c7 \lccode`\^^e7=`\^^e7
+\catcode`\^^e8=11 \uccode`\^^e8=`\^^c8 \lccode`\^^e8=`\^^e8
+\catcode`\^^e9=11 \uccode`\^^e9=`\^^c9 \lccode`\^^e9=`\^^e9
+\catcode`\^^ea=11 \uccode`\^^ea=`\^^ca \lccode`\^^ea=`\^^ea
+\catcode`\^^eb=11 \uccode`\^^eb=`\^^cb \lccode`\^^eb=`\^^eb
+\catcode`\^^ec=11 \uccode`\^^ec=`\^^cc \lccode`\^^ec=`\^^ec
+\catcode`\^^ed=11 \uccode`\^^ed=`\^^cd \lccode`\^^ed=`\^^ed
+\catcode`\^^ee=11 \uccode`\^^ee=`\^^ce \lccode`\^^ee=`\^^ee
+\catcode`\^^ef=11 \uccode`\^^ef=`\^^cf \lccode`\^^ef=`\^^ef
+\catcode`\^^f0=11 \uccode`\^^f0=`\^^d0 \lccode`\^^f0=`\^^f0
+\catcode`\^^f1=11 \uccode`\^^f1=`\^^d1 \lccode`\^^f1=`\^^f1
+\catcode`\^^f2=11 \uccode`\^^f2=`\^^d2 \lccode`\^^f2=`\^^f2
+\catcode`\^^f3=11 \uccode`\^^f3=`\^^d3 \lccode`\^^f3=`\^^f3
+\catcode`\^^f4=11 \uccode`\^^f4=`\^^d4 \lccode`\^^f4=`\^^f4
+\catcode`\^^f5=11 \uccode`\^^f5=`\^^d5 \lccode`\^^f5=`\^^f5
+\catcode`\^^f6=11 \uccode`\^^f6=`\^^d6 \lccode`\^^f6=`\^^f6
+\catcode`\^^f7=11 \uccode`\^^f7=`\^^d7 \lccode`\^^f7=`\^^f7
+\catcode`\^^f8=11 \uccode`\^^f8=`\^^d8 \lccode`\^^f8=`\^^f8
+\catcode`\^^f9=11 \uccode`\^^f9=`\^^d9 \lccode`\^^f9=`\^^f9
+\catcode`\^^fa=11 \uccode`\^^fa=`\^^da \lccode`\^^fa=`\^^fa
+\catcode`\^^fb=11 \uccode`\^^fb=`\^^db \lccode`\^^fb=`\^^fb
+\catcode`\^^fc=11 \uccode`\^^fc=`\^^dc \lccode`\^^fc=`\^^fc
+\catcode`\^^fd=11 \uccode`\^^fd=`\^^dd \lccode`\^^fd=`\^^fd
+\catcode`\^^fe=11 \uccode`\^^fe=`\^^de \lccode`\^^fe=`\^^fe
+\catcode`\^^ff=11 \uccode`\^^ff=`\^^df \lccode`\^^ff=`\^^ff
+%%End of LMTone option %%
+\else
+%%
+%% Other CM fonts
+%% eight points fonts %%
+\font\eightrm=cmr8
+\font\eightbf=cmbx8
+\font\eightsl=cmsl8
+\font\eighttt=cmtt8
+\font\eightit=cmti8
+\font\eightss=cmss8
+%% five points fonts %%
+\font\fivess=cmss8 scaled 625
+%% six points fonts %%
+\font\sixrm=cmr6
+\font\sixbf=cmbx6
+\font\sixss=cmss8 scaled 750
+%% seven points fonts %%
+\font\sevenss=cmss8 scaled 875
+%% nine points fonts %%
+\font\ninerm=cmr9
+\font\ninebf=cmbx9
+\font\niness=cmss9
+%% ten points fonts (not defined in plain.tex)%%
+\font\tenss=cmss10
+\font\tencsc=cmcsc10
+%% twelve points fonts %%
+\font\twelverm=cmr12
+\font\twelvebf=cmbx12
+\font\twelvesl=cmsl12
+\font\twelvett=cmtt12
+\font\twelveit=cmti12
+\font\twelvess=cmss12
+\font\twelvecsc=cmcsc10 scaled 1200
+%% fourteen points fonts %%
+\font\fourteenrm=cmr12 scaled 1167
+\font\fourteenbf=cmbx12 scaled 1167
+\font\fourteensl=cmsl12 scaled 1167
+\font\fourteentt=cmtt12 scaled 1167
+\font\fourteenit=cmti12 scaled 1167
+\font\fourteenss=cmss12 scaled 1167
+\font\fourteencsc=cmcsc10 scaled 1400
+%% twenty points fonts %%
+\font\twentyrm=cmr12 scaled 1667
+\font\twentybf=cmbx12 scaled 1667
+\font\twentysl=cmsl12 scaled 1667
+\font\twentytt=cmtt12 scaled 1667
+\font\twentyit=cmti12 scaled 1667
+\font\twentyss=cmss12 scaled 1667
+\font\twentycsc=cmcsc10 scaled 2000
+%% twentyfour  points fonts %%
+\font\twentyfourrm=cmr12 scaled 2000
+\font\twentyfourbf=cmbx12 scaled 2000
+\font\twentyfoursl=cmsl12 scaled 2000
+\font\twentyfourtt=cmtt12 scaled 2000
+\font\twentyfourit=cmti12 scaled 2000
+\font\twentyfourss=cmss12 scaled 2000
+\font\twentyfourcsc=cmcsc10 scaled 2400
+%% AMS activated
+\ifx\ifAMS\relax%
+%% small caps font
+\font\eightcsc=cmcsc8
+\else
+%% small caps font
+\font\eightcsc=cmcsc10 scaled 800
+\fi
+%% end of AMS option
+\fi
+%% end of LMT1 option
+%% Support of TS1 fonts
+\ifx\ifLMTS\relax%
+\immediate\write16{*** TS1 option activated. ts1-LM fonts are used ***}
+\input TS1mac.tex
+\fi
+%% End of LMTSone option %%
+%% DStroke option %%
+\ifx\ifDS\relax%
+\immediate\write16{*** Doublestroke option activated. DS fonts used ***}
+\font\fiveds=dsrom8 scaled 625
+\font\sixds=dsrom8 scaled 750
+\font\sevends=dsrom8 scaled 875
+\font\eightds=dsrom8
+\font\nineds=dsrom10 scaled 900
+\font\tends=dsrom10
+\font\twelveds=dsrom12
+\font\fourteends=dsrom12 scaled 1167
+\font\twentyds=dsrom12 scaled 1667
+\font\twentyfourds=dsrom12 scaled 2000
+\fi
+%% End of DStroke option %%
+%%
+%% Families defined in plain.tex %%
+%% fam0 rm roman
+%% fam1 i  math-italic
+%% fam2 sy symbols
+%% fam3 ex extension fonts
+%% fam4 itfam text-italic
+%% fam5 slfam slanted
+%% fam6 bffam roman boldface
+%% fam7 ttfam teletype
+%%
+%% New family math-italic bold. Must be fam8 %%
+\newfam\mibfam
+%%
+%% New family symbols boldface. Must be fam9 %%
+\newfam\bsyfam
+%%
+%% New family sans serif  %%
+\newfam\ssfam
+%%
+%% New family small caps %%
+\newfam\cscfam
+%%
+%% New family doublestroke %%
+\ifx\ifDS\relax%
+\input DSmac.tex
+\fi
+\def\ds{}
+%%
+%% Change to tenpoint fonts %%
+\def\tenpoint{
+\textfont0=\tenrm \scriptfont0=\sevenrm \scriptscriptfont0=\fiverm
+\textfont1=\teni \scriptfont1=\seveni \scriptscriptfont1=\fivei
+\def\mit{\fam1 } \def\oldstyle{\fam1 \teni}
+\textfont2=\tensy \scriptfont2=\sevensy \scriptscriptfont2=\fivesy
+\def\cal{\fam2 }
+\textfont3=\tenex \scriptfont3=\sevenex \scriptscriptfont3=\fiveex
+\textfont\itfam=\tenit
+\textfont\slfam=\tensl
+\textfont\ttfam=\tentt
+\textfont\ssfam=\tenss
+\scriptfont\ssfam=\sevenss \scriptscriptfont\ssfam=\fivess
+\textfont\bffam=\tenbf
+\scriptfont\bffam=\sevenbf \scriptscriptfont\bffam=\fivebf
+\textfont\cscfam=\tencsc
+\textfont\mibfam=\tenmib
+\scriptfont\mibfam=\sevenmib \scriptscriptfont\bffam=\fivemib
+\textfont\bsyfam=\tenbsy
+\scriptfont\bsyfam=\sevenbsy \scriptscriptfont\bffam=\fivebsy
+\ifx\ifDS\relax%
+\textfont\dsfam=\tends
+\scriptfont\dsfam=\sevends \scriptscriptfont\dsfam=\fiveds
+\def\ds{\fam\dsfam\tends}
+\else
+{}
+\fi
+\ifx\ifLMTS\relax%
+\def\rm{\fam0 \tenrm \let\tcfont=\tencrm}
+\def\it{\fam\itfam\tenit \let\tcfont=\tencit}
+\def\sl{\fam\slfam\tensl \let\tcfont=\tencsl}
+\def\tt{\fam\ttfam\tentt \let\tcfont=\tenctt}
+\def\sf{\fam\ssfam\tenss \let\tcfont=\tencss}
+\def\bf{\fam\bffam\tenbf \let\tcfont=\tencbf}
+\else
+\def\rm{\fam0 \tenrm}
+\def\it{\fam\itfam\tenit}
+\def\sl{\fam\slfam\tensl}
+\def\tt{\fam\ttfam\tentt}
+\def\sf{\fam\ssfam\tenss}
+\def\bf{\fam\bffam\tenbf}
+\fi
+\def\sc{\fam\cscfam\tencsc}
+\def\mb{\fam\mibfam} \def\boldstyle{\fam\mibfam\tenmib}
+\def\bcal{\fam\bsyfam\tenbsy}
+\def\unsetmathbold{
+\textfont1=\teni \scriptfont1=\seveni \scriptscriptfont1=\fivei
+\textfont2=\tensy \scriptfont2=\sevensy \scriptscriptfont2=\fivesy
+\def\oldstyle{\fam1 \teni} }
+\def\setmathbold{
+\textfont1=\tenmib \scriptfont1=\sevenmib \scriptscriptfont1=\fivemib
+\textfont2=\tenbsy \scriptfont2=\sevenbsy \scriptscriptfont2=\fivebsy
+\def\oldstyle{\fam1 \tenmib} }
+\normalbaselineskip=12pt minus 1pt
+\setbox\strutbox=\hbox{\vrule height8.5pt depth3.5pt width0pt}
+\bigsize=8.5pt
+\Bigsize=11.5pt
+\biggsize=14.5pt
+\Biggsize=17.5pt
+\normalbaselines\rm}
+%%
+%% Change to twelve points fonts %%
+\def\twelvepoint{
+\textfont0=\twelverm \scriptfont0=\eightrm \scriptscriptfont0=\sixrm
+\textfont1=\twelvei \scriptfont1=\eighti \scriptscriptfont1=\sixi
+\def\mit{\fam1 } \def\oldstyle{\fam1 \twelvei}
+\textfont2=\twelvesy \scriptfont2=\eightsy \scriptscriptfont2=\sixsy
+\def\cal{\fam2 }
+\textfont3=\twelveex \scriptfont3=\eightex \scriptscriptfont3=\sixex
+\textfont\itfam=\twelveit
+\textfont\slfam=\twelvesl
+\textfont\ttfam=\twelvett
+\textfont\ssfam=\twelvess
+\scriptfont\ssfam=\eightss \scriptscriptfont\ssfam=\sixss
+\textfont\bffam=\twelvebf
+\scriptfont\bffam=\eightbf \scriptscriptfont\bffam=\sixbf
+\textfont\cscfam=\twelvecsc
+\textfont\mibfam=\twelvemib
+\scriptfont\mibfam=\eightmib \scriptscriptfont\mibfam=\sixmib
+\textfont\bsyfam=\twelvebsy
+\scriptfont\bsyfam=\eightbsy \scriptscriptfont\bsyfam=\sixbsy
+\ifx\ifDS\relax%
+\textfont\dsfam=\twelveds
+\scriptfont\dsfam=\eightds \scriptscriptfont\dsfam=\sixds
+\def\ds{\fam\dsfam\twelveds}
+\else
+{}
+\fi
+\ifx\ifLMTS\relax%
+\def\rm{\fam0 \twelverm \let\tcfont=\twelvecrm}
+\def\it{\fam\itfam\twelveit \let\tcfont=\twelvecit}
+\def\sl{\fam\slfam\twelvesl \let\tcfont=\twelvecsl}
+\def\tt{\fam\ttfam\twelvett \let\tcfont=\twelvectt}
+\def\sf{\fam\ssfam\twelvess \let\tcfont=\twelvecss}
+\def\bf{\fam\bffam\twelvebf \let\tcfont=\twelvecss}
+\else
+\def\rm{\fam0 \twelverm}
+\def\it{\fam\itfam\twelveit}
+\def\sl{\fam\slfam\twelvesl}
+\def\tt{\fam\ttfam\twelvett}
+\def\sf{\fam\ssfam\twelvess}
+\def\bf{\fam\bffam\twelvebf}
+\fi
+\def\sc{\fam\cscfam\twelvecsc}
+\def\mb{\fam\mibfam} \def\boldstyle{\fam\mibfam\twelvemib}
+\def\bcal{\fam\bsyfam}
+\def\unsetmathbold{
+\textfont1=\twelvei \scriptfont1=\eighti \scriptscriptfont1=\sixi
+\textfont2=\twelvesy \scriptfont2=\eightsy \scriptscriptfont2=\sixsy
+\def\oldstyle{\fam1 \twelvei} }
+\def\setmathbold{
+\textfont1=\twelvemib \scriptfont1=\eightmib \scriptscriptfont1=\sixmib
+\textfont2=\twelvebsy \scriptfont2=\eightbsy \scriptscriptfont2=\sixbsy
+\def\oldstyle{\fam1 \twelvemib} }
+\normalbaselineskip=14pt minus 1pt
+\setbox\strutbox=\hbox{\vrule height10pt depth4pt width0pt}
+\bigsize=10.2pt
+\Bigsize=13.8pt
+\biggsize=17.4pt
+\Biggsize=21pt
+\normalbaselines\rm}
+%%
+%% Change to eight points fonts %%
+\def\eightpoint{
+\textfont0=\eightrm \scriptfont0=\sixrm \scriptscriptfont0=\fiverm
+\textfont1=\eighti \scriptfont1=\sixi \scriptscriptfont1=\fivei
+\def\mit{\fam1 } \def\oldstyle{\fam1 \eighti}
+\textfont2=\eightsy \scriptfont2=\sixsy \scriptscriptfont2=\fivesy
+\def\cal{\fam2 }
+\textfont3=\eightex \scriptfont3=\sixex \scriptscriptfont3=\fiveex
+\textfont\itfam=\eightit
+\textfont\slfam=\eightsl
+\textfont\ttfam=\eighttt
+\textfont\ssfam=\eightss
+\scriptfont\ssfam=\sixss \scriptscriptfont\ssfam=\fivess
+\textfont\bffam=\eightbf
+\scriptfont\bffam=\sixbf \scriptscriptfont\bffam=\fivebf
+\textfont\cscfam=\eightcsc
+\textfont\mibfam=\eightmib
+\scriptfont\mibfam=\sixmib \scriptscriptfont\mibfam=\fivemib
+\textfont\bsyfam=\eightbsy
+\scriptfont\bsyfam=\sixbsy \scriptscriptfont\bsyfam=\fivebsy
+\ifx\ifDS\relax%
+\textfont\dsfam=\eightds
+\scriptfont\dsfam=\sixds \scriptscriptfont\dsfam=\fiveds
+\def\ds{\fam\dsfam\eightds}
+\else
+{}
+\fi
+\ifx\ifLMTS\relax%
+\def\rm{\fam0 \eightrm \let\tcfont=\eightcrm}
+\def\it{\fam\itfam\eightit \let\tcfont=\eightcit}
+\def\sl{\fam\slfam\eightsl \let\tcfont=\eightcsl}
+\def\tt{\fam\ttfam\eighttt \let\tcfont=\eightctt}
+\def\sf{\fam\ssfam\eightss \let\tcfont=\eightcss}
+\def\bf{\fam\bffam\eightbf \let\tcfont=\eightcbf}
+\else
+\def\rm{\fam0 \eightrm}
+\def\it{\fam\itfam\eightit}
+\def\sl{\fam\slfam\eightsl}
+\def\tt{\fam\ttfam\eighttt}
+\def\sf{\fam\ssfam\eightss}
+\def\bf{\fam\bffam\eightbf}
+\fi
+\def\sc{\fam\cscfam\eightcsc}
+\def\mb{\fam\mibfam} \def\boldstyle{\fam\mibfam\eightmib}
+\def\bcal{\fam\bsyfam}
+\def\unsetmathbold{
+\textfont1=\eighti \scriptfont1=\sixi \scriptscriptfont1=\fivei
+\textfont2=\eightsy \scriptfont2=\sixsy \scriptscriptfont2=\fivesy
+\def\oldstyle{\fam1 \eighti} }
+\def\setmathbold{
+\textfont1=\eightmib \scriptfont1=\sixmib \scriptscriptfont1=\fivemib
+\textfont2=\eightbsy \scriptfont2=\sixbsy \scriptscriptfont2=\fivebsy
+\def\oldstyle{\fam1 \eightmib} }
+\normalbaselineskip=9pt
+\setbox\strutbox=\hbox{\vrule height7pt depth2pt width0pt}
+\bigsize=6.8pt
+\Bigsize=9.2pt
+\biggsize=11.6pt
+\Biggsize=14pt
+\normalbaselines\rm}
+%%
+%% Change to fourteen points fonts %%
+\def\fourteenpoint{
+\textfont0=\fourteenrm \scriptfont0=\ninerm \scriptscriptfont0=\sevenrm
+\textfont1=\fourteeni \scriptfont1=\ninei \scriptscriptfont1=\seveni
+\def\mit{\fam1 } \def\oldstyle{\fam1 \fourteeni}
+\textfont2=\fourteensy \scriptfont2=\ninesy \scriptscriptfont2=\sevensy
+\def\cal{\fam2 }
+\textfont3=\fourteenex \scriptfont3=\nineex \scriptscriptfont3=\sevenex
+\textfont\itfam=\fourteenit
+\textfont\slfam=\fourteensl
+\textfont\ttfam=\fourteentt
+\textfont\ssfam=\fourteenss
+\scriptfont\ssfam=\niness \scriptscriptfont\ssfam=\sevenss
+\textfont\bffam=\fourteenbf
+\scriptfont\bffam=\ninebf \scriptscriptfont\bffam=\sevenbf
+\textfont\cscfam=\fourteencsc
+\textfont\mibfam=\fourteenmib
+\scriptfont\mibfam=\ninemib \scriptscriptfont\mibfam=\sevenmib
+\textfont\bsyfam=\fourteenbsy
+\scriptfont\bsyfam=\ninebsy \scriptscriptfont\bsyfam=\sevenbsy
+\ifx\ifDS\relax%
+\textfont\dsfam=\fourteends
+\scriptfont\dsfam=\nineds \scriptscriptfont\dsfam=\sevends
+\def\ds{\fam\dsfam\fourteends}
+\else
+{}
+\fi
+\ifx\ifLMTS\relax%
+\def\rm{\fam0 \fourteenrm \let\tcfont=\fourteencrm}
+\def\it{\fam\itfam\fourteenit \let\tcfont=\fourteencit}
+\def\sl{\fam\slfam\fourteensl \let\tcfont=\fourteencsl}
+\def\tt{\fam\ttfam\fourteentt \let\tcfont=\fourteenctt}
+\def\bf{\fam\bffam\fourteenbf \let\tcfont=\fourteencbf}
+\def\sf{\fam\ssfam\fourteenss \let\tcfont=\fourteencss}
+\else
+\def\rm{\fam0 \fourteenrm}
+\def\it{\fam\itfam\fourteenit}
+\def\sl{\fam\slfam\fourteensl}
+\def\tt{\fam\ttfam\fourteentt}
+\def\bf{\fam\bffam\fourteenbf}
+\def\sf{\fam\ssfam\fourteenss}
+\fi
+\def\sc{\fam\cscfam\fourteencsc}
+\def\mb{\fam\mibfam} \def\boldstyle{\fam\mibfam\fourteenmib}
+\def\bcal{\fam\bsyfam}
+\def\unsetmathbold{
+\textfont1=\fourteeni \scriptfont1=\ninei \scriptscriptfont1=\seveni
+\textfont2=\fourteensy \scriptfont2=\ninesy \scriptscriptfont2=\sevensy
+\def\oldstyle{\fam1 \fourteeni} }
+\def\setmathbold{
+\textfont1=\fourteenmib \scriptfont1=\ninemib \scriptscriptfont1=\sevenmib
+\textfont2=\fourteenbsy \scriptfont2=\ninebsy \scriptscriptfont2=\sevenbsy
+\def\oldstyle{\fam1 \fourteenmib} }
+\normalbaselineskip=17pt minus 1pt
+\setbox\strutbox=\hbox{\vrule height12pt depth5pt width0pt}
+\bigsize=11.9pt
+\Bigsize=16.1pt
+\biggsize=20.3pt
+\Biggsize=24.5pt
+\normalbaselines\rm}
+%%
+%% Change to twentypoint fonts %%
+\def\twentypoint{
+\textfont0=\twentyrm \scriptfont0=\fourteenrm \scriptscriptfont0=\tenrm
+\textfont1=\twentyi \scriptfont1=\fourteeni \scriptscriptfont1=\teni
+\def\mit{\fam1 } \def\oldstyle{\fam1 \twentyi}
+\textfont2=\twentysy \scriptfont2=\fourteensy \scriptscriptfont2=\tensy
+\def\cal{\fam2 }
+\textfont3=\twentyex \scriptfont3=\fourteenex \scriptscriptfont3=\tenex
+\textfont\itfam=\twentyit
+\textfont\slfam=\twentysl
+\textfont\ttfam=\twentytt
+\textfont\ssfam=\twentyss
+\scriptfont\ssfam=\fourteenss \scriptscriptfont\ssfam=\tenss
+\textfont\bffam=\twentybf
+\scriptfont\bffam=\fourteenbf \scriptscriptfont\bffam=\tenbf
+\textfont\cscfam=\twentycsc
+\textfont\mibfam=\twentymib
+\scriptfont\mibfam=\fourteenmib \scriptscriptfont\mibfam=\tenmib
+\textfont\bsyfam=\twentybsy
+\scriptfont\bsyfam=\fourteenbsy \scriptscriptfont\bsyfam=\tenbsy
+\ifx\ifDS\relax%
+\textfont\dsfam=\twentyds
+\scriptfont\dsfam=\fourteends \scriptscriptfont\dsfam=\tends
+\def\ds{\fam\dsfam\twentyds}
+\else
+{}
+\fi
+\ifx\ifLMTS\relax%
+\def\rm{\fam0 \twentyrm \let\tcfont=\twentycrm}
+\def\it{\fam\itfam\twentyit \let\tcfont=\twentycit}
+\def\sl{\fam\slfam\twentysl \let\tcfont=\twentycsl}
+\def\tt{\fam\ttfam\twentytt \let\tcfont=\twentyctt}
+\def\sf{\fam\ssfam\twentyss \let\tcfont=\twentycss}
+\def\bf{\fam\bffam\twentybf \let\tcfont=\twentycbf}
+\else
+\def\rm{\fam0 \twentyrm}
+\def\it{\fam\itfam\twentyit}
+\def\sl{\fam\slfam\twentysl}
+\def\tt{\fam\ttfam\twentytt}
+\def\sf{\fam\ssfam\twentyss}
+\def\bf{\fam\bffam\twentybf}
+\fi
+\def\sc{\fam\cscfam\twentycsc}
+\def\mb{\fam\mibfam} \def\boldstyle{\fam\mibfam\twentymib}
+\def\unsetmathbold{
+\textfont1=\twentyi \scriptfont1=\fourteeni \scriptscriptfont1=\teni
+\textfont2=\twentysy \scriptfont2=\fourteensy \scriptscriptfont2=\tensy
+\def\oldstyle{\fam1 \twentyi} }
+\def\setmathbold{
+\textfont1=\twentymib \scriptfont1=\fourteenmib \scriptscriptfont1=\tenmib
+\textfont2=\twentybsy \scriptfont2=\fourteenbsy \scriptscriptfont2=\tenbsy
+\def\oldstyle{\fam1 \twentymib} }
+\normalbaselineskip=24pt minus 2pt
+\setbox\strutbox=\hbox{\vrule height17pt depth7pt width0pt}
+\bigsize=17pt
+\Bigsize=23pt
+\biggsize=29pt
+\Biggsize=35pt
+\normalbaselines\rm}
+%%
+%% Change to twentyfour points fonts %%
+\def\twentyfourpoint{
+\textfont0=\twentyfourrm \scriptfont0=\fourteenrm \scriptscriptfont0=\twelverm
+\textfont1=\twentyfouri \scriptfont1=\fourteeni \scriptscriptfont1=\twelvei
+\def\mit{\fam1 } \def\oldstyle{\fam1 \twentyfouri}
+\textfont2=\twentyfoursy \scriptfont2=\fourteensy \scriptscriptfont2=\twelvesy
+\def\cal{\fam2 }
+\textfont3=\twentyfourex \scriptfont3=\fourteenex \scriptscriptfont3=\twelveex
+\textfont\itfam=\twentyfourit
+\textfont\slfam=\twentyfoursl
+\textfont\ttfam=\twentyfourtt
+\textfont\ssfam=\twentyfourss
+\scriptfont\ssfam=\fourteenss \scriptscriptfont\ssfam=\twelvess
+\textfont\bffam=\twentyfourbf
+\scriptfont\bffam=\fourteenbf \scriptscriptfont\bffam=\twelvebf
+\textfont\cscfam=\twentyfourcsc
+\textfont\mibfam=\twentyfourmib
+\scriptfont\mibfam=\fourteenmib \scriptscriptfont\mibfam=\twelvemib
+\textfont\bsyfam=\twentyfourbsy
+\scriptfont\bsyfam=\fourteenbsy \scriptscriptfont\bsyfam=\twelvebsy
+\ifx\ifDS\relax%
+\textfont\dsfam=\twentyfourds
+\scriptfont\dsfam=\fourteends \scriptscriptfont\dsfam=\twelveds
+\def\ds{\fam\dsfam\twentyfourds}
+\else
+{}
+\fi
+\ifx\ifLMTS\relax%
+\def\rm{\fam0 \twentyfourrm \let\tcfont=\twentyfourcrm}
+\def\it{\fam\itfam\twentyfourit \let\tcfont=\twentyfourcit}
+\def\sl{\fam\itfam\twentyfoursl \let\tcfont=\twentyfourcsl}
+\def\tt{\fam\ttfam\twentyfourtt \let\tcfont=\twentyfourctt}
+\def\sf{\fam\ssfam\twentyfourss \let\tcfont=\twentyfourcss}
+\def\bf{\fam\bffam\twentyfourbf \let\tcfont=\twentyfourcbf}
+\else
+\def\rm{\fam0 \twentyfourrm}
+\def\it{\fam\itfam\twentyfourit}
+\def\sl{\fam\itfam\twentyfoursl}
+\def\tt{\fam\ttfam\twentyfourtt}
+\def\sf{\fam\ssfam\twentyfourss}
+\def\bf{\fam\bffam\twentyfourbf}
+\fi
+\def\sc{\fam\cscfam\twentyfourcsc}
+\def\mb{\fam\mibfam} \def\boldstyle{\fam\mibfam\twentyfourmib}
+\def\bcal{\fam\bsyfam}
+\def\unsetmathbold{
+\textfont1=\twentyfouri \scriptfont1=\fourteeni \scriptscriptfont1=\twelvei
+\textfont2=\twentyfoursy \scriptfont2=\fourteensy \scriptscriptfont2=\twelvesy
+\def\oldstyle{\fam1 \twentyfouri} }
+\def\setmathbold{
+\textfont1=\twentyfourmib \scriptfont1=\fourteenmib
+\scriptscriptfont1=\twelvemib
+\textfont2=\twentyfourbsy \scriptfont2=\fourteenbsy
+\scriptscriptfont2=\twelvebsy
+\def\oldstyle{\fam1 \twentyfourmib} }
+\normalbaselineskip=28pt minus 2pt
+\setbox\strutbox=\hbox{\vrule height20pt depth8pt width0pt}
+\bigsize=20.4pt
+\Bigsize=27.6pt
+\biggsize=34.8pt
+\Biggsize=42pt
+\normalbaselines\rm}
+%%
+%% double space
+\def\doublespace{
+\normalbaselineskip=24pt minus 1pt
+\setbox\strutbox=\hbox{\vrule height17pt depth 7pt width0pt}
+\normalbaselines}
+%%
+%% Initial set at ten points
+\tenpoint
+

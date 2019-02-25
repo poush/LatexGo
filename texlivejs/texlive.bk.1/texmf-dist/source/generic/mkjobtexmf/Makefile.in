@@ -1,0 +1,114 @@
+# Makefile.in
+# @configure_input@
+
+# Copyright 2007, 2008, 2011 by Heiko Oberdiek.
+#
+# The file is part of project mkjobtexmf.
+# It's free software; you may redistribute it and/or
+# modify it under the same terms as Perl itself
+# (Perl Artistic License/GNU General Public License, version 2).
+
+VPATH = @srcdir@
+srcdir = @srcdir@
+SHELL = @SHELL@
+
+prefix = @prefix@
+datarootdir = @datarootdir@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+mandir = @mandir@
+manext = 1
+man1dir = $(mandir)/man$(manext)
+
+INSTALL = @INSTALL@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+INSTALL_DATA = @INSTALL_DATA@
+
+PRJ = mkjobtexmf
+SRC_FILE = $(PRJ).pl
+SRC_FILES = $(SRC_FILE) $(PRJ).ltx clean-case.pl version.pl
+DOC_FILES = $(PRJ).txt $(PRJ).man $(PRJ).html $(PRJ).pdf README
+ALL_FILES = $(DOC_FILES) configure
+AUTOSRC_FILES = configure.ac Makefile.in install-sh
+DISTRIB_FILES = $(SRC_FILES) $(ALL_FILES) $(AUTOSRC_FILES)
+PDFLATEX = TEXINPUTS=$(srcdir): pdflatex
+LUALATEX = TEXINPUTS=$(srcdir): lualatex
+TMP_FILE = __temp__.pl
+FILE_DATE_VERSION = date-version.txt
+
+default all:
+
+include $(wildcard $(srcdir)/$(PRJ).mk)
+
+configure: configure.ac
+	autoconf
+
+Makefile: Makefile.in configure
+	./configure
+
+doc: $(DOC_FILES)
+
+$(FILE_DATE_VERSION): $(SRC_FILE)
+	./version.pl
+	autoconf
+	./configure
+
+$(PRJ).txt: $(SRC_FILE)
+	pod2text -l $< $@
+
+$(PRJ).man: $(SRC_FILE) $(FILE_DATE_VERSION)
+	pod2man -d "$(shell cat $(FILE_DATE_VERSION))" $< $@
+
+html: $(PRJ).html
+$(PRJ).html: $(SRC_FILE) ./clean-case.pl
+	./clean-case.pl $< $(TMP_FILE)
+	pod2html --title=$(PRJ) --infile=$(TMP_FILE) --outfile=$@
+
+$(PRJ).pdf: $(PRJ).ltx $(PRJ).tex
+	$(LUALATEX) $<
+	makeindex $(PRJ)
+	$(LUALATEX) $<
+	makeindex $(PRJ)
+	$(LUALATEX) $<
+	makeindex $(PRJ)
+	$(LUALATEX) $<
+	makeindex $(PRJ)
+	$(LUALATEX) $<
+
+$(PRJ).tex: $(SRC_FILE)
+	./clean-case.pl $< $(TMP_FILE)
+	pod2latex -out $@ $(TMP_FILE)
+	recode latin1..utf8 $@
+
+distrib: $(PRJ).zip
+
+$(PRJ).zip: $(DISTRIB_FILES)
+	zip -9j $@ $+
+
+install:
+	$(INSTALL) -d $(bindir) $(man1dir)
+	$(INSTALL_SCRIPT) $(srcdir)/$(PRJ).pl $(bindir)/$(PRJ)
+	$(INSTALL_DATA) $(srcdir)/$(PRJ).man $(man1dir)/$(PRJ).1
+
+check: $(SRC_FILE)
+	podchecker $<
+
+uninstall:
+	-rm -f $(bindir)/$(PRJ) $(man1dir)/$(PRJ).1
+
+clean:
+	-rm -f $(PRJ).aux $(PRJ).log $(PRJ).toc
+	-rm -f $(PRJ).idx $(PRJ).ind $(PRJ).ilg
+	-rm -f pod2htmd.tmp pod2htmi.tmp
+
+distclean: clean
+	-rm -f Makefile config.status config.log config.cache
+	-rm -f $(PRJ).tex
+
+realclean: distclean
+	-rm -f $(ALL_FILES) $(PRJ).zip
+
+mostlyclean: clean
+
+.PHONY: default all doc distrib install check uninstall \
+        clean distclean realclean mostlyclean test html

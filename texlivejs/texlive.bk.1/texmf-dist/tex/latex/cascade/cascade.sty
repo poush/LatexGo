@@ -1,0 +1,126 @@
+%%
+%% This is file `cascade.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% cascade.dtx  (with options: `package')
+%% 
+%% Copyright (C) 2018 by F. Pantigny
+%% 
+%% This file may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either
+%% version 1.3 of this license or (at your option) any later
+%% version.  The latest version of this license is in:
+%% 
+%%      http://www.latex-project.org/lppl.txt
+%% 
+%% and version 1.3 or later is part of all distributions of
+%% LaTeX version 2005/12/01 or later.
+%% 
+\def\myfileversion{1.01}
+\def\myfiledate{2018/07/12}
+\RequirePackage{l3keys2e}
+\ProvidesExplPackage
+  {cascade}
+  {\myfiledate}
+  {\myfileversion}
+  {Easy presentation of demonstrations in cascades}
+\RequirePackage{xparse}
+%%
+%% The following macro is the same as the macro of amsmath
+\cs_if_free:NT \spread@equation
+    {\cs_set_protected:Npn \spread@equation
+               {\openup\jot
+                \cs_set_protected:Npn \spread@equation {}}}
+%%
+%% The following registers will be used for the options.
+\dim_new:N \l__cascade_interline_dim
+\dim_new:N \l__cascade_interline_all_dim
+\dim_new:N \l__cascade_space_between_dim
+\dim_set:Nn \l__cascade_space_between_dim {0.5 em}
+%%
+%% This set of options will be used by \Cascade and \ShortCascade
+\keys_define:nn {cascade/command}
+  {
+   interline          .dim_set:N        = \l__cascade_interline_dim,
+   interline          .value_required:n = true ,
+   interline-all      .code:n           = { \dim_set:Nn \l__cascade_interline_all_dim {#1}
+                                            \dim_set:Nn \l__cascade_interline_dim {#1} },
+   interline-all      .value_required:n = true,
+   space-between      .dim_set:N        = \l__cascade_space_between_dim,
+   space-between      .value_required:n = true}
+%%
+%% This set of options will be used by \CascadeOptions
+\keys_define:nn {cascade/global}
+  {interline-all      .dim_set:N        = \l__cascade_interline_all_dim,
+   interline-all      .value_required:n = true,
+   space-between      .dim_set:N        = \l__cascade_space_between_dim,
+   space-between      .value_required:n = true}
+\NewDocumentCommand \CascadeOptions {m}
+    {\keys_set:nn {cascade/global} {#1}}
+%%
+%% The command \Cascade is defined with \NewDocumentCommand of xparse
+\NewDocumentCommand \Cascade {O{} mmmm}
+   { \if_mode_math:
+        \msg_error:nn {cascade} {Cascade~in~math~mode}
+     \fi:
+     \mode_leave_vertical:
+     \group_begin:
+     \spread@equation
+     \dim_set_eq:NN \l__cascade_interline_dim \l__cascade_interline_all_dim
+     \keys_set:nn {cascade/command} {#1}
+     \box_clear_new:N \l__cascade_box_one
+     \box_clear_new:N \l__cascade_box_two
+     \box_clear_new:N \l__cascade_box_three
+     \box_clear_new:N \l__cascade_box_four
+     \hbox_set:Nn \l__cascade_box_one {#2}
+     \hbox_set:Nn \l__cascade_box_two {#3}
+     \hbox_set:Nn \l__cascade_box_three {#4}
+     \hbox_set:Nn \l__cascade_box_four {#5}
+     \dim_zero_new:N \l__cascade_top_dim
+     \dim_set:Nn \l__cascade_top_dim
+            {\dim_max:nn \c_zero_dim
+                         {\box_ht:N \l__cascade_box_one - \box_ht:N \l__cascade_box_two}}
+     \dim_zero_new:N \l__cascade_bottom_dim
+     \dim_set:Nn \l__cascade_bottom_dim
+            {\dim_max:nn \c_zero_dim
+                         {\box_dp:N \l__cascade_box_three - \box_dp:N \l__cascade_box_four}}
+     \box_set_ht:Nn \l__cascade_box_one \c_zero_dim
+     \box_set_dp:Nn \l__cascade_box_three \c_zero_dim
+     \vbox:n
+      {\skip_vertical:N \l__cascade_top_dim
+       \vbox_top:n
+        {\hbox:n
+          {$\left.
+              \vcenter {\halign{\hfil##\cr
+                                \hbox:n{\tl_if_empty:nF {#2}
+                                          {\box_use_drop:N \l__cascade_box_one
+                                           \skip_horizontal:n \l__cascade_space_between_dim}
+                                        \box_use_drop:N \l__cascade_box_two \strut} \cr
+                                \noalign{\skip_vertical:n \l__cascade_interline_dim}
+                                \hbox:n{\tl_if_empty:nF {#4}
+                                          {\box_use_drop:N \l__cascade_box_three
+                                           \skip_horizontal:n \l__cascade_space_between_dim}
+                                        \box_use_drop:N \l__cascade_box_four \strut} \cr
+                               }
+                       }
+            \right\}$
+          }
+         \skip_vertical:N \l__cascade_bottom_dim
+        }
+      }
+     \group_end:
+}
+\msg_new:nnn {cascade}
+             {Cascade~in~math~mode}
+             {The~commands~\token_to_str:N \Cascade\
+              and~\token_to_str:N \ShortCascade\
+              should~be~used~in~text~mode~only.~However,~you~can~
+              go~on~for~this~time.}
+\NewDocumentCommand \ShortCascade {O{}mm}
+    {\Cascade[#1]{}{#2}{}{#3}}
+
+\endinput
+%%
+%% End of file `cascade.sty'.

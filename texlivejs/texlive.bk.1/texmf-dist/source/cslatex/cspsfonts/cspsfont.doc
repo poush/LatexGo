@@ -1,0 +1,1424 @@
+\def\fileversion{v.1.0d}
+\def\filedate{1995/12/02}
+% \def\filename{cspsfont.doc}
+% \def\docdate{1995/12/02}
+% \CheckSum{762}
+% \makeatletter
+% \renewcommand\l@section[2]{^^A
+% \addpenalty{\@secpenalty}^^A
+% \setlength\@tempdima{1.5em}^^A
+% \begingroup
+% \parindent\z@ \rightskip\@pnumwidth
+% \parfillskip \minus\@pnumwidth
+% \leavevmode \bfseries
+% \advance\leftskip\@tempdima
+% \hskip \minus\leftskip
+% #1\nobreak\hfil\nobreak\hbox to\@pnumwidth{\hss #2}\par
+% \endgroup}
+% \makeatother
+% 
+% \newcommand\cstex{C\kern\minus.2ex\lower.5ex\hbox
+% {\small$\cal{S}$}\kern\minus.1ex\TeX}
+% \title{Instalace \v{c}esk\'ych PostScriptov\'ych font\r{u}\thanks{Toto
+% je soubor \filename~\fileversion \space z~\filedate.  Dokumentace byla
+% naposledy aktualizov\'ana~\docdate.}}
+% \author{Zden\v{e}k Wagner\\\texttt{<wagner@icpf.cas.cz>}}
+% \begin{document}\maketitle
+% 
+% \tableofcontents
+% 
+% \section{\'Uvod}
+% \cstex\ zavedl takzvan\'e cs-fonty, co\v{z} je vlastn\v{e}
+% roz\v{s}\'{\i}\v{r}en\'{\i} p\r{u}vodn\'{\i}ch Knuthov\'ych
+% cm-font\r{u}.  Spodn\'{\i} polovina m\'a k\'odov\'an\'{\i} stejn\'e
+% jako cm-fonty, horn\'{\i} polovina m\'a a\v{z} na drobn\'e odchylky
+% k\'odov\'an\'{\i} ISO Latin\,2.  \LaTeXe\ m\'a velkou v\'yhodu v~tom,
+% \v{z}e lze v~jednom dokumentu pou\v{z}\'{\i}vat sou\v{c}asn\v{e} fonty
+% s~r\r{u}zn\'ym k\'odov\'an\'{\i}m.  Lze tedy cs-fonty kombinovat se
+% standardn\'{\i}mi PostScriptov\'ymi fonty v~k\'odov\'an\'{\i} T\,1.
+% P\v{r}esto existuj\'{\i} d\r{u}vody pro pou\v{z}\'{\i}v\'an\'{\i}
+% po\v{c}e\v{s}t\v{e}n\'ych PostScriptov\'ych font\r{u}
+% kompatibiln\'{\i}ch s~cs-fonty, tj.~v k\'odov\'an\'{\i} ISO Latin\,2.
+% 
+% Zaveden\'{\i} po\v{c}e\v{s}t\v{e}n\'ych\footnote{Mluv\'{\i}m zde
+% o~po\v{c}e\v{s}t\v{e}n\'{\i}, ale ve skute\v{c}nosti mysl\'{\i}m
+% vytvo\v{r}en\'{\i} font\r{u} s~podporou \v{c}e\v{s}tiny,
+% sloven\v{s}tiny, i~jin\'ych jazyk\r{u}.} font\r{u} do \LaTeX u{}
+% vy\v{z}aduje dv\v{e} akce.  P\v{r}edev\v{s}\'{\i}m je nutno
+% vytvo\v{r}it virtu\'aln\'{\i} skripty font\r{u} v~po\v{z}adovan\'em
+% k\'odov\'an\'{\i}.  K~tomu ji\v{z} existuj\'{\i} programy, o~nich\v{z}
+% se zde tak\'e zm\'{\i}n\'{\i}me.  Druh\'ym krokem je
+% vytvo\v{r}en\'{\i} souboru s~popisem fontu.  Samoz\v{r}ejm\v{e} by se
+% n\v{e}kdo mohl ob\v{e}tovat k~tomu, aby takov\'e soubory pro
+% b\v{e}\v{z}n\'e fonty vytvo\v{r}il.  Font\r{u} je ale mnoho
+% a~ka\v{z}d\'y by cht\v{e}l p\v{r}id\'avat dal\v{s}\'{\i}
+% a~dal\v{s}\'{\i}.  Nav\'{\i}c jsou v\v{s}echny soubory podobn\'e,
+% proto je lze snadno vytv\'a\v{r}et automaticky.  To je d\r{u}vod,
+% pro\v{c} byla vytvo\v{r}ena utilita \texttt{cspsfont}.
+% 
+% \section{Pro\v{c} ne \texttt{fontinst}?}
+% \LaTeXe\ pou\v{z}\'{\i}v\'a jako standardn\'{\i} n\'astroj pro
+% zav\'ad\v{e}n\'{\i} nov\'ych font\r{u} utilitu \texttt{fontinst}.
+% Nab\'{\i}z\'{\i} se ot\'azka, pro\v{c} se s~po\v{c}e\v{s}t\v{e}n\'ymi
+% fonty zach\'az\'{\i} jinak.  D\r{u}vodem je konzervativnost.
+% Po\v{c}e\v{s}t\v{e}n\'{\i} font\r{u} a~jejich zaveden\'{\i} do \LaTeX
+% u{} vy\v{z}aduje \v{r}adu akc\'{\i}.  Je nutno modifikovat
+% \texttt{afm} soubor a~upravit virtu\'aln\'{\i} skripty.  Nev\'{\i}m,
+% co v\v{s}e \texttt{fontinst} um\'{\i}.  Je to siln\'y n\'astroj, ale
+% vytv\'a\v{r}\'{\i} si vlastn\v{e} sv\r{u}j nov\'y jazyk.  Proto\v{z}e
+% zaveden\'{\i} font\r{u} pro \v{c}e\v{s}tinu a~sloven\v{s}tinu
+% nen\'{\i} zcela trivi\'aln\'{\i}, d\'av\'am zat\'{\i}m p\v{r}ednost
+% t\v{e}m n\'astroj\r{u}m, kter\'e ji\v{z} zn\'am.  Je v\v{s}ak
+% mo\v{z}n\'e, \v{z}e \v{c}asem odejde \texttt{cspsfont} do
+% \v{r}\'{\i}\v{s}e brontosaur\r{u}, blbouna nejapn\'eho a~jin\'ych
+% vyhynul\'ych potvor, aby p\v{r}enechala svoji pr\'aci pro
+% standardn\'{\i} \texttt{fontinst}.
+% 
+% \section{Tvorba \v{c}esk\'ych virtu\'aln\'{\i}ch skript\r{u}}
+% Virtu\'aln\'{\i} skript pro \TeX\ lze vytvo\v{r}it programem
+% \texttt{afm2tfm}.  Pot\'{\i}\v{z} je pouze v~tom, \v{z}e
+% standardn\'{\i} \texttt{afm}-soubory neobsahuj\'{\i} \'udaje
+% pot\v{r}ebn\'e pro sestaven\'{\i} v\v{s}ech p\'{\i}smen pro
+% \v{c}e\v{s}tinu a~sloven\v{s}tinu.  Lze sice pou\v{z}\'{\i}t program
+% \texttt{l2accents} Ji\v{r}\'{\i}ho Zlatu\v{s}ky, ale to je pon\v{e}kud
+% nepohodln\'e.  V\'yhodn\v{e}j\v{s}\'{\i} je pou\v{z}it\'{\i} programu
+% \textsc{a2ac} Petra Ol\v{s}\'aka, kter\'y do \texttt{afm}-souboru
+% p\v{r}ip\'{\i}\v{s}e definice chyb\v{e}j\'{\i}c\'{\i}ch
+% kompozitn\'{\i}ch znak\r{u}.  Tak tak\'e vznikly virtu\'aln\'{\i}
+% skripty, kter\'e jsou pops\'any n\'{\i}\v{z}e.
+% 
+% Petr Ol\v{s}\'ak vytvo\v{r}il soubor \texttt{cscorr.tab}, kter\'y
+% upravuje usazen\'{\i} akcent\r{u}.  Jeho c\'{\i}lem byla
+% optimalizace \v{c}esk\'ych a~slovensk\'ych p\'{\i}smen, tak\v{z}e
+% nap\v{r}.  \AA\ nebo \^e vypadaj\'{\i} \v{c}asto o\v{s}kliv\v{e}.
+% Nav\'{\i}c se podrobn\v{e}j\v{s}\'{\i}m testov\'an\'{\i}m ukazuje,
+% \v{z}e ka\v{z}d\'e p\'{\i}smo je kresleno trochu jinak a~nelze
+% tud\'{\i}\v{z} vysta\v{c}it s~jednou korek\v{c}n\'{\i} tabulkou.
+% Krom\v{e} toho m\'am podez\v{r}en\'{\i}, \v{z}e jsou
+% v~\texttt{afm}-souborech i~chyby\,\ldots{} B\v{e}hem
+% testov\'an\'{\i} byly proto vytvo\v{r}eny specifick\'e
+% korek\v{c}n\'{\i} tabulky vych\'azej\'{\i}c\'{\i} z~p\r{u}vodn\'{\i}
+% \texttt{cscorr.tab}, a~to bu\v{d} pouh\'ym p\v{r}eps\'an\'{\i}m
+% premisy NC na RC\footnote{Viz dokumentace programu \textsc{a2ac}.}
+% s~p\v{r}\'{\i}padn\'ym posunem akcentu, nebo p\v{r}enesen\'{\i}m
+% premisy CC z~p\r{u}vodn\'{\i}ho \texttt{afm}-souboru, kter\'a byla
+% p\v{r}eps\'ana na RC a~byly upraveny parametry.  R\r{u}znorodost
+% p\'{\i}sem lze pak dokumentovat i~t\'{\i}m, \v{z}e pro v\v{s}echny
+% fonty z~rodin Hevetica a~Helvetica-Narrow vysta\v{c}\'{\i}me
+% s~jedinou korek\v{c}n\'{\i} tabulkou, zat\'{\i}mco pro Palatino
+% m\'ame \v{c}ty\v{r}i speci\'aln\'{\i} tabulky.
+% 
+% \section{Po\v{c}e\v{s}t\v{e}n\'{\i} PSNFSS}\label{fonts}
+% P\v{r}i diskusi o~k\'odov\'an\'{\i} PostScriptov\'ych font\r{u} pro
+% \cstex\ se vyskytl dotaz, zda tak\'e n\v{e}kdo po\v{c}e\v{s}t\'{\i}
+% PSNFSS.  Zast\'anci T1 jist\v{e} okam\v{z}it\v{e}
+% pouk\'a\v{z}\'{\i} na to, \v{z}e odklonem od standardu si
+% p\v{r}id\v{e}l\'av\'ame pr\'aci.  Nen\'{\i} tomu tak.  \LaTeXe\ je
+% toti\v{z} postaven na geni\'aln\'{\i} filozofii.  Vezm\v{e}me si
+% nap\v{r}.  \texttt{times.sty} z~\texttt{lw35nfss}.  Zde se
+% \emph{pouze} p\v{r}edefinuje |\rmdefault| a~|\sfdefault|, tak\v{z}e
+% m\'{\i}sto standardn\'{\i} rodiny Computer Modern se pou\v{z}ije
+% Times-Roman a~Helvetica.  Po\v{c}e\v{s}t\v{e}n\'{\i} dos\'ahne
+% u\v{z}ivatel pouhou zm\v{e}nou |\fontencoding|, nemus\'{\i}me se
+% tedy o~nic starat!
+% 
+% V~\texttt{lw35nfss} jsou definov\'any styly\footnote{Podle nov\'e
+% terminologie \uv{package}, co\v{z} neum\'{\i}m libozvu\v{c}n\v{e}
+% p\v{r}elo\v{z}it.}, kde jsou fonty Computer Modern nahrazeny
+% ur\v{c}it\'ymi PostScriptov\'ymi fonty.  Zde k~nim p\v{r}id\'ame
+% je\v{s}t\v{e} \textsc{ntimes} a~\textsc{nhelvet}.  Definice jsou
+% shrnuty v~tabulce~\ref{fonty}.
+% 
+% \begin{table}[bt]
+% \DeleteShortVerb\|
+% \caption{Styly pro definice font\r u}\label{fonty}
+% \vspace{1ex}\centering
+% \begin{tabular}{|>{\sffamily}l|lll|}\hline
+% \rm Styl & Sans font & Serif font & Typewriter font \\\hline
+% avant & AvantGarde & & \\
+% bookman & AvantGarde & Bookman & Courier \\
+% courier & & & Courier \\
+% helvet & Helvetica & & \\
+% newcent & AvantGarde & NewCenturySchoolbook & Courier \\
+% palatino & Helvetica & Palatino & Courier \\
+% times & Helvetica & Times & Courier \\\hline
+% nhelvet & HelveticaNarrow & & \\
+% ntimes & Times & HelveticaNarrow & Courier\\\hline
+% \end{tabular}
+% \MakeShortVerb\|
+% \end{table}
+% 
+% \section{Definice PostScriptov\'ych font\r{u}}
+% P\v{r}i definici je nutno vytvo\v{r}it soubor, kter\'y bude
+% obsahovat ur\v{c}it\'e p\v{r}\'{\i}kazy.  Abychom si
+% u\v{s}et\v{r}ili psan\'{\i}, pop\'{\i}\v{s}eme vlastnosti fontu
+% jednoduch\'ym skriptem a~v\v{s}e ostatn\'{\i} ponech\'ame na
+% po\v{c}\'{\i}ta\v{c}i.  Soubor s~popisn\'ym skriptem bude
+% za\v{c}\'{\i}nat povelem
+% \begin{verbatim}
+% \input{cspsfont}
+% \end{verbatim}
+% Potom budou n\'asledovat p\v{r}\'{\i}kazy, kter\'e si pop\'{\i}\v{s}eme d\'ale.
+% 
+% \subsection{Glob\'aln\'{\i} p\v{r}\'{\i}kazy}
+% \DescribeMacro{\Author}
+% Prvn\'{\i} \v{c}\'ast popisu fontu obsahuje p\v{r}\'{\i}kazy, kter\'e
+% se t\'ykaj\'{\i} cel\'eho souboru.  Jedn\'{\i}m z~nich je makro
+% |\Author|, kter\'e pouze zaznamen\'a jm\'eno autora souboru.  To se pak
+% bude automaticky p\v{r}en\'a\v{s}et do v\v{s}ech vygenerovan\'ych
+% soubor\r{u}.
+% 
+% \DescribeMacro{\Comment}
+% Soubory pro \LaTeXe\ maj\'{\i} identifika\v{c}n\'{\i} p\v{r}\'{\i}kaz
+% |\ProvidesFile|, kam se zapisuje datum vytvo\v{r}en\'{\i}
+% a~koment\'a\v{r}.  Makro |\Comment| definuje text, kter\'y bude
+% v~koment\'a\v{r}\'{\i}ch uveden u~v\v{s}ech vygenerovan\'ych
+% soubor\r{u}.  Tento koment\'a\v{r} by m\v{e}l b\'yt jasn\'y, ale
+% stru\v{c}n\'y.
+% 
+% \DescribeMacro{\FontPath}
+% Toto makro definuje adres\'a\v{r}, ve kter\'em se nach\'azej\'{\i} metriky
+% font\r{u}.  Nebude-li toto makro pou\v{z}ito, program nebude um\v{e}t
+% naj\'{\i}t fonty a~\v{z}\'adn\'e definice se nevytvo\v{r}\'{\i}!
+% Mus\'{\i}te uv\'est i~koncov\'e lom\'{\i}tko.  Nap\v{r}.  pro
+% standardn\'{\i} distribuci em\TeX u{} je nutno pou\v{z}\'{\i}t
+% 
+% |\FontPath{c:/emtex/tfm/}|
+% 
+% \subsection{Prost\v{r}ed\'{\i} pro z\'apis definice fontu}
+% \DescribeEnv{fd}
+% Jeden soubor m\r{u}\v{z}e b\'yt pou\v{z}it pro generov\'an\'{\i}
+% v\'{\i}ce soubor\r{u} sou\v{c}asn\v{e}.  Mus\'{\i}me tedy vymezit
+% jejich za\v{c}\'atek a~konec a~definovat jejich jm\'ena.  K~tomu
+% slou\v{z}\'{\i} prost\v{r}ed\'{\i} \meta{fd}, kter\'e se
+% pou\v{z}\'{\i}v\'a n\'asleduj\'{\i}c\'{\i}m zp\r{u}sobem:
+% 
+% \noindent
+% |\begin{fd}{|\meta{k\'od}|}{|\meta{rodina}|}|\\
+% P\v{r}\'{\i}kazy pro definici font\r{u}\\
+% |\end{fd}|
+% 
+% Jm\'eno souboru vytvo\v{r}\'{\i} \texttt{cspsfont} automaticky.
+% 
+% \DescribeEnv{PkgWrite}
+% Naprostou v\v{e}t\v{s}inu nutn\'ych p\v{r}\'{\i}kaz\r{u} lze definovat
+% pomoc\'{\i} symbolick\'ych skript\r{u}.  M\r{u}\v{z}e se ov\v{s}em
+% st\'at, \v{z}e budeme cht\'{\i}t p\v{r}ipsat p\v{r}\'{\i}kazy, pro
+% n\v{e}\v{z} symbolick\'y skript nem\'ame.  Takov\'e p\v{r}\'{\i}kazy pak
+% jednodu\v{s}e zap\'{\i}\v{s}eme do prost\v{r}ed\'{\i} \meta{PkgWrite}.
+% 
+% \DescribeMacro{\exclam}
+% V\'y\v{s}e uveden\'e prost\v{r}ed\'{\i} zapisuje sv\r{u}j obsah tak, jak
+% je, tedy bez expanze.  Ob\v{c}as by se hodilo, kdybychom n\v{e}jak\'e
+% makro expandovat mohli.  Proto uvnit\v{r} prost\v{r}ed\'{\i}
+% \meta{PkgWrite} m\v{e}n\'{\i}me kategorii vyk\v{r}i\v{c}n\'{\i}ku, kter\'y
+% nyn\'{\i} slou\v{z}\'{\i} m\'{\i}sto zp\v{e}tn\'eho lom\'{\i}tka.
+% Sou\v{c}asn\v{e} si pouze pro toto prost\v{r}ed\'{\i} definujeme makro
+% |\exclam|, kter\'e se expanduje na oby\v{c}ejn\'y vyk\v{r}i\v{c}n\'{\i}k.
+% Mus\'{\i}me jej ov\v{s}em zapisovat jako |!exclam|, proto\v{z}e jsme
+% zm\v{e}nili kategorie!
+% 
+% \subsection{Prost\v{r}ed\'{\i} definice fontu}
+% \DescribeEnv{fontdecl}
+% Prost\v{r}ed\'{\i} \meta{fontdecl} uzav\'{\i}r\'a popis vlastnost\'{\i}
+% fontu.  Jeho syntaxe je n\'asleduj\'{\i}c\'{\i}.
+% 
+% \noindent
+% |\begin{fontdecl}[|\meta{default}|]{|\meta{base\
+% name}|}[|\meta{suffix\ base}|]|\\
+% Definice fontu\\
+% |\end{fontdecl}|
+% 
+% Jednotliv\'e parametry maj\'{\i} tento v\'yznam:
+% \begin{description}
+% \item[default] ur\v{c}uje standardn\'{\i} font, kter\'ym se
+% nahrad\'{\i} kombinace \uv{series/shape}, je\v{z} nebyla nalezena.
+% Parametr se mus\'{\i} uv\'ad\v{e}t ve tvaru \meta{series/shape}.
+% Standard je \meta{m/n}.
+% \item[base name] je z\'akladn\'{\i} \v{c}\'ast jm\'ena souboru
+% s~metrikou fontu.  Toto z\'akladn\'{\i} jm\'eno bude
+% vyu\v{z}\'{\i}v\'ano v~dal\v{s}\'{\i}ch p\v{r}\'{\i}kazech.
+% \item[suffix base] je suffix, kter\'y se p\v{r}id\'av\'a na konec
+% jm\'ena souboru.  Standardn\v{e} je suffix pr\'azdn\'y.
+% \end{description}
+% 
+% \DescribeMacro{\SeriesSuffix}
+% Pro ka\v{z}d\'y |\fontseries| mus\'{\i}me k~z\'akladn\'{\i}mu jm\'enu
+% souboru p\v{r}idat p\'{\i}smeno \v{c}i skupinu p\'{\i}smen.
+% Standardn\'{\i} p\v{r}\'{\i}pony nadefinujeme p\v{r}\'{\i}kazem:
+% 
+% |\SeriesSuffix| \meta{font series}/\meta{suffix}.
+% 
+% \noindent
+% Te\v{c}ka na konci je nezbytn\'a!  Je-li stejn\'y \uv{series}
+% definov\'an v\'{\i}cekr\'at, plat\'{\i} pouze prvn\'{\i} hodnota.
+% 
+% \DescribeMacro{\ShapeSuffix}
+% Podobn\v{e} mus\'{\i}me zach\'azet i~s~|\fontshape|. I~syntaxe
+% p\v{r}\'{\i}kazu je podobn\'a:
+% 
+% |\ShapeSuffix| \meta{font shape}/\meta{suffix}.
+% 
+% \noindent
+% P\v{r}i tvorb\v{e} jm\'ena souboru se k~z\'akladn\'{\i}mu jm\'enu
+% p\v{r}id\'a nejprve suffix z~p\v{r}\'{\i}kazu |\SeriesSuffix| a~potom ze
+% |\ShapeSuffix|.
+% 
+% \DescribeMacro{\FontDef}
+% Pro n\v{e}kter\'e kombinace \uv{series/shape} m\r{u}\v{z}eme
+% vy\v{z}adovat speci\'aln\'{\i} definici.  K~tomu lze pou\v{z}\'{\i}t
+% makro |\FontDef|, kter\'e m\'a p\v{r}ednost p\v{r}ed dv\v{e}ma
+% v\'y\v{s}e uveden\'ymi makry.  Syntaxe je n\'asleduj\'{\i}c\'{\i}:
+% 
+% |\FontDef| \meta{series}/\meta{shape}=\meta{file name}.
+% 
+% \noindent
+% Na m\'{\i}st\v{e} \meta{file name} se uvede p\v{r}esn\'e jm\'eno
+% souboru (bez adres\'a\v{r}e a~p\v{r}\'{\i}pony, ale v\v{c}etn\v{e}
+% suffixu).  M\'{\i}sto pro jm\'eno souboru lze t\'e\v{z} nechat
+% pr\'azdn\'e.  To pak znamen\'a, \v{z}e pro danou kombinaci
+% \uv{series/shape} se definice fontu nem\'a vytv\'a\v{r}et.
+% Uvedeme-li tedy
+% \begin{verbatim}
+% \FontDef bx/sl=.
+% \end{verbatim}
+% nebude program vytv\'a\v{r}et definici pro \uv{bx/sl},
+% zat\'{\i}mco definice pro ostatn\'{\i} kombinace \uv{bx}
+% i~\uv{sl} se vytvo\v{r}\'{\i}.
+% 
+% \DescribeMacro{\FontSub}
+% Zde definujeme substituci pro danou kombinaci \uv{series/shape} ve tvaru:
+% 
+% |\FontSub| \meta{orig. series}/\meta{orig. shape}=\meta{series}/\meta{shape}.
+% 
+% \noindent
+% Tento p\v{r}\'{\i}kaz budeme ignorovat v~p\v{r}\'{\i}pad\v{e},
+% \v{z}e p\r{u}vodn\'{\i} font lze vytvo\v{r}it.
+% 
+% \DescribeMacro{\SeriesAlias}
+% Syntaxe tohoto makra je:
+% 
+% |\SeriesAlias| \meta{series}/\meta{alias}.
+% 
+% \noindent
+% Pokud neexistuje font pro \uv{series}, program zkus\'{\i}
+% pou\v{z}\'{\i}t \uv{alias}.
+% 
+% \DescribeMacro{\ShapeAlias}
+% Toto makro m\'a podobn\'y v\'yznam, ale plat\'{\i} pro \uv{shape}.
+% I~syntaxe je stejn\'a:
+% 
+% |\ShapeAlias| \meta{shape}/\meta{alias}.
+% 
+% \DescribeMacro{\BasBX}
+% \DescribeMacro{\BXasB}
+% Com\-pu\-ter mod\-ern rozli\v{s}uje {\fontseries{b}\selectfont bold}
+% a~\textbf{bold extended}.  PostScriptov\'e fonty obvykle takov\'e
+% varianty nemaj\'{\i}.  Tyto p\v{r}\'{\i}pady jsou standardn\v{e}
+% o\v{s}et\v{r}eny p\v{r}\'{\i}kazem |\SeriesAlias|, kter\'y provede
+% n\'ahradu s~varov\'an\'{\i}m.  Pokud toto varov\'an\'{\i} nechceme
+% p\v{r}i v\'yb\v{e}ru fontu vid\v{e}t, m\r{u}\v{z}eme pou\v{z}\'{\i}t
+% jedno ze zde uveden\'ych maker.  |\BasBX| \v{r}\'{\i}k\'a, \v{z}e
+% m\'{\i}sto \uv{bold} pou\v{z}ijeme \uv{bold extended}, |\BXasB|
+% specifikuje opa\v{c}nou n\'ahradu.  Pokud ov\v{s}em oba fonty
+% existuj\'{\i} nebo byly p\v{r}edefinov\'any pomoc\'{\i} |\FontDef|,
+% nemaj\'{\i} tato makra \v{z}\'adn\'y v\'yznam.
+% 
+% \DescribeMacro{\MakeSeries}
+% \DescribeMacro{\MakeShape}
+% Tato makra uv\'ad\v{e}j\'{\i} seznam \uv{series} a~\uv{shape}
+% odd\v{e}len\'ych \v{c}\'arkami, pro n\v{e}\v{z} se maj\'{\i}
+% vytv\'a\v{r}et definice fontu.
+% 
+% \DescribeMacro{\FamilySetup}
+% \changes{1.0b}{1995/05/19}{Popis nov\'eho makra
+% \texttt{\protect\bslash FamilySetup}}
+% \'U\v{c}elem tohoto makra je na\v{c}ten\'{\i}
+% a~uschov\'an\'{\i} p\v{r}\'{\i}kaz\accent23u, kter\'e se
+% maj\'{\i} prov\'est v\v{z}dy p\v{r}i zaveden\'{\i} dan\'e rodiny
+% p\'{\i}sma. Obsah
+% tohoto makra odpov\'{\i}d\'a posledn\'{\i}mu parametru makra
+% |\DeclareFontFamily|. Syntaxe je n\'asleduj\'{\i}c\'{\i}:
+% 
+% |\FamilySetup{|\meta{Setup code}|}|
+% 
+% \DescribeMacro{\ShapeSetup}
+% \changes{1.0b}{1995/05/19}{Popis nov\'eho makra
+% \texttt{\protect\bslash ShapeSetup}}
+% Zde analogicky na\v{c}teme p\v{r}\'{\i}kazy, kter\'e
+% pak budou vlo\v{z}eny do
+% posledn\'{\i}ho parametru makra |\DeclareFontShape|. Mus\'{\i}me tedy
+% zadat, ke kter\'emu fontu se p\v{r}\'{\i}kazy vztahuj\'{\i},
+% tak\v{z}e syntaxe
+% p\v{r}\'{\i}kazu bude:
+% 
+% |\ShapeSetup{|\meta{series}/\meta{shape}|}{|\meta{setup code}|}|
+% 
+% \subsection{Jak v\v{s}e funguje}
+% Aby bylo jasn\'e, co kter\'e makro prov\'ad\'{\i}, mus\'{\i}me si
+% uv\'est podrobnosti o~cel\'em prost\v{r}ed\'{\i} \meta{fontdecl}.
+% 
+% P\v{r}\'{\i}kaz |\begin{fontdecl}| pouze zapamatuje hodnoty sv\'ych
+% parametr\r{u} a~vynuluje |\BasBX| i~|\BXasB|.  Nic v\'{\i}c
+% ned\v{e}l\'a.  Stejn\v{e} tak n\'asleduj\'{\i}c\'{\i} makra pouze
+% ukl\'adaj\'{\i} sv\'e hodnoty nebo nastavuj\'{\i}
+% p\v{r}ep\'{\i}na\v{c}e.  Z~toho vypl\'yv\'a, \v{z}e prost\v{r}ed\'{\i}
+% \meta{PkgWrite} nem\'a uvnit\v{r} \meta{fontdecl} smysl, proto\v{z}e
+% jeho z\'apis je okam\v{z}it\'y a~provede se v\v{z}dy p\v{r}ed
+% jak\'ymkoliv v\'ystupem generovan\'ym p\v{r}\'{\i}kazy pro popis
+% vlastnost\'{\i} fontu.
+% 
+% Ve\v{s}kerou \v{c}innost prov\'ad\'{\i} p\v{r}\'{\i}kaz
+% |\end{fontdecl}|.  Vyu\v{z}ijeme toho, \v{z}e p\v{r}i
+% v\'{\i}cen\'asobn\'em uveden\'{\i} popisn\'ych p\v{r}\'{\i}kaz\r{u}
+% je funk\v{c}n\'{\i} pouze prvn\'{\i} z~nich.  Proto zde bez obav
+% m\r{u}\v{z}eme nadefinovat standardn\'{\i} hodnoty.  Pot\'e ji\v{z}
+% m\r{u}\v{z}eme zapsat p\v{r}\'{\i}kaz |\DeclareFontFamily|.
+% 
+% V~prvn\'{\i}m pr\r{u}chodu p\v{r}es v\v{s}echny kombinace
+% \uv{series/shape} bereme v~\'uvahu pouze jm\'ena font\r{u}
+% vytvo\v{r}en\'a p\v{r}\'{\i}kazy |\FontDef| a~standardn\'{\i} jm\'ena.
+% Pokud takov\'y font existuje, vytvo\v{r}\'{\i}me pro n\v{e}j
+% |\DeclareFontShape| a~ponech\'ame n\'azev v~pomocn\'em makru
+% vytvo\v{r}en\'em makrem |\FontDef|.  Pokud font neexistuje a~byl
+% definov\'an p\v{r}\'{\i}kazem |\FontDef|, pak si poznamen\'ame, \v{z}e
+% font vytvo\v{r}it nelze.
+% 
+% V~druh\'em pr\r{u}chodu se sna\v{z}\'{\i}me vytvo\v{r}it \uv{alias},
+% p\v{r}i\v{c}em\v{z} |\BasBX| a~|\BXasB| maj\'{\i} p\v{r}ednost.
+% Substituce vytvo\v{r}en\'e p\v{r}\'{\i}kazem |\FontSub| maj\'{\i}
+% p\v{r}ednost p\v{r}ed standardn\'{\i}mi substitucemi.  Op\v{e}t si
+% ozna\v{c}\'{\i}me fonty, kter\'e ji\v{z} byly vytvo\v{r}eny.
+% 
+% T\v{r}et\'{\i} pr\r{u}chod je posledn\'{\i}.  P\v{r}i n\v{e}m
+% nahrad\'{\i}me nenalezen\'e fonty standardem definovan\'ym v~\'uvodu
+% prost\v{r}ed\'{\i} \meta{fontdecl}, ov\v{s}em pouze tehdy,
+% jestli\v{z}e tento font existuje.
+% 
+% \section{Z\'akladn\'{\i} PostScriptov\'e fonty}
+% Zde si p\v{r}iprav\'{\i}me soubor pro tvorbu definic
+% z\'akladn\'{\i}ch font\r{u}, kter\'e zn\'a tisk\'arna
+% Hewlett-Packard LaserJet~4m.  Za\v{c}neme obvyklou
+% identifikac\'{\i} a~glob\'aln\'{\i}mi p\v{r}\'{\i}kazy.
+% P\v{r}edpokl\'ad\'ame, \v{z}e se pou\v{z}\'{\i}v\'a em\TeX\
+% nainstalovan\'y na disk~C.  M\'ate-li jinou instalaci,
+% mus\'{\i}te si p\v{r}ed pou\v{z}it\'{\i}m upravit |\FontPath|
+% nebo vytvo\v{r}it soubor \texttt{fontpath.cfg}, kter\'y bude
+% obsahovat spr\'avn\'y p\v{r}\'{\i}kaz |\FontPath|.
+% 
+% \LaTeXe\ v~\v{c}esk\'e/slovensk\'e verzi definuje
+% k\'odov\'an\'{\i} \texttt{IL2}.  To v\v{s}ak
+% nepou\v{z}\'{\i}v\'a v\v{s}echny znaky, kter\'e obsahuj\'{\i}
+% PostScriptov\'e fonty.  Proto m\'ame k\'odov\'an\'{\i}
+% \texttt{XL2}, kter\'e je jeho roz\v{s}\'{\i}\v{r}en\'{\i}m.
+% Vytvo\v{r}\'{\i}me si defini\v{c}n\'{\i} soubory pro ob\v{e}
+% k\'odov\'an\'{\i}.
+%
+% Jsou zde popisy i~pro k\'odov\'an\'i \texttt{T1} pouze pro
+% p\v{r}\'ipad, \v{z}e by n\v{e}kdo cht\v{e}l vygenerovat
+% pozm\v{e}n\v{e}n\'e fonty s~pou\v{z}it\'im jin\'ych
+% korek\v{c}n\'ich tabulek. T\'im ov\v{s}em bude m\'it
+% nestandardn\'i fonty, co\v{z} v\r{u}bec nedoporu\v{c}ujeme.
+% \changes{1.0c}{1995/06/22}{P\v rid\'ano k\'odov\'an\'i T1}
+% \changes{1.0d}{1995/12/02}{Upraveny n\'azvy font\r{u}}
+%    \begin{macrocode}
+%<*fonts>
+\NeedsTeXFormat{LaTeX2e}
+%<+XL2>\typeout{Definition file for Czech/Slovak PostScript fonts (XL2 encoding)}
+%<+IL2>\typeout{Definition file for Czech/Slovak PostScript fonts (IL2 encoding)}
+%<+T1>\typeout{Definition file for Czech/Slovak PostScript fonts (T1 encoding)}
+\typeout{(C) Z. Wagner, \filedate}
+\input{cspsfont}
+\Author{Z.\sp Wagner}
+\InputIfFileExists{fontpath.cfg}{}%
+  {\FontPath{c:/emtex/tfm/}}
+%    \end{macrocode}
+% 
+% \subsection{ITC Avant Garde Gothic}
+% Toto je bezpatkov\'y font s~variantami \uv{book} a~\uv{demi}.
+%    \begin{macrocode}
+\Comment{CS\sp AvantGarde}
+%<+XL2>\begin{fd}{XL2}{pag}
+%<+IL2>\begin{fd}{IL2}{pag}
+%<+T1>\begin{fd}{T1}{pag}
+%<+T1>\begin{fontdecl}{pag}
+%<-T1>\begin{fontdecl}{pag}[8z]
+\SeriesSuffix m/k.
+\SeriesSuffix b/d.
+\BXasB
+\end{fontdecl}
+\end{fd}
+%    \end{macrocode}
+% 
+% \subsection{ITC Bookman}
+% Zde m\'ame varianty \uv{light} a~\uv{demi}.
+%    \begin{macrocode}
+\Comment{CS\sp Bookman}
+%<+XL2>\begin{fd}{XL2}{pbk}
+%<+IL2>\begin{fd}{IL2}{pbk}
+%<+T1>\begin{fd}{T1}{pbk}
+%<+T1>\begin{fontdecl}{pbk}
+%<-T1>\begin{fontdecl}{pbk}[8z]
+\SeriesSuffix m/l.
+\SeriesSuffix bx/d.
+\BasBX
+\end{fontdecl}
+\end{fd}
+%    \end{macrocode}
+% 
+% \subsection{Courier}
+% Zde m\'ame neproporcion\'aln\'{\i} font, kter\'y m\r{u}\v{z}eme
+% pou\v{z}\'{\i}t pouze jako type\-writer font.  P\v{r}esto\v{z}e zde
+% uv\'ad\'{\i}me k\'odov\'an\'{\i} \texttt{XL2}, je ve skute\v{c}nosti
+% odli\v{s}n\'e.  Spr\'avn\v{e} bychom m\v{e}li ps\'at \texttt{XT2},
+% ale pak bychom nemohli snadno pou\v{z}\'{\i}vat PSNFSS.
+% \changes{1.0b}{1995/05/19}{P\v{r}id\'an
+% \texttt{\protect\bslash hyphenchar}}
+%    \begin{macrocode}
+\Comment{CS\sp Courier}
+%<+XL2>\begin{fd}{XL2}{pcr}
+%<+IL2>\begin{fd}{IL2}{pcr}
+%<+T1>\begin{fd}{T1}{pcr}
+%<+T1>\begin{fontdecl}{pcr}[t]
+%<-T1>\begin{fontdecl}{pcr}[8t]
+\FamilySetup{\hyphenchar\font=-1}
+\BXasB
+\end{fontdecl}
+\end{fd}
+%    \end{macrocode}
+% 
+% \subsection{Helvetica}
+% Klasick\'y bezpatkov\'y font.  Do t\'eto rodiny p\v{r}id\'ame
+% i~Helvetica Narrow, co\v{z} budeme pova\v{z}ovat za \uv{condensed}
+% a~\uv{bold-condensed}.
+% Proto\v{z}e \uv{Narrow} m\'a suffix
+% \uv{n} na konci jm\'ena, mus\'{\i}me pou\v{z}\'{\i}t |\FontDef|.
+% \changes{1.0b}{1995/05/20}{Helvetica semi-bold opravena na
+% bold-condensed}
+%    \begin{macrocode}
+\Comment{CS\sp Helvetica}
+%<+XL2>\begin{fd}{XL2}{phv}
+%<+IL2>\begin{fd}{IL2}{phv}
+%<+T1>\begin{fd}{T1}{phv}
+%<+T1>\begin{fontdecl}{phv}
+%<-T1>\begin{fontdecl}{phv}[8z]
+\MakeSeries{m,b,bx,c,bc}
+\SeriesSuffix c/c.
+\SeriesSuffix bc/bc.
+%<-T1>\FontDef c/n=phvrn8z.
+%<-T1>\FontDef c/sl=phvron8z.
+%<-T1>\FontDef c/sc=phvrnc8z.
+%<-T1>\FontDef bc/n=phvbn8z.
+%<-T1>\FontDef bc/sl=phvbon8z.
+%<-T1>\FontDef bc/sc=phvbnc8z.
+%<+T1>\FontDef c/n=phvrrn.
+%<+T1>\FontDef c/sl=phvron.
+%<+T1>\FontDef c/sc=phvrrnc.
+%<+T1>\FontDef bc/n=phvbrn.
+%<+T1>\FontDef bc/sl=phvbon.
+%<+T1>\FontDef bc/sc=phvbrnc.
+\BXasB
+\end{fontdecl}
+\end{fd}
+%    \end{macrocode}
+% 
+% \subsection{Helvetica Narrow}
+% Tato rodina je vhodn\'ym bezpatkov\'ym partnerem rodiny Times.
+%    \begin{macrocode}
+\Comment{CS\sp Helvetica\sp Narrow}
+%<+XL2>\begin{fd}{XL2}{phvn}
+%<+IL2>\begin{fd}{IL2}{phvn}
+%<+T1>\begin{fd}{T1}{phvn}
+%<+T1>\begin{fontdecl}{phv}[n]
+%<-T1>\begin{fontdecl}{phv}[n8z]
+\ShapeSuffix n/r.
+%<-T1>\FontDef m/sc=phvrnc8z.
+%<-T1>\FontDef b/sc=phvbnc8z.
+%<+T1>\FontDef m/sc=phvrrnc.
+%<+T1>\FontDef b/sc=phvbrnc.
+\BXasB
+\end{fontdecl}
+\end{fd}
+%    \end{macrocode}
+% 
+% \subsection{New Century Schoolbook}
+% Koment\'a\v{r} snad nen\'{\i} t\v{r}eba.
+%    \begin{macrocode}
+\Comment{CS\sp New\sp Century\sp Schoolbook}
+%<+XL2>\begin{fd}{XL2}{pnc}
+%<+IL2>\begin{fd}{IL2}{pnc}
+%<+T1>\begin{fd}{T1}{pnc}
+%<+T1>\begin{fontdecl}{pnc}
+%<-T1>\begin{fontdecl}{pnc}[8z]
+\BXasB
+\end{fontdecl}
+\end{fd}
+%    \end{macrocode}
+% 
+% \subsection{Palatino}
+% Op\v{e}t bez koment\'a\v{r}e.
+%    \begin{macrocode}
+\Comment{CS\sp Palatino}
+%<+XL2>\begin{fd}{XL2}{ppl}
+%<+IL2>\begin{fd}{IL2}{ppl}
+%<+T1>\begin{fd}{T1}{ppl}
+%<+T1>\begin{fontdecl}{ppl}
+%<-T1>\begin{fontdecl}{ppl}[8z]
+\BXasB
+\end{fontdecl}
+\end{fd}
+%    \end{macrocode}
+% 
+% \subsection{Times}
+% Klasick\'y patkov\'y font, zejm\'ena pro novinovou sazbu.
+%    \begin{macrocode}
+\Comment{CS\sp Times}
+%<+XL2>\begin{fd}{XL2}{ptm}
+%<+IL2>\begin{fd}{IL2}{ptm}
+%<+T1>\begin{fd}{T1}{ptm}
+%<+T1>\begin{fontdecl}{ptm}
+%<-T1>\begin{fontdecl}{ptm}[8z]
+\BXasB
+\end{fontdecl}
+\end{fd}
+%    \end{macrocode}
+% 
+% \subsection{ITC Zapf Chancery}
+% Zde m\'ame pouze font \uv{medium/italic}.
+%    \begin{macrocode}
+\Comment{CS\sp Zapf\sp Chancery}
+%<+XL2>\begin{fd}{XL2}{pzc}
+%<+IL2>\begin{fd}{IL2}{pzc}
+%<+T1>\begin{fd}{T1}{pzc}
+%<-T1>\begin{fontdecl}[m/it]{pzc}[8z]
+%<+T1>\begin{fontdecl}[m/it]{pzc}
+\SeriesSuffix m/m.
+\end{fontdecl}
+\makeatletter
+\begin{PkgWrite}
+!@percentchar!space Only one shape available!exclam
+\end{PkgWrite}
+\end{fd}
+%    \end{macrocode}
+% 
+% Nakonec vyp\'{\i}\v{s}eme na obrazovku zpr\'avu, \v{z}e v\v{s}e skon\v{c}ilo.
+% \changes{1.0b}{1995/05/20}{Konec zm\v{e}n\v{e}n na
+% \texttt{\protect\bslash stop}}
+%    \begin{macrocode}
+\typeout{Font generation finished}
+\stop
+%</fonts>
+%    \end{macrocode}
+% 
+% \section{Instalace}
+% Instalace se prov\'ad\'{\i} pomoc\'{\i} souboru \texttt{cspsfont.ins},
+% kter\'y vytv\'a\v{r}\'{\i} \v{s}est soubor\r{u}:
+% \begin{description}
+% \item[cspsfont.tex] vlastn\'{\i} utilita, pro vytvo\v{r}en\'{\i} se
+% mus\'{\i} udat \meta{file}.
+% \item[cspsfont.drv] hlavn\'{\i} soubor pro tisk dokumentace, nutno udat
+% \meta{driver}.
+% \item[cspsfont.il2, cspsfont.xl2, cspsfont.t1\footnote{Tento soubor
+% vytvo\v r\'i jm\'ena podle star\'e konvence. Nov\'a jm\'ena podle
+% sou\v casn\'ych pravidel vytv\'a\v r\'i fontinst a v\v sechny pot\v
+% rebn\'e soubory najdete na CTAN.}] defini\v{c}n\'{\i} soubory
+% pro vytvo\v{r}en\'{\i} soubor\r{u} s~definicemi z\'akladn\'{\i}ch
+% PostScriptov\'ych font\r{u}.  Pro vytvo\v{r}en\'{\i} tohoto souboru je
+% nutno udat \meta{fonts}.  Krom\v{e} toho je nutno zadat parametr pro
+% k\'odov\'an\'{\i}, bu\v{d} \texttt{IL2} nebo \texttt{XL2} nebo
+% \texttt{T1}. \item[nhelvet.sty] styl pro definici Helvetica Narrow
+% jako bezpatkov\'eho fontu. Nutno udat \meta{nhelv}.
+% \item[ntimes.sty] varianta \texttt{times.sty} z~\texttt{lx35nfss},
+% av\v{s}ak jako bezpatkov\'y font se pou\v{z}ije Helvetica Narrow.
+% \changes{1.0c}{1995/06/22}{P\v rid\'ana instalace k\'odov\'an\'i T1}
+% \end{description}
+% 
+% \StopEventually{\PrintChanges}
+% 
+% \section{Implementace}
+% Za\v{c}neme jako obvykle identifikac\'{\i} souboru pro \LaTeXe\
+% i~pro u\v{z}ivatele.
+%    \begin{macrocode}
+%<*file>
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesFile{cspsfont}[\filedate\space CsPsFont utility \fileversion]
+\typeout{CsPsFont utility \fileversion}
+\typeout{(C) Z. Wagner, \filedate}
+\typeout{Czech documentation \docdate}
+\edef\restoreAt{\noexpand\catcode`\noexpand\@\the\catcode`\@}
+\makeatletter
+\edef\Cps@filedate{\filedate}
+\edef\Cps@fileversion{\fileversion}
+%    \end{macrocode}
+% 
+% \subsection{Prost\v{r}ed\'{\i} pro p\v{r}\'{\i}m\'y z\'apis do souboru}
+% Tuto \v{c}\'ast nap\'{\i}\v{s}eme hned na za\v{c}\'atku, proto\v{z}e
+% je nejjednodu\v{s}\v{s}\'{\i}.  Pou\v{z}ijeme k~tomu
+% \texttt{verbatim.sty} od Rainera Sch\"opfa.
+%    \begin{macrocode}
+\RequirePackage{verbatim}
+%    \end{macrocode}
+% 
+% \begin{macro}{\PkgWrite}
+% \begin{macro}{\exclam}
+% \changes{1.0d}{1995/12/02}{P\v{r}id\'an a o\v{s}et\v{r}en
+% \texttt{\protect\bslash protect}}
+% Proti p\v{r}\'{\i}kladu uveden\'emu v~dokumentaci v\'y\v{s}e
+% zm\'{\i}n\v{e}n\'eho stylu m\'ame \'ukol zjednodu\v{s}en t\'{\i}m,
+% \v{z}e ve\v{s}ker\'e zpracov\'an\'{\i} prob\'{\i}h\'a ve
+% vertik\'aln\'{\i}m re\v{z}imu a~v\'ystupn\'{\i} soubor je ji\v{z}
+% otev\v{r}en.  Naproti tomu se ov\v{s}em mus\'{\i}me postarat
+% o~zm\v{e}nu kategorie vyk\v{r}i\v{c}n\'{\i}ku a~definici makra
+% |\exclam|.
+%    \begin{macrocode}
+\def\PkgWrite{%
+  \let\do\@makeother\dospecials
+  \def\exclam{!}
+  \catcode`\^^M\active
+  \catcode`\!0
+  \def\verbatim@processline{{%
+    \let\protect\@unexpandable@noexpand
+    \edef\Cps@line{\the\verbatim@line}% expanduj v\v{s}e
+    \immediate\write\Cps@Pkg@Write{\Cps@line}}}%
+  \verbatim@start}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% 
+% \begin{macro}{\endPkgWrite}
+% Ukon\v{c}en\'{\i} nevy\v{z}aduje v\r{u}bec nic.
+%    \begin{macrocode}
+\let\endPkgWrite\relax
+%    \end{macrocode}
+% \end{macro}
+% 
+% \subsection{Glob\'aln\'{\i} p\v{r}\'{\i}kazy}
+% \begin{macro}{\Author}
+% \changes{1.0d}{1995/12/02}{Zru\v{s}ena expanze}
+% Zde si ulo\v{z}\'{\i}me jm\'eno autora pro dal\v{s}\'{\i}
+% pou\v{z}it\'{\i}.
+%    \begin{macrocode}
+\def\Author{\def\Cps@author}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Comment}
+% Analogicky nalo\v{z}\'{\i}me i~s~koment\'a\v{r}em.
+%    \begin{macrocode}
+\def\Comment#1{\def\Cps@comment{\sp #1}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\FontPath}
+% Toto makro ulo\v{z}\'{\i} jm\'eno adres\'a\v{r}e, v~n\v{e}m\v{z}
+% jsou metriky font\r{u}.  Jm\'eno mus\'{\i} b\'yt ukon\v{c}eno
+% lom\'{\i}tkem.  Testov\'an\'{\i} posledn\'{\i}ho znaku nen\'{\i}
+% trivi\'aln\'{\i}, ale m\'ame jinou mo\v{z}nost kontroly.
+% Vytvo\v{r}\'{\i}me fiktivn\'{\i} jm\'eno souboru stejn\'ym
+% zp\r{u}sobem, jak\'y budeme pou\v{z}\'{\i}vat pozd\v{e}ji, a~pak
+% jej nech\'ame rozebrat na jednotliv\'e \v{c}\'asti.  Potom
+% ov\v{e}\v{r}\'{\i}me, zda se shoduj\'{\i} s~p\r{u}vodn\'{\i}mi
+% stavebn\'{\i}mi kameny.
+%    \begin{macrocode}
+\def\FontPath#1{%
+  \edef\Cps@fontpath{#1}%
+  \def\ZW@tempa{name}%
+  \def\ZW@tempb{.ext}%
+  \filename@parse{\Cps@fontpath\ZW@tempa\ZW@tempb}%
+  \ifx\filename@area\Cps@fontpath
+  \else
+    \Wr@ngPathErr
+  \fi}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Wr@ngPathErr}
+% T\'{\i}mto makrem budeme ps\'at chybovou zpr\'avu.
+%    \begin{macrocode}
+\def\Wr@ngPathErr{%
+  \errhelp{No help available, read the documentation!}%
+  \errmessage{The path name should end with a~slash}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \subsection{Prost\v{r}ed\'{\i} pro tvorbu definice fontu}
+% \begin{macro}{\fd}
+% \changes{1.0d}{1995/12/02}{P\v{r}id\'any mezery pomoc\'i 
+% \texttt{\protect\bslash sp}}
+% Toto makro otev\v{r}e v\'ystupn\'{\i} soubor.  Vynuluje
+% p\v{r}ep\'{\i}na\v{c} pro signalizaci, zda se maj\'{\i}
+% zpracov\'avat parametry a~zap\'{\i}\v{s}e \'uvodn\'{\i}
+% p\v{r}\'{\i}kazy.  K\'od a~rodinu mus\'{\i}me uschovat pro
+% pozd\v{e}j\v{s}\'{\i} pou\v{z}it\'{\i}.
+%    \begin{macrocode}
+\def\fd#1#2{\immediate\openout\Cps@Pkg@Write#1#2.fd \relax
+  \typeout{Generating <#1#2.fd>}
+  \def\Cps@enc{#1}
+  \def\Cps@fam{#2}
+  \def\protect{\noexpand}
+  \immediate\write\Cps@Pkg@Write
+    {\string\ProvidesFile
+      {#1#2.fd}[\number\year/\two@digits{\month}/\two@digits{\day}%
+      \Cps@comment]}
+  \@ifundefined{Cps@comment}{}{%
+   \ifx\Cps@comment\empty
+   \else
+    \immediate\write\Cps@Pkg@Write{\string\typeout{\Cps@comment}}%
+    \@ifundefined{Cps@author}{}{%
+     \ifx\Cps@author\empty
+     \else
+      \immediate\write\Cps@Pkg@Write
+       {\string\typeout
+        {(C)\sp \Cps@author,
+          \number\year/\two@digits{\month}/\two@digits{\day}}}%
+     \fi
+    }%
+   \fi
+  }%
+  \immediate\write\Cps@Pkg@Write
+    {\string\typeout{Created\sp by\sp CsPsFont\sp utility\sp \Cps@fileversion\sp
+      (C)\sp Z.\sp Wagner,\sp \Cps@filedate}}\let\protect\relax}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\endfd}
+% Konec prost\v{r}ed\'{\i} je velmi jednoduch\'y.
+%    \begin{macrocode}
+\def\endfd{%
+  \immediate\closeout\Cps@Pkg@Write
+  \typeout{End of fd-file}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Cps@Pkg@Write}
+% Na z\'av\v{e}r t\'eto \v{c}\'asti si alokujeme pot\v{r}ebnou
+% prom\v{e}nnou.
+%    \begin{macrocode}
+\newwrite\Cps@Pkg@Write
+%    \end{macrocode}
+% \end{macro}
+% 
+% \subsection{Pomocn\'a makra}
+% V~dal\v{s}\'{\i} \v{c}\'asti budeme pot\v{r}ebovat \v{r}adu maker.
+% Definujeme si je zde, abychom se pozd\v{e}ji nemuseli zdr\v{z}ovat
+% popisem jejich funkce.
+% 
+% \begin{macro}{\sp}
+% \changes{1.0d}{1995/12/02}{Nov\'e makro}
+% Prvn\'i makro n\'am umo\v{z}n\'i z\'apis mezer.
+%    \begin{macrocode}
+\def\sp{\protect\space}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Wr@ngEnvErr}
+% P\v{r}i popisu u\v{z}ivatelsk\'ych p\v{r}\'{\i}kaz\r{u} jsme uvedli,
+% \v{z}e mnoh\'e z~nich lze pou\v{z}\'{\i}t pouze v~prost\v{r}ed\'{\i}
+% \meta{fontdecl}.  Bude-li p\v{r}\'{\i}kaz pou\v{z}it mimo toto
+% prost\v{r}ed\'{\i}, chceme zobrazit chybovou zpr\'avu.
+%    \begin{macrocode}
+\def\Wr@ngEnvErr{%
+  \errhelp{Some macros can only be used
+    inside the <fontdecl> environment.^^J%
+    The macro at the end of the top line is one of them.}%
+  \errmessage{This is not valid outside <fontdecl>}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% Nyn\'{\i} si nastav\'{\i}me n\v{e}kolik maker jako pojistky. Skute\v{c}n\'e
+% definice p\v{r}ijdou pozd\v{e}ji.
+%    \begin{macrocode}
+\let\Cps@IgnoreSpaces\Wr@ngEnvErr
+\let\FamilySetup\Wr@ngEnvErr
+\let\ShapeSetup\Wr@ngEnvErr
+%    \end{macrocode}
+% 
+% \begin{macro}{\Cps@RestoreSpaces}
+% Toto makro obnov\'{\i} p\r{u}vodn\'{\i} kategorii mezery.
+%    \begin{macrocode}
+\def\Cps@RestoreSpaces{\catcode`\ =10 }
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Cps@GetParams}
+% Toto makro p\v{r}iprav\'{\i} v\v{s}e pro \v{c}ten\'{\i} parametru.
+%    \begin{macrocode}
+\def\Cps@GetParams{\Cps@IgnoreSpaces \Cps@XGetParams}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Cps@XGetParams}
+% Nyn\'{\i} p\v{r}e\v{c}teme parametr ukon\v{c}en\'y te\v{c}kou,
+% obnov\'{\i}me v\'yznam mezery a~zavol\'ame pokra\v{c}ovac\'{\i} makro,
+% kter\'e bude muset u\v{z}ivatel definovat d\v{r}\'{\i}ve ne\v{z}
+% zavol\'a |\Cps@GetParams|.
+%    \begin{macrocode}
+\def\Cps@XGetParams#1.{%
+  \edef\Cps@Params{#1}\Cps@RestoreSpaces \Cps@continue}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Def}
+% Toto makro pou\v{z}ijeme pro definici makra s~komplexn\'{\i}m
+% jm\'enem.  Definici provedeme pouze v~p\v{r}\'{\i}pad\v{e}, \v{z}e
+% makro dosud definov\'ano nebylo.  Je to tedy obdoba
+% |\providecommand|.
+%    \begin{macrocode}
+\def\Def#1{\@ifundefined{#1}{\@namedef{#1}}{\@gobble}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Cps@BS}
+% \begin{macro}{\Cps@LB}
+% \begin{macro}{\Cps@RB}
+% P\v{r}i z\'apisu do souboru budeme pot\v{r}ebovat symboly
+% s~kategori\'{\i}~12.  Zde si vytvo\v{r}\'{\i}me
+% odpov\'{\i}daj\'{\i}c\'{\i} makra.
+%    \begin{macrocode}
+\begingroup
+  \catcode`\]=2
+  \catcode`\[=1
+  \catcode`\|=0
+  \catcode`\}=12
+  \catcode`\{=12
+  \catcode`\\=12
+  |gdef|Cps@LB[{]
+  |gdef|Cps@RB[}]
+  |gdef|Cps@BS[\]
+|endgroup
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% 
+% \subsection{Prost\v{r}ed\'{\i} pro definici fontu}
+% V~t\'eto \v{c}\'asti si nadefinujeme nejen vlastn\'{\i}
+% prost\v{r}ed\'{\i} \meta{fontdecl}, ale i~p\v{r}\'{\i}kazy, kter\'e
+% se pro popis vlastnost\'{\i} fontu pou\v{z}\'{\i}vaj\'{\i}.
+% 
+% \begin{macro}{\fontdecl}
+% Toto makro nepln\'{\i} \v{z}\'adn\'e slo\v{z}it\'e funkce.  Pouze se
+% ulo\v{z}\'{\i} hodnoty parametr\r{u} do pomocn\'ych prom\v{e}nn\'ych
+% a~definuje se v\'y\v{s}e zm\'{\i}n\v{e}n\'e makro.
+%    \begin{macrocode}
+\newcommand\fontdecl[2][m/n]{%
+  \def\Cps@base{#2}%
+  \def\Cps@default{#1}%
+%    \end{macrocode}
+% \begin{macro}{\Cps@IgnoreSpaces}
+% Parametry v~popisn\'ych makrech definuj\'{\i} ur\v{c}it\'e vlastnosti
+% fontu, kter\'e se budou ukl\'adat do pomocn\'ych prom\v{e}nn\'ych
+% a~s~t\v{e}mito hodnotami se bude d\'ale pracovat.  Pokud p\v{r}i
+% jejich zad\'av\'an\'{\i} omylem vlo\v{z}\'{\i}me mezeru, mohl by test
+% selhat a~v\'ysledek by byl \v{s}patn\'y.  Proto budeme
+% pou\v{z}\'{\i}vat makro, kter\'e v~\v{c}\'asti
+% n\'asleduj\'{\i}c\'{\i}ho textu bude ignorovat v\v{s}echny mezery.
+%    \begin{macrocode}
+  \def\Cps@IgnoreSpaces{\catcode`\ =9 }%
+%    \end{macrocode}
+% \end{macro}
+% \changes{1.0b}{1995/05/19}{Nov\'a makra pro setup fontu}
+% \begin{macro}{\FamilySetup}
+% \begin{macro}{\ShapeSetup}
+% Tato makra zah\'aj\'{\i} \v{c}innost pot\v{r}ebnou
+% pro zaznamen\'an\'{\i} maker,
+% kter\'a se maj\'{\i} zapsat do posledn\'{\i}ho parametru p\v{r}\'{\i}kazu
+% |\DeclareFontFamily| resp. |\DeclareFontShape|.
+%    \begin{macrocode}
+  \def\FamilySetup{\get@setup{Cps@FAM}}%
+  \def\ShapeSetup{\Cps@IgnoreSpaces\Shape@Setup}%
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% Nakonec vyp\'{\i}\v{s}eme na termin\'al informaci a~zavol\'ame makro,
+% kter\'e p\v{r}e\v{c}te suffix.
+%    \begin{macrocode}
+  \typeout{Declaring font \Cps@enc/\Cps@fam}\Cps@scan@suffix}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Cps@scan@suffix}
+% Toto makro se definuje velmi jednodu\v{s}e a~snad nevy\v{z}aduje
+% koment\'a\v{r}.
+%    \begin{macrocode}
+\newcommand\Cps@scan@suffix[1][]{\edef\Cps@sfx{#1}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\BasBX}
+% \begin{macro}{\BXasB}
+% Tato makra pouze m\v{e}n\'{\i} p\v{r}ep\'{\i}na\v{c}e.
+%    \begin{macrocode}
+\def\BasBX{\BasBX@true \BXasB@false}
+\def\BXasB{\BXasB@true \BasBX@false}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% 
+% \begin{macro}{\ifBasBX@}
+% \begin{macro}{\ifBXasB@}
+% P\v{r}\'{\i}slu\v{s}n\'e p\v{r}ep\'{\i}na\v{c}e si mus\'{\i}me
+% alokovat.
+%    \begin{macrocode}
+\newif\ifBasBX@  \newif\ifBXasB@
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% 
+% \begin{macro}{\Shape@Setup}
+% V~makru |\ShapeSetup| jsme nastavili ignorov\'an\'{\i}
+% mezer, \v{c}\'{\i}m\v{z}
+% jsme zajistili bezpe\v{c}n\'e na\v{c}ten\'{\i} \uv{font series} a~\uv{font
+% shape}. Ne\v{z} budeme pokra\v{c}ovat, mus\'{\i}me v\'yznam mezery obnovit.
+%    \begin{macrocode}
+\def\Shape@Setup#1{\Cps@RestoreSpaces \get@setup{Cps@#1STP}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\get@setup}
+% Zde jako parametr dostaneme jm\'eno makra (bez \'uvodn\'{\i}ho
+% zp\v{e}tn\'eho lom\'{\i}tka), kter\'e m\'ame definovat, pokud je\v{s}t\v{e}
+% definov\'ano nen\'{\i}. Proto si za\v{c}\'atek definice schov\'ame do
+% |\Cps@make@def|. Obsah ale budeme pozd\v{e}ji zapisovat
+% \uv{verbatim}, proto mus\'{\i}me zm\v{e}nit kategorie v\v{s}ech
+% speci\'aln\'{\i}ch znak\accent23u. To mus\'{\i}me
+% samoz\v{r}ejm\v{e} prov\'est ve skupin\v{e},
+% jinak by nastal zmatek.
+%    \begin{macrocode}
+\def\get@setup#1{%
+  \def\Cps@make@def{\Def{#1}}\begingroup
+    \@sanitize \scan@setup}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\scan@setup}
+% Nyn\'{\i} zb\'yv\'a jen uzav\v{r}\'{\i}t skupinu,
+% aby se obnovily p\accent23uvodn\'{\i}
+% kategorie, a~prov\'est definici. T\v{e}lo ddefinice zde m\'ame jako
+% parametr.
+%    \begin{macrocode}
+\def\scan@setup#1{\endgroup \Cps@make@def{#1}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\MakeSeries}
+% Toto makro vytvo\v{r}\'{\i} seznam \uv{font series}, kter\'e se
+% maj\'{\i} definovat.
+%    \begin{macrocode}
+\def\MakeSeries{\Cps@IgnoreSpaces \M@keSeries}
+\def\M@keSeries#1{\providecommand\Series@List{#1}\Cps@RestoreSpaces}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\MakeShape}
+% Zde analogicky vytv\'a\v{r}\'{\i}me seznam \uv{font shape}.
+%    \begin{macrocode}
+\def\MakeShape{\Cps@IgnoreSpaces \M@keShape}
+\def\M@keShape#1{\providecommand\Shape@List{#1}\Cps@RestoreSpaces}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\FontDef}
+% Nyn\'{\i} si p\v{r}iprav\'{\i}me definici jm\'ena fontu. Hlavn\'{\i}
+% makro je zcela jednoduch\'e.
+%    \begin{macrocode}
+\def\FontDef{\let\Cps@continue\Cps@FontDef \Cps@GetParams}
+%    \end{macrocode}
+% T\'{\i}m m\'ame parametry p\v{r}ipraveny v~pomocn\'e prom\v{e}nn\'e.
+% Mus\'{\i}me si tedy nadefinovat
+% pomocn\'e makro, kter\'e je rozebere a~provede po\v{z}adovanou definici.
+%    \begin{macrocode}
+\def\Cps@FontDef{%
+  \def\Cps@@FD##1/##2=##3.{\Def{Cps@FD@##1/##2}{##3}}%
+  \expandafter\Cps@@FD\Cps@Params.}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\FontSub}
+% Stejn\'ym zp\r{u}sobem budeme \v{c}\'{\i}st i~p\v{r}\'{\i}kazy
+% pro substituce.
+%    \begin{macrocode}
+\def\FontSub{\let\Cps@continue\Cps@FontSub \Cps@GetParams}
+\def\Cps@FontSub{%
+  \def\Cps@@FS##1/##2=##3.{\Def{Cps@FS@##1/##2}{##3}}%
+  \expandafter\Cps@@FS\Cps@Params.}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\SeriesSuffix}
+% Toto makro je podobn\'e jako p\v{r}edchoz\'{\i}, jen po\v{c}et
+% parametr\r{u} je odli\v{s}n\'y.
+%    \begin{macrocode}
+\def\SeriesSuffix{\let\Cps@continue\Cps@SeriesSuffix \Cps@GetParams}
+\def\Cps@SeriesSuffix{%
+  \def\Cps@@Ser##1/##2.{\Def{Cps@ser@##1}{##2}}%
+  \expandafter\Cps@@Ser\Cps@Params.}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\ShapeSuffix}
+% I~zde postupujeme obdobn\v{e}.
+%    \begin{macrocode}
+\def\ShapeSuffix{\let\Cps@continue\Cps@ShapeSuffix \Cps@GetParams}
+\def\Cps@ShapeSuffix{%
+  \def\Cps@@Sh##1/##2.{\Def{Cps@sh@##1}{##2}}%
+  \expandafter\Cps@@Sh\Cps@Params.}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\SeriesAlias}
+% Alias vy\v{z}aduje stejn\'y typ zpracov\'an\'{\i}.
+%    \begin{macrocode}
+\def\SeriesAlias{\let\Cps@continue\Cps@SeriesAlias \Cps@GetParams}
+\def\Cps@SeriesAlias{%
+  \def\Cps@@seral##1/##2.{\Def{Cps@seral@##1}{##2}}%
+  \expandafter\Cps@@seral\Cps@Params.}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\ShapeAlias}
+% Zde m\'ame posledn\'{\i} makro ze s\'erie.
+%    \begin{macrocode}
+\def\ShapeAlias{\let\Cps@continue\Cps@ShapeAlias \Cps@GetParams}
+\def\Cps@ShapeAlias{%
+  \def\Cps@@shal##1/##2.{\Def{Cps@shal@##1}{##2}}%
+  \expandafter\Cps@@shal\Cps@Params.}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\endfontdecl}
+% Kone\v{c}n\v{e} m\'ame p\v{r}ipraveno v\v{s}e, abychom si mohli
+% definovat vlastn\'{\i} v\'ykonn\'y p\v{r}\'{\i}kaz.  Jak bylo
+% d\v{r}\'{\i}ve uvedeno, rozpad\'a se do p\v{e}ti
+% jednodu\v{s}\v{s}\'{\i}ch \v{c}innost\'{\i}.
+%    \begin{macrocode}
+\def\endfontdecl{\Cps@Commence
+  \Cps@FirstPass \Cps@bxb \Cps@SecondPass \Cps@ThirdPass}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Cps@Commence}
+% V~\'uvodu nastav\'{\i}me standardn\'{\i} definice a~potom
+% zap\'{\i}\v{s}eme definici rodiny.
+% \changes{1.0b}{1995/05/19}{Dopln\v{e}n \protect\uv{family
+% setup}}
+%    \begin{macrocode}
+\def\Cps@Commence{%
+  \MakeSeries{m,b,bx}%
+  \MakeShape{n,sl,it,sc}%
+  \SeriesSuffix m/r.%
+  \SeriesSuffix b/b.%
+  \SeriesSuffix bx/b.%
+  \ShapeSuffix n/.%
+  \ShapeSuffix it/i.%
+  \ShapeSuffix sl/o.%
+  \ShapeSuffix sc/c.%
+  \SeriesAlias b/bx.%
+  \SeriesAlias bx/b.%
+  \ShapeAlias sl/it.%
+  \ShapeAlias it/sl.%
+  \immediate\write\Cps@Pkg@Write
+    {\string\DeclareFontFamily{\Cps@enc}{\Cps@fam}%
+     {\@ifundefined{Cps@FAM}{}{\Cps@FAM}}}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\@ifNoFont}
+% Toto makro testuje, zda existuje libovoln\'y z\'aznam pro font,
+% jeho\v{z} vlastnosti jsou ud\'any parametrem ukon\v{c}en\'ym
+% te\v{c}kou.  Pokud se \v{z}\'adn\'y z\'aznam nenajde, provede se
+% p\v{r}\'{\i}kaz dan\'y jako druh\'y parametr, v~opa\v{c}n\'em
+% p\v{r}\'{\i}pad\v{e} se provede p\v{r}\'{\i}kaz specifikovan\'y
+% t\v{r}et\'{\i}m parametrem.
+%    \begin{macrocode}
+\def\@ifNoFont#1.{\@ifundefined{Cps@FD@#1}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\@ifNoSub}
+% Analogicky budeme testovat, zda nen\'{\i} definov\'ana substituce.
+%    \begin{macrocode}
+\def\@ifNoSub#1.{\@ifundefined{Cps@FS@#1}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Cps@FontMade}
+% Pokud se poda\v{r}\'{\i} naj\'{\i}t font, nadefinujeme si
+% odpov\'{\i}daj\'{\i}c\'{\i} makro, do n\v{e}ho\v{z}
+% vlo\v{z}\'{\i}me jm\'eno souboru.  Nav\'{\i}c zap\'{\i}\v{s}eme
+% informaci do log-souboru i~na obrazovku.
+%    \begin{macrocode}
+\def\Cps@FontMade#1=#2.{\expandafter\edef\csname Made@#1\endcsname{#2}%
+  \typeout{#1=#2}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Cps@FontSubst}
+% Obdobn\v{e} nalo\v{z}\'{\i}me i~s~\'usp\v{e}\v{s}nou substituc\'{\i}.
+% Do makra v\v{s}ak vlo\v{z}\'{\i}me symbolick\'y
+% popis n\'ahradn\'{\i}ho fontu.
+%    \begin{macrocode}
+\def\Cps@FontSubst#1=#2.{\expandafter\edef\csname Subst@#1\endcsname{#2}%
+  \typeout{#1->#2}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\@ifIgnoreFont}
+% T\'{\i}mto makrem testujeme, zda se m\'a font ignorovat, tj.
+% zda se v~p\v{r}\'{\i}kazu |\FontDef| zadalo pr\'azdn\'e jm\'eno
+% souboru.  V~tom p\v{r}\'{\i}pad\v{e} se provede p\v{r}\'{\i}kaz
+% v~druh\'em parametru, jinak se vykon\'a p\v{r}\'{\i}kaz dan\'y
+% t\v{r}et\'{\i}m parametrem.
+%    \begin{macrocode}
+\def\@ifIgnoreFont#1.#2#3{%
+  \edef\ZW@tempa{\@nameuse{Cps@FD@#1}}%
+  \ifx\ZW@tempa\empty \def\ZW@tempa{#2}\else \def\ZW@tempa{#3}\fi
+  \ZW@tempa}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\@ifFontMade}
+% Analogicky zde prov\'ad\'{\i}me test, zda je font vytvo\v{r}en.
+%    \begin{macrocode}
+\def\@ifFontMade#1.#2#3{\@ifundefined{Made@#1}{#3}{#2}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\@ifFontSubst}
+% Tento test zji\v{s}\v{t}uje, zda pro font byla vytvo\v{r}ena
+% substituce.
+%    \begin{macrocode}
+\def\@ifFontSubst#1.#2#3{\@ifundefined{Subst@#1}{#3}{#2}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\@ifFontExists}
+% Posledn\'{\i} z~pomocn\'ych maker p\v{r}ep\'{\i}n\'a dv\v{e}
+% r\r{u}zn\'e \v{c}innosti podle toho, zda font
+% dan\'eho jm\'ena existuje.
+%    \begin{macrocode}
+\def\@ifFontExists#1.{%
+  \edef\ZW@tempa{\Cps@fontpath#1.tfm}\IfFileExists{\ZW@tempa}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Cps@FirstPass}
+% V~prvn\'{\i}m pr\r{u}chodu bereme v~\'uvahu pouze fonty
+% definovan\'e p\v{r}\'{\i}kazy |\FontDef|
+% a~standardn\'{\i}mi suffixy.
+%    \begin{macrocode}
+\def\Cps@FirstPass{%
+ \@for\s@ries:=\Series@List\do{%
+  \@for\sh@pe:=\Shape@List\do{\Cps@First@Pass}}}
+\def\Cps@First@Pass{%
+  \edef\Cps@font{\s@ries/\sh@pe}%
+  \expandafter\@ifNoFont\Cps@font.%
+   {\edef\f@name
+     {\Cps@base\@nameuse{Cps@ser@\s@ries}\@nameuse{Cps@sh@\sh@pe}\Cps@sfx}}%
+   {\expandafter\@ifIgnoreFont\Cps@font.%
+     {\let\f@name\relax}%
+     {\edef\f@name{\@nameuse{Cps@FD@\Cps@font}}}}%
+  \@ifundefined{f@name}{}{%
+    \@ifFontExists\f@name.%
+      {\Cps@FontMade\Cps@font=\f@name.\Cps@WriteFdef}{}}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Cps@WriteFdef}
+% Toto makro zap\'{\i}\v{s}e definici dan\'eho fontu.
+% \changes{1.0b}{1995/05/19}{Dopln\v{e}n \protect\uv{shape setup}}
+%    \begin{macrocode}
+\def\Cps@WriteFdef{%
+  \immediate\write\Cps@Pkg@Write
+   {\string\DeclareFontShape
+    {\Cps@enc}{\Cps@fam}{\s@ries}{\sh@pe}{<-> \f@name}%
+     {\@ifundefined{Cps@\s@ries/\sh@pe @STP}{}%
+       {\@nameuse{Cps@\s@ries/\sh@pe @STP}}}}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Cps@bxb}
+% Nyn\'{\i} zkus\'{\i}me prov\'est n\'ahradu b/bx, ov\v{s}em
+% pouze v~p\v{r}\'{\i}pad\v{e}, \v{z}e font dosud nebyl
+% vytvo\v{r}en ani nebyl potla\v{c}en.
+%    \begin{macrocode}
+\def\Cps@bxb{%
+  \ifBasBX@
+    \@for\sh@pe:=\Shape@List\do{\Cps@repl{b}{bx}}%
+  \fi
+  \ifBXasB@
+    \@for\sh@pe:=\Shape@List\do{\Cps@repl{bx}{b}}%
+  \fi}
+\def\Cps@repl#1#2{%
+  \edef\Cps@font{#1/\sh@pe}%
+  \edef\s@ries{#1}%
+  \expandafter\@ifFontMade\Cps@font.{}{%
+    \expandafter\@ifNoFont\Cps@font.{%
+      \edef\tri@lf@nt{#2/\sh@pe}%
+      \expandafter\@ifFontMade\tri@lf@nt.%
+        {\edef\f@name{\@nameuse{Made@\tri@lf@nt}}%
+          \Cps@FontMade\Cps@font=\f@name.\Cps@WriteFdef}%
+        {}%
+      }%
+      {}%
+    }}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Cps@SecondPass}
+% V~druh\'em pr\r{u}chodu se sna\v{z}\'{\i}me vytvo\v{r}it fonty
+% pomoc\'{\i} alias\r{u}.  Bereme v~\'uvahu pouze fonty, kter\'e
+% je\v{s}t\v{e} nejsou hotovy a~jejich\v{z} jm\'ena nebyla
+% vytvo\v{r}ena p\v{r}\'{\i}kazem |\FontDef|.
+%    \begin{macrocode}
+\def\Cps@SecondPass{%
+  \@for\s@ries:=\Series@List\do{%
+    \@for\sh@pe:=\Shape@List\do{\Cps@Second@Pass}}}
+\def\Cps@Second@Pass{%
+  \edef\Cps@font{\s@ries/\sh@pe}%
+  \expandafter\@ifFontMade\Cps@font.{}{%
+    \expandafter\@ifNoFont\Cps@font.{%
+      \expandafter\@ifNoSub\Cps@font.{}%
+      {\edef\f@name{\@nameuse{Cps@FS@\Cps@font}}\Cps@Try@Subst}%
+      \expandafter\@ifFontSubst\Cps@font.{}%
+        {\Cps@TryShape\s@ries.}%
+      \expandafter\@ifFontSubst\Cps@font.{}%
+        {\Cps@TrySeries}%
+    }{}%
+  }}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Cps@Try@Subst}
+% Toto makro dost\'av\'a v~prom\v{e}nn\'e |\f@name| odkaz na font,
+% kter\'y m\'a b\'yt pou\v{z}it pro n\'ahradu.  Pokud byl takov\'y
+% font vytvo\v{r}en, provedeme substituci.  V~substituci nikdy
+% neodkazujeme na font, kter\'y je s\'am substituc\'{\i}.  Na konci
+% makra m\v{e}n\'{\i}me definici |\f@name|, co\v{z} by n\'am
+% pozd\v{e}ji zp\r{u}sobilo pot\'{\i}\v{z}e.  Proto tuto zm\v{e}nu
+% provedeme lok\'aln\v{e}.
+%    \begin{macrocode}
+\def\Cps@Try@Subst{\expandafter
+  \@ifFontMade\f@name.{%
+    \Cps@FontSubst\Cps@font=\f@name.%
+    {\edef\f@name{sub * \f@name}\Cps@WriteFdef}}%
+  {}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Cps@TryShape}
+% Toto makro zkus\'{\i} alternativn\'{\i} \uv{shape}.
+%    \begin{macrocode}
+\def\Cps@TryShape#1.{%
+  \@ifundefined{Cps@shal@\sh@pe}{}%
+  {\edef\f@name{#1/\@nameuse{Cps@shal@\sh@pe}}\Cps@Try@Subst}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Cps@TrySeries}
+% Zde zkus\'{\i}me alternativn\'{\i} \uv{series}.
+%    \begin{macrocode}
+\def\Cps@TrySeries{%
+  \@ifundefined{Cps@seral@\s@ries}{}%
+  {\edef\f@name{\@nameuse{Cps@seral@\s@ries}/\sh@pe}\Cps@Try@Subst
+    \expandafter\@ifFontSubst\Cps@font.{}%
+      {\Cps@TryShape\@nameuse{Cps@seral@\s@ries}.}}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\Cps@ThirdPass}
+% Pokud byl \uv{default} font vytvo\v{r}en (t\v{r}eba
+% i~substituc\'{\i}), provedeme t\v{r}et\'{\i}
+% pr\r{u}chod, kdy se sna\v{z}\'{\i}me nahradit nevytvo\v{r}en\'e
+% fonty.
+%    \begin{macrocode}
+\def\Cps@ThirdPass{%
+  \edef\f@name{\Cps@default}%
+  \expandafter\@ifFontMade\f@name.{}%
+  {\expandafter\@ifFontSubst\f@name.{}{\let\f@name\empty}}%
+  \ifx\f@name\empty
+  \else
+    \@for\s@ries:=\Series@List\do{%
+      \@for\sh@pe:=\Shape@List\do{\Cps@Third@Pass}}%
+   \fi}
+\def\Cps@Third@Pass{%
+  \edef\Cps@font{\s@ries/\sh@pe}%
+  \expandafter\@ifNoFont\Cps@font.{%
+    \expandafter\@ifFontMade\Cps@font.{}{%
+      \expandafter\@ifFontSubst\Cps@font.{}{\Cps@Try@Subst}}}%
+  {}}
+
+\restoreAt
+%</file>
+%    \end{macrocode}
+% \end{macro}
+% 
+% \section{Styly}
+% Zde si vytvo\v{r}\'{\i}me styly, o~nich\v{z} jsme se zm\'{\i}nili
+% v~kapitole~\ref{fonts}.
+%    \begin{macrocode}
+%<*ntimes>
+\renewcommand\rmdefault{ptm}
+\renewcommand\sfdefault{phvn}
+\renewcommand\ttdefault{pcr}
+%</ntimes>
+%<*nhelv>
+\renewcommand\sfdefault{phvn}
+%</nhelv>
+%    \end{macrocode}
+% \catcode`\-=12 \relax
+% 
+% \section{Driver}
+% Zde jsou p\v{r}\'{\i}kazy, kter\'ymi se tiskne dokumentace.
+%    \begin{macrocode}
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage[split]{czech}
+\usepackage{multicol}
+\usepackage{array}
+\RecordChanges
+\CodelineIndex
+\EnableCrossrefs
+^^A \OnlyDescription
+\DoNotIndex{\def,\edef,\gdef,\ifx,\begin,\end,\newcommand,\providecommand}
+\DoNotIndex{\newif,\newwrite,\immediate,\openout,\closeout,\write,\else,\fi}
+\DoNotIndex{\typeout,\string,\noexpand,\relax,\endinput,\let}
+\DoNotIndex{\DoNotIndex,\CodelineIndex,\DocInput,\PrintIndex}
+\DoNotIndex{\EnableCrossrefs,\DisableCrossrefs,\PrintChanges}
+\DoNotIndex{\StopEventually,\Finale,\OnlyDescription}
+\DoNotIndex{\csname,\endcsname,\do,\@for,\@makeother}
+\DoNotIndex{\@gobble,\@ifundefined,\@namedef,\@nameuse,\the,\catcode,\v}
+\DoNotIndex{\usepackage,\RequirePackage,\renewcommand,\space}
+\DoNotIndex{\rmdefault,\sfdefault,\ttdefault,\empty,dospecials}
+\DoNotIndex{\number,\NeedsTeXFormat,\expandafter,\documentclass}
+\DoNotIndex{\input,\IfFileExists,\InputIfFileExists}
+\DoNotIndex{\filename,\filedate,\fileversion,\docdate,\active}
+\DocInput{cspsfont.doc}
+\PrintIndex \Finale
+\end{document}
+%</driver>
+%    \end{macrocode}
+% 
+% Na konec v\v{s}ech soubor\r{u} vlo\v{z}\'{\i}me |\endinput|,
+% aby se ji\v{z} nic nena\v{c}\'{\i}talo.
+%    \begin{macrocode}
+\endinput
+%    \end{macrocode}
+% 
+%% \CharacterTable
+%% {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%% Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%% Digits        \0\1\2\3\4\5\6\7\8\9
+%% Exclamation   \!     Double quote  \"     Hash (number) \#
+%% Dollar        \$     Percent       \%     Ampersand     \&
+%% Acute accent  \'     Left paren    \(     Right paren   \)
+%% Asterisk      \*     Plus          \+     Comma         \,
+%% Minus         \-     Point         \.     Solidus       \/
+%% Colon         \:     Semicolon     \;     Less than     \<
+%% Equals        \=     Greater than  \>     Question mark \?
+%% Commercial at \@     Left bracket  \[     Backslash     \\
+%% Right bracket \]     Circumflex    \^     Underscore    \_
+%% Grave accent  \`     Left brace    \{     Vertical bar  \|
+%% Right brace   \}     Tilde         \~}
+%% 
+

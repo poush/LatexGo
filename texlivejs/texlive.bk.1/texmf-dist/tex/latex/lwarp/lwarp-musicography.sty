@@ -1,0 +1,93 @@
+%%
+%% This is file `lwarp-musicography.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `musicography')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+\LWR@ProvidesPackagePass{musicography}[2018/05/21]
+\RenewDocumentCommand{\musSymbol}{ O{\musFont} m m m m }{%
+\begin{lateximage}%
+{#1\kern#2\raisebox{#3}{#5}\kern#4}%
+\end{lateximage}%
+}
+
+\RenewDocumentCommand{\musStemmedNote}{ m }{%
+\begin{lateximage}%
+\musSymbol{0.05em}{0.5ex}{0.2em}{#1\musStem}%
+\end{lateximage}%
+}
+
+\RenewDocumentCommand{\musFlaggedNote}{ m m }{%
+\begin{lateximage}%
+\musSymbol{0.05em}{0.5ex}{0pt}{#1\musStem}%
+\musSymbol{0pt}{0pt}{0.9em}{#2}%
+\end{lateximage}%
+}
+
+\RenewDocumentCommand{\musDottedNote}{ m }{%
+\begin{lateximage}%
+#1\musDot%
+\end{lateximage}%
+}
+
+\RenewDocumentCommand{\musMeter}{ m m }{%
+\begin{lateximage}*[#1/#2][#1#2]%
+\musStack{#1}{#2}\kern0.05em%
+\end{lateximage}%
+}
+
+\RenewDocumentCommand{\meterCplus}{ m }{%
+\begin{lateximage}*[C#1]%
+    \meterC{}\kern-0.7pt#1%
+\end{lateximage}%
+}
+
+\RenewDocumentCommand{\meterC}{}{%
+\begin{lateximage}*[C]%
+\musSymbolMeter{\symbol{83}}%
+\end{lateximage}%
+}
+
+\RenewDocumentCommand{\meterCutC}{}{%
+\begin{lateximage}*[C|]%
+\musSymbolMeter{\symbol{82}}%
+\end{lateximage}%
+}
+
+\RenewDocumentCommand{\meterCThreeTwo}{}{%
+\begin{lateximage}*[C3/2]%
+\meterCplus{\musStack{3}{2}}%
+\end{lateximage}%
+}
+
+\RenewDocumentCommand{\musFlat}       {}{\HTMLunicode{266D}}
+\RenewDocumentCommand{\musDoubleFlat} {}{\HTMLunicode{1D12B}}
+\RenewDocumentCommand{\musSharp}      {}{\HTMLunicode{266F}}
+\RenewDocumentCommand{\musDoubleSharp}{}{\HTMLunicode{1D12A}}
+\RenewDocumentCommand{\musNatural}    {}{\HTMLunicode{266E}}
+
+\RenewDocumentCommand{\musWhole}{}{\HTMLunicode{1D15D}}
+\RenewDocumentCommand{\musHalf}{}{\HTMLunicode{1D15E}}
+\RenewDocumentCommand{\musQuarter}{}{\HTMLunicode{1D15F}}
+\RenewDocumentCommand{\musEighth}{}{\HTMLunicode{1D160}}
+\RenewDocumentCommand{\musSixteenth}{}{\HTMLunicode{1D161}}
+
+\RenewDocumentCommand{\musWholeDotted}{}{\HTMLunicode{1D15D}\HTMLunicode{1D16D}}
+\RenewDocumentCommand{\musHalfDotted}{}{\HTMLunicode{1D15E}\HTMLunicode{1D16D}}
+\RenewDocumentCommand{\musQuarterDotted}{}{\HTMLunicode{1D15F}\HTMLunicode{1D16D}}
+\RenewDocumentCommand{\musEighthDotted}{}{\HTMLunicode{1D160}\HTMLunicode{1D16D}}
+\RenewDocumentCommand{\musSixteenthDotted}{}{\HTMLunicode{1D161}\HTMLunicode{1D16D}}
+\endinput
+%%
+%% End of file `lwarp-musicography.sty'.

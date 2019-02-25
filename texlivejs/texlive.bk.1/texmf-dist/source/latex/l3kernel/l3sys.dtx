@@ -1,0 +1,303 @@
+% \iffalse meta-comment
+%
+%% File: l3sys.dtx
+%
+% Copyright (C) 2015-2019 The LaTeX3 Project
+%
+% It may be distributed and/or modified under the conditions of the
+% LaTeX Project Public License (LPPL), either version 1.3c of this
+% license or (at your option) any later version.  The latest version
+% of this license is in the file
+%
+%    https://www.latex-project.org/lppl.txt
+%
+% This file is part of the "l3kernel bundle" (The Work in LPPL)
+% and all files in that bundle must be distributed together.
+%
+% -----------------------------------------------------------------------
+%
+% The development version of the bundle can be found at
+%
+%    https://github.com/latex3/latex3
+%
+% for those people who are interested.
+%
+%<*driver>
+\documentclass[full,kernel]{l3doc}
+\begin{document}
+  \DocInput{\jobname.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \title{^^A
+%   The \pkg{l3sys} package: System/runtime functions^^A
+% }
+%
+% \author{^^A
+%  The \LaTeX3 Project\thanks
+%    {^^A
+%      E-mail:
+%        \href{mailto:latex-team@latex-project.org}
+%          {latex-team@latex-project.org}^^A
+%    }^^A
+% }
+%
+% \date{Released 2019-02-15}
+%
+% \maketitle
+%
+% \begin{documentation}
+%
+% \section{The name of the job}
+%
+% \begin{variable}[added = 2015-09-19]{\c_sys_jobname_str}
+%   Constant that gets the \enquote{job name} assigned when \TeX{} starts.
+%   \begin{texnote}
+%     This copies the contents of the primitive \tn{jobname}. It is a constant
+%     that is set by \TeX{} and should not be overwritten by the package.
+%   \end{texnote}
+% \end{variable}
+%
+% \section{Date and time}
+%
+% \begin{variable}[added = 2015-09-22]
+%   {
+%     \c_sys_minute_int,
+%     \c_sys_hour_int,
+%     \c_sys_day_int,
+%     \c_sys_month_int,
+%     \c_sys_year_int,
+%   }
+%   The date and time at which the current job was started: these are
+%   all reported as integers.
+%   \begin{texnote}
+%     Whilst the underlying primitives can be altered by the user, this
+%     interface to the time and date is intended to be the \enquote{real}
+%     values.
+%   \end{texnote}
+% \end{variable}
+%
+% \section{Engine}
+%
+% \begin{function}[added = 2015-09-07, EXP, pTF]
+%   {
+%     \sys_if_engine_luatex:,
+%     \sys_if_engine_pdftex:,
+%     \sys_if_engine_ptex:  ,
+%     \sys_if_engine_uptex: ,
+%     \sys_if_engine_xetex:
+%   }
+%   \begin{syntax}
+%     \cs{sys_if_engine_pdftex:TF} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Conditionals which allow engine-specific code to be used. The names
+%   follow naturally from those of the engine binaries: note that the
+%   |(u)ptex| tests are for \epTeX{} and \eupTeX{} as \pkg{expl3} requires
+%   the \eTeX{} extensions. Each conditional is true for
+%   \emph{exactly one} supported engine. In particular,
+%   |\sys_if_engine_ptex_p:| is true for \epTeX{} but false for \eupTeX{}.
+% \end{function}
+%
+% \begin{variable}[added = 2015-09-19]{\c_sys_engine_str}
+%   The current engine given as a lower case string: one of
+%   |luatex|, |pdftex|, |ptex|, |uptex| or |xetex|.
+% \end{variable}
+%
+% \section{Output format}
+%
+% \begin{function}[added = 2015-09-19, EXP, pTF]
+%   {
+%     \sys_if_output_dvi:,
+%     \sys_if_output_pdf:
+%   }
+%   \begin{syntax}
+%     \cs{sys_if_output_dvi:TF} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Conditionals which give the current output mode the \TeX{} run is
+%   operating in. This is always one of two outcomes, DVI mode or
+%   PDF mode. The two sets of conditionals are thus complementary and
+%   are both provided to allow the programmer to emphasise the most
+%   appropriate case.
+% \end{function}
+%
+% \begin{variable}[added = 2015-09-19]{\c_sys_output_str}
+%   The current output mode given as a lower case string: one of
+%   |dvi| or |pdf|.
+% \end{variable}
+%
+% \end{documentation}
+%
+% \begin{implementation}
+%
+% \section{\pkg{l3sys} implementation}
+%
+%    \begin{macrocode}
+%<*initex|package>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%<@@=sys>
+%    \end{macrocode}
+%
+% \subsection{The name of the job}
+%
+% \begin{variable}{\c_sys_jobname_str}
+%   Inherited from the \LaTeX3 name for the primitive: this needs to
+%   actually contain the text of the job name rather than the name of
+%   the primitive, of course.
+%    \begin{macrocode}
+%<*initex>
+\tex_everyjob:D \exp_after:wN
+  {
+    \tex_the:D \tex_everyjob:D
+    \str_const:Nx \c_sys_jobname_str { \tex_jobname:D }
+  }
+%</initex>
+%<*package>
+\str_const:Nx \c_sys_jobname_str { \tex_jobname:D }
+%</package>
+%    \end{macrocode}
+% \end{variable}
+%
+% \subsection{Time and date}
+%
+% \begin{variable}
+%   {
+%     \c_sys_minute_int,
+%     \c_sys_hour_int,
+%     \c_sys_day_int,
+%     \c_sys_month_int,
+%     \c_sys_year_int,
+%   }
+%   Copies of the information provided by \TeX{}.
+%    \begin{macrocode}
+%<*initex>
+\int_const:Nn \c_sys_minute_int
+  { \int_mod:nn { \tex_time:D } { 60 } }
+\int_const:Nn \c_sys_hour_int
+  { \int_div_truncate:nn { \tex_time:D } { 60 } }
+\int_const:Nn \c_sys_day_int   { \tex_day:D }
+\int_const:Nn \c_sys_month_int { \tex_month:D }
+\int_const:Nn \c_sys_year_int  { \tex_year:D }
+%</initex>
+%<*package>
+\int_const:Nn \c_sys_minute_int
+  { \int_mod:nn { \tex_primitive:D \time } { 60 } }
+\int_const:Nn \c_sys_hour_int
+  { \int_div_truncate:nn { \tex_primitive:D \time } { 60 } }
+\int_const:Nn \c_sys_day_int   { \tex_primitive:D \day }
+\int_const:Nn \c_sys_month_int { \tex_primitive:D \month }
+\int_const:Nn \c_sys_year_int  { \tex_primitive:D \year }
+%</package>
+%    \end{macrocode}
+% \end{variable}
+%
+% \subsection{Detecting the engine}
+%
+% \begin{macro}{\@@_const:nn}
+%   Set the |T|, |F|, |TF|, |p| forms of |#1| to be constants equal to
+%   the result of evaluating the boolean expression~|#2|.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_const:nn #1#2
+  {
+    \bool_if:nTF {#2}
+      {
+        \cs_new_eq:cN { #1 :T }  \use:n
+        \cs_new_eq:cN { #1 :F }  \use_none:n
+        \cs_new_eq:cN { #1 :TF } \use_i:nn
+        \cs_new_eq:cN { #1 _p: } \c_true_bool
+      }
+      {
+        \cs_new_eq:cN { #1 :T }  \use_none:n
+        \cs_new_eq:cN { #1 :F }  \use:n
+        \cs_new_eq:cN { #1 :TF } \use_ii:nn
+        \cs_new_eq:cN { #1 _p: } \c_false_bool
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[pTF, EXP]
+%   {
+%     \sys_if_engine_luatex:,
+%     \sys_if_engine_pdftex:,
+%     \sys_if_engine_ptex:,
+%     \sys_if_engine_uptex:,
+%     \sys_if_engine_xetex:
+%   }
+% \begin{variable}{\c_sys_engine_str}
+%   Set up the engine tests on the basis exactly one test should be true.
+%   Mainly a case of looking for the appropriate marker primitive. For
+%   \upTeX{}, there is a complexity in that setting |-kanji-internal=sjis|
+%   or |-kanji-internal=euc| effective makes it more like \pTeX{}. In those
+%   cases we therefore report \pTeX{} rather than \upTeX{}.
+%    \begin{macrocode}
+\str_const:Nx \c_sys_engine_str
+  {
+    \cs_if_exist:NT \tex_luatexversion:D { luatex }
+    \cs_if_exist:NT \tex_pdftexversion:D { pdftex }
+    \cs_if_exist:NT \tex_kanjiskip:D
+      {
+        \bool_lazy_and:nnTF
+          { \cs_if_exist_p:N \tex_disablecjktoken:D }
+          { \int_compare_p:nNn { \tex_jis:D "2121 } = { "3000 } }
+          { uptex }
+          { ptex }
+      }
+    \cs_if_exist:NT \tex_XeTeXversion:D { xetex }
+  }
+\tl_map_inline:nn { { luatex } { pdftex } { ptex } { uptex } { xetex } }
+  {
+    \@@_const:nn { sys_if_engine_ #1 }
+      { \str_if_eq_p:Vn \c_sys_engine_str {#1} }
+  }
+%    \end{macrocode}
+% \end{variable}
+% \end{macro}
+%
+% \subsection{Detecting the output}
+%
+% \begin{macro}[pTF, EXP]
+%   {
+%     \sys_if_output_dvi:,
+%     \sys_if_output_pdf:
+%   }
+% \begin{variable}{\c_sys_output_str}
+%   This is a simple enough concept: the two views here are complementary.
+%    \begin{macrocode}
+\str_const:Nx \c_sys_output_str
+  {
+    \int_compare:nNnTF
+      { \cs_if_exist_use:NF \tex_pdfoutput:D { 0 } } > { 0 }
+      { pdf }
+      { dvi }
+  }
+\@@_const:nn { sys_if_output_dvi }
+  { \str_if_eq_p:Vn \c_sys_output_str { dvi } }
+\@@_const:nn { sys_if_output_pdf }
+  { \str_if_eq_p:Vn \c_sys_output_str { pdf } }
+%    \end{macrocode}
+% \end{variable}
+% \end{macro}
+%
+% \subsection{Randomness}
+%
+% This candidate function is placed there because
+% \cs{sys_if_rand_exist:TF} is used in \pkg{l3fp-rand}.
+%
+% \begin{macro}[EXP, pTF]{\sys_if_rand_exist:}
+%   Currently, randomness exists under \pdfTeX{}, \LuaTeX{}, \pTeX{} and \upTeX{}.
+%    \begin{macrocode}
+\@@_const:nn { sys_if_rand_exist }
+  { \cs_if_exist_p:N \tex_uniformdeviate:D }
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+%</initex|package>
+%    \end{macrocode}
+%
+%\end{implementation}
+%
+%\PrintIndex

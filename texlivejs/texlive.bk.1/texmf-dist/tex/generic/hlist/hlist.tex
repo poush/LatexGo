@@ -1,0 +1,617 @@
+% !TeX encoding = ISO-8859-1
+% Ce fichier contient le code commenté de l'extension "hlist"
+%
+% IMPORTANT : pour que les commentaires s'affichent correctement,
+%             ouvrir ce fichier avec l'encodage ISO-8859-1
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                    %
+\def\hlstname                   {hlist}                              %
+\def\hlstver                     {0.11}                              %
+%                                                                    %
+\def\hlstdate                 {2017/08/08}                           %
+%                                                                    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% --------------------------------------------------------------------
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%
+% %     http://www.latex-project.org/lppl.txt
+%
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+% --------------------------------------------------------------------
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Christian Tellechea
+% email: unbonpetit@netc.fr
+%        Commentaires, suggestions et signalement de bugs bienvenus !
+%        Comments, bug reports and suggestions are welcome.
+% Package URL: https://www.ctan.org/pkg/hlist
+% Copyright: Christian Tellechea 2017
+% --------------------------------------------------------------------
+% L'extension hlist est composée des 9 fichiers suivants :
+%   - code               : hlist            (.tex et .sty)
+%   - manuel en français : hlist-fr         (.tex et .pdf)
+%   - fichiers de test   : hlist-latex      (.tex et .pdf)
+%                          hlist-tex        (.tex et .pdf)
+%   - fichier lisezmoi   : README
+% --------------------------------------------------------------------
+
+\begingroup
+	\ifdefined\skvname\let\hlsttmp\endgroup\else\def\hlsttmp{\endgroup\input simplekv.tex}\fi
+\hlsttmp\relax
+\expandafter\edef\csname hlst_restorecatcode\endcsname{\catcode`\noexpand\_=\the\catcode`\_\relax}
+\catcode`\_11
+
+%################################################
+%########### macros de développement ############
+%################################################
+% Cette macro est équivalente à 0 et sert notamment à stopper le développement
+% de \romannumeral
+\chardef\hlst_stop 0
+
+% Définition du quark, notamment inséré à la fin d'une liste pour en reconnaitre
+% la fin et stopper la récursivité
+\def\hlst_quark{\hlst_quark}
+
+% Voici les macros habituelles de sélection d'arguments
+\def\hlst_gobarg#1{}
+\long\def\hlst_first#1#2{#1}
+\long\def\hlst_second#1#2{#2}
+\long\def\hlst_firsttonil#1#2\_nil{#1}
+
+% Voici la macro pour 1-développer ou 2-développer le 2e argument (le 1er étant
+% dépouillé des accolades)
+%     \hlst_exparg{<a>}{<b>} devient <a>{<b>}
+\long\def\hlst_exparg#1#2{\expandafter\hlst_exparg_i\expandafter{#2}{#1}}%
+\long\def\hlst_exparg_i#1#2{#2{#1}}
+
+% Et la macro pour 1-développer le 2e argument (le 1er et le 2e argument sont
+% dépouillés des accolades)%
+%     \hlst_expafter{<a>}{<b>} devient <a><*b>
+\long\def\hlst_expafter#1#2{\expandafter\hlst_expafter_i\expandafter{#2}{#1}}
+\long\def\hlst_expafter_i#1#2{#2#1}
+
+%################################################
+%################ macros de test ################
+%################################################
+% Voici quelques macros à sélection d'arguments pour les tests
+\def\hlst_ifnum#1{\ifnum#1\expandafter\hlst_first\else\expandafter\hlst_second\fi}
+\def\hlst_ifcsname#1{\ifcsname#1\endcsname\expandafter\hlst_first\else\expandafter\hlst_second\fi}
+\long\def\hlst_ifx#1{\ifx#1\expandafter\hlst_first\else\expandafter\hlst_second\fi}
+\long\def\hlst_ifempty#1{\hlst_exparg\hlst_ifx{\expandafter\relax\detokenize{#1}\relax}}
+\def\hlst_ifstar#1#2{\def\hlst_ifstar_i{\hlst_ifx{*\hlst_nxttok}{\hlst_first{#1}}{#2}}\futurelet\hlst_nxttok\hlst_ifstar_i}
+
+% Ici, une macro pour définir le token <espace>
+\def\hlst_deftok#1#2{\let#1= #2\relax}\hlst_deftok\hlst_sptok{ }
+
+% Et une macro pour tester le prochain token
+\def\hlst_ifnxttok#1#2#3{\hlst_deftok\hlst_toktotest{#1}\def\__truecode{#2}\def\__falsecode{#3}\hlst_ifnxttok_a}
+\def\hlst_ifnxttok_a{\futurelet\_futurtok\hlst_ifnxttok_b}
+\def\hlst_ifnxttok_b{%
+	\hlst_ifx{\_futurtok\hlst_sp}
+		{\afterassignment\hlst_ifnxttok_a\let\_futurtok= }
+		{\hlst_ifx{\_futurtok\hlst_toktotest}\__truecode\__falsecode}%
+}
+
+%################################################
+%############### macros de  hlist ###############
+%################################################
+% Voici les registres utilisés :
+% 1) le compteur d'imbrication, incrémenté de 1 à chaque nouvelle liste 
+%    imbriquée :
+\newcount\hlst_nest
+
+% 2) Le compteur des \items sur chaque ligne :
+\newcount\hlst_colcnt
+
+% 3) La largeur des \hbox enfermant les <items> (un <item> est le <label> _et_
+%    le <texte> de l'item) :
+\newdimen\hlst_itemboxwidth
+
+% 4) L'espace entre chaque <item> :
+\newdimen\hlst_colsep
+
+% 5) La largeur disponible pour loger une ligne d'<items> :
+\newdimen\hlst_textwidth
+
+% 6) La profondeur maximale des \vtop rencontrées jusqu'alors dans une ligne :
+\newdimen\hlst_maxdepth
+
+% 7) La profondeur du dernier élément de la \vtop la plus profonde de la ligne :
+\newdimen\hlst_maxprevdepth
+
+% 8) La boite chapeau contenant l'<item> (<label> + <texte>) :
+\newbox\hlst_currenthbox
+
+% 9) La boite contenant le <label> :
+\newbox\hlst_labelbox
+
+%10) La boite contenant le <texte>
+\newbox\hlst_textbox
+
+%11) Un booléen à fins de débogage et une dimension de débogage
+%    Il sera mis à faux après la phase de tests et supprimé dès
+%    la version 0.2
+\newif\ifhlstdebugmode\hlstdebugmodefalse
+\newdimen\hlst_debugdim
+
+% La macro qui écrit les avertissement dans le fichier log de façon équivalente
+% à \wlog :
+\def\hlst_warning#1{\immediate\write-1 {Package hlist Warning: #1}}
+
+% Cette macro renvoie le 1er caractère détokénizé de la <valeur> obtenue par
+% 2-développement de #1, de la forme \useKV[hlist]{<clé>}
+\def\hlst_firstcarof#1{\expandafter\hlst_firsttonil\detokenize\expandafter\expandafter\expandafter{#1}\_nil}
+
+% Cette macro évalue la dimension contenue dans la <valeur> d'une <clé>
+% passée dans l'argument #1 et l'assigne à la <valeur> de cette <clé>
+\def\hlst_evaldim#1{%
+% On n'évalue que si la <valeur> ne commence pas par "*" qui est réservé
+	\if\string*\hlst_firstcarof{\useKV[\hlstname]{#1}*}\else
+		\expandafter\edef\csname hlst_[\hlstname]_\detokenize{#1}\endcsname{\the\dimexpr\useKV[\hlstname]{#1}\relax}%
+	\fi
+}
+
+% Même principe pour les ressorts
+\def\hlst_evalskip#1{\expandafter\edef\csname hlst_[\hlstname]_\detokenize{#1}\endcsname{\the\glueexpr\useKV[\hlstname]{#1}\relax}}
+
+% Voici la macro par qui tout commence; elle peut être appelée par \hlist façon TeX
+% ou par \begin{hlist} façon LaTeX.
+% On teste d'abord si elle dispose d'un argument optionnel qui serait les
+% <clé>=<valeur> applicables à cette liste
+\def\hlist{\begingroup\hlst_ifnxttok[{\hlist_i}{\hlist_i[]}}
+\def\hlist_i[#1]{%
+% Si les <clé>=<valeur> ne sont pas vide, les définir dans le groupe semi simple
+% qui vient d'être ouvert
+	\hlst_ifempty{#1}{}{\sethlist{#1}}%
+% Fixer les dimensions et les ressorts
+	\hlst_evaldim{list parindent}\hlst_evaldim{item sep}\hlst_evaldim{left margin}\hlst_evaldim{col sep}%
+	\hlst_evaldim{item offset}\hlst_evaldim{label sep}\hlst_evalskip{pre skip}\hlst_evalskip{post skip}%
+% Ensuite, lire un /entier/ et stocker dans \hlst_colcnt le nombre de colonnes voulu
+	\afterassignment\hlist_ii\hlst_colcnt=
+}
+
+\def\hlist_ii{%
+% Incrémenter le compteur d'imbrications
+	\global\advance\hlst_nest 1
+% Si le compteur de label correspondant à cette imbrication existe,
+	\hlst_ifcsname{c@hlist\romannumeral\hlst_nest}
+% l'initialiser sauf si la <clé> "resume" vaut "true"
+		{\ifboolKV[\hlstname]{resume}{}{\csname c@hlist\romannumeral\hlst_nest\endcsname\hlst_stop}}
+% S'il n'existe pas, le créer (attention, \newcount est \outer)!
+		{\csname newcount\expandafter\endcsname\csname c@hlist\romannumeral\hlst_nest\endcsname}%
+	\hlst_ifnum{\hlst_colcnt<1 }
+% Envisager le cas où le nombre de colonnes demandé est < 1 et message d'erreur
+		{\errmessage{Invalid column number "\the\hlst_colcnt", 1 column used instead}\def\hlst_nbcol{1}}
+% La macro \hlst_nbcol contient finalement le nombre de colonnes
+		{\edef\hlst_nbcol{\the\hlst_colcnt}}%
+% Si on doit afficher les labels
+	\ifboolKV[\hlstname]{show label}
+% Calculer combien de dimensions explicites sont demandées par l'utilisateur
+		{\edef\hlst_implicitdim{\the\numexpr
+			\if\string*\hlst_firstcarof{\useKV[\hlstname]{item offset}*}1\else0\fi+
+			\if\string*\hlst_firstcarof{\useKV[\hlstname]{label width}*}1\else0\fi+
+			\if\string*\hlst_firstcarof{\useKV[\hlstname]{label sep}*}1\else0\fi\relax
+			}%
+% Si ce nombre est au moins 1
+		\ifnum\hlst_implicitdim>0
+			\hlst_ifnum{\hlst_implicitdim>1 }
+% S'il est plus grand que 1, message d'erreur car parmi les 3 dimensions, _une_
+% seule peut être implicite
+				{\errmessage{Too many implicit dimensions for labels, default settings used instead}%
+				\sethlist{item offset=1.5em,label sep=0.25em,label width=1.25em}%
+				}
+% Si ce nombre est égal à 1, calculer la dimension implicite en fonction des 2
+% autres dimensions explicites...
+				{\if\string*\hlst_firstcarof{\useKV[\hlstname]{item offset}*}%
+					\edef\hlst_implicitdim{[\hlstname]{item offset=\the\dimexpr\useKV[\hlstname]{label sep}+\useKV[\hlstname]{label width}\relax}}%
+				\else\if\string*\hlst_firstcarof{\useKV[\hlstname]{label sep}*}%
+					\edef\hlst_implicitdim{[\hlstname]{label sep=\the\dimexpr\useKV[\hlstname]{item offset}-\useKV[\hlstname]{label width}\relax}}%
+				\else\if\string*\hlst_firstcarof{\useKV[\hlstname]{label width}*}%
+					\edef\hlst_implicitdim{[\hlstname]{label width=\the\dimexpr\useKV[\hlstname]{item offset}-\useKV[\hlstname]{label sep}\relax}}%
+				\fi\fi\fi
+% ...et la sauvegarder dans le <trousseau> "hlist" via la <clé> correspondante
+				\expandafter\setKV\hlst_implicitdim
+				}%
+		\fi
+% Vérifier que "item offset" >= label sep + label width et dans le cas
+% contraire, avertir
+		\ifdim\useKV[\hlstname]{item offset}<\dimexpr\useKV[\hlstname]{label sep}+\useKV[\hlstname]{label width}\relax
+			\hlst_warning{incompatibles dimensions: item offset (\the\dimexpr\useKV[\hlstname]{item offset}\relax) < label sep (\the\dimexpr\useKV[\hlstname]{label sep}\relax) + label width (\the\dimexpr\useKV[\hlstname]{label width}\relax)}%
+		\fi
+		}
+		{}%
+% Si l'imbrication est 1, on est donc dans la hlist de plus haut niveau
+	\ifnum\hlst_nest=1 % si liste mère
+% Régler la parindent à la <valeur> de la <clé> "left margin"
+		\parindent\dimexpr\useKV[\hlstname]{left margin}\relax
+% et insérer le ressort "pre skip"
+		\ifhmode\par\fi\vskip\useKV[\hlstname]{pre skip}%
+	\else
+% Sinon, pas d'indentation pour les listes imbriquées
+		\parindent0pt
+	\fi
+% Sauvegarder la largeur actuelle horizontale
+	\hlst_textwidth=\dimexpr\ifdefined\linewidth\linewidth\else\hsize\fi-\parindent\relax
+% Informations de débogage sur les dimensions des composants
+	\ifhlstdebugmode
+		\message{*** hlist mode debug : largeur = \the\hlst_textwidth}%
+		\hlst_debugdim=0pt \def\hlst_debuglineno{0}%
+		\edef\hlst_debuglineno{\number\numexpr\hlst_debuglineno+1}%
+		\def\debuginfoB{\space\space Ligne d'items no \hlst_debuglineno\space:^^J}%
+	\fi
+	\leavevmode
+% Initialiser le compteur de colonnes \hlst_colcnt à 0
+	\hlst_colcnt0
+% Sauvegarder dans \hlst_colsep la <valeur> de la <clé> "col sep"
+	\hlst_colsep\useKV[\hlstname]{col sep}\relax
+% Au début de la liste : pas de multicolonne
+	\def\hlst_askedmulticol{1}%
+% Calculer la largeur de chaque <item> (=<label>+<texte>) s'il est non multicol
+	\edef\hlst_colwidth{\the\dimexpr(\hlst_textwidth-\useKV[\hlstname]{col sep}*(\hlst_nbcol-1))/(\hlst_nbcol)}%
+% Collecter dans une boite tout ce qui se trouve jusqu'au premier \hitem
+% (neutraliser l'espace, le tab et le retour charriot)
+	\setbox0\hbox\bgroup\catcode`\^^I 9 \catcode`\^^M 9 \catcode32 9
+}
+
+% Voici maintenant la macro qui ferme l'environnement. Elle aussi peut être
+% à la TeX par \endhlist ou par \end{hlist} comme on le fait en LaTeX.
+\def\endhlist{%
+% En premier lieu, il faut exécuter la routine qui achève un \hitem (fermeture
+% des boites, calcul de la \vtop la plus profonde et de son \prevdepth, etc)
+	\hlst_enditem
+% Débogage
+	\ifhlstdebugmode
+		\message{\debuginfoB\space\space\space\space TOTAL = \the\hlst_debugdim/\the\hlst_textwidth^^J
+			\space\space\space\space Depassement = \number\numexpr\hlst_debugdim-\hlst_textwidth\relax sp^^J
+			*** Fin de la liste^^J^^J}%
+		\ifnum\numexpr\hlst_debugdim-\hlst_textwidth\relax>4 \errmessage{Depassement !}\fi
+	\fi
+% Si la liste est non imbriquée, insérer le ressort "post skip"
+	\ifnum\hlst_nest=1 \vskip\useKV[\hlstname]{post skip}\fi
+% Décrémenter le compteur d'imbrications
+	\global\advance\hlst_nest -1
+% Fermer le groupe semi simple ouvert avec \hlist et manger les espaces
+	\endgroup
+	\ignorespaces
+}
+
+% Voici à présent des macros traduisant un <nombre> en un <label>.
+% La première, qui est appelée par toutes les autres, converti le <nombre> en un
+% nombre arabe.
+\def\hlst_arabic#1{%
+% Si le compteur (au modèle latex, c'est-à-dire "\c@<nom>") existe
+	\hlst_ifcsname{c@\detokenize{#1}}
+% Donner le nombre arabe avec \number, sinon, message d'erreur
+		{\number\csname c@\detokenize{#1}\endcsname}
+		{\errmessage{Unknown counter named "\detokenize{#1}"}}%
+}
+% Ensuite, ces macros convertissent un <nombre> en nombre romain ou en lettre,
+% avec choix de la casse
+\def\hlst_roman#1{\romannumeral\hlst_arabic{#1}\relax}
+\def\hlst_Roman#1{\uppercase\expandafter\expandafter\expandafter{\hlst_roman{#1}}}
+\def\hlst_alpha#1{\ifcase\hlst_arabic{#1}\relax\or a\or b\or c\or d\or e\or f\or g\or h\or i\or j\or
+	k\or l\or m\or n\or o\or p\or q\or r\or s\or t\or u\or v\or w\or x\or
+	y\or z\else\errmessage{No letter for a value of \number\numexpr#1\relax}\fi}
+\def\hlst_Alpha#1{\ifcase\hlst_arabic{#1}\relax\or A\or B\or C\or D\or E\or F\or G\or H\or I\or J\or
+	K\or L\or M\or N\or O\or P\or Q\or R\or S\or T\or U\or V\or W\or X\or
+	Y\or Z\else\errmessage{No letter for a value of \number\numexpr#1\relax}\fi}
+
+% Voici maintenant la macro \hitem, qui marque le début d'un nouvel <item>
+% Tout d'abord, on s'intéresse à ce qui suit, c'est-à-dire aux argument
+% optionnels.
+% On teste si elle est suivie d'une "*" (qui commande un retour à la ligne pour
+% cet item) et on transmet le token 0 ou 1 selon l'issue du test
+\def\hitem{\hlst_ifstar{\hlst_hitem_grabopts1}{\hlst_hitem_grabopts0}}
+
+% Ensuite, on teste si elle est suivie de ">" (qui commande un multicol maximal
+% pour cet item) et on transmet le token 0 ou 1  selon l'issue du test
+\def\hlst_hitem_grabopts#1{\hlst_ifnxttok>{\hlst_first{\hlst_hitem_grabopts_i#11}}{\hlst_hitem_grabopts_i#10}}
+
+% La macro \hlst_hitem_grabopts_i reçoit les 2 premiers arguments concernant la
+% présence ou pas de "*" et de ">" ; ces 2 tokens seront transmis de proche en
+% proche jusqu'à la la macro \hitem_ii qui est la macro qui fait le boulot.
+\def\hlst_hitem_grabopts_i#1#2{%
+% On teste si une parenthèse (pour demander un multicol) est le prochain token
+	\hlst_ifnxttok(
+% Si oui, aller lire ce qui est à l'intérieur avec \hlst_hitem_grabopts_ii
+		{\hlst_hitem_grabopts_ii#1#2}
+% Sinon, on teste si un crochet (pour forcer un label pour cet item) est le
+% prochain token 
+		{\hlst_ifnxttok[
+% Si oui, aller lire ce qu'il contient
+			{\hlst_hitem_grabopts_iii#1#2}
+% Si ni parenthèse ni crochet, transmettre "()[<quark>]" à \hitem_i
+			{\hitem_i#1#2()[\hlst_quark]}%
+		}%
+}
+
+% Ici, une parenthèse a été lue en premier, tester si la suite est un crochet
+\def\hlst_hitem_grabopts_ii#1#2(#3){\hlst_ifnxttok[{\hitem_i#1#2(#3)}{\hitem_i#1#2(#3)[\hlst_quark]}}
+
+% Ici, un crochet a été lu en premier, tester si la suite est une parenthèse
+\def\hlst_hitem_grabopts_iii#1#2[#3]{\hlst_ifnxttok({\hlst_hitem_grabopts_iv#1#2[#3]}{\hitem_i#1#2()[#3]}}
+
+% Au cas où le crochet est lu en premier, remettre les argument optionnels dans
+% le bon ordre : parenthèse _puis_ crochet
+\def\hlst_hitem_grabopts_iv#1#2[#3](#4){\hitem_i#1#2(#4)[#3]}
+
+% Cette macro mange tous les espaces _explicites_ qui se trouvent éventuellement
+% après les arguments optionnels
+% Pour résumer, \hitem peut être suivi de "*" _puis_ ">" (ordre imposé)
+% Ensuite on peut trouver (<multicol>) et/ou [<label>] dans n'importe quel ordre
+\def\hitem_i#1#2(#3)[#4]{%
+	\hlst_ifnxttok\hlst_sptok
+		{\def\__temp{\hitem_i#1#2(#3)[#4]}\expandafter\__temp\skv_gobspace}
+		{\hitem_ii#1#2(#3)[#4]}%
+}
+
+% Voici la /vraie/ macro qui va faire le boulot et ses arguments :
+%     - #1 et #2 valent 0 ou 1 selon la présence de "*" et ">"
+%     - #3 est le nombre de multicolonnes demandé (si vide, comprendre 1)
+%     - #4 est le label demandé (si <quark>, comprendre absence d'argument
+%       optionnel)
+\def\hitem_ii#1#2(#3)[#4]{%
+% si ce n'est _pas_ le 1er de la liste
+	\hlst_ifnum{\hlst_colcnt>0 }
+% Exécuter la routine de fin d'item
+		{\hlst_enditem}
+% Sinon, fermer la boite ouverte par \hlist
+		{\egroup
+% Si toutes ses dimensions ne sont pas nulles, message d'erreur
+		\ifnum0\ifnum\wd0=0 1\fi\ifnum\dp0=0 1\fi\ifnum\ht0=0 1\fi<111
+			\errmessage{\string\hitem\space expected}%
+		\fi
+% comme il s'agit du 1er item de la liste, initialiser les profondeurs
+		\hlst_maxdepth0pt \hlst_maxprevdepth0pt
+		}%
+% Incrémenter le compteur de label associé à cette imbrication
+	\expandafter\global\expandafter\advance\csname c@hlist\romannumeral\hlst_nest\endcsname 1
+% Incrémenter le compteur de colonnes du nombre de colonnes sautées précédemment
+	\advance\hlst_colcnt\hlst_askedmulticol\relax
+% Si "*", mettre le compteur de colonnes au maximum pour forcer retour à la
+% ligne
+	\ifnum#1=1 \hlst_colcnt\numexpr\hlst_nbcol+1\relax\fi
+	\ifnum\hlst_colcnt>1
+% Si ce n'est pas le 1er item de la liste
+		\hlst_ifnum{\hlst_colcnt=\numexpr\hlst_nbcol+1\relax}
+% Si le nombre d'item sur la ligne a atteint son maximum,
+% former le paragraphe, sauter l'espace verticale "item sep"
+			{\par\vskip\useKV[\hlstname]{item sep}\relax
+% Débogage
+			\ifhlstdebugmode
+				\message{\debuginfoB\space\space\space\space TOTAL = \the\hlst_debugdim/\the\hlst_textwidth^^J
+					\space\space\space\space Depassement = \number\numexpr\hlst_debugdim-\hlst_textwidth\relax sp^^J}%
+				\ifnum\numexpr\hlst_debugdim-\hlst_textwidth\relax>\hlst_colcnt \errmessage{Depassement !}\fi% dépassement si plus que <nb colonnes>sp
+				\edef\hlst_debuglineno{\number\numexpr\hlst_debuglineno+1}%
+				\def\debuginfoB{\space\space Ligne d'items no \hlst_debuglineno\space:^^J}%
+				\hlst_debugdim0pt
+			\fi
+% Tromper TeX : ne pas tenir compte des profondeurs des \vtop, mais utiliser la
+% profondeur du dernier élément de la \vtop la plus profonde
+			\prevdepth\hlst_maxprevdepth
+% Passer en mode horizontal, initialiser les variables pour commencer une
+% nouvelle ligne d'items
+			\leavevmode
+			\hlst_maxdepth0pt \hlst_maxprevdepth0pt \hlst_colcnt=1
+			}
+% S'il reste des items à loger sur la ligne, insérer espace inter-item
+			{\kern\hlst_colsep\relax
+% Débogage
+			\ifhlstdebugmode
+				\edef\debuginfoB{\debuginfoB\space\space\space\space colsep (\the\hlst_colsep)^^J}%
+				\advance\hlst_debugdim\hlst_colsep
+			\fi
+			}%
+	\fi
+% Calculer le nombre de multicolonne pour l'item courant
+	\edef\hlst_askedmulticol{\number\numexpr
+		\hlst_ifnum{#2=1 }
+% Si ">", prendre le maximum disponible
+			{\hlst_nbcol+1-\hlst_colcnt}
+% Sinon, prendre l'argument #3 (s'il est vide ce qui correspond à une absence
+% d'argument optionnel, prendre 1)
+			{\hlst_ifempty{#3}{1}{(#3)}}%
+		\relax}%
+	\hlst_ifnum{\hlst_askedmulticol<1 }
+% Si l'utilisateur est un joueur ou un abruti !
+		{\errmessage{Invalid multicol "(#3)", "(1)" used instead}\def\hlst_askedmulticol{1}}
+% Si trop de multicol demandé
+		{\hlst_ifnum{\numexpr\hlst_colcnt+\hlst_askedmulticol-1\relax>\hlst_nbcol\relax}
+% Prendre le maximum et avertir
+			{\edef\hlst_askedmulticol{\number\numexpr\hlst_nbcol+1-\hlst_colcnt\relax}%
+			\hlst_warning{too much multicol (#3) asked, (\hlst_askedmulticol) used instead}}%
+			{}%
+		}%
+% Calculer la largeur de la \hbox contenant l'<items>
+	\hlst_itemboxwidth\dimexpr\hlst_colwidth*\hlst_askedmulticol+\useKV[\hlstname]{col sep}*(\hlst_askedmulticol-1)\relax
+% Définir la boite  contenant <label> + <texte>
+	\setbox\hlst_currenthbox\hbox to \hlst_itemboxwidth\bgroup
+% Initialiser le débordement du <label>
+		\xdef\hlst_labeloverwidth{0pt}%
+% Si on affiche les labels ET si #4 n'est pas vide (un label explicitement
+% demandé "[]" doit être compris comme "ne pas afficher de label du tout pour
+% cet item").
+		\hlst_ifnum{\ifboolKV[\hlstname]{show label}10\hlst_ifempty{#4}01=11 }%
+% Ouvrir la boite des labels
+			{\hbox to \useKV[\hlstname]{item offset}{%
+% Pousser à droite au cas où "item offset">"label sep"+"label width"
+				\hfill
+% Ouvrir la \hbox contenant le label et forcer sa dimension horizontale à la
+% <valeur> "label width"
+				\hbox to \useKV[\hlstname]{label width}{%
+% Trouver la première lettre de la <valeur> "label align", sachant qu'une
+% consigne vide sera comprise comme un alignement "l"
+					\edef\hlst_align{\hlst_firstcarof{\useKV[\hlstname]{label align}l}}%
+% Pousser à droite si cette lettre est "r" ou "c"
+					\if      \string r\hlst_align\hfill
+					\else\if \string c\hlst_align\hfill
+					\fi\fi
+% Localement, (re)définir les macros de formatage pour le label afin qu'elles
+% deviennent accessible à l'utilisateur
+					\let\arabic\hlst_arabic\let\roman\hlst_roman\let\Roman\hlst_Roman\let\alpha\hlst_alpha\let\Alpha\hlst_Alpha
+% Mettre dans la boite \hlst_labelbox tout ce qui concerne le label (les codes
+% avant/après et le label formaté selon la <valeur> "label")
+					\setbox\hlst_labelbox\hbox{%
+						\useKV[\hlstname]{pre label}%
+						\hlst_ifx{\hlst_quark#4}{\useKV[\hlstname]{label}}{#4}%
+						\useKV[\hlstname]{post label}%
+					}%
+% Mesurer le dépassement (signé) du label par rapport à sa dimension autorisée
+% "label width"
+					\xdef\hlst_labeloverwidth{\the\dimexpr\wd\hlst_labelbox-\useKV[\hlstname]{label width}\relax}%
+% Afficher la boite contenant le label avec ou sans cadre
+					\ifboolKV[\hlstname]{show frame}
+						{\fboxrule.4pt  \fboxsep-\fboxrule \fbox{\box\hlst_labelbox}}
+						{\box\hlst_labelbox}%
+% Si on gère le dépassement de largeur
+					\ifboolKV[\hlstname]{autoindent}
+% Mettre le ressort \hss pour neutraliser l'avertissement de "overful hbox"
+						{\ifdim\hlst_labeloverwidth>0pt \hss\fi}
+						{}%
+% Pousser à gauche si l'alignement demandé est "l" ou "c"
+					\if      \string l\hlst_align\hfill
+					\else\if \string c\hlst_align\hfill
+					\fi\fi
+					}%
+% Séparation horizontale entre boite de <label> et boite de <texte>
+				\kern\useKV[\hlstname]{label sep}\relax
+				}%
+% Diminuer la largeur disponible de la largeur de la boite de <label>, soit la
+% <valeur> "item offset"
+			\advance\hlst_itemboxwidth-\useKV[\hlstname]{item offset}\relax
+			}
+			{}%
+% Maintenant que la boite du <label> est affichée (ou pas si c'est le choix de
+% l'utilisateur), il faut passer à la boite qui contient le <texte> du label.
+% Bien entendu, on utilise des accolades _implicites_ puisque la fin de la boite
+% ne se situe pas dans cette macro.
+% Cette boite sera une \vtop...
+		\setbox\hlst_textbox\vtop\bgroup
+% ...de largeur \hlst_itemboxwidth...
+			\hsize\hlst_itemboxwidth
+% ...que l'on copie vers \linewidth pour les utilisateurs de LaTeX, afin que
+% cette macro garde sa cohérence
+			\ifdefined\linewidth\linewidth\hlst_itemboxwidth\fi\relax
+% Réglage du parindent à "list parindent"
+			\parindent\useKV[\hlstname]{list parindent}\relax
+% Passage en mode H et pas d'indentation pour le 1er paragraphe si on
+% affiche les labels
+			\ifboolKV[\hlstname]{show label}\noindent\indent
+% Après être passé en mode horizontal, on insère l'indentation supplémentaire en
+% cas de débordement de la largeur du <label>
+			\ifboolKV[\hlstname]{autoindent}
+				{\ifdim\hlst_labeloverwidth>0pt \kern\hlst_labeloverwidth\fi}
+				{}%
+% Puis, on exécute le code inséré juste avant le <texte> de l'item
+			\useKV[\hlstname]{pre item}%
+}
+%            __________________________________________
+%           |                                          |
+%           |   <texte> de l'item entre ces 2 macros   |
+%           |__________________________________________|
+%
+% Une fois que le <texte> de l'item est /librement/ composé (librement, cela
+% autorise les changements de catcode, le "verbatim", etc), la macro de fin du
+% <texte> est exécutée.
+\def\hlst_enditem{%
+% D'abord, exécuter le code de fin d'item
+			\useKV[\hlstname]{post item}%
+% Ensuite, former le paragraphe pour accéder à \prevdepth
+			\par
+% et développer "\the\prevdepth" _avant_ de fermer la \vtop et la \hbox (le
+% double \egroup) pour que cette dimension soit le texte de remplacement de
+% \hlst_currentdepth
+			\hlst_exparg{%
+% fermeture de la \vtop
+			\egroup
+			\ifboolKV[\hlstname]{show frame}{\fboxrule.4pt  \fboxsep-.4pt \fbox{\box\hlst_textbox}}{\box\hlst_textbox}%
+		\egroup
+		\def\hlst_currentdepth}{\the\prevdepth}%
+% Si la profondeur de la \vtop qui vient d?être créé est supérieure à toutes
+% celles rencontrées dans cette ligne,
+		\ifdim\dp\hlst_currenthbox>\hlst_maxdepth
+% retenir la valeur de \prevdepth
+			\hlst_maxprevdepth\hlst_currentdepth\relax
+% et mettre à jour la profondeur maximale des \vtop de la ligne en cours.
+% Le but de cette manoeuvre est de trouver la profondeur du dernier élément de
+% la plus profonde \vtop de la ligne en cours.
+% Cette valeur de \prevdepth sera utilisée au prochain \par pour tromper
+% TeX qui sinon, prendrait en compte la /grande/ profondeur des \vtop, menant à
+% des lignes trop proches.
+			\hlst_maxdepth\dp\hlst_currenthbox
+		\fi
+% Une fois tout ceci fait, afficher la boite contenant le <texte>
+	\box\hlst_currenthbox
+% Débogage
+	\ifhlstdebugmode
+		\edef\debuginfoB{\debuginfoB\space\space\space\space item (\the\hlst_itemboxwidth)^^J}%
+		\advance\hlst_debugdim\hlst_itemboxwidth
+	\fi
+}%
+
+\hlst_restorecatcode
+% Création, si nécessaire d'une macro \fbox, équivalente à celle de LaTeX
+\unless\ifdefined\fbox
+% Prendre les réglages par défaut identiques à ceux de laTeX
+	\newdimen\fboxrule \newdimen\fboxsep \fboxrule=.4pt \fboxsep=3pt
+% Pour les explications, voir codes 251 \`a 254 de ce fichier :
+%      http://progtex.fr/wp-content/uploads/2014/09/code.txt
+% et pages 271 \`a 274 de "Apprendre à programmer en TeX"
+	\def\fbox#1{%
+		\hbox{%
+			\vrule width\fboxrule
+			\vtop{%
+				\vbox{\hrule height\fboxrule \kern\fboxsep \hbox{\kern\fboxsep#1\kern\fboxsep}}%
+				\kern\fboxsep \hrule height\fboxrule
+			}\vrule width\fboxrule
+		}%
+	}
+\fi
+
+% Les réglages par défaut (modifiables avec \setdefaulthlist)
+\setKVdefault[\hlstname]{
+	pre skip      = \medskipamount,% ressort vertical avant la liste mère
+	post skip     = \medskipamount,% ressort vertical après la liste mère
+	left margin   = 0pt,% décalage à droite des premières boites de chaque ligne de la liste mère
+	col sep       = 2.5em,% espace de séparation entre colonnes
+	item offset   = 1.75em,% distance entre bord gauche du label et bord gauche de l'item
+	label sep     = 0.25em,% recul du label
+	label width   = *,% largeur du label automatique (=1.75-0.25 em) car "item ofset" = "label width" + "label sep"
+	label align   = left,% consigne d'alignement
+	show label    = true,% afficher les numérotations et tenir compte de leur largeur
+	pre label     = \bf,% code exécuté au début de la boite contenant le label
+	label         = \arabic{hlisti}.,% code du label
+	post label    = {},% code exécuté après le label
+	item sep      = 0pt,% espace vertical supplémentaire entre lignes d'items
+	list parindent= 0pt,% indentation des paragraphes des items (sauf le 1er)
+	pre item      = {},% code exécuté avant le texte de l'item
+	post item     = {},% code exécuté après le texte de l'item
+	resume        = false,% pas de reprise de numérotation
+	autoindent    = false,% pas d'indentation auto en cas de label trop large
+	show frame    = false% ne pas afficher les cadres autour des boites <label> et <texte>
+}
+
+% La macro \inithlist remet toutes les <clés> à leur <valeur> par défaut
+\expandafter\let\expandafter\inithlist\csname hlst_[\hlstname]\endcsname
+
+% Macros permettant de modifier les <valeurs> des <clés> de hlist...
+\def\sethlist#{\setKV[\hlstname]}
+
+% ... ainsi que les <valeurs> par défaut
+\def\setdefaulthlist#{\setKVdefault[\hlstname]}
+\endinput
+
+Versions :
+ _____________________________________________________________________________
+| Version |    Date    | Changements                                          |
+|-----------------------------------------------------------------------------|
+|   0.1   | 01/05/2017 | Première version                                     |
+|-----------------------------------------------------------------------------|
+|   0.11  | 08/08/2017 | Chargement de simpleKV                               |
+|-----------------------------------------------------------------------------|

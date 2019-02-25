@@ -1,0 +1,427 @@
+%D \module
+%D   [      file=x-fig-01,
+%D        version=2001.03.21,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Figure Base Generation,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D See \type {x-fig-00.tex} and \type {x-fig-04.tex} for more
+%D information on how to use and generate figure databases.
+%D This file loads the file named \type {\jobfilename}
+%D (\TEXEXEC\ will set this variable). You can apply this
+%D style to a database by saying:
+%D
+%D \starttyping
+%D context --input=d-res-01.xml auto:x-res-01.mkiv
+%D \stoptyping
+%D
+%D The following modes are supported (not all yet in mkiv):
+%D
+%D \starttabulate[|lT|l|]
+%D \NC letter             \NC map the preview on letter size  \NC \NR
+%D \NC compact            \NC use an alternative presentation \NC \NR
+%D \NC clipgrid-distance  \NC add a copy with grid overlayed  \NC \NR
+%D \NC clipgrid-steps     \NC add a copy with grid overlayed  \NC \NR
+%D \NC previewpage-A4     \NC show graphic relative to A4     \NC \NR
+%D \NC previewpage-letter \NC show graphic relative to letter \NC \NR
+%D \NC previewpage-S6     \NC show graphic relative to S6     \NC \NR
+%D \stoptabulate
+%D
+%D The resulting file has the following characteristics:
+%D
+%D \startitemize[packed]
+%D \startitem  the document is split into three sections: first each
+%D figure is shown at its own page, then an overview of figures is
+%D shown with some data alongside, and finally an index and table of
+%D contents shows up \stopitem
+%D \startitem  there is no title page, which means that one can access
+%D a figure by page number without offset \stopitem
+%D \startitem  the document is opened at the first overview page, that
+%D is, when the viewer supports it \stopitem
+%D \startitem  the graphic is shown 3~times: on a page of its own,
+%D scaled to a fixed dimension, and relative to a4 or letter paper
+%D size \stopitem
+%D \startitem the labels can be accessed in an index and list at the
+%D end of the document \stopitem
+%D \stopitemize
+
+\defineregister
+  [figureindex]
+
+\setupregister
+  [figureindex]
+  [criterium=text,
+   interaction=text,
+   pagenumber=no,
+   indicator=no]
+
+\setuptolerance
+  [verytolerant]
+
+\setupbuttons
+  [offset=10pt,
+   width=broad,
+   strut=no,
+   rulethickness=1pt,
+   framecolor=darkred]
+
+\setuplayout
+  [topspace=15pt,
+   backspace=15pt,
+   header=0pt,
+   footer=0pt,
+   bottom=20pt,
+   bottomdistance=10pt,
+   width=middle,
+   height=fit]
+
+\setupbackgrounds
+  [page]
+  [background=,
+   backgroundcolor=gray]
+
+\setupinteractionscreen
+  [width=max,
+   height=max]
+
+\setupinteraction
+  [style=,
+   color=,
+   contrastcolor=,
+   state=start]
+
+\setuphead
+  [section]
+  [style=bfb]
+
+\setupinteractionmenu
+  [bottom]
+  [left=\hfill,
+   middle=\hskip10pt,
+   frame=off,
+   style=bold,
+   background=color,
+   backgroundcolor=darkred,
+   foregroundcolor=white]
+
+\startinteractionmenu[bottom]
+    \but [begin]         begin   \\
+    \but [index]         index   \\
+    \but [list]          list    \\
+    \but [CloseDocument] close   \\
+    \but [PreviousJump]  go back \\
+\stopinteractionmenu
+
+\setupinteraction
+  [openaction=begin]
+
+\setuppapersize
+  [S6][S6]
+
+\setupbackgrounds
+  [page]
+  [background=color]
+
+\setupinteraction
+  [menu=on]
+
+\setupbodyfont
+  [tt,10pt]
+
+\definesymbol     [attachment] [{\strut\bf\color[darkred]{\inputfilename}}] % jobname.xml}}]
+\setupattachments [symbol=attachment,alternative=,location=text]
+\useattachment    [datafile] [\inputfilename]
+
+\xmlloadonly{main}{\inputfilename}{}
+
+\mainlanguage[\xmlattributedef{main}{/rlx:library}{language}{en}]
+
+\startxmlsetups xml:resource:asis
+    \startTEXpage[pagestate=start]
+        \xmldoifelsetext{#1}{/rlx:label} {
+            \edef\CurrentLabel{\xmltext{#1}{rlx:label}}
+        } {
+            \edef\CurrentLabel{\xmltext{#1}{rlx:file}}
+        }
+        \pagereference [
+            asis:\CurrentLabel
+        ]
+        \gotobox {
+            \externalfigure[\xmltext{#1}{/rlx:file}]
+        }[% tricky no space before [
+            data:\CurrentLabel
+        ]
+    \stopTEXpage
+\stopxmlsetups
+
+\definemeasure[figure:width] [210mm]
+\definemeasure[figure:height][297mm]
+
+\startmode[letter]
+    \enablemode[previewpage-letter]
+\stopmode
+
+\startmode[previewpage-A4]
+    \definemeasure[figure:width] [210mm]
+    \definemeasure[figure:height][297mm]
+\stopmode
+
+\startmode[previewpage-letter]
+    \definemeasure[figure:width] [8.5in]
+    \definemeasure[figure:height][11in]
+\stopmode
+
+\startmode[previewpage-S6]
+    \definemeasure[figure:width] [600pt]
+    \definemeasure[figure:height][450pt]
+\stopmode
+
+\startxmlsetups xml:resource:a
+    \button
+        [
+            width=150pt,
+            height=100pt,
+            offset=10pt,
+            frame=off,
+            background=color,
+            backgroundcolor=white,
+            color=
+        ]
+        {
+            \externalfigure
+                [\xmltext{#1}{rlx:file}]
+                [factor=max]
+        }
+        [
+            grid:\CurrentLabel
+        ]
+\stopxmlsetups
+
+\startxmlsetups xml:resource:b
+    \framed
+        [
+            width=150pt,
+            height=100pt,
+            offset=10pt,
+            frame=off,
+            background=color,
+            backgroundcolor=white,
+            color=
+        ]
+        {
+            \externalfigure [
+                \xmltext{#1}{rlx:file}
+            ] [
+                factor=max
+            ]
+        }
+\stopxmlsetups
+
+\startxmlsetups xml:resource:data
+
+    % using a layer makes more sense but we had this ...
+
+    \xmldoifelsetext{#1}{/rlx:label} {
+        \edef\CurrentLabel{\xmltext{#1}{rlx:label}}
+    } {
+        \edef\CurrentLabel{\xmltext{#1}{rlx:file}}
+    }
+
+    \button {
+        \hbox to \hsize {
+            \forgetall
+            \dontcomplain
+            \pagereference[data:\CurrentLabel]
+
+            %\ifnum\CurrentPage=1 \pagereference[begin]\fi
+
+            \expanded{\figureindex{\xmltext{#1}{/rlx:label}}}
+
+            \vbox to 100pt {
+                \hsize30pt
+                \vskip5pt
+                \hbox to \hsize {
+                    \hss
+                    \strut
+                    \bf
+                    \at[asis:\CurrentLabel]
+                    \hss
+                }
+                \vfill
+            }
+            \advance\hsize by -30pt
+            \doifelsemode {clipgrid-distance,clipgrid-steps} {
+                \xmlsetup{#1}{xml:resource:a}
+            } {
+                \xmlsetup{#1}{xml:resource:b}
+            }
+            \edef\CurrentWidth {\the\dimexpr\figurenaturalwidth}
+            \edef\CurrentHeight{\the\dimexpr\figurenaturalheight}
+            \advance\hsize by -150pt
+            \hskip10pt
+            \advance\hsize by -10pt
+            \vbox to 100pt {
+                \hsize40pt
+                \framed [
+                    offset=overlay,
+                    framecolor=darkred,
+                    rulethickness=.5pt
+                ] {
+                    \scale [
+                        width=40pt
+                    ] {
+                        \framed [
+                            width=\measure{figure:width},
+                            height=\measure{figure:height},
+                            offset=overlay,
+                            frame=off,
+                            background=color,
+                            backgroundcolor=white
+                        ] {
+                            \externalfigure
+                                [
+                                    \xmltext{#1}{rlx:file}
+                                ] [
+                                    reset=yes
+                                ]
+                            }
+                        }
+                    }
+                \vfill
+            }
+            \advance\hsize by -40pt
+            \hskip10pt
+            \advance\hsize by -10pt
+            \vbox to 100pt {
+                \blank[disable]
+                \starttabulate[|Bel|p|]
+                                                 \NC file       \NC \xmltext{#1}{/rlx:file}          \NC \NR
+                    \xmldoif{#1}{/rlx:label}     {\NC label      \NC \xmltext{#1}{/rlx:label}         \NC \NR}
+                                                 \NC dimensions \NC \CurrentWidth\ * \CurrentHeight \NC \NR
+                    \xmldoif{#1}{/rlx:copyright} {\NC copyright  \NC \xmltext{#1}{/rlx:copyright}     \NC \NR}
+                    \xmldoif{#1}{/rlx:status}    {\NC status     \NC \xmltext{#1}{/rlx:status}        \NC \NR}
+                    \xmldoif{#1}{/rlx:comment}   {\NC comment    \NC \xmltext{#1}{/rlx:comment}       \NC \NR}
+                \stoptabulate
+                \vfill
+            }
+        }
+    } [
+        asis:\CurrentLabel
+    ]
+
+    \vskip10pt
+
+\stopxmlsetups
+
+\startxmlsetups xml:description
+
+    \starttabulate[|lBe|p|]
+        \xmldoif{#1}{/rlx:organization} {\NC organization  \NC \xmltext{#1}{/rlx:organization} \NC \NR}
+        \xmldoif{#1}{/rlx:project}      {\NC project       \NC \xmltext{#1}{/rlx:project}      \NC \NR}
+        \xmldoif{#1}{/rlx:product}      {\NC product       \NC \xmltext{#1}{/rlx:product}      \NC \NR}
+        \xmldoif{#1}{/rlx:comment}      {\NC comment       \NC \xmltext{#1}{/rlx:comment}      \NC \NR}
+                                        \NC specification \NC \attachment[datafile]          \NC \NR
+    \stoptabulate
+
+\stopxmlsetups
+
+\starttext
+
+    \xmlfilter{main}{/rlx:library/rlx:resource/command(xml:resource:asis)}
+
+    \subject {Figure collection}
+
+    \xmlfilter{main}{/rlx:library/rlx:description/command(xml:description)}
+
+    \subject [list] {List of figures}
+
+    \xmlfilter{main}{/rlx:library/rlx:resource/command(xml:resource:data)}
+
+    \page
+
+    \subject [index] {Index of figures}
+
+    \startcolumns
+        \placeregister[figureindex]
+    \stopcolumns
+
+\stoptext
+
+% \doifmodeelse{clipgrid-distance,clipgrid-steps}{\page}{\stoptext}
+
+% \startuniqueMPgraphic{clipgrid}{dx,dy,nx,ny,type}
+%   numeric gdx, gdy, lbx, lby ;
+%   if \MPvar{type}=1 :
+%     gdx := \MPvar{dy} ;
+%     gdy := \MPvar{dx} ;
+%   else :
+%     gdx := OverlayWidth /\MPvar{nx} ;
+%     gdy := OverlayHeight/\MPvar{ny} ;
+%   fi ;
+%   lbx := gdx ;
+%   lby := gdy ;
+%   defaultfont  := "\truefontname{Mono}" ;
+%   defaultscale := .5 ;
+%   numeric pen ; pen := .25pt ;
+%   def MyGrid text t =
+%     draw vlingrid (0,OverlayWidth ,gdy,OverlayWidth ,OverlayHeight) t ;
+%     draw hlingrid (0,OverlayHeight,gdx,OverlayHeight,OverlayWidth ) t ;
+%   enddef ;
+%   pickup pencircle scaled pen ;
+%   MyGrid withcolor white ;
+%   MyGrid dashed evenly scaled pen ;
+%   draw OverlayBox withcolor white ;
+%   draw OverlayBox dashed evenly scaled pen ;
+%   draw vlinlabel.bot(0,eps+OverlayWidth /lby,2,OverlayWidth ) ;
+%   draw hlinlabel.lft(0,eps+OverlayHeight/lbx,2,OverlayHeight) ;
+%   setbounds currentpicture to OverlayBox enlarged (2*EmWidth) ;
+% \stopuniqueMPgraphic
+
+% \presetMPvariable[clipgrid][dx=10pt]
+% \presetMPvariable[clipgrid][dy=10pt]
+% \presetMPvariable[clipgrid][nx=10]
+% \presetMPvariable[clipgrid][ny=10]
+
+% \startmode[clipgrid-distance]
+%   \defineoverlay[grid][\uniqueMPgraphic{clipgrid}{type=1}]
+% \stopmode
+
+% \startmode[clipgrid-steps]
+%   \defineoverlay[grid][\uniqueMPgraphic{clipgrid}{type=2}]
+% \stopmode
+
+% \setupexternalfigures
+%   [background={color,foreground,grid},
+%    backgroundcolor=white]
+
+% \def\StartFigureD
+%   {\StartFigureA}
+
+% \def\StopFigureD
+%   {\doglobal\increment\CurrentPage
+%    \setupbackgrounds[page][background=page]
+%    \startpagefigure[\XMLflush{rlx:file}][offset=20pt]%
+%      \doifelsenothing{\XMLflush{rlx:label}}
+%        {\expanded{\definereference[Description][about:\XMLflush{rlx:file}]}%
+%         \expanded{\pagereference[grid:\XMLflush{rlx:file}]}}
+%        {\expanded{\definereference[Description][about:\XMLflush{rlx:label}]}%
+%         \expanded{\pagereference[grid:\XMLflush{rlx:label}]}}
+%    \stoppagefigure
+%   %\pagefigure[\XMLflush{rlx:file}][offset=20pt]
+%    \setupbackgrounds[page][background=]
+%    \egroup}
+
+% \defineXMLignore      [rlx:description]
+% \defineXMLenvironment [rlx:figure]      \StartFigureD \StopFigureD
+
+% \doglobal\newcounter\CurrentPage
+
+% \processXMLfilegrouped{\jobfullname} \page
+
+\stoptext

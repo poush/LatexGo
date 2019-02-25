@@ -1,4 +1,3 @@
-var Module = {};
 var is_browser = (typeof(self) !== "undefined" || typeof(window) !== "undefined");
 
 if(is_browser) {

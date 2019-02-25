@@ -1,0 +1,257 @@
+%%^^A%% um-code-variables.dtx -- part of UNICODE-MATH <wspr.io/unicode-math>
+%%^^A%% Declaration of all code-level variables used in the package.
+
+% \section{Variable initialisation}
+%
+%    \begin{macrocode}
+%<*package>
+%    \end{macrocode}
+%
+%
+% \subsection{bool}
+%
+% True if using a proper OpenType font with unicode maths
+%    \begin{macrocode}
+\bool_new:N \g_@@_ot_math_bool
+%    \end{macrocode}
+%
+% Set when \cs{setmathfont} is run to trap the problem of no main font defined.
+%    \begin{macrocode}
+\bool_new:N \g_@@_main_font_defined_bool
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\bool_new:N \g_@@_init_bool
+\bool_new:N \l_@@_implicit_alph_bool
+%    \end{macrocode}
+% For \opt{math-style}:
+%    \begin{macrocode}
+\bool_new:N \g_@@_literal_bool
+\bool_new:N \g_@@_upLatin_bool
+\bool_new:N \g_@@_uplatin_bool
+\bool_new:N \g_@@_upGreek_bool
+\bool_new:N \g_@@_upgreek_bool
+%    \end{macrocode}
+% For \opt{bold-style}:
+%    \begin{macrocode}
+\bool_new:N \g_@@_bfliteral_bool
+\bool_new:N \g_@@_bfupLatin_bool
+\bool_new:N \g_@@_bfuplatin_bool
+\bool_new:N \g_@@_bfupGreek_bool
+\bool_new:N \g_@@_bfupgreek_bool
+%    \end{macrocode}
+% For \opt{sans-style}:
+%    \begin{macrocode}
+\bool_new:N \g_@@_upsans_bool
+\bool_new:N \g_@@_sfliteral_bool
+%    \end{macrocode}
+% For assorted package options:
+%    \begin{macrocode}
+\bool_new:N \g_@@_upNabla_bool
+\bool_new:N \g_@@_uppartial_bool
+\bool_new:N \g_@@_literal_Nabla_bool
+\bool_new:N \g_@@_literal_partial_bool
+\bool_new:N \l_@@_smallfrac_bool
+\bool_new:N \g_@@_literal_colon_bool
+\bool_new:N \g_@@_mathrm_text_bool
+\bool_new:N \g_@@_mathit_text_bool
+\bool_new:N \g_@@_mathbf_text_bool
+\bool_new:N \g_@@_mathsf_text_bool
+\bool_new:N \g_@@_mathtt_text_bool
+%    \end{macrocode}
+%
+% \subsection{int}
+%
+%    \begin{macrocode}
+\int_new:N \g_@@_fam_int
+\int_new:N \g_@@_fonts_used_int
+\int_new:N \l_@@_primecount_int
+%    \end{macrocode}
+%
+% \subsection{tl}
+%
+%    \begin{macrocode}
+\tl_if_exist:NF \g_@@_secret_hook_tl { \tl_new:N \g_@@_secret_hook_tl }
+%    \end{macrocode}
+%
+% For displaying in warning messages, etc.:
+%    \begin{macrocode}
+\tl_const:Nn \c_@@_math_alphabet_name_latin_tl {Latin,~lowercase}
+\tl_const:Nn \c_@@_math_alphabet_name_Latin_tl {Latin,~uppercase}
+\tl_const:Nn \c_@@_math_alphabet_name_greek_tl {Greek,~lowercase}
+\tl_const:Nn \c_@@_math_alphabet_name_Greek_tl {Greek,~uppercase}
+\tl_const:Nn \c_@@_math_alphabet_name_num_tl   {Numerals}
+\tl_const:Nn \c_@@_math_alphabet_name_misc_tl  {Misc.}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\tl_new:N \l_@@_style_tl
+\tl_new:N \l_@@_family_tl
+\tl_new:N \l_@@_alphabet_tl
+\tl_new:N \l_@@_fontname_tl
+\tl_new:N \l_@@_symfont_label_tl
+\tl_new:N \l_@@_remap_style_tl
+\tl_new:N \l_@@_fam_two_tl
+\tl_new:N \l_@@_fam_three_tl
+\tl_new:N \l_@@_curr_named_slot
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\tl_new:N \l_@@_tmpa_tl
+\tl_new:N \l_@@_tmpb_tl
+\tl_new:N \l_@@_tmpc_tl
+\tl_new:N \l_@@_mathstyle_tl
+\tl_new:N \l_@@_radicals_tl
+\tl_new:N \l_@@_nolimits_tl
+\tl_new:N \l_@@_trial_family_tl
+\tl_new:N \l_@@_ss_chain_tl
+\tl_new:N \l_@@_tmpa_key_tl
+%    \end{macrocode}
+%
+% Used to store the font switch for the \cs{operator@font}.
+%    \begin{macrocode}
+\tl_new:N \g_@@_operator_mathfont_tl
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\tl_new:N \g_@@_slash_delimiter_usv
+\tl_new:N \g_@@_mathparam_settings_tl
+\tl_new:N \l_@@_mathtable_tl
+\tl_new:N \g_@@_mathtable_tl
+\tl_new:N \g_@@_fontname_tl
+\tl_new:N \g_@@_mversion_tl
+\tl_new:N \g_@@_symfont_tl
+\tl_new:N \l_@@_font_keyval_tl
+\tl_new:N \g_@@_family_tl
+\tl_new:N \g_@@_style_tl
+\tl_new:N \g_@@_remap_style_tl
+\tl_new:N \l_@@_not_token_name_tl
+\tl_new:N \g_@@_curr_font_cmd_tl
+\tl_new:N \g_@@_sqrt_font_cmd_tl
+\tl_new:N \g_@@_prime_font_cmd_tl
+%    \end{macrocode}
+%
+% \begin{macro}{\g_@@_mathparam_store_tl}
+% Used to store and restore the math parameters used in Lua\TeX.
+% This is done to `save' the values of the \emph{first} (or main)
+% maths font loaded, rather than (as per Lua\TeX\ defaults) the last.
+%    \begin{macrocode}
+%<*LU>
+\tl_new:N \g_@@_mathparam_store_tl
+%</LU>
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{clist}
+%
+%    \begin{macrocode}
+\clist_new:N \g_@@_char_nrange_clist
+\clist_new:N \g_@@_unknown_keys_clist
+\clist_new:N \g_@@_alphabet_clist
+\clist_new:N \l_@@_mathmap_charints_clist
+\clist_new:N \l_@@_unknown_keys_clist
+\clist_new:N \l_@@_keyval_clist
+\clist_new:N \l_@@_alphabet_clist
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\clist_new:N \g_@@_bad_alpha_clist
+\clist_gput_right:Nx \g_@@_bad_alpha_clist { \tl_to_str:n {bf} }
+\clist_gput_right:Nx \g_@@_bad_alpha_clist { \tl_to_str:n {sf} }
+\clist_gput_right:Nx \g_@@_bad_alpha_clist { \tl_to_str:n {bfsf} }
+%    \end{macrocode}
+%
+% \subsection{seq}
+%
+%    \begin{macrocode}
+\seq_new:N \l_@@_missing_alph_seq
+\seq_new:N \g_@@_mathalph_seq
+\seq_new:N \g_@@_char_range_seq
+\seq_new:N \g_@@_mclass_range_seq
+%    \end{macrocode}
+%
+% \begin{macro}{\g_@@_mathclasses_seq}
+% Every math class.
+%    \begin{macrocode}
+\seq_new:N \g_@@_mathclasses_seq
+\seq_gset_from_clist:Nn \g_@@_mathclasses_seq
+  {
+    \mathord,\mathalpha,\mathbin,\mathrel,\mathpunct,
+     \mathop,
+    \mathopen,\mathclose,
+    \mathfence,\mathover,\mathunder,
+     \mathaccent,\mathaccentoverlay,\mathbotaccent,\mathaccentwide,\mathbotaccentwide
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\g_@@_default_mathalph_seq}
+% This sequence stores the alphabets in each math style.
+%    \begin{macrocode}
+\seq_new:N \g_@@_default_mathalph_seq
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\g_@@_mathstyles_seq}
+% This is every `math style' known to \pkg{unicode-math}.
+% A named range is such as "bfit" and "sfit", which are also math styles (with \cs{symbfit} and \cs{symsfit}).
+% `Mathstyles' are a superset of named ranges and also include commands such as \cs{symbf} and \cs{symsf}.
+%
+% N.B. for parsing purposes `named ranges' are defined as strings!
+%    \begin{macrocode}
+\seq_new:N \g_@@_mathstyles_seq
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{prop}
+%
+%    \begin{macrocode}
+\prop_new:N \g_@@_supers_prop
+\prop_new:N \g_@@_subs_prop
+%    \end{macrocode}
+%
+% \subsection{muskip}
+%
+%    \begin{macrocode}
+\muskip_new:N \g_@@_primekern_muskip
+\muskip_gset:Nn \g_@@_primekern_muskip { -\thinmuskip/2 }% arbitrary
+%    \end{macrocode}
+%
+% \subsection{fp}
+%
+%    \begin{macrocode}
+\fp_new:N \g_@@_size_tfsf_fp
+\fp_new:N \g_@@_size_sfssf_fp
+%    \end{macrocode}
+%
+% \subsection{quark}
+%
+% \begin{macro}{\q_unicode_math}
+% Used as a flag within control sequences to check they're recognised by the package.
+%    \begin{macrocode}
+\quark_new:N \q_unicode_math
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+%</package>
+%    \end{macrocode}
+
+\endinput
+
+% /©
+%
+% ------------------------------------------------
+% The UNICODE-MATH package  <wspr.io/unicode-math>
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% Copyright 2006-2019  Will Robertson, LPPL "maintainer"
+% Copyright 2010-2017  Philipp Stephani
+% Copyright 2011-2017  Joseph Wright
+% Copyright 2012-2015  Khaled Hosny
+% ------------------------------------------------
+%
+% ©/

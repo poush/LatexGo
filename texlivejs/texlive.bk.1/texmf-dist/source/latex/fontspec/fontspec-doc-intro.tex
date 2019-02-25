@@ -1,0 +1,247 @@
+%%^^A%%  fontspec-doc-intro.tex -- part of FONTSPEC <wspr.io/fontspec>
+
+\documentclass[a4paper]{l3doc}
+\usepackage{fontspec-doc-style}
+\showexamplesfalse
+\begin{document}
+
+\part{Getting started}
+
+\section{History}
+
+This package began life as a \LaTeX\ interface to select system-installed
+\MacOSX\ fonts in \name{Jonathan Kew}'s \XeTeX, the first widely-used
+Unicode extension to \TeX. Over time, \XeTeX\ was extended to support OpenType
+fonts and then was ported into a cross-platform program to run also on Windows
+and Linux.
+
+More recently, \LuaTeX\ is fast becoming the \TeX\ engine of the day; it
+supports Unicode encodings and OpenType fonts and opens up the internals of
+\TeX\ via the Lua programming language. Hans Hagen's Con\TeX t Mk.\,IV is a
+re-write of his powerful typesetting system, taking full advantage of
+\LuaTeX's features including font support; a kernel of his work in this area
+has been extracted to be useful for other \TeX\ macro systems as well, and
+this has enabled \pkg{fontspec} to be adapted for \LaTeX\ when run with the
+\LuaTeX\ engine.
+
+
+
+\section{Introduction}
+
+The \pkg{fontspec} package allows users of either \XeTeX\ or \LuaTeX\ to
+load OpenType fonts in a \LaTeX\ document. No font installation is necessary,
+and font features can be selected and used as desired throughout the document.
+
+Without \pkg{fontspec}, it is necessary to write cumbersome font definition
+files for \LaTeX, since \LaTeX's font selection scheme (known as the
+`\textsc{nfss}') has a lot going on behind the scenes to allow easy
+commands like \cmd\emph\ or \cmd\bfseries. With an uncountable number of
+fonts now available for use, however, it becomes less desirable to have to
+write these font definition (|.fd|) files for every font one wishes to use.
+
+Because \pkg{fontspec} is designed to work in a variety of modes, this
+user documentation is split into separate sections that are designed to be
+relatively independent. Nonetheless, the basic functionality all behaves in
+the same way, so previous users of \pkg{fontspec} under \XeTeX\ should have
+little or no difficulty switching over to \LuaTeX.
+
+This manual can get rather in-depth, as there are a lot of details
+to cover. See the documents \path{fontspec-example.tex} for a complete minimal example
+to get started quickly.
+
+
+\subsection{Acknowledgements}
+
+This package could not have been possible without the early and continued support
+the author of \XeTeX, Jonathan Kew. When I started this package, he steered
+me many times in the right direction.
+
+I've had great
+feedback over the years on feature requests, documentation queries, bug reports, font suggestions, and so on from lots of people all around the world.
+Many thanks to you all.
+
+Thanks to David Perry and Markus B\"ohning for numerous documentation
+improvements and David Perry again for contributing the text for one of the
+sections of this manual.
+
+Special thanks to Khaled Hosny, who was the driving force behind the support for \LuaLaTeX, ultimately leading to version 2.0 of the package.
+
+
+
+\section{Package loading and options}
+
+For basic use, no package options are required:
+\begin{Verbatim}
+  \usepackage{fontspec}
+\end{Verbatim}
+Package options will be introduced below; some preliminary details are discussed first.
+
+
+\subsection{Font encodings}
+The 2016 release of \pkg{fontspec} initiated some changes for font encodings and the loading of \pkg{xunicode}.
+The 2017 release rolls out those changes as default.
+
+The now-default \texttt{tuenc} package option switches the \textsc{nfss} font encoding to \texttt{TU}.
+\texttt{TU} is a new Unicode font encoding, intended for both \XeTeX\ and \LuaTeX\ engines, and automatically contains support for symbols covered by \LaTeX's traditional \texttt{T1} and \texttt{TS1} font encodings (for example, |\%|, |\textbullet|, |\"u|, and so on).
+As a result, with this package option, Ross Moore's \pkg{xunicode} package is \textbf{not} loaded.
+Some new, experimental, features are now provided to customise some encoding details; see Part~\vref{part:enc} for further details.
+
+Pre-2017 behaviour can be achieved with the \texttt{euenc} package option.
+This selects the \texttt{EU1} or \texttt{EU2} encoding (\XeTeX/\LuaTeX, resp.) and loads the \pkg{xunicode} package.
+Package authors and users who have referred explicitly to the encoding names \texttt{EU1} or \texttt{EU2} should update their code or documents.
+(See internal variable names described in \vref{sec:api} for how to do this properly.)
+
+
+\subsection{Maths fonts adjustments}
+By default, \pkg{fontspec} adjusts \LaTeX's default maths setup in order to maintain the correct Computer Modern symbols when the roman font changes.
+However, it will attempt to avoid doing this if another maths font package is loaded (such as \pkg{mathpazo} or the \pkg{unicode-math} package).
+
+If you find that \pkg{fontspec} is incorrectly changing the maths font when it shouldn't be, apply the |no-math| package option to manually suppress its behaviour here.
+
+
+\subsection{Configuration}
+\label{sec:config}
+
+If you wish to customise any part of the
+\pkg{fontspec} interface, this should be done by creating your own
+\texttt{fontspec.cfg} file,
+which will be automatically loaded if it is found by \XeTeX\ or \LuaTeX.
+A |fontspec.cfg| file is distributed with \pkg{fontspec} with a small number of defaults set up within it.
+
+To customise \pkg{fontspec} to your liking, use the standard |.cfg| file as a starting point or write your own from scratch, then either place it in the same folder as the main document for isolated cases, or in a location
+that \XeTeX\ or \LuaTeX\ searches by default; \eg\ in Mac\TeX: \path{~/Library/texmf/tex/latex/}.
+
+The package option |no-config| will suppress the loading of the |fontspec.cfg| file under all circumstances.
+
+
+\subsection{Warnings}
+\label{sec:quiet-warnings}
+
+This package can give some warnings that can be harmless if you know what
+you're doing. Use the |quiet| package option to write these warnings to the
+transcript (\texttt{.log}) file instead.
+
+Use the |silent| package option to completely suppress these warnings if you
+don't even want the |.log| file cluttered up.
+
+
+
+\section{Interaction with \LaTeXe\ and other packages}
+
+This section documents some areas of adjustment that \pkg{fontspec} makes
+to improve default behaviour with \LaTeXe\ and third-party packages.
+
+
+\subsection{Verbatim}
+\label{sec:verb}
+
+Many verbatim mechanisms assume the existence of a `visible space' character that exists in the \textsc{ascii} space slot of the typewriter font. This character is known in Unicode as \unichar{2423}{box open}, which looks like this: `\verb*| |'.
+
+When a Unicode typewriter font is used, \LaTeX\ no longer prints visible spaces for the |verbatim*| environment and |\verb*| command.
+This problem is fixed by using the correct Unicode glyph, and the following packages are patched to do the same:
+\pkg{listings}, \pkg{fancyvrb}, \pkg{moreverb}, and \pkg{verbatim}.
+
+In the case that the typewriter font does not contain `\verb*| |', the Latin Modern Mono font is used as a fallback.
+
+In 2019, \LaTeX\ will use a new command \cs{verbvisiblespace} for internal commands and for
+third party packages. If this new command is defined, \pkg{fontspec}'s patching code here
+will be entirely disabled and the packages listed above should no longer rely on \pkg{fontspec}
+to redefine their internals.
+
+
+\subsection{Commands for old-style and lining numbers}
+
+\DescribeMacro{\oldstylenums}
+\DescribeMacro{\liningnums}
+\LaTeX's definition of \cs{oldstylenums} relies on strange font encodings.
+We provide a \pkg{fontspec}-compatible alternative and while we're at it
+also throw in the reverse option as well. Use \cs{oldstylenums}\marg{text}
+to explicitly use old-style (or lowercase) numbers in \meta{text}, and
+the reverse for \cs{liningnums}\marg{text}.
+
+
+\subsection{Italic small caps}
+
+\DescribeMacro{\itshape}
+\DescribeMacro{\slshape}
+\DescribeMacro{\scshape}
+Note that this package redefines the \cs{itshape}, \cs{slshape}, and \cs{scshape} commands in order to allow them to select italic small caps in conjunction.
+With these changes, writing |\itshape\scshape| will lead to italic small caps, and |\upshape| subsequently then moves back to small caps only. |\upshape| again returns from small caps to upright regular.
+(And similarly for for |\slshape|. In addition, once italic small caps are selected then |\slshape| will switch to slanted small caps, and vice versa.)
+
+
+\subsection{Emphasis and nested emphasis}
+
+\DescribeMacro{\eminnershape}
+\LaTeXe\ allows you to specify the behaviour of \cs{emph} nested within \cs{emph} by setting the \cs{eminnershape} command.
+For example,
+\begin{Verbatim}
+  \renewcommand\eminnershape{\upshape\scshape}
+\end{Verbatim}
+will produce small caps within |\emph{\emph{...}}|.
+
+\DescribeMacro{\emfontdeclare}
+The \pkg{fontspec} package takes this idea one step further to allow arbitrary font shape changes and arbitrary levels of nesting within emphasis.
+This is performed using the |\emfontdeclare| command, which takes a comma-separated list of font switches corresponding to increasing levels of emphasis.
+An example:
+\begin{enumerate}
+\item |\emfontdeclare{\itshape,\upshape\scshape,\itshape}| will lead to `italics', `small caps', then `italic small caps' as the level of emphasis increases, as long as italic small caps are defined for the font.
+  Note that |\upshape| is required because the font changes are cascading.
+\end{enumerate}
+The implementation of this feature tries to be `smart' and guess what level of emphasis to use in the case of manual font changing.
+This is reliable only if you use shape-changing commands in \cs{emfontdeclare}.
+For example:
+\begin{Verbatim}
+    \emfontdeclare{\itshape,\upshape\scshape,\itshape}
+    ...
+    \scshape small caps \emph{hello}
+\end{Verbatim}
+Here, the emphasised text `hello' will be printed in italic small caps since |\emph| can detect that the current font shape is already in the second `mode' of emphasis.
+
+\DescribeMacro{\emreset}
+Finally, if you have so much nested emphasis that |\emfontdeclare| runs out of options, it will insert |\emreset| (by default just |\upshape|) and start again from the beginning.
+
+
+\subsection{Strong emphasis}
+
+\DescribeMacro{\strong}
+\DescribeMacro{\strongenv}
+The \cs{strong} macro is used analogously to \cs{emph} but produces variations in weight.
+If you need it in environment form, use |\begin{strongenv}...\end{strongenv}|.
+
+As with emphasis, this font-switching command is intended to move through a range
+of font weights. For example, if the fonts are set up correctly it allows usage such as
+|\strong{...\strong{...}}| in which each nested \cs{strong} macro increases the
+weight of the font.
+
+\DescribeMacro{\strongfontdeclare}
+Currently this feature set is somewhat experimental and there is no syntactic sugar
+to easily define a range of font weights using \pkg{fontspec} commands.
+Use, say, the following to define first bold and then black (|k|) font faces for \cs{strong}:
+\begin{Verbatim}
+  \strongfontdeclare{\bfseries,\fontseries{k}\selectfont}
+\end{Verbatim}
+
+\DescribeMacro{\strongreset}
+If too many levels of \cs{strong} are reached, \cs{strongreset} is inserted.
+By default this is a no-op and the font will simply remain the same.
+Use \cs{renewcommand}\cs{strongreset}|{\mdseries}| to start again from the beginning if desired.
+
+An example for setting up a font family for use with \cs{strong} is discussed in \vref{sec:strong-example}.
+
+\end{document}
+
+% /©
+% ------------------------------------------------
+% The FONTSPEC package  <wspr.io/fontspec>
+% ------------------------------------------------
+% Copyright  2004-2019  Will Robertson, LPPL "maintainer"
+% Copyright  2009-2015  Khaled Hosny
+% Copyright  2013       Philipp Gesang
+% Copyright  2013-2016  Joseph Wright
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% ©/

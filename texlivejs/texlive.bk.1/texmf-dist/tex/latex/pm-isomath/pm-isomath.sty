@@ -1,0 +1,196 @@
+%%
+%% This is file `pm-isomath.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% pm-isomath.dtx  (with options: `style')
+%%   ______________________________________________________
+%%   The PM-ISOmath bundle
+%%   Copyright (C) 2017 Claudio Beccari
+%%   All rights reserved
+%% 
+%%   License information appended
+%% 
+\NeedsTeXFormat{LaTeX2e}[2017/01/01]
+\ProvidesPackage{pm-isomath}[%
+2018/01/12 v.1.0.04
+Poor man package for typesetting ISO compliant math when using pdfLaTeX]
+
+
+\@ifpackageloaded{iftex}{}{\RequirePackage{iftex}}
+\unless\ifPDFTeX
+    \PackageError{pm-isomath}{%
+       ******************************************\MessageBreak
+       This package should be used only when     \MessageBreak
+       typesetting with pdfLaTeX.                \MessageBreak
+       Skipping loading the package              \MessageBreak
+       ******************************************\MessageBreak
+    }{%
+       ******************************************\MessageBreak
+       Press the X key and restart typesetting   \MessageBreak
+       while using pdfLaTeX\MessageBreak
+       ******************************************\MessageBreak
+    }
+\expandafeter\@firstoftwo
+\else
+    \PackageInfo{pm-isomath}{%
+       ******************************************\MessageBreak
+       Typesetting this document with pdfLaTeX!  \MessageBreak
+       ******************************************\MessageBreak
+    }
+\expandafter\@secondoftwo
+\fi
+{\endinput}{\relax}
+\newif\ifengineer \engineerfalse
+\DeclareOption{engineer}{\engineertrue}
+\ProcessOptions*\relax
+\@ifpackageloaded{amsmath}{}{\RequirePackage{amsmath}}
+\@ifpackageloaded{etoolbox}{}{\RequirePackage{etoolbox}}
+\@ifpackageloaded{xparse}{}{\RequirePackage{xparse}}
+\newcommand\switchvarsymbols[1]{%
+\letcs{\tempA}{#1}\csletcs{#1}{var#1}\cslet{var#1}{\tempA}}
+%%%%
+\switchvarsymbols{epsilon}
+\switchvarsymbols{theta}
+\switchvarsymbols{rho}
+\switchvarsymbols{phi}
+%%%%%
+\switchvarsymbols{Gamma}
+\switchvarsymbols{Delta}
+\switchvarsymbols{Theta}
+\switchvarsymbols{Lambda}
+\switchvarsymbols{Xi}
+\switchvarsymbols{Pi}
+\switchvarsymbols{Sigma}
+\switchvarsymbols{Upsilon}
+\switchvarsymbols{Phi}
+\switchvarsymbols{Psi}
+\switchvarsymbols{Omega}
+\@ifpackageloaded{alphabeta}{}{\RequirePackage{alphabeta}}
+
+\def\ISOfam{lmr}\def\ISOser{m}\def\ISOsha{n}
+\NewDocumentCommand\MathLatin{m gO{m}D(){it}}{\bgroup
+\edef\y{\IfNoValueTF{#2}{\ISOfam}{#2}}%
+\edef\x{\noexpand\egroup\noexpand\MLatin{\noexpand#1}{\y}}\x{#3}{#4}}
+
+\providecommand\MLatin[4]{\text{%
+\def\ISOfam{#2}\def\ISOser{#3}\def\ISOsha{#4}%
+\ifcsstring{math@version}{bold}{\def\ISOser{bx}}{}%
+\usefont{T1}{\ISOfam}{\ISOser}{\ISOsha}#1}}
+
+\NewDocumentCommand\MathGreek{ m g O{m} d()}{%
+\edef\y{\IfNoValueTF{#2}{\ISOfam}{#2}}%
+\edef\x{\IfNoValueTF{#4}{\ISOsha}{#4}}%
+\MGreek{#1}{\y}{#3}{\x}}
+
+\newcommand{\MGreek}[4]{\text{%
+\def\ISOfam{#2}\def\ISOser{#3}\def\ISOsha{#4}%
+\ifcsstring{math@version}{bold}{\def\ISOser{bx}}{}%
+{\usefont{LGR}{\ISOfam}{\ISOser}{\ISOsha}#1}}}
+
+\newcommand\ISOalpha{\MathGreek{\alpha}}
+\newcommand\ISObeta{\MathGreek{\beta}}
+\newcommand\ISOgamma{\MathGreek{\gamma}}
+\newcommand\ISOdelta{\MathGreek{\delta}}
+\newcommand\ISOepsilon{\MathGreek{\epsilon}}
+\newcommand\ISOzeta{\MathGreek{\zeta}}
+\newcommand\ISOeta{\MathGreek{\eta}}
+\newcommand\ISOtheta{\MathGreek{\theta}}
+\newcommand\ISOiota{\MathGreek{\iota}}
+\newcommand\ISOkappa{\MathGreek{\kappa}}
+\newcommand\ISOlambda{\MathGreek{\lambda}}
+\newcommand\ISOmu{\MathGreek{\mu}}
+\newcommand\ISOnu{\MathGreek{\nu}}
+\newcommand\ISOxi{\MathGreek{\xi}}
+\newcommand\ISOomicron{\MathGreek{\omicron}}
+\newcommand\ISOpi{\MathGreek{\pi}}
+\newcommand\ISOrho{\MathGreek{\rho}}
+\newcommand\ISOsigma{\MathGreek{\sigma}}
+\newcommand\ISOtau{\MathGreek{\tau}}
+\newcommand\ISOupsilon{\MathGreek{\upsilon}}
+\newcommand\ISOphi{\MathGreek{\phi}}
+\newcommand\ISOchi{\MathGreek{\chi}}
+\newcommand\ISOpsi{\MathGreek{\psi}}
+\newcommand\ISOomega{\MathGreek{\omega}}
+\newcommand\ISOGamma{\MathGreek{\Gamma}}
+\newcommand\ISODelta{\MathGreek{\Delta}}
+\newcommand\ISOEta{\MathGreek{\Eta}}
+\newcommand\ISOTheta{\MathGreek{\Theta}}
+\newcommand\ISOLambda{\MathGreek{\Lambda}}
+\newcommand\ISOXi{\MathGreek{\Xi}}
+\newcommand\ISOPi{\MathGreek{\Pi}}
+\newcommand\ISORho{\MathGreek{\Rho}}
+\newcommand\ISOSigma{\MathGreek{\Sigma}}
+\newcommand\ISOUpsilon{\MathGreek{\Upsilon}}
+\newcommand\ISOPhi{\MathGreek{\Phi}}
+\newcommand\ISOChi{\MathGreek{\Chi}}
+\newcommand\ISOPsi{\MathGreek{\Psi}}
+\newcommand\ISOOmega{\MathGreek{\Omega}}
+\DeclareRobustCommand{\mathrm}%
+{\relax\ifmmode\else\expandafter\non@alpherr
+\csname mathrm \endcsname\fi
+\def\ISOsha{n}\expandafter\use@mathgroup
+\csname M@OT1\endcsname\symoperators}
+
+\DeclareRobustCommand{\mathit}%
+{\relax\ifmmode\expandafter\non@alpherr
+\csname mathit \endcsname\fi
+\def\ISOsha{it}\expandafter\use@mathgroup
+\csname M@OT1\endcsname{9}}
+\newcommand\mathbfit[1]{\MathLatin{#1}{lmr}[bx](it)}
+\newcommand\mathsfit[1]{\MathLatin{#1}{lmss}[m](sl)}
+\newcommand\mathsfbfit[1]{\MathLatin{#1}{lmss}[bx](sl)}
+\let\vectorsymbol\mathbfit
+\let\matrixsymbol\mathbfit
+\let\tensorsymbol\mathsfbfit
+\newcommand\iunit{\MathLatin{i}(n)}
+\newcommand\junit{\MathLatin{j}(n)}
+\ifengineer
+   \let\iu\junit
+\else
+   \let\iu\iunit
+\fi
+\let\eu\undefined
+\DeclareMathOperator\eu{\MathLatin{e}(n)}
+\providecommand\uppi{}
+\renewcommand\uppi{\ISOpi(n)}
+\providecommand*\diff{}
+\renewcommand*\diff{\ensuremath{\mathop{}\!\MathLatin{d}(n)}}
+\providecommand*\micro{}
+\renewcommand*\micro{\textormath{\ifcsdef{textmicro}%
+{\textmicro}{\ISOmu(rs)}}{\ISOmu(rs)}}
+\providecommand*\ohm{}
+\AtBeginDocument{\@ifpackageloaded{textcomp}{%
+\renewcommand*\ohm{\textormath{{\textohm}}{\ISOOmega(n)}}}%
+{\renewcommand*\ohm{\textormath{\ISOOmega(\f@shape)}{\ISOOmega(n)}}}}
+\global\csletcs{bbl@it@ped}{undefined}
+\global\csletcs{bbl@it@ap}{undefined}
+\DeclareRobustCommand\textormath{%
+\unless\ifmmode\expandafter\@firstoftwo
+\else\expandafter\@secondoftwo\fi}
+\AfterEndPreamble{\let\ped\undefined\let\ap\undefined
+\DeclareRobustCommand*\ped[1]{%
+\textormath{\textsubscript{#1}}{_{\mathrm{#1}}}}%
+\providecommand\ap{}
+\DeclareRobustCommand\ap[1]{%
+\textormath{\textsuperscript{#1}}{^{\mathrm{#1}}}}%
+\unless\ifcsname unit\endcsname
+\DeclareRobustCommand{\unit}[1]{\,\textormath{#1}{\mathrm{#1}}}
+\fi}
+
+%% 
+%% Copyright 2017 Claudio Beccari
+%% 
+%% Distributable under the LaTeX Project Public License,
+%% version 1.3c or higher (your choice). The latest version of
+%% this license is at: http://www.latex-project.org/lppl.txt
+%% 
+%% This work is "author-maintained"
+%% 
+%% This work consists of this file pm-isomath.dtx, a README file
+%% the manifest.txt file, and the derived files:
+%%     pm-isomath.sty, pm-isomath.pdf.
+%% 
+%%
+%% End of file `pm-isomath.sty'.

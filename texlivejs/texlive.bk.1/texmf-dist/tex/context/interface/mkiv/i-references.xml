@@ -1,0 +1,566 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="setupreferencing" level="style" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="state">
+                    <cd:constant type="start" default="yes"/>
+                    <cd:constant type="stop"/>
+                </cd:parameter>
+                <cd:parameter name="expansion">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                    <cd:constant type="xml"/>
+                </cd:parameter>
+                <cd:parameter name="autofile">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="export">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="doublesided">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="interaction">
+                    <cd:constant type="label"/>
+                    <cd:constant type="text"/>
+                    <cd:constant type="symbol"/>
+                    <cd:constant type="all" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="separator">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="prefix">
+                    <cd:resolve name="value-referenceprefix"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="textreference" level="document" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-list"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="pagereference" level="document" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="reference" level="document" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-list"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setreference" level="document" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-list"/>
+            <cd:resolve name="assignment-userdata-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="usereferenceparameter" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="boxreference" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-list"/>
+            <cd:csname/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="hboxreference" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-list"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="vboxreference" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-list"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="contentreference" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-list"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupframed"/>
+            </cd:assignments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definereference" level="style" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-reference-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resetreference" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setpagereference" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-reference-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsereferencefound" level="system" category="references conditional" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-reference"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifreferencefoundelse" level="system" category="references conditional" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-reference"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupreferenceprefix" level="style" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:resolve name="value-referenceprefix"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupglobalreferenceprefix" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:resolve name="value-referenceprefix"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="referenceprefix" type="environment" begin="push" end="pop" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:resolve name="value-referenceprefix"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="referenceprefix" type="environment" begin="globalpush" end="globalpop" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:resolve name="value-referenceprefix"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="referenceprefix" level="system" category="references" file="strc-ref.mkvi"/>
+
+    <cd:command name="in" level="document" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text-optional"/>
+            <cd:resolve name="argument-text-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="at" level="document" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text-optional"/>
+            <cd:resolve name="argument-text-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="about" level="document" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="from" level="document" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="over" level="document" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="filterreference" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:resolve name="value-referencetype"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="getreferenceentry" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:resolve name="value-referencetype"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="getreference" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:resolve name="value-referencetype"/>
+            </cd:keywords>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="ref" level="document" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:resolve name="value-referencetype"/>
+            </cd:keywords>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="somewhere" level="document" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="docheckedpagestate" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-reference"/>
+            <cd:resolve name="argument-command"/>
+            <cd:resolve name="argument-command"/>
+            <cd:resolve name="argument-command"/>
+            <cd:resolve name="argument-command"/>
+            <cd:resolve name="argument-command"/>
+            <cd:resolve name="argument-command"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="someplace" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="atpage" level="document" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="symbolreference" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definereferenceformat" level="style" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupreferenceformat"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupreferenceformat" level="style" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="label">
+                    <cd:constant type="*"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="type">
+                    <cd:resolve name="value-referencetype"/>
+                </cd:parameter>
+                <cd:parameter name="setups">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="autocase">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="text">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="referenceformat" generated="yes" variant="example" level="document" category="references" file="strc-ref.mkvi">
+        <cd:sequence>
+            <cd:variable value="referenceformat"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:resolve name="argument-text-optional"/>
+            <cd:resolve name="argument-text-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="goto" level="document" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:content/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="goto" type="environment" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="gotobox" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:content/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="useurl" level="style" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-url"/>
+            <cd:resolve name="keyword-file-optional"/>
+            <cd:resolve name="keyword-text-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="useURL" level="style" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-url"/>
+            <cd:resolve name="keyword-file-optional"/>
+            <cd:resolve name="keyword-text-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="usefile" level="style" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-file"/>
+            <cd:resolve name="keyword-text-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="useexternaldocument" level="style" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-file"/>
+            <cd:resolve name="keyword-text-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelseurldefined" level="system" category="references conditional" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifurldefinedelse" level="system" category="references conditional" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsefiledefined" level="system" category="references conditional" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doiffiledefinedelse" level="system" category="references conditional" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupurl" level="style" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="url" level="document" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="defineprogram" level="style" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-text"/>
+            <cd:resolve name="keyword-text-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupprograms" level="style" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="program" level="document" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definepage" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="gotopage" level="system" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupreferencestructureprefix" level="style" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="cd:name"/>
+                <cd:constant type="cd:section"/>
+            </cd:keywords>
+            <cd:keywords optional="yes">
+                <cd:constant type="default"/>
+            </cd:keywords>
+            <cd:assignments list="yes">
+                <cd:parameter name="prefix">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="prefixseparatorset">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="prefixconversion">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="prefixconversionset">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="prefixstarter">
+                    <cd:resolve name="value-starter"/>
+                </cd:parameter>
+                <cd:parameter name="prefixstopper">
+                    <cd:resolve name="value-stopper"/>
+                </cd:parameter>
+                <cd:parameter name="prefixset">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="prefixsegments">
+                    <cd:resolve name="value-prefixsegments"/>
+                </cd:parameter>
+                <cd:parameter name="numberconversion">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="numberconversionset">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="numberstarter">
+                    <cd:resolve name="value-starter"/>
+                </cd:parameter>
+                <cd:parameter name="numberstopper">
+                    <cd:resolve name="value-stopper"/>
+                </cd:parameter>
+                <cd:parameter name="numbersegments">
+                    <cd:resolve name="value-numbersegments"/>
+                </cd:parameter>
+                <cd:parameter name="numberseparatorset">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="prefixconnector">
+                    <cd:resolve name="value-connector"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

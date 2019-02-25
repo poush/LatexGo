@@ -1,0 +1,63 @@
+% epreuve.sty coming from the News  --Steve Anderson 2 mar 1993
+%                                mods Bernard GAULLE 97/06/31
+% when this file is input in a LaTeX document, it will print a large
+% DRAFT message in light grey at an angle across each page.
+%
+% assumes DVI file will be converted to PostScript by the dvips driver.
+%
+% taken from example posted to the net.
+%%
+%%      checksum        = "17686 63 274 2073"
+%%
+% Include the LaTeX draft option of style by default (--bg)
+\ifx\undefined\ds@draft\let\ds@draft\relax\fi
+\ds@draft
+
+% define the default language specific name (--bg)
+\ifx\draftname\undefined%
+   \def\draftname{- \noexpand\311preuve -}% imprimer Épreuve (PS)
+\fi
+%
+\let\docEpreuve=\document%
+\def\document{% attach the mods to \begin{document}
+              \csname docEpreuve\endcsname%
+% let \DRAFTNAME apply if defined
+\ifx\DRAFTNAME\undefined%
+\else\let\draftname=\DRAFTNAME%
+\fi
+%              \message{DRAFT=\draftname}%
+\special{! userdict begin /bop-hook{
+gsave 
+/encodefont {                  % coming from the red book (--bg)
+    findfont dup               % get the old font dict
+    maxlength dict begin       % make a new one just as big
+   {    1 index /FID ne        % Copy everything but FID
+        {   def }
+        {   pop pop }
+        ifelse }
+   forall
+   /Encoding exch def          % Install the new encoding
+   dup /FontName exch def      % new font dict is still current
+   currentdict definefont      % Create the new font
+   end
+} bind def
+/Helvetica-Bold-ISOLatin1 ISOLatin1Encoding
+         /Helvetica-Bold encodefont pop
+initmatrix 72 dup scale
+/Helvetica-Bold-ISOLatin1 findfont 2 scalefont setfont
+(\draftname) dup
+stringwidth pop
+4.5 5.5 translate
+60 rotate 2 div neg 0 moveto
+.95 setgray
+show
+grestore
+% here was the original coding:
+%200 30 translate
+%65 rotate /Times-Roman findfont 220 scalefont setfont
+%0 0 moveto 0.99 setgray (\draftname) show grestore
+}def end}%
+}%\document
+\ifx\docEpreuve\relax\document\fi% outside any high language
+\endinput
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

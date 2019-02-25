@@ -1,0 +1,1045 @@
+% ----------------------------------------------------------------------------
+%  This "ucharclasses" package sets up XeTeX character classes based on which
+%  unicode block a character is found in. It then allows transition rules to be defined
+%  when entering or leaving particular unicode blocks, the code of which gets inserted
+%  automatically when a transition from a character from one unicode block to a
+%  character from another unicode block is encountered by XeTeX
+%
+%  Current compatibility should be Unicode 10.0.
+%
+%  Credits:
+%   v2.1-2.3: Qing Lee, Werner Lemberg
+%   v2.0: Enrico Gregorio
+%   v1.0: Mike "Pomax" Kamermans
+%
+%  Significant updates:
+%   v2.3: Unicode 10 support
+%   v2.2: Unicode 8.0 and LaTeX2e support
+%   v2.1: Uplift for the intercharclass updates introduced in XeTeX 0.99994
+%   v2.0: Rewritten to Vastly improve performance.
+%   v1.0: Unicode block switching using XeTeX intercharclasses.
+%
+%  License: public domain (https://www.ctan.org/license/pd)
+%
+% ----------------------------------------------------------------------------
+
+\ProvidesPackage{ucharclasses}[2017/08/10 v2.3.0 Unicode block character classes for XeLaTeX]
+
+\newif\if@ucharclassverbose
+\DeclareOption{verbose}{\@ucharclassverbosetrue}
+
+% ----------------------------------------------------------------------------
+%  The package options allow you to selectively enable certain unicode blocks
+% ----------------------------------------------------------------------------
+
+% We first define all blocks in a list together with their start and end
+% point.
+%
+% Starting with XeTeX version 3.14159265-2.6-0.99994, the number of
+% \XeTeXcharclass registers was extended from 256 to 4096 entries; some not
+% so important blocks are thus provided only for this and newer versions.
+% The boundary of character class was changed from 255 to 4095 correspondingly.
+% The primitive \XeTeXinterwordspaceshaping was introduced by XeTeX 0.99994;
+% we use it as a flag to identify this version.
+%
+% However, earlier version of LaTeX2e (before 2016/04/22 v2.0q) didn't provide
+% support for 4096 entries; we thus have to override the hard-coded limit.
+\ifdefined\e@alloc@intercharclass@top
+  \chardef\@ucharclass@boundary=\e@alloc@intercharclass@top
+\else
+  \ifdefined\XeTeXinterwordspaceshaping
+    \chardef\@ucharclass@boundary=4095 %
+    \def\newXeTeXintercharclass{%
+      \e@alloc\XeTeXcharclass\chardef
+              \xe@alloc@intercharclass\m@ne\@ucharclass@boundary}
+  \else
+    \chardef\@ucharclass@boundary=\@cclv
+  \fi
+\fi
+
+\def\AllClasses{
+% Unicode 5.1 block definitions
+  \do{AegeanNumbers}{"010100}{"01013F}
+  \do{AlphabeticPresentationForms}{"0FB00}{"0FB4F}
+  \do{AncientGreekMusicalNotation}{"01D200}{"01D24F}
+  \do{AncientGreekNumbers}{"010140}{"01018F}
+  \do{AncientSymbols}{"010190}{"0101CF}
+  \do{Arabic}{"0600}{"06FF}
+  \do{ArabicPresentationFormsA}{"0FB50}{"0FDFF}
+  \do{ArabicPresentationFormsB}{"0FE70}{"0FEFF}
+  \do{ArabicSupplement}{"0750}{"077F}
+  \do{Armenian}{"0530}{"058F}
+  \do{Arrows}{"02190}{"021FF}
+  \do{Balinese}{"01B00}{"01B7F}
+  \do{BasicLatin}{"0020}{"007F} % 0000..007F in Unicode standard
+  \do{Bengali}{"0980}{"09FF}
+  \do{BlockElements}{"02580}{"0259F}
+  \do{Bopomofo}{"03100}{"0312F}
+  \do{BopomofoExtended}{"031A0}{"031BF}
+  \do{BoxDrawing}{"02500}{"0257F}
+  \do{BraillePatterns}{"02800}{"028FF}
+  \do{Buginese}{"01A00}{"01A1F}
+  \do{Buhid}{"01740}{"0175F}
+  \do{ByzantineMusicalSymbols}{"01D000}{"01D0FF}
+%     Carian (see below)
+  \do{Cham}{"0AA00}{"0AA5F}
+  \do{Cherokee}{"013A0}{"013FF}
+  \do{CJKCompatibility}{"03300}{"033FF}
+  \do{CJKCompatibilityForms}{"0FE30}{"0FE4F}
+  \do{CJKCompatibilityIdeographs}{"0F900}{"0FAFF}
+  \do{CJKCompatibilityIdeographsSupplement}{"02F800}{"02FA1F}
+  \do{CJKRadicalsSupplement}{"02E80}{"02EFF}
+  \do{CJKStrokes}{"031C0}{"031EF}
+  \do{CJKSymbolsAndPunctuation}{"03000}{"0303F}
+  \do{CJKUnifiedIdeographs}{"04E00}{"09FFF}
+  \do{CJKUnifiedIdeographsExtensionA}{"03400}{"04DBF}
+  \do{CJKUnifiedIdeographsExtensionB}{"020000}{"02A6DF}
+  \do{CombiningDiacriticalMarks}{"0300}{"036F}
+  \do{CombiningDiacriticalMarksForSymbols}{"020D0}{"020FF}
+  \do{CombiningDiacriticalMarksSupplement}{"01DC0}{"01DFF}
+  \do{CombiningHalfMarks}{"0FE20}{"0FE2F}
+  \do{ControlPictures}{"02400}{"0243F}
+  \do{Coptic}{"02C80}{"02CFF}
+  \do{CountingRodNumerals}{"01D360}{"01D37F}
+  \do{Cuneiform}{"012000}{"0123FF}
+  \do{CuneiformNumbersAndPunctuation}{"012400}{"01247F}
+  \do{CurrencySymbols}{"020A0}{"020CF}
+  \do{CypriotSyllabary}{"010800}{"01083F}
+  \do{Cyrillic}{"0400}{"04FF}
+  \do{CyrillicExtendedA}{"02DE0}{"02DFF}
+  \do{CyrillicExtendedB}{"0A640}{"0A69F}
+  \do{CyrillicSupplement}{"0500}{"052F}
+  \do{Deseret}{"010400}{"01044F}
+  \do{Devanagari}{"0900}{"097F}
+  \do{Dingbats}{"02700}{"027BF}
+  \do{DominoTiles}{"01F030}{"01F09F}
+  \do{EnclosedAlphanumerics}{"02460}{"024FF}
+  \do{EnclosedCJKLettersAndMonths}{"03200}{"032FF}
+  \do{Ethiopic}{"01200}{"0137F}
+  \do{EthiopicExtended}{"02D80}{"02DDF}
+  \do{EthiopicSupplement}{"01380}{"0139F}
+  \do{GeneralPunctuation}{"02000}{"0206F}
+  \do{GeometricShapes}{"025A0}{"025FF}
+  \do{Georgian}{"010A0}{"010FF}
+  \do{GeorgianSupplement}{"02D00}{"02D2F}
+  \do{Glagolitic}{"02C00}{"02C5F}
+  \do{Gothic}{"010330}{"01034F}
+  \do{GreekAndCoptic}{"0370}{"03FF}
+  \do{GreekExtended}{"01F00}{"01FFF}
+  \do{Gujarati}{"0A80}{"0AFF}
+  \do{Gurmukhi}{"0A00}{"0A7F}
+  \do{HalfwidthAndFullwidthForms}{"0FF00}{"0FFEF}
+  \do{HangulCompatibilityJamo}{"03130}{"0318F}
+  \do{HangulJamo}{"01100}{"011FF}
+  \do{HangulSyllables}{"0AC00}{"0D7AF}
+  \do{Hanunoo}{"01720}{"0173F}
+  \do{Hebrew}{"0590}{"05FF}
+  \do{Hiragana}{"03040}{"0309F}
+  \do{IdeographicDescriptionCharacters}{"02FF0}{"02FFF}
+  \do{IPAExtensions}{"0250}{"02AF}
+  \do{Kanbun}{"03190}{"0319F}
+  \do{KangxiRadicals}{"02F00}{"02FDF}
+  \do{Kannada}{"0C80}{"0CFF}
+  \do{Katakana}{"030A0}{"030FF}
+  \do{KatakanaPhoneticExtensions}{"031F0}{"031FF}
+  \do{KayahLi}{"0A900}{"0A92F}
+  \do{Kharoshthi}{"010A00}{"010A5F}
+  \do{Khmer}{"01780}{"017FF}
+  \do{KhmerSymbols}{"019E0}{"019FF}
+  \do{Lao}{"0E80}{"0EFF}
+  \do{LatinExtendedAdditional}{"01E00}{"01EFF}
+  \do{LatinExtendedA}{"0100}{"017F}
+  \do{LatinExtendedB}{"0180}{"024F}
+  \do{LatinExtendedC}{"02C60}{"02C7F}
+  \do{LatinExtendedD}{"0A720}{"0A7FF}
+  \do{LatinSupplement}{"0080}{"00FF}
+  \do{Lepcha}{"01C00}{"01C4F}
+  \do{LetterlikeSymbols}{"02100}{"0214F}
+  \do{Limbu}{"01900}{"0194F}
+  \do{LinearBIdeograms}{"010080}{"0100FF}
+  \do{LinearBSyllabary}{"010000}{"01007F}
+  \do{Lycian}{"010280}{"01029F}
+  \do{Lydian}{"010920}{"01093F}
+  \do{MahjongTiles}{"01F000}{"01F02F}
+  \do{Malayalam}{"0D00}{"0D7F}
+  \do{MathematicalAlphanumericSymbols}{"01D400}{"01D7FF}
+  \do{MathematicalOperators}{"02200}{"022FF}
+  \do{MiscellaneousMathematicalSymbolsA}{"027C0}{"027EF}
+  \do{MiscellaneousMathematicalSymbolsB}{"02980}{"029FF}
+  \do{MiscellaneousSymbols}{"02600}{"026FF}
+  \do{MiscellaneousSymbolsAndArrows}{"02B00}{"02BFF}
+  \do{MiscellaneousTechnical}{"02300}{"023FF}
+  \do{ModifierToneLetters}{"0A700}{"0A71F}
+  \do{Mongolian}{"01800}{"018AF}
+  \do{MusicalSymbols}{"01D100}{"01D1FF}
+  \do{Myanmar}{"01000}{"0109F}
+  \do{NewTaiLue}{"01980}{"019DF}
+  \do{NKo}{"07C0}{"07FF}
+  \do{NumberForms}{"02150}{"0218F}
+  \do{Ogham}{"01680}{"0169F}
+  \do{OlChiki}{"01C50}{"01C7F}
+%     OldItalic (see below)
+  \do{OldPersian}{"0103A0}{"0103DF}
+  \do{OpticalCharacterRecognition}{"02440}{"0245F}
+  \do{Oriya}{"0B00}{"0B7F}
+  \do{Osmanya}{"010480}{"0104AF}
+  \do{PhagsPa}{"0A840}{"0A87F}
+%     PhaistosDisc (see below)
+  \do{Phoenician}{"010900}{"01091F}
+  \do{PhoneticExtensions}{"01D00}{"01D7F}
+  \do{PhoneticExtensionsSupplement}{"01D80}{"01DBF}
+  \do{PrivateUseArea}{"0E000}{"0F8FF}
+  \do{Rejang}{"0A930}{"0A95F}
+  \do{Runic}{"016A0}{"016FF}
+  \do{Saurashtra}{"0A880}{"0A8DF}
+  \do{Shavian}{"010450}{"01047F}
+  \do{Sinhala}{"0D80}{"0DFF}
+  \do{SmallFormVariants}{"0FE50}{"0FE6F}
+  \do{SpacingModifierLetters}{"02B0}{"02FF}
+  \do{Sundanese}{"01B80}{"01BBF}
+  \do{SuperscriptsAndSubscripts}{"02070}{"0209F}
+  \do{SupplementalArrowsA}{"027F0}{"027FF}
+  \do{SupplementalArrowsB}{"02900}{"0297F}
+  \do{SupplementalMathematicalOperators}{"02A00}{"02AFF}
+  \do{SupplementalPunctuation}{"02E00}{"02E7F}
+%     SupplementaryPrivateUseAreaA (see below)
+%     SupplementaryPrivateUseAreaB (see below)
+  \do{SylotiNagri}{"0A800}{"0A82F}
+  \do{Syriac}{"0700}{"074F}
+  \do{Tagalog}{"01700}{"0171F}
+  \do{Tagbanwa}{"01760}{"0177F}
+  \do{Tags}{"0E0000}{"0E007F}
+  \do{TaiLe}{"01950}{"0197F}
+  \do{TaiXuanJingSymbols}{"01D300}{"01D35F}
+  \do{Tamil}{"0B80}{"0BFF}
+  \do{Telugu}{"0C00}{"0C7F}
+  \do{Thaana}{"0780}{"07BF}
+  \do{Thai}{"0E00}{"0E7F}
+  \do{Tibetan}{"0F00}{"0FFF}
+  \do{Tifinagh}{"02D30}{"02D7F}
+  \do{Ugaritic}{"010380}{"01039F}
+  \do{UnifiedCanadianAboriginalSyllabics}{"01400}{"0167F}
+  \do{Vai}{"0A500}{"0A63F}
+  \do{VerticalForms}{"0FE10}{"0FE1F}
+  \do{YiRadicals}{"0A490}{"0A4CF}
+  \do{YiSyllables}{"0A000}{"0A48F}
+  \do{YijingHexagramSymbols}{"04DC0}{"04DFF}
+% Unicode 5.2 additions
+  \do{Avestan}{"010B00}{"010B3F}
+  \do{Bamum}{"0A6A0}{"0A6FF}
+  \do{CJKUnifiedIdeographsExtensionC}{"02A700}{"02B73F}
+  \do{CommonIndicNumberForms}{"0A830}{"0A83F}
+  \do{DevanagariExtended}{"0A8E0}{"0A8FF}
+  \do{EgyptianHieroglyphs}{"013000}{"01342F}
+  \do{EnclosedAlphanumericSupplement}{"01F100}{"01F1FF}
+  \do{EnclosedIdeographicSupplement}{"01F200}{"01F2FF}
+  \do{HangulJamoExtendedA}{"0A960}{"0A97F}
+  \do{HangulJamoExtendedB}{"0D7B0}{"0D7FF}
+  \do{ImperialAramaic}{"010840}{"01085F}
+  \do{InscriptionalPahlavi}{"010B60}{"010B7F}
+  \do{InscriptionalParthian}{"010B40}{"010B5F}
+  \do{Javanese}{"0A980}{"0A9DF}
+  \do{Kaithi}{"011080}{"0110CF}
+  \do{Lisu}{"0A4D0}{"0A4FF}
+  \do{MeeteiMayek}{"0ABC0}{"0ABFF}
+  \do{MyanmarExtendedA}{"0AA60}{"0AA7F}
+%     OldSouthArabian (see below)
+%     OldTurkic (see below)
+  \do{RumiNumeralSymbols}{"010E60}{"010E7F}
+  \do{Samaritan}{"0800}{"083F}
+  \do{TaiTham}{"01A20}{"01AAF}
+  \do{TaiViet}{"0AA80}{"0AADF}
+  \do{UnifiedCanadianAboriginalSyllabicsExtended}{"018B0}{"018FF}
+  \do{VedicExtensions}{"01CD0}{"01CFF}
+% Unicode 6.0 additions
+  \do{AlchemicalSymbols}{"01F700}{"01F77F}
+  \do{BamumSupplement}{"016800}{"016A3F}
+  \do{Batak}{"01BC0}{"01BFF}
+  \do{Brahmi}{"011000}{"01107F}
+  \do{CJKUnifiedIdeographsExtensionD}{"02B740}{"02B81F}
+  \do{Emoticons}{"01F600}{"01F64F}
+  \do{EthiopicExtendedA}{"0AB00}{"0AB2F}
+  \do{KanaSupplement}{"01B000}{"01B0FF}
+  \do{Mandaic}{"0840}{"085F}
+  \do{MiscellaneousSymbolsAndPictographs}{"01F300}{"01F5FF}
+  \do{PlayingCards}{"01F0A0}{"01F0FF}
+  \do{TransportAndMapSymbols}{"01F680}{"01F6FF}
+% Unicode 6.1 additions
+  \do{ArabicExtendedA}{"08A0}{"08FF}
+  \do{ArabicMathematicalAlphabeticSymbols}{"01EE00}{"01EEFF}
+  \do{Chakma}{"011100}{"01114F}
+  \do{MeeteiMayekExtensions}{"0AAE0}{"0AAFF}
+  \do{MeroiticCursive}{"0109A0}{"0109FF}
+  \do{MeroiticHieroglyphs}{"010980}{"01099F}
+  \do{Miao}{"016F00}{"016F9F}
+  \do{Sharada}{"011180}{"0111DF}
+  \do{SoraSompeng}{"0110D0}{"0110FF}
+  \do{SundaneseSupplement}{"01CC0}{"01CCF}
+  \do{Takri}{"011680}{"0116CF}
+% Unicode 7.0 additions
+  \do{BassaVah}{"016AD0}{"016AFF}
+  \do{CaucasianAlbanian}{"010530}{"01056F}
+  \do{CombiningDiacriticalMarksExtended}{"01AB0}{"01AFF}
+  \do{CopticEpactNumbers}{"0102E0}{"0102FF}
+%     Duployan (see below)
+  \do{Elbasan}{"010500}{"01052F}
+  \do{GeometricShapesExtended}{"01F780}{"01F7FF}
+  \do{Grantha}{"011300}{"01137F}
+  \do{Khojki}{"011200}{"01124F}
+  \do{Khudawadi}{"0112B0}{"0112FF}
+  \do{LatinExtendedE}{"0AB30}{"0AB6F}
+  \do{LinearA}{"010600}{"01077F}
+  \do{Mahajani}{"011150}{"01117F}
+  \do{Manichaean}{"010AC0}{"010AFF}
+  \do{MendeKikakui}{"01E800}{"01E8DF}
+  \do{Modi}{"011600}{"01165F}
+  \do{Mro}{"016A40}{"016A6F}
+  \do{MyanmarExtendedB}{"0A9E0}{"0A9FF}
+  \do{Nabataean}{"010880}{"0108AF}
+%     OldNorthArabian (see below)
+  \do{OldPermic}{"010350}{"01037F}
+  \do{OrnamentalDingbats}{"01F650}{"01F67F}
+  \do{PahawhHmong}{"016B00}{"016B8F}
+  \do{Palmyrene}{"010860}{"01087F}
+  \do{PauCinHau}{"011AC0}{"011AFF}
+  \do{PsalterPahlavi}{"010B80}{"010BAF}
+%     ShorthandFormatControls (see below)
+  \do{Siddham}{"011580}{"0115FF}
+  \do{SinhalaArchaicNumbers}{"0111E0}{"0111FF}
+  \do{SupplementalArrowsC}{"01F800}{"01F8FF}
+  \do{Tirhuta}{"011480}{"0114DF}
+  \do{WarangCiti}{"0118A0}{"0118FF}
+% Unicode 8.0 additions
+  \do{Ahom}{"011700}{"01173F}
+%     AnatolianHieroglyphs (see below)
+  \do{CherokeeSupplement}{"0AB70}{"0ABBF}
+  \do{CJKUnifiedIdeographsExtensionE}{"02B820}{"02CEAF}
+  \do{EarlyDynasticCuneiform}{"012480}{"01254F}
+  \do{Hatran}{"0108E0}{"0108FF}
+  \do{Multani}{"011280}{"0112AF}
+  \do{OldHungarian}{"010C80}{"010CFF}
+  \do{SupplementalSymbolsAndPictographs}{"01F900}{"01F9FF}
+%     SuttonSignWriting (see below)
+% Unicode 9.0 additions needed for classes
+  \do{CyrillicExtendedC}{"01C80}{"01C8F}
+  \do{GlagoliticSupplement}{"01E000}{"01E02F}
+  \do{IdeographicSymbolsAndPunctuation}{"016FE0}{"016FFF}
+  \do{MongolianSupplement}{"011660}{"01167F}
+% Unicode 10.0 additions needed for classes
+  \do{CJKUnifiedIdeographsExtensionF}{"02CEB0}{"02EBEF}
+  \do{KanaExtendedA}{"01B100}{"01B12F}
+  \do{SyriacSupplement}{"0860}{"086F}
+%
+  \ifdefined\XeTeXinterwordspaceshaping
+    \do{AnatolianHieroglyphs}{"014400}{"01467F}
+    \do{Carian}{"0102A0}{"0102DF}
+    \do{Duployan}{"01BC00}{"01BC9F}
+    \do{OldItalic}{"010300}{"01032F}
+    \do{OldNorthArabian}{"010A80}{"010A9F}
+    \do{OldSouthArabian}{"010A60}{"010A7F}
+    \do{OldTurkic}{"010C00}{"010C4F}
+    \do{PhaistosDisc}{"0101D0}{"0101FF}
+    \do{ShorthandFormatControls}{"01BCA0}{"01BCAF}
+    \do{SupplementaryPrivateUseAreaA}{"0F0000}{"0FFFFF}
+    \do{SupplementaryPrivateUseAreaB}{"0100000}{"010FFFF}
+    \do{SuttonSignWriting}{"01D800}{"01DAAF}
+%   Unicode 9.0 additions
+    \do{Adlam}{"01E900}{"01E95F}
+    \do{Bhaiksuki}{"011C00}{"011C6F}
+    \do{Marchen}{"011C70}{"011CBF}
+    \do{Newa}{"011400}{"01147F}
+    \do{Osage}{"0104B0}{"0104FF}
+    \do{Tangut}{"017000}{"0187FF}
+    \do{TangutComponents}{"018800}{"018AFF}
+%   Unicode 10.0 additions
+    \do{MasaramGondi}{"011D00}{"011D5F}
+    \do{Nushu}{"01B170}{"01B2FF}
+    \do{Soyombo}{"011A50}{"011AAF}
+    \do{ZanabazarSquare}{"011A00}{"011A4F}
+  \fi
+}
+
+% ----------------------------------------------------------------------------
+%  Option handling lets the user turn off "load all" and selectively enable only those blocks
+%  they are interested in
+% ----------------------------------------------------------------------------
+
+% Each option starts with \overrideClassLoading; so any specified
+% option will set |\if@overrideClassLoading| to true; when one has
+% been scanned it's not necessary to set the conditional again. Then
+% for block X we let \enableX to \@empty so that later on we can check
+% if it is defined
+
+\newif\if@overrideClassLoading
+\newcommand{\overrideClassLoading}{\@overrideClassLoadingtrue
+  \let\overrideClassLoading\relax}
+
+\def\do#1#2#3{\DeclareOption{#1}%
+  {\overrideClassLoading\expandafter\let\csname enable#1\endcsname\@empty}}
+% We execute the list with this definition of \do
+\AllClasses
+
+% informal groups
+% We define lists also for these groups
+
+\def\ClassGroups{
+  \doclass{Arabics}
+  \doclass{CanadianSyllabics}
+  \doclass{CherokeeFull}
+  \doclass{Chinese}
+  \doclass{CJK}
+  \doclass{Cyrillics}
+  \doclass{Diacritics}
+  \doclass{EthiopicFull}
+  \doclass{GeorgianFull}
+  \doclass{Greek}
+  \doclass{Korean}
+  \doclass{Japanese}
+  \doclass{Latin}
+  \doclass{Mathematics}
+  \doclass{MongolianFull}
+  \doclass{MyanmarFull}
+  \doclass{Phonetics}
+  \doclass{Punctuation}
+  \doclass{SundaneseFull}
+  \doclass{Symbols}
+  \doclass{SyriacFull}
+  \doclass{Yi}
+  \doclass{Other}
+}
+
+\def\ArabicsClasses{
+  \do{Arabic}
+  \do{ArabicExtendedA}
+  \do{ArabicPresentationFormsA}
+  \do{ArabicPresentationFormsB}
+  \do{ArabicSupplement}
+}
+
+\def\CanadianSyllabicsClasses{
+  \do{UnifiedCanadianAboriginalSyllabics}
+  \do{UnifiedCanadianAboriginalSyllabicsExtended}
+}
+
+\def\CherokeeFullClasses{
+  \do{Cherokee}
+  \do{CherokeeSupplement}
+}
+
+\def\ChineseClasses{
+  \do{Bopomofo}
+  \do{BopomofoExtended}
+  \do{CJKCompatibility}
+  \do{CJKCompatibilityForms}
+  \do{CJKCompatibilityIdeographs}
+  \do{CJKCompatibilityIdeographsSupplement}
+  \do{CJKRadicalsSupplement}
+  \do{CJKStrokes}
+  \do{CJKSymbolsAndPunctuation}
+  \do{CJKUnifiedIdeographs}
+  \do{CJKUnifiedIdeographsExtensionA}
+  \do{CJKUnifiedIdeographsExtensionB}
+  \do{CJKUnifiedIdeographsExtensionC}
+  \do{CJKUnifiedIdeographsExtensionD}
+  \do{CJKUnifiedIdeographsExtensionE}
+  \do{CJKUnifiedIdeographsExtensionF}
+  \do{EnclosedCJKLettersAndMonths}
+  \do{EnclosedIdeographicSupplement}
+  \do{IdeographicDescriptionCharacters}
+  \do{IdeographicSymbolsAndPunctuation}
+  \do{KangxiRadicals}
+}
+
+\def\CJKClasses{
+  \do{Bopomofo}
+  \do{BopomofoExtended}
+  \do{CJKCompatibility}
+  \do{CJKCompatibilityForms}
+  \do{CJKCompatibilityIdeographs}
+  \do{CJKCompatibilityIdeographsSupplement}
+  \do{CJKRadicalsSupplement}
+  \do{CJKStrokes}
+  \do{CJKSymbolsAndPunctuation}
+  \do{CJKUnifiedIdeographs}
+  \do{CJKUnifiedIdeographsExtensionA}
+  \do{CJKUnifiedIdeographsExtensionB}
+  \do{CJKUnifiedIdeographsExtensionC}
+  \do{CJKUnifiedIdeographsExtensionD}
+  \do{CJKUnifiedIdeographsExtensionE}
+  \do{CJKUnifiedIdeographsExtensionF}
+  \do{EnclosedCJKLettersAndMonths}
+  \do{EnclosedIdeographicSupplement}
+  \do{HalfwidthAndFullwidthForms}
+  \do{HangulCompatibilityJamo}
+  \do{HangulJamo}
+  \do{HangulJamoExtendedA}
+  \do{HangulJamoExtendedB}
+  \do{HangulSyllables}
+  \do{Hiragana}
+  \do{IdeographicDescriptionCharacters}
+  \do{IdeographicSymbolsAndPunctuation}
+  \do{KanaSupplement}
+  \do{KanaExtendedA}
+  \do{Kanbun}
+  \do{KangxiRadicals}
+  \do{Katakana}
+  \do{KatakanaPhoneticExtensions}
+}
+
+\def\CyrillicsClasses{
+  \do{Cyrillic}
+  \do{CyrillicExtendedA}
+  \do{CyrillicExtendedB}
+  \do{CyrillicExtendedC}
+  \do{CyrillicSupplement}
+  \do{GlagoliticSupplement}
+  \do{Glagolitic}
+}
+
+\def\DiacriticsClasses{
+  \do{CombiningDiacriticalMarks}
+  \do{CombiningDiacriticalMarksExtended}
+  \do{CombiningDiacriticalMarksForSymbols}
+  \do{CombiningDiacriticalMarksSupplement}
+  \do{CombiningHalfMarks}
+  \do{ModifierToneLetters}
+  \do{SpacingModifierLetters}
+}
+
+\def\EthiopicFullClasses{
+  \do{Ethiopic}
+  \do{EthiopicExtended}
+  \do{EthiopicExtendedA}
+  \do{EthiopicSupplement}
+}
+
+\def\GeorgianFullClasses{
+  \do{Georgian}
+  \do{GeorgianSupplement}
+}
+
+\def\GreekClasses{
+  \do{Coptic}
+  \do{CopticEpactNumbers}
+  \do{GreekAndCoptic}
+  \do{GreekExtended}
+}
+
+\def\KoreanClasses{
+  \do{HangulCompatibilityJamo}
+  \do{HangulJamo}
+  \do{HangulJamoExtendedA}
+  \do{HangulJamoExtendedB}
+  \do{HangulSyllables}
+}
+
+\def\JapaneseClasses{
+  \do{CJKUnifiedIdeographs}
+  \do{HalfwidthAndFullwidthForms}
+  \do{Hiragana}
+  \do{KanaSupplement}
+  \do{KanaExtendedA}
+  \do{Kanbun}
+  \do{KangxiRadicals}
+  \do{Katakana}
+  \do{KatakanaPhoneticExtensions}
+}
+
+\def\LatinClasses{
+  \do{AlphabeticPresentationForms}
+  \do{BasicLatin}
+  \do{LatinExtendedAdditional}
+  \do{LatinExtendedA}
+  \do{LatinExtendedB}
+  \do{LatinExtendedC}
+  \do{LatinExtendedD}
+  \do{LatinExtendedE}
+  \do{LatinSupplement}
+}
+
+\def\MathematicsClasses{
+  \do{ArabicMathematicalAlphabeticSymbols}
+  \do{MathematicalAlphanumericSymbols}
+  \do{MathematicalOperators}
+  \do{MiscellaneousMathematicalSymbolsA}
+  \do{MiscellaneousMathematicalSymbolsB}
+  \do{SupplementalMathematicalOperators}
+}
+
+\def\MongolianFullClasses{
+  \do{Mongolian}
+    \do{MongolianSupplement}
+}
+
+\def\MyanmarFullClasses{
+  \do{Myanmar}
+  \do{MyanmarExtendedA}
+  \do{MyanmarExtendedB}
+}
+
+\def\PhoneticsClasses{
+  \do{IPAExtensions}
+  \do{PhoneticExtensions}
+  \do{PhoneticExtensionsSupplement}
+}
+
+\def\PunctuationClasses{
+  \do{GeneralPunctuation}
+  \do{SupplementalPunctuation}
+}
+
+\def\SundaneseFullClasses{
+  \do{Sundanese}
+  \do{SundaneseSupplement}
+}
+
+\def\SymbolsClasses{
+  \do{AlchemicalSymbols}
+  \do{Arrows}
+  \do{BoxDrawing}
+  \do{ByzantineMusicalSymbols}
+  \do{ControlPictures}
+  \do{CurrencySymbols}
+  \do{Dingbats}
+  \do{Emoticons}
+  \do{GeometricShapes}
+  \do{GeometricShapesExtended}
+  \do{LetterlikeSymbols}
+  \do{MiscellaneousSymbols}
+  \do{MiscellaneousSymbolsAndArrows}
+  \do{MiscellaneousSymbolsAndPictographs}
+  \do{MiscellaneousTechnical}
+  \do{NumberForms}
+  \do{OrnamentalDingbats}
+  \do{SupplementalArrowsA}
+  \do{SupplementalArrowsB}
+  \do{SupplementalArrowsC}
+  \do{SupplementalSymbolsAndPictographs}
+  \do{TransportAndMapSymbols}
+}
+
+\def\SyriacFullClasses{
+  \do{Syriac}
+  \do{SyriacSupplement}
+}
+
+\def\YiClasses{
+  \do{YiRadicals}
+  \do{YiSyllables}
+}
+
+\def\OtherClasses{
+  \do{AegeanNumbers}
+  \do{Ahom}
+%     AnatolianHieroglyphs (see below)
+  \do{AncientGreekMusicalNotation}
+  \do{AncientGreekNumbers}
+  \do{AncientSymbols}
+  \do{Armenian}
+  \do{Avestan}
+  \do{Balinese}
+  \do{Bamum}
+  \do{BamumSupplement}
+  \do{BassaVah}
+  \do{Batak}
+  \do{Bengali}
+  \do{BlockElements}
+  \do{Brahmi}
+  \do{BraillePatterns}
+  \do{Buginese}
+  \do{Buhid}
+%     Carian (see below)
+  \do{Cham}
+  \do{CaucasianAlbanian}
+  \do{Chakma}
+  \do{CommonIndicNumberForms}
+  \do{Coptic}
+  \do{CountingRodNumerals}
+  \do{Cuneiform}
+  \do{CuneiformNumbersAndPunctuation}
+  \do{CypriotSyllabary}
+  \do{Deseret}
+  \do{Devanagari}
+  \do{DominoTiles}
+%     Duployan (see below)
+  \do{EarlyDynasticCuneiform}
+  \do{EgyptianHieroglyphs}
+  \do{Elbasan}
+  \do{EnclosedAlphanumerics}
+  \do{EnclosedAlphanumericSupplement}
+  \do{Gothic}
+  \do{Grantha}
+  \do{Gujarati}
+  \do{Gurmukhi}
+  \do{Hanunoo}
+  \do{Hatran}
+  \do{Hebrew}
+  \do{ImperialAramaic}
+  \do{InscriptionalPahlavi}
+  \do{InscriptionalParthian}
+  \do{Javanese}
+  \do{Kaithi}
+  \do{Kannada}
+  \do{KayahLi}
+  \do{Kharoshthi}
+  \do{Khmer}
+  \do{KhmerSymbols}
+  \do{Khojki}
+  \do{Khudawadi}
+  \do{Lao}
+  \do{Lepcha}
+  \do{Limbu}
+  \do{LinearA}
+  \do{LinearBIdeograms}
+  \do{LinearBSyllabary}
+  \do{Lisu}
+  \do{Lycian}
+  \do{Lydian}
+  \do{Mahajani}
+  \do{MahjongTiles}
+  \do{Malayalam}
+  \do{Mandaic}
+  \do{Manichaean}
+  \do{MeeteiMayek}
+  \do{MeeteiMayekExtensions}
+  \do{MendeKikakui}
+  \do{MeroiticCursive}
+  \do{MeroiticHieroglyphs}
+  \do{Miao}
+  \do{Modi}
+  \do{Mro}
+  \do{Multani}
+  \do{MusicalSymbols}
+  \do{Nabataean}
+  \do{NewTaiLue}
+  \do{NKo}
+  \do{Ogham}
+  \do{OlChiki}
+  \do{OldHungarian}
+%     OldItalic (see below)
+%     OldNorthArabian (see below)
+  \do{OldPermic}
+  \do{OldPersian}
+%     OldSouthArabian (see below)
+%     OldTurkic (see below)
+  \do{OpticalCharacterRecognition}
+  \do{Oriya}
+  \do{Osmanya}
+  \do{PahawhHmong}
+  \do{Palmyrene}
+  \do{PauCinHau}
+  \do{PhagsPa}
+%     PhaistosDisc (see below)
+  \do{Phoenician}
+  \do{PlayingCards}
+  \do{PrivateUseArea}
+  \do{PsalterPahlavi}
+  \do{Rejang}
+  \do{RumiNumeralSymbols}
+  \do{Runic}
+  \do{Samaritan}
+  \do{Saurashtra}
+  \do{Sharada}
+  \do{Shavian}
+%     ShorthandFormatControls (see below)
+  \do{Siddham}
+  \do{Sinhala}
+  \do{SinhalaArchaicNumbers}
+  \do{SmallFormVariants}
+  \do{SoraSompeng}
+  \do{SuperscriptsAndSubscripts}
+%     SupplementaryPrivateUseAreaA (see below)
+%     SupplementaryPrivateUseAreaB (see below)
+%     SuttonSignWriting (see below)
+  \do{SylotiNagri}
+  \do{Tagalog}
+  \do{Tagbanwa}
+  \do{Tags}
+  \do{TaiLe}
+  \do{TaiTham}
+  \do{TaiViet}
+  \do{TaiXuanJingSymbols}
+  \do{Takri}
+  \do{Tamil}
+  \do{Telugu}
+  \do{Thaana}
+  \do{Thai}
+  \do{Tibetan}
+  \do{Tifinagh}
+  \do{Tirhuta}
+  \do{Ugaritic}
+  \do{Vai}
+  \do{VedicExtensions}
+  \do{VerticalForms}
+  \do{WarangCiti}
+  \do{YijingHexagramSymbols}
+%
+  \ifdefined\XeTeXinterwordspaceshaping
+    \do{Adlam}
+    \do{AnatolianHieroglyphs}
+    \do{Bhaiksuki}
+    \do{Carian}
+    \do{Duployan}
+    \do{Marchen}
+    \do{MasaramGondi}
+    \do{Newa}
+    \do{Nushu}
+    \do{OldItalic}
+    \do{OldNorthArabian}
+    \do{OldSouthArabian}
+    \do{OldTurkic}
+    \do{Osage}
+    \do{PhaistosDisc}
+    \do{ShorthandFormatControls}
+    \do{Soyombo}
+    \do{SupplementaryPrivateUseAreaA}
+    \do{SupplementaryPrivateUseAreaB}
+    \do{SuttonSignWriting}
+    \do{Tangut}
+    \do{TangutComponents}
+    \do{ZanabazarSquare}
+  \fi
+}
+
+% For each class group Z we define the relative option
+% \DeclareOption{Z}{\overrideClassLoading\enableX1\enableX2...\enableXn}
+% where X1, X2, ..., Xn are the blocks belonging to class Z
+
+\def\do#1{%
+  \unexpanded{\expandafter\let\csname enable#1\endcsname\@empty}}
+\def\doclass#1{%
+  \begingroup\edef\x{\endgroup\noexpand\DeclareOption{#1}{%
+    \noexpand\overrideClassLoading\csname #1Classes\endcsname}}\x}
+\ClassGroups
+
+
+\ProcessOptions\relax
+
+% If no option has been given, \if@overrideClassLoading will still be
+% false, and in this case we enable *all* blocks (again by defining
+% \enableX equal to \@empty for each block X
+
+\if@overrideClassLoading\else
+  \def\do#1#2#3{\expandafter\let\csname enable#1\endcsname\@empty}
+  \AllClasses
+\fi
+
+% ----------------------------------------------------------------------------
+% After dealing with the options, make sure we have the necessary packages available
+% ----------------------------------------------------------------------------
+
+% because this package relies on XeTeX's intercharclass sytem, better require XeTeX
+\RequirePackage{ifxetex}
+\RequireXeTeX
+
+% ----------------------------------------------------------------------------
+% This package heavily exploits XeTeX's intercharclass system!
+% ----------------------------------------------------------------------------
+
+% enable/disable commands
+\newcommand{\disableTransitionRules}{\XeTeXinterchartokenstate = \z@}
+\newcommand{\enableTransitionRules}{\XeTeXinterchartokenstate = \@ne}
+
+% shorthand commands
+\let\uccoff\disableTransitionRules
+\let\uccon\enableTransitionRules
+
+% make sure it's turned on
+\enableTransitionRules
+
+% ----------------------------------------------------------------------------
+%  And now, finally, we can start loading all the requested blocks
+% ----------------------------------------------------------------------------
+
+% \message{Package ucharclasses Message: Assigning character classes per
+% Unicode block (this may take a while)}
+
+%% We record the last allocated class before allocating ours;
+%% \newXeTeXintercharclass saves in the counter
+%% \xe@alloc@intercharclass the last allocated class number; initially
+%% it's 3, but some other code might have allocated interchar classes
+%% before loading this package; if \enableX is defined (to \@empty,
+%% but that's irrelevant), an intercharclass is allocated by using the
+%% list \AllClasses; two cases for block X:
+%%
+%% (1) \enableX is defined: then \do{X}{a}{b} will become
+%% \@defineUnicodeClass{X}{a}{b} which in turn will execute
+%% \newXeTeXintercharclass\XClass and start a loop assigning code
+%% points from a to b to this class
+%%
+%% (2) \enableX is not defined: then \do{X}{a}{b} will become
+%% \@gobblethree{X}{a}{b} and so nothing will be performed
+
+\chardef\@classstart=\xe@alloc@intercharclass
+
+\providecommand\@gobblethree[3]{}
+\def\do#1{%
+  \ifcsname enable#1\endcsname
+     \expandafter\@defineUnicodeClass
+   \else
+     \expandafter\@gobblethree
+   \fi{#1}}
+
+\def\@defineUnicodeClass#1#2#3{%
+  \if@ucharclassverbose\typeout{Defining #1 Class}\fi
+  \expandafter\newXeTeXintercharclass\csname #1Class\endcsname
+  \count@=#2
+  \loop
+  \if@ucharclassverbose
+    \typeout{\XeTeXcharclass\number\count@=
+      \expandafter\string\csname #1Class\endcsname}%
+  \fi
+    \XeTeXcharclass\count@=\csname #1Class\endcsname
+  \ifnum\count@<#3
+    \advance\count@\@ne
+  \repeat
+}
+\AllClasses
+
+% finally, we record the end of our charclass range
+\chardef\@classend=\xe@alloc@intercharclass
+
+
+%%% Our assigned classes go from \@classstart (excluded) to \@classend (included)
+
+% ----------------------------------------------------------------------------
+%	Use: \setTransitionsFor{block name}{when entering this block}{when leaving this block}
+% ----------------------------------------------------------------------------
+
+\def\setTransitionsFor#1#2#3{%
+  \ifcsname enable#1\endcsname
+    \count@=\@classstart
+    \loop\ifnum\count@<\@classend
+      \advance\count@\@ne
+      \ifnum\count@=\csname #1Class\endcsname\else
+         \XeTeXinterchartoks\count@ \csname #1Class\endcsname={#2}%
+         \XeTeXinterchartoks\csname #1Class\endcsname \count@={#3}%
+      \fi
+    \repeat
+    \XeTeXinterchartoks\@ucharclass@boundary\csname #1Class\endcsname={#2}%
+    \XeTeXinterchartoks\csname #1Class\endcsname\@ucharclass@boundary={#3}%
+  \else
+    \if@ucharclassverbose
+      \PackageWarningNoLine{ucharclasses}{Class #1\MessageBreak
+                                          not loaded}%
+    \fi
+  \fi
+}
+
+% ----------------------------------------------------------------------------
+%	Use: \setTransitionTo{block name}{what to do when entering this block}
+% ----------------------------------------------------------------------------
+
+\def\setTransitionTo#1#2{%
+  \ifcsname enable#1\endcsname
+    \count@=\@classstart
+    \loop\ifnum\count@<\@classend
+      \advance\count@\@ne
+      \ifnum\count@=\csname #1Class\endcsname\else
+        \XeTeXinterchartoks\count@ \csname #1Class\endcsname={#2}%
+      \fi
+    \repeat
+    \XeTeXinterchartoks\@ucharclass@boundary\csname #1Class\endcsname={#2}%
+  \else
+    \if@ucharclassverbose
+      \PackageWarningNoLine{ucharclasses}{Class #1\MessageBreak
+                                          not loaded}%
+    \fi
+  \fi
+}
+
+% ----------------------------------------------------------------------------
+%	Use: \setTransitionFrom{block name }{what to do when leaving this block}
+% ----------------------------------------------------------------------------
+
+\def\setTransitionFrom#1#2{%
+  \ifcsname enable#1\endcsname
+    \count@=\@classstart
+    \loop\ifnum\count@<\@classend
+      \advance\count@\@ne
+      \ifnum\count@=\csname #1Class\endcsname\else
+        \XeTeXinterchartoks\csname #1Class\endcsname \count@={#2}%
+      \fi
+    \repeat
+    \XeTeXinterchartoks\csname #1Class\endcsname\@ucharclass@boundary={#2}%
+  \else
+    \if@ucharclassverbose
+      \PackageWarningNoLine{ucharclasses}{Class #1\MessageBreak
+                                          not loaded}%
+    \fi
+  \fi
+}
+
+% ----------------------------------------------------------------------------
+% Informal Block Rules - for these, to/from must always be defined
+%
+% Available informal groups are:
+%
+%   - Arabics
+%   - CanadianSyllabics
+%   - CherokeeFull
+%   - Chinese (including bopomofo)
+%   - CJK (Chinese/Japanese/Korean)
+%   - Cyrillics
+%   - Diacritics
+%   - EthiopicFull
+%   - GeorgianFull
+%   - Greek
+%   - Japanese (it is advised to set CJK first to a catch-all, then set
+%               Japanese for specifics)
+%   - Korean (=Hangul) (same comment as for Japanese)
+%   - Latin
+%   - Mathematics
+%   - MongolianFull
+%   - MyanmarFull
+%   - Phonetics
+%   - Punctuation
+%   - SundaneseFull
+%   - Symbols
+%   - SyriacFull
+%   - Yi
+%   - Other (I am not a fan of lump groups. I hope to un-lump most of it)
+%
+% ----------------------------------------------------------------------------
+
+%% For each class group Z we define \setTransitionsForX as
+%% \newcommand\setTransitionsForZ[2]{%
+%%    \setTransitionsFor{X1}{#1}{#2}
+%%    \setTransitionsFor{X2}{#1}{#2}
+%%    ...
+%%    \setTransitionsFor{Xn}{#1}{#2}}
+%% where X1, X2, ..., Xn are the blocks in group Z
+
+\def\do#1{\noexpand\setTransitionsFor{#1}{####1}{####2}}
+\def\doclass#1{
+  \begingroup\edef\x{\endgroup
+    \noexpand\newcommand
+    \unexpanded\expandafter{\csname setTransitionsFor#1\endcsname}[2]%
+    {\csname #1Classes\endcsname}}\x}
+\ClassGroups
+
+
+% ----------------------------------------------------------------------------
+%
+% based on the previous informal groups, we can define a catch-all transition command
+%
+% ----------------------------------------------------------------------------
+
+%% The following is equivalent to define
+%%   \newcommand{\setDefaultTransitions[2]{
+%%     \setTransitionsForArabic{#1}{#2}
+%%     ...
+%%     \setTransitionsForOther{#1}{#2}}
+
+\def\doclass#1{%
+  \expandafter\noexpand\csname setTransitionsFor#1\endcsname{####1}{####2}}
+\begingroup\edef\x{\endgroup
+  \noexpand\newcommand\noexpand\setDefaultTransitions[2]{%
+    \ClassGroups}}\x
+
+% ----------------------------------------------------------------------------
+
+\let\do\@undefined\let\doclass\@undefined
+\endinput
+%
+% End of file `ucharclasses.sty'.

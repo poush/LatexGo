@@ -1,0 +1,213 @@
+%%^^A%%  fontspec-code-opening.dtx -- part of FONTSPEC <wspr.io/fontspec>
+%
+% \section{Opening code}
+%
+% \iffalse
+%    \begin{macrocode}
+%<*fontspec>
+%    \end{macrocode}
+% \fi
+%
+% \subsection{Package options}
+%
+%    \begin{macrocode}
+\DeclareOption{cm-default}
+  {
+    \@@_warning:n {cm-default-obsolete}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\DeclareOption {math}     { \bool_gset_true:N  \g_@@_math_bool  }
+\DeclareOption {no-math}  { \bool_gset_false:N \g_@@_math_bool  }
+\DeclareOption {config}   { \bool_gset_true:N  \g_@@_cfg_bool   }
+\DeclareOption {no-config}{ \bool_gset_false:N \g_@@_cfg_bool   }
+\DeclareOption {euenc}    { \bool_gset_true:N  \g_@@_euenc_bool }
+\DeclareOption {tuenc}    { \bool_gset_false:N \g_@@_euenc_bool }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\DeclareOption {quiet}
+  {
+    \msg_redirect_module:nnn { fontspec } { warning } { info }
+    \msg_redirect_module:nnn { fontspec } { info } { none }
+  }
+\DeclareOption{silent}
+  {
+    \msg_redirect_module:nnn { fontspec } { warning } { none }
+    \msg_redirect_module:nnn { fontspec } { info } { none }
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\ExecuteOptions{config,math,tuenc}
+\ProcessOptions*
+%    \end{macrocode}
+%
+%
+%
+%
+% \subsection{Encodings}
+%
+% Soon to be the default, with a just-in-case check:
+%    \begin{macrocode}
+\bool_if:NF \g_@@_euenc_bool
+  {
+    \file_if_exist:nTF {tuenc.def}
+      {
+        \cs_if_exist:cF {T@TU}
+          {
+            \@@_warning:n {tu-clash}
+            \DeclareFontEncoding{TU}{}{}
+            \DeclareFontSubstitution{TU}{lmr}{m}{n}
+          }
+      }
+      {
+        \@@_warning:n {tu-missing}
+        \bool_gset_true:N \g_@@_euenc_bool
+      }
+  }
+\bool_if:NTF \g_@@_euenc_bool
+  {
+%<XE>    \tl_gset:Nn \g_fontspec_encoding_tl {EU1}
+%<LU>    \tl_gset:Nn \g_fontspec_encoding_tl {EU2}
+  }
+  { \tl_gset:Nn \g_fontspec_encoding_tl { TU } }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\tl_set:Nn \rmdefault {lmr}
+\tl_set:Nn \sfdefault {lmss}
+\tl_set:Nn \ttdefault {lmtt}
+\RequirePackage[\g_fontspec_encoding_tl]{fontenc}
+\tl_set_eq:NN \UTFencname \g_fontspec_encoding_tl % for xunicode if needed
+%    \end{macrocode}
+% To overcome the encoding changing the current font size, but only if a class has been loaded first:
+%    \begin{macrocode}
+\tl_if_in:NnT \@filelist {.cls} { \normalsize }
+%    \end{macrocode}
+% Dealing with a couple of the problems introduced by \pkg{babel}:
+%    \begin{macrocode}
+\tl_set_eq:NN \cyrillicencoding \g_fontspec_encoding_tl
+\tl_set_eq:NN \latinencoding    \g_fontspec_encoding_tl
+\AtBeginDocument
+  {
+    \tl_set_eq:NN \cyrillicencoding \g_fontspec_encoding_tl
+    \tl_set_eq:NN \latinencoding    \g_fontspec_encoding_tl
+  }
+%    \end{macrocode}
+% That latin encoding definition is repeated to suppress font warnings.
+% Something to do with \cmd\select@language\ ending up in the \texttt{.aux}
+% file which is read at the beginning of the document.
+%
+%    \begin{macrocode}
+\bool_if:NT \g_@@_euenc_bool
+  {
+%<LU>    \cs_set_eq:NN \fontspec_tmp: \XeTeXpicfile
+%<LU>    \cs_set:Npn \XeTeXpicfile {}
+    \RequirePackage{xunicode}
+%<LU>    \cs_set_eq:NN \XeTeXpicfile \fontspec_tmp:
+  }
+%    \end{macrocode}
+%
+%
+% \subsection{Generic functions}
+%
+% \begin{macro}{\FontspecSetCheckBoolTrue}
+% \begin{macro}{\FontspecSetCheckBoolFalse}
+% These strange set functions are to simplify returning code from LuaTeX:
+%    \begin{macrocode}
+\cs_new:Npn \FontspecSetCheckBoolTrue  { \bool_set_true:N  \l_@@_check_bool }
+\cs_new:Npn \FontspecSetCheckBoolFalse { \bool_set_false:N \l_@@_check_bool }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\@@_keys_set_known:nnN}
+%    \begin{macrocode}
+\cs_new:Nn \@@_keys_set_known:nnN
+  {
+%<debug>  \typeout{:::: Keys~set:~{#1}~{#2} }
+    \keys_set_known:nnN {#1} {#2} #3
+%<debug>  \typeout{:::: Leftover:~{#3} }
+  }
+\cs_generate_variant:Nn \@@_keys_set_known:nnN {nx}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_int_mult_truncate:Nn}
+% Missing in expl3, IMO.
+%    \begin{macrocode}
+\cs_new:Nn \@@_int_mult_truncate:Nn
+  {
+    \int_set:Nn #1 { \__dim_eval:w #2 #1 \__dim_eval_end: }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_lua_function:ne}
+% \begin{macro}{\@@_lua_function:nee}
+% \begin{macro}{\@@_lua_function:neee}
+% \begin{macro}{\@@_lua_function:neeee}
+%    \begin{macrocode}
+%<*LU>
+\cs_set:Npn \@@_lua_function:ne    #1#2       { \lua_now:e { fontspec.#1 ("#2")                } }
+\cs_set:Npn \@@_lua_function:nee   #1#2#3     { \lua_now:e { fontspec.#1 ("#2","#3")           } }
+\cs_set:Npn \@@_lua_function:neee  #1#2#3#4   { \lua_now:e { fontspec.#1 ("#2","#3","#4")      } }
+\cs_set:Npn \@@_lua_function:neeee #1#2#3#4#5 { \lua_now:e { fontspec.#1 ("#2","#3","#4","#5") } }
+%</LU>
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+%
+%
+% \subsection{\pkg{expl3} variants}
+%
+%    \begin{macrocode}
+\cs_generate_variant:Nn \int_set:Nn {Nv}
+\cs_generate_variant:Nn \keys_set:nn {nx}
+\cs_generate_variant:Nn \keys_set_known:nnN {nx}
+\cs_generate_variant:Nn \prop_put:Nnn {Nxx}
+\cs_generate_variant:Nn \prop_put:Nnn {NxV}
+\cs_generate_variant:Nn \prop_gput_if_new:Nnn  {NxV}
+\cs_generate_variant:Nn \prop_gput:Nnn  {Nxn}
+\cs_generate_variant:Nn \prop_get:NnNT  {NxN}
+\cs_generate_variant:Nn \prop_get:NnNTF {NxN}
+\cs_generate_variant:Nn \str_if_eq:nnTF {nv}
+\cs_generate_variant:Nn \tl_if_empty_p:n {e}
+\cs_generate_variant:Nn \tl_if_empty:nTF {x}
+\cs_generate_variant:Nn \tl_if_empty:nF {x}
+\cs_generate_variant:Nn \tl_if_empty:nF {f}
+\cs_generate_variant:Nn \tl_if_eq:nnT {ox}
+\cs_generate_variant:Nn \tl_replace_all:Nnn {Nnx}
+%    \end{macrocode}
+%
+%
+%
+%
+% \iffalse
+%    \begin{macrocode}
+%</fontspec>
+%    \end{macrocode}
+% \fi
+
+
+\endinput
+
+% /©
+% ------------------------------------------------
+% The FONTSPEC package  <wspr.io/fontspec>
+% ------------------------------------------------
+% Copyright  2004-2019  Will Robertson, LPPL "maintainer"
+% Copyright  2009-2015  Khaled Hosny
+% Copyright  2013       Philipp Gesang
+% Copyright  2013-2016  Joseph Wright
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% ©/

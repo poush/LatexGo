@@ -1,0 +1,50 @@
+%%
+%% This is file `lwarp-xy.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `xy')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+\LWR@ProvidesPackagePass{xy}[2013/10/06]
+
+\AtBeginDocument{
+
+\preto{\xy}{\begin{lateximage}[(-xy-~\packagediagramname)]}
+\appto{\endxy}{\end{lateximage}}
+
+\@ifundefined{xymatrix}{}{
+\LetLtxMacro\LWR@origxymatrix\xymatrix
+
+\renewcommand{\xymatrix}[1]{%
+\begin{lateximage}[(-xy- xymatrix \packagediagramname)]
+\LWR@origxymatrix{#1}
+\end{lateximage}
+}
+}
+
+\@ifundefined{xygraph}{}{
+\LetLtxMacro\LWR@origxygraph\xygraph
+
+\renewcommand{\xygraph}[1]{%
+\begin{lateximage}[(-xy- xygraph \packagediagramname)]
+\LWR@origxygraph{#1}
+\end{lateximage}
+}
+}
+
+}
+
+\endinput
+%%
+%% End of file `lwarp-xy.sty'.

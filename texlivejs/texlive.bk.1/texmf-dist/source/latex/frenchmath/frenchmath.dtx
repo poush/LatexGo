@@ -1,0 +1,368 @@
+% \iffalse meta-comment
+%
+% Copyright (C) 2018 by Antoine Missier <prenom.nom@ac-toulouse.fr>
+%
+% Version 0.1 : 27/12/2011
+% Version 1.0 : création fichiers dtx et ins
+% This file may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License, either version 1.3 of this license
+% or (at your option) any later version.  The latest version of this
+% license is in:
+%
+%   http://www.latex-project.org/lppl.txt
+%
+% and version 1.3 or later is part of all distributions of LaTeX version
+% 2005/12/01 or later.
+% \fi
+%
+% \iffalse
+%<*driver>
+\ProvidesFile{frenchmath.dtx}
+%</driver>
+%<*package> 
+\NeedsTeXFormat{LaTeX2e}[2005/12/01]
+\ProvidesPackage{frenchmath}   
+    [15/01/2019 v1.0 .dtx frenchmath file]
+%</package>
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+%\frenchbsetup{ItemLabels=\textendash}
+\usepackage{lmodern}
+\usepackage{frenchmath}
+% pour les besoins de la doc on substitue T à ;
+\DeclareMathSymbol{T}\mathpunct{Roman}{059} 
+\DisableCrossrefs         
+%\CodelineIndex
+%\RecordChanges
+\usepackage{hyperref}
+\hypersetup{%
+    colorlinks, 
+    linkcolor=blue,
+    pdftitle={frenchmath}, 
+    pdfsubject={LaTeX package}, 
+    pdfauthor={Antoine Missier}
+}
+\begin{document}
+  \DocInput{frenchmath.dtx}
+  %\PrintChanges
+  %\PrintIndex
+\end{document}
+%</driver>
+% \fi
+%
+% \CheckSum{584}
+%
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%   Dollar        \$     Percent       \%     Ampersand     \&
+%   Acute accent  \'     Left paren    \(     Right paren   \)
+%   Asterisk      \*     Plus          \+     Comma         \,
+%   Minus         \-     Point         \.     Solidus       \/
+%   Colon         \:     Semicolon     \;     Less than     \<
+%   Equals        \=     Greater than  \>     Question mark \?
+%   Commercial at \@     Left bracket  \[     Backslash     \\
+%   Right bracket \]     Circumflex    \^     Underscore    \_
+%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%   Right brace   \}     Tilde         \~}
+%
+%
+% \changes{v1.0}{15/01/2019}{Initial version}
+%
+% \GetFileInfo{frenchmath.sty}
+%
+% \title{L'extension \textsf{frenchmath}\thanks{Ce document
+%     correspond à \textsf{frenchmath}~\fileversion, version initiale du \filedate.}}
+% \author{Antoine Missier \\ \texttt{prenom.nom@ac-toulouse.fr}}
+% \date{15 janvier 2019}
+% \maketitle
+%
+% \section{Introduction}
+% Cette extension, inspirée de |mafr| de Christian Obrecht \cite{MAFR},
+% permet le respect des règles typographiques mathématiques françaises, 
+% en particulier la possibilité d'obtenir automatiquement les majuscules 
+% mathématiques en romain (lettres droites) plutôt qu'en italique,
+% comme préconisé dans \cite{RTIN} et \cite{IGEN}. 
+%
+% D'autres solutions pour composer les majuscules mathématiques en romain
+% sont proposées dans l'extension \texttt{isomath} \cite{ISOM}
+% (avec les polices \texttt{fourier}, \texttt{kpfonts}, \emph{etc}.)
+% ou encore \texttt{mathdesign} \cite{DESIGN} (avec les polices commerciales \texttt{utopia}, 
+% \texttt{garamond} ou \texttt{charter}). Mais \texttt{frenchmath}
+% fournit une méthode générique s'adaptant à n'importe quelle police, 
+% en particulier \texttt{lmodern} avec laquelle ce document a été composé.
+%
+% D'autres préconisations peu respectées, telles que composer en romain
+% et non en italique le symbole différentiel, les nombres i et e \cite{IGEN}, 
+% sont en fait des règles internationales \cite{TYPMA}, \cite{LSHORT}.
+% Elles ne sont donc pas implémentées dans |frenchmath|
+% \footnote{Nous proposons pour cela l'extension \texttt{mismath} \cite{MIS}, 
+% en cours de finalisation (\filedate). Celle-ci fournit également diverses macros
+% pour les mathématiques internationales.}.
+%
+% L'extension fournit en outre diverses macros francisées.
+% Quelques différences sont à signaler avec |mafr| : 
+% \begin{itemize}
+% \item nous avons choisi de ne pas substituer les symboles français aux symboles anglo-saxons 
+% avec le même nom de commande mais de créer de nouvelles commandes ;
+% \item les macros présentées dans la section 2 correspondant à des macros de |mafr|
+% sont signalées par un astérisque en fin d'item, les autres sont nouvelles ;
+% \item enfin quelques commandes de |mafr| ne sont pas spécifiques 
+% aux mathématiques françaises et ne sont donc pas abordées ici :
+% c'est le cas de |\vect|
+% \footnote{Pour de jolis vecteurs on dispose de l'extension \texttt{esvect}
+% de Eddie Saudrais \cite{VECT}.},
+% des ensembles de nombres |\R|, |\N|, \ldots (pour $\mathbf{R}, \mathbf{N}, \ldots$)
+% ainsi que celles relatives à la réalisation de feuilles d'exercices.
+% \end{itemize}
+%
+% Mentionnons aussi l'extension |tdsfrmath| \cite{FRM} de Yvon Henel
+% qui fournit beaucoup de commandes francisées.
+%
+% \section{Utilisation}
+%
+% Contrairement à |mafr|, |frenchmath| ne charge pas les extensions 
+% |fontenc| avec l'option |T1|,
+% ni |babel| avec l'option |french|
+% \footnote{L'ancienne option \texttt{frenchb} est devenue obsolète 
+% et doit être remplacée par \texttt{french} \cite{BABEL}.}
+% afin de laisser à l'utilisateur plus de souplesse sur le choix de ces options.
+%
+% \medskip
+% En France, les lettres majuscules du mode mathématique doivent toujours
+% être composées en romain ($A, B, C, \ldots$) et non en italique 
+% (\cite{RTIN} p.107, voir aussi \cite{IGEN}).
+% Il faut dire que cette convention n'est pas commode à mettre en œuvre,
+% ni avec \LaTeX, ni avec les éditeurs de formule des traitements de textes usuels,
+% et peu d'auteurs la respectent.
+% La mise en œuvre automatique de cette recommandation est le principal bénéfice 
+% de |frenchmath| (comme de |mafr|).* 
+%
+% \DescribeEnv{capsrm, capsit}
+% L'extension |frenchmath| possède deux options : |capsrm| (par défaut) et |capsit|.
+% Avec |capsrm|, les majuscules sont composées automatiquement en romain
+% \footnote{Ne fonctionne pas avec \texttt{beamer}.}
+% et avec |capsit| en italique.
+% Quelque soit l'option choisie, on peut toujours changer l'aspect 
+% d'une lettre particulière, avec les macros \LaTeX\ |\mathrm| et |\mathit|.
+%
+% \medskip
+% Nous présentons d'abors quelques commandes de \texttt{frenchmath} 
+% qui sont essentiellement des alias.
+%
+% \DescribeMacro{\curs}
+% Les lettres cursives ($\curs{A}, \curs{B}, \curs{C}, \curs{D}, \ldots$) sont composées
+% (en mode mathématique) avec la macro |\curs| et sont différentes de celles obtenues 
+% avec |\mathcal| 
+% \footnote{L'extension \texttt{calrsfs} fournit les mêmes cursives en redéfinissant
+% la commande \texttt{\bslash mathcal}.}
+% ($\mathcal{A}, \mathcal{B}, \mathcal{C}, \mathcal{D}, \ldots$).*
+%
+% \DescribeMacro{\infeg} \DescribeMacro{\supeg}
+% Les relations $\infeg$ et $\supeg$ s'obtiennent avec les commandes |\infeg| et |\supeg|
+% et diffèrent des versions anglaises de |\leq| ($\leq$) et |\geq| ($\geq$).
+% Ce sont des alias des commandes |\leqslant| et |\geqslant| de l'extension \texttt{amssymb}
+% automatiquement chargée par \texttt{frenchmath}.*
+%
+% \DescribeMacro{\vide}
+% Le symbole $\vide$ 
+% \footnote{\LaTeX\ fournit la commande \texttt{\bslash o} qui compose
+% également un O barré, mais trop décalé vers le bas (pour l'ensemble vide) : $S=\o$,
+% alors qu'avec \texttt{\bslash vide} on obtient $S=\vide$.}
+% s'obtient avec |\vide| (alias de |\varnothing| de l'extension \texttt{amssymb}) ;
+% il diffère de la version anglaise 
+% obtenue avec |\emptyset| : $\emptyset$.*
+%
+% \DescribeMacro{\paral}
+% La commande |\paral| fournit la \emph{relation} 
+% \footnote{Pour noter que deux objets sont perpendiculaires, on utilise 
+% \texttt{\bslash perp}, défini comme une \emph{relation} mathématique plutôt que 
+% \texttt{\bslash bot} défini comme un \emph{symbole} (les espacements diffèrent).}
+% du parallélisme : $\paral$,
+% plutôt que sa version anglaise |\parallel| : $\parallel$.*
+%
+% \DescribeMacro{\ssi}
+% La commande |\ssi| produit \og \ssi \fg.
+%
+% \DescribeMacro{\cmod}
+% Bien que \LaTeX\ propose par défaut le modulo entre parenthèses, avec |\pmod|, 
+% qui est d'usage en français, on peut vouloir composer  un modulo entre crochets,
+% ce que permet la commande |\cmod| en respectant le bon espacement
+% propre au modulo : $ 5 \equiv 53 \cmod{12}$.
+%
+% \medskip
+% Les commandes suivantes sont déclarées comme identifiants de fonctions.
+%
+% \DescribeMacro{\pgcd} \DescribeMacro{\ppcm} 
+% En arithmétique, nous avons les classiques |\pgcd| et |\ppcm|, 
+% qui diffèrent de leur version anglo-saxonne |\gcd| et |\lcm|
+% \footnote{Cette dernière n'est pas implémentée en standard dans \LaTeX\ 
+% (mais dans \texttt{mismath}).}.
+%
+% \DescribeMacro{\Card} \DescribeMacro{\card}
+% Pour le cardinal d'un ensemble, nous proposons |\Card|, cité dans \cite{RTIN}, 
+% ou |\card|, cité dans \cite{AA}.
+%
+% \pagebreak
+% \DescribeMacro{\Ker} \DescribeMacro{\Hom}
+% \LaTeX\ fournit les macros
+% |\ker| et |\hom| alors que l'usage français est souvent
+% de commencer ces noms par une majuscule pour obtenir $\Ker$
+% \footnote{La commande \texttt{\bslash Im} existe déjà pour la
+% partie imaginaire des nombres complexes et produit $\Im$ ; 
+% elle est redéfinie en Im par l'extension \texttt{mismath} 
+% et peut aussi être utilisée pour l'image.}
+% et $\Hom$.
+%
+% \DescribeMacro{\rg} \DescribeMacro{\Vect}
+% Le rang d'une application linéaire ou d'une matrice ($\rg$) s'obtient avec la commande |\rg|
+% et l'espace vectoriel engendré par une famille de vecteurs avec |\Vect|.
+%
+% \DescribeMacro{\ch} \DescribeMacro{\sh} \DescribeMacro{\tgh}
+% En principe, les fonctions hyperboliques s'écrivent en français avec les macros \LaTeX\ standard
+% |\cosh, \sinh, \tanh| ; les écritures $\ch x$, $\sh x$ et $\tgh x$ ne sont la norme
+% qu'avec les langues d'Europe de l'Est \cite{COMP}, mais celles-ci 
+% sont néanmoins utilisées en France \cite{RTIN}. 
+% On les obtient avec les commandes |\ch|, |\sh| et |\tgh|
+% \footnote{La commande \texttt{\bslash th} existe déjà et produit $\th$.}.
+%
+% \medskip
+% \DescribeMacro{\virgdec} \DescribeMacro{\virgstd}
+% Par défaut la virgule est un symbole de ponctuation et, en mode mathématique,
+% une espace sera ajoutée après la virgule, ce qui est légitime dans un intervalle :
+% |$[a,b]$| donne $[a,b]$, mais pas pour un nombre en français : |$12,5$| donne $12,5$
+% avec une espace trop grande après la virgule.
+% L'extension |babel|, avec l'option |french|, fournit deux bascules :
+% |\DecimalMathComma| et |\StandardMathComma| \cite{BABEL}, qui permettent de modifier
+% le comportement de la virgule en mode mathématique.
+% Nous proposons ici les alias |\virgdec| et |\virgstd| pour ces deux commandes
+% \footnote{Une autre solution très commode est l'utilisation de l'extension \texttt{icomma}
+% (intelligent comma) de Walter Schmidt \cite{COMMA}, 
+% mais, contrairement à \texttt{\bslash virgdec}, \texttt{icomma} ne rétablit 
+% pas l'espace après la virgule quand
+% on tape \texttt{\$[a,b]\$}.}.
+%
+% \DescribeMacro{;} \virgdec
+% Le symbole \og;\fg\ a été redéfini pour le mode mathématique
+% car l'espace précédant le double-point est incorrecte en français
+% |$x \in [0,25 ; 3,75]$| donne
+% $x\in [0,25 T 3,75 ]$ sans |frenchmath| et $x\in [0,25; 3,75]$ avec |frenchmath| ;
+% le comportement de \og ;\fg devient identique à celui de \og:\fg
+% \footnote{Un autre problème d'espacement se pose avec les délimiteurs $[$ et $]$,
+% par exemple  $x \in ]0, \pi[$. Une solution est proposée
+% dans l'extension \texttt{mismath}.}.
+%
+% \section{Le code}
+%
+%    \begin{macrocode}
+\RequirePackage{ifthen}
+\newboolean{capsit}
+\DeclareOption{capsit}{\setboolean{capsit}{true}}
+\DeclareOption{capsrm}{\setboolean{capsit}{false}} % valeur par défaut
+\ProcessOptions \relax
+
+\RequirePackage{mathrsfs} % fournit les majuscules cursives
+\RequirePackage{amssymb} % fournit \leqslant, \geqslant et \varnothing
+\RequirePackage{amsopn} % fournit \DeclareMathOperator
+\RequirePackage{xspace} % utile pour la commande \ssi
+
+\newcommand\curs{\mathscr}
+\newcommand\infeg{\leqslant} 
+\newcommand\supeg{\geqslant} 
+\newcommand\vide{\varnothing}
+\newcommand{\paral}{\mathrel{/\!\!/}} % \parallel existe déjà : ||
+\newcommand\ssi{si, et seulement si,\xspace}
+\newcommand*{\cmod}[1]{\quad[#1]}
+
+\DeclareMathOperator{\pgcd}{pgcd}
+\DeclareMathOperator{\ppcm}{ppcm}
+\DeclareMathOperator{\card}{card}
+\DeclareMathOperator{\Card}{Card}
+\DeclareMathOperator{\Ker}{Ker}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\rg}{rg}
+\DeclareMathOperator{\Vect}{\Vect}
+\DeclareMathOperator{\ch}{ch}
+\DeclareMathOperator{\sh}{sh}
+\DeclareMathOperator{\tgh}{th}
+
+\newcommand\virgdec{\DecimalMathComma} % pas d'espace
+\newcommand\virgstd{\StandardMathComma} % espace après la virgule
+
+\DeclareSymbolFont{Roman}{\encodingdefault}{\familydefault}{m}{n} 
+\DeclareMathSymbol{;}\mathbin{Roman}{059} % \mathpunct à l'origine
+
+\ifthenelse{\boolean{capsit}}{}{%
+	\DeclareMathSymbol{A}\mathalpha{Roman}{`A} %'A codage octal du A dans Roman
+	\DeclareMathSymbol{B}\mathalpha{Roman}{`B}
+	\DeclareMathSymbol{C}\mathalpha{Roman}{`C}
+	\DeclareMathSymbol{D}\mathalpha{Roman}{`D}
+	\DeclareMathSymbol{E}\mathalpha{Roman}{`E}
+	\DeclareMathSymbol{F}\mathalpha{Roman}{`F}
+	\DeclareMathSymbol{G}\mathalpha{Roman}{`G}
+	\DeclareMathSymbol{H}\mathalpha{Roman}{`H}
+	\DeclareMathSymbol{I}\mathalpha{Roman}{`I}
+	\DeclareMathSymbol{J}\mathalpha{Roman}{`J}
+	\DeclareMathSymbol{K}\mathalpha{Roman}{`K}
+	\DeclareMathSymbol{L}\mathalpha{Roman}{`L}
+	\DeclareMathSymbol{M}\mathalpha{Roman}{`M}
+	\DeclareMathSymbol{N}\mathalpha{Roman}{`N}
+	\DeclareMathSymbol{O}\mathalpha{Roman}{`O}
+	\DeclareMathSymbol{P}\mathalpha{Roman}{`P}
+	\DeclareMathSymbol{Q}\mathalpha{Roman}{`Q}
+	\DeclareMathSymbol{R}\mathalpha{Roman}{`R}
+	\DeclareMathSymbol{S}\mathalpha{Roman}{`S}
+	\DeclareMathSymbol{T}\mathalpha{Roman}{`T}
+	\DeclareMathSymbol{U}\mathalpha{Roman}{`U}
+	\DeclareMathSymbol{V}\mathalpha{Roman}{`V}
+	\DeclareMathSymbol{W}\mathalpha{Roman}{`W}
+	\DeclareMathSymbol{X}\mathalpha{Roman}{`X}
+	\DeclareMathSymbol{Y}\mathalpha{Roman}{`Y}
+	\DeclareMathSymbol{Z}\mathalpha{Roman}{`Z}
+	}
+%    \end{macrocode}
+%
+% \begin{thebibliography}{16}
+% \bibitem{RTIN} \emph{Lexique des règles typographiques en usage à l’Imprimerie Nationale}.
+% Édition du 26/08/2002.
+% \bibitem{IGEN} \emph{Composition des textes scientifiques}.
+% Inspection générale de mathématiques (IGEN-DESCO), 06/12/2001.
+% \bibitem{AA} \emph{Règles françaises de typographie mathématique}. Alexandre André, 02/09/2015.
+% \bibitem{ES} \emph{Le petit typographe rationnel}. Eddie Saudrais, 20/03/2000.
+% \bibitem{ISO} \emph{Norme ISO 31-11: 1992 et sa révision ISO 80000-2: 2009 (extraits)}.
+% http://aalem.free.fr/maths/mathematiques.pdf.
+% \bibitem{TYPMA} \emph{Typesetting mathematics for science and technology according 
+% to ISO 31/XI}, Claudio Beccari, TUGboat Volume 18 (1997), \No1.
+% \bibitem{COMP} \emph{\LaTeX\ Companion}. Frank Mittelbach, Michel Goossens,
+% 2\ieme édition, Pearson Education France, 2005.
+% \bibitem{LSHORT} \emph{The Not So Short Introduction to \LaTeXe}. Manuel \LaTeX\
+% de Tobias Oetiker, Hubert Partl, Irene Hyna et Elisabeth Schlegl, CTAN, v6.2 28/02/2018.
+% \bibitem{MAFR} \emph{La distribution \texttt{mafr}}. Extension \LaTeX\ de Christian Obrecht, 
+% CTAN, v1.0 17/09/2006.
+% \bibitem{FRM} \emph{L'extension \texttt{tdsfrmath}}. Extension \LaTeX\ de Yvon Henel, 
+% CTAN, v1.3 22/06/2009.
+% \bibitem{ISOM} \emph{\texttt{isomath}, Mathematical style for science and technology}.
+% Extension \LaTeX\ de Günter Milde, CTAN, v0.6.1 04/06/2012.
+% \bibitem{DESIGN} \emph{The \texttt{mathdesign} package}. Extension \LaTeX\ de
+% Paul Pichaureau, CTAN, 29/08/2013.
+% \bibitem{BABEL} \emph{A Babel language definition file for French}. Extension \LaTeX\ 
+% \texttt{babel-french} de Daniel Flipo, CTAN, v3.5c 14/09/2018.
+% \bibitem{COMMA} \emph{The \texttt{icomma} package for \LaTeXe}. 
+% Extension \LaTeX\ de Walter Schmidt,
+% CTAN, v2.0 10/03/2002. 
+% \bibitem{VECT} \emph{Typesetting vectors with beautiful arrow with \LaTeXe}.
+% Extension \LaTeX\ \texttt{esvect} de Eddie Saudrais, CTAN, v1.3 11/07/2013.
+% \bibitem{MIS} \emph{Miscellaneus mathematical macros}. Extension \LaTeX\ \texttt{mismath}
+% d'Antoine Missier, en cours de finalisation (\filedate).
+% \end{thebibliography}
+
+% \Finale
+\endinput
+
+% \footnote{On peut voir aussi \texttt{\bslash varparallel} 
+% de l'extension \texttt{txfonts/pxfonts}.}

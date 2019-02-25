@@ -1,0 +1,132 @@
+%D The following bunch of macros come from plain \TEX\ by
+%D Don Knuth and deal with basic alignment. We just include
+%D them here so that they can be used if needed. Normally,
+%D \CONTEXT\ users will fall back on one of the three table
+%D environments.
+%D
+%D The hidden names are somewhat adapted and we use other
+%D local variables.
+
+\writestatus{loading}{ConTeXt Table Macros / Plain Tabular}
+
+%D This code might become a module.
+
+\unprotect
+
+\newconditional \c_tabl_plain_cr
+\newconditional \c_tabl_plain_use_tab
+\newbox         \b_tabl_plain_tabs
+\newbox         \b_tabl_plain_tabs_yet
+\newbox         \b_tabl_plain_tabs_done
+\newdimen       \d_tabl_plain_tab
+
+\let\m_tabl_plain_next\relax
+
+\def\cleartabs % visible
+  {\global\setbox\b_tabl_plain_tabs_yet\emptyhbox
+   \setbox\b_tabl_plain_tabs\emptyhbox}
+
+\def\settabs % visible
+  {\setbox\b_tabl_plain_tabs\emptyhbox
+   \futurelet\m_tabl_plain_next\tabl_plain_set_tabs}
+
+\def\tabalign % visible
+  {\settrue\c_tabl_plain_use_tab
+   \tabl_plain_make_tab_box}
+
+\ifdefined\+ \else
+    \let\+\tabalign % no outer here (can be overloaded)
+\fi
+
+\def\tabl_plain_set_tabs
+  {\ifx\m_tabl_plain_next\+%
+     \let\tabl_plain_nxt\tabl_plain_align
+   \else\ifx\m_tabl_plain_next\tabalign % added hh
+     \let\tabl_plain_nxt\tabl_plain_align
+   \else
+     \let\tabl_plain_nxt\tabl_plain_set_cols
+   \fi\fi
+   \let\m_tabl_plain_next\relax
+   \tabl_plain_nxt}
+
+\def\tabl_plain_align
+  {\afterassignment\tabl_plain_set_tab
+   \let\tabl_plain_nxt}
+
+\def\tabl_plain_set_tab
+  {\let\tabl_plain_nxt\relax
+   \setfalse\c_tabl_plain_use_tab
+   \tabl_plain_make_tab_box}
+
+\def\tabl_plain_set_cols#1\columns
+  {\scratchcounter#1\relax
+   \d_tabl_plain_tab\hsize
+   \loop
+     \ifnum\scratchcounter>\zerocount
+       \tabl_plain_other
+   \repeat}
+
+\def\tabl_plain_other
+  {\scratchdimen\d_tabl_plain_tab
+   \divide\scratchdimen\scratchcounter
+   \setbox\b_tabl_plain_tabs\hbox
+     {\hbox to\scratchdimen{}%
+      \unhbox\b_tabl_plain_tabs}%
+   \advance\d_tabl_plain_tab-\scratchdimen
+   \advance\scratchcounter\minusone}
+
+\def\tabl_plain_make_tab_box
+  {\begingroup
+   \let\+\tabalign % added hh
+   \global\setbox\b_tabl_plain_tabs_yet\copy\b_tabl_plain_tabs
+   \global\setbox\b_tabl_plain_tabs_done\emptyhbox
+   \let\cr\tabl_plain_cr
+   \setbox\scratchbox\vbox\bgroup
+     \setfalse\c_tabl_plain_cr
+     \ialign\bgroup
+       \aligntab
+       \tabl_plain_begin_tab_box
+       \alignmark\alignmark
+       \tabl_plain_end_tab_box
+       \crcr}
+
+\def\tabl_plain_cr
+  {\settrue\c_tabl_plain_cr
+   \crcr
+   \egroup
+   \egroup
+   \ifconditional\c_tabl_plain_use_tab
+     \unvbox\scratchbox
+     \lastbox % okay?
+   \fi
+   \endgroup
+   \setbox\b_tabl_plain_tabs\hbox
+     {\unhbox\b_tabl_plain_tabs_yet
+      \unhbox\b_tabl_plain_tabs_done}}
+
+\def\tabl_plain_begin_tab_box
+  {\setbox\scratchbox\hbox\bgroup}
+
+\def\tabl_plain_end_tab_box
+  {\ifconditional\c_tabl_plain_cr
+     \egroup % now \box\scratchbox holds the column
+   \else
+     \hss
+     \egroup
+     \global\setbox\b_tabl_plain_tabs_yet\hbox
+       {\unhbox\b_tabl_plain_tabs_yet
+        \global\setbox\globalscratchbox\lastbox}% now \box\globalscratchbox holds its size
+     \ifvoid\globalscratchbox
+       \global\setbox\globalscratchbox\hbox to \wd\scratchbox
+         {}%
+     \else
+       \setbox\scratchbox\hbox to \wd\globalscratchbox
+         {\unhbox\scratchbox}%
+     \fi
+     \global\setbox\b_tabl_plain_tabs_done\hbox
+       {\box\globalscratchbox
+        \unhbox\b_tabl_plain_tabs_done}%
+   \fi
+   \box\scratchbox}
+
+\protect \endinput

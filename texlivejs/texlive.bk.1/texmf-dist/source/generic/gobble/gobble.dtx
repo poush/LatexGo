@@ -1,0 +1,502 @@
+% \iffalse meta-comment
+%<=*COPYRIGHT>
+%% Copyright (C) 2012-2019 by Martin Scharrer <martin@scharrer-online.de>
+%% ----------------------------------------------------------------------
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+%%
+%% This work has the LPPL maintenance status `maintained'.
+%%
+%% The Current Maintainer of this work is Martin Scharrer.
+%%
+%% This work consists of the files gobble.dtx and gobble.ins
+%% and the derived files gobble.sty, gobble-user.sty,
+%% gobble.tex and gobble-user.tex
+%%
+%<=/COPYRIGHT>
+% \fi
+%
+% \iffalse
+%<*driver>
+\ProvidesFile{gobble.dtx}[%
+%<=*DATE>
+    2019/01/04
+%<=/DATE>
+%<=*VERSION>
+    v0.2
+%<=/VERSION>
+    DTX file for the gobble package]
+\documentclass{ydoc}
+\GetFileInfo{gobble.dtx}
+\usepackage{gobble}[\filedate]
+\EnableCrossrefs
+\CodelineIndex
+\RecordChanges
+\begin{document}
+  \DocInput{\jobname.dtx}
+  \PrintChanges
+  \PrintIndex
+\end{document}
+%</driver>
+% \fi
+%
+% \CheckSum{0}
+%
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%   Dollar        \$     Percent       \%     Ampersand     \&
+%   Acute accent  \'     Left paren    \(     Right paren   \)
+%   Asterisk      \*     Plus          \+     Comma         \,
+%   Minus         \-     Point         \.     Solidus       \/
+%   Colon         \:     Semicolon     \;     Less than     \<
+%   Equals        \=     Greater than  \>     Question mark \?
+%   Commercial at \@     Left bracket  \[     Backslash     \\
+%   Right bracket \]     Circumflex    \^     Underscore    \_
+%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%   Right brace   \}     Tilde         \~}
+%
+%
+% \changes{v0.1}{2012/06/09}{First version.}
+%
+% \DoNotIndex{\newcommand,\newenvironment}
+%
+% \GetFileInfo{gobble.dtx}
+% \author{Martin Scharrer}
+% \email{martin@scharrer-scharrer.de}
+% \ifdefined\repository
+%   \repository{https://bitbucket.org/martin_scharrer/gobble}
+% \fi
+%
+% \maketitle
+%
+% \begin{abstract}\noindent
+% The \pkg{gobble} \LaTeX\ package provides more macros to discard (gobble)
+% macro arguments. These macros are by default only for package
+% and class writers, but are exported to the user level by the
+% \pkg{gobble-user} package.
+% The macros are also available as generic packages for other \TeX\ formats.
+% \end{abstract}
+%
+% \section{Macros}
+%
+% \subsection{Macros for Package/Class Writers}
+% The following macros are provided by the generic \file{gobble.tex} and the \LaTeX\ package \pkg{gobble}.
+% Some are already provided by the \LaTeX\ kernel.
+%
+% \DescribeMacro\@gobble
+% \DescribeMacro\@gobbletwo
+% \DescribeMacro\@gobblethree
+% \DescribeMacro\@gobblefour
+% Gobbles one, two, three or four mandatory arguments.
+%
+% \DescribeMacro\@gobbleopt
+% \DescribeMacro\@gobbletwoopt
+% \DescribeMacro\@gobbleallopt
+% Gobbles one, two or all found optional arguments if present.
+%
+% \DescribeMacro\@gobbletwoopttwo
+% Gobbles (up to) two optional arguments if present and then two mandatory arguments.
+%
+% \DescribeMacro\@firstofone
+% Reads one argument and expands to it, i.e.\ removes the braces around it.
+%
+% \DescribeMacro\@firstoftwo
+% Reads two arguments and expands to the first one while discarding the second one.
+%
+% \DescribeMacro\@secondoftwo
+% Reads two arguments and expands to the second one while discarding the first one.
+%
+% \DescribeMacro\@firstofthree
+% \DescribeMacro\@secondofthree
+% \DescribeMacro\@thirdofthree
+% These macros read three arguments and expand to the first, second or third one, respectively, while discarding the other.
+%
+% \DescribeMacro\@gobbletofi{<code>}<discarded code>\AlsoMacro{fi}
+% \DescribeMacro\@gobbletoelse{<code>}<discarded code>\AlsoMacro{else}
+% \DescribeMacro\@gobbletoor{<code>}<discarded code>\AlsoMacro{or}
+% These macros read one argument and then gobble everything to the next \Macro{fi}, \Macro{else} or \Macro{or},
+% respectively. Afterwards they expand to the first argument.
+% This allows to break out of an \Macro{if..} or \Macro{ifcase} branch, which is sometimes required if code should be
+% executed after the conditional.
+%
+% \subsection{User Level Macros}
+% The following macros are provided by the generic \file{gobble-user.tex} and the \LaTeX\ package \pkg{gobble-user}.
+% These also load the \file{gobble.tex} file or package \pkg{gobble} package, respectively.
+%
+% They macros are identical to the corresponding versions with the leading `|@|', but can be used freely in a user
+% document.
+%
+%
+% \DescribeMacro\gobble
+% \DescribeMacro\gobbletwo
+% \DescribeMacro\gobblethree
+% \DescribeMacro\gobblefour
+%
+% \DescribeMacro\gobbleopt
+% \DescribeMacro\gobbletwoopt
+% \DescribeMacro\gobbleallopt
+%
+% \DescribeMacro\gobbletwoopttwo
+%
+% \DescribeMacro\firstofone
+%
+% \DescribeMacro\firstoftwo
+% \DescribeMacro\secondoftwo
+%
+% \DescribeMacro\firstofthree
+% \DescribeMacro\secondofthree
+% \DescribeMacro\thirdofthree
+%
+% \DescribeMacro\gobbletofi
+% \DescribeMacro\gobbletoelse
+% \DescribeMacro\gobbletoor
+%
+%
+% \StopEventually{}
+% \clearpage
+% \section{Implementation}
+%
+% \iffalse
+%<*gobble.sty>
+% \fi
+%    \begin{macrocode}
+%<!COPYRIGHT>
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesPackage{gobble}[%
+%<!DATE>
+%<!VERSION>
+%<*DRIVER>
+    2099/01/01 develop
+%</DRIVER>
+    Provides more gobble macros]
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\input{gobble}
+%    \end{macrocode}
+
+% \iffalse
+%</gobble.sty>
+% \fi
+%
+% \iffalse
+%<*gobble-user.sty>
+% \fi
+%    \begin{macrocode}
+%<!COPYRIGHT>
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesPackage{gobble-user}[%
+%<!DATE>
+%<!VERSION>
+%<*DRIVER>
+    2099/01/01 develop
+%</DRIVER>
+    Provides user level macros]
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\RequirePackage{gobble}
+\input{gobble-user}
+%    \end{macrocode}
+
+% \iffalse
+%</gobble-user.sty>
+% \fi
+%
+% \iffalse
+%<*gobble.tex>
+% \fi
+%
+%    \begin{macrocode}
+\expandafter\ifx\csname gobble.tex loaded\endcsname\relax
+    \expandafter\def\csname gobble.tex loaded\endcsname{1}%
+\else
+    \expandafter\endinput
+\fi
+%    \end{macrocode}
+%
+% \begin{macro}{\gobbletex@catcode}
+%    \begin{macrocode}
+\expandafter\edef\csname gobbletex@catcode\endcsname{%
+    \catcode`\noexpand\@=\the\catcode`\@%
+}%
+\catcode`\@=11
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\@gobble}
+% \begin{macro}{\@gobbletwo}
+% \begin{macro}{\@gobblethree}
+% \begin{macro}{\@gobblefour}
+%    \begin{macrocode}
+\long\def\@gobble#1{}%
+\long\def\@gobbletwo#1#2{}%
+\long\def\@gobblethree#1#2#3{}%
+\long\def\@gobblefour#1#2#3#4{}%
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+%
+% \begin{macro}{\@gobbleopt}
+%    \begin{macrocode}
+\long\def\@gobbleopt{%
+    \@ifnextchar[%
+        {\@gobbleopt@}%
+        {}%
+}%
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@gobbleopt@}
+%    \begin{macrocode}
+\def\@gobbleopt@[#1]{}%
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\@gobbletwoopt}
+%    \begin{macrocode}
+\long\def\@gobbletwoopt{%
+    \@ifnextchar[%
+        {\@gobbletwoopt@}%
+        {}%
+}%
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@gobbletwoopt@}
+%    \begin{macrocode}
+\def\@gobbletwoopt@[#1]{\@gobbleopt}%
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\@gobbleallopt}
+%    \begin{macrocode}
+\long\def\@gobbleallopt{%
+    \@ifnextchar[%
+        {\@gobbleallopt@}%
+        {}%
+}%
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\@gobbleallopt@}
+%    \begin{macrocode}
+\long\def\@gobbleallopt@[#1]{%
+    \@ifnextchar[%
+        {\@gobbleallopt@}%
+        {}%
+}%
+%    \end{macrocode}
+% \end{macro}
+%
+%
+%
+% \begin{macro}{\@gobbletwoopttwo}
+%    \begin{macrocode}
+\long\def\@gobbletwoopttwo{%
+    \@ifnextchar[%
+        {\@gobbletwoopttwo@}%
+        {\@gobbletwo}%
+}%
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@gobbletwoopttwo@}
+%    \begin{macrocode}
+\long\def\@gobbletwoopttwo@[#1]{%
+    \@ifnextchar[%
+        {\@gobbletwoopttwo@@}%
+        {\@gobbletwo}%
+}%
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@gobbletwoopttwo@@}
+%    \begin{macrocode}
+\long\def\@gobbletwoopttwo@@[#1]{%
+    \@gobbletwo
+}%
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@firstofone}
+%    \begin{macrocode}
+\long\def\@firstofone#1{#1}%
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@firstoftwo}
+% \begin{macro}{\@secondoftwo}
+%    \begin{macrocode}
+\long\def\@firstoftwo#1#2{#1}%
+\long\def\@secondoftwo#1#2{#2}%
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+%
+% \begin{macro}{\@firstofthree}
+% \begin{macro}{\@secondofthree}
+% \begin{macro}{\@thirdofthree}
+%    \begin{macrocode}
+\long\def\@firstofthree#1#2#3{#1}%
+\long\def\@secondofthree#1#2#3{#2}%
+\long\def\@thirdofthree#1#2#3{#3}%
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+%
+% \begin{macro}{\@gobbletofi}
+% \begin{macro}{\@gobbletoelse}
+% \begin{macro}{\@gobbletoor}
+%    \begin{macrocode}
+\long\def\@gobbletofi#1#2\fi{\fi#1}%
+\long\def\@gobbletoelse#1#2\else{\else#1}%
+\long\def\@gobbletoor#1#2\or{\or#1}%
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+%    \begin{macrocode}
+\gobbletex@catcode
+%    \end{macrocode}
+%
+% \iffalse
+%</gobble.tex>
+% \fi
+%
+% \iffalse
+%<*gobble-user.tex>
+% \fi
+%    \begin{macrocode}
+\expandafter\ifx\csname gobble-user.tex loaded\endcsname\relax
+    \expandafter\def\csname gobble-user.tex loaded\endcsname{1}%
+\else
+    \expandafter\endinput
+\fi
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\input{gobble}
+%    \end{macrocode}
+%
+% \begin{macro}{\gobbletex@catcode}
+%    \begin{macrocode}
+\expandafter\edef\csname gobbletex@catcode\endcsname{%
+    \catcode`\noexpand\@=\the\catcode`\@%
+}%
+\catcode`\@=11
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\gobble}
+% \begin{macro}{\gobbletwo}
+% \begin{macro}{\gobblethree}
+% \begin{macro}{\gobblefour}
+%    \begin{macrocode}
+\let\gobble\@gobble
+\let\gobbletwo\@gobbletwo
+\let\gobblethree\@gobblethree
+\let\gobblefour\@gobblefour
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+%
+% \begin{macro}{\gobbleopt}
+%    \begin{macrocode}
+\let\gobbleopt\@gobbleopt
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\gobbletwoopt}
+%    \begin{macrocode}
+\let\gobbletwoopt\@gobbletwoopt
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\gobbleallopt}
+%    \begin{macrocode}
+\let\gobbleallopt\@gobbleallopt
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\gobbletwoopttwo}
+%    \begin{macrocode}
+\let\gobbletwoopttwo\@gobbletwoopttwo
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\firstofone}
+%    \begin{macrocode}
+\let\firstofone\@firstofone
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\firstoftwo}
+% \begin{macro}{\secondoftwo}
+%    \begin{macrocode}
+\let\firstoftwo\@firstoftwo
+\let\secondoftwo\@secondoftwo
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\firstofthree}
+% \begin{macro}{\secondofthree}
+% \begin{macro}{\thirdofthree}
+%    \begin{macrocode}
+\let\firstofthree\@firstofthree
+\let\secondofthree\@secondofthree
+\let\thirdofthree\@thirdofthree
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+%
+% \begin{macro}{\gobbletofi}
+% \begin{macro}{\gobbletoelse}
+% \begin{macro}{\gobbletoor}
+%    \begin{macrocode}
+\let\gobbletofi\@gobbletofi
+\let\gobbletoelse\@gobbletoelse
+\let\gobbletoor\@gobbletoor
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+%    \begin{macrocode}
+\gobbletex@catcode
+%    \end{macrocode}
+%
+% \iffalse
+%</gobble-user.tex>
+% \fi
+%
+% \Finale
+\endinput

@@ -1,0 +1,333 @@
+% xmlparser.tex
+%%%%%%%%%%%%%%%%%%
+% Petr Olsak  2016
+
+% After \input xmlparser you can do:
+
+% \xmlprep {domument.xml} {document.out}
+% You can define all tags used in the document.xml 
+% in the form \def\XMLtag#1#2{...}.  Then you can process:
+% \input document.out
+
+% The macro \xmlprep {input.xml} {output-file} converts XML document to a
+% TeX-friendly format. You can define used macros and do \input output-file. 
+% More information is at the end of this document
+
+\newwrite\xmloutfile
+\def\xmlprep#1#2{% #1=input file, #2=output file
+   \ifx\relax#2\relax \chardef\xmloutfile=16 \else
+   \immediate\openout\xmloutfile=#2 \fi
+   \begingroup \everypar={\setbox0=\lastbox\par \xscan}\input#1 \endgroup
+   \immediate\closeout\xmloutfile
+}
+\long\def\xscan#1<{\ifx\xscan#1\xscan \else\toks0={#1}\xprint{\the\toks0\npercent}\fi\xtag}
+
+\def\npercent#1{}\edef\npercent{\expandafter\npercent\string\%} % normal %
+\def\xprint#1{\immediate\write\xmloutfile{\xindent#1}}
+\def\xindent{}
+
+\def\xtag#1{\ifx#1!\expandafter\xtagH \else\fihere\xtagA#1\fi}
+\def\xtagA#1#2>{\ifx#1?\xtagE#2>\else\ifx#1/\xtagG#2>\else\xtagB#1#2>/>\end\fi\fi}
+\def\xtagB#1/>#2\end{\ifx>#2>\let\tmp=n\xtagC#1 \end\else \let\tmp=/\xtagC#1> \end\fi}
+\def\xtagC#1 #2\end{\def\currargs{}\ifx>#2>\xtagD#1\else \xtagF#2\xtagD#1>\fi}
+\def\xtagD#1>{\bgroup\def\currtag{#1}%
+   \ifx\tmp/\xprint{\string\XML#1\space{\currargs}{}}\egroup\else
+   \xprint{\string\XML#1\space{\currargs}\iftrue\string{\else}\fi\npercent}%
+   \edef\xindent{\xindent\space\space}\fi
+}
+\def\xtagE#1?>{\xprint{\string\META\space{#1}}}
+\def\xtagF#1>{\def\currargs{#1}}
+\def\xtagG#1>{\def\tmp{#1}\ifx\tmp\currtag\else
+   \message{WARNING: <\currtag>...</#1> doesn't match}\fi
+   \egroup\xprint{\iffalse{\else\string}\fi\npercent}%
+}
+\def\xtagH#1{\ifx#1-\expandafter\xtagI \else \fihere\xtagJ#1\fi}
+\def\xtagI#1-->{} % comment in the format <!-- ... -->
+\def\xtagJ#1 #2>{\xprint{\string\SPEC#1\space{#2}}}
+\def\fihere#1\fi{\fi#1}
+
+\def\xarg#1{\xargA#1 ==}
+\def\xargA#1#2={\def\xargN{#1#2}\ifx#1=\else\expandafter\xargB\fi}
+\def\xargB#1{\ifx#1"\expandafter\xargC\else\fihere\xargE#1\fi}
+\def\xargC#1"{\xargD{#1}}
+\def\xargD#1{\expandafter\def\csname ARG\xargN\endcsname{#1}\xargA}
+\def\xargE#1{\ifx#1'\expandafter\xargF\else\fihere\xargG#1\fi}
+\def\xargF#1'{\xargD{#1}}
+\def\xargG#1 {\xargD{#1}}
+
+\def\META#1{}  \def\SPECDOCTYPE#1{}
+
+\def\entity#1;{\csname ent:#1\endcsname}
+\def\declentity#1#2{\expandafter\def\csname ent:#1\endcsname{#2}}
+
+\endinput
+
+--------------------------------------------------------------------------
+
+Documentation
+=============
+
+Introduction example. Suppose the test.xml file:
+
+--------------------
+
+<?xml version="1.0" encoding="utf8"?>
+<pricelist>
+  <!-- This is price list of a virtual firm -->
+  <name>Computer components</name>
+  <validity from="1.1.2000" to="31.3.2000"/>
+  <firm>
+    <name>První hardwarová, s.r.o.</name>
+    <address>
+      <street>Průmyslová 12</street>
+      <city>Praha 10</city>
+      <postalcode>100 000</postalcode>
+      <email>info@prhv.cz</email>
+    </address>
+  </firm> 
+  <offer>
+    <product category="polohovací zařízení" code="pxbd-21">
+      <name>Hyperoptická <em>digitální</em> myš</name>
+      <price currency="CZK">368.30</price>
+    </product>
+    <product category="pevné disky" code="sbhd-99">
+      <name>Soft-slow disc &lt; 19,3 GB</name>
+      <price currency="CZK">8500</price>
+    </product>
+    <product category="polohovací zařízení" code="pxbd-13">
+      <name>Special touchpad</name>
+      <price currency="CZK">5635.20</price>
+    </product>
+  </offer>
+</pricelist>
+
+--------------------
+
+When you process it by \xmlprep {test.xml} {test.out} you get:
+
+--------------------
+
+\META {xml version="1.0" encoding="utf8"}
+\XMLpricelist {}{%
+  \XMLname {}{%
+    Computer components%
+  }%
+  \XMLvalidity {from="1.1.2000" to="31.3.2000"}{}
+  \XMLfirm {}{%
+    \XMLname {}{%
+      První hardwarová, s.r.o.%
+    }%
+    \XMLadddress {}{%
+      \XMLstreet {}{%
+        Průmyslová 12%
+      }%
+      \XMLcity {}{%
+        Praha 10%
+      }%
+      \XMLpostalcode {}{%
+        100 000%
+      }%
+      \XMLemail {}{%
+        info@prhv.cz%
+      }%
+    }%
+  }%
+  \XMLoffer {}{%
+    \XMLproduct{category="polohovací zařízení" code="pxbd-21"}{%
+      \XMLname {}{%
+        Hyperoptická %
+        \XMLem {}{%
+          digitální%
+        }%
+        myš%
+      }%
+      \XMLprice {currency="CZK"}{%
+        368.30%
+      }%
+    }%
+    \XMLproduct {category="pevné disky" code="sbhd-99"}{%
+      \XMLname {}{%
+        Soft-slow disc &lt; 19,3 GB%
+      }%
+      \XMLprice {currency="CZK"}{%
+        8500%
+      }%
+    }%
+    \XMLproduct {category="polohovací zařízení" code="pxbd-13"}{%
+      \XMLname {}{%
+        Special touchpad%
+      }%
+      \XMLprice {currency="CZK"}{%
+        5635.20%
+      }%
+    }%
+  }%
+}%
+
+--------------------------
+
+This format is more comfortable for further TeX processing.
+You can define appropriate macros, for example:
+
+--------------------------
+
+\newtoks\street \newtoks\city \newtoks\postalcode \newtoks\email
+
+\def\XMLpricelist#1{} % only process second argument ...
+\def\XMLname#1#2{{\bf#2}\medskip}
+\def\XMLvalidity#1#2{}
+\def\XMLfirm#1#2{\bgroup
+   \def\XMLname##1##2{{\it##2}\par}%
+   \def\XMLaddress##1##2{##2\printaddress}%
+   \def\XMLstreet##1##2{\street{##2}}%
+   \def\XMLcity##1##2{\city{##2}}%
+   \def\XMLpostalcode##1##2{\postalcode{##2}}%
+   \def\XMLemail##1##2{\email{##2}}%
+   \def\printaddress{ulice: \the\street, 
+      mesto: \the\postalcode\space\the\city, email: {\tt\the\email}} 
+   Dodavatel: #2\par
+   \egroup
+}
+\def\XMLoffer#1{}
+\def\XMLproduct#1#2{\bgroup
+   \xarg{#1}%
+   \def\XMLname##1##2{\def\name{##2}}%
+   \def\XMLprice##1##2{\xarg{currency=?}\xarg{##1}\def\price{##2}}
+   #2%
+   \centerline{\name\space(\ARGcode)\dotfill\price\space\ARGcurrency}
+   \egroup
+}
+\def\XMLem#1#2{{\it#2} \ignorespaces}
+
+\catcode`&=13 \let&=\entity
+\declentity{lt}{$<$}
+
+\input test.out
+
+----------------------------
+
+After \input test.out, you get the desired document.
+
+
+Features of the \xmlprep conversion
+===================================
+
+The <tag arguments>text</tag> is converted to:
+
+   \XMLtag {arguments}{%
+      text%
+   }%
+
+The <tag arguments/> or <tag/> are converted to
+
+   \XMLtag {arguments}{}  or  \XMLtag {}{}
+
+The <!-- text --> is ignored.
+
+The <?text?> is converted to:
+
+   \META {text}
+
+The <!TEXT text> is converted to:
+
+   \SPECTEXT {text}
+
+The closings </tags> are checked to the opening <tag>. 
+The nested tags are indented in the output.
+
+
+Scanning of the arguments
+=========================
+
+The <tag arguments> are converted to \XMLtag{arguments}{%, so the arguments
+are saved as first parameter of the \XMLtag macro. Arguments are typically
+in the form
+
+   argA="valueA" argB="valueB" argC="valueC"
+
+You can define
+
+   \def\XMLtag#1#2{\bgroup \xarg{#1}...process #2\egroup}
+
+The \xarg{arguments} scans the arguments given in the parameter. The result of
+\xarg{"valueA" argB="valueB" argC="valueC"} is equivalent to
+\def\ARGargA{valueA}\def\ARGargB{valueB}\def\ARGargC{valueC}, so you can use
+these macros in further processing.
+
+There are alternatives of the format of arguments:
+
+   argA='valueA' or argA=valueA (separated by space or end of arguments).
+
+The \xarg macro is able to treat these alternatives properly.
+
+Recommendation: If you assume default values of arguments then do something
+similar to this:
+
+   \xarg{argA="defaultA" argB="defaultB"}\xarg{#1}.
+
+
+XML entities
+============
+
+The XML text includes sometimes the entity in the form &name; If it is true
+in your XML document, then you can set & as active with the meaning \entity 
+and declare the used entities by \declentity{name}{what to do}. If the document 
+includes the entities &l; &gt; &amp; (for example) then you can do:
+
+   \catcode`&=13 \let&=\entity
+   \declentity{lt}{$<$}
+   \declentity{gt}{$>$}
+   \declentity{amp}{\&}
+
+
+Various approaches for \XMLtag definitions
+==========================================
+
+Classical approach is
+
+   \def\XMLtag#1#2{\bgroup process arguments #1, process body #2\egroup}
+
+You can define \XMLtag with only one parameter. Then the second parameter is
+normally processed in the group. This is usable if you need to keep the
+possibility of catcode changing in the document. If you need to process
+arguments in the same group as body then do something like this:
+
+   \def\XMLtag#1{\bgroup \xarg{#1}\let\next=}
+
+If you read body in #2 then you can decide what to do before and what to do
+after:
+
+   \def\XMLtag#1#2{what to do before #2 what to do after}
+
+If the body of <tag> includes data declared in <tagA>, <tabB>, then you can
+save the data first and then print the result in the part "what to do after". 
+Example:
+
+   <tag> <tagA>somethingA</tagA> <tagB>somethingB</tagB> </tag>
+
+   \newtoks\dataA \newtoks\dataB
+   \def\XMLtag#1#2{\bgroup
+      \def\XMLtagA##1{\dataA=}\def\XMLtagB##1{\dataB=}%
+      #2% process the body, dataA and dataB are set.
+      print \the\dataB and \the\dataA.
+      \egroup}
+
+The meaning of the tag can depends on the outer tag used. See the "name" tag
+in the introduction example. Then you must to define various meaning of such
+tag inside another \XMLtag macro. 
+
+   <tagA> <name>My name</name> </tagA> <tagB> <name>City name</name> </tagB>
+
+   \def\XMLtagA#1#2{\bgroup
+       \def\XMLname##1##2{...}%
+       ...
+       \egroup
+   }
+   \def\XMLtagB#1#2{\bgroup
+       \def\XMLname##1##2{...something different}%
+       ...
+       \egroup
+   }
+
+-------------------------------------------------------
+

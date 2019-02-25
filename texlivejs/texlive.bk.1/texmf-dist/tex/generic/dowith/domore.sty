@@ -1,0 +1,164 @@
+                                                      \input plainpkg
+\ProvidesPackage{domore}[2015/09/17 v0.32 dowith extended (UL)]
+%% Copyright (C) 2012 2013 2015 Uwe Lueck,
+%% http://www.contact-ednotes.sty.de.vu
+%% -- author-maintained in the sense of LPPL below --
+%%
+%% This file can be redistributed and/or modified under
+%% the terms of the LaTeX Project Public License; either
+%% version 1.3c of the License, or any later version.
+%% The latest version of this license is in
+%%     http://www.latex-project.org/lppl.txt
+%% We did our best to help you, but there is NO WARRANTY.
+%%
+%% Please report bugs, problems, and suggestions via
+%%
+%%   http://www.contact-ednotes.sty.de.vu
+%%
+\PushCatMakeLetterAt                                %% 2015/09/17
+%% == With \LaTeX, extend 'dowith''s \cs{setdo} ==
+%% %% mod. 2012/11/06: 
+%% The original 'dowith' offers |\setdo{<do>}|
+%% for defining a one-parameter macro `\do' expanding to <do>.
+%% The present package allows applying a <digit>-parameter macro 
+%% (maybe `\do', <digit> being 2, 3, or ...)
+%% to a list of "brace groups" where each brace group 
+%% contains <digit> arguments. If \LaTeX\ is present ...
+\ifltx
+%% ... the following extension 
+%% \[|\setdo[<digit>]{<do>}]|\]
+%% of the basic 'dowith' version 
+%% can be used to define a <digit>-parameter macro `\do'.
+%% You also can equip `\do' with an initial optional argument by
+%% \[|\setdo[<digit>][<default>]{<do>}]|\]
+%% The next two moves allow loading the package 
+%% independently of 'dowith' (overriding its definition of `\setdo')
+%% as well as using the package 
+%% with a format that has not defined `\do' before.
+%% The first parameter of `\do' may even be \emph{optional.}
+  \let\setdo\relax \let\do\empty
+  \newcommand*{\setdo}[1][1]{\renewcommand\do[#1]}
+\fi
+%% 
+%% == Auxiliaries ==
+%% |\@firstsecondoftwo{<balanced-1>}{<balanced-2>}| \ 
+%% is a variant of \LaTeX's `\@firstofone{<balanced>}' for 
+%% \emph{two} arguments. It just removes outer braces
+%% from each of the two arguments (provided it has outer braces), 
+%% resulting in \[<balanced-1><balanced-2>\]
+\long\def\@firstsecondoftwo#1#2{#1#2}
+%% % |\@secondfirstoftwo<arg-1><arg-2>| results in <ark-2><ark-1> 
+%% % where <ark-1> is ... 
+%% % [TODO declare "meta-function removing braces"---in 'dowith' documentation]
+%% % (<arg-1>, <arg-2> must not contain `\par' tokens so far---TODO):
+%% |\@secondfirstoftwo{<balanced-1>}{<balanced-2>}| 
+%% \emph{additionally} interchanges the two arguments 
+%% (after removing braces):
+\long\def\@secondfirstoftwo#1#2{#2#1}
+%% Our main application is using it as an extended `\expandafter'
+%% before `\fi':
+%% \[`\@secondfirstoftwo{<do>}\fi'\]
+%% will expand to
+%% \[`\fi<do>'\]
+%% This won't work with `\else' in place of `\fi'.
+%% 
+%% == Enhanced \cs{DoWith} ==
+%% Here comes a more powerful variant of 'dowith''s `\DoWith'. 
+%% Instead of iterating a single "command" <cmd>
+%% on an arglist <args> by 
+%% \[`\DoWith{<cmd>}<args>\StopDoing'\]
+%% (cf. `dowith.pdf'), the present `\DoWith' can have a 
+%% more complex first argument. If <args> consists 
+%% of some brace groups the first of which is {<farg>} 
+%% so that <args> is 
+%% \[`{<farg>}<rgs>'\]
+%% ---<rgs> being the remaining arglist---
+%% \[|\DoWith{<repeat>}<args>\StopDoing|\]
+%% works like 
+%% \[`<repeat>{<farg>}\DoWith{<repeat>}<rgs>\StopDoing'\]
+%% and so on---a recursive explanation. Or if <args> is
+%% \[`{<arg-1>}{<arg-2>}'\dots`{<arg-n>}'\]
+%% ($n$ items), the result is like 
+%% \[`<repeat>{<arg-1>}<repeat>{<arg-2>}'\dots`<repeat>{<arg-n>}'\]
+%% The actual definition is:
+\def\DoWith#1#2{%
+    \ifx\StopDoing#2\empty      %% not \@empty for Plain 2012/11/05
+        \else\@secondfirstoftwo{#1{#2}\DoWith{#1}}\fi}
+%% In order to \strong{use} the remaining definitions from \strong{'dowith' 
+%% together with the present package},          %% \strong 2012/11/06
+%% load `dowith.sty' before `domore.sty'.
+%%
+%% (v0.32:) |\StopDoing| must be provided in case 'dowith'
+%% is not loaded at all. Being "undefined" is very 
+%% bad when `\DoWithMore' is used for a list of \emph{assignments.}
+%% As in 'dowith', we assume that no argument starts with something 
+%% that has the same meaning as `\DoWith' itself:
+\let\StopDoing\DoWith
+%%
+%% == Applications of \cs{DoWith} ==
+%% `\DoWith' still is somewhat auxiliary. What I have used in practice, 
+%% are the following definitions.
+%%
+%% |\DoWithMore{<repeat>}<args>\StopDoing| %% was \DoMore 2015/05/22
+%% with <args> as above 
+%% "unpacks" each arglist item so that <repeat> may be a macro 
+%% with more than one argument---say, <digit> arguments.
+%% Then <f-arg> or <arg-1>, as well as <arg-2> $\dots$ <arg-n>,
+%% should provide an arglist consisting of <digit> items.
+\def\DoWithMore#1{\DoWith{\@firstsecondoftwo{#1}}}
+%% Now I use metavariable <do> instead of <repeat>. 
+%% We consider some "separator" material <sep> to be inserted
+%% between instances of applying <do> to an item of <args>.
+%% We want to get
+%% \[`<do>{<arg-1>}<sep><do>{<arg-2>}<sep>'\dots`<sep><do>{<arg-n>}'\]
+%% This is achieved simply by starting with
+%% \[`<do>{<farg>}'\]
+%% and then proceeding as with 
+%% \[`\DoWith{<sep><do>}<rgs>\StopDoing'\]
+%% And that's what |\DoSeparateWith{<do>}{<sep>}<args>\StopDoing| does:
+\def\DoSeparateWith#1#2#3{#1{#3}\DoWith{#2#1}}
+%% |\DoSeparateWithMore{<do>}{<sep>}<args>\StopDoing| combines
+%% the two previous things, inserting separator material <sep>
+%% and unpacking the nested arg\-lists:
+\def\DoSeparateWithMore#1#2{%              %% wieder 2012/06/05
+    \DoSeparateWith{\@firstsecondoftwo{#1}}{#2}}
+%% My main application is that <do> is a link macro with arguments
+%% <target> and <text> and that <sep> is \qtdcode{~\string|~}
+%% (or some tie variant) to get a horizontal list of links like
+%% \[\def|{$\vert$}\mbox{<text-1> | <text-2> | \dots | <text-n>}\]
+%% 
+%% == Without \cs{StopDoing} == %% 2013/03/20, mv. 2013/03/22
+%% The following enhancements of 'dowith' are provided by %% 2013/03/22
+%% v0.31.
+%%
+%% |\DoWithAllOf{<repeat>}{<list>}| works like 
+%% \[`\DoWith{<repeat>}<list>\StopDoing'\]
+%% as in 'dowith', but now with a more general first argument:
+\def\DoWithAllOf#1#2{\DoWith{#1}#2\StopDoing}
+%% |\DoWithAllIn{<repeat>}{<list-macro>}| works as in 'dowith' too
+%% and needs the <repeat> enhancement too:                %% 2013/03/21
+\def\DoWithAllIn#1#2{%
+    \expandafter \@secondfirstoftwo \expandafter {#2}{\DoWith{#1}}%
+    \StopDoing}
+%%
+%% == Leaving and History ==
+\PopLetterCatAt
+\endinput
+
+VERSION HISTORY 
+v0.1    2012/01/17  developed in `texblog.fdf' 
+                    (using \[re]newcommand*)
+v0.2    2012/08/07  own file `domore.sty', \def's only
+        2012/08/08  dealing with "more" \setdo
+v0.3    2012/11/05  using `plainpkg'; removing old % code
+                    (see stored v0.2); auxiliaries \long
+        2012/11/06  doc.: more on \setdo (<digit>, opt. arg.), 
+                    usage with `dowith' \strong
+        2012/11/18  doc.: adjusted for `catchdq'; reworking for 
+                    \DoWith; \DoWithMore, \DoSeparateWith
+        2012/11/19  doc.: \DoSeparateWithMore
+v0.31   2013/03/20  \DoWithAllOf
+        2013/03/21  \DoWithAllIn
+        2013/03/22  moving down new section, mod. doc.
+v0.32   2015/05/22  doc. fix \DoWithMore; providing \StopDoing
+        2015/09/17  \PushCatMakeLetterAt!

@@ -1,0 +1,97 @@
+!config
+# Arara, the cool TeX automation tool
+# Copyright (c) 2018, Paulo Roberto Massa Cereda 
+# All rights reserved.
+#
+# This rule is part of arara.
+identifier: indent
+name: Indent
+authors:
+- Chris Hughes
+- Paulo Cereda
+commands:
+- name: The latexindent.pl script
+  command: >
+    @{
+        return getCommand('latexindent', silent, trace, screenlog,
+               settings, cruft, overwrite, output, file, modifylinebreaks,
+               options, logfile);
+    }
+arguments:
+- identifier: silent
+  flag: >
+    @{
+        isTrue(parameters.silent, '-s')
+    }
+- identifier: overwrite
+  flag: >
+    @{
+        isTrue(parameters.overwrite, '-w')
+    }
+- identifier: trace
+  flag: >
+    @{
+      if ([ 'default', 'complete' ].contains(parameters.trace)) {
+          return isTrue(parameters.trace == 'default', '-t', '-tt');
+      }
+      else {
+          throwError('You provided an invalid value for trace.');
+      }
+    }
+- identifier: screenlog
+  flag: >
+    @{
+        isTrue(parameters.screenlog, '-sl')
+    }
+- identifier: modifylinebreaks
+  flag: >
+    @{
+        isTrue(parameters.modifylinebreaks, '-m')
+    }
+- identifier: settings
+  flag: >
+    @{
+      check = parameters.containsKey('where');
+      location = check ? parameters.where : '';
+      if ([ 'local', 'onlydefault' ].contains(parameters.settings)) {
+          return isTrue(parameters.settings == 'local', isTrue(check,
+                 '-l='.concat(location), '-l'), '-d');
+      }
+      else {
+          throwError('You provided an invalid value for settings.');
+      }
+    }
+- identifier: cruft
+  flag: >
+    @{
+        '-c='.concat(parameters.cruft)
+    }
+- identifier: logfile
+  flag: >
+    @{
+        [ '-g', parameters.logfile ]
+    }
+- identifier: output
+  flag: >
+    @{
+        [ '-o', parameters.output ]
+    }
+- identifier: where
+  flag: >
+    @{
+      check = parameters.containsKey('settings');
+      setting = check ? parameters.settings : '';
+      if (setting != 'local') {
+          throwError('This key requires a local setting.');
+      }
+    }
+- identifier: options
+  flag: >
+    @{
+        if (isList(parameters.options)) {
+            return parameters.options;
+        }
+        else {
+            throwError('I was expecting a list of options.');
+        }
+    }

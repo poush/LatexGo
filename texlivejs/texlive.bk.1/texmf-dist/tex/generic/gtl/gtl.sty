@@ -1,0 +1,675 @@
+%%
+%% This is file `gtl.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% gtl.dtx  (with options: `package')
+%% 
+%% Do not distribute a modified version of this file.
+%% 
+%% Communicate any suggestions for changing this package
+%% to Bruno Le Floch (blflatex+gtl@gmail.com).
+%% 
+%% File: gtl.dtx Copyright (C) 2013,2015,2017,2018 Bruno Le Floch
+%%
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3c
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%%
+%% This work has the LPPL maintenance status 'maintained'
+%% and the current maintainer is Bruno Le Floch.
+%%
+%% This work consists of the files gtl.dtx and gtl.ins and
+%% derived file gtl.sty.
+%% -----------------------------------------------------------------------
+\begingroup\expandafter\expandafter\expandafter\endgroup
+\expandafter\ifx\csname RequirePackage\endcsname\relax
+  \input expl3-generic.tex
+\else
+  \RequirePackage{expl3}[2017/11/14]
+\fi
+\ExplSyntaxOn
+\cs_if_exist:NTF \ProvidesExplPackage
+  {
+    \cs_new_eq:NN \__gtl_end_package_hook: \prg_do_nothing:
+    \ExplSyntaxOff
+    \ProvidesExplPackage
+  }
+  {
+    \cs_new_eq:NN \__gtl_end_package_hook: \ExplSyntaxOff
+    \group_begin:
+    \ExplSyntaxOff
+    \cs_set_protected:Npn \__gtl_tmp:w #1#2#3#4
+      {
+        \group_end:
+        \tl_gset:cx { ver @ #1 . sty } { #2 ~ v#3 ~ #4 }
+        \cs_if_exist_use:NF \wlog { \iow_log:x }
+          { Package: ~ #1 ~ #2 ~ v#3 ~ #4 }
+      }
+    \__gtl_tmp:w
+  }
+      {gtl} {2018/12/28} {0.5} {Manipulate unbalanced lists of tokens}
+\cs_generate_variant:Nn \use:nn { no }
+\cs_new:Npn \__gtl_exp_not_n:N #1 { \exp_not:n {#1} }
+\cs_new:Npn \__gtl_brace:nn #1#2 { { #1 #2 } }
+\cs_new:Npn \__gtl_brace_swap:nn #1#2 { { #2 #1 } }
+\cs_new:Npn \__gtl_strip_nil_mark:w
+  { \__gtl_strip_nil_mark_aux:w \prg_do_nothing: }
+\cs_new:Npn \__gtl_strip_nil_mark_aux:w #1 \q_nil \q_mark
+  { \exp_not:o {#1} }
+\cs_new_eq:NN \s__gtl \scan_stop:
+\cs_new_protected:Npn \gtl_set:Nn   { \__gtl_set:NNn \tl_set:Nn   }
+\cs_new_protected:Npn \gtl_gset:Nn  { \__gtl_set:NNn \tl_gset:Nn  }
+\cs_new_protected:Npn \gtl_const:Nn { \__gtl_set:NNn \tl_const:Nn }
+\cs_new_protected:Npn \gtl_set:Nx   { \__gtl_set:NNn \tl_set:Nx   }
+\cs_new_protected:Npn \gtl_gset:Nx  { \__gtl_set:NNn \tl_gset:Nx  }
+\cs_new_protected:Npn \gtl_const:Nx { \__gtl_set:NNn \tl_const:Nx }
+\cs_new_protected:Npn \__gtl_set:NNn   #1#2#3
+  { #1 #2 { \s__gtl { } {#3} { } } }
+\gtl_const:Nn \c_empty_gtl { }
+\tl_const:Nn \c_group_end_gtl   { \s__gtl { { } } { } {     } }
+\tl_const:Nn \c_group_begin_gtl { \s__gtl {     } { } { { } } }
+\cs_new_protected:Npn \gtl_new:N #1
+  { \cs_new_eq:NN #1 \c_empty_gtl }
+\cs_new_eq:NN \gtl_set_eq:NN  \tl_set_eq:NN
+\cs_new_eq:NN \gtl_gset_eq:NN \tl_gset_eq:NN
+\cs_new_protected:Npn \gtl_clear:N  #1
+  { \gtl_set_eq:NN  #1 \c_empty_gtl }
+\cs_new_protected:Npn \gtl_gclear:N #1
+  { \gtl_gset_eq:NN #1 \c_empty_gtl }
+\cs_new_protected:Npn \gtl_clear_new:N #1
+  { \gtl_if_exist:NTF #1 { \gtl_clear:N #1 } { \gtl_new:N #1 } }
+\cs_new_protected:Npn \gtl_gclear_new:N #1
+  { \gtl_if_exist:NTF #1 { \gtl_gclear:N #1 } { \gtl_new:N #1 } }
+\prg_new_eq_conditional:NNn \gtl_if_exist:N \tl_if_exist:N
+  { p , T , F , TF }
+\cs_new_protected:Npn \gtl_put_left:Nn #1#2
+  { \tl_set:Nx #1 { \exp_after:wN \__gtl_put_left:wn #1 {#2} } }
+\cs_new_protected:Npn \gtl_gput_left:Nn #1#2
+  { \tl_gset:Nx #1 { \exp_after:wN \__gtl_put_left:wn #1 {#2} } }
+\cs_new:Npn \__gtl_put_left:wn \s__gtl #1#2#3 #4
+  {
+    \tl_if_empty:nTF {#1}
+      { \exp_not:n { \s__gtl { } { #4 #2 } {#3} } }
+      {
+        \s__gtl
+        { \exp_not:o { \__gtl_brace:nn {#4} #1 } }
+        { \exp_not:n {#2} }
+        { \exp_not:n {#3} }
+      }
+  }
+\cs_new_protected:Npn \gtl_put_right:Nn #1#2
+  { \tl_set:Nx #1 { \exp_after:wN \__gtl_put_right:wn #1 {#2} } }
+\cs_new_protected:Npn \gtl_gput_right:Nn #1#2
+  { \tl_gset:Nx #1 { \exp_after:wN \__gtl_put_right:wn #1 {#2} } }
+\cs_new:Npn \__gtl_put_right:wn \s__gtl #1#2#3 #4
+  {
+    \tl_if_empty:nTF {#3}
+      { \exp_not:n { \s__gtl {#1} { #2 #4 } { } } }
+      {
+        \s__gtl
+        { \exp_not:n {#1} }
+        { \exp_not:n {#2} }
+        { \exp_not:o { \__gtl_brace_swap:nn {#4} #3 } }
+      }
+  }
+\cs_new_protected:Npn \gtl_concat:NNN #1#2#3
+  { \tl_set:Nx  #1 { \exp_last_two_unbraced:Noo \__gtl_concat:ww #2 #3 } }
+\cs_new_protected:Npn \gtl_gconcat:NNN #1#2#3
+  { \tl_gset:Nx #1 { \exp_last_two_unbraced:Noo \__gtl_concat:ww #2 #3 } }
+\cs_new:Npn \__gtl_concat:ww \s__gtl #1#2#3 \s__gtl #4#5#6
+  {
+    \tl_if_blank:nTF {#3}
+      {
+        \tl_if_blank:nTF {#4}
+          { \__gtl_concat_aux:nnnnnn }
+          { \__gtl_concat_auxi:nnnnnn }
+      }
+      {
+        \tl_if_blank:nTF {#4}
+          { \__gtl_concat_auxii:nnnnnn }
+          { \__gtl_concat_auxiv:nnnn }
+      }
+      {#1} {#2} {#3} {#4} {#5} {#6}
+  }
+\cs_new:Npn \__gtl_concat_aux:nnnnnn #1#2#3#4#5#6
+  { \exp_not:n { \s__gtl {#1} { #2 #5 } {#6} } }
+\cs_new:Npn \__gtl_concat_auxi:nnnnnn #1#2#3#4#5#6
+  {
+    \s__gtl
+    {
+      \exp_not:n {#1}
+      \exp_not:f
+        { \__gtl_concat_auxiii:w \__gtl_brace:nn {#2} #4 ~ \q_stop }
+    }
+    { \exp_not:n {#5} }
+    { \exp_not:n {#6} }
+  }
+\cs_new:Npn \__gtl_concat_auxii:nnnnnn #1#2#3#4#5#6
+  {
+    \s__gtl
+    { \exp_not:n {#1} }
+    { \exp_not:n {#2} }
+    {
+      \exp_not:n {#6}
+      \exp_not:f
+        { \__gtl_concat_auxiii:w \__gtl_brace_swap:nn {#5} #3 ~ \q_stop }
+    }
+  }
+\cs_new:Npn \__gtl_concat_auxiii:w #1 ~ #2 \q_stop {#1}
+\cs_new:Npn \__gtl_concat_auxiv:nnnn #1#2#3#4
+  {
+    \tl_if_single:nTF {#3}
+      { \__gtl_concat_auxv:wnwnn }
+      { \__gtl_concat_auxvi:nnwnwnn }
+    #3 ~ \q_mark #4 ~ \q_mark {#1} {#2}
+  }
+\cs_new:Npn \__gtl_concat_auxv:wnwnn
+    #1#2 \q_mark #3#4 \q_mark #5#6
+  {
+    \__gtl_concat:ww
+      \s__gtl {#5} { #6 { #1 #3 } } { }
+      \s__gtl {#4}
+  }
+\cs_new:Npn \__gtl_concat_auxvi:nnwnwnn
+    #1#2#3 \q_mark #4#5 \q_mark #6#7
+  {
+    \__gtl_concat:ww
+      \s__gtl {#6} {#7} { { #2 { #1 #4 } } #3 }
+      \s__gtl {#5}
+  }
+\cs_new:Npn \gtl_to_str:N #1 { \exp_after:wN \__gtl_to_str:w #1 }
+\cs_new:Npn \gtl_to_str:n #1 { \__gtl_to_str:w #1 }
+\cs_new:Npn \__gtl_to_str:w \s__gtl #1#2#3
+  { \__gtl_to_str_loopi:nnw { } #1 \q_nil \q_mark {#2} {#3} }
+\cs_new:Npx \__gtl_to_str_loopi:nnw #1#2
+  {
+    \exp_not:N \quark_if_nil:nTF {#2}
+      { \exp_not:N \__gtl_to_str_testi:nnw {#1} {#2} }
+      { \exp_not:N \__gtl_to_str_loopi:nnw { #1 #2 \iow_char:N \} } }
+  }
+\cs_new:Npx \__gtl_to_str_testi:nnw #1#2#3 \q_mark
+  {
+    \exp_not:N \tl_if_empty:nTF {#3}
+      { \exp_not:N \__gtl_to_str_endi:nnn {#1} }
+      {
+        \exp_not:N \__gtl_to_str_loopi:nnw
+          { #1 #2 \iow_char:N \} } #3 \exp_not:N \q_mark
+      }
+  }
+\cs_new:Npn \__gtl_to_str_endi:nnn #1#2#3
+  { \__gtl_to_str_loopii:nnw #3 { #1 #2 } \q_nil \q_stop }
+\cs_new:Npx \__gtl_to_str_loopii:nnw #1#2
+  {
+    \exp_not:N \quark_if_nil:nTF {#2}
+      { \exp_not:N \__gtl_to_str_testii:nnw {#1} {#2} }
+      { \exp_not:N \__gtl_to_str_loopii:nnw { #2 \iow_char:N \{ #1 } }
+  }
+\cs_new:Npx \__gtl_to_str_testii:nnw #1#2#3 \q_stop
+  {
+    \exp_not:N \tl_if_empty:nTF {#3}
+      { \exp_not:N \tl_to_str:n {#1} }
+      {
+        \exp_not:N \__gtl_to_str_loopii:nnw
+          { #2 \iow_char:N \{ #1 } #3 \exp_not:N \q_stop
+      }
+  }
+\cs_new_protected:Npn \gtl_show:N
+  { \__gtl_show:NNN \tl_show:n \tl_show:N }
+\cs_new_protected:Npn \gtl_log:N
+  { \__gtl_show:NNN \tl_log:n \tl_log:N }
+\cs_new_protected:Npn \__gtl_show:NNN #1#2#3
+  {
+    \gtl_if_exist:NTF #3
+      { \exp_args:Nx #1 { \token_to_str:N #3 = \gtl_to_str:N #3 } }
+      { #2 #3 }
+  }
+\prg_new_eq_conditional:NNn \gtl_if_eq:NN \tl_if_eq:NN
+  { p , T , F , TF }
+\prg_new_conditional:Npnn \gtl_if_empty:N #1 { p , T , F , TF }
+  {
+    \tl_if_eq:NNTF #1 \c_empty_gtl
+      { \prg_return_true: } { \prg_return_false: }
+  }
+\prg_new_conditional:Npnn \gtl_if_tl:N #1 { p , T , F , TF }
+  { \exp_after:wN \__gtl_if_tl_return:w #1 }
+\cs_new:Npn \__gtl_if_tl_return:w \s__gtl #1#2#3
+  {
+    \tl_if_empty:nTF { #1 #3 }
+      { \prg_return_true: } { \prg_return_false: }
+  }
+\prg_new_conditional:Npnn \gtl_if_single_token:N #1 { p , T , F , TF }
+  { \exp_after:wN \__gtl_if_single_token_return:w #1 #1 }
+\cs_new:Npn \__gtl_if_single_token_return:w \s__gtl #1#2#3 #4
+  {
+    \tl_if_empty:nTF { #1 #3 }
+      {
+        \tl_if_single_token:nTF {#2}
+          { \prg_return_true: }
+          { \prg_return_false: }
+      }
+      {
+        \gtl_if_eq:NNTF #4 \c_group_begin_gtl
+          { \prg_return_true: }
+          {
+            \gtl_if_eq:NNTF #4 \c_group_end_gtl
+              { \prg_return_true: }
+              { \prg_return_false: }
+          }
+      }
+  }
+\prg_new_conditional:Npnn \gtl_if_blank:N #1 { p , T , F , TF }
+  { \exp_after:wN \__gtl_if_blank_return:w #1 }
+\cs_new:Npn \__gtl_if_blank_return:w \s__gtl #1#2#3
+  {
+    \tl_if_blank:nTF { #1 #2 #3 }
+      { \prg_return_true: }
+      { \prg_return_false: }
+  }
+\prg_new_conditional:Npnn \gtl_if_head_is_group_begin:N #1
+  { p , T , F , TF }
+  {
+    \exp_after:wN \__gtl_head:wnnnnn #1
+      { \prg_return_false: }
+      { \prg_return_true: }
+      { \prg_return_false: }
+      { \prg_return_false: }
+      { \prg_return_false: \use_none:n }
+  }
+\prg_new_conditional:Npnn \gtl_if_head_is_group_end:N #1
+  { p , T , F , TF }
+  {
+    \exp_after:wN \__gtl_head:wnnnnn #1
+      { \prg_return_false: }
+      { \prg_return_false: }
+      { \prg_return_true: }
+      { \prg_return_false: }
+      { \prg_return_false: \use_none:n }
+  }
+\prg_new_conditional:Npnn \gtl_if_head_is_space:N #1
+  { p , T , F , TF }
+  {
+    \exp_after:wN \__gtl_head:wnnnnn #1
+      { \prg_return_false: }
+      { \prg_return_false: }
+      { \prg_return_false: }
+      { \prg_return_true: }
+      { \prg_return_false: \use_none:n }
+  }
+\prg_new_conditional:Npnn \gtl_if_head_is_N_type:N #1
+  { p , T , F , TF }
+  {
+    \exp_after:wN \__gtl_head:wnnnnn #1
+      { \prg_return_false: }
+      { \prg_return_false: }
+      { \prg_return_false: }
+      { \prg_return_false: }
+      { \prg_return_true: \use_none:n }
+  }
+\prg_new_conditional:Npnn \gtl_if_head_eq_catcode:NN #1#2
+  { p , T , F , TF }
+  { \__gtl_if_head_eq_code_return:NNN \if_catcode:w #1#2 }
+\prg_new_conditional:Npnn \gtl_if_head_eq_charcode:NN #1#2
+  { p , T , F , TF }
+  { \__gtl_if_head_eq_code_return:NNN \if_charcode:w #1#2 }
+\cs_new:Npn \__gtl_if_head_eq_code_return:NNN #1#2#3
+  {
+    #1
+        \exp_not:N #3
+        \exp_after:wN \__gtl_head:wnnnnn #2
+          { ? \use_none:nn }
+          { \c_group_begin_token }
+          { \c_group_end_token }
+          { \c_space_token }
+          { \exp_not:N }
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+\prg_new_conditional:Npnn \gtl_if_head_eq_meaning:NN #1#2
+  { p , T , F , TF }
+  { \__gtl_if_head_eq_meaning_return:NN #1#2 }
+\cs_new:Npn \__gtl_if_head_eq_meaning_return:NN #1#2
+  {
+    \exp_after:wN \__gtl_head:wnnnnn #1
+      { \if_false: }
+      { \if_meaning:w #2 \c_group_begin_token }
+      { \if_meaning:w #2 \c_group_end_token }
+      { \if_meaning:w #2 \c_space_token }
+      { \if_meaning:w #2 }
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+\cs_new:Npn \__gtl_head:wnnnnn \s__gtl #1#2#3 #4#5#6#7#8
+  {
+    \tl_if_empty:nTF {#1}
+      {
+        \tl_if_empty:nTF {#2}
+          { \tl_if_empty:nTF {#3} {#4} {#5} }
+          { \__gtl_head_aux:nwnnnn {#2} \q_stop {#5} {#6} {#7} {#8} }
+      }
+      { \__gtl_head_aux:nwnnnn #1 \q_stop {#5} {#6} {#7} {#8} }
+  }
+\cs_new:Npn \__gtl_head_aux:nwnnnn #1#2 \q_stop #3#4#5#6
+  {
+    \tl_if_head_is_group:nTF {#1} {#3}
+      {
+        \tl_if_empty:nTF {#1} {#4}
+          {
+            \tl_if_head_is_space:nTF {#1} {#5}
+              { \if_false: { \fi: \__gtl_head_auxii:N #1 } {#6} }
+          }
+      }
+  }
+\cs_new:Npn \__gtl_head_auxii:N #1
+  {
+    \exp_after:wN \__gtl_head_auxiii:Nnn
+    \exp_after:wN #1
+    \exp_after:wN { \if_false: } \fi:
+  }
+\cs_new:Npn \__gtl_head_auxiii:Nnn #1#2#3 { #3 #1 }
+\cs_new:Npn \gtl_head:N #1
+  {
+    \exp_after:wN \__gtl_head:wnnnnn #1
+      { }
+      { \exp_after:wN { \if_false: } \fi: }
+      { \if_false: { \fi: } }
+      { ~ }
+      { \__gtl_exp_not_n:N }
+  }
+\cs_new:Npn \gtl_head_do:NN #1#2
+  {
+    \exp_after:wN \__gtl_head:wnnnnn #1
+      { #2 \q_no_value }
+      { \exp_after:wN #2 \exp_after:wN { \if_false: } \fi: }
+      { \if_false: { \fi: #2 } }
+      { #2 ~ }
+      { #2 }
+  }
+\cs_new:Npn \gtl_head_do:NNT #1#2#3
+  {
+    \gtl_if_empty:NTF #1
+      { }
+      { \gtl_head_do:NN #1 #2 #3 }
+  }
+\cs_new:Npn \gtl_head_do:NNF #1#2#3
+  {
+    \gtl_if_empty:NTF #1
+      {#3}
+      { \gtl_head_do:NN #1 #2 }
+  }
+\cs_new:Npn \gtl_head_do:NNTF #1#2#3#4
+  {
+    \gtl_if_empty:NTF #1
+      {#4}
+      { \gtl_head_do:NN #1 #2 #3 }
+  }
+\cs_new_protected:Npn \gtl_get_left:NN #1#2
+  {
+    \exp_after:wN \__gtl_head:wnnnnn #1
+      { \gtl_set:Nn #2 { \q_no_value } }
+      { \gtl_set_eq:NN #2 \c_group_begin_gtl }
+      { \gtl_set_eq:NN #2 \c_group_end_gtl }
+      { \gtl_set:Nn #2 { ~ } }
+      { \gtl_set:Nn #2 }
+  }
+\cs_new_protected:Npn \gtl_pop_left:N #1
+  {
+    \gtl_if_empty:NF #1
+      { \tl_set:Nx #1 { \exp_after:wN \__gtl_pop_left:w #1 } }
+  }
+\cs_new_protected:Npn \gtl_gpop_left:N #1
+  {
+    \gtl_if_empty:NF #1
+      { \tl_gset:Nx #1 { \exp_after:wN \__gtl_pop_left:w #1 } }
+  }
+\cs_new:Npn \__gtl_pop_left:w \s__gtl #1#2#3
+  {
+    \tl_if_empty:nTF {#1}
+      {
+        \tl_if_empty:nTF {#2}
+          { \__gtl_pop_left_auxi:n {#3} }
+          { \__gtl_pop_left_auxiv:nn {#2} {#3} }
+      }
+      { \__gtl_pop_left_auxv:nnn {#1} {#2} {#3} }
+  }
+\cs_new:Npn \__gtl_pop_left_auxi:n #1
+  {
+    \s__gtl
+    { }
+    \__gtl_pop_left_auxii:nnnw { } { } #1 \q_nil \q_stop
+  }
+\cs_new:Npn \__gtl_pop_left_auxii:nnnw #1#2#3
+  {
+    \quark_if_nil:nTF {#3}
+      { \__gtl_pop_left_auxiii:nnnw {#1} {#2} {#3} }
+      { \__gtl_pop_left_auxii:nnnw { #1 #2 } { {#3} } }
+  }
+\cs_new:Npn \__gtl_pop_left_auxiii:nnnw #1#2#3#4 \q_stop
+  {
+    \tl_if_empty:nTF {#4}
+      { \exp_not:n { #2 {#1} } }
+      { \__gtl_pop_left_auxii:nnnw { #1 #2 } { {#3} } }
+  }
+\cs_new:Npn \__gtl_pop_left_auxiv:nn #1#2
+  {
+    \s__gtl
+    { \tl_if_head_is_group:nT {#1} { { \tl_head:n {#1} } } }
+    { \tl_if_head_is_space:nTF {#1} { \exp_not:f } { \tl_tail:n } {#1} }
+    { \exp_not:n {#2} }
+  }
+\cs_new:Npn \__gtl_pop_left_auxv:nnn #1#2#3
+  {
+    \s__gtl
+    { \if_false: { \fi: \__gtl_pop_left_auxvi:n #1 } }
+    { \exp_not:n {#2} }
+    { \exp_not:n {#3} }
+  }
+\cs_new:Npn \__gtl_pop_left_auxvi:n #1
+  {
+    \tl_if_empty:nF {#1}
+      {
+        \tl_if_head_is_group:nT {#1} { { \tl_head:n {#1} } }
+        {
+          \tl_if_head_is_space:nTF {#1}
+            { \exp_not:f } { \tl_tail:n } {#1}
+        }
+      }
+    \exp_after:wN \exp_not:n \exp_after:wN { \if_false: } \fi:
+  }
+\cs_new_protected:Npn \gtl_pop_left:NN #1#2
+  {
+    \gtl_get_left:NN #1 #2
+    \gtl_pop_left:N #1
+  }
+\cs_new_protected:Npn \gtl_gpop_left:NN #1#2
+  {
+    \gtl_get_left:NN #1 #2
+    \gtl_gpop_left:N #1
+  }
+\cs_new:Npn \gtl_left_tl:N #1
+  { \exp_after:wN \__gtl_left_tl:w #1 }
+\cs_new:Npn \__gtl_left_tl:w \s__gtl #1#2#3
+  { \tl_if_empty:nTF {#1} { \exp_not:n {#2} } { \tl_head:n {#1} } }
+\cs_new_protected:Npn \gtl_pop_left_tl:N #1
+  { \tl_set:Nx #1 { \exp_after:wN \__gtl_pop_left_tl:w #1 } }
+\cs_new_protected:Npn \gtl_gpop_left_tl:N #1
+  { \tl_gset:Nx #1 { \exp_after:wN \__gtl_pop_left_tl:w #1 } }
+\cs_new:Npn \__gtl_pop_left_tl:w \s__gtl #1#2#3
+  {
+    \s__gtl
+    \tl_if_empty:nTF {#1}
+      { { } { } }
+      {
+        { { } \tl_tail:n {#1} }
+        { \exp_not:n {#2} }
+      }
+    { \exp_not:n {#3} }
+  }
+\cs_new:Npn \gtl_left_item:NF #1
+  { \exp_after:wN \__gtl_left_item:wF #1 }
+\cs_new:Npn \__gtl_left_item:wF \s__gtl #1#2#3
+  { \__gtl_left_item_auxi:nwF #1 {#2} \q_stop }
+\cs_new:Npn \__gtl_left_item_auxi:nwF #1#2 \q_stop #3
+  { \tl_if_blank:nTF {#1} {#3} { \tl_head:n {#1} } }
+\prg_new_protected_conditional:Npnn \gtl_pop_left_item:NN #1#2 { TF , T , F }
+  { \exp_after:wN \__gtl_pop_left_item:wNNN #1#2 \tl_set:Nx #1 }
+\prg_new_protected_conditional:Npnn \gtl_gpop_left_item:NN #1#2 { TF , T , F }
+  { \exp_after:wN \__gtl_pop_left_item:wNNN #1#2 \tl_gset:Nx #1 }
+\cs_new_protected:Npn \__gtl_pop_left_item:wNNN
+    \s__gtl #1#2#3 #4#5#6
+  {
+    \tl_if_empty:nTF {#1}
+      {
+        \tl_if_blank:nTF {#2} { \prg_return_false: }
+          {
+            \tl_set:Nx #4 { \tl_head:n {#2} }
+            #5 #6
+              {
+                \s__gtl { } { \tl_tail:n {#2} }
+                { \exp_not:n {#3} }
+              }
+            \prg_return_true:
+          }
+      }
+      {
+        \__gtl_pop_left_item_aux:nwnnNNN #1 \q_nil \q_stop
+          {#2} {#3} #4 #5 #6
+      }
+  }
+\cs_new_protected:Npn \__gtl_pop_left_item_aux:nwnnNNN
+    #1#2 \q_stop #3#4#5#6#7
+  {
+    \tl_if_blank:nTF {#1} { \prg_return_false: }
+      {
+        \tl_set:Nx #5 { \tl_head:n {#1} }
+        #6 #7
+          {
+            \s__gtl
+            { { \tl_tail:n {#1} } \__gtl_strip_nil_mark:w #2 \q_mark }
+            { \exp_not:n {#3} }
+            { \exp_not:n {#4} }
+          }
+        \prg_return_true:
+      }
+  }
+\cs_new:Npn \gtl_left_text:NF #1
+  { \exp_after:wN \__gtl_left_text:wF #1 }
+\cs_new:Npn \__gtl_left_text:wF \s__gtl #1#2#3
+  {
+    \tl_if_empty:nTF {#1}
+      { \__gtl_left_text_auxi:nwF {#2} \q_stop }
+      { \__gtl_left_text_auxi:nwF #1 \q_stop }
+  }
+\cs_new:Npn \__gtl_left_text_auxi:nwF #1#2 \q_stop
+  { \__gtl_left_text_auxii:wnwF #1 \q_mark { } \q_mark \q_stop }
+\cs_new:Npn \__gtl_left_text_auxii:wnwF #1 #
+  { \__gtl_left_text_auxiii:nnwF {#1} }
+\cs_new:Npn \__gtl_left_text_auxiii:nnwF #1#2 #3 \q_mark #4 \q_stop #5
+  { \tl_if_empty:nTF {#4} {#5} { \exp_not:n { #1 {#2} } } }
+\cs_new_protected:Npn \gtl_pop_left_text:N #1
+  { \tl_set:Nx #1 { \exp_after:wN \__gtl_pop_left_text:w #1 } }
+\cs_new_protected:Npn \gtl_gpop_left_text:N #1
+  { \tl_gset:Nx #1 { \exp_after:wN \__gtl_pop_left_text:w #1 } }
+\cs_new:Npn \__gtl_pop_left_text:w \s__gtl #1#2#3
+  {
+    \s__gtl
+    \tl_if_empty:nTF {#1}
+      {
+        { }
+        { \__gtl_pop_left_text_auxi:n {#2} }
+      }
+      {
+        { \__gtl_pop_left_text_auxiv:nw #1 \q_nil \q_mark }
+        { \exp_not:n {#2} }
+      }
+    { \exp_not:n {#3} }
+  }
+\cs_new:Npn \__gtl_pop_left_text_auxi:n #1
+  {
+    \__gtl_pop_left_text_auxii:wnw #1
+      \q_nil \q_mark { } \q_mark \q_stop
+  }
+\cs_new:Npn \__gtl_pop_left_text_auxii:wnw #1 #
+  { \__gtl_pop_left_text_auxiii:nnw {#1} }
+\cs_new:Npn \__gtl_pop_left_text_auxiii:nnw #1#2#3 \q_mark #4 \q_stop
+  {
+    \tl_if_empty:nTF {#4}
+      { \__gtl_strip_nil_mark:w #1 }
+      { \__gtl_strip_nil_mark:w #3 \q_mark }
+  }
+\cs_new:Npn \__gtl_pop_left_text_auxiv:nw #1
+  {
+    { \__gtl_pop_left_text_auxi:n {#1} }
+    \__gtl_strip_nil_mark:w
+  }
+\cs_new:Npn \__gtl_tl_count:n #1
+  { \int_eval:n { 0 \__gtl_tl_count_loop:n #1 \q_nil \q_stop } }
+\cs_new:Npn \__gtl_tl_count_loop:n #1
+  {
+    \quark_if_nil:nTF {#1}
+      { \__gtl_tl_count_test:w }
+      { + 1 \__gtl_tl_count_loop:n }
+  }
+\cs_new:Npn \__gtl_tl_count_test:w #1 \q_stop
+  { \tl_if_empty:nF {#1} { + 1 \__gtl_tl_count_loop:n #1 \q_stop } }
+\cs_new:Npn \gtl_extra_end:N #1
+  { \exp_after:wN \__gtl_extra_end:w #1 }
+\cs_new:Npn \__gtl_extra_end:w \s__gtl #1#2#3
+  { \__gtl_tl_count:n {#1} }
+\cs_new:Npn \gtl_extra_begin:N #1
+  { \exp_after:wN \__gtl_extra_begin:w #1 }
+\cs_new:Npn \__gtl_extra_begin:w \s__gtl #1#2#3
+  { \__gtl_tl_count:n {#3} }
+\cs_new:Npn \gtl_count_tokens:N #1
+  { \exp_after:wN \__gtl_count_tokens:w #1 }
+\cs_new:Npn \__gtl_count_tokens:w \s__gtl #1#2#3
+  {
+    \int_eval:n
+      { -1 \__gtl_count_auxi:nw #1 {#2} #3 \q_nil \q_stop }
+  }
+\cs_new:Npn \__gtl_count_auxi:nw #1
+  {
+    \quark_if_nil:nTF {#1}
+      { \__gtl_count_auxii:w }
+      {
+        + 1
+        \__gtl_count_auxiii:n {#1}
+        \__gtl_count_auxi:nw
+      }
+  }
+\cs_new:Npn \__gtl_count_auxii:w #1 \q_stop
+  {
+    \tl_if_empty:nF {#1}
+      {
+        + 2
+        \__gtl_count_auxi:nw #1 \q_stop
+      }
+  }
+\cs_new:Npn \__gtl_count_auxiii:n #1
+  {
+    \tl_if_empty:nF {#1}
+      {
+        \tl_if_head_is_group:nTF {#1}
+          {
+            + 2
+            \exp_args:No \__gtl_count_auxiii:n { \use:n #1 }
+          }
+          {
+            + 1
+            \tl_if_head_is_N_type:nTF {#1}
+              { \exp_args:No \__gtl_count_auxiii:n { \use_none:n #1 } }
+              { \exp_args:Nf \__gtl_count_auxiii:n {#1} }
+          }
+      }
+  }
+\__gtl_end_package_hook:
+%% 
+%%
+%% End of file `gtl.sty'.

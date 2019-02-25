@@ -1,0 +1,1127 @@
+% \iffalse meta-comment
+%
+%% File: l3draw.dtx
+%
+% Copyright(C) 2018,2019 The LaTeX3 Project
+%
+% It may be distributed and/or modified under the conditions of the
+% LaTeX Project Public License (LPPL), either version 1.3c of this
+% license or (at your option) any later version.  The latest version
+% of this license is in the file
+%
+%    http://www.latex-project.org/lppl.txt
+%
+% This file is part of the "l3experimental bundle" (The Work in LPPL)
+% and all files in that bundle must be distributed together.
+%
+% -----------------------------------------------------------------------
+%
+% The development version of the bundle can be found at
+%
+%    https://github.com/latex3/latex3
+%
+% for those people who are interested.
+%
+%<*driver|package>
+\RequirePackage{expl3}
+%</driver|package>
+%<*driver>
+\documentclass[full]{l3doc}
+\usepackage[utf8]{inputenc}
+\usepackage{l3draw}
+% For creating code demonstrations
+% This needs access to some code-level interfaces in listings
+\usepackage{listings}
+\makeatletter
+\lst@RequireAspects{writefile}
+\newsavebox\demo@box
+\lstnewenvironment{demo}[1][code and example]
+  {%
+    \global\let\lst@intname\@empty
+    \edef\demo@end{%
+      \expandafter\noexpand\csname demo@@#1@end\endcsname
+    }%
+    \@nameuse{demo@@#1}%
+  }
+  {\demo@end}
+\newcommand\demo@new[3]{%
+  \@namedef{demo@@#1}{#2}%
+  \@namedef{demo@@#1@end}{#3}%
+}
+\newcommand*\demo@common{%
+  \setkeys{lst}
+    {%
+       basicstyle   = \small\ttfamily,
+       basewidth    = 0.51em,
+       gobble       = 5,
+       language     = [LaTeX]{TeX},
+    }%
+}
+\newcommand*\demo@input{%
+  \ExplSyntaxOn
+  \catcode`\^^M = 10\relax
+  \catcode`\% = 14\relax
+  \input{\jobname.tmp}%
+  \ExplSyntaxOff
+}
+\demo@new{code and example}{%
+  \setbox\demo@box=\hbox\bgroup
+    \lst@BeginAlsoWriteFile{\jobname.tmp}%
+    \demo@common
+}{%
+    \lst@EndWriteFile
+  \egroup
+  \begin{center}
+    \ifdim\wd\demo@box > 0.75\linewidth
+      \begin{minipage}{\linewidth}
+        \usebox\demo@box
+      \end{minipage}%
+      \par
+      \begin{minipage}{\linewidth}
+        \demo@input
+      \end{minipage}
+    \else
+      \begin{minipage}{0.25\linewidth}
+        \demo@input
+      \end{minipage}%
+      \hfil
+      \begin{minipage}{0.75\linewidth}
+        \usebox\demo@box
+      \end{minipage}%
+    \fi
+  \end{center}
+}
+\makeatother
+\begin{document}
+  \DocInput{\jobname.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \title{^^A
+%   The \pkg{l3draw} package\\ Core drawing support^^A
+% }
+%
+% \author{^^A
+%  The \LaTeX3 Project\thanks
+%    {^^A
+%      E-mail:
+%        \href{mailto:latex-team@latex-project.org}
+%          {latex-team@latex-project.org}^^A
+%    }^^A
+% }
+%
+% \date{Released 2019-01-28}
+%
+% \maketitle
+%
+% \begin{documentation}
+%
+% \section{\pkg{l3draw} documentation}
+%
+% The \pkg{l3draw} package provides a set of tools for creating (vector)
+% drawings in \pkg{expl3}. It is heavily inspired by the \pkg{pgf} layer of
+% the Ti\textit{k}Z system, with many of the interfaces having the same form.
+% However, the code provided here is build entirely on core \pkg{expl3} ideas
+% and uses the \LaTeX3 FPU for numerical support.
+%
+% Numerical expressions in \pkg{l3draw} are handled as floating point
+% expressions, unless otherwise noted. This means that they may contain or
+% omit explicit units. Where units are omitted, they will automatically be
+% taken as given in (\TeX{}) points.
+%
+% The code here is \emph{highly} experimental.
+%
+% \subsection{Drawings}
+%
+% \begin{function}{\draw_begin:, \draw_end:}
+%   \begin{syntax}
+%     \cs{draw_begin:}
+%     ...
+%     \cs{draw_end:}
+%   \end{syntax}
+%   Each drawing should be created within a \cs{draw_begin:}/\cs{draw_end:}
+%   function pair. The \texttt{begin} function sets up a number of key
+%   data structures for the rest of the functions here: unless otherwise
+%   specified, use of |\draw_...| functions outside of this
+%   \enquote{environment} is \emph{not supported}.
+%
+%   The drawing created within the environment will be inserted into
+%   the typesetting stream by the \cs{draw_end:} function, which will
+%   switch out of vertical mode if required.
+%   \begin{demo}
+%     \dim_new:N \l_mypos_dim
+%     \draw_begin:
+%       \draw_path_moveto:n { 0cm , \l_mypos_dim }
+%       \draw_path_lineto:n { 1cm , \l_mypos_dim }
+%       \dim_set:Nn \l_mypos_dim { 1cm }
+%       \draw_path_lineto:n { 1cm , \l_mypos_dim }
+%       \draw_path_close:
+%       \draw_path_use_clear:n { stroke }
+%     \draw_end:
+%   \end{demo}
+%
+%   Within a drawing, the only commands that should appear are those directly
+%   aimed at drawing (from \pkg{l3draw}) and those which produce \emph{no}
+%   typeset output. For example, it is possible to include loops inside a
+%   drawing using |\int_step_function:nnnn| or similar. On the other hand,
+%   text should not be included directly in drawings, but should rather be
+%   inserted using the appropriate \pkg{l3draw} command.
+%
+%   The drawing environment sets the following standard behaviors
+%   \begin{itemize}
+%      \item Non-zero rule for fill overlaps
+%      \item Butt caps for lines
+%      \item Mitering for line joins with a miter factor of $10$
+%      \item Solid line strokes
+%   \end{itemize}
+% \end{function}
+%
+% Within a drawing, there are different ways of referring to a position.
+% The co-ordinates of a point are given relative to the current
+% \emph{drawing axes}. These can be manipulated and tracked at the code
+% level. Underlying this is the \meta{canvas}, which is at the \pkg{draw}
+% level essentially fixed and in line with the paper. Initially, the two
+% sets of axes are coincident. (It is possible to manipulate the canvas
+% axes at the driver level: this is then \enquote{transparent} to the
+% \pkg{draw} level, and so should be used only when strictly required.)
+%
+% \begin{function}{\draw_suspend_begin:, \draw_suspend_end:}
+%   \begin{syntax}
+%     \cs{draw_suspend_begin:}
+%     ...
+%     \cs{draw_suspend_end:}
+%   \end{syntax}
+%   Suspends all of the drawing mechanisms to allow \enquote{normal}
+%   material to be created. Typically, this environment will be applied
+%   inside a box which may contain nested pictures.
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_path_moveto:n { 0cm , 0cm }
+%       \hbox_set:Nn \l_tmpa_box
+%         {
+%           \draw_suspend_begin:
+%             This~is~normal~text.
+%             \draw_begin: % A subpicture
+%               \draw_path_moveto:n { 1cm , 0cm }
+%               \draw_path_lineto:n { 1cm , 1cm }
+%               \draw_path_use_clear:n { stroke }
+%             \draw_end:
+%             More~text.
+%           \draw_suspend_end:
+%         }
+%       \draw_box_use:N \l_tmpa_box
+%       \draw_path_lineto:n { 0cm , 1cm }
+%       \draw_path_use_clear:n { stroke }
+%     \draw_end:
+%   \end{demo}
+% \end{function}
+%
+% \subsection{Graphics state}
+%
+% Within the drawing environment, a number of functions control how drawings
+% will appear. Note that these all apply \emph{globally}, though some are
+% rest at the start of each drawing (\cs{draw_begin:}).
+%
+% \begin{variable}{\g_draw_linewidth_default_dim}
+%   The default value of the linewidth for stokes, set at the start
+%   of every drawing (\cs{draw_begin:}).
+% \end{variable}
+%
+% \begin{function}{\draw_linewidth:n}
+%   \begin{syntax}
+%     \cs{draw_linewidth:n} \Arg{width}
+%   \end{syntax}
+%   Sets the width to be used for stroking to the \meta{width} (an 
+%   \meta{fp expr}).
+% \end{function}
+%
+% \begin{function}{\draw_dash_pattern:nn}
+%   \begin{syntax}
+%     \cs{draw_dash_pattern:nn} \Arg{pattern} \Arg{phase}
+%   \end{syntax}
+%   Specifies a dash pattern. The \meta{pattern} itself is a comma-separated
+%   list of entries which represent the \enquote{on} and \enquote{off}
+%   parts of the line. These are all \meta{fp expr} and repeat as required.
+%   Thus the \meta{pattern} may be of arbitrary length. The \meta{phase}
+%   specifies where during the first \enquote{on} line the pattern should
+%   start.
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_dash_pattern:nn
+%         { 0.5cm , 0.5cm , 0.1cm , 0.2cm }
+%         { 0cm }
+%       \draw_path_moveto:n { 0cm , 0cm }
+%       \draw_path_lineto:n { 2cm , 0cm }
+%       \draw_path_use_clear:n { stroke }
+%       \draw_dash_pattern:nn
+%         { 0.5cm , 0.5cm , 0.1cm , 0.2cm }
+%         { 0.1cm }
+%       \draw_path_moveto:n { 0cm , 1mm }
+%       \draw_path_lineto:n { 2cm , 1mm }
+%       \draw_path_use_clear:n { stroke }
+%       \draw_dash_pattern:nn
+%         { 0.5cm , 0.5cm , 0.1cm , 0.2cm }
+%         { 0.2cm }
+%       \draw_path_moveto:n { 0cm , 2mm }
+%       \draw_path_lineto:n { 2cm , 2mm }
+%       \draw_path_use_clear:n { stroke }
+%     \draw_end:
+%   \end{demo}
+%   Setting an empty pattern will produce a solid line.
+%   
+%   Note the \meta{pattern} interface here is different from that in \pkg{pgf}:
+%   the list is comma-separated not given in brace groups.
+% \end{function}
+%
+% \begin{function}{\draw_nonzero_rule:, \draw_evenodd_rule:}
+%   \begin{syntax}
+%     \cs{draw_nonzero_rule:}
+%   \end{syntax}
+%   Active either the non-zero winding number or the even-odd rule,
+%   respectively, for determining what is inside a fill or clip area.
+%   For technical reasons, these command are not influenced by scoping
+%   and apply on an ongoing basis.
+% \end{function}
+%
+% \begin{function}
+%   {
+%     \draw_cap_butt:      ,
+%     \draw_cap_rectangle: ,
+%     \draw_cap_round:
+%   }
+%   \begin{syntax}
+%     \cs{draw_cap_butt:}
+%   \end{syntax}
+%   Sets the style of terminal stroke position to one of butt, rectangle or
+%   round.
+% \end{function}
+%
+% \begin{function}
+%   {
+%     \draw_join_bevel: ,
+%     \draw_join_miter: ,
+%     \draw_join_round:
+%   }
+%   \begin{syntax}
+%     \cs{draw_cap_butt:}
+%   \end{syntax}
+%   Sets the style of stroke joins to one of bevel, miter or round.
+% \end{function}
+%
+% \begin{function}{\draw_miterlimit:n}
+%   \begin{syntax}
+%     \cs{draw_miterlimit:n} \Arg{factor}
+%   \end{syntax}
+%   Sets the miter \meta{factor} of lines joined as a miter, as described in the
+%   PDF and PostScript manuals. The \meta{factor} is an \meta{fp expr}.
+% \end{function}
+%
+% \subsection{Scoping drawing elements}
+%
+% Scoping drawing elements is necessary to allowing nesting of subparts.
+% These features have specific use requirements: the preconditions must be
+% met. In particular, each type of drawing scope also constitutes a
+% group (\cs{group_begin:}/\cs{group_end:} pair): as such, they must be
+% nested correctly.
+%
+% \begin{function}{\draw_scope_begin:, \draw_scope_end:}
+%   \begin{syntax}
+%     \cs{draw_scope_begin:}
+%     ...
+%     \cs{draw_scope_end:}
+%   \end{syntax}
+%   Creates a scope for localisation of state settings within a drawing.
+%   A scope forms a \TeX{} group but will also localise global state
+%   variables (such as \cs{g_draw_linewidth_default_dim}), and driver-level
+%   concepts such as the termination of lines.
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_scope_begin:
+%         \group_begin:
+%           \draw_linewidth:n { 2pt }
+%           \draw_path_rectangle:nn { 0 , 0 } { 2ex , 2ex }
+%           \draw_path_use:n  { stroke }
+%         \group_end:
+%         \draw_path_rectangle:nn { 3ex , 0ex } { 2ex , 2ex }
+%         \draw_path_use:n  { stroke }
+%       \draw_scope_end:
+%       \draw_path_rectangle:nn { 6ex , 0ex } { 2ex , 2ex }
+%       \draw_path_use_clear:n  { stroke }
+%     \draw_end:
+%   \end{demo}
+%   Global graphical concepts restricted by scope are
+%   \begin{itemize}
+%     \item Line width
+%     \item Stroke and fill color
+%     \item Dash pattern
+%     \item Line joining and capping, including the miter limit
+%     \item Clipping paths
+%     \item Canvas (driver) transformations
+%   \end{itemize}
+% \end{function}
+%
+% \subsection{Points}
+%
+% Functions supporting the calculation of points (co-ordinates) are expandable
+% and may be used outside of the drawing environment. When used in this
+% way, they all yield a co-ordinate tuple, for example
+% \begin{verbatim}
+%   \tl_set:Nx \l_tmpa_tl { \draw_point:nn { 1 } { 2 } }
+%   \tl_show:N \l_tmpa_tl
+% \end{verbatim}
+% gives
+% \begin{verbatim}
+%   > \l_tmpa_tl=1pt,2pt.
+%   <recently read> }
+% \end{verbatim}
+%
+% This output form is then suitable as \emph{input} for subsequent point
+% calculations, \emph{i.e.}~where a \meta{point} is required it may be
+% given as a tuple. This \emph{may} include units and surrounding
+% parentheses, for example
+% \begin{verbatim}
+%   1,2
+%   (1,2)
+%   1cm,3pt
+%   (1pt,2cm)
+%   2 * sind(30), 2^4in
+% \end{verbatim}
+% are all valid input forms. Notice that each part of the tuple may itself
+% be a float point expression.
+%
+% Point co-ordinates are relative to the canvas axes, but can be transformed
+% by \cs{draw_point_transform:n}. These manipulation is applied by many
+% higher-level functions, for example path construction, and allows parts of
+% a drawing to be rotated, scaled or skewed. This occurs before writing any
+% data to the driver, and so such manipulations are tracked by the drawing
+% mechanisms. See \cs{driver_draw_cm:nnnn} for driver-level
+% manipulation of the canvas axes themselves.
+%
+% Notice that in contrast to \pkg{pgf} it is possible to give the positions
+% of points \emph{directly}.
+%
+% \subsubsection{Basic point functions}
+%
+% \begin{function}[EXP]{\draw_point_polar:nn, \draw_point_polar:nnn}
+%   \begin{syntax}
+%     \cs{draw_point_polar:nn} \Arg{angle} \Arg{radius}
+%     \cs{draw_point_polar:nnn} \Arg{angle} \Arg{radius-a} \Arg{radius-b}
+%   \end{syntax}
+%   Gives the co-ordinates of the point at \meta{angle} (an \meta{fp expr} in
+%   \emph{degrees}) and \meta{radius}. The three-argument version accepts
+%   two radii of different lengths.
+%   
+%   Note the interface here is somewhat different from that in \pkg{pgf}:
+%   the one- and two-radii versions in \pkg{l3draw} use separate functions,
+%   whilst in \pkg{pgf} they use the same function and a keyword.
+% \end{function}
+%
+% \begin{function}[EXP]{\draw_point_unit_vector:n}
+%   \begin{syntax}
+%     \cs{draw_point_unit_vector:n} \Arg{point}
+%   \end{syntax}
+%   Expands to the co-ordinates of a unit vector in the direction of the
+%   \meta{point} from the origin.
+% \end{function}
+%
+% \begin{function}[EXP]{\draw_point_transform:n}
+%   \begin{syntax}
+%     \cs{draw_point_transform:n} \Arg{point}
+%   \end{syntax}
+%   Evaluates the position of the \meta{point} subject to the current
+%   transformation matrix. This operation is applied automatically by
+%   most higher-level functions (\emph{e.g.}~path manipulations).
+% \end{function}
+%
+% \subsubsection{Points on a vector basis}
+%
+% As well as giving explicit values, it is possible to describe points
+% in terms of underlying direction vectors. The latter are initially
+% co-incident with the standard Cartesian axes, but may be altered by
+% the user.
+%
+% \begin{function}{\draw_xvec:n, \draw_yvec:n, \draw_zvec:n}
+%   \begin{syntax}
+%     \cs{draw_xvec:n} \Arg{point}
+%   \end{syntax}
+%   Defines the appropriate base vector to point toward the \meta{point}
+%   on the canvas. The standard settings for the $x$- and $y$-vectors are
+%   $1\,\mathrm{cm}$ along the relevant canvas axis, whilst for the
+%   $z$-vector an appropriate direction is taken.
+% \end{function}
+%
+% \begin{function}[EXP]{\draw_point_vec:nn, \draw_point_vec:nnn}
+%   \begin{syntax}
+%     \cs{draw_point_vec:nn} \Arg{xscale} \Arg{yscale}
+%     \cs{draw_point_vec:nnn} \Arg{xscale} \Arg{yscale} \Arg{zscale}
+%   \end{syntax}
+%   Expands to the co-ordinate of the point at \meta{xscale} times the
+%   $x$-vector and \meta{yscale} times the $y$-vector. The three-argument
+%   version extends this to include the $z$-vector.
+% \end{function}
+%
+% \begin{function}[EXP]{\draw_point_vec_polar:nn, \draw_point_vec_polar:nnn}
+%   \begin{syntax}
+%     \cs{draw_point_vec_polar:nn} \Arg{angle} \Arg{radius}
+%     \cs{draw_point_vec_polar:nnn} \Arg{angle} \Arg{radius-a} \Arg{radius-b}
+%   \end{syntax}
+%   Gives the co-ordinates of the point at \meta{angle} (an \meta{fp expr} in
+%   \emph{degrees}) and \meta{radius}, relative to the prevailing
+%   $x$- and $y$-vectors. The three-argument version accepts two radii of
+%   different lengths.
+%   
+%   Note the interface here is somewhat different from that in \pkg{pgf}:
+%   the one- and two-radii versions in \pkg{l3draw} use separate functions,
+%   whilst in \pkg{pgf} they use the same function and a keyword.
+% \end{function}
+%
+% \subsubsection{Intersections}
+%
+% \begin{function}[EXP]{\draw_point_intersect_lines:nnnn}
+%   \begin{syntax}
+%     \cs{draw_point_intersect_lines:nnnn} \Arg{point1} \Arg{point2} \Arg{point3} \Arg{point4}
+%   \end{syntax}
+%   Evaluates the point at the intersection of one line, joining
+%   \meta{point1} and \meta{point2}, and a second line joining \meta{point3}
+%   and \meta{point4}. If the lines do not intersect, or are coincident, and
+%   error will occur.
+% \end{function}
+%
+% \begin{function}[EXP]{\draw_point_intersect_circles:nnnnn}
+%   \begin{syntax}
+%     \cs{draw_point_intersect_circles:nnnnn}
+%       \Arg{center1} \Arg{radius1} \Arg{center2} \Arg{radius2} \Arg{root}
+%   \end{syntax}
+%   Evaluates the point at the intersection of one circle with
+%   \meta{center1} and \meta{radius1}, and a second circle with \meta{center2}
+%   and \meta{radius2}. If the circles do not intersect, or are coincident, and
+%   error will occur.
+%
+%   Note the interface here has a different argument ordering from that in
+%   \pkg{pgf}, which has the two centers then the two radii.
+% \end{function}
+%
+% \subsubsection{Interpolations}
+%
+% \begin{function}[EXP]{\draw_point_interpolate_line:nnn}
+%   \begin{syntax}
+%     \cs{draw_point_interpolate_line:nnn} \Arg{part} \Arg{point1} \Arg{point2}
+%   \end{syntax}
+%   Expands to the point which is \meta{part} way along the line joining
+%   \meta{point1} and \meta{point2}. The \meta{part} may be an interpolation or
+%   an extrapolation, and is a floating point value expressing a percentage
+%   along the line, \emph{e.g.}~a value of \texttt{0.5} would be half-way
+%   between the two points.
+% \end{function}
+%
+% \begin{function}[EXP]{\draw_point_interpolate_distance:nnn}
+%   \begin{syntax}
+%     \cs{draw_point_interpolate_distance:nnn} \Arg{distance} \Arg{point expr1} \Arg{point expr2}
+%   \end{syntax}
+%   Expands to the point which is \meta{distance} way along the line joining
+%   \meta{point1} and \meta{point2}. The \meta{distance} may be an interpolation
+%   or an extrapolation.
+% \end{function}
+%
+% \begin{function}[EXP]{\draw_point_interpolate_curve:nnnnnn}
+%   \begin{syntax}
+%     \cs{draw_point_interpolate_curve:nnnnnn} \Arg{part}
+%       \Arg{start} \Arg{control1} \Arg{control2} \Arg{end}
+%   \end{syntax}
+%   Expands to the point which is \meta{part} way along the curve between
+%   \meta{start} and \meta{end} and defined by \meta{control1} and
+%   \meta{control2}. The \meta{part} may be an interpolation or
+%   an extrapolation, and is a floating point value expressing a percentage
+%   along the curve, \emph{e.g.}~a value of \texttt{0.5} would be half-way
+%   along the curve.
+% \end{function}
+%
+% \subsection{Paths}
+%
+% Paths are constructed by combining one or more operations before applying
+% one or more actions. Thus until a path is \enquote{used}, it may be
+% manipulated or indeed discarded entirely. Only one path is active at
+% any one time, and the path is \emph{not} affected by \TeX{} grouping.
+%
+% \begin{function}{\draw_path_corner_arc:nn}
+%   \begin{syntax}
+%     \cs{draw_path_corner_arc:n} \Arg{length1} \Arg{length2}
+%   \end{syntax}
+%   Sets the degree of rounding applied to corners in a path: the two
+%   \meta{length} values are the distances from the corner at which the curving
+%   should start. The first \meta{length} applies to the part of the path
+%   \enquote{leading in} to the corner (\emph{i.e.}~from the previous path
+%   operation), and the second to that \enquote{leading out}. If both
+%   values are \texttt{0pt} then corners will not be rounded. The values
+%   apply within the scope of the current \TeX{} group.
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_path_corner_arc:nn { 5mm } { 5mm }
+%       \draw_path_rectangle_corners:nn
+%         { 0cm , 0cm } { 3cm , 2cm }
+%       \draw_path_use_clear:n { stroke }
+%     \draw_end:
+%   \end{demo}
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_path_corner_arc:nn { 10mm } { 5mm }
+%       \draw_path_moveto:n { 0cm , 0cm }
+%       \draw_path_lineto:n { 0cm , 2cm }
+%       \draw_path_lineto:n { 3cm , 2cm }
+%       \draw_path_curveto:nnn
+%         { 3cm , 0cm } { 2cm , 0cm } { 1cm , 0cm }
+%       \draw_path_use_clear:n { stroke }
+%     \draw_end:
+%   \end{demo}
+%   The corners created are quarter-circles for exact right-angles and
+%   close approximations otherwise. Closing a path will result in rounding
+%   correctly.
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_path_corner_arc:nn { 4pt } { 4pt }
+%       \draw_path_moveto:n
+%         { \draw_point_polar:nn { 0 } { 1cm } }
+%       \int_step_inline:nnnn { 72 } { 72 } { 359 }
+%         {
+%           \draw_path_lineto:n
+%             { \draw_point_polar:nn { #1 } { 1cm } }
+%         }
+%        \draw_path_close:
+%       \draw_path_use_clear:n { stroke }
+%     \draw_end:
+%   \end{demo}
+% \end{function}
+%
+% \begin{function}{\draw_path_close:}
+%   \begin{syntax}
+%     \cs{draw_path_close:}
+%   \end{syntax}
+%   Closes the current part of the path by appending a straight line from
+%   the current point to the starting point of the path. In general, any
+%   path to be \emph{filled} should include a close instructions.
+% \end{function}
+%
+% \begin{function}{\draw_path_use:n, \draw_path_use_clear:n}
+%   \begin{syntax}
+%     \cs{draw_path_use:n} \Arg{action(s)}
+%   \end{syntax}
+%   Inserts the current path, carrying out one ore more possible \meta{actions}
+%   (a comma list):
+%   \begin{itemize}
+%     \item \texttt{clear} Resets the path to empty
+%     \item \texttt{clip} Clips any content outside of the path
+%     \item \texttt{draw}
+%     \item \texttt{fill} Fills the interior of the path with the current
+%       file color
+%     \item \texttt{stroke} Draws a line along the current path
+%   \end{itemize}
+% \end{function}
+%
+% \subsubsection{Path operations on drawing axes}
+%
+% The standard path functions are all influenced by the active transformation
+% matrix, \emph{i.e.}~the work relative to the drawing axes rather than
+% the canvas.
+%
+% \begin{function}{\draw_path_moveto:n}
+%   \begin{syntax}
+%     \cs{draw_path_moveto:n} \Arg{point}
+%   \end{syntax}
+%   Moves the reference point of the path to the \meta{point}, but will
+%   not join this to any previous point.
+% \end{function}
+%
+% \begin{function}{\draw_path_lineto:n}
+%   \begin{syntax}
+%     \cs{draw_path_lineto:n} \Arg{point}
+%   \end{syntax}
+%   Joins the current path to the \meta{point} with a straight line.
+%   In general, for reliable treatment by viewers, a \cs{draw_path_moveto:n}
+%   operation should precede the first use of a \cs{draw_path_lineto:n}
+%   on a path.
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_path_moveto:n { 0cm , 0cm }
+%       \draw_path_lineto:n { 1cm , 1cm }
+%       \draw_path_lineto:n { 2cm , 1cm }
+%       \draw_path_lineto:n { 3cm , 0.5cm }
+%       \draw_path_lineto:n { 3cm , 0cm }
+%       \draw_color_fill:n {  yellow!80!black }
+%       \draw_path_use_clear:n { fill , stroke }
+%     \draw_end:
+%   \end{demo}
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_path_moveto:n { 0cm , 0cm }
+%       \draw_path_lineto:n { 1cm , 1cm }
+%       \draw_path_lineto:n { 2cm , 1cm }
+%       \draw_path_moveto:n { 2cm , 1cm }  % Begins a new part
+%       \draw_path_lineto:n { 3cm , 0.5cm }
+%       \draw_path_lineto:n { 3cm , 0cm }
+%       \draw_color_fill:n {  yellow!80!black }
+%       \draw_path_use_clear:n { fill , stroke }
+%     \draw_end:
+%   \end{demo}
+% \end{function}
+%
+% \begin{function}{\draw_path_curveto:nnn}
+%   \begin{syntax}
+%     \cs{draw_path_curveto:nnn} \Arg{control1} \Arg{control2} \Arg{end}
+%   \end{syntax}
+%   Joins the current path to the \meta{end} with a curved line defined by
+%   cubic Bézier points \meta{control1} and \meta{control2}. The bounding box
+%   of the path (and image) will fully-contain the curve and control points,
+%   \emph{i.e.}~it may be bigger than strictly necessary to contain the curve
+%   \emph{alone}.
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_path_moveto:n { 0cm , 0cm }
+%       \draw_path_curveto:nnn
+%         { 1cm , 1cm } % First control
+%         { 2cm , 1cm } % Second control
+%         { 3cm , 0cm } % End
+%       \draw_color_fill:n {  yellow!80!black }
+%       \draw_path_use_clear:n { fill , stroke }
+%     \draw_end:
+%   \end{demo}
+% \end{function}
+%
+% \begin{function}{\draw_path_curveto:nn}
+%   \begin{syntax}
+%     \cs{draw_path_curveto:nn} \Arg{control} \Arg{end}
+%   \end{syntax}
+%   Joins the current path to the \meta{end} with a curved line defined by
+%   quadratic Bézier point \meta{control}. The bounding box
+%   of the path (and image) will fully-contain the curve and computed (cubic)
+%   control points, \emph{i.e.}~it may be bigger than strictly necessary to
+%   contain the curve \emph{alone}.
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_path_moveto:n { 0cm , 0cm }
+%       \draw_path_curveto:nn
+%         { 1cm , 1cm }
+%         { 2cm , 0cm }
+%       \draw_color_fill:n {  yellow!80!black }
+%       \draw_path_use_clear:n { fill , stroke }
+%     \draw_end:
+%   \end{demo}
+% \end{function}
+%
+% \begin{function}{\draw_path_arc:nnn, \draw_path_arc:nnnn}
+%   \begin{syntax}
+%     \cs{draw_path_arc:nnn} \Arg{angle1} \Arg{angle2} \Arg{radius}
+%     \cs{draw_path_arc:nnnn} \Arg{angle1} \Arg{angle2} \Arg{radius-a} \Arg{radius-b}
+%   \end{syntax}
+%   Joins the current path with an arc between \meta{angle1} and \meta{angle2}
+%   and of \meta{radius}. The four-argument version accepts two radii of
+%   different lengths.
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_path_moveto:n { 0cm , 0cm }
+%       \draw_path_lineto:n { 0cm , 1cm }
+%       \draw_path_arc:nnn { 180 } { 90 } { 0.5cm }
+%       \draw_path_lineto:n { 3cm , 1.5cm }
+%       \draw_path_arc:nnn { 90 } { -45 } { 0.5cm }
+%       \draw_path_use_clear:n { fill }
+%     \draw_end:
+%   \end{demo}
+%
+%   Note the interface here has a different argument ordering from that in
+%   \pkg{pgf}, which has the two centers then the two radii.
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_path_moveto:n { 0cm , 0cm }
+%       \draw_path_arc:nnnn { 180 } { 45 } { 2cm } { 1cm }
+%       \draw_path_use_clear:n { stroke }
+%     \draw_end:
+%   \end{demo}
+% \end{function}
+%
+% \begin{function}{\draw_path_arc_axes:nnnn}
+%   \begin{syntax}
+%     \cs{draw_path_arc_axes:nnn} \Arg{angle1} \Arg{angle2} \Arg{vector1} \Arg{vector2}
+%   \end{syntax}
+%   Appends the portion of an ellipse from \meta{angle1} to \meta{angle2} of an
+%   ellipse with axes along \meta{vector1} and \meta{vector2} to the current
+%   path.
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_path_moveto:n { 0cm , 0cm }
+%       \draw_path_lineto:n { 2cm , 5mm }
+%       \draw_path_moveto:n { 0cm , 0cm }
+%       \draw_path_lineto:n { 0cm , 1cm }
+%       \draw_path_moveto:n { 2cm , 5mm }
+%       \draw_path_arc_axes:nnnn { 0 } { 90 }
+%         { 2cm , 5mm } { 0cm , 1cm }
+%       \draw_path_use_clear:n { stroke }
+%     \draw_end:
+%   \end{demo}
+% \end{function}
+%
+% \begin{function}{\draw_path_ellipse:nnn}
+%   \begin{syntax}
+%     \cs{draw_path_ellipse:nnn} \Arg{center} \Arg{vector1} \Arg{vector2}
+%   \end{syntax}
+%   Appends an ellipse at \meta{center} with axes along \meta{vector1} and
+%   \meta{vector2} to the current path. A new part is started if the path
+%   is already non-empty. Notice that the underlying drawing is constructed
+%   from arcs with appropriate moves: the interfaces is a more efficient
+%   convenience.
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_path_ellipse:nnn
+%         { 1cm , 0cm }
+%         { 1.5cm , 0cm }
+%         { 0cm , 1cm }
+%       \draw_path_use_clear:n { stroke }
+%       \draw_color:n { red }
+%       \draw_path_ellipse:nnn
+%         { 1cm , 0cm }
+%         { 1cm , 1cm }
+%         { -0.5cm , 0.5cm }
+%       \draw_path_use_clear:n { stroke }
+%     \draw_end:
+%   \end{demo}
+%
+%   Note that any transformation is applied to the completed ellipse rather than
+%   to the axes.
+% \end{function}
+%
+% \begin{function}{\draw_path_circle:nn}
+%   \begin{syntax}
+%     \cs{draw_path_circle:nn} \Arg{center} \Arg{radius}
+%   \end{syntax}
+%   Appends a circle of \meta{radius} at \meta{center} to the current path. 
+%   This is a shortcut for \cs{draw_path_ellipse:nnn}.
+% \end{function}
+%
+% \begin{function}{\draw_path_rectangle:nn, \draw_path_rectangle_corners:nn}
+%   \begin{syntax}
+%     \cs{draw_path_rectangle:nn} \Arg{lower-left} \Arg{displacement}
+%     \cs{draw_path_rectangle_corners:nn} \Arg{lower-left} \Arg{top-right}
+%   \end{syntax}
+%   Appends a rectangle starting at \meta{lower-left} to the current path,
+%   with the size of the rectangle determined either by a \meta{displacement}
+%   or the position of the \meta{top-right}.
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_path_rectangle:nn
+%         { 1cm , 0cm }
+%         { 1.5cm , 1cm }
+%       \draw_path_rectangle:nn
+%         { 1.5cm , 0.25cm }
+%         { 1.5cm , 1cm }
+%       \draw_path_rectangle:nn
+%         { 2cm , 0.5cm }
+%         { 1.5cm , 1cm }
+%       \draw_path_use_clear:n { draw }
+%     \draw_end:
+%   \end{demo}
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_path_rectangle_corners:nn
+%         { 1cm , 0cm }
+%         { 1.5cm , 1cm }
+%       \draw_path_use_clear:n { draw }
+%     \draw_end:
+%   \end{demo}
+% \end{function}
+%
+% \begin{function}{\draw_path_grid:nnnn}
+%   \begin{syntax}
+%     \cs{draw_path_grid:nnnn} \Arg{xstep} \Arg{ystep} \Arg{lower-left} \Arg{upper-right}
+%   \end{syntax}
+%   Constructs a grid of \meta{xstep} and \meta{ystep} inside the rectangle
+%   defined by the \meta{lower-left} and the \meta{upper-right}, and appends
+%   this to the current path. The grid will be aligned such that grid lines
+%   pass through the origin, which may result in \enquote{protruding} ends
+%   if the start/end positions do not fully align.
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_linewidth:n { 0.8pt }
+%       \draw_path_grid:nnnn
+%         { 1cm } { 1cm }
+%         { -3mm , -3mm }
+%         { 33mm , 23mm }
+%       \draw_path_use_clear:n { stroke }
+%       \draw_linewidth:n { 0.4pt }
+%       \draw_path_grid:nnnn
+%         { 1mm } { 1mm }
+%         { -1.5mm , -1.5mm }
+%         { 31.5mm , 21.5mm }
+%       \draw_path_use_clear:n { stroke }
+%     \draw_end:
+%   \end{demo}
+%
+%   Any transformation is applied to the finished grid.
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_transform_rotate:n { 10 }
+%       \draw_path_grid:nnnn
+%         { 1mm } { 2mm }
+%         { 0mm , 0mm }
+%         { 30mm , 30mm }
+%       \draw_path_use_clear:n { stroke }
+%     \draw_end:
+%   \end{demo}
+% \end{function}
+%
+% \subsubsection{Path scope}
+%
+% \begin{function}{\draw_path_scope_begin:, \draw_path_scope_end:}
+%   \begin{syntax}
+%     \cs{draw_path_scope_begin:}
+%     ...
+%     \cs{draw_path_scope_end:}
+%   \end{syntax}
+%   Suspends (and saves) the current (partial) path, initialising a new
+%   path within the scope. Path operations are written to output only when
+%   used, so the scoped path is stored at the \pkg{expl3} level, not
+%   in the output.
+% \end{function}
+%
+% \subsubsection{Path operations on canvas axes}
+%
+% For \emph{specialist} work, a small number of functions are provided
+% which work relative to the canvas axes, \emph{i.e.}~these functions
+% ignore the transformation matrix.
+%
+% \begin{function}{\draw_path_canvas_moveto:n}
+%   \begin{syntax}
+%     \cs{draw_path_canvas_moveto:n} \Arg{canvas point}
+%   \end{syntax}
+%   Moves the reference point of the path to the \meta{canvas point}, but will
+%   not join this to any previous point.
+% \end{function}
+%
+% \begin{function}{\draw_path_canvas_lineto:n}
+%   \begin{syntax}
+%     \cs{draw_path_canvas_lineto:n} \Arg{canvas point}
+%   \end{syntax}
+%   Joins the current path to the \meta{canvas point} with a straight line.
+% \end{function}
+%
+% \begin{function}{\draw_path_canvas_curveto:nnn}
+%   \begin{syntax}
+%     \cs{draw_path_canvas_curveto:nnn} \Arg{control1} \Arg{control2} \Arg{end}
+%   \end{syntax}
+%   Joins the current path to the \meta{end} with a curved line defined by
+%   cubic Bézier points \meta{control1} and \meta{control2}. These positions
+%   are given as canvas points.
+% \end{function}
+%
+% \subsection{Bounding box}
+%
+% \begin{variable}{\l_draw_bb_update_bool}
+%   All functions automatically update the bounding box of the image, unless
+%   specified otherwise. This behavior is selectable using the
+%   \cs{l_draw_bb_update_bool} boolean.
+% \end{variable}
+%
+% \subsection{Boxes and coffins}
+%
+% \begin{function}{\draw_box_use:N}
+%   \begin{syntax}
+%     \cs{draw_box_use:N} \meta{box}
+%   \end{syntax}
+%   Inserts the \meta{box} into a drawing, taking account of the current
+%   transformation matrix and shift, and adjusting the drawing bounding
+%   box to contain the (apparent) size of the box if this is active
+%   (see \cs{l_draw_bb_update_bool}).
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_path_moveto:n { 0cm , 0cm }
+%       \draw_path_lineto:n { 0cm , 1cm }
+%       \draw_path_use_clear:n { stroke }
+%       \hbox_set:Nn \l_tmpa_box
+%         { This~is~text. }
+%       \draw_box_use:N \l_tmpa_box
+%     \draw_end:
+%   \end{demo}
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_transform_matrix:nnnn { 2 } { 0 } { 1 } { 2 }
+%       \draw_path_moveto:n { 0cm , 0cm }
+%       \draw_path_lineto:n { 0cm , 1cm }
+%       \draw_path_use_clear:n { stroke }
+%       \hbox_set:Nn \l_tmpa_box
+%         { This~is~text. }
+%       \draw_box_use:N \l_tmpa_box
+%     \draw_end:
+%   \end{demo}
+% \end{function}
+%
+% \begin{function}{\draw_coffin_use:Nnn}
+%   \begin{syntax}
+%     \cs{draw_coffin_use:N} \meta{coffin} \Arg{hpole} \Arg{vpole}
+%   \end{syntax}
+%   Inserts the \meta{coffin} into a drawing, taking account of the current
+%   transformation matrix and shift, and adjusting the drawing bounding
+%   box to contain the (apparent) size of the box if this is active
+%   (see \cs{l_draw_bb_update_bool}). The alignment point of the coffin to
+%   the origin is specified by the intersection of the \meta{hpole} and the
+%   \meta{vpole}.
+%   \begin{demo}
+%     \draw_begin:
+%       \draw_path_moveto:n { 0cm , 0cm }
+%       \draw_path_lineto:n { 0cm , 1cm }
+%       \draw_path_use_clear:n { stroke }
+%       \hcoffin_set:Nn \l_tmpa_coffin
+%         { This~is~text. }
+%       \draw_coffin_use:Nnn \l_tmpa_coffin { hc } { vc }
+%     \draw_end:
+%   \end{demo}
+% \end{function}
+%
+% \subsection{Color}
+%
+% \begin{function}{\draw_color:n, \draw_color_fill:n, \draw_color_stroke:n}
+%   \begin{syntax}
+%     \cs{draw_color:n} \Arg{color expression}
+%   \end{syntax}
+%   Evaluates the \meta{color expression} as described for \pkg{l3color}.
+% \end{function}
+%
+% \subsection{Transformations}
+%
+% Points are normally used unchanged relative to the canvas axes. This can
+% be modified by applying a transformation matrix. The canvas axes themselves
+% may be adjusted using \cs{driver_draw_cm:nnnn}: note that this
+% is transparent to the drawing code so is not tracked.
+%
+% \begin{function}
+%   {\draw_transform_matrix:nnnn, \draw_transform_matrix_concat:nnnn}
+%   \begin{syntax}
+%     \cs{draw_transform_matrix:nnnn}
+%       \Arg{a} \Arg{b} \Arg{c} \Arg{d}
+%   \end{syntax}
+%   Applies the transformation matrix $[ \meta{a} \meta{b} \meta{c} \meta{d}]$.
+%   The basic version over-writes the current matrix, the |concat| version
+%   concatenates.
+%   This assignment is local.
+% \end{function}
+%
+% \begin{function}{\draw_transform_shift:n, \draw_transform_shift_concat:n}
+%   \begin{syntax}
+%     \cs{draw_transform_shift:n} \Arg{vector}
+%   \end{syntax}
+%   Applies the transformation \meta{vector} to points. The basic version
+%   over-writes the current vector, the |concat| version concatenates.
+%   This assignment is local.
+% \end{function}
+%
+% \begin{function}{\draw_transform_triangle:nnn}
+%   \begin{syntax}
+%     \cs{draw_transform_triangle:nnn}
+%       \Arg{origin} \Arg{point1} \Arg{point2}
+%   \end{syntax}
+%   Applies a transformation such that the co-ordinates $(0, 0)$, $(1, 0)$
+%   and $(0, 1)$ are given by the \meta{origin}, \meta{point1} and
+%   \meta{point2}, respectively.
+%   This assignment is local.
+% \end{function}
+%
+% \begin{function}{\draw_transform_rotate:n}
+%   \begin{syntax}
+%     \cs{draw_transform_rotate:n} \Arg{angle}
+%   \end{syntax}
+%   Applies a rotation by the \meta{angle}, measured anti-clockwise in degrees.
+%   This rotation is \emph{additional} to any prevailing transformation.
+%   This assignment is local.
+% \end{function}
+%
+% \begin{function}
+%   {
+%     \draw_transform_scale:n,
+%     \draw_transform_xscale:n,
+%     \draw_transform_yscale:n
+%   }
+%   \begin{syntax}
+%     \cs{draw_transform_scale:n} \Arg{scale}
+%   \end{syntax}
+%   Applies the \meta{scale} in either $x$ or $y$ (or both).
+%   This scale is \emph{added} to any prevailing transformation.
+%   This assignment is local.
+% \end{function}
+%
+% \begin{function}
+%   {
+%     \draw_transform_xshift:n,
+%     \draw_transform_yshift:n
+%   }
+%   \begin{syntax}
+%     \cs{draw_transform_xshift:n} \Arg{xshift}
+%   \end{syntax}
+%   Applies an \meta{xshift} or \meta{yshift}, as appropriate. This shift is
+%   \emph{added} to any prevailing one.
+%   This assignment is local.
+% \end{function}
+%
+% \begin{function}
+%   {
+%     \draw_transform_xslant:n,
+%     \draw_transform_yslant:n
+%   }
+%   \begin{syntax}
+%     \cs{draw_transform_xslant:n} \Arg{slant}
+%   \end{syntax}
+%   Applies the \meta{slant} (a factor) in either $x$ or $y$.
+%   This slant is \emph{added} to any prevailing transformation.
+%   This assignment is local.
+% \end{function}
+%
+% \begin{function}
+%   {\draw_transform_matrix_invert:, \draw_transform_shift_invert:}
+%   \begin{syntax}
+%     \cs{draw_transform_matrix_invert:}
+%   \end{syntax}
+%   Inverts the current transformation matrix or shift vector, as
+%   appropriate.
+%   This assignment is local.
+% \end{function}
+%
+% \begin{function}
+%   {\draw_transform_matrix_reset:, \draw_transform_shift_reset:}
+%   \begin{syntax}
+%     \cs{draw_transform_matrix_reset:}
+%   \end{syntax}
+%   Resets the current transformation matrix or shift vector, as
+%   appropriate.
+%   This assignment is local.
+% \end{function}
+%
+% \end{documentation}
+%
+% \begin{implementation}
+%
+% \section{\pkg{l3draw} implementation}
+%
+%    \begin{macrocode}
+%<*initex|package>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%<@@=draw>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%<*package>
+\ProvidesExplPackage{l3draw}{2019-01-28}{}
+  {L3 Experimental core drawing support}
+%</package>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\RequirePackage { l3color }
+%    \end{macrocode}
+%
+% Everything else is in the sub-files!
+%
+%    \begin{macrocode}
+%</initex|package>
+%    \end{macrocode}
+%
+% \end{implementation}
+%
+% \PrintIndex

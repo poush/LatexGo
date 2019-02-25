@@ -1,0 +1,577 @@
+%& --translate-file=il1-t1.tcx
+% Documentatioin File of the package fontch.tex   V2.2 2010/04/12
+% Copyright 2010 R. Medina
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, version 1.3c
+%
+%% Options of fontch
+ \let\AMSfont\relax
+ \let\DStroke\relax 
+ \let\LMTone\relax
+ \let\LMTSone\relax
+%% Input fontch and bsymbols
+ \input fontch.tex
+ \input bsymbols.tex
+\leftline{ } %% To start the page
+\bigskip\bigskip
+\twentyfourpoint
+\centerline{\bf fontch}
+\fourteenpoint\sf
+\bigskip
+\centerline{ Macros for changing fonts and sizes in plain \TeX}
+\centerline{Rodrigo Medina rmedina@ivic.gob.ve}
+\centerline{V2.2 2010/04/12}
+\rm
+\bigskip\bigskip
+\twelvepoint
+\leftline{\bf Description}
+\tenpoint
+       This package allows, in plain \TeX, to change with a single
+command the size of all fonts that are used for text input and math input.
+Main text fonts of sizes 8, 10, 12, 14, 20 and 24 points are available.
+Fonts of sizes 5, 6, 7 and 9 points are used in subscripts and subscripts of
+subscripts of other main sizes.
+In addition fontch gives support to:
+\item{\bull} Boldface math-italic and boldface math symbols,
+\item{\bull} T1 Latin Modern fonts,
+\item{\bull} TS1 companion symbol fonts.
+\item{\bull} AMS fonts for boldface math,
+\item{\bull} Double Stroke fonts for blackboard bold symbols
+\medskip 
+\twelvepoint
+\leftline{\bf Requirements}
+\tenpoint
+No special requirements are needed for using the original OT1 Computer Modern fonts.
+
+\item{\bull}  In order to use the options for  T1 Latin Modern fonts and the
+companion TS1 symbol fonts, you
+ need to have installed
+  the Latin Modern fonts of version 1.000 or larger. Older versions of LM fonts,
+  where the cork encoded fonts had names as cork-lmr10 (instead of ec-lmr10) 
+  are compatible only with fontch-2.0.
+ You can find the old package  in
+
+\centerline{\sf CTAN:/tex-archive/obsolete/macros/plain/contrib/fontch20.tar.gz}
+\item{\bull} In order to use the option for boldface math symbols you need to have
+ the AMS fonts installed.
+\item{\bull} In order to use the option for blackboard bold symbols you need to
+ have the Double Stroke fonts installed.
+\medskip
+\twelvepoint
+\leftline{\bf Components}
+\tenpoint
+The fontch V2.2 package is composed of the following files:\par\noindent
+\settabs 10 \columns
+\+&{\tt README}      &&-- text file with this same information \cr
+\+&{\tt fontch.tex}  &&-- main macros\cr
+\+&{\tt bsymbols.tex}&&-- macros for boldface  symbols\cr
+\+&{\tt TS1mac.texr} &&-- macros for the TS1 companion symbols\cr
+\+&{\tt DSmac.tex}   &&-- auxiliary file for the DStroke option\cr
+\+&{\tt fontch.pdf}  &&-- manual of fontch\cr
+\+&{\tt fontch\_doc.tex}  &&-- source of manual \cr
+
+\medskip 
+\twelvepoint
+\leftline{\bf Installation}
+\tenpoint
+        You have only to put the macro files {\tt fontch.tex}, {\tt
+ bsymbols.tex}, {\tt TS1mac.tex} and {\tt DSmac.tex} in any sensible place
+ inside the texmf tree, like\par
+
+\centerline{\tt  \dots/texmf/tex/plain/fontch/}
+
+It is also commendable to put the files {\tt README} and {\tt fontch.pdf}
+in a proper place such as
+
+ \centerline{\tt \dots/texmf/doc/plain/fontch/}
+\medskip 
+\twelvepoint
+\leftline{\bf Usage}
+\tenpoint
+   For using {\tt fontch.tex} with the original TeX OT1 fonts (Computer Modern)
+just put at the beginning of the document:\par
+
+{\tt $\backslash$input fontch.tex}
+
+The file {\tt bsymbols.tex} provides macro definitions for boldface versions
+of math symbols. For using it just input the file where you need it.
+
+The fontch package has four options for handling different kinds of fonts:\par
+
+\+&{\tt LMTone}  &&for Latin Modern T1 fonts.\cr
+\+&{\tt LMTSone} &&for the TS1 companion symbol font.\cr
+\+&{\tt AMSfont} &&for AMS fonts used for boldface math.\cr
+\+&{\tt DStroke} &&for Doublestroke fonts providing blackboard-boldface
+ symbols.\cr
+\par
+
+The four options are independent. They are activated by setting the
+corresponding variable before calling  fontch.tex. For example for
+activating all the four options and using the macros for bold math
+put at the beginning of the document:
+\smallskip\par
+{\tt
+$\backslash$let$\backslash$AMSfont$\backslash$relax\par
+$\backslash$let$\backslash$DStroke$\backslash$relax\par
+$\backslash$let$\backslash$LMTone$\backslash$relax\par
+$\backslash$let$\backslash$LMTSone$\backslash$relax\par
+$\backslash$input fontch.tex\par
+$\backslash$input bsymbols.tex\par
+}
+\medskip 
+{\twelvepoint
+\leftline{\bf General Commands}
+}
+Here we treat those features of fontch that are common to all options. First
+we have to say that there is one modification of the standard behavior of
+plain \TeX. Plain
+     \TeX\ defines for the font \#3 the same font (tenex) for text, script and
+     scriptscript. That is awful. The fontch package uses sevenex for
+     script and fiveex for scriptscript, as \TeX\ does for the other fonts.
+
+The package fontch defines the following commands valid for any option.
+\par\noindent
+Commands for changing font size:\par
+
+\+&{\tt $\backslash$eightpoint}      &&-- Change to small type\cr
+\+&{\tt $\backslash$tenpoint}        &&-- Change to normal type\cr
+\+&{\tt $\backslash$twelvepoint}     &&-- Change to large type\cr
+\+&{\tt $\backslash$fourteenpoint}   &&-- Change to very large type\cr
+\+&{\tt $\backslash$twentypoint}     &&-- Change to huge type\cr
+\+&{\tt $\backslash$twentyfourpoint} &&-- Change to immense type\cr
+\smallskip
+\noindent
+Commands for changing family, most of them already in plain \TeX:
+
+\+&{\tt $\backslash$rm}         &&-- Roman\cr
+\+&{\tt $\backslash$sl}         &&-- Slanted\cr
+\+&{\tt $\backslash$it}         &&-- Italic\cr
+\+&{\tt $\backslash$bf}         &&-- Boldface\cr
+\+&{\tt $\backslash$tt}         &&-- Teletype\cr
+\+&{\tt $\backslash$sf}         &&-- Sans Serif (new)\cr
+\+&{\tt $\backslash$sc}         &&-- Small Caps\cr
+\+&{\tt $\backslash$cal}        &&-- Calligraphic\cr
+\+&{\tt $\backslash$mit}        &&-- Math Italic\cr
+\+&{\tt $\backslash$mb}         &&-- Math Boldface (new)\cr
+\+&{\tt $\backslash$bcal}       &&-- Boldface calligraphic (new)\cr
+\+&{\tt $\backslash$oldstyle}   &&-- Old style digits\cr
+\+&{\tt $\backslash$boldstyle}  &&-- Boldface old style digits (new)\cr
+\+&{\tt $\backslash$setmathbold}&&-- Set families 1 and 2 to cmmib and
+ cmmbsy (new)\cr
+\+&{\tt $\backslash$unsetmathbold}&&-- Reset families 1 and 2 to cmmi and
+ cmmsy (new)\cr
+\smallskip
+\noindent
+Command for changing line spacing:
+\+&{\tt $\backslash$doublespace}&&-- Double space for ten and twelve points\cr
+\medskip
+The scope of these commands is the group defined by the braces.
+The commands for changing size are active until a new changing size command is
+given. The initial size is tenpoint and the initial family is roman. The
+commands for changing family 
+are active until a new changing family command is given. The changing size
+commands reset the family to {\tt $\backslash$rm} and the double space
+to single space.
+
+ Since the changing size commands modify the parameters that
+control the spacing between lines and between words, unpredictable results
+are obtained if they are given in the middle of a paragraph. Nevertheless
+inside a paragraph 
+it is still possible to use the \TeX\ font commands of the form
+ {\it $\backslash$size+family}, where {\it size} is one from {\tt five,
+six, seven, eight, nine, ten, twelve, fourteen, twenty} or {\tt  twentyfour}
+and {\it family} is one from  {\tt rm, sl, it, bf, tt, ss} or {\tt csc}
+({\it e.g.}{\tt $\backslash$twelvess}). Here {\tt ss} represents the sans serifi
+family and {\tt csc} the small caps family.
+
+\noindent
+For example the following text\par
+{\tt
+\smallskip
+$\backslash$eightpoint\par
+This  well known formula of physics is due to $\{\backslash$it
+ Newton$\}$\par
+\$\$ $\backslash$vec F = m $\backslash$vec a \$\$\par
+\medskip
+$\backslash$twentyfourpoint\par
+This  well known formula of physics is due to $\{\backslash$it
+ Newton$\}$\par
+\$\$ $\backslash$vec F = m $\backslash$vec a \$\$\par
+\medskip
+$\backslash$fourteenpoint\par
+Many books use boldface letters instead of arrows for indicating vectors,\par
+\$\$ $\{\backslash$mb F$\}$ = m $\{\backslash$mb a$\}$ \$\$\par
+}
+\par \noindent
+yields:\par
+\eightpoint
+This  well known formula of physics is due to {\it Newton}
+$$ \vec F = m \vec a $$
+
+\twentyfourpoint
+This  well known formula of physics is due to {\it Newton}
+$$ \vec F = m \vec a $$
+
+\fourteenpoint
+Many books use boldface letters instead of arrows for indicating  vectors,\par
+$$ {\mb F} = m {\mb a} $$
+
+\tenpoint
+\medskip\noindent
+Another example using the sans serif family,
+
+{\tt
+The orthogonal matrix \$$\backslash$sf A\$ satifies the relation\par
+\$\$ $\{\backslash$sf A$\}$\^{}t $\backslash$sf A = I\$\$
+}
+\par\noindent
+yields
+
+The orthogonal matrix $\sf A$ satifies the relation
+$$ {\sf A}^t \sf A = I$$
+
+\medskip
+{\twelvepoint
+\leftline{\bf AMS fonts}
+}
+ Only the cmcs, cmmib, cmbsy and cmex AMS fonts are supported. These
+     are used for small caps and for boldface math-italic and boldface
+     greek symbols. The other AMS fonts like the Euler, Cyrillic and extra
+     symbols are not supported.
+
+\medskip
+{\twelvepoint
+\leftline{\bf Boldface math}}
+
+  There are two main uses of boldface math. One case is the use of
+     isolated boldface  characters or symbols inside a formula. For this case
+     fontch provides bold versions of math symbols and the macro
+  {\tt $\backslash$mb} for bold
+     math-italic characters.  The plain \TeX\  macro
+{\tt $\backslash$bf}  yields roman-bold
+     characters in math mode.  The name of the bold version of a math symbol
+     is obtained adding the prefix {\tt bf} to the name of the normal symbol.
+    For
+     example a boldface italic ``a'' ($\mb a$) is {\tt $\{\backslash$mb a$\}$},
+ a boldface roman ``P'' ({\bf P}) is {\tt $\{\backslash$bf P$\}$},
+      a boldface $\sigma$ ($\bfsigma$) is {\tt $\backslash$bfsigma}, a boldface
+{\tt $\backslash$iff} ($\bfiff$) is {\tt $\backslash$bfiff}.
+
+     The other case is when one wants to write a complete formula in
+     boldface, for example inside a title. For this case fontch has the
+     macro {\tt $\backslash$setmathbold} that changes the font families 1 (cmmi) and 2 (cmsy)
+     to the bold versions cmmib and cmmbsy. The macro
+ {\tt $\backslash$unsetmathbold} resets
+     the families 1 and 2 to their original values. These macros should be
+     put before and after the formula.
+
+  Usually the macro  {\tt $\backslash$setmathbold} does not change the whole
+ formula to
+     boldface. This is due to the fact that in math mode some symbols
+     come from family \#0 (cmr) or \#3 (cmex) such as ``+''
+ or {\tt $\backslash$int}. Fontch
+     provides macros for the symbols that come from family \#0, For
+     example the bold version of ``('' is {\tt $\backslash$bflparen}.
+
+  Math symbols of family \#3 (cmex) do not have bold versions. In particular
+    {\tt $\backslash$int}, {\tt $\backslash$sum} and {\tt $\backslash$prod}.
+ Nevertheless {\tt $\backslash$smallint} is of cmsy and does have
+     a bold version.
+
+
+The macros for boldface math symbols are defined in the file
+ {\tt bsymbols.tex}. The macros for the bold version of
+symbols that don't have a keyword are
+\smallskip
+\+&$\backslash$bfexcl      &&$\bfexcl$\cr
+\+&$\backslash$bflparen    &&$\bflparen$\cr
+\+&$\backslash$bfrparen    &&$\bfrparen$\cr 
+\+&$\backslash$bfplus      &&$\bfplus$\cr  
+\+&$\backslash$bfcomma     &&$\bfcomma$\cr 
+\+&$\backslash$bfcolon     &&$\bfcolon$\cr 
+\+&$\backslash$bfsemicolon &&$\bfsemicolon$\cr 
+\+&$\backslash$bfequal     &&$\bfequal$\cr 
+\+&$\backslash$bflbraket   &&$\bflbraket$\cr 
+\+&$\backslash$bfrbraket   &&$\bfrbraket$\cr 
+\+&$\backslash$bflt        &&$\bflt$\cr  
+\+&$\backslash$bfslash     &&$\bfslash$\cr 
+\+&$\backslash$bfgt        &&$\bfgt$\cr   
+\+&$\backslash$bfminus     && $\bfminus$\cr 
+\+&$\backslash$bfvert      &&$\bfvert$\cr  
+
+\smallskip\noindent
+For example the following text
+
+{\tt
+$\backslash$twelvepoint\par
+$\backslash$centerline$\{\backslash$bf Newton's Sencod Law, 
+$\backslash$setmathbold \$$\backslash$vec F$\backslash$bfequal m
+$\backslash$vec a\$\par
+$\backslash$unsetmathbold$\}$}\par
+\smallskip\noindent
+yields
+
+\twelvepoint
+\centerline{\bf Newton's Second Law, \setmathbold$\vec F\bfequal m\vec a$
+\unsetmathbold}
+\tenpoint
+
+\medskip
+{\twelvepoint
+\leftline{\bf Double Stroke option}
+}
+The {\tt DStroke} option loads the Double Stroke fonts, that provide
+blackboard-boldface capital letters. 
+ Only the roman Double Stroke font is supported. The sans serif version
+     is not supported. There is only a command associated to this option
+
+\+&{\tt $\backslash$ds} &&-- Double Stroke\cr
+
+\smallskip\noindent
+For example\par
+{\tt \$\$ $\{\backslash$ds N$\} \backslash$subset
+$\{\backslash$ds Z$\} \backslash$subset
+$\{\backslash$ds Q$\} \backslash$subset
+$\{\backslash$ds R$\} \backslash$subset
+$\{\backslash$ds C$\}$ \$\$}
+
+\noindent
+yields
+
+$$ {\ds N}\subset{\ds Z}\subset{\ds Q}\subset{\ds R}\subset{\ds C}$$
+
+
+\medskip
+{\twelvepoint
+\leftline{\bf T1 encoded Latin Modern fonts}}
+
+The {\tt LMTone} option loads the T1 encoded Latin Modern fonts, which
+are used for text input. Math input is still done with the CM OT1 fonts.
+Using the translation files {\tt il1-t1.tcx} or {\tt il2-t1.tcx}
+it is possible to write a latin1 or latin2 encoded {\tt .tex} file, without
+bothering about accents and special characters.  This is not only more
+convenient for writing the
+file, but usually it is also required for a proper behavior of the
+hyphenation procedures. For example
+
+{\tt
+\%\& --translate-file=il1-t1.tcx\par
+$\backslash$let$\backslash$LMTone$\backslash$relax\par
+$\backslash$input fontch.tex\par
+\medskip
+¡Esto está escrito en español! ¿no es cómodo?}\par
+\smallskip\noindent
+yields
+
+¡Esto está escrito en español! ¿no es cómodo? 
+
+\medskip
+{\twelvepoint
+\leftline{\bf Commands of the LM T1 option}}
+
+The {\tt LMTone} option of fontch redefines the following plain
+ \TeX\ commands: {\tt
+  $\backslash$i, $\backslash$j, $\backslash$ae, $\backslash$AE,
+ $\backslash$oe, $\backslash$OE, $\backslash$o, $\backslash$O,
+  $\backslash$ss, $\backslash$SS, $\backslash$aa, $\backslash$AA,
+ $\backslash$l, $\backslash$L,
+  $\backslash$Gamma, $\backslash$Delta, $\backslash$Theta,
+ $\backslash$Lambda, $\backslash$Xi, $\backslash$Pi, $\backslash$Phi,\par
+\noindent
+  $\backslash$Sigma, $\backslash$Upsilon,
+ $\backslash$Psi, $\backslash$Omega, $\backslash$hbar.}
+
+\noindent
+Fontch defines new T1 commands for non-latin1 characters
+
+\+&{\tt $\backslash$lh} &&\lh\cr
+\+&{\tt $\backslash$Lh} &&\Lh\cr
+\+&{\tt $\backslash$dh} &&\dh\cr
+\+&{\tt $\backslash$th}  &&\th \cr
+\+&{\tt $\backslash$dbar}  &&\dbar\cr 
+\+&{\tt $\backslash$Edh} &&\Edh\cr
+\+&{\tt $\backslash$edh} &&\edh\cr
+\+&{\tt $\backslash$ij} &&\ij\cr
+\+&{\tt $\backslash$IJ} &&\IJ\cr
+\+&{\tt $\backslash$nj} &&\nj\cr
+\+&{\tt $\backslash$NJ} &&\NJ\cr
+\+&{\tt $\backslash$thorn} &&\thorn\cr
+\+&{\tt $\backslash$Thorn} &&\Thorn\cr
+\+&{\tt $\backslash$smallzero} &&\smallzero\cr
+\+&{\tt $\backslash$lguille} &&\lguille &&&(don't appear in il1-t1.tcx)\cr
+\+&{\tt $\backslash$rguille} &&\rguille  &&&(don't appear in il1-t1.tcx)\cr
+\+&{\tt $\backslash$vispace}  &&\vispace\cr 
+
+\noindent
+The following plain \TeX\ text accents are redefined:
+
+{\tt
+ $\backslash$\`{}, $\backslash$\'{}, $\backslash$\^{}, $\backslash$\~{},
+ $\backslash$\"{}, $\backslash$H, $\backslash$v, $\backslash$u,
+ $\backslash$=, $\backslash$., $\backslash$b, $\backslash$c}
+
+\noindent
+The following  plain \TeX\ math-accents are redefined:
+
+{\tt
+  $\backslash$acute, $\backslash$grave,
+ $\backslash$ddot,
+$\backslash$tilde, $\backslash$bar, $\backslash$breve,
+$\backslash$check, $\backslash$hat, $\backslash$dot.}
+
+\noindent
+New T1 text accents re defined:
+
+\+&{\tt $\backslash$r}  &&-- ring accent\cr
+\+&{\tt $\backslash$k}  &&-- ogonek\cr
+
+\noindent
+Finally a new T1 math-accent is defined
+
+\+&{\tt $\backslash$ring}\cr
+
+\medskip
+{\twelvepoint
+\leftline{\bf Commands of the LMTS1 option}}
+
+The TS1 option defines a macro for accessing the TS1 symbols by their position
+in the table,\par
+ 
+\+&{\tt $\backslash$tcchar$\{$\#1$\}$} &&-- Character of TS1 table\cr
+
+\noindent
+Some plain \TeX\ commands are redefined:\par
+
+\+&{\tt $\backslash$t$\{$\#1$\}$} &&--  tie-after-accent\cr
+\+&{\tt $\backslash$P}     &&\P\cr
+\+&{\tt $\backslash$S}     &&\S\cr
+\+&{\tt $\backslash$dag}   &&\dag\cr
+\+&{\tt $\backslash$ddag}  &&\ddag\cr
+\+&{\tt $\backslash$copyright} &&\$copyright\cr
+
+\noindent
+There is a macro for most of the TS1 symbols,
+Some are text versions of symbols of the math mode. The macros are
+in increasing charcode order:
+
+\+&{\tt $\backslash$arrowl}     &&\arrowl\cr 
+\+&{\tt $\backslash$arrowr}     &&\arrowr\cr 
+\+&{\tt $\backslash$blank}      &&\blank\cr
+\+&{\tt $\backslash$dollar}     &&\dollar\cr     
+\+&{\tt $\backslash$caster}     &&\caster\cr 
+\+&{\tt $\backslash$sequals}    &&\sequals\cr 
+\+&{\tt $\backslash$anglel}     &&\anglel\cr
+\+&{\tt $\backslash$angler}     &&\angler\cr
+\+&{\tt $\backslash$mho}        &&\mho\cr
+\+&{\tt $\backslash$bigcircle}  &&\bigcircle\cr
+\+&{\tt $\backslash$Ohm}        &&\Ohm\cr
+\+&{\tt $\backslash$bbracketl}  &&\bbracketl\cr 
+\+&{\tt $\backslash$bbracketr}  &&\bbracketr\cr
+\+&{\tt $\backslash$arrowu}     &&\arrowu \cr
+\+&{\tt $\backslash$arrowd}     &&\arrowd \cr
+\+&{\tt $\backslash$textstar}   &&\textstar\cr
+\+&{\tt $\backslash$born}       &&\born\cr
+\+&{\tt $\backslash$died}       &&\died\cr
+\+&{\tt $\backslash$leaf}       &&\leaf\cr
+\+&{\tt $\backslash$married}    &&\married\cr
+\+&{\tt $\backslash$music}      &&\music\cr
+\+&{\tt $\backslash$doublevert} &&\doublevert\cr 
+\+&{\tt $\backslash$perthousand} &&\perthousand\cr
+\+&{\tt $\backslash$bull}        &&\bull\cr   
+\+&{\tt $\backslash$centigrade}  &&\centigrade\cr
+\+&{\tt $\backslash$olddollar}   &&\olddollar\cr
+\+&{\tt $\backslash$oldcent}     &&\oldcent\cr
+\+&{\tt $\backslash$florin}      &&\florin\cr
+\+&{\tt $\backslash$Colon}       &&\Colon\cr
+\+&{\tt $\backslash$won}         &&\won\cr
+\+&{\tt $\backslash$naira}       &&\naira\cr
+\+&{\tt $\backslash$guarani}     &&\guarani\cr
+\+&{\tt $\backslash$peso}        &&\peso\cr
+\+&{\tt $\backslash$lira}        &&\lira\cr
+\+&{\tt $\backslash$recipe}      &&\recipe\cr
+\+&{\tt $\backslash$interrobang} &&\interrobang\cr 
+\+&{\tt $\backslash$gnaborretni} &&\gnaborretni\cr
+\+&{\tt $\backslash$dong}        &&\dong\cr
+\+&{\tt $\backslash$TM}          &&\TM\cr
+\+&{\tt $\backslash$pertenth}    &&\pertenth\cr
+\+&{\tt $\backslash$npilcrow}    &&\npilcrow \cr
+\+&{\tt $\backslash$baht}        &&\baht\cr
+\+&{\tt $\backslash$numero}      &&\numero\cr
+\+&{\tt $\backslash$abzueglich}  &&\abzueglich\cr
+\+&{\tt $\backslash$aestimated}  &&\aestimated \cr
+\+&{\tt $\backslash$openbull}    &&\openbull\cr
+\+&{\tt $\backslash$SM}          &&\SM\cr
+\+&{\tt $\backslash$qbrackl}     &&\qbrackl\cr 
+\+&{\tt $\backslash$qbrackr}     &&\qbrackr \cr
+\+&{\tt $\backslash$cent}        &&\cent\cr
+\+&{\tt $\backslash$sterling}    &&\sterling\cr
+\+&{\tt $\backslash$currency}    &&\currency\cr
+\+&{\tt $\backslash$yen}         &&\yen\cr
+\+&{\tt $\backslash$brokenvert}  &&\brokenvert\cr 
+\+&{\tt $\backslash$feminine}    &&\feminine\cr
+\+&{\tt $\backslash$copyleft}    &&\copyleft\cr
+\+&{\tt $\backslash$lognot}      &&\lognot \cr
+\+&{\tt $\backslash$circledP}    &&\circledP\cr
+\+&{\tt $\backslash$registered}  &&\registered\cr
+\+&{\tt $\backslash$degree}      &&\degree\cr
+\+&{\tt $\backslash$plusminus}   &&\plusminus\cr
+\+&{\tt $\backslash$twoup}       &&\twoup\cr
+\+&{\tt $\backslash$threeup}     &&\threeup\cr
+\+&{\tt $\backslash$micro}       &&\micro\cr
+\+&{\tt $\backslash$centereddot} &&\centereddot\cr
+\+&{\tt $\backslash$reference}   &&\reference\cr
+\+&{\tt $\backslash$oneup}       &&\oneup\cr
+\+&{\tt $\backslash$masculine}   &&\masculine\cr
+\+&{\tt $\backslash$root}        &&\root\cr
+\+&{\tt $\backslash$onequarter}  &&\onequarter\cr
+\+&{\tt $\backslash$onehalf}     &&\onehalf \cr
+\+&{\tt $\backslash$threequarters} &&\threequarters\cr
+\+&{\tt $\backslash$euro}        &&\euro\cr
+\+&{\tt $\backslash$texttimes}   &&\texttimes\cr
+
+\medskip
+{\twelvepoint
+\leftline{\bf History}}
+\leftline{\sl Modifications from version 2.1}
+Version 2.2 is a minor correction version. Some minor
+corrections of the README file.
+The main change is the inclusion of the {\tt fontch.pdf} 
+documentation file.
+
+\leftline{\sl  Modifications from version 2.0}
+Version 2.1 is a minor bug correction version.
+The main change is the change in the name of
+the cork-encoded LM font files to the new
+naming conventions (cork-lmr10 -> ec-lmr10, etc.).
+Fontch-2.1 is compatible with LM-1.000 or newer versions.
+Older versions of LM fonts are not compatible.
+
+\leftline{\sl Modifications from version 1.3}
+Version 2.0 is a mayor revision.
+There are many improvements such as
+
+\item{--} Proper handling of smallcaps
+\item{--} Support for bold-math
+\item{--} Support for AMS fonts
+\item{--} Support for blackboard boldface
+\item{--} Correction of bugs and scaling.
+
+\medskip
+{\twelvepoint
+\leftline{\bf Bugs}}
+  Comments and bugs reports are welcome at {\sf rmedina@ivic.gob.ve}.
+
+\medskip
+{\twelvepoint
+\leftline{\bf Copyright}}
+ Copyright 2010 Rodrigo Medina\par
+The fontch package v2.2, including this manual, may be distributed or modified
+under the conditions of the LaTeX Project Public License, version 1.3c.
+
+This software is copyright but you are granted a license which gives you, the
+``user'' of the software, legal permission to copy, distribute, and/or modify
+the software. However, if you modify the software and then distribute it (even
+just locally) you must change the name of the software, or use other technical
+means to avoid confusion.
+
+\bye

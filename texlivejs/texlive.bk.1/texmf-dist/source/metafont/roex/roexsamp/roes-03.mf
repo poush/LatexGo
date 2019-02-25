@@ -1,0 +1,49 @@
+%%%%
+%%%% This file belongs to the ROEX package.
+%%%%
+%%% draw write_preamble write_postamble find_BB set_BB fill_C clip_C
+%%% draw fix_fill_cmyk fix_draw_cmyk
+% ROES-03.MF, ``OLYMPIC CIRCLES'':
+%  Yet another example making use of both expanding stroke and removing
+%  overlaps; it also demonstrates repositioning of the picture in such
+%  a way that the lower left corner of the bounding box coincides with
+%  the origin of coordinate system.
+input mftoeps; eps_mode_setup; input roex;
+tracingremoving:=1; tracingexpanding:=1;
+% ---
+beginchar("0",in#,in#,0); % temporary values
+ path A[];
+ for i:=1,2,3,4,5:
+  A[i]:=fullcircle scaled w shifted
+   (floor(i/4)*(1/2sqrt(3)*w,0)+1/2w*(up rotated (120i+60)));
+ endfor
+ expand_stroke (A1,A2,A3,A4,A5) (.5mm) R;
+ remove_overlap (make_list(1,R.num)R) () R;
+% setting of intermediate colors:
+ k:=0; % the number of intermediate colors
+ C[incr k]=0; M[k]=1; Y[k]=1; K[k]:=0;
+ C[incr k]=0; M[k]=0; Y[k]=1; K[k]:=0;
+ C[incr k]=0.25; M[k]=0; Y[k]=0.75; K[k]:=0;
+ C[incr k]=1; M[k]=0.5; Y[k]=0; K[k]:=0;
+ C[incr k]=0.3; M[k]=1; Y[k]=0; K[k]:=0;
+ l:=30; % the number of interpolation steps
+ m=l*(k-1); % the number of strips
+ find_BB make_list(1,R.num)R;
+% repositioning of the picture:
+ for i:=1 upto R.num: R[i]:=R[i] shifted -llxy; endfor
+ m*w'=xh_crd:=xh_crd-xl_crd; xl_crd:=0;
+ h'=yh_crd:=yh_crd-yl_crd; yl_crd:=0;
+% exporting:
+ write_preamble jobname;
+ clip_C make_list(1,R.num)R;
+ n:=0;
+ for i:=1 upto k-1: for j:=0 upto l-1:
+  n:=n+1;
+  fix_fill_cmyk
+   forsuffixes $=C,M,Y,K: (j/(l-1))[$[i],$[i+1]] if str$ <> "K": , fi endfor;
+  fill_C unitsquare xscaled 11/10w' yscaled h' shifted ((n-1)*w'-1/20w',0);
+ endfor endfor
+ write_postamble;
+endchar;
+end.
+%%\end

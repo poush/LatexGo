@@ -1,0 +1,196 @@
+% \iffalse meta-comment
+%
+% Copyright (C) 2018 by Microsoft.
+% ---------------------------------------------------------------------------
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Christopher Granade (chgranad@microsoft.com).
+%
+% This work consists of the files qsharp.dtx and qsharp.ins,
+% the derived filebase qsharp.sty, and the associated installer file Install.ps1.
+%
+% \fi
+%
+% \iffalse
+%<*driver>
+\ProvidesFile{qsharp.dtx}
+%</driver>
+%<package>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+%<package>\ProvidesPackage{qsharp}
+%<*package>
+    [2019/01/14 v0.3.1901.1401 Initial public version.]
+%</package>
+%
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage[pretty,uselistings]{revquantum}[2015/12/29]
+    \lstset{basicstyle=\ttfamily\footnotesize, commentstyle=\rmfamily}
+\usepackage{xcolor}
+\usepackage{qsharp}
+\usepackage{sourcecodepro}
+\EnableCrossrefs
+\CodelineIndex
+\RecordChanges
+\begin{document}
+  \DocInput{qsharp.dtx}
+  \PrintChanges
+^^A   \PrintIndex
+\end{document}
+%</driver>
+% \fi
+%
+% \CheckSum{0}
+%
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%   Dollar        \$     Percent       \%     Ampersand     \&
+%   Acute accent  \'     Left paren    \(     Right paren   \)
+%   Asterisk      \*     Plus          \+     Comma         \,
+%   Minus         \-     Point         \.     Solidus       \/
+%   Colon         \:     Semicolon     \;     Less than     \<
+%   Equals        \=     Greater than  \>     Question mark \?
+%   Commercial at \@     Left bracket  \[     Backslash     \\
+%   Right bracket \]     Circumflex    \^     Underscore    \_
+%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%   Right brace   \}     Tilde         \~}
+%
+%
+% \changes{v0.3.1901.1401}{2019/01/14}{Initial public version.}
+% \changes{v0.1}{2018/12/04}{Initial version.}
+%
+% \DoNotIndex{\newcommand,\newenvironment}
+%
+% \providecommand*{\url}{\texttt}
+% \newcommand{\DescribeColor}[1]{%
+%     \DescribeMacro{#1}%
+%     {\color{#1} \textbullet}
+%
+% }
+%
+% \GetFileInfo{qsharp.dtx}
+% \title{The \textsf{qsharp} package}
+% \author{Christopher Granade \\ \url{chgranad@microsoft.com}}
+% \date{\fileversion~from \filedate}
+%
+% \maketitle
+%
+% \section{Introduction}
+%
+% The \textsf{qsharp} package provides syntax highlighting for the \qs~language \citeneed.
+%
+% \section{Examples}
+%
+% \begin{lstlisting}[style=QSharp]
+%   namespace Example {
+%       open Microsoft.Quantum.Primitive;
+%
+%       /// # Summary
+%       /// Prepares $(\ket{00} + \ket{11}) / \sqrt{2}$.
+%       operation PrepareEntangledPair(left : Qubit, right : Qubit) : Unit {
+%           body {
+%               H(left);
+%               CNOT(left, right);
+%           }
+%           adjoint auto;
+%           controlled auto;
+%           controlled adjoint auto;
+%       }
+%   }
+% \end{lstlisting}
+%
+% \StopEventually{}
+%
+% \section{Implementation}
+%
+% \iffalse
+%<*package>
+% \fi
+%
+
+%    \begin{macrocode}
+
+\usepackage{listings}
+\usepackage{xcolor}
+
+%    \end{macrocode}
+
+% \subsection{Notation} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%    \begin{macrocode}
+
+\newcommand{\qs}{Q\#}
+
+%    \end{macrocode}
+
+% \subsection{Color Definitions} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%    \begin{macrocode}
+
+\definecolor{cud-reddish-purple}{RGB}{204,121,167}
+\colorlet{doc-comment}{cud-reddish-purple!60!black}
+
+%    \end{macrocode}
+
+% \subsection{Language Definition} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%    \begin{macrocode}
+
+\makeatletter
+\lstdefinelanguage{QSharp}{
+    morekeywords={
+        namespace,
+        open,
+        operation,
+        function,
+        body,
+        adjoint,
+        auto,
+        controlled,
+        let,
+        set,
+        mutable,
+        using,
+        borrowing,
+        Adjoint,
+        Qubit, Unit,
+        Zero, One
+    },
+    % Define built-in primitives as second-order keywords.
+    morekeywords=[2]{H, CNOT, I, X, Y, Z, Message},
+    sensitive=true,
+    morecomment=[l]{//},
+    morecomment=[l][\lst@commentstyle\color{doc-comment}]{///}
+}
+\makeatother
+
+%    \end{macrocode}
+%
+% We also provide styles that set options that are commonly useful with \qs.
+%
+%    \begin{macrocode}
+
+\lstdefinestyle{QSharp}{
+    language=QSharp,
+    mathescape=true
+}
+
+%    \end{macrocode}
+
+%
+% \iffalse
+%</package>
+% \fi
+%
+% \Finale
+\endinput

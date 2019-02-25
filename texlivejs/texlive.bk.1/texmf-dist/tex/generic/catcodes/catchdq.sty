@@ -1,0 +1,142 @@
+                                                 \input plainpkg
+\ProvidesPackage{catchdq}[2015/05/22 v0.21 typographic dqs (UL)]
+%% %% rm. "simple" -- too long -- 2015/05/22
+%%
+%% Copyright (C) 2012 2015 Uwe Lueck,
+%% http://www.contact-ednotes.sty.de.vu
+%% -- author-maintained in the sense of LPPL below --
+%%
+%% This file can be redistributed and/or modified under
+%% the terms of the LaTeX Project Public License; either
+%% version 1.3c of the License, or any later version.
+%% The latest version of this license is in
+%%     http://www.latex-project.org/lppl.txt
+%% There is NO WARRANTY (actually somewhat experimental).
+%%
+%% Please report bugs, problems, and suggestions via
+%%
+%%   http://www.contact-ednotes.sty.de.vu
+%%
+%%  == Purpose and Usage            ==
+%% 
+%% === Installing and Calling       ===
+%% The file `catchdq.sty' is provided ready, 
+%% installation only requires
+%% putting it somewhere where \TeX\ finds it
+%% (which may need updating the filename data
+%%  base).\urlfoot{ukfaqref}{inst-wlcf} 
+%% However, the files `plainpkg.tex' and `stacklet.sty' %% stacklet 2012/09/19
+%% must be installed likewise.
+%% 
+%% \emph{With} \LaTeX, the file should be loaded by `\RequirePackage{catchdq}'
+%% or `\usepackage{catchdq}'. 
+%% 
+%% \emph{Without} \LaTeX, load it by `\input catchdq.sty'.
+%%
+%% As explained in `plainpgk-doc.pdf', however, ``generic" 
+%% packages based on 'plainpkg' should load 'catchdq' by 
+%% `\RequirePackage{catchdq}'.
+%%
+%% === Commands and Syntax          ===
+%% \label{sec:catchdq-cmds}
+%% 'catchdq.sty' (indirectly) allows using |"<no-dqs>"|
+%% for surrounding <no-dqs> with typographical quotation marks, 
+%% using that double quote |"| as an active character. 
+%% As rendering that `"' active during defining macros can 
+%% corrupt the latter, the user (or package writer) must 
+%% activate that `"' explicitly by |\catchdqs|. 
+%%
+%% Further difficulties may arise after `\catchdqs', 
+%% various ways to get around them are described in the remaing sections.
+%% 
+%%  == The Code                     ==
+%% === Required ===
+%% The package is an application (of ideas of) 'actcodes.sty':
+\RequirePackage{actcodes}
+%%
+%% === The Core: \cs{catchdq} ===
+%% % \label{sec:catchdq-core}
+%% |\catchdq<no-dqs>"| will expand to |\dqtd{<no-dqs>}|, 
+%% provided the \acro{ASCII} double quote is an active character: 
+{\MakeActive\"\gdef\catchdq#1"{\dqtd{#1}}}
+%% 
+%% === What Double Quotes Actually Are ===
+%% |\dqtd| in turn is a kind of ``variable." 'blog.sty' offered 
+%% |\endqtd| for English typographical double quotes, 
+%% |\dedqtd| for German ones, and |\asciidqtd| for ``non-typographical" 
+%% double quotes (as needed for \acro{XML} attributes).
+%% |\asciidq| accesses a single \acro{ASCII} double quote, 
+%% |\enldq| a single English typographical left one, 
+%% |\enrdq| a single English typographical right one. 
+%% (It may be useful to access them indepentently of each other, 
+%%  in certain complex situations ...)
+%% 'blog.sty', dealing with \acro{HTML}, of course has different ideas 
+%% about them TODO.
+\gdef\asciidq{"}
+\gdef\asciidqtd#1{"#1"}
+%% We allow loading 'catchdq' \emph{after} another package 
+%% (such as 'blog.sty') has chosen meanings for `\endqtd' and the 
+%% like. Before v0.21, definedness was tested by
+%% `\ifx'...`\undefined', which two times fell
+%% prey to some earlier `\@ifundefined'. So now:
+\begingroup \escapechar=-1
+\def\provass#1#2#3{%
+    \expandafter\ifx\csname \string#2\endcsname\relax #1#2#3\fi}
+\provass \gdef         \enldq  {{``}}
+\provass {\global\let} \enrdq  \asciidq
+\provass \gdef         \endqtd {#1{\enldq#1\enrdq}}
+%% Typographical alternatives to `\endqtd' may be obtained 
+%% from \ctanpkgstyref{ngerman} or so, if you are smart ...
+%% %% <- 2012/09/20 ->
+%% (see Section~\ref{sec:sw} for how it works):
+\provass \gdef         \dedqtd {#1{\glqq#1\grqq}}
+%% 'blog.sty', dealing with \acro{HTML}, had a different idea 
+%% about `\endqtd' of course. It has also used the mechanism of 
+%% the \ctanpkgref{langcode} package that allows using `\dqtd' and other 
+%% language-depended constructs with an ``implicit" choice according 
+%% to the ``current language code," which should appear soon.
+%% 
+%% === Switching ===
+%% \label{sec:sw}
+%% 'blog.sty' usually does a single switch which gets a new name now:
+%% |\catchdqs|.
+\gdef\catchdqs{\MakeActiveLet\"\catchdq}
+%% After this, |"<no-dqs>"| will expand to `\dqtd{#1}'.
+%% The default expansion for |\dqtd| will be |\endqtd|:
+\provass {\global\let} \dqtd \endqtd
+%% Might be done by |\endqs|---when there are alternatives, 
+%% but 'blog.sty' and 'langcode.sty' do this in a different way ... TODO 
+% \gdef\endqs{\let\dqtd\endqtd}
+% \ifx\dqtd\undefined \global\endqs \fi
+\endgroup
+%% \catchdqs Actually, here is a little "Tessst"~...
+%% \let\dqtd\dedqtd \ and here with "doytshe doppleta unf..." $\dots$ \ 
+%% %% anf -> unf 2015/05/22
+%% The latter has been achieved by 
+%% \[`\usepackage{ngerman} \originalTeX'\]
+%% \MakeOther\"
+%% 
+%% |\MakeOther\"| may switch off catching mode (---done just before, 
+%%  as \ctanpkgref{niceverb} at present doesn't render it verbatim). 
+%%                                  'actcodes' suggests 
+%% a different way to return from the `\catchdqs' state: 
+%% Let the character active and change its meaning only, let it 
+%% \emph{expand} to its ``other" version---by |\activeasciidqs|?
+%% |\MakeActiveOther\"| and \catchdqs 
+%% \let"\asciidq 
+%% |\let"\asciidq| (it works!) or |\MakeActiveLet\"\asciidq|
+%% (abbreviate as `\activeasciidqs'?) ... In 'blog.sty', there never 
+%% was a need for switching back. We must rework interaction with 
+%% 'niceverb' and can perhaps simplify the latter, ... TODO
+%%
+%% === Leaving and Version History  ===
+\endinput
+%%
+%% VERSION HISTORY
+ 
+v0.1   2010/11/13   in texblog.fdf
+v0.2   2012/09/17   own file, new ideas ... 
+       2012/09/19   doc: stacklet
+       2012/09/20   \dedqtd conditionally; reworked doc., 
+                    tested ngerman.sty
+v0.21  2015/05/22   better test for undefinedness

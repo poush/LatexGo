@@ -1,0 +1,216 @@
+%D \module
+%D   [       file=meta-dum,
+%D        version=2003.03.21,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Dummy (External) Graphics,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D This library overloads the normal external figure
+%D placeholder by a nicer one.
+%D
+%D \startbuffer
+%D \useMPlibrary[dum]
+%D
+%D \startlinecorrection
+%D \externalfigure[unknown-a][width=3cm,height=1cm]
+%D \stoplinecorrection
+%D
+%D \startlinecorrection
+%D \externalfigure[unknown-b][width=4cm,height=5cm]
+%D \stoplinecorrection
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+% currently preparempvariables is unable to resolve number
+% fractions like reduction
+
+% June 22, 2003, this definition was patched to adapt itself
+% to transparent colors, but ... in 2011 we no longer have
+% is_transparent so we revert.
+%
+% \startuseMPgraphic{placeholder}{width,height,reduction,color}
+%     numeric w, h, d, r ; color c, b, cc ; path p ; boolean t ;
+%     t := is_transparent(\MPvar{color}) ;
+%     c := not_transparent(\MPvar{color}) ;
+%     b := not_transparent(white) ;
+%     w := \MPvar{width} ;
+%     h := \MPvar{height} ;
+%     r := \MPvar{reduction} ;
+%     d := max(w,h) ;
+%     p := unitsquare xyscaled (w,h) ;
+%     cc := r[.5c,b] ;
+%     fill p withcolor if t : transparent(1,.5,cc) else : cc fi ;
+%     for i := 1 upto 60 :
+%         cc := r[c randomized(.3,.9),b] ;
+%         fill fullcircle
+%             scaled (d/5 randomized (d/5))
+%             shifted (center p randomized (d))
+%             withcolor if t : transparent(1,.5,cc) else : cc fi ;
+%     endfor ;
+%     clip currentpicture to p ;
+% \stopuseMPgraphic
+
+\startuseMPgraphic{minifun::figure:placeholder}{width,height,reduction,color}
+    begingroup ;
+    save w, h, d, r, p, c, b ;
+    numeric w, h, d, r ; path p ;
+    if cmykcolor \MPvar{color} :
+        cmykcolor c, b ; b := (0,0,0,0)
+    else :
+        color c, b ;  ; b := (1,1,1)
+    fi ;
+    c := \MPvar{color} ;
+    w := \MPvar{width} ;
+    h := \MPvar{height} ;
+    r := \MPvar{reduction} ;
+    d := max(w,h) ;
+    p := unitsquare xyscaled (w,h) ;
+    fill p withcolor r[.5c,b] ;
+    for i := 1 upto 60 :
+        fill fullcircle
+            scaled (d/5 randomized (d/5))
+            shifted (center p randomized (d))
+            withcolor r[c randomized(.3,.9),b] ;
+    endfor ;
+    clip currentpicture to p ;
+    endgroup ;
+\stopuseMPgraphic
+
+\defineoverlay
+  [figure:placeholder:graphic]
+  [\useMPgraphic
+     {minifun::figure:placeholder}%
+     {width=\figurewidth,%
+      height=\figureheight,%
+      reduction=\externalfigureparameter\c!reduction,%
+      color=placeholder:\the\c_grph_replacement_n}]
+
+\definepalet
+  [placeholder]
+  [1=red,2=green,3=blue,4=cyan,5=magenta,6=yellow]
+
+\newcount\c_grph_replacement_n
+
+\setupexternalfigures
+  [\c!reduction=0,
+   \c!text=\v!yes]
+
+\let\grph_include_replacement_saved\grph_include_replacement
+
+\unexpanded\def\grph_include_replacement#1#2#3%
+  {\begingroup
+   \getpaletsize[placeholder]%
+   \ifnum\c_grph_replacement_n=\zerocount
+     \getrandomnumber \m_grph_replacement_n\plusone\paletsize
+     \global\c_grph_replacement_n \m_grph_replacement_n\relax
+   \else
+     \global\advance\c_grph_replacement_n\plusone
+   \fi
+   \ifnum\c_grph_replacement_n>\paletsize
+     \global\c_grph_replacement_n\plusone
+   \fi
+   \setupcurrentexternalfigure
+     [\c!width=\figurewidth,
+      \c!height=\figureheight,
+      \c!frame=\v!off,
+      \c!strut=\v!no,
+      \c!align={\v!middle,\v!lohi},
+      \c!background=figure:placeholder:graphic,
+      \c!foregroundcolor=\s!white]%
+   \doifelse{\externalfigureparameter\c!text}\v!yes
+     {\edef\m_graphics_text_a{#1}\edef\m_graphics_text_a{\ifx\m_graphics_text_a\s!dummy\else\detokenize\expandafter{\m_graphics_text_a}\fi}%
+      \edef\m_graphics_text_b{#2}\edef\m_graphics_text_b{\ifx\m_graphics_text_b\s!dummy\else\detokenize\expandafter{\m_graphics_text_b}\fi}%
+      \edef\m_graphics_text_c{#3}\edef\m_graphics_text_c{\ifx\m_graphics_text_c\s!dummy\else\detokenize\expandafter{\m_graphics_text_c}\fi}%
+      \infofont\setupinterlinespace\dohyphens
+      \inheritedexternalfigureframed{\directsetup{figure:placeholder:text}}}%
+     {\inheritedexternalfigureframed{}}%
+   \endgroup}
+
+\unexpanded\def\dummyfigure
+  {\externalfigure[placeholder]}
+
+\startsetups figure:placeholder:text
+    \ifx\m_graphics_text_a\empty\else
+        \strut name: \m_graphics_text_a\par
+    \fi
+    \ifx\m_graphics_text_b\empty\else
+        \strut
+        \ifx\m_graphics_text_a\empty
+            \ifx\m_graphics_text_c\empty
+            \else
+                file:\space
+            \fi
+        \else
+            file:\space
+        \fi
+        \m_graphics_text_b\par
+    \fi
+    \ifx\m_graphics_text_c\empty\else
+        \strut state: \m_graphics_text_c\par
+    \fi
+\stopsetups
+
+%D \starttyping
+%D \externalfigure[mediashow.swf][comment={Alas, we have no nice preview},background=figure:comment]
+%D \externalfigure[mediashow.swf][comment={Alas, we have no nice preview},background=figure:dummy]
+%D \externalfigure[mediashow.swf][background=figure:dummy]
+%D \stoptyping
+
+\defineframed
+  [figurecomment]
+  [\c!background=\v!color,
+   \c!backgroundcolor=\s!gray,
+   \c!frame=\v!off,
+   \c!foregroundstyle=\ttbf,
+   \c!align={\v!middle,\v!lohi},
+   \c!height=\figureheight,
+   \c!width=\figurewidth]
+
+\defineframed
+  [figuredummy]
+  [\c!background=figure:dummy:only,
+   \c!foregroundcolor=\s!white,
+   \c!backgroundcolor=\v!gray,
+   \c!frame=\v!off,
+   \c!foregroundstyle=\ttbf,
+   \c!align={\v!middle,\v!lohi},
+   \c!height=\figureheight,
+   \c!width=\figurewidth]
+
+\defineoverlay
+  [figure:dummy:only]
+  [\grph_include_replacement\empty\empty\empty]
+
+\defineoverlay
+  [figure:comment]
+  [\figurecomment{\externalfigureparameter\c!comment}]
+
+\defineoverlay
+  [figure:dummy]
+  [\figuredummy{\externalfigureparameter\c!comment}]
+
+\setupexternalfigures
+  [\c!comment=]
+
+\protect
+
+\continueifinputfile{meta-imp-dum.mkiv}
+
+\starttext
+
+    \externalfigure[whatever-missing]
+
+    \blank
+
+    \externalfigure[whatever-missing][width=2cm]
+
+\stoptext

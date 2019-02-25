@@ -1,0 +1,294 @@
+% \iffalse
+% !TEX encoding = UTF-8 Unicode
+%
+% file piedmontese.dtx file. By running this file through (pdf)LaTeX
+% you get the documentation concerning the babel option for the language
+% piedmontese. The extraction of the code apparently is done simultaneously
+% with the production of the documentation.
+%
+%<*internal>
+\begingroup
+\input docstrip.tex
+\keepsilent
+\preamble
+  ______________________________________________________
+  The piedmontese file for babel
+  Copyright (C) 2013 Claudio Beccari 
+  All rights reserved
+
+  License information appended
+
+\endpreamble
+\postamble
+Copyright 2013 Claudio Beccari
+
+Distributable under the LaTeX Project Public License,
+version 1.3c or higher (your choice). The latest version of
+this license is at: http://www.latex-project.org/lppl.txt
+
+This work is "author-maintained"
+
+This work consists of this file piedmontese.dtx,
+and the derived files piedmontese.ldf and piedmontese.pdf.
+
+\endpostamble
+\askforoverwritefalse
+\generate{\file{piedmontese.ldf}{\from{piedmontese.dtx}{code}}}
+%
+\def\tmpa{plain}
+\ifx\tmpa\fmtname\endgroup\expandafter\bye\fi
+\endgroup
+%</internal>
+% \fi
+% \iffalse
+% Tell the \LaTeX\ system who we are and write en entry
+% in the transcript.
+%<*dtx>
+\ProvidesFile{piedmontese.dtx}
+%</dtx>
+%<code>\ProvidesLanguage{piedmontese}
+%<code>\ProvidesFile{piedmontese}    
+     [2013/02/12 v.1.0 Piedmontese support for the babel system]
+%<*filedriver>
+\documentclass{ltxdoc}
+\newcommand*{\TeXhax}{\TeX hax}
+\newcommand*{\babel}{\textsf{babel}}
+\newcommand*{\langvar}{$\langle \mathit lang \rangle$}
+\newcommand*{\note}[1]{}
+\newcommand*{\Lopt}[1]{\textsf{#1}}
+\newcommand*{\file}[1]{\texttt{#1}}
+\begin{document}
+ \DocInput{piedmontese.dtx}
+\end{document}
+%</filedriver>
+%\fi
+% \GetFileInfo{piedmontese.dtx}
+%
+% \section{The Piedmontese language}
+%
+%    The file \file{\filename}\footnote{The file described in this
+%    section has version number \fileversion\ and was last revised on
+%    \filedate.} defines all the language definition macros for the
+%    Piedmontese language\footnote{Language ISO 639 coded with letter identification \texttt{pms}. This file was created by Claudio Beccari; see the source file for more information.}.
+%
+% \StopEventually{}
+% 
+%    The macro |\LdfInit| takes care of preventing that this file is
+%    loaded more than once, checking the category code of the
+%    \texttt{@} sign, etc. |\CurrentOption| is actually the name of 
+%    language that was specified as an option in the call to \babel.
+% \iffalse
+%<*code>
+% \fi
+%    \begin{macrocode}
+\LdfInit{\CurrentOption}{captions\CurrentOption}
+%    \end{macrocode}
+%
+%    When this file is read as an option to the |\usepackage|
+%    command that loads |babel|, \texttt{piedmontese} could be an
+%    `unknown' language, or better, a language who's patterns have
+%    not been loaded into the format file; in this case we have to
+%    make it known. So we check for the existence of |\l@piedmontese|
+%    to see whether we have to do something here. If the Piedmontese
+%    patterns have not (yet) been loaded in the format file, we prefer
+%    to declare |piedmontese| a dialect of |italian| rather than
+%    a dialect of |english|, although we resort to the latter language
+%    if also the Italian patterns have not been loaded into the format
+%    file: this unfortunately happens when a basic \TeX\ system
+%    installation is being used.
+%
+%    \begin{macrocode}
+\LdfInit\CurrentOption{captions\CurrentOption}
+\ifx\l@piedmontese\@undefined
+    \@nopatterns{piedmontese}
+    \ifx\l@italian\@undefined
+        \@nopatterns{italian}
+        \adddialect\l@piedmontese\l@english
+    \else
+        \adddialect\l@piedmontese\l@italian
+    \fi
+\fi 
+%    \end{macrocode}
+% \begin{macro}{\captionspiedmontese}
+%    The macro |\captionspiedmontese| defines all strings used in the
+%    four standard documentclasses provided with \LaTeX.
+%    \begin{macrocode}
+\@namedef{captions\CurrentOption}{%
+    \def\prefacename{Prefassion}%
+    \def\refname{Riferiment}%
+    \def\abstractname{Somari}%
+    \def\bibname{Bibliograf\`ia}%
+    \def\chaptername{Cap\`itol}%
+    \def\appendixname{Gionta}%
+    \def\contentsname{T\`aula}%
+    \def\listfigurename{Lista dle figure}%
+    \def\listtablename{Lista dle tabele}%
+    \def\indexname{T\`aula anal\`itica}%
+    \def\figurename{Figura}%
+    \def\tablename{Tabela}%
+    \def\partname{Part}%
+    \def\enclname{Gionta/e}%
+    \def\ccname{Con c\`opia a}%
+    \def\headtoname{P\"er}%
+    \def\pagename{P\`agina}%
+    \def\seename{v\"ed}%
+    \def\alsoname{v\"ed anche}%
+    \def\proofname{Dimostrassion}%
+    \def\glossaryname{Glossari}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\datepiedmontese}
+%    The macro |\datepiedmontese| redefines the command |\today| to
+%    produce Piedmontese dates. The proposition corresponding to
+%    `of' has three spellings in Piedmontese, one general (\"ed),  one to
+%    be used in front of words starting with a group of consonants (d\"e),
+%    and a third one, that derives from the latter by vocalic elision (d')
+%    to be used in front of words starting with a vowel.
+%    \begin{macrocode}
+\@namedef{date\CurrentOption}{%
+    \def\today{\number\day\space \space\ifcase\month\or
+      \"ed gen\'e\or \"ed fevr\'e\or \"ed mars\or d'avril\or 
+      \"ed maj\or \"ed giugn\or \"ed luj\or d'agost\or 
+      d\"e st\`ember\or d'ot\'ober\or \"ed nov\`ember\or 
+      d\"e dz\`ember\fi\space dal\space\number\year}}
+%    \end{macrocode}
+% \end{macro}
+%
+%  \begin{macro}{\piedmontesehyphenmins}
+%    This macro is used to store the correct values of the hyphenation
+%    parameters |\lefthyphenmin| and |\righthyphenmin|.
+%    \begin{macrocode}
+\providehyphenmins{\CurrentOption}{\tw@\tw@}
+%    \end{macrocode}
+%  \end{macro}
+%
+% \begin{macro}{\extraspiedmontese}
+% \begin{macro}{\noextraspiedmontese}
+%    The next step consists of defining commands to switch to (and
+%    from) the Piedmontese language.
+%
+%    The macro |\extraspiedmontese| will perform all the extra
+%    definitions needed for the Piedmontese language. The macro
+%    |\noextraspiedmontese| is used to cancel the actions of
+%    |\extraspiedmontese|. In particular we set pretty high
+%    default values for widow and club lines and very high
+%    demerits to avoid that the last line starts with the
+%    second half of a hyphenated word. We also assign a non zero
+%    value |\lccode| to the apostrophe that in Piedmontese is being
+%    used for marking a vocalic elision and for apocope; by giving it a non 
+%    zero value, the hyphenation algorithm treats the phrase formed
+%    by the article or articulated preposition and the following
+%    term as a single word and the patterns for Piedmontese take care
+%    of avoiding line breaks right after the apostrophe.
+%
+%    \begin{macrocode}
+\expandafter\addto\csname extras\CurrentOption\endcsname{%
+  \babel@savevariable\clubpenalty
+  \babel@savevariable\widowpenalty
+  \babel@savevariable\@clubpenalty
+  \clubpenalty3000\widowpenalty3000\@clubpenalty\clubpenalty}%
+\expandafter\addto\csname extras\CurrentOption\endcsname{%
+  \babel@savevariable\finalhyphendemerits
+  \finalhyphendemerits50000000}%
+\expandafter\addto\csname extras\CurrentOption\endcsname{%
+  \lccode`'=`'}%
+\expandafter\addto\csname noextras\CurrentOption\endcsname{%
+  \lccode`'=0}%
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% The double straight quote |"| is made active for the current language.
+% Its purpose is primarily to produce a diacritic hyphen; meanwhile 
+% it is convenient to let it perform some other little tasks, such as
+% to insert an etymologic line break, to simplify the |\slash| command, 
+% and to ease the introduction of the double raised open quotes, that are
+% cumbersome to insert with the Italian keyboard.
+%
+% The main activation of the |"| sign is done through the babel command
+% |\declare@shorthand| that checks if the |"| has been used in math or
+% in text mode; if in text mode, a service macro |\pms@next| is defined
+% that upon execution lets a future token be aliased by the implicit token
+% c.s. |\pms@temp|, while the actual work is demanded to |\pms@cwm|.
+%    \begin{macrocode}
+\initiate@active@char{"}%
+\expandafter\addto\csname extras\CurrentOption\endcsname{%
+\bbl@activate{"}\languageshorthands{piedmontese}}%
+\declare@shorthand{piedmontese}{"}{%
+\ifmmode
+    \def\pms@next{''}%
+\else
+    \def\pms@next{\futurelet\pms@temp\pms@cwm}%
+\fi
+\pms@next
+}%
+%    \end{macrocode}
+%
+% After defining another service macro |\pms@@cwm| for introducing a
+% discretionary break that may be inserted in the middle of a word,
+% allowing another break point, but allowing hyphenation in both letter
+% strings that sit at either side of this break point. The the |\pms@cwm|
+% macro is defined to perform the necessary actions depending on the
+% nature of the token memorized into the temporary c.s. |\pms@temp|.
+% The |\@gobble| macro must be repeated at each test, otherwise it
+% gobbles the |\fi| of the outer test. An |\expandafter| construct might
+% reduce this repetition.
+%    \begin{macrocode}
+\DeclareRobustCommand*{\pms@cwm}{\let\pms@@next\relax
+\ifcat\noexpand\pms@temp a%
+    \def\pms@@next{\pms@@cwm}%
+\else
+    \ifx\pms@temp/%
+        \def\pms@@next{\bbl@allowhyphens/\bbl@allowhyphens\@gobble}%
+    \else
+        \ifx\pms@temp-%
+           \def\pms@@next{\bbl@allowhyphens-\bbl@allowhyphens\@gobble}%
+        \else
+            \ifx\pms@temp"%
+                \def\pms@@next{``\expandafter\@gobble\string}%
+            \fi
+        \fi
+    \fi
+\fi
+\pms@@next}%
+%    \end{macrocode}
+% \begin{macro}{\noextraspiedmontese}
+% This done, we are ready to prepare the switch back to another language"
+%    \begin{macrocode}
+\expandafter\addto\csname noextras\CurrentOption\endcsname{%
+\bbl@deactivate{"}}
+%    \end{macrocode}
+% \end{macro}
+%
+%    The macro |\ldf@finish| takes care of looking for a
+%    configuration file, setting the main language to be switched on
+%    at |\begin{document}| and resetting the category code of
+%    \texttt{@} to its original value.
+%    \begin{macrocode}
+\ldf@finish\CurrentOption
+%    \end{macrocode}
+% \iffalse
+%</code>
+% \fi
+% \CheckSum{226}
+% \Finale
+%\endinput
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

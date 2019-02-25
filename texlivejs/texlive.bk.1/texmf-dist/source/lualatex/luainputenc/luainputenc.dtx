@@ -1,0 +1,1464 @@
+% \iffalse meta-comment -- by the way, this file contains UTF-8
+%
+% Written in 2009, 2010 by Manuel Pégourié-Gonnard and Élie Roux.
+%     <mpg@elzevir.fr>
+%     <elie.roux@telecom-bretagne.eu>
+%
+% This work is under the CC0 license. As an exception, the files 
+% luainputenc.sty, lutf8.def and lutf8x.def have more restrictions. 
+% See these file for more details.
+%
+% People who helped on this package:
+%   Javier Bezos
+%   Will Robertson
+%   Hans Hagen
+%   Heiko Oberdiek
+%   Javier Mugica
+%
+% This work consists of the main source file luainputenc.dtx
+% and the derived files
+%   luainputenc.sty, luainputenc.lua, lutf8.def, lutf8x.def,
+%   and luainputenc.pdf
+%
+% Unpacking:
+%    tex luainputenc.dtx
+% Documentation: 
+%    pdflatex luainputenc.dtx
+%
+%<*ignore>
+\begingroup
+  \def\x{LaTeX2e}%
+\expandafter\endgroup
+\ifcase 0\ifx\install y1\fi\expandafter
+         \ifx\csname processbatchFile\endcsname\relax\else1\fi
+         \ifx\fmtname\x\else 1\fi\relax
+\else\csname fi\endcsname
+%</ignore>
+%<*install>
+\input docstrip.tex
+
+\keepsilent
+\askforoverwritefalse
+
+\let\MetaPrefix\relax
+
+\preamble
+This is a generated file.
+
+Written in 2009, 2010 by Manuel Pegourie-Gonnard and Elie Roux.
+
+This work is under the CC0 license. As an exception, the files 
+luainputenc.sty, lutf8.def and lutf8x.def have more restrictions. 
+See these file for more details.
+
+People who helped on this package:
+  Javier Bezos
+  Will Robertson
+  Hans Hagen
+  Heiko Oberdiek
+  Javier Mugica
+
+This work consists of the main source file luainputenc.dtx
+and the derived files
+   luainputenc.sty, luainputenc.lua, lutf8.def, lutf8x.def,
+   and luainputenc.pdf
+
+\endpreamble
+
+\let\MetaPrefix\DoubleperCent
+
+\generate{%
+  \usedir{tex/lualatex/luainputenc}%
+  \file{luainputenc.sty}{\from{luainputenc.dtx}{package}}%
+  \file{lutf8.def}{\from{luainputenc.dtx}{def}}%
+  \file{lutf8x.def}{\from{luainputenc.dtx}{defx}}%
+}
+
+\generate{%
+  \usedir{doc/luatex/luainputenc}%
+  \file{test.tex}{\from{luainputenc.dtx}{test}}%
+}
+
+\def\MetaPrefix{-- }
+
+\def\luapostamble{%
+  \MetaPrefix^^J%
+  \MetaPrefix\space End of File `\outFileName'.%
+}
+
+\def\currentpostamble{\luapostamble}%
+
+\generate{%
+  \usedir{tex/lualatex/luainputenc}%
+  \file{luainputenc.lua}{\from{luainputenc.dtx}{lua}}%
+}
+
+\nopreamble
+\nopostamble
+
+\generate{%
+  \file{inputenc.sty.diff}{\from{luainputenc.dtx}{patch}}%
+}
+
+\obeyspaces
+\Msg{************************************************************************}
+\Msg{*}
+\Msg{* To finish the installation you have to move the following}
+\Msg{* files into a directory searched by TeX:}
+\Msg{*}
+\Msg{*     luainputenc.sty luainputenc.lua lutf8.def lutf8x.def}
+\Msg{*}
+\Msg{* Happy TeXing!}
+\Msg{*}
+\Msg{************************************************************************}
+
+\endbatchfile
+%</install>
+%<*ignore>
+\fi
+%</ignore>
+% \iffalse
+%<package>
+%<package>\NeedsTeXFormat{LaTeX2e}
+%<package>\ProvidesPackage{luainputenc}
+%<package>  [2010/11/19 v0.973 inputenc package for LuaTeX]
+%<package>
+% \fi
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{lmodern}
+\usepackage{metalogo}
+\usepackage[lmargin=5cm, textwidth=14cm]{geometry}
+\usepackage[bookmarks=true, colorlinks=true]{hyperref}
+\usepackage{bookmark}
+\usepackage[english]{babel}
+\providecommand\eTeX{e\TeX}
+\newcommand\pf{\textsf}
+\newcommand\file{\texorpdfstring{\nolinkurl}{}}
+\newcommand\code{\texttt}
+\newcommand*\email[1]{\href{mailto:#1}{#1}}
+\begin{document}
+  \DocInput{luainputenc.dtx}%
+\end{document}
+%</driver>
+% \fi
+%
+% \CheckSum{0}
+%
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%   Dollar        \$     Percent       \%     Ampersand     \&
+%   Acute accent  \'     Left paren    \(     Right paren   \)
+%   Asterisk      \*     Plus          \+     Comma         \,
+%   Minus         \-     Point         \.     Solidus       \/
+%   Colon         \:     Semicolon     \;     Less than     \<
+%   Equals        \=     Greater than  \>     Question mark \?
+%   Commercial at \@     Left bracket  \[     Backslash     \\
+%   Right bracket \]     Circumflex    \^     Underscore    \_
+%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%   Right brace   \}     Tilde         \~}
+%
+% \title{The \textsf{luainputenc} package}
+% \date{2010/11/19 v0.973}
+% \author{%
+%   Manuel P\'egouri\'e-Gonnard \email{mpg@elzevir.fr} \\
+%   \'Elie Roux \email{elie.roux@telecom-bretagne.eu}}
+%
+% \maketitle
+%
+% \begin{abstract}
+% Input encoding management for Lua\TeX, needed only for compatibility with
+% old documents. For new documents, using UTF-8 encoding and Unicode fonts is
+% \emph{strongly} recommended. You've been warned!
+% \end{abstract}
+%
+% \tableofcontents
+%
+% \section{Overview: When (not) to use this package}
+%
+% This package is strictly meant for compatibility. It is usefull in the two
+% (overlapping) following cases:
+% \begin{enumerate}
+% \item Your source is not encoded in UTF-8 and you don't want to reencode it
+% for some reason.
+% \item Your document is using legacy 8-bit fonts (with \pf{fontenc}), as
+% opposed to modern Unicode fonts (most probably with \pf{fontspec} or
+% \pf{luaotfload} and \pf{fontenc} with option \code{EU2}).
+% \end{enumerate}
+% Surprisingly enough, in the second case \pf{luainputenc} is needed, due to
+% the way \LaTeX\ implements font encodings.
+%
+% From the user point of view, adapting an old document for \LuaTeX\ is really
+% easy: replacing \pf{inputenc} by \pf{luainputenc} in the preamble is
+% enough.
+%
+% Note that \pf{luainputenc} automatically loads \pf{inputenc} if called
+% with an old engine, so you will still be able to compile your documents with
+% pdf\TeX\ without changing them.
+%
+% \pf{luainputenc} has several modes of operation. By default, it basically
+% turns \LuaTeX\ into an 8-bit engine, which means you loose half of the
+% benefits from using \LuaTeX. If you are using only Unicode fonts, you can
+% activate a nicer mode of operation using the \code{unactivate} package
+% option. That way, \LuaTeX\ remains a true Unicode engine.
+%
+% Unicode fonts with \LuaTeX\ are handled using a new encoding: \code{EU2}. It
+% is used internally by the \pf{fontspec} package when loading Unicode fonts.
+% This encoding is special as it needs non-ASCII characters to be non-active
+% (unlike other font encodings), so you cannot mix old encodings and EU2. If
+% you're using only Unicode fonts, this isn't a problem: use the
+% \code{unactivate} package option mentioned in the previous paragraph.
+%
+% But if you
+% want to use both 8-bit fonts and Unicode fonts in your document, you need to
+% use another package option, \code{lutf8x}. This option
+% overrides \LaTeX's mechanism for font encoding switching, so that it
+% (un)activates non-ASCII characters on-the-fly. With this options, you'll be
+% able change the font encoding from/to \code{EU2}, for example:
+% 
+% \begin{verbatim}
+% abc
+% {
+% \fontencoding{EU2}\usefont
+% \font\foo="MyOtfFont.otf"\foo
+% abc
+% }
+% abc
+% \end{verbatim}
+%
+% \section{Documentation}
+%
+% \subsection{Introduction}
+%
+% One the the most interesting new features of Lua\TeX\ is the fact that it is
+% (like Omega/Aleph) not limited to 256 characters, and can now understand
+% Unicode. The problem is that it does not read input the way older engines
+% (like pdf\TeX) do, and thus \textsf{inputenc} is totally broken with Lua\TeX
+% . This package aims at replacing \textsf{inputenc} for Lua\TeX , by adapting
+% the way Lua\TeX\ handles input, and the way \textsf{inputenc} handles UTF-8.
+% This package has two very distinct modes: 8-bit and UTF-8.
+%
+% \subsection{Overview of 8-bit mode}
+%
+% This package \textbf{does not} map 8-bit encodings to utf8. It allows
+% Lua\TeX\ to read 8-bit characters, by converting each byte into a unicode
+% character with the same character number. The resulting unicode characters
+% are not true UTF-8, they are what we will call ``fake UTF-8". For example
+% the byte 225 will be converted into the unicode character with number 225
+% (two bytes long). It will be true UTF-8 only if the encoding is latin1.
+%
+% Here is how it works: the 8-bit encodings are converted into fake UTF-8, so
+% that the corresponding tokens are chars with the good numbers. Then (like
+% \textsf{inputenc}) it reads the char numbers, and converts it into LICR
+% (\LaTeX\ Internal Character Representation), with the font encoding.
+%
+% In Lua\TeX\ version 0.43, a new callback called |process_output_buffer|,
+% this callbacks allows to make Lua\TeX\ write 8-bit instead of UTF-8, so the
+% behaviour is the same as pdfTeX as this level. For versions prior to 0.43
+% though, we need to do more tricky things, described in the next paragraph.
+% This machinery is disabled for Lua\TeX\ version 0.43 and superior, so you
+% can keep the default behaviour, which will be compatible with pdfTeX in 
+% most cases, but you can consider the machinery obsolete.
+%
+% For these old versions, \textsf{luainputenc} only changes the input
+% behaviour, it does not change the ouput behaviour (when files are written
+% for example). The consequence is that files will still be written by
+% Lua\TeX\ in UTF-8 (fake UTF-8 in this case), even if the asked input
+% encoding is a 8-bit encoding. In most cases it's not a problem, as most
+% files will be written in LICR, meaning ASCII, which is both 8-bit and UTF-8.
+% The problem comes when characters with a number $>$ 128 are written in a
+% 8-bit encoding. This may happen if you use |\protect| in a section for
+% example. In these cases, Lua\TeX\ will write fake UTF-8, and try to read
+% 8-bit encoding, so it will get confused.
+%
+% The proposed solution is to unactivate the input conversion when we read
+% certain files or extentions. This package should work with no change for
+% most documents, but if you cook your own aux files with an unknown
+% extention, you may have to force the package to read some files in UTF-8
+% instead of 8-bit. See comments in the \texttt{.sty} file to know the useful
+% commands.
+%
+% \subsection{Overview of UTF-8 mode}
+%
+% The behaviour of \textsf{inputenc} in utf8 mode is to read the input byte by
+% byte, and decide if the character we are in is 1, 2, 3 or 4 bytes long, and
+% then read other bytes accordingly. This behaviour fails with Lua\TeX\
+% because it reads input character by character (characters do not have a
+% fixed number of bytes in unicode). The result is thus an error.
+%
+% All characters recognized by \TeX\ are active characters, that correspond to
+% a LICR macro. Then \textsf{inputenc} reads the \texttt{*.dfu} files that
+% contain the correspondance between these LICR macros and a character number
+% in the fonts for different font encodings (T1, OT1, etc.).
+%
+% \subsubsection{legacy mode}
+%
+% \textsf{luainputenc} can get this behaviour (we will call it \emph{legacy
+% mode}, but another difference implied by the fact that Lua\TeX\ can read
+% more than 256 characters is that fonts can also have more than 256
+% characters. Lua\TeX\ can thus read unicode fonts. If we want to use unicode
+% fonts (OTF for example), we can't use the \emph{legacy mode} anymore, as it
+% would mean that we would have to rewrite a specially long
+% \texttt{unicode.dfu} file, and it would be totally inefficient, as for
+% instance \texttt{\'e} (unicode character number 233) would be mapped to
+% \texttt{\string\'e}, and then mapped back to \texttt{\string\char\ 233}.
+%
+% \subsubsection{unicode font mode}
+%
+% To fix this, the most simple solution is to desactivate all activated
+% characters, thus typing \texttt{\'e} will directly call
+% \texttt{\string\char\ 233} in the unicode fonts, and produce a \texttt{\'e}.
+% We will call this behaviour the \emph{unicode font mode}. To enable this
+% mode, you can use the option \texttt{unactivate} in \textsf{luainputenc},
+% and you must use the font encoding \texttt{EU2} provided by the \textsf{euenc}
+% package. See documentation of \textsf{euenc} package for more details about
+% \texttt{EU2}. To use this mode with \texttt{EU2}, you must be able to open OTF
+% fonts. A simple way to do so it by using the package \textsf{luaotfload}.
+%
+% \subsubsection{mixed mode}
+%
+% But the \emph{unicode font mode} has a strong limitation (that will
+% certainly dissapear with time): it cannot use non-unicode fonts. If you want
+% to mix unicode fonts and old fonts, you'll have to use the \emph{mixed
+% mode}. In this mode you can type some parts of your document in \emph{legacy
+% mode} and some in \emph{unicode font mode}. The reason why we chose not to
+% integrate this choice in the \emph{legacy mode} is that we wanted to have a
+% mode that preserved most of the backward compatibility, to safely compile
+% old documents; the \emph{mixed mode} introduces new things that may break
+% old documents. To get the \emph{mixed mode}, you must pass the option
+% \texttt{lutf8x} to \textsf{luainputenc}. This mode is the most experimental.
+%
+% \section{Accessing the encoding in lua}
+%
+% In order to access the encoding and the package option in lua, two variables
+% are set: |luainputenc.package_option| contains the option passed to the
+% package, and |luainputenc.encoding| that contains the encoding (defaults to
+% utf8, and is utf8 even with the options |unactivate|, |utf8x|, etc.).
+%
+% \section{Files}
+%
+% This package contains a \texttt{.sty} file for both \LaTeX\ and Plain, a
+% patch for inputenc to use \textsf{luainputenc} so that you can process old
+% documents without changing anything, and the lua functions.
+%
+% \subsection{\texttt{inputenc.sty} patch}
+%
+% A good thing would be to patch \textsf{inputenc} to load
+% \textsf{luainputenc} instead, so that you don't have to change your
+% documents to load \textsf{luainputenc} especially. The \LaTeX\ team is
+% extremely conservative and does not want this patch applied (maybe we will
+% find a solution later). Here is a patch for inputenc.sty:
+%
+% \iffalse
+%<*patch>
+% \fi
+%
+%    \begin{macrocode}
+
+   \ifnum\@tempcnta<`#2\relax
+      \advance\@tempcnta\@ne
+   \repeat}
++
++\begingroup\expandafter\expandafter\expandafter\endgroup   
++\expandafter\ifx\csname XeTeXversion\endcsname\relax\else
++  \RequirePackage{xetex-inputenc}
++  \DeclareOption*{\PassOptionsToPackage{\CurrentOption}{xetex-inputenc}}
++  \ProcessOptions*
++  \expandafter\endinput
++\fi
++\begingroup\expandafter\expandafter\expandafter\endgroup   
++\expandafter\ifx\csname directlua\endcsname\relax\else
++  \RequirePackage{luainputenc}
++  \DeclareOption*{\PassOptionsToPackage{\CurrentOption}{luainputenc}}
++  \ProcessOptions*
++  \expandafter\endinput
++\fi
++
+ \ProcessOptions
+ \endinput
+ %%
+
+%    \end{macrocode}
+%
+% \iffalse
+%</patch>
+% \fi
+%
+% \subsection{\texttt{luainputenc.sty}}
+%
+%    This file has some code from \texttt{inputenc.sty}, but also provides new
+%    options, and new macros to convert from 8-bit to fake UTF-8.
+%
+% \iffalse
+%<*package>
+% \fi
+%
+%    \begin{macrocode}
+%
+%% This file was adapted from inputenc.sty, which copyright is:
+%% Copyright 1993 1994 1995 1996 1997 1998 1999 2000 2001 2002 2003 2004
+%% 2005 2006 The LaTeX3 Project.
+%%
+%% inputenc.sty is under the lppl version 1.3c or later, and can be
+%% found in the base LaTeX system.
+%%
+%% The lppl can be found at http://www.latex-project.org/lppl.txt
+%%
+%% The changes to inputenc.sty are Copyright 2009 Elie Roux, and are
+%% under the CC0 license.
+%%
+%% The changes are LuaTeX support.
+%%
+%% This file is distributed under the CC0 license, with clause 6 of the
+%% lppl as additional restrictions.
+
+%    \end{macrocode}
+%
+%    First we check if we are called with Lua\TeX , (pdf)\TeX or Xe\TeX . If
+%    we are called with pdf\TeX , we default to \textsf{inputenc}, and to
+%    \textsf{xetex-inputenc} if we are called with Xe\TeX . We also remap the
+%    new options to \texttt{utf8} in these cases.
+%
+%    \begin{macrocode}
+
+\RequirePackage{ifluatex}
+\RequirePackage{ifxetex}
+
+\ifxetex
+  \DeclareOption{unactivate}{\PassOptionsToPackage{utf8}{xetex-inputenc}}
+  \DeclareOption{lutf8}{\PassOptionsToPackage{utf8}{xetex-inputenc}}
+  \DeclareOption{lutf8x}{\PassOptionsToPackage{utf8}{xetex-inputenc}}
+  \DeclareOption*{\PassOptionsToPackage{\CurrentOption}{xetex-inputenc}}
+  \ProcessOptions*
+  \RequirePackage{xetex-inputenc}
+  \expandafter\endinput
+\fi
+
+\ifluatex\else
+  \DeclareOption{unactivate}{\PassOptionsToPackage{utf8}{inputenc}}
+  \DeclareOption{lutf8}{\PassOptionsToPackage{utf8}{inputenc}}
+  \DeclareOption{lutf8x}{\PassOptionsToPackage{utf8}{inputenc}}
+  \DeclareOption*{\PassOptionsToPackage{\CurrentOption}{inputenc}}
+  \ProcessOptions*
+  \RequirePackage{inputenc}
+  \expandafter\endinput
+\fi
+
+%    \end{macrocode}
+%
+%    Here we know we are called with Lua\TeX . We first require
+%    \textsf{luatextra} and ensure a few primitives, then we load the
+%    \texttt{lua} file.
+%
+%    \begin{macrocode}
+
+\RequirePackage{luatexbase}
+\luatexbase@ensure@primitive{luaescapestring}
+
+\RequireLuaModule{luainputenc}
+
+%    \end{macrocode}
+%
+%    Here is some code from \textsf{inputenc}.
+%
+%    \begin{macrocode}
+
+\def\DeclareInputMath#1{%
+   \@inpenc@test
+   \bgroup
+      \uccode`\~#1%
+      \uppercase{%
+   \egroup
+      \def~%
+   }%
+}
+\def\DeclareInputText#1#2{%
+   \def\reserved@a##1 ${}%
+   \def\reserved@b{#2}%
+   \ifcat_\expandafter\reserved@a\meaning\reserved@b$ $_%
+      \DeclareInputMath{#1}{#2}%
+   \else
+      \DeclareInputMath{#1}{\IeC{#2}}%
+   \fi
+}
+\def\IeC{%
+  \ifx\protect\@typeset@protect
+    \expandafter\@firstofone
+  \else
+    \noexpand\IeC
+  \fi
+}
+%    \end{macrocode}
+%
+%    We changed a little the behaviour of this macro: we removed
+%    |\@inpenc@loop\^^?\^^ff|, because it made no sense in UTF-8 mode. We will
+%    call this line for 8-bit encodings.
+%
+%    Note that the code has been changed for |\endlinechar|, because in new
+%    versions (from v0.43) of Lua\TeX{} the value cannot exceed 127.
+%    Thus, with the old version of \textsf{luainputenc}, when trying
+%    to add 10000, it fails silently, and when 10000 is substracted, the
+%    new value is -1, resulting in no end of lines at all in the document.
+%
+%    \begin{macrocode}
+
+\def\inputencoding#1{%
+  \the\inpenc@prehook
+  \gdef\@inpenc@test{\global\let\@inpenc@test\relax}%
+  \edef\@inpenc@undefined{\noexpand\@inpenc@undefined@{#1}}%
+  \edef\inputencodingname{#1}%
+  \@inpenc@loop\^^A\^^H%
+  \@inpenc@loop\^^K\^^K%
+  \@inpenc@loop\^^N\^^_%
+  \xdef\saved@endlinechar{\the\endlinechar }%
+  \endlinechar=-1
+  \xdef\saved@space@catcode{\the\catcode`\ }%
+  \catcode`\ 9\relax
+  \input{#1.def}%
+  \endlinechar=\saved@endlinechar{}%
+  \catcode`\ \saved@space@catcode\relax
+  \ifx\@inpenc@test\relax\else
+    \PackageWarning{inputenc}%
+             {No characters defined\MessageBreak
+              by input encoding change to `#1'\MessageBreak}%
+  \fi
+  \the\inpenc@posthook
+  \luatexbase@directlua{luainputenc.set_option("\luatexluaescapestring{#1}")}
+}
+\newtoks\inpenc@prehook
+\newtoks\inpenc@posthook
+\def\@inpenc@undefined@#1{\PackageError{inputenc}%
+        {Keyboard character used is undefined\MessageBreak
+         in inputencoding `#1'}%
+       {You need to provide a  definition with
+        \noexpand\DeclareInputText\MessageBreak or
+        \noexpand\DeclareInputMath before using this key.}}%
+\def\@inpenc@loop#1#2{%
+  \@tempcnta`#1\relax
+  \loop
+    \catcode\@tempcnta\active
+    \bgroup
+      \uccode`\~\@tempcnta
+      \uppercase{%
+    \egroup
+         \let~\inpenc@undefined
+      }%
+  \ifnum\@tempcnta<`#2\relax
+     \advance\@tempcnta\@ne
+  \repeat}
+
+%    \end{macrocode}
+%
+%    Here we declare our options. Note that we remap \texttt{utf8} to
+%    \texttt{lutf8}, because we use out \texttt{lutf8.def} instead of
+%    \textsf{inputenc}'s \texttt{utf8.def}.
+%
+%    \begin{macrocode}
+
+\DeclareOption{utf8}{%
+  \inputencoding{lutf8}%
+}
+
+\DeclareOption{lutf8}{%
+  \inputencoding{lutf8}%
+}
+
+\DeclareOption{utf8x}{%
+  \inputencoding{lutf8}%
+}
+
+\DeclareOption{lutf8x}{%
+  \inputencoding{lutf8x}%
+}
+
+%    \end{macrocode}
+%
+%    For the \texttt{unactivate} option, for \emph{unicode font mode}, we just
+%    don't do anything.
+%
+%    \begin{macrocode}
+
+\DeclareOption{unactivate}{%
+  \edef\inputencodingname{unactivate}%
+  \luatexbase@directlua{luainputenc.set_option([[unactivate]])}
+}
+
+%    \end{macrocode}
+%
+%    All other options are 8-bit encodings, so we activate the translation
+%    into fake UTF-8, and we execute the loop we removes from
+%    |\inputencoding|.
+%
+%    \begin{macrocode}
+
+\DeclareOption*{%
+  \lIE@activate %
+  \@inpenc@loop\^^?\^^ff%
+  \inputencoding{\CurrentOption}%
+}
+
+%    \end{macrocode}
+%
+%    The rest of the file is only the machinery for LuaTeX versions without
+%    the callback |process_output_buffer|, so it will be deprecated after
+%    TeXLive 2009, you are not advised to use it.
+%
+%    \begin{macrocode}
+
+\ifnum\luatexversion>42
+
+    \newcommand*{\lIE@activate}[0]{%
+      \luatexbase@directlua{luainputenc.register_callbacks()}%
+    }
+
+\else
+
+%    \end{macrocode}
+%
+%    |\lIE@setstarted| and |\lIE@setstopped| are called when the fake UTF-8
+%    translation must be activated or desactivated. You can call them several
+%    successive times. They are called very often, even if the package is not
+%    activated (for example if it's loaded with the utf8 option), but they act
+%    only if the package is activated.
+%
+%    \begin{macrocode}
+
+\newcommand*\lIE@setstarted[0]{%
+  \ifnum\lIE@activated=1 %
+    \luatexbase@directlua{luainputenc.setstarted()}%
+  \fi %
+}
+
+\newcommand*\lIE@setstopped[0]{%
+  \ifnum\lIE@activated=1 %
+    \luatexbase@directlua{luainputenc.setstopped()}%
+  \fi %
+}
+
+%    \end{macrocode}
+%
+%    The following 5 macros are made to declare a file that will have to be
+%    read in fake UTF-8 and not in 8-bit. These files are the ones that will
+%    be generated by \TeX . In \textbf{no way} this means you can include true
+%    UTF-8 files, it means that you can include files that have been written
+%    by Lua\TeX\ with \textsf{luainputenc}, which means files in fake UTF-8.
+%    The macros are very simple, when you call them with a file name (the same
+%    as the one you will use with \string\input ), it will read it with or
+%    without the fake UTF-8 translation. This package includes a whole bunch
+%    of extentions that will be read in fake UTF-8, so the occasions to use
+%    these macros will be rare, but if you use them, please report it to the
+%    package maintainer.
+%
+%    \begin{macro}{\lIE@SetUtfFile}
+%
+%    If you call this macro with a file name, each time you will input this
+%    file, it will be read in fake UTF-8. You can call it with a file that you
+%    generate with Lua\TeX\ and that you want to include.
+%
+%    \begin{macrocode}
+
+\newcommand*\lIE@SetUtfFile[1]{%
+  \luatexbase@directlua{luainputenc.set_unicode_file("\luatexluaescapestring{#1}")}%
+}
+
+%    \end{macrocode}
+%
+%    \end{macro}
+%
+%    \begin{macro}{\lIE@SetNonUtfFile}
+%
+%    Same as the previous macro, except that the file will be read as 8-bit.
+%    This macro is useful if there is an exception in an extention (see
+%    further comments).
+%
+%    \begin{macrocode}
+
+\newcommand*\lIE@SetNonUtfFile[1]{%
+  \luatexbase@directlua{luainputenc.set_non_unicode_file("\luatexluaescapestring{#1}")}%
+}
+
+%    \end{macrocode}
+%
+%    \end{macro}
+%
+%    \begin{macro}{\lIE@UnsetFile}
+%
+%    This macro gives a file the default behaviour of its extention.
+%
+%    \begin{macrocode}
+
+\newcommand*\lIE@UnsetFile[1]{%
+  \luatexbase@directlua{luainputenc.unset_file("\luatexluaescapestring{#1}")}%
+}
+
+%    \end{macrocode}
+%
+%    \end{macro}
+%
+%    \begin{macro}{\lIE@SetUtfExt}
+%
+%    You can tell \textsf{luainputenc} to treat all files with a particular
+%    extention in a certain way. The way the file extention is checked is to
+%    compare the four last characters of the filename. So if your extention
+%    has only three letters, you must include the preceding dot. This macro
+%    tells \textsf{luainputenc} to read all files from an extention in fake
+%    UTF-8.
+%
+%    \begin{macrocode}
+
+\newcommand*\lIE@SetUtfExt[1]{%
+  \luatexbase@directlua{luainputenc.set_unicode_extention("\luatexluaescapestring{#1}")}%
+}
+
+%    \end{macrocode}
+%
+%    \end{macro}
+%
+%    \begin{macro}{\lIE@SetUtfExt}
+%
+%    Same as before, but the files will be read in 8-bit.
+%
+%    \begin{macrocode}
+
+\newcommand*\lIE@SetNonUtfExt[1]{
+  \luatexbase@directlua{luainputenc.set_non_unicode_extention("\luatexluaescapestring{#1}")}
+}
+
+%    \end{macrocode}
+%
+%    \end{macro}
+%
+%    \begin{macro}{\lIE@InputUtfFile}
+%
+%    This macro inputs a file in fake UTF-8. It has the ``feature" to unset
+%    the behaviour on the file you will call, so to be safe, you must call
+%    them with files for which the behaviour has not been set.
+%
+%    \begin{macrocode}
+
+
+\newcommand*\lIE@InputUtfFile[1]{%
+  \lIE@SetUtfFile{#1}%
+  \input #1%
+  \lIE@UnsetFile{#1}%
+}
+
+%    \end{macrocode}
+%
+%    \end{macro}
+%
+%    \begin{macro}{\lIE@InputNonUtfFile}
+%
+%    Same as before, but to read a file as 8-bit.
+%
+%    \begin{macrocode}
+
+\newcommand*\lIE@InputNonUtfFile[1]{%
+  \lIE@SetNonUtfFile{#1}%
+  \input #1%
+  \lIE@UnsetFile{#1}%
+}
+
+%    \end{macrocode}
+%
+%    \end{macro}
+%
+%    Two definitions to put the previous two macros in the user space.
+%
+%    \begin{macrocode}
+
+\newcommand*\InputUtfFile[1]{%
+  \lIE@InputUtfFile{#1}%
+}
+
+\newcommand*\InputNonUtfFile[1]{%
+  \lIE@InputNonUtfFile{#1}%
+}
+
+\newcount\lIE@activated
+
+\newcommand*{\lIE@activate}[0]{%
+  \lIE@activated=1 %
+  \lIE@setstarted %
+}
+
+\newcommand*{\lIE@FromInputenc}[1]{%
+  \ifnum\lIE@activated=0 %
+    \lIE@activate %
+  \fi%
+}
+
+\fi
+
+\ProcessOptions*
+
+%    \end{macrocode}
+%
+% \iffalse
+%</package>
+% \fi
+%
+% \iffalse
+%<*def>
+% \fi
+%
+% \subsection{\texttt{lutf8.def}}
+%
+%    \begin{macrocode}
+%% This file was adapted from utf8.def, which copyright is:
+%% Copyright 1993 1994 1995 1996 1997 1998 1999 2000 2001 2002 2003
+%% 2004 2005 2006 The LaTeX3 Project.
+%%
+%% utf8.def is under the lppl version 1.3c or later, and can be found
+%% in the base LaTeX system.
+%%
+%% The lppl can be found at http://www.latex-project.org/lppl.txt
+%%
+%% The changes to utf8.def are Copyright 2009 Elie Roux, and are under
+%% the CC0 license.
+%%
+%% The changes are LuaTeX support.
+%%
+%% This file is distributed under the CC0 license, with clause 6 of the
+%% lppl as additional restrictions.
+
+%    \end{macrocode}
+%
+%    Most of the file is taken from \texttt{utf8.def}, the main changes are
+%    commented. A lot of code was removed, especially the codes that analysed
+%    the unicode characters byte by byte.
+%
+%    \begin{macrocode}
+
+
+\ProvidesFile{lutf8.def}
+   [2010/05/10 v0.97 UTF-8 support for luainputenc]
+
+\makeatletter
+\catcode`\ \saved@space@catcode
+
+\@inpenc@test
+
+\ifx\@begindocumenthook\@undefined
+  \makeatother
+  \endinput \fi
+
+%    \end{macrocode}
+%
+%    This function is changed a lot. Its aim is to map the character (first
+%    argument) to a macro (second argument). In \texttt{utf8.def} it was
+%    complicated as unicode was analyzed byte by byte. With Lua\TeX\ it is
+%    extremely simple, we just have to activate the character, and call a
+%    traditional |\DeclareInputTeXt|.
+%
+%    \begin{macrocode}
+
+\gdef\DeclareUnicodeCharacter#1#2{%
+ \@tempcnta"#1%
+ \catcode\@tempcnta\active %
+ \DeclareInputText{\the\@tempcnta}{#2}%
+}
+
+\@onlypreamble\DeclareUnicodeCharacter
+
+\def\cdp@elt#1#2#3#4{%
+  \wlog{Now handling font encoding #1 ...}%
+  \lowercase{%
+      \InputIfFileExists{#1enc.dfu}}%
+         {\wlog{... processing UTF-8 mapping file for font encoding
+                #1}%
+          \catcode`\ 9\relax}%
+        {\wlog{... no UTF-8 mapping file for font encoding #1}}%
+}
+\cdp@list
+
+\def\DeclareFontEncoding@#1#2#3{%
+  \expandafter %
+  \ifx\csname T@#1\endcsname\relax %
+    \def\cdp@elt{\noexpand\cdp@elt}%
+    \xdef\cdp@list{\cdp@list\cdp@elt{#1}%
+                    {\default@family}{\default@series}%
+                    {\default@shape}}%
+    \expandafter\let\csname#1-cmd\endcsname\@changed@cmd %
+    \begingroup %
+      \wlog{Now handling font encoding #1 ...}%
+      \lowercase{%
+        \InputIfFileExists{#1enc.dfu}}%
+           {\wlog{... processing UTF-8 mapping file for font encoding #1}}%
+           {\wlog{... no UTF-8 mapping file for font encoding #1}}%
+    \endgroup
+  \else
+     \@font@info{Redeclaring font encoding #1}%
+  \fi
+  \global\@namedef{T@#1}{#2}%
+  \global\@namedef{M@#1}{\default@M#3}%
+  \xdef\LastDeclaredEncoding{#1}%
+}
+
+\DeclareUnicodeCharacter{00A9}{\textcopyright}
+\DeclareUnicodeCharacter{00AA}{\textordfeminine}
+\DeclareUnicodeCharacter{00AE}{\textregistered}
+\DeclareUnicodeCharacter{00BA}{\textordmasculine}
+\DeclareUnicodeCharacter{02C6}{\textasciicircum}
+\DeclareUnicodeCharacter{02DC}{\textasciitilde}
+\DeclareUnicodeCharacter{200C}{\textcompwordmark}
+\DeclareUnicodeCharacter{2026}{\textellipsis}
+\DeclareUnicodeCharacter{2122}{\texttrademark}
+\DeclareUnicodeCharacter{2423}{\textvisiblespace}
+
+%    \end{macrocode}
+%
+% \iffalse
+%</def>
+% \fi
+%
+% \iffalse
+%<*defx>
+% \fi
+%
+% \subsection{\texttt{lutf8x.def}}
+%
+%    \begin{macrocode}
+%% This file was adapted from utf8.def, which copyright is:
+%% Copyright 1993 1994 1995 1996 1997 1998 1999 2000 2001 2002 2003
+%% 2004 2005 2006 The LaTeX3 Project.
+%%
+%% utf8.def is under the lppl version 1.3c or later, and can be found
+%% in the base LaTeX system.
+%%
+%% The lppl can be found at http://www.latex-project.org/lppl.txt
+%%
+%% The changes to utf8.def are Copyright 2009 Elie Roux, and are under
+%% the CC0 license.
+%%
+%% The changes are LuaTeX support.
+%%
+%% This file is distributed under the CC0 license, with clause 6 of the
+%% lppl as additional restrictions.
+
+%    \end{macrocode}
+%
+%    This file is mostly the code from \texttt{lutf.def}, but it adds
+%    mechanisms to pass from \emph{legacy mode} to \emph{unicode font mode}.
+%    The trick is to put in a lua table all characters that are activated by
+%    the \emph{legacy mode}, and to unactivate them when we switch to
+%    \emph{unicode font mode}. This is made (almost) entirely in lua. The
+%    difficult part is the changes in |\DeclareFontEncoding|.
+%
+%    \begin{macrocode}
+
+\ProvidesFile{lutf8x.def}
+   [2010/05/10 v0.97 UTF-8 support for luainputenc]
+
+\makeatletter
+\catcode`\ \saved@space@catcode
+
+\@inpenc@test
+
+\ifx\@begindocumenthook\@undefined
+  \makeatother
+  \endinput \fi
+
+%    \end{macrocode}
+%
+%    We change it a little to add the activated character in the lua table.
+%
+%    \begin{macrocode}
+
+\gdef\DeclareUnicodeCharacter#1#2{%
+ \@tempcnta"#1%
+ \luatexbase@directlua{luainputenc.declare_character('\the\@tempcnta')}%
+ \catcode\@tempcnta\active %
+ \DeclareInputText{\the\@tempcnta}{#2}%
+}
+
+\@onlypreamble\DeclareUnicodeCharacter
+
+\def\cdp@elt#1#2#3#4{%
+  \wlog{Now handling font encoding #1 ...}%
+  \lowercase{%
+      \InputIfFileExists{#1enc.dfu}}%
+         {\wlog{... processing UTF-8 mapping file for font encoding
+                #1}%
+          \catcode`\ 9\relax}%
+        {\wlog{... no UTF-8 mapping file for font encoding #1}}%
+}
+\cdp@list
+
+%    \end{macrocode}
+%
+%    The macros to change from/to \emph{legacy mode} to/from \emph{unicode
+%    font mode}.
+%
+%    \begin{macrocode}
+
+\def\lIE@ActivateUnicodeCatcodes{%
+\luatexbase@directlua{luainputenc.activate_characters()}%
+}
+
+\def\lIE@DesactivateUnicodeCatcodes{%
+\luatexbase@directlua{luainputenc.desactivate_characters()}%
+}
+
+\def\lIE@CharactersActivated{%
+\luatexbase@directlua{luainputenc.force_characters_activated()}
+}
+
+\edef\lIE@EU{EU2}
+
+%    \end{macrocode}
+%
+%    We add some code to automatically activate or unactivate characters
+%    according to the encoding changes. Note that we override |\@@enc@update|,
+%    which may pose some problems if a package of yours does it too.
+%    Fortunately this package is the only one that does it in \TeX Live.
+%
+%    \begin{macrocode}
+
+\def\DeclareFontEncoding@#1#2#3{%
+  \edef\lIE@test{#1}%
+  \ifx\lIE@test\lIE@EU %
+    \ifx\LastDeclaredEncoding\lIE@EU\else %
+      \lIE@CharactersActivated %
+      \lIE@DesactivateUnicodeCatcodes %
+    \fi
+    \gdef\@@enc@update{%
+      \edef\lIE@test{#1}%
+      \ifx\f@encoding\lIE@EU %
+        \lIE@DesactivateUnicodeCatcodes %
+       \else %
+        \lIE@ActivateUnicodeCatcodes %
+      \fi
+      \expandafter\let\csname\cf@encoding-cmd\endcsname\@changed@cmd
+      \expandafter\let\csname\f@encoding-cmd\endcsname\@current@cmd
+      \default@T
+      \csname T@\f@encoding\endcsname
+      \csname D@\f@encoding\endcsname
+      \let\enc@update\relax
+      \let\cf@encoding\f@encoding
+    }
+  \else %
+    \expandafter %
+    \ifx\csname T@#1\endcsname\relax %
+      \def\cdp@elt{\noexpand\cdp@elt}%
+      \xdef\cdp@list{\cdp@list\cdp@elt{#1}%
+                      {\default@family}{\default@series}%
+                      {\default@shape}}%
+      \expandafter\let\csname#1-cmd\endcsname\@changed@cmd %
+      \begingroup %
+        \wlog{Now handling font encoding #1 ...}%
+        \lowercase{%
+          \InputIfFileExists{#1enc.dfu}}%
+             {\wlog{... processing UTF-8 mapping file for font encoding #1}}%
+             {\wlog{... no UTF-8 mapping file for font encoding #1}}%
+      \endgroup
+    \else
+       \@font@info{Redeclaring font encoding #1}%
+    \fi
+  \fi %
+  \global\@namedef{T@#1}{#2}%
+  \global\@namedef{M@#1}{\default@M#3}%
+  \xdef\LastDeclaredEncoding{#1}%
+}
+
+\DeclareUnicodeCharacter{00A9}{\textcopyright}
+\DeclareUnicodeCharacter{00AA}{\textordfeminine}
+\DeclareUnicodeCharacter{00AE}{\textregistered}
+\DeclareUnicodeCharacter{00BA}{\textordmasculine}
+\DeclareUnicodeCharacter{02C6}{\textasciicircum}
+\DeclareUnicodeCharacter{02DC}{\textasciitilde}
+\DeclareUnicodeCharacter{200C}{\textcompwordmark}
+\DeclareUnicodeCharacter{2026}{\textellipsis}
+\DeclareUnicodeCharacter{2122}{\texttrademark}
+\DeclareUnicodeCharacter{2423}{\textvisiblespace}
+
+%    \end{macrocode}
+%
+% \iffalse
+%</defx>
+% \fi
+%
+%
+% \subsection{\texttt{luainputenc.lua}}
+%
+%    First the \texttt{inputenc} module is registered as a Lua\TeX\ module,
+%    with some informations.
+%
+% \iffalse
+%<*lua>
+% \fi
+%
+%    \begin{macrocode}
+
+module('luainputenc', package.seeall)
+
+luainputenc.module = {
+    name          = "luainputenc",
+    version       =  0.97,
+    date          = "2010/05/10",
+    description   = "Lua simple inputenc package.",
+    author        = "Elie Roux",
+    copyright     = "Elie Roux",
+    license       = "CC0",
+}
+
+luatexbase.provides_module(luainputenc.module)
+
+local format = string.format
+
+luainputenc.log = luainputenc.log or function(...)
+  luatexbase.module_log('luainputenc', format(...))
+end
+
+%    \end{macrocode}
+%
+%    We keep the option and the true encoding in two variables.
+%
+%    \begin{macrocode}
+
+luainputenc.encoding = "utf8"
+luainputenc.package_option = nil
+
+function luainputenc.set_option(option)
+  luainputenc.package_option = option
+  if option == "lutf8" or option == "lutf8x" or option == "utf8x" or option == "unactivate" then
+    luainputenc.encoding = "utf8"
+  else
+    luainputenc.encoding = option
+  end
+end
+
+%    \end{macrocode}
+%
+%    Some local declarations.
+%
+%    \begin{macrocode}
+
+local char, utfchar, byte, format, gsub, utfbyte, utfgsub =
+string.char, unicode.utf8.char, string.byte, string.format, string.gsub, unicode.utf8.byte, unicode.utf8.gsub
+
+%    \end{macrocode}
+%
+%    The function to transform a 8-bit character in the corresponding fake
+%    UTF-8 character.
+%
+%    \begin{macrocode}
+
+function luainputenc.byte_to_utf(ch)
+    return utfchar(byte(ch))
+end
+
+%    \end{macrocode}
+%
+%    The function that will be registered in the
+%    \texttt{process\_input\_buffer} callback when needed.
+%
+%    \begin{macrocode}
+
+function luainputenc.fake_utf_read(buf)
+    return gsub(buf,"(.)", luainputenc.byte_to_utf)
+end
+
+%    \end{macrocode}
+%
+%    The function to transform a fake utf8 character in the corresponding 
+%    8-bit character.
+%
+%    \begin{macrocode}
+
+function luainputenc.utf_to_byte(ch)
+    return char(utfbyte(ch))
+end
+
+%    \end{macrocode}
+%
+%    The function that will be registered in the
+%    \texttt{process\_output\_buffer} callback if it exists.
+%
+%    \begin{macrocode}
+
+function luainputenc.fake_utf_write(buf)
+    return utfgsub(buf,"(.)", luainputenc.utf_to_byte)
+end
+
+%    \end{macrocode}
+%
+%    Here we register the two callbacks, and the behaviour is the same as in pdfTeX.
+%    The next part of the file is only the machinery for LuaTeX versions without
+%    the callback |process_output_buffer|, so it will be deprecated after
+%    TeXLive 2009, you are not advised to use it.
+%
+%    \begin{macrocode}
+
+if tex.luatexversion > 42 then
+
+    function luainputenc.register_callbacks()
+        luatexbase.add_to_callback('process_output_buffer', luainputenc.fake_utf_write, 'luainputenc.fake_utf_write')
+        luatexbase.add_to_callback('process_input_buffer', luainputenc.fake_utf_read, 'luainputenc.fake_utf_read')
+    end
+    
+else
+
+%    \end{macrocode}
+%
+%    \texttt{start()} and \texttt{stop()} are the functions that register or
+%    unregister the function in the callback. When the function is registered,
+%    Lua\TeX\ reads the input in fake UTF-8.
+%
+%    \begin{macrocode}
+
+    local started, stopped = 1, 0
+
+    luainputenc.state = stopped
+
+    function luainputenc.setstate(state)
+        if state == luainputenc.state then
+            return
+        elseif state == started then
+            luainputenc.start()
+        else
+            luainputenc.stop()
+        end
+    end
+
+    function luainputenc.setstarted()
+        luainputenc.setstate(started)
+    end
+
+    function luainputenc.setstopped()
+        luainputenc.setstate(stopped)
+    end
+
+    function luainputenc.start()
+        luatexbase.add_to_callback('process_input_buffer', luainputenc.fake_utf_read,
+            'luainputenc.fake_utf_read')
+        luainputenc.state = started
+        if luainputenc.callback_registered == 0 then
+            luainputenc.register_callback()
+        end
+    end
+    
+    function luainputenc.stop()
+        luatexbase.remove_from_callback('process_input_buffer', 'luainputenc.fake_utf_read')
+        luainputenc.state = stopped
+        return
+    end
+
+%    \end{macrocode}
+%
+%    Here is a list of all file extentions for which we consider that the
+%    files have been written by Lua\TeX , and thus must be read in fake UTF-8.
+%    I may have forgotten things in the list. If you find a new extention,
+%    please report the maintainer.
+%
+%    \begin{macrocode}
+
+    luainputenc.unicode_extentions = {
+      ['.aux'] = 1, -- basic files
+      ['.toc'] = 1,
+      ['.gls'] = 1,
+      ['.ind'] = 1,
+      ['.idx'] = 1,
+      ['.vrb'] = 1, -- beamer and powerdot
+      ['.nav'] = 1, -- other beamer extentions
+      ['.sol'] = 1,
+      ['.qsl'] = 1,
+      ['.snm'] = 1,
+      ['.pgn'] = 1, -- pagereference
+      ['.cpg'] = 1, -- AlProTeX
+      ['.pst'] = 1, -- pst-tree
+      ['.tmp'] = 1, -- sauerj/collect
+      ['.sym'] = 1, -- listofsymbols
+      ['.sub'] = 1, -- listofsymbols
+      ['.lof'] = 1, -- preprint
+      ['.lot'] = 1, -- preprint
+      ['mtc1'] = 1, -- minitoc
+      ['.ovr'] = 1, -- thumbss
+      ['.fff'] = 1, -- endplate
+      ['.sbb'] = 1, -- splitbib
+      ['.bbl'] = 1, -- latex
+      ['.ain'] = 1, -- authorindex
+      ['.abb'] = 1, -- juraabbrev
+      ['.ent'] = 1, -- endnotes
+      ['.end'] = 1, -- fn2end
+      ['.thm'] = 1, -- ntheorem
+      ['.xtr'] = 1, -- extract
+      ['.han'] = 1, -- linguho
+      ['.bnd'] = 1, -- bibref
+      ['.bbl'] = 1, -- bibref
+      ['.col'] = 1, -- mwrite
+      ['.ttt'] = 1, -- endfloat
+      ['.fax'] = 1, -- lettre
+      ['.tns'] = 1, -- lettre
+      ['.odt'] = 1, -- lettre
+      ['.etq'] = 1, -- lettre
+      ['.emd'] = 1, -- poemscol
+      ['.emx'] = 1, -- poemscol
+      ['.ctn'] = 1, -- poemscol
+      ['.hst'] = 1, -- vhistory
+      ['.acr'] = 1, -- crosswrd
+      ['.dwn'] = 1, -- crosswrd
+      ['.ttc'] = 1, -- talk
+      -- ['.txt'] = 1, -- coverpage, but not sure it's safe to include it...
+      ['.eve'] = 1, -- calend0
+      ['.scn'] = 1, -- cwebmac
+      }
+
+%    \end{macrocode}
+%
+%    The code to define a specific behaviour for certain files.
+%
+%    \begin{macrocode}
+
+    luainputenc.unicode_files = {}
+
+    luainputenc.non_unicode_files = {}
+
+    function luainputenc.set_unicode_file(filename)
+        if luainputenc.non_unicode_files[filename] == 1 then
+            luainputenc.non_unicode_files[filename] = nil
+        end
+        luainputenc.unicode_files[filename] = 1
+    end
+
+    function luainputenc.set_non_unicode_file(filename)
+        if luainputenc.unicode_files[filename] == 1 then
+            luainputenc.unicode_files[filename] = nil
+        end
+        luainputenc.non_unicode_files[filename] = 1
+    end
+
+    function luainputenc.set_unicode_extention(ext)
+        luainputenc.unicode_extention[ext] = 1
+    end
+
+    function luainputenc.set_non_unicode_extention(ext)
+        if luainputenc.unicode_extentions[ext] == 1 then
+            luainputenc.unicode_extentions[ext] = nil
+        end
+    end
+
+    function luainputenc.unset_file(filename)
+        if luainputenc.unicode_files[filename] == 1 then
+            luainputenc.unicode_files[filename] = nil
+        elseif luainputenc.non_unicode_files[filename] == 1 then
+            luainputenc.non_unicode_files[filename] = nil
+        end
+    end
+
+    local unicode, non_unicode = stopped, started
+
+    function luainputenc.find_state(filename)
+        if luainputenc.unicode_files[filename] == 1 then
+            return unicode
+        elseif luainputenc.non_unicode_files[filename] == 1 then
+            return non_unicode
+        else
+            local ext = filename:sub(-4)
+             if luainputenc.unicode_extentions[ext] == 1 then
+                 return unicode
+             else
+                return non_unicode
+             end
+        end
+    end
+
+%    \end{macrocode}
+%
+%    We register the functions to stop or start the fake UTF-8 translation in
+%    the appropriate callbacks if necessary.
+%
+%    \begin{macrocode}
+
+    function luainputenc.pre_read_file(env)
+        if not env.path then 
+            return
+        end
+        local currentstate = luainputenc.state
+        luainputenc.setstate(luainputenc.find_state(env.filename))
+        env.previousstate = currentstate
+    end
+
+    function luainputenc.close(env)
+        luainputenc.setstate(env.previousstate)
+    end
+
+    luainputenc.callback_registered = 0
+
+    function luainputenc.register_callback()
+        if luainputenc.callback_registered == 0 then
+            luatexbase.add_to_callback('pre_read_file', luainputenc.pre_read_file,
+                'luainputenc.pre_read_file')
+            luatexbase.add_to_callback('file_close', luainputenc.close, 'luainputenc.close')
+            luainputenc.callback_registered = 1
+        end
+    end
+
+end
+
+%    \end{macrocode}
+%
+%    Finally we provide some functions to activate or disactivate the catcodes
+%    of the non-ASCII characters.
+%
+%    \begin{macrocode}
+
+
+luainputenc.activated_characters = {}
+luainputenc.characters_are_activated = false
+
+function luainputenc.declare_character(c)
+    luainputenc.activated_characters[tonumber(c)] = true
+end
+
+function luainputenc.force_characters_activated ()
+    luainputenc.characters_are_activated = true
+end
+
+function luainputenc.activate_characters()
+    if not luainputenc.characters_are_activated then
+        for n, _ in pairs(luainputenc.activated_characters) do
+            tex.sprint(string.format('\\catcode %d\\active',n))
+        end
+        luainputenc.characters_are_activated = true
+    end
+end
+
+function luainputenc.desactivate_characters()
+    if luainputenc.characters_are_activated then
+        for n, _ in pairs(luainputenc.activated_characters) do
+            tex.sprint(string.format('\\catcode %d=11',n))
+        end
+        luainputenc.characters_are_activated = false
+    end
+end
+
+%    \end{macrocode}
+%
+% \iffalse
+%</lua>
+% \fi
+%
+%    \section{Test file}
+%
+%    Very minimal, just check that the package correctly loads with an option
+%    and doesn't crash on a one-line plain ASCII document body\dots
+%
+%    \begin{macrocode}
+%<*test>
+\documentclass{article}
+\usepackage[utf8]{luainputenc}
+\begin{document}
+bla
+\end{document}
+%</test>
+%    \end{macrocode}
+%
+% \Finale
+\endinput

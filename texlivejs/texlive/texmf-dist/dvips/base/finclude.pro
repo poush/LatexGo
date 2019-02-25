@@ -1,4 +1,3 @@
-%!
-/fstore{dup dict exch{dup 4 2 roll put}repeat def}bind def/fshow{gsave
-72 TeXDict/Resolution get div -72 TeXDict/VResolution get div scale 1
-DVImag div dup scale get cvx exec show grestore}bind def
+version https://git-lfs.github.com/spec/v1
+oid sha256:9bcefd3fd1c529a3f91635059ab56024da95db7c5faca00394f1ba23648c2a7a
+size 201

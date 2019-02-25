@@ -1,0 +1,2175 @@
+% This file is part of the CTAN package named gfnotation.
+% 
+%   GFnotation.tex: typeset G. Frege's notation of the Begriffsschrift or
+%                   the Grundgesetze der Arithmetik in plain TeX
+%
+%   Copyright (C) 2015  Udo Wermuth (author)
+%
+%   This program is free software: you can redistribute it and/or modify
+%   it under the terms of the GNU General Public License as published by
+%   the Free Software Foundation, either version 3 of the License, or
+%   (at your option) any later version.
+%
+%   This program is distributed in the hope that it will be useful,
+%   but WITHOUT ANY WARRANTY; without even the implied warranty of
+%   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%   GNU General Public License for more details.
+%
+%   You should have received a copy of the GNU General Public License
+%   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+\message{[(GFnotation.tex) Version 2.9 --- 29.03.2015 10:45]}
+% Werte für den Stil der Begriffsschrift
+% die Weite eines \*-Makroteils (Voreinstellung 0.57 em)
+\newdimen\gfbsvolleeinheit     \gfbsvolleeinheit = 0.57 em
+% die Höhe der horizontalen Striche (Voreinstellung 0.5 ex)
+\newdimen\gfbsraise            \gfbsraise = 0.5 ex
+% die Höhe des Negationstriches (Voreinstellung 0.25 ex)
+\newdimen\gfbsneg              \gfbsneg = 0.25 ex
+% die Dicke der horizontalen Striche (Voreinstellung 0.5 pt)
+\newdimen\gfbsstrichdicke      \gfbsstrichdicke = 0.5 pt
+% die Dicke des Urteilsstrichs (Voreinstellung 0.1 em)
+\newdimen\gfbsurteildicke      \gfbsurteildicke = 0.1 em
+% die Höhe (ohne Strichdicke) (Voreinstellung 1.5 ex)
+\newdimen\gfbsuht              \gfbsuht = 1.5 ex
+% die Tiefe des Urteilsstrichs (Voreinstellung 0.5 ex)
+\newdimen\gfbsudp              \gfbsudp = 0.5 ex
+% die Dicke des Ersetzungsstrichs (Voreinstellung 0.08 em)
+\newdimen\gfbsersetzungdicke   \gfbsersetzungdicke = 0.08 em
+% die Dicke eines Definitionsstrichs (Voreinstellung 0.075 em)
+\newdimen\gfbsdefdicke         \gfbsdefdicke = 0.075 em
+% der Abstand der Striche bei Schlussketten (Voreinstellung 2.5 pt)
+\newdimen\gfbsschlussabstand   \gfbsschlussabstand = 2.5 pt
+% und die Dicke des dickeren Striches (Voreinstellung 0.8 pt)
+\newdimen\gfbsschlussdicke     \gfbsschlussdicke = 0.8 pt
+% der Abstand in Schlussweisen zwischen Doppelpunkten
+\newdimen\gfbsdpabstand        \gfbsdpabstand = 0.2 em
+% Werte für den Grundgesetzestil
+% Einheitsstrichdicke (Voreinstellung 0.58 pt)
+\newdimen\gfggstrichdicke      \gfggstrichdicke = 0.58 pt
+% Höhe des Inhaltsstriches (Voreinstellung 0.14 ex)
+\newdimen\gfggraise            \gfggraise = 0.14 ex
+% Höhe Negationszeichen (Voreinstellung 0.47 ex)
+\newdimen\gfggneg              \gfggneg = 0.47 ex
+% Höhe des Urteilsstriches (Voreinstellung 1.4 ex)
+\newdimen\gfgguht              \gfgguht = 1.4 ex
+% Tiefe des Urteilstriches (Voreinstellung 0.9 ex)
+\newdimen\gfggudp              \gfggudp = 0.9 ex
+% der Abstand in Schlussweisen zwischen Doppelpunkten
+\newdimen\gfggdpabstand        \gfggdpabstand = 0.06 em
+% Prozentangabe für die Höhe eines kurzen Negationsstrichs
+\newcount\gfbsnegpct \gfbsnegpct=70
+% Die kompakte Notation benötigt für die Zeilen Register
+\newcount\gfbsmaxanzahlzeilen     \gfbsmaxanzahlzeilen=25
+%
+% ab hier keine Änderungen vornehmen (außer am Ende Buchstaben)
+%
+% Setze folgendes Zeichen für Zeilenumbruch in Meldungen ein
+\newlinechar=`\^^J
+% Substitutionen können unterdrückt werden
+\newif\ifgfbskeinesubst
+\ifx t\nosubst
+   \message{^^JOK, substitutions are disabled^^J}%
+   \gfbskeinesubsttrue
+\else
+   \gfbskeinesubstfalse
+\fi
+\newif\ifggsymloaded
+\ifx t\fgefontsknown
+   \message{^^JThe family ggfam with the fge-fonts is active.^^J}%
+   \ggsymloadedtrue
+\else
+   \ggsymloadedfalse
+\fi
+\newif\ifggrotiere
+\ifx t\showrotation
+   \ggrotieretrue
+\else
+   \message{^^JRotated symbols are shown unrotated.^^J}%
+   \ggrotierefalse
+\fi
+\catcode`@=11
+\def\mynewfam{\alloc@8\fam\chardef\sixt@@n}
+\catcode`@=12
+\ifggsymloaded
+   \font\tengg=fgerm10  \font\tenggi=fgeit10
+   \font\ninegg=fgerm10 at 9pt  \font\nineggi=fgeit10 at 9pt
+   \font\eightgg=fgerm10 at 8pt \font\eightggi=fgeit10 at 8pt
+   \mynewfam\ggfam
+\fi
+\font\nineeufm=eufm9
+\font\eighteufm=eufm8
+\font\sixeufm=eufm6
+\font\tencmmib=cmmib10 \skewchar\tencmmib='177
+\font\ninecmmib=cmmib9 \skewchar\ninecmmib='177
+\font\eightcmmib=cmmib8 \skewchar\eightcmmib='177
+\font\sevencmmib=cmmib7 \skewchar\sevencmmib='177
+\font\sixcmmib=cmmib6 \skewchar\sixcmmib='177
+\font\fivecmmib=cmmib5 \skewchar\fivecmmib='177
+\expandafter\ifx\csname cmmibfam\endcsname\relax
+   \mynewfam\cmmibfam
+\else
+   \message{^^JThe family cmmibfam is already defined.^^J}%
+\fi
+\font\tencmbsy=cmbsy10 \skewchar\tencmbsy='60
+\font\ninecmbsy=cmbsy9 \skewchar\ninecmbsy='60
+\font\eightcmbsy=cmbsy8 \skewchar\eightcmbsy='60
+\font\sevencmbsy=cmbsy7 \skewchar\sevencmbsy='60
+\font\sixcmbsy=cmbsy6 \skewchar\sixcmbsy='60
+\font\fivecmbsy=cmbsy5 \skewchar\fivecmbsy='60
+\expandafter\ifx\csname cmbsyfam\endcsname\relax
+   \mynewfam\cmbsyfam
+\else
+   \message{^^JThe family cmbsyfam is already defined.^^J}%
+\fi
+\font\sevenit=cmti7
+\font\sixit=cmti7 at 6pt
+\font\fiveit=cmti7 at 5pt
+\font\twelvei=cmmi10 at 12pt \skewchar\twelvei='177
+\def\hexno#1{\ifcase#1 0\or 1\or 2\or 3\or 4\or 5\or 6\or 7\or 8\or
+ 9\or A\or B\or C\or D\or E\or F\fi}
+\newtoks\gftextfontaenderung
+\newdimen\ufdimi \newdimen\ufdimii
+\def\bstenpoint{%
+   \scriptfont\itfam=\sevenit
+     \scriptscriptfont\itfam=\fiveit
+   \textfont\eufmfam=\teneufm
+     \scriptfont\eufmfam=\seveneufm
+     \scriptscriptfont\eufmfam=\fiveeufm
+   \textfont\cmmibfam=\tencmmib
+     \scriptfont\cmmibfam=\sevencmmib
+     \scriptscriptfont\cmmibfam=\fivecmmib
+   \textfont\cmbsyfam=\tencmbsy
+     \scriptfont\cmbsyfam=\sevencmbsy
+     \scriptscriptfont\cmbsyfam=\fivecmbsy
+   \ifggsymloaded
+      \textfont\ggfam=\tengg
+   \fi
+   \font\ffont=cmdunh10 at 8pt \font\nfont=cmsl12
+   \font\ufont=cmdunh10 at 9pt {\ufont\global\ufdimi=0.07em \global\ufdimii=0.5ex }%
+   \gftextfontaenderung={\textfont1=\twelvei \textfont\msbfam=\sevenmsb
+      \ifggsymloaded\textfont\ggfam=\tenggi\fi}}
+\def\bsninepoint{%
+   \scriptfont\itfam=\sixit
+     \scriptscriptfont\itfam=\fiveit
+   \textfont\eufmfam=\nineeufm
+     \scriptfont\eufmfam=\sixeufm
+     \scriptscriptfont\eufmfam=\fiveeufm
+   \textfont\cmmibfam=\ninecmmib
+     \scriptfont\cmmibfam=\sixcmmib
+     \scriptscriptfont\cmmibfam=\fivecmmib
+   \textfont\cmbsyfam=\ninecmbsy
+     \scriptfont\cmbsyfam=\sixcmbsy
+     \scriptscriptfont\cmbsyfam=\fivecmbsy
+   \ifggsymloaded
+      \textfont\ggfam=\ninegg
+   \fi
+   \font\ffont=cmdunh10 at 7pt \font\nfont=cmsl10 at 11pt
+   \font\ufont=cmdunh10 at 8pt {\ufont\global\ufdimi=0.11em \global\ufdimii=0.6ex }%
+   \gftextfontaenderung={\textfont1=\twelvei\textfont\msbfam=\sixmsb
+      \ifggsymloaded\textfont\ggfam=\nineggi\fi}}
+\def\bseightpoint{%
+   \scriptfont\itfam=\sixit
+     \scriptscriptfont\itfam=\fiveit
+   \textfont\eufmfam=\eighteufm
+     \scriptfont\eufmfam=\sixeufm
+     \scriptscriptfont\eufmfam=\fiveeufm
+   \textfont\cmmibfam=\eightcmmib
+     \scriptfont\cmmibfam=\sixcmmib
+     \scriptscriptfont\cmmibfam=\fivecmmib
+   \textfont\cmbsyfam=\eightcmbsy
+     \scriptfont\cmbsyfam=\sixcmbsy
+     \scriptscriptfont\cmbsyfam=\fivecmbsy
+   \ifggsymloaded
+      \textfont\ggfam=\eightgg
+   \fi
+   \font\ffont=cmdunh10 at 6pt \font\nfont=cmsl10
+   \font\ufont=cmdunh10 at 7pt {\ufont\global\ufdimi=0.16em \global\ufdimii=0.6ex }%
+   \gftextfontaenderung={\textfont1=\teni\textfont\msbfam=\fivemsb
+      \ifggsymloaded\textfont\ggfam=\eightggi\fi}}
+\bstenpoint
+\def\AmSTeX{$\cal A\kern-.1667em\lower.5ex\hbox{$\cal M$}\kern-.075em S$-\TeX}
+\newhelp\gfbskeinbuchstabeinhoehlunghilfe{%
+Either in the current or in the previously typed \string\* macro you must have^^J%
+used as the last symbol one of (1) \string$, %$%
+(2) \string., (3) \string,, (4) \string;,^^J%
+(5) \string`, (6) 7, or (7) \string @ and now a character is expected that is^^J%
+used as the variable for the ``for all''.}
+\newhelp\gfbsunbekanntessymbolhilfe{%
+The shown character is not handled by the \string\* macro.^^J%
+Here is the list of allowed characters:^^J%
+(1) \string" (nothing), (2) \string_ (empty box), (3) \string- (content stroke),^^J%
+(4) \string<, \string(, \string~, \string), or \string> (negation),
+(5) \string+, \string^, or \string/ (double negation),^^J%
+(6) \string: (then), (7) \string' (if), (8) \string! (connector then-if),^^J%
+(9) \string[ (judgement left), (10) \string] (judgement right),^^J%
+(11) \string| (substitution bar), (12) \string= (double inference rule),^^J%
+(13) \string. (half \string-), (14) \string, (half \string~), ^^J%
+(15) \string` (half \string~ moved left), (16) \string; (half \string+),^^J%
+(17) \string @ (for all), (18) \string$ (either \string. or half \string"),^^J% $
+(19) 0 (either \string( or \string)), (20) 1 (either \string^ or \string/),
+(21) 2 (either \string^ or \string+),^^J%
+(22) 3 , (23) 4 (either \string- or \string"),^^J%
+(24) 5 (either \string_ or \string"), (25) 6 (either \string[ or \string]),
+(26) 7 (either \string` or \string,),^^J%
+(27) 8 (either \string< or \string~), (28) 9 (only 1/3 of \string-).^^J%
+(13)-(16), and (26) signal a ``for all'' and must be paired^^J%
+(any combination allowed).^^J%
+(18) signals also a ``for all'' and must be paired with itself.}
+\newhelp\gfbshaelftehilfe{%
+After a signaled ``for all'' one of (1) \string., (2) \string,, (3) \string;,^^J%
+(4) \string`, or (5) 7 must directly follow the variable. These symbols must be^^J%
+paired in any combination around the character that is used as the^^J%
+variable in the ``for all''.}
+\newhelp\gfbsklammerhilfe{%
+A ``for all'' was signaled by a dollar sign. This must be followed by^^J%
+a dollar sign. The other symbols to signal the end of a ``for all''^^J%
+cannot be used here, that is \string., \string,, \string`, or \string; are not allowed.}
+\newhelp\gfggschlussweisehilfe{%
+The `\string?' cannot be used if the style is set to follow the Begriffsschrift.^^J%
+Either the style for the Grundgesetze must be used or the `\string?' sign has to^^J%
+be invoked: You have to set `\string\gfggschlussweisetrue' to use this command.^^J%
+You can activate the style of the Grundgesetze with the command \string\toggleGGstyle.}
+\newhelp\gfbszwischenzeichenhilfe{%
+A character for a single conclusion sign must be introduced by a `\string>'.^^J%
+The character was found but no `\string>' has been read before.}
+\newhelp\gfbszwischenzeichenfehlthilfe{%
+You have entered a `\string>' so that the next conclusion symbol must be^^J%
+either an `x' or an `u'.}
+\newhelp\gfbsunbekannterschlusshilfe{%
+The symbol is not allowed in a \string\*? macro. Here is a list of known symbols:^^J%
+(1) \string_ (empty box), (2) \string" (nothing), (3) \string- (single line),^^J%
+(4) \string. (single dot), (5) \string= (double line),^^J%
+(6) \string* (line and empty box as double line),^^J%
+(7) \string> (signal single character), (8) x (cross), and (9) u (brace).^^J%
+(8) and (9) must be signaled by (7).}
+\newhelp\gfbsnegwdhhilfe{%
+The repetition needs a nonnegative counter to output the^^J%
+text parameters. The negative value is ignored.}
+\newhelp\gfbspositionunbekannthilfe{%
+To position the formula number use either l for left, m for middle,^^J%
+or r for right.}
+\newhelp\gfbsdoppelpunkthilfe{%
+The number of colons (one or two) is given by the number of periods:^^J%
+the period gives one colon, the colon two.}
+\newhelp\gfbszuvieleparameterhilfe{%
+A statement has only three parameters. But here you have used more.^^J%
+The parameter is ignored but it might belong to the next construction^^J%
+and can cause more errors if the grouping was not correct.}
+\newhelp\gfbsfalschesvzhilfe{%
+A sign must be one of (1) \string-, (2) \string+, or (3) \string..^^J%
+They have the meaning negation, confirmation (double negation), and no sign, resp.}
+\newhelp\gfbskeinbuchstabeanhoehlungspositionhilfe{%
+A ``for all'' variable must be a letter.^^J%
+Other error messages from building the \string\*-macros will follow.}
+\newhelp\gfbsfalscherstarthilfe{%
+A formula must start either with `\string|' or `\string.'.^^J%
+The second parameter to \string\formel\space must be one of these characters.}
+\newhelp\gfbsnurterminalhilfe{%
+Only a terminal string was entered, no valid Frege formula found.}
+\newhelp\gfbsnurnullinaushilfe{%
+As substitutions are disabled, a number can only be written in the^^J%
+first line of a formula. The input is ignored and 0 is used instead.}
+\newhelp\gfbskeinesubsthilfe{%
+The last parameter is substitution information and should be empty.^^J%
+You have disabled the use of substitutions in the compact notation^^J%
+by asigning the value ``t'' to \string\nosubst. Don't make this setting^^J%
+before the package is loaded if you need substitutions.}
+\newhelp\gfbsleeresubsthilfe{%
+You cannot substitute a character by a space. Probably some space occurs^^J%
+directly after the colon that should be removed.}
+\newhelp\gfbszweiteposzugrosshilfe{%
+The position for the formel number must be to the left^^J%
+of the postition of the line. Assuming a small positive distance.}
+\newhelp\gfbskeinelaengehilfe{%
+The line denoting the conclusion can only be drawn if it^^J%
+has a positive length. More errors will follow.}
+\newhelp\gfbsdoppelpunktzahlhilfe{%
+The third symbol must be either a period or a colon to^^J%
+give the number of colons. More erros will follow.}
+\newhelp\gfbsposabstandhilfe{%
+The p-parameter of the substitution is not smaller than the^^J%
+p-parameter of the formula. A small distance is assumed, but^^J%
+that might result in a wrong output.}
+\newhelp\ggunbekannteboxnummer{%
+There are four boxes for \string\pfrege\space and \string\pparens, and^^J%
+four boxes for \string\bfrege\space and \string\bparens.^^J%
+To output a box \string\pfbox\space and \string\bfbox\space are used.^^J%
+The listed macros need as the first parameter a number^^J%
+in the range 1 and 4. Other numbers are ignored.}
+\newhelp\ggkeinbekanntessymbol{%
+Macro \string\G\space does not know how to handle the argument.}
+\newhelp\ggkeinvokalbuchstabe{%
+For a value-range the spiritus lenis must be applied to a^^J%
+lowercase greek vowel (\string\alpha, \string\epsilon).^^J%
+The greek letter is given as the argument of the macro and^^J%
+must be expresssed here by its latin representation,^^J%
+f.e., a for \string\alpha. Other letters are rejected.}
+% \ff ist der Formelnummernfont
+\let\ff=\rm
+\newdimen\gfbssdicke \newdimen\gfbsudicke
+\newdimen\gfbsddicke
+\newdimen\gfbsedicke \newdimen\gfbsfdicke
+\newdimen\gfbshoehe
+\newdimen\gfbsneght  \newdimen\gfbsnegdp
+\gfbssdicke=\gfbsstrichdicke    \gfbsudicke=\gfbsurteildicke
+\gfbsddicke=\gfbsdefdicke
+\gfbsedicke=\gfbsersetzungdicke \gfbsfdicke=\gfbsschlussdicke
+\gfbshoehe=\gfbsraise           \gfbsnegdp=\gfbsneg
+% die Überlappung der Striche an den Fugen
+\newdimen\gfbsueberlappung     \gfbsueberlappung = -0.001 em
+% eine \gfbseinheit ist um die Überlappung kleiner als die volle Einheit
+\newdimen\gfbseinheit          \gfbseinheit = \gfbsvolleeinheit
+         \advance\gfbseinheit by \gfbsueberlappung
+% für zwei Einheiten wird ebenfalls ein Wert benötigt
+\newdimen\gfbszweiheit         \gfbszweiheit = 2\gfbsvolleeinheit
+         \advance\gfbszweiheit by \gfbsueberlappung
+% aus drei Teilen wird ein Element erzeugt
+\newdimen\gfbselementdimen     \gfbselementdimen = 3\gfbseinheit
+% die Gesamthöhe der horizontalen Striche
+\newdimen\gfbsht \newdimen\gfgght 
+\gfbsht=\gfbshoehe  \advance\gfbsht by \gfbssdicke   \gfgght=\gfbsht
+% \gfbsrulefill ändert sich mit dem Stil, \gfggrulefill bleibt konstant
+\def\gfbsrulefill{\leaders\hrule height \gfbsht depth -\gfbshoehe\hfill}
+\def\gfggrulefill{\leaders\hrule height \gfgght depth -\gfbsraise\hfill}
+% die Strichdicke noch beim Urteilsstrich addieren
+\newdimen\gfbsfuht  \newdimen\gfbsfudp
+\gfbsfuht=\gfbsuht \advance\gfbsfuht by \gfbssdicke
+\gfbsfudp=\gfbsudp
+% die Position der Schlussstriche berechnen
+\newdimen\gfbsos   \newdimen\gfbsus
+\gfbsos=\gfbsschlussabstand  \advance\gfbsos by \gfbsfdicke
+\gfbsus=\gfbsos \advance\gfbsus by -\gfbssdicke
+% und der Abstand bei Doppelpunkten
+\newdimen\gfbsdpa
+\gfbsdpa=\gfbsdpabstand
+\def\gfbsneuestriche{%
+   \ifgfbsuseGGstyle
+      \global\gfbssdicke=\gfggstrichdicke
+      \global\gfbsudicke=\gfggstrichdicke
+      \global\gfbsddicke=\gfggstrichdicke
+      \global\gfbsedicke=\gfggstrichdicke
+      \global\gfbsfdicke=\gfggstrichdicke
+      \global\gfbshoehe=\gfggraise
+      \global\gfbsnegdp=\gfggneg
+      \global\gfbsfuht=\gfgguht
+      \global\gfbsfudp=\gfggudp
+      \global\gfbsdpa=\gfggdpabstand
+   \else
+      \global\gfbssdicke=\gfbsstrichdicke
+      \global\gfbsudicke=\gfbsurteildicke  
+      \global\gfbsddicke=\gfbsdefdicke  
+      \global\gfbsedicke=\gfbsersetzungdicke
+      \global\gfbsfdicke=\gfbsschlussdicke
+      \global\gfbshoehe=\gfbsraise
+      \global\gfbsnegdp=\gfbsneg
+      \global\gfbsfuht=\gfbsuht
+      \global\gfbsfudp=\gfbsudp
+      \global\gfbsdpa=\gfbsdpabstand
+   \fi
+   \global\gfbsht=\gfbshoehe
+   \global\advance\gfbsht by \gfbssdicke
+   \gdef\gfbsrulefill{\leaders\hrule height \gfbsht depth -\gfbshoehe\hfill}%
+   \global\advance\gfbsfuht by \gfbssdicke
+   \global\gfbsos=\gfbsschlussabstand  \global\advance\gfbsos by \gfbsfdicke
+   \global\gfbsus=\gfbsos \global\advance\gfbsus by -\gfbssdicke
+}
+\newif\ifgfbsuseGGstyle  \gfbsuseGGstylefalse
+% true falls der Negationsstrich den Inhaltsstrich berühren soll
+\newif\ifgfbsnegdirekt \gfbsnegdirektfalse
+\newif\ifgfbshoehlung   \gfbshoehlungfalse
+\newif\ifgfbskompakt  \gfbskompaktfalse
+\newif\ifgfbszweitehaelfte   \gfbszweitehaelftefalse
+\newif\ifgfbsklammerzu \gfbsklammerzufalse
+\newif\ifgfggschlussweise  \gfggschlussweisefalse
+\newif\ifgfbszwischenzeichen
+\mathchardef\diagup="0\hexno\msbfam1E
+\mathchardef\diagdown="0\hexno\msbfam1F
+\newdimen\gfbsfonosenken
+\newbox\gfbsbox  \newdimen\gfbsboxht   \newdimen\gfbsboxdp
+\newif\ifgfbsfonoohnepunkt \gfbsfonoohnepunktfalse
+\newbox\ggpboxi   \newbox\ggbboxi % Boxen für \pfrege und \bfrege
+\newbox\ggpboxii  \newbox\ggbboxii
+\newbox\ggpboxiii \newbox\ggbboxiii % und für \pparens und \bparens
+\newbox\ggpboxiv  \newbox\ggbboxiv
+\def\gfbsteilelement#1{%
+   \ifgfbshoehlung % Zeichen in eine Höhlung setzen (1. \fi)
+      \ifcat \noexpand#1a\else
+         \errhelp=\gfbskeinbuchstabeinhoehlunghilfe
+         \errmessage{A ``for all'' variable must be a letter not `\string#1'}%
+      \fi
+      \ifdim\gfbssdicke<0.59 pt
+         \setbox0=\hbox{$\mathchar"015E$}% plain \TeX Vorgabe
+      \else
+         \setbox0=\hbox{$\mathchar"0\hexno\cmmibfam5E$}%
+      \fi
+      \dimen0 = \gfbseinheit   \advance\dimen0 by -0.5\wd0
+      \dimen2 = \wd0    \divide\dimen2 by 18   \advance\dimen0 by 1.5\dimen2
+      \hbox to \gfbszweiheit{%
+         \hbox to\dimen0{\gfbsrulefill}%
+         \kern-1.2\dimen2
+         \raise\gfbshoehe\hbox{%
+            \lower\ht0\hbox{%
+               \ifx#1ß$\buildrel{\the\dsz}\over{\box0}$%
+               \else$\buildrel{{\frak #1}}\over{\box0}$%
+               \fi
+            }%
+         }%
+         \nobreak
+         \kern-1.5\dimen2
+         \gfbsrulefill
+      }%
+      \kern\gfbsueberlappung
+      \gfbshoehlungfalse
+   \else
+      \ifx #1$%$% halber Inhaltsstrich oder Leerstelle nach Höhlung
+         \ifgfbsklammerzu
+            \gfbsklammerzufalse
+         \else
+            \gfbsklammerzutrue
+            \gfbshoehlungtrue
+         \fi
+         \ifgfbszweitehaelfte
+            \errhelp=\gfbshaelftehilfe
+            \errmessage{Unexpected `\string#1' after signaled ``for all''}%
+            \gfbszweitehaelftefalse
+         \fi
+         \ifgfbskompakt\relax
+         \else
+            \hbox to 0.5\gfbsvolleeinheit{\gfbsrulefill}\kern0.5\gfbsueberlappung
+            \nobreak
+         \fi
+      \else
+         \ifgfbsklammerzu
+            \errhelp=\gfbsklammerhilfe
+            \errmessage{A \string$ expected, not `\string#1'}%$
+            \gfbsklammerzufalse
+         \fi
+      \ifx #1.% halber Inhaltsstrich
+         \hbox to 0.5\gfbsvolleeinheit{\gfbsrulefill}\kern0.5\gfbsueberlappung
+         \nobreak
+         \ifgfbszweitehaelfte
+            \gfbszweitehaelftefalse
+         \else
+            \gfbshoehlungtrue
+            \gfbszweitehaelftetrue
+         \fi
+      \else\ifx #1,% halber verneinter Inhaltsstrich
+         \hbox to 0.5\gfbsvolleeinheit{\gfbsrulefill}\kern0.5\gfbsueberlappung
+         \nobreak
+         \ifgfbszweitehaelfte\hskip-0.3\gfbseinheit
+         \else\hskip-0.2\gfbseinheit\fi
+         \hskip-0.5\gfbssdicke
+         \ifgfbsnegdirekt
+            \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+         \else
+            \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+            \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+         \fi
+         \nobreak
+         \hskip-0.5\gfbssdicke
+         \ifgfbszweitehaelfte\hskip0.3\gfbseinheit
+         \else\hskip0.2\gfbseinheit\fi
+         \ifgfbszweitehaelfte
+            \gfbszweitehaelftefalse
+         \else
+            \gfbshoehlungtrue
+            \gfbszweitehaelftetrue
+         \fi
+      \else\ifx #1`% halber ganz links verneinter Inhaltsstrich
+         \hbox to 0.5\gfbsvolleeinheit{\gfbsrulefill}\kern0.5\gfbsueberlappung
+         \nobreak
+         \hskip-0.5\gfbseinheit
+         \ifgfbsnegdirekt
+            \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+         \else
+            \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+            \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+         \fi
+         \nobreak
+         \hskip-\gfbssdicke
+         \hskip0.5\gfbseinheit
+         \ifgfbszweitehaelfte
+            \gfbszweitehaelftefalse
+         \else
+            \gfbshoehlungtrue
+            \gfbszweitehaelftetrue
+         \fi
+      \else\ifx #1;% halber doppelt verneinter Inhaltsstrich
+         \hbox to 0.5\gfbsvolleeinheit{\gfbsrulefill}\kern0.5\gfbsueberlappung
+         \nobreak
+         \ifgfbszweitehaelfte\hskip-0.42\gfbseinheit
+         \else\hskip-0.27\gfbseinheit\fi
+         \hskip-\gfbssdicke
+         \ifgfbsnegdirekt
+            \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+         \else
+            \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+            \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+         \fi
+         \nobreak
+         \hskip0.27\gfbseinheit
+         \hskip-\gfbssdicke
+         \ifgfbsnegdirekt
+            \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+         \else
+            \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+            \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+         \fi
+         \nobreak
+         \ifgfbszweitehaelfte\hskip0.15\gfbseinheit\fi
+         \ifgfbszweitehaelfte
+            \gfbszweitehaelftefalse
+         \else
+            \gfbshoehlungtrue
+            \gfbszweitehaelftetrue
+         \fi
+      \else\ifx #17% variable Negation
+         \ifgfbskompakt
+            \hbox to 0.5\gfbsvolleeinheit{\gfbsrulefill}\kern0.5\gfbsueberlappung
+            \nobreak
+            \ifgfbszweitehaelfte\hskip-0.3\gfbseinheit
+            \else\hskip-0.2\gfbseinheit\fi
+            \hskip-0.5\gfbssdicke
+            \ifgfbsnegdirekt
+               \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+            \else
+               \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+               \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+            \fi
+            \nobreak
+            \hskip-0.5\gfbssdicke
+            \ifgfbszweitehaelfte\hskip0.3\gfbseinheit
+            \else\hskip0.2\gfbseinheit\fi
+         \else
+            \hbox to 0.5\gfbsvolleeinheit{\gfbsrulefill}\kern0.5\gfbsueberlappung
+            \nobreak
+            \hskip-0.5\gfbseinheit
+            \ifgfbsnegdirekt
+               \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+            \else
+               \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+               \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+            \fi
+            \nobreak
+            \hskip-\gfbssdicke
+            \hskip0.5\gfbseinheit
+         \fi
+         \ifgfbszweitehaelfte
+            \gfbszweitehaelftefalse
+         \else
+            \gfbshoehlungtrue
+            \gfbszweitehaelftetrue
+         \fi
+      \else
+         \ifgfbszweitehaelfte
+            \errhelp=\gfbshaelftehilfe
+            \errmessage{Unexpected `\string#1' after signaled ``for all''}%
+            \gfbszweitehaelftefalse
+         \fi
+         \ifx #1"% Leerstelle
+            \relax
+         \else\ifx #1_% leer
+            \hskip\gfbseinheit
+         \else\ifx #1-% Inhaltsstrich
+            \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+            \nobreak
+         \else\ifx #1=% Schlusskette
+            \vrule height \gfbsos depth -\gfbsus width \gfbsvolleeinheit
+            \nobreak
+            \hskip-\gfbsvolleeinheit
+            \vrule height \gfbsfdicke depth 0pt width \gfbsvolleeinheit
+            \nobreak
+            \kern\gfbsueberlappung
+         \else
+            \ifx #1~% verneinter Inhaltsstrich
+               \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+               \nobreak
+               \hskip-0.5\gfbseinheit
+               \hskip-0.5\gfbssdicke
+               \ifgfbsnegdirekt
+                  \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+               \else
+                  \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                  \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+               \fi
+               \nobreak
+               \hskip-0.5\gfbssdicke
+               \hskip0.5\gfbseinheit
+            \else\ifx #1(% Negation mitte-links
+               \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+               \nobreak
+               \hskip-0.75\gfbseinheit
+               \hskip-0.5\gfbssdicke
+               \ifgfbsnegdirekt
+                  \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+               \else
+                  \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                  \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+               \fi
+               \nobreak
+               \hskip-0.5\gfbssdicke
+               \hskip0.75\gfbseinheit
+            \else\ifx #1<% Negation ganz links
+               \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+               \nobreak
+               \hskip-\gfbseinheit
+               \ifgfbsnegdirekt
+                  \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+               \else
+                  \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                  \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+               \fi
+               \nobreak
+               \hskip-\gfbssdicke
+               \hskip\gfbseinheit
+            \else\ifx #1)% Negation mitte-rechts
+               \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+               \nobreak
+               \hskip-0.25\gfbseinheit
+               \hskip-0.5\gfbssdicke
+               \ifgfbsnegdirekt
+                  \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+               \else
+                  \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                  \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+               \fi
+               \nobreak
+               \hskip-0.5\gfbssdicke
+               \hskip0.25\gfbseinheit
+            \else\ifx #1>% Negation ganz rechts
+               \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+               \nobreak
+               \hskip-\gfbssdicke
+               \ifgfbsnegdirekt
+                  \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+               \else
+                  \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                  \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+               \fi
+               \nobreak
+            \else\ifx #1+% doppelter verneinter Inhaltsstrich
+               \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+               \nobreak
+               \hskip-0.75\gfbseinheit
+               \hskip-0.5\gfbssdicke
+               \ifgfbsnegdirekt
+                  \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+               \else
+                  \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                  \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+               \fi
+               \nobreak
+               \hskip0.5\gfbseinheit
+               \hskip-\gfbssdicke
+               \ifgfbsnegdirekt
+                  \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+               \else
+                  \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                  \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+               \fi
+               \nobreak
+               \hskip-0.5\gfbssdicke
+               \hskip0.25\gfbseinheit
+            \else\ifx #1^% doppelter verneinter Inhaltsstrich links
+               \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+               \nobreak
+               \hskip-\gfbseinheit
+               \ifgfbsnegdirekt
+                  \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+               \else
+                  \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                  \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+               \fi
+               \nobreak
+               \hskip0.5\gfbseinheit
+               \hskip-\gfbssdicke
+               \ifgfbsnegdirekt
+                  \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+               \else
+                  \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                  \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+               \fi
+               \nobreak
+               \hskip-\gfbssdicke
+               \hskip0.5\gfbseinheit
+            \else\ifx #1/% doppelter verneinter Inhaltsstrich rechts
+               \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+               \nobreak
+               \hskip-0.5\gfbseinheit
+               \hskip-\gfbssdicke
+               \ifgfbsnegdirekt
+                  \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+               \else
+                  \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                  \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+               \fi
+               \nobreak
+               \hskip0.5\gfbseinheit
+               \hskip-\gfbssdicke
+               \ifgfbsnegdirekt
+                  \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+               \else
+                  \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                  \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+               \fi
+               \nobreak
+            \else
+               \ifx #1:% dann-Verbindung
+                  \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+                  \nobreak
+                  \hskip-0.5\gfbseinheit
+                  \hskip-0.5\gfbssdicke
+                  \vrule width \gfbssdicke height \gfbshoehe
+                  \nobreak
+                  \hskip-0.5\gfbssdicke
+                  \hskip0.5\gfbseinheit
+               \else\ifx #1'% wenn-Verbindung
+                  \hskip0.5\gfbsvolleeinheit
+                  \hskip-0.5\gfbssdicke
+                  \vrule width \gfbssdicke depth -\gfbshoehe
+                  \nobreak
+                  \hskip-0.5\gfbssdicke
+                  \hbox to 0.5\gfbsvolleeinheit{\gfbsrulefill}\kern0.5\gfbsueberlappung
+                  \nobreak
+                  \kern0.5\gfbsueberlappung
+               \else\ifx #1!% senkrechter Strich für Verlängerungen zwischen dann und wenn
+                  \hskip0.5\gfbseinheit
+                  \hskip-0.5\gfbssdicke
+                  \vrule width \gfbssdicke
+                  \nobreak
+                  \hskip-0.5\gfbssdicke
+                  \hskip0.5\gfbseinheit
+               \else
+                  \ifx #1[% Urteilsstrich
+                     \smash{\vrule width \gfbsudicke height \gfbsfuht depth \gfbsfudp}%
+                     \nobreak
+                     \hskip-\gfbsudicke
+                     \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+                     \nobreak
+                  \else\ifx #1]% Urteilsstrich rechtsbündig
+                     \hskip\gfbseinheit
+                     \hskip-\gfbsudicke
+                     \smash{\vrule width \gfbsudicke height \gfbsfuht depth \gfbsfudp}%
+                  \else\ifx #13% Definitionsstriche rechtsbündig
+                     \hskip\gfbseinheit
+                     \hskip-4\gfbsddicke
+                     \smash{\vrule width \gfbsddicke height \gfbsfuht depth \gfbsfudp}%
+                     \nobreak
+                     \hskip2\gfbsddicke
+                     \smash{\vrule width \gfbsddicke height \gfbsfuht depth \gfbsfudp}%
+                  \else\ifx #1|% Ersetzungsstrich
+                     \hskip0.5\gfbseinheit
+                     \hskip-0.5\gfbsedicke
+                     \vrule width \gfbsedicke
+                     \nobreak
+                     \hskip-0.5\gfbsedicke
+                     \hskip0.5\gfbseinheit
+                  \else\ifx #1@% Vorbereitung für eine Höhlung
+                     \gfbshoehlungtrue
+                  \else
+                     \ifx #10% Negation mitte-links oder mitte-rechts
+                        \ifgfbskompakt
+                           \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+                           \nobreak
+                           \hskip-0.25\gfbseinheit
+                           \hskip-0.5\gfbssdicke
+                           \ifgfbsnegdirekt
+                              \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+                           \else
+                              \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                              \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+                           \fi
+                           \nobreak
+                           \hskip-0.5\gfbssdicke
+                           \hskip0.25\gfbseinheit
+                        \else
+                           \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+                           \nobreak
+                           \hskip-0.75\gfbseinheit
+                           \hskip-0.5\gfbssdicke
+                           \ifgfbsnegdirekt
+                              \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+                           \else
+                              \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                              \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+                           \fi
+                           \nobreak
+                           \hskip-0.5\gfbssdicke
+                           \hskip0.75\gfbseinheit
+                        \fi
+                     \else\ifx #11% Doppelte Negation links oder rechts
+                        \ifgfbskompakt
+                           \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+                           \nobreak
+                           \hskip-0.5\gfbseinheit
+                           \hskip-\gfbssdicke
+                           \ifgfbsnegdirekt
+                              \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+                           \else
+                              \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                              \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+                           \fi
+                           \nobreak
+                           \hskip0.5\gfbseinheit
+                           \hskip-\gfbssdicke
+                           \ifgfbsnegdirekt
+                              \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+                           \else
+                              \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                              \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+                           \fi
+                           \nobreak
+                        \else
+                           \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+                           \nobreak
+                           \hskip-\gfbseinheit
+                           \ifgfbsnegdirekt
+                              \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+                           \else
+                              \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                              \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+                           \fi
+                           \nobreak
+                           \hskip0.5\gfbseinheit
+                           \hskip-\gfbssdicke
+                           \ifgfbsnegdirekt
+                              \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+                           \else
+                              \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                              \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+                           \fi
+                           \nobreak
+                           \hskip-\gfbssdicke
+                           \hskip0.5\gfbseinheit
+                        \fi
+                     \else\ifx #12% Doppelte Negation links oder zentriert
+                        \ifgfbskompakt
+                           \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+                           \nobreak
+                           \hskip-0.75\gfbseinheit
+                           \hskip-0.5\gfbssdicke
+                           \ifgfbsnegdirekt
+                              \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+                           \else
+                              \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                              \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+                           \fi
+                           \nobreak
+                           \hskip0.5\gfbseinheit
+                           \hskip-\gfbssdicke
+                           \ifgfbsnegdirekt
+                              \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+                           \else
+                              \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                              \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+                           \fi
+                           \nobreak
+                           \hskip-0.5\gfbssdicke
+                           \hskip0.25\gfbseinheit
+                        \else
+                           \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+                           \nobreak
+                           \hskip-\gfbseinheit
+                           \ifgfbsnegdirekt
+                              \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+                           \else
+                              \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                              \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+                           \fi
+                           \nobreak
+                           \hskip0.5\gfbseinheit
+                           \hskip-\gfbssdicke
+                           \ifgfbsnegdirekt
+                              \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+                           \else
+                              \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                              \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+                           \fi
+                           \nobreak
+                           \hskip-\gfbssdicke
+                           \hskip0.5\gfbseinheit
+                        \fi
+                     \else\ifx #14% Inhaltsstrich oder Leerstelle
+                        \ifgfbskompakt\relax
+                        \else
+                           \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+                           \nobreak
+                        \fi
+                     \else\ifx #15% leer oder Leerstelle
+                        \ifgfbskompakt\relax
+                        \else
+                           \hskip\gfbseinheit
+                        \fi
+                     \else\ifx #16% Urteil links- oder rechtsbündig 
+                        \ifgfbskompakt
+                           \hskip\gfbseinheit
+                           \hskip-\gfbsudicke
+                           \smash{\vrule width \gfbsudicke height \gfbsfuht depth \gfbsfudp}%
+                        \else
+                           \smash{\vrule width \gfbsudicke height \gfbsfuht depth \gfbsfudp}%
+                           \nobreak
+                           \hskip-\gfbsudicke
+                           \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+                           \nobreak
+                        \fi
+                     \else\ifx #18% Negation ganz links oder zentriert
+                        \ifgfbskompakt
+                           \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+                           \nobreak
+                           \hskip-0.5\gfbseinheit
+                           \hskip-0.5\gfbssdicke
+                           \ifgfbsnegdirekt
+                              \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+                           \else
+                              \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                              \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+                           \fi
+                           \nobreak
+                           \hskip-0.5\gfbssdicke
+                           \hskip0.5\gfbseinheit
+                        \else
+                           \hbox to \gfbsvolleeinheit{\gfbsrulefill}\kern\gfbsueberlappung
+                           \nobreak
+                           \hskip-\gfbseinheit
+                           \ifgfbsnegdirekt
+                              \vrule width \gfbssdicke height \gfbshoehe depth \gfbsnegdp
+                           \else
+                              \gfbsneght=.01\gfbshoehe \multiply\gfbsneght by \gfbsnegpct
+                              \vrule width \gfbssdicke height \gfbsneght depth \gfbsnegdp
+                           \fi
+                           \nobreak
+                           \hskip-\gfbssdicke
+                           \hskip\gfbseinheit
+                        \fi
+                     \else\ifx #19% Drittelstrich
+                        \hbox to 0.333333\gfbsvolleeinheit{\gfbsrulefill}\kern0.3333\gfbsueberlappung
+                        \nobreak
+                     \else\ifx #1*% 5/3 Leerstelle
+                        \hskip1.666667\gfbseinheit
+                     \else
+                        \errhelp=\gfbsunbekanntessymbolhilfe
+                        \errmessage{`\string#1' is not allowed in a \string\* macro}%
+                     \fi\fi\fi\fi\fi\fi\fi\fi\fi
+                  \fi\fi\fi\fi\fi
+               \fi\fi\fi
+            \fi\fi\fi\fi\fi\fi\fi\fi
+         \fi\fi\fi\fi
+      \fi\fi\fi\fi\fi\fi
+   \fi
+}
+\let\discretionarytimes=\*
+\def\*#1#2#3{%
+   \ifx #1?% Schlussweise aus den Grundgesetzen
+      \ifgfggschlussweise
+         \gfbsschluss{#2}%
+         \gfbsschluss{#3}%
+      \else
+         \errhelp=\gfggschlussweisehilfe
+         \errmessage{You cannot use this construction in style Begriffsschrift}%
+      \fi
+   \else
+         \gfbsteilelement{#1}%
+         \gfbsteilelement{#2}%
+         \gfbsteilelement{#3}%
+   \fi
+}
+\def\toggleGGstyle{%
+   \ifgfbsuseGGstyle% gehe zum Stil der Begriffsschrift über
+      \gfbskompaktfalse
+      \gfbsfonoohnepunktfalse
+      \gfggschlussweisefalse
+      \gfbsnegdirektfalse
+      \gfbsuseGGstylefalse
+   \else% verwende den Stil der Grundgesetze
+      \gfbskompakttrue
+      \gfbsfonoohnepunkttrue
+      \gfggschlussweisetrue
+      \gfbsnegdirekttrue
+      \gfbsuseGGstyletrue
+   \fi
+   \gfbsneuestriche
+}
+\def\gfbsschluss#1{%
+   \ifx #1x% Wendung
+      \ifgfbszwischenzeichen
+         \kern\gfbsueberlappung
+         \hbox to 3\gfbsvolleeinheit{\hss$\diagdown$\llap{$\diagup$}\hss}%
+         \kern2\gfbsueberlappung
+      \else
+         \errhelp=\gfbszwischenzeichenhilfe
+         \errmessage{An `x' must be introduced by `\string>'}%
+      \fi
+      \gfbszwischenzeichenfalse
+   \else\ifx #1u% Wandlung
+     \ifgfbszwischenzeichen
+         \kern\gfbsueberlappung
+         \hbox to 3\gfbsvolleeinheit{$\setbox0=\hbox{$\braceld$}%
+            \bracelu\leaders\vrule height\ht0 depth0pt\hfill\braceru$}%
+         \kern2\gfbsueberlappung
+      \else
+         \errhelp=\gfbszwischenzeichenhilfe
+         \errmessage{An `u' must be introduced by `\string>'}%
+      \fi
+      \gfbszwischenzeichenfalse
+   \else
+      \ifgfbszwischenzeichen
+         \errhelp=\gfbszwischenzeichenfehlthilfe
+         \errmessage{Either `x' or `u' expected}%
+         \gfbszwischenzeichenfalse
+      \fi
+      \ifx #1-% einzeln: Strich
+         \hbox to 1.5\gfbsvolleeinheit{\gfggrulefill}\kern1.5\gfbsueberlappung
+      \else\ifx #1.% einzeln: zentrierter Punkt
+         \hbox to 1.5\gfbsvolleeinheit{\hss$\cdot$\hss}\kern1.5\gfbsueberlappung
+      \else
+         \ifx #1=% doppelt: Strich oben, Strich unten
+            \vrule height \gfbsos depth -\gfbsus width 1.5\gfbsvolleeinheit
+            \nobreak
+            \hskip-1.5\gfbsvolleeinheit
+            \vrule height \gfbsfdicke depth 0pt width 1.5\gfbsvolleeinheit
+            \kern1.5\gfbsueberlappung
+         \else\ifx #1*% doppelt: Strich oben, leer unten
+            \vrule height \gfbsos depth -\gfbsus width 1.5\gfbsvolleeinheit
+            \kern1.5\gfbsueberlappung
+         \else
+            \ifx #1_% Leerraum
+               \hskip1.5\gfbseinheit
+            \else\ifx #1"% Leerstelle
+               \relax 
+            \else\ifx #1>% Einzelsymbol (Wendung oder Wandlung) folgt
+               \gfbszwischenzeichentrue
+            \else % nicht erlaubt
+               \errhelp=\gfbsunbekannterschlusshilfe
+               \errmessage{`\string#1' is not allowed in a \string\*? macro}%
+            \fi\fi\fi
+         \fi\fi
+      \fi\fi
+   \fi\fi
+}
+\newcount\gfbswiederholung
+\def\wdh#1#2#3#4#5{%
+   \gfbswiederholung=#1
+   \ifnum\gfbswiederholung<0
+      \errhelp=\gfbsnegwdhhilfe
+      \errmessage{Repetition count cannot be negative, found \string#1}%
+   \else
+      \loop
+      \ifnum\gfbswiederholung>0
+         #2#3#4#5%
+         \advance\gfbswiederholung by -1
+      \repeat
+   \fi
+}
+\def\nzp#1{%
+   \ifvmode\noindent\else\hfil\break\fi
+   \gfbsstrut
+   \hskip#1\gfbselementdimen
+   \relax
+   \global\gfbsfonosenken=0pt
+}
+\let\nlp\nzp
+\def\gfbsstrut{%
+   \relax\ifmmode\copy\gfbsbox\else\unhcopy\gfbsbox\fi
+}
+\def\gfbsabstandzuruecksetzen{%
+   \global\gfbsboxht=\ht\strutbox  \global\gfbsboxdp=\dp\strutbox
+   \global\setbox\gfbsbox=\hbox{%
+             \vrule height\the\gfbsboxht depth\the\gfbsboxdp width0pt }%
+}
+\gfbsabstandzuruecksetzen
+\def\gfbssetzeabstand#1#2{%
+   \global\gfbsboxht=#1pt \global\gfbsboxdp=#2pt %
+   \global\setbox\gfbsbox=\hbox{%
+             \vrule height\the\gfbsboxht depth\the\gfbsboxdp width0pt }%
+}
+\def\gfbsreduziereabstandum#1#2{%
+   \global\advance\gfbsboxht by -0.#1#2\gfbsboxht
+   \global\advance\gfbsboxdp by -0.#1#2\gfbsboxdp
+   \global\setbox\gfbsbox=\hbox{%
+             \vrule height\the\gfbsboxht depth\the\gfbsboxdp width0pt }%
+}
+\def\zi#1{%
+   \hbox to \gfbselementdimen{\rm\thinspace #1\hss}\ignorespaces
+}
+\def\ze#1{%
+   \hbox{\rm\thinspace #1}%
+}
+\newif\ifgfbsinnen % false: Zeichen werden mit \ze gesetzt, true: mit \zi
+\def\nzpz#1#2{\nzp{#1}\llap{#2}}
+\let\nlpz\nzpz
+\def\fono#1{%
+   \hfill\lower\gfbsfonosenken\hbox{\rm({\ff #1}\ifgfbsfonoohnepunkt\else.\fi}%
+}
+\def\bss#1/#2#3:#4#5\ess{%
+   \nzp{#1}%
+   \ifx #2l%
+      \ifx #4.%
+         \hbox to \gfbseinheit{\rm\hss({\ff #3})\rlap{\kern\gfbsdpa:}\hss}%
+      \else\ifx #4:%
+         \hbox to \gfbseinheit{\rm\hss({\ff #3})\rlap{\kern\gfbsdpa:\kern\gfbsdpa:}\hss}%
+      \else
+         \errhelp=\gfbsdoppelpunkthilfe
+         \errmessage{Either a period or a colon is expected for the number of colons}%
+         \hbox to \gfbseinheit{\rm\hss({\ff #3})\rlap{\kern\gfbsdpa:\kern\gfbsdpa:}\hss}%
+      \fi\fi
+      \hskip2\gfbseinheit
+   \else\ifx #2r%
+      \hskip2\gfbseinheit
+      \ifx #4.%
+         \hbox to \gfbseinheit{\rm\hss({\ff #3})\rlap{\kern\gfbsdpa:}\hss}%
+      \else\ifx #4:%
+         \hbox to \gfbseinheit{\rm\hss({\ff #3})\rlap{\kern\gfbsdpa:\kern\gfbsdpa:}\hss}%
+      \else
+         \errhelp=\gfbsdoppelpunkthilfe
+         \errmessage{Either a period or a colon is expected for the number of colons}%
+         \hbox to \gfbseinheit{\rm\hss({\ff #3})\rlap{\kern\gfbsdpa:\kern\gfbsdpa:}\hss}%
+      \fi\fi
+   \else\ifx #2m%
+      \hskip\gfbseinheit
+      \ifx #4.%
+         \hbox to \gfbseinheit{\rm\hss({\ff #3})\rlap{\kern\gfbsdpa:}\hss}%
+      \else\ifx #4:%
+         \hbox to \gfbseinheit{\rm\hss({\ff #3})\rlap{\kern\gfbsdpa:\kern\gfbsdpa:}\hss}%
+      \else
+         \errhelp=\gfbsdoppelpunkthilfe
+         \errmessage{Either a period or a colon is expected for the number of colons}%
+         \hbox to \gfbseinheit{\rm\hss({\ff #3})\rlap{\kern\gfbsdpa:\kern\gfbsdpa:}\hss}%
+      \fi\fi
+      \hskip\gfbseinheit
+   \else
+      \errhelp=\gfbspositionunbekannthilfe
+      \errmessage{Only l, m, and r are allowed as position parameter}%
+      \hskip\gfbseinheit
+      \ifx #4.%
+         \hbox to \gfbseinheit{\rm\hss({\ff #3})\rlap{\kern\gfbsdpa:}\hss}%
+      \else\ifx #4:%
+         \hbox to \gfbseinheit{\rm\hss({\ff #3})\rlap{\kern\gfbsdpa:\kern\gfbsdpa:}\hss}%
+      \else
+         \errhelp=\gfbsdoppelpunkthilfe
+         \errmessage{Either a period or a colon is expected for the number of colons}%
+         \hbox to \gfbseinheit{\rm\hss({\ff #3})\rlap{\kern\gfbsdpa:\kern\gfbsdpa:}\hss}%
+      \fi\fi
+      \hskip\gfbseinheit         
+   \fi\fi\fi
+   {\let\gfbsrulefill\gfggrulefill #5}%
+   \vadjust{\penalty-15}\ignorespaces
+}
+%
+% ab hier folgt die Zeilennotation
+%
+\newtoks\dsz \dsz={\xi}% wird für Buchstaben ß eingesetzt
+\newcount\gfbstmpcount
+\catcode`@=11
+\def\mynewskip{\alloc@2\skip\skipdef\insc@unt}
+\def\mynewtoks{\alloc@5\toks\toksdef\@cclvi}
+\catcode`@=12
+\gfbstmpcount=\gfbsmaxanzahlzeilen
+\ifgfbskeinesubst
+   \advance\gfbstmpcount by 1
+\else
+   \multiply\gfbstmpcount by 2
+\fi
+\let\rom\romannumeral
+\count255=1
+\loop
+   \expandafter\mynewtoks\csname gfbstoks\rom\count255\endcsname
+   \expandafter\mynewskip\csname gfbsskip\rom\count255\endcsname
+\ifnum\count255<\gfbstmpcount
+   \advance\count255 by 1
+\repeat
+\newcount\gfbshaengtan   \newcount\gfbsgehtbis    \newcount\gfbsanzahl
+\newif\ifgfbsdannwenn
+\newtoks\gfbselement    \newcount\gfbszeile
+\newcount\gfbsanzahlplus     \newcount\gfbsanzahlfest
+\newtoks\gfbsprefix
+\newif\ifgfbsaussagesichtbar  \gfbsaussagesichtbarfalse
+\newcount\gfbsgrenze   \newcount\gfbszaehler    
+\newif\ifgfbskeinekompaktehoehlung \gfbskeinekompaktehoehlungfalse
+\newcount\gfbserstezeile \newcount\gfbsersteanzahl \newcount\gfbserstegehtbis
+\newcount\gfbszweitezeile \newcount\gfbszweitegehtbis
+\newif\ifvzzz    \newif\ifvzez
+\newcount\gfbseinzug
+\newif\ifgfbsnurterminal
+\newcount\gfbsgrundeinzug    \newcount\gfbssubststart
+\gfbsgrundeinzug=0
+\gfbssubststart=\gfbsmaxanzahlzeilen \advance\gfbssubststart by 1
+\newif\ifgfbslognotation  \gfbslognotationfalse
+\newif\ifgfbszeigestats   \gfbszeigestatsfalse
+\newcount\gfbsmaxformelzeile
+\newcount\gfbsvorgaenger  \gfbsvorgaenger=0
+\def\setskip#1#2#3#4{%
+   %\skip-Register = \gfbsanzahl plus \gfbshaengtan minus \gfbsgehtbis
+   \global\csname gfbsskip\rom#1\endcsname=#2pt plus #3pt minus #4pt%
+}
+\def\verschlucke#1#2{\relax}
+\def\getskip#1.#2 #3 #4.#5 #6 #7.#8{%
+   \global\gfbsanzahl=#1%
+   \global\gfbshaengtan=#4%
+   \global\gfbsgehtbis=#7%
+   \verschlucke
+}
+\def\gfbsformel#1#2#3#4#5{%
+   \gfbsdannwennfalse
+   \ifx #1.% dann-wenn Beziehung
+      \gfbsdannwenntrue
+   \else\ifx #1-% dann-wenn
+      \gfbsdannwenntrue
+   \else\ifx #1+% dann-wenn
+      \gfbsdannwenntrue
+   \else\ifx #1*% Höhlung
+      \global\gfbsnurterminalfalse
+      \ifcat \noexpand#3a\else
+         \errhelp=\gfbskeinbuchstabeanhoehlungspositionhilfe
+         \errmessage{Symbol `\string#3' not allowed as variable}%
+      \fi
+      \bgroup\gfbsvorgaenger=2 
+      \ifx #2.\ifx #4.\ifgfbskeinekompaktehoehlung\else
+         \gfbsvorgaenger=3
+      \fi\fi\fi \gfbsformel #5{}{}{}{}\egroup
+      \expandafter\getskip\the\csname gfbsskip\rom\gfbszeile\endcsname
+      \gfbstmpcount=0 % Anzahl der benutzen .
+      \ifx #2-%
+         \ifnum\gfbsvorgaenger<2 \gfbselement={\*,#3}%
+         \else\ifnum\gfbsvorgaenger=2 \gfbselement={\*`#3}%
+         \else\gfbselement={\*7#3}%
+         \fi\fi
+      \else\ifx #2+%
+         \gfbselement={\*;#3}%
+      \else\ifx #2.%
+         \gfbselement={\*.#3}\gfbstmpcount=1
+      \else
+         \errhelp=\gfbsfalschesvzhilfe
+         \errmessage{Symbol `\string#2' not allowed as sign}%
+         \gfbselement={\*___}\gfbsprefix={\*___}\gfbsanzahlfest=3
+      \fi\fi\fi
+      \ifx #4-% ebenso nach der Höhlung
+         \gfbselement=\expandafter{\the\gfbselement,}%
+      \else\ifx #4+%
+         \gfbselement=\expandafter{\the\gfbselement;}%
+      \else\ifx #4.%
+         \gfbselement=\expandafter{\the\gfbselement.}%
+         \advance\gfbstmpcount by 1
+      \else
+         \errhelp=\gfbsfalschesvzhilfe
+         \errmessage{Symbol `\string#4' not allowed as sign}%
+         \gfbselement={\*___}\gfbsprefix={\*___}\gfbsanzahlfest=3
+      \fi\fi\fi
+      \ifnum\gfbstmpcount=2
+         \ifgfbskeinekompaktehoehlung
+            \gfbsprefix={\*___}\gfbsanzahlfest=3
+         \else\gfbselement={\*$#3$}\gfbsprefix={\*5__}\gfbsanzahlfest=2
+         \fi
+      \else
+         \gfbsprefix={\*___}\gfbsanzahlfest=3
+      \fi
+      \gfbsanzahlplus=3
+      \edef\gfbstoken{\the\gfbselement\the\csname gfbstoks\rom\gfbszeile\endcsname}%
+      \global\csname gfbstoks\rom\gfbszeile\endcsname=\expandafter{\gfbstoken}%
+      \ifgfbskompakt
+         \global\advance\gfbsanzahl by \gfbsanzahlfest
+      \else
+         \global\advance\gfbsanzahl by \gfbsanzahlplus
+      \fi
+      \setskip{\the\gfbszeile}{\the\gfbsanzahl}{\the\gfbshaengtan}{\the\gfbsgehtbis}%
+      \gfbsfuegelinksan{\gfbszeile}{\gfbsgehtbis}%
+   \else\ifx #1=% Aussage
+      \global\gfbsnurterminalfalse
+      \def\gfbstest{#4}%
+      \ifx\gfbstest\empty
+         \def\gfbstest{#5}%
+         \ifx\gfbstest\empty\else
+            \errhelp=\gfbszuvieleparameterhilfe
+            \errmessage{Too many parameters for statement (found `\string#5')}%
+         \fi
+      \else
+         \errhelp=\gfbszuvieleparameterhilfe
+         \errmessage{Too many parameters for statement (found `\string#4')}%
+      \fi
+      \bgroup\gfbsvorgaenger=4 \gfbsformel #3{}{}{}{}\egroup
+      \expandafter\getskip\the\csname gfbsskip\rom\gfbszeile\endcsname
+      \ifx #2-% auf Negation bzw. doppelte Negation prüfen
+         \ifnum\gfbsvorgaenger>6 \gfbselement={\*484}\else\gfbselement={\*4~4}\fi
+         \gfbsprefix={\*5_5}\gfbsanzahlfest=1
+      \else\ifx #2+%
+         \ifnum\gfbsvorgaenger>6 \gfbselement={\*424}\else\gfbselement={\*4+4}\fi
+         \gfbsprefix={\*5_5}\gfbsanzahlfest=1
+      \else\ifx #2.%
+         \ifgfbsaussagesichtbar
+            \gfbselement={\*4-4}\gfbsprefix={\*5_5}\gfbsanzahlfest=1
+         \else
+            \gfbselement={\*444}\gfbsprefix={\*555}\gfbsanzahlfest=0
+         \fi
+      \else
+         \errhelp=\gfbsfalschesvzhilfe
+         \errmessage{Symbol `\string#2' not allowed as sign}%
+         \gfbselement={\*___}\gfbsprefix={\*___}\gfbsanzahlfest=3
+      \fi\fi\fi
+      \gfbsanzahlplus=3
+      \edef\gfbstoken{\the\gfbselement\the\csname gfbstoks\rom\gfbszeile\endcsname}%
+      \global\csname gfbstoks\rom\gfbszeile\endcsname=\expandafter{\gfbstoken}%
+      \ifgfbskompakt
+         \global\advance\gfbsanzahl by \gfbsanzahlfest
+      \else
+         \global\advance\gfbsanzahl by \gfbsanzahlplus
+      \fi
+      \setskip{\the\gfbszeile}{\the\gfbsanzahl}{\the\gfbshaengtan}{\the\gfbsgehtbis}%
+      \gfbsfuegelinksan{\gfbszeile}{\gfbsgehtbis}%
+   \else\ifx #1!% Sequenz oder Makroaufruf
+      \gfbselement=\expandafter{#2#3#4#5}%
+      \edef\gfbstoken{\the\gfbselement}%
+      \bgroup\expandafter\gfbsformel\gfbstoken {}{}{}{}\egroup
+   \else % einzelnes Zeichen
+      \ifgfbsinnen
+         \gfbselement={\zi{$#1#2#3#4#5$}}%
+      \else
+         \gfbselement={\ze{$#1#2#3#4#5$}}%
+      \fi
+      \edef\gfbstoken{\the\gfbselement\the\csname gfbstoks\rom\gfbszeile\endcsname}%
+      \global\csname gfbstoks\rom\gfbszeile\endcsname=\expandafter{\gfbstoken}%
+      \setskip{\the\gfbszeile}3{\the\gfbszeile}{\the\gfbszeile}%
+   \fi\fi\fi\fi\fi\fi
+   \ifgfbsdannwenn
+      \global\gfbsnurterminalfalse
+      \bgroup\gfbsvorgaenger=5 \gfbsformel #3{}{}{}{}\egroup
+      \expandafter\getskip\the\csname gfbsskip\rom\gfbszeile\endcsname
+      \gfbserstezeile=\gfbszeile
+      \gfbsersteanzahl=\gfbsanzahl
+      \gfbserstegehtbis=\gfbsgehtbis
+      \gfbszeile=\gfbsgehtbis \advance\gfbszeile by 1
+      \bgroup\gfbsvorgaenger=6 \gfbsformel #5{}{}{}{}\egroup
+      \expandafter\getskip\the\csname gfbsskip\rom\gfbszeile\endcsname
+      \gfbszweitezeile=\gfbszeile
+      \gfbszweitegehtbis=\gfbsgehtbis
+      \global\vzezfalse
+      \ifx #2-%
+         \global\vzeztrue
+      \else\ifx #2+%
+         \global\vzeztrue
+      \else\ifx #2.\else
+         \errhelp=\gfbsfalschesvzhilfe
+         \errmessage{Symbol `\string#2' not allowed as sign}%
+         \gfbselement={\*___}\gfbsprefix={\*___}\gfbsanzahlfest=3
+      \fi\fi\fi
+      \global\vzzzfalse
+      \ifx #4-%
+         \global\vzzztrue
+      \else\ifx #4+%
+         \global\vzzztrue
+      \else\ifx #4.\else
+         \errhelp=\gfbsfalschesvzhilfe
+         \errmessage{Symbol `\string#4' not allowed as sign}%
+         \gfbselement={\*___}\gfbsprefix={\*___}\gfbsanzahlfest=3
+      \fi\fi\fi
+      {\advance\gfbsersteanzahl by -\gfbsanzahl
+      \ifnum\gfbsersteanzahl>0 % fülle zweite Zeile auf
+         \advance\gfbsersteanzahl by -1
+         \gfbstmpcount=\gfbsersteanzahl
+         \loop
+         \ifnum\gfbstmpcount>2
+            \advance\gfbstmpcount by -3
+         \repeat
+         \ifcase\gfbstmpcount
+            \gfbselement={\*""}\gfbsprefix={\*""_}\gfbsanzahlplus=1 \gfbsanzahlfest=1
+         \or\gfbselement={\*"-}\gfbsprefix={\*"__}\gfbsanzahlplus=2 \gfbsanzahlfest=2
+         \or\gfbselement={\*-}\gfbsprefix={\*___}\gfbsanzahlplus=3 \gfbsanzahlfest=3
+         \fi
+         \advance\gfbsersteanzahl by -\gfbstmpcount
+         \ifnum\gfbstmpcount=2
+            \gfbselement=\expandafter{\the\gfbselement-}%
+         \fi
+         \ifvzzz
+            \ifx #4-%
+               \gfbselement=\expandafter{\the\gfbselement(}%
+            \else
+               \gfbselement=\expandafter{\the\gfbselement+}%
+            \fi
+            \global\vzzzfalse
+         \else
+            \gfbselement=\expandafter{\the\gfbselement-}%
+         \fi
+         \edef\gfbstoken{\the\gfbselement\the\csname gfbstoks\rom\gfbszeile\endcsname}%
+         \global\csname gfbstoks\rom\gfbszeile\endcsname=\expandafter{\gfbstoken}%
+         \ifgfbskompakt
+            \global\advance\gfbsanzahl by \gfbsanzahlfest
+         \else
+            \global\advance\gfbsanzahl by \gfbsanzahlplus
+         \fi
+         \setskip{\the\gfbszeile}{\the\gfbsanzahl}{\the\gfbshaengtan}{\the\gfbsgehtbis}%
+         \gfbsfuegelinksan{\gfbszeile}{\gfbsgehtbis}%
+         \gfbselement={\*---}\gfbsprefix={\*___}\gfbsanzahlfest=3 \gfbsanzahlplus=3
+         \loop
+         \ifnum\gfbsersteanzahl>2
+            \edef\gfbstoken{\the\gfbselement\the\csname gfbstoks\rom\gfbszeile\endcsname}%
+            \global\csname gfbstoks\rom\gfbszeile\endcsname=\expandafter{\gfbstoken}%
+            \ifgfbskompakt
+               \global\advance\gfbsanzahl by \gfbsanzahlfest
+            \else
+               \global\advance\gfbsanzahl by \gfbsanzahlplus
+            \fi
+            \setskip{\the\gfbszeile}{\the\gfbsanzahl}{\the\gfbshaengtan}{\the\gfbsgehtbis}%
+            \gfbsfuegelinksan{\gfbszeile}{\gfbsgehtbis}%
+            \advance\gfbsersteanzahl by -3
+         \repeat
+      \fi
+      \ifnum\gfbsersteanzahl<0 % fülle erste Zeile auf
+         \advance\gfbsersteanzahl by 1
+         \gfbstmpcount=-\gfbsersteanzahl
+         \loop
+         \ifnum\gfbstmpcount>2
+            \advance\gfbstmpcount by -3
+         \repeat
+         \ifcase\gfbstmpcount
+            \gfbselement={\*""}\gfbsprefix={\*""_}\gfbsanzahlplus=1 \gfbsanzahlfest=1
+         \or\gfbselement={\*"-}\gfbsprefix={\*"__}\gfbsanzahlplus=2 \gfbsanzahlfest=2
+         \or\gfbselement={\*-}\gfbsprefix={\*___}\gfbsanzahlplus=3 \gfbsanzahlfest=3
+         \fi
+         \advance\gfbsersteanzahl by \gfbstmpcount
+         \ifnum\gfbstmpcount=2
+            \gfbselement=\expandafter{\the\gfbselement-}%
+         \fi
+         \ifvzez
+            \ifx #2-%
+               \gfbselement=\expandafter{\the\gfbselement(}%
+            \else
+               \gfbselement=\expandafter{\the\gfbselement+}%
+            \fi
+            \global\vzezfalse
+         \else
+            \gfbselement=\expandafter{\the\gfbselement-}%
+         \fi
+         \advance\gfbstmpcount by 1
+         \edef\gfbstoken{\the\gfbselement\the\csname gfbstoks\rom\gfbserstezeile\endcsname}%
+         \global\csname gfbstoks\rom\gfbserstezeile\endcsname=\expandafter{\gfbstoken}%
+         \global\advance\csname gfbsskip\rom\gfbserstezeile\endcsname by \number\gfbstmpcount pt
+         \gfbsfuegelinksan{\gfbserstezeile}{\gfbserstegehtbis}%
+         \gfbselement={\*---}\gfbsprefix={\*___}\gfbsanzahlfest=3 \gfbsanzahlplus=3
+         \loop
+         \ifnum\gfbsersteanzahl<-2
+            \edef\gfbstoken{\the\gfbselement\the\csname gfbstoks\rom\gfbserstezeile\endcsname}%
+            \global\csname gfbstoks\rom\gfbserstezeile\endcsname=\expandafter{\gfbstoken}%
+            \global\advance\csname gfbsskip\rom\gfbserstezeile\endcsname by 3 pt
+            \gfbsfuegelinksan{\gfbserstezeile}{\gfbserstegehtbis}%
+            \advance\gfbsersteanzahl by 3
+         \repeat
+      \fi}%
+      \gfbszeile=\gfbserstezeile
+      \expandafter\getskip\the\csname gfbsskip\rom\gfbszeile\endcsname
+      \gfbsanzahlfest=0
+      \gfbsanzahlplus=3
+      \ifx #1-% auf Negation bzw. doppelte Negation prüfen
+         \ifnum\gfbsvorgaenger<2 \gfbselement={\*):}%
+         \else\ifnum\gfbsvorgaenger<4 \gfbselement={\*~:}%
+         \else\ifnum\gfbsvorgaenger<7 \gfbselement={\*8:}%
+         \else\gfbselement={\*0:}\fi\fi\fi
+         \gfbsprefix={\*_!}\gfbsanzahlfest=2
+      \else\ifx #1+%
+         \ifnum\gfbsvorgaenger<2 \gfbselement={\*/:}%
+         \else\ifnum\gfbsvorgaenger>6 \gfbselement={\*1:}%
+         \else\gfbselement={\*+:}%
+         \fi\fi
+         \gfbsprefix={\*_!}\gfbsanzahlfest=2
+      \else\ifx #1.%
+         \gfbselement={\*4:}\gfbsprefix={\*5!}\gfbsanzahlfest=1
+      \fi\fi\fi
+      \ifvzez
+         \ifx #2-%
+            \gfbselement=\expandafter{\the\gfbselement(}%
+         \else
+            \gfbselement=\expandafter{\the\gfbselement+}%
+         \fi
+         \advance\gfbsanzahlfest by 1
+         \gfbsprefix=\expandafter{\the\gfbsprefix_}%
+      \else
+         \ifvzzz
+            \gfbselement=\expandafter{\the\gfbselement-}%
+            \advance\gfbsanzahlfest by 1
+            \gfbsprefix=\expandafter{\the\gfbsprefix_}%
+         \else
+            \gfbselement=\expandafter{\the\gfbselement4}%
+            \gfbsprefix=\expandafter{\the\gfbsprefix5}%
+         \fi
+      \fi
+      \edef\gfbstoken{\the\gfbselement\the\csname gfbstoks\rom\gfbszeile\endcsname}%
+      \global\csname gfbstoks\rom\gfbszeile\endcsname=\expandafter{\gfbstoken}%
+      \ifgfbskompakt
+         \global\advance\gfbsanzahl by \gfbsanzahlfest
+      \else
+         \global\advance\gfbsanzahl by \gfbsanzahlplus
+      \fi
+      \setskip{\the\gfbszeile}{\the\gfbsanzahl}{\the\gfbshaengtan}{\the\gfbsgehtbis}%
+      \gfbsfuegelinksan{\gfbszeile}{\gfbsgehtbis}%
+      \gfbszeile=\gfbszweitezeile
+      \expandafter\getskip\the\csname gfbsskip\rom\gfbszeile\endcsname
+      \gfbsanzahlplus=3
+      \ifx #1.%
+         \gfbselement={\*5}\gfbsprefix={\*5}\gfbsanzahlfest=0
+      \else
+         \gfbselement={\*_}\gfbsprefix={\*_}\gfbsanzahlfest=1
+      \fi
+      \ifvzzz
+         \ifx #4-%
+            \gfbselement=\expandafter{\the\gfbselement'(}%
+         \else
+            \gfbselement=\expandafter{\the\gfbselement'+}%
+         \fi
+         \advance\gfbsanzahlfest by 2
+         \gfbsprefix=\expandafter{\the\gfbsprefix__}%
+      \else
+         \ifvzez
+            \gfbselement=\expandafter{\the\gfbselement'-}%
+            \advance\gfbsanzahlfest by 2
+            \gfbsprefix=\expandafter{\the\gfbsprefix__}%
+         \else
+            \gfbselement=\expandafter{\the\gfbselement'4}%
+            \advance\gfbsanzahlfest by 1
+            \gfbsprefix=\expandafter{\the\gfbsprefix_5}%
+      \fi\fi
+      \edef\gfbstoken{\the\gfbselement\the\csname gfbstoks\rom\gfbszeile\endcsname}%
+      \global\csname gfbstoks\rom\gfbszeile\endcsname=\expandafter{\gfbstoken}%
+      \ifgfbskompakt
+         \global\advance\gfbsanzahl by \gfbsanzahlfest
+      \else
+         \global\advance\gfbsanzahl by \gfbsanzahlplus
+      \fi
+      \setskip{\the\gfbszeile}{\the\gfbsanzahl}{\the\gfbshaengtan}{\the\gfbsgehtbis}%
+      \gfbsfuegelinksan{\gfbszeile}{\gfbsgehtbis}%
+      \setskip{\the\gfbszweitezeile}{\the\gfbsanzahl}{\the\gfbserstezeile}{\the\gfbsgehtbis}%
+      \gfbszeile=\gfbserstezeile
+      \expandafter\getskip\the\csname gfbsskip\rom\gfbszeile\endcsname
+      \setskip{\the\gfbszeile}{\the\gfbsanzahl}{\the\gfbshaengtan}{\the\gfbszweitegehtbis}%
+   \fi
+}
+\def\gfbsfuegelinksan#1#2{\bgroup
+   \gfbstmpcount=0 \advance\gfbstmpcount by #2% höchste zu ändernde Zeilennummer
+   \count255=0 \advance\count255 by #1% Startzeile (nicht zu ändern)
+   \loop
+   \ifnum\gfbstmpcount>\count255
+      \edef\gfbstoken{\the\gfbsprefix\the\csname gfbstoks\rom\gfbstmpcount\endcsname}%
+      \global\csname gfbstoks\rom\gfbstmpcount\endcsname=\expandafter{\gfbstoken}%
+      \ifgfbskompakt
+         \global\advance\csname gfbsskip\rom\gfbstmpcount\endcsname
+                        by \number\gfbsanzahlfest pt
+      \else
+         \global\advance\csname gfbsskip\rom\gfbstmpcount\endcsname
+                        by \number\gfbsanzahlplus pt
+      \fi
+      \advance\gfbstmpcount by -1
+   \repeat
+\egroup}
+\outer\def\formel p#1#2#3{%
+   \global\gfbseinzug=#1%
+   \global\gfbszeile=1
+   \setskip 1011
+   \gfbsanzahlfest=0 \gfbsanzahlplus=0 \gfbsprefix={}\gfbselement={}%
+   \gfbsnurterminaltrue
+   \bgroup\gfbsvorgaenger=8 \gfbsformel #3{}{}{}{}\egroup
+   \expandafter\getskip\the\csname gfbsskip\rom\gfbszeile\endcsname
+   \ifx #2|% | markiert ein Urteil, sonst ist es eine Vorstellung
+      \gfbsprefix={\*55_}%
+      \ifnum\gfbsanzahl<4 % Formel besteht nur aus einem Terminal
+         \ifgfbsnurterminal
+            \errhelp=\gfbsnurterminalhilfe
+            \errmessage{No Frege formula entered}%
+            \gfbselement={\*55]}\gfbsanzahlfest=1
+         \else\gfbselement={\*5]9}\gfbsanzahlfest=2
+         \fi
+      \else\gfbselement={\*556}\gfbsanzahlfest=1
+      \fi
+   \else\ifx #2.%
+      \gfbsprefix={\*555}%
+      \ifnum\gfbsanzahl<4 % Formel besteht nur aus einem Terminal
+         \ifgfbsnurterminal
+            \errhelp=\gfbsnurterminalhilfe
+            \errmessage{No Frege formula entered}%
+            \gfbselement={\*555}\gfbsanzahlfest=0
+         \else\gfbselement={\*559}\gfbsanzahlfest=1
+         \fi
+      \else\gfbselement={\*554}\gfbsanzahlfest=0
+      \fi
+   \else
+      \errhelp=\gfbsfalscherstarthilfe
+      \errmessage{Unknown formula type `\string#2'}%
+      \gfbselement={\*___}\gfbsprefix={\*___}\gfbsanzahlfest=3
+   \fi\fi
+   \gfbsanzahlplus=3
+   \edef\gfbstoken{\the\gfbselement\the\csname gfbstoks\rom\gfbszeile\endcsname}%
+   \global\csname gfbstoks\rom\gfbszeile\endcsname=\expandafter{\gfbstoken}%
+   \ifgfbskompakt
+      \global\advance\gfbsanzahl by \gfbsanzahlfest
+   \else
+      \global\advance\gfbsanzahl by \gfbsanzahlplus
+   \fi
+   \setskip{\the\gfbszeile}{\the\gfbsanzahl}{\the\gfbshaengtan}{\the\gfbsgehtbis}%
+   \gfbsfuegelinksan{\gfbszeile}{\gfbsgehtbis}%
+   \expandafter\getskip\the\gfbsskipi\relax
+   \ifnum\gfbsmaxformelzeile<\gfbsgehtbis
+      \global\gfbsmaxformelzeile=\gfbsgehtbis
+      \ifgfbszeigestats\zeigezeilenstatistik\fi
+   \fi
+   \gfbszaehler=\gfbshaengtan
+   \gfbsgrenze=1 \advance\gfbsgrenze by \gfbsgehtbis
+   \gfbszeile=\gfbssubststart
+   \ifnum\gfbsgrundeinzug>0
+      \advance\gfbseinzug by -\gfbsgrundeinzug
+      \ifnum\gfbseinzug>0\else
+         \errhelp=\gfbsposabstandhilfe
+         \errmessage{The formula must be positioned to the right of substitutions}%
+         \gfbseinzug=2
+   \fi\fi
+   \par\noindent\leavevmode
+   \vbox\bgroup\offinterlineskip
+      \loop
+      \ifnum\gfbszaehler<\gfbsgrenze
+         \bgroup
+            \count255=\csname gfbsskip\rom\gfbszeile\endcsname
+            \divide\count255 by 65536
+            \gfbstmpcount=\count255
+            \divide\gfbstmpcount by 3
+            \advance\gfbseinzug by -\gfbstmpcount
+            \multiply\gfbstmpcount by -3
+            \advance\gfbstmpcount by \count255
+            \ifcase\gfbstmpcount
+               \edef\gfbstoken{\noexpand\wdh\noexpand{\the\gfbseinzug
+                               \noexpand}\noexpand\*___}%
+            \or
+               \advance\gfbseinzug by -1
+               \edef\gfbstoken{\noexpand\*"__\noexpand\wdh\noexpand{\the\gfbseinzug
+                               \noexpand}\noexpand\*___}%
+            \or
+               \advance\gfbseinzug by -1
+               \edef\gfbstoken{\noexpand\*""_\noexpand\wdh\noexpand{\the\gfbseinzug
+                               \noexpand}\noexpand\*___}%
+            \fi
+            \global\gfbselement=\expandafter{\gfbstoken}%
+         \egroup
+         \hbox{%
+            \nlp{\the\gfbsgrundeinzug}%
+            \the\csname gfbstoks\rom\gfbszeile\endcsname
+            \the\gfbselement
+            \the\csname gfbstoks\rom\gfbszaehler\endcsname
+         }%
+         \ifgfbslognotation
+            \dimen255=\csname gfbsskip\rom\gfbszeile\endcsname
+            \wlog{\string\nlp\string{\the\gfbsgrundeinzug\string}}%
+            \ifdim\dimen255>0pt \wlog{\the\csname gfbstoks\rom\gfbszeile\endcsname}\fi
+            \wlog{\the\gfbselement}%
+            \wlog{\the\csname gfbstoks\rom\gfbszaehler\endcsname}%
+         \fi
+         \global\csname gfbstoks\rom\gfbszaehler\endcsname={}%
+         \global\csname gfbsskip\rom\gfbszaehler\endcsname=0pt
+         \global\advance\gfbszaehler by 1
+         \global\csname gfbstoks\rom\gfbszeile\endcsname={}%
+         \global\csname gfbsskip\rom\gfbszeile\endcsname=0pt
+         \ifgfbskeinesubst\else
+            \global\advance\gfbszeile by 1
+         \fi
+      \repeat
+      \ifgfbskeinesubst\else
+         \loop
+         \ifnum\csname gfbsskip\rom\gfbszeile\endcsname>0
+            \hbox{\nlp{\the\gfbsgrundeinzug}\the\csname gfbstoks\rom\gfbszeile\endcsname}%
+            \ifgfbslognotation
+               \wlog{\string\nlp\string{\the\gfbsgrundeinzug\string}}%
+               \wlog{\the\csname gfbstoks\rom\gfbszeile\endcsname}%
+            \fi
+            \global\csname gfbstoks\rom\gfbszeile\endcsname={}%
+            \global\csname gfbsskip\rom\gfbszeile\endcsname=0pt
+            \global\advance\gfbszeile by 1
+         \repeat
+      \fi
+   \egroup
+   \gfbsgrundeinzug=0
+}
+\def\gfbsaus p#1,#2"#3"mit#4\also{%
+   \global\gfbsgrundeinzug=#1%
+   \gfbszeile=\the\gfbssubststart
+   \ifgfbskeinesubst
+      \ifnum #2>0
+         \errhelp=\gfbsnurnullinaushilfe
+         \errmessage{Zero expected; read ``#2''}%
+      \fi
+   \else
+      \advance\gfbszeile by #2%
+   \fi
+   \global\csname gfbstoks\rom\gfbszeile\endcsname={\zi{\hss\thinspace #3\hss}}%
+   \setskip{\the\gfbszeile}3{\the\gfbszeile}{\the\gfbszeile}%
+   \gfbsanzahlfest=0 \gfbsanzahlplus=0 \gfbsprefix={}\gfbselement={}%
+   \def\next{#4}%
+   \ifx\next\empty
+   \else\ifgfbskeinesubst
+      \errhelp=\gfbskeinesubsthilfe
+      \errmessage{Substitutions disabled}%
+   \else
+      \bgroup
+       \gfbsinnentrue
+       \advance\gfbszeile by 1
+       \gfbssubst #4\gfbssubstend
+      \egroup
+   \fi\fi
+}
+\outer\def\aus p#1,#2"#3"mit#4\also{%
+   \gfbsaus p#1,#2"#3"mit#4\also
+}
+\outer\def\verwende p#1"#2"{%
+   \gfbsaus p#1,0"#2"mit\also
+}
+\let\ziehan\verwende
+\def\gfbssubst#1:#2 #3\gfbssubstend{%
+   \def\gfbstest{#1}%
+   \ifx\gfbstest\empty% Ende der Substitutionen
+      \null
+   \else
+      \def\gfbstest{#2}%
+      \ifx\gfbstest\empty
+         \if#1\ \else
+            \errhelp=\gfbsleeresubsthilfe
+            \errmessage{Empty substitution}%
+         \fi
+         \bgroup\gfbsformel \ {}{}{}{}{}\egroup
+      \else
+         \gfbsanzahlplus=0 \gfbsanzahlfest=0 \gfbsprefix={}\gfbselement={}%
+         \bgroup\gfbsvorgaenger=1 \gfbsformel #2{}{}{}{}{}\egroup
+      \fi
+      \expandafter\getskip\the\csname gfbsskip\rom\gfbszeile\endcsname
+      \gfbselement={\*_|_}\gfbsprefix={\*_|_}\gfbsanzahlfest=3 \gfbsanzahlplus=3
+      \edef\gfbstoken{\the\gfbselement\the\csname gfbstoks\rom\gfbszeile\endcsname}%
+      \global\csname gfbstoks\rom\gfbszeile\endcsname=\expandafter{\gfbstoken}%
+      \ifgfbskompakt
+         \global\advance\gfbsanzahl by \gfbsanzahlfest
+      \else
+         \global\advance\gfbsanzahl by \gfbsanzahlplus
+      \fi
+      \setskip{\the\gfbszeile}{\the\gfbsanzahl}{\the\gfbshaengtan}{\the\gfbsgehtbis}%
+      \gfbsfuegelinksan{\gfbszeile}{\gfbsgehtbis}%
+      \gfbselement={\llap{$#1$}}%
+      \edef\gfbstoken{\the\gfbselement\the\csname gfbstoks\rom\gfbszeile\endcsname}%
+      \global\csname gfbstoks\rom\gfbszeile\endcsname=\expandafter{\gfbstoken}%
+      \def\gfbstest{#3}%
+      \ifx\gfbstest\empty
+      \else
+         \gfbsanzahlplus=0 \gfbsanzahlfest=0 \gfbsprefix={}\gfbselement={}%
+         \bgroup
+          \gfbszeile=\gfbsgehtbis
+          \advance\gfbszeile by 1
+          \gfbssubst #3\gfbssubstend
+         \egroup
+      \fi
+   \fi
+}
+\outer\def\folgtmit p#1"#2"a#3p#4s#5{%
+    \gfbsgrundeinzug=#4 \advance\gfbsgrundeinzug by -#1
+    \advance\gfbsgrundeinzug by -1
+    \ifnum #1<#4\else
+       \errhelp=\gfbszweiteposzugrosshilfe
+       \errmessage{The second p-value must be larger than the first}%
+       \gfbsgrundeinzug=1
+    \fi
+    \ifnum 0>#5
+       \errhelp=\gfbskeinelaengehilfe
+       \errmessage{The s-value must be nonnegative}%
+    \fi
+    \ifx #3.%
+    \else
+       \ifx #3:\else
+          \errhelp=\gfbsdoppelpunktzahlhilfe
+          \errmessage{Invalid symbol `#3' for number of colons}%
+       \fi
+    \fi
+    \bss{#1}/m{#2}:#3\wdh{\the\gfbsgrundeinzug}\*___\wdh{#5}\*---\ess
+    \ifgfbslognotation
+       \wlog{\string\bss\string{#1\string}/m\string{#2\string}:#3%
+             \string\wdh\string{\the\gfbsgrundeinzug\string}\string\*___%
+             \string\wdh\string{#5\string}\string\*---\string\ess}%
+    \fi
+}
+\def\gfbsdurch p#1 #2\folgende{%
+   \ifgfbskeinesubst
+      \errhelp=\gfbskeinesubsthilfe
+      \errmessage{Substitutions disabled}%
+   \fi
+   \global\gfbsgrundeinzug=#1%
+   \gfbszeile=\the\gfbssubststart
+   \setskip{\the\gfbszeile}0{\the\gfbszeile}{\the\gfbszeile}%
+   \gfbsanzahlfest=0 \gfbsanzahlplus=0 \gfbsprefix={}\gfbselement={}%
+   \bgroup\gfbsinnentrue\gfbssubst #2\gfbssubstend\egroup
+}
+\outer\def\durch p#1 #2\folgende{%
+   \gfbsdurch p#1 #2\folgende
+}
+\def\formelName "#1"{%
+   \fono{#1}%
+   \ifgfbslognotation
+      \wlog{\string\fono\string{#1\string}}%
+      \wlog{==========}%
+      \wlog{}%
+   \fi
+   \ignorespaces
+}
+\outer\def\genannt{\formelName}
+\def\zeigezeilenstatistik{\bgroup
+   \message{^^JMaximum number of lines: \the\gfbsmaxformelzeile. }%
+\egroup}
+\def\frege#1#2{%
+   \global\gfbszeile=1
+   \setskip 1011
+   \gfbselement={}\gfbsprefix={}\gfbsanzahlfest=0 \gfbsanzahlplus=0 
+   \gfbsnurterminaltrue
+   \bgroup\gfbsvorgaenger=7 \gfbsformel #2{}{}{}{}\egroup
+   \expandafter\getskip\the\csname gfbsskip\rom\gfbszeile\endcsname
+   \ifx #1|% Urteil
+      \gfbsprefix={\*""_}%
+      \ifnum\gfbsanzahl<4
+         \ifgfbsnurterminal
+            \errhelp=\gfbsnurterminalhilfe
+            \errmessage{No Frege formula entered}%
+            \gfbselement={\*""[}\gfbsanzahlfest=1
+         \else\gfbselement={\*"]9}\gfbsanzahlfest=2
+         \fi
+      \else\gfbselement={\*""6}\gfbsanzahlfest=1
+   \fi
+   \else\ifx #1.%
+      \gfbsprefix={\*""5}%
+      \ifnum\gfbsanzahl<4
+         \ifgfbsnurterminal
+            \errhelp=\gfbsnurterminalhilfe
+            \errmessage{No Frege formula entered}%
+            \gfbselement={\*""5}\gfbsanzahlfest=0
+         \else\gfbselement={\*"--}\gfbsanzahlfest=2
+         \fi
+      \else\gfbselement={\*""4}\gfbsanzahlfest=0
+      \fi
+   \else
+      \errhelp=\gfbsfalscherstarthilfe
+      \errmessage{Unknown formula type `\string#1'}%
+      \gfbselement={\*""-}\gfbsprefix={\*""_}\gfbsanzahlfest=1
+   \fi\fi
+   \gfbsanzahlplus=1
+   \edef\gfbstoken{\the\gfbselement\the\csname gfbstoks\rom\gfbszeile\endcsname}%
+   \global\csname gfbstoks\rom\gfbszeile\endcsname=\expandafter{\gfbstoken}%
+   \ifgfbskompakt
+      \global\advance\gfbsanzahl by \gfbsanzahlfest
+   \else
+      \global\advance\gfbsanzahl by \gfbsanzahlplus
+   \fi
+   \setskip{\the\gfbszeile}{\the\gfbsanzahl}{\the\gfbshaengtan}{\the\gfbsgehtbis}%
+   \gfbsfuegelinksan{\gfbszeile}{\gfbsgehtbis}%
+   \expandafter\getskip\the\gfbsskipi\relax
+   \gfbszaehler=\gfbshaengtan \gfbsgrenze=1 \advance\gfbsgrenze by \gfbsgehtbis
+   \leavevmode\vtop\bgroup\offinterlineskip
+      \loop
+      \ifnum\gfbszaehler<\gfbsgrenze
+         \hbox{\gfbsstrut\the\csname gfbstoks\rom\gfbszaehler\endcsname}%
+         \global\csname gfbstoks\rom\gfbszaehler\endcsname={}%
+         \global\csname gfbsskip\rom\gfbszaehler\endcsname=0pt
+         \global\advance\gfbszaehler by 1
+      \repeat 
+   \egroup
+}
+\def\klammerfrege#1#2#3#4#5#6#7{% \frege#1#2 mit Klammern #3 und #4;
+% #5=1 <=> ohne \frege#1; #6 Boxtyp; #7 Boxnr.
+   \setbox0=\hbox{\ifnum#5=0 \frege#1{#2}\else#2\fi}\dimen0=\ht0
+   \setbox1=\hbox{(}\advance\dimen0 by .5\dp1
+   \setbox0=\hbox{\delimiterfactor=100 \delimitershortfall=8pt
+      $\left#3\vcenter{\box0}\right#4$}%
+   \dimen1=\ht0 \advance\dimen1 by -\dimen0
+   \ifnum#7>0 \ifnum#7<5
+      \global\setbox\csname gg#6box\romannumeral#7\endcsname=\hbox{%
+         \vbox to\dimen0{\hbox{\lower\dimen1\box0}}}%
+   \else\errhelp=\ggunbekannteboxnummer
+         \errmessage{The box number must be 1, 2, 3, or 4}%
+   \fi
+   \else\errhelp=\ggunbekannteboxnummer
+         \errmessage{The box number must be \string>0 and \string<5}%
+   \fi
+   \ignorespaces
+}
+\def\pfrege#1#2#3{\klammerfrege#2{#3}()0p{#1}}%
+\def\bfrege#1#2#3{\klammerfrege#2{#3}[]0b{#1}}%
+\def\pparens#1#2{\klammerfrege{}{$#2$}()1p{#1}}%
+\def\bparens#1#2{\klammerfrege{}{$#2$}[]1b{#1}}%
+\def\ggpoderbboxausgeben#1#2{\ifnum#1>0
+   \ifnum#1<5
+      \copy\csname gg#2box\romannumeral#1\endcsname
+   \else\errhelp=\ggunbekannteboxnummer
+         \errmessage{The box number must be 1, 2, 3, or 4}%
+         ???
+   \fi
+   \else\errhelp=\ggunbekannteboxnummer
+         \errmessage{The box number must be \string>0 and \string<5}%
+         ???
+\fi}
+\def\pfbox#1{\ggpoderbboxausgeben{#1}p}
+\def\bfbox#1{\ggpoderbboxausgeben{#1}b}
+%
+% weitere Einstellungen
+%
+\def\erklaerung p#1#2 #3#4=#5{%
+\ifgfbsuseGGstyle
+   \nlp{#1}\ifx #2|\*_[-\else\*_39\fi
+    $\;
+     \vtop{\hbox{%
+        \ifx #2:%
+           $#3#4$%
+        \else
+           \frege #3{#4}%
+        \fi}}
+     =\vtop{\hbox{$#5$}}$%
+ \else\nlp{#1}\ifx #2|\*_[-\else\*_3-\fi
+    $\left\lgroup
+     \left\lgroup
+       \vcenter{\hbox{\frege #3{#4}}}
+     \right\rgroup
+     \equiv\vcenter{\hbox{$#5$}}%
+     \right\rgroup$%
+ \fi
+}
+\def\gfvererbe#1#2#3#4{{%
+   \setbox0=\vbox{\offinterlineskip\hbox{\gfbsstrut$#1$}\hbox{$\vert$}\hbox{\gfbsstrut$#2$}}%
+   \setbox2=\vbox{\offinterlineskip\hbox{\gfbsstrut$#3$}\hbox{\phantom{$\vert$}}\hbox{\gfbsstrut$#4$}}%
+   \ifdim\ht0>\ht2
+        \global\gfbsfonosenken=0.5\ht0 \global\advance\gfbsfonosenken by -\dp0
+   \else\global\gfbsfonosenken=0.5\ht2 \global\advance\gfbsfonosenken by -\dp2 \fi
+   \vcenter{\unvbox0 }\!\left(\vcenter{\unvbox2 }\right.%
+}}
+\def\gffolgt#1#2#3{%
+   \!\!{\textstyle\phantom t#1\atop\textstyle\phantom)\widetilde#2}#3%
+}
+\def\gfgehoertan#1#2#3{%
+   \!\!{\textstyle\phantom t\underline#1\atop\textstyle\phantom{)}\widetilde#2}#3%
+}
+\def\gfeindeutig#1#2#3{{%
+   \setbox0=\vbox{\offinterlineskip\hbox{\gfbsstrut$#1$}\hbox{\rm I}\hbox{\gfbsstrut$#2$}}%
+   \setbox2=\vbox{\hbox{\gfbsstrut$#3$}}%
+   \ifdim\ht0>\ht2
+        \global\gfbsfonosenken=0.5\ht0 \global\advance\gfbsfonosenken by -\dp0
+   \else\global\gfbsfonosenken=0.5\ht2 \global\advance\gfbsfonosenken by -\dp2 \fi
+   \vcenter{\unvbox0 }\vcenter{\unvbox2 }%
+}}
+\def\G#1{%
+   \ifx#1!% 1. Eintrag
+      \hbox{$\scriptstyle\mathchar"0\hexno\cmbsyfam6E
+        \mkern-9.1mu
+        \mathchar"0\hexno\cmbsyfam6E$}%
+   \else\ifx#1^% 2. Eintrag
+     \mathbin{\raise.5ex
+      \hbox{$\scriptscriptstyle\mathchar"0\hexno\cmmibfam5F$}}%
+   \else\ifx#1>% 3. Eintrag
+      \hbox{$\mathchar"0269\thinspace$}%
+   \else\ifx#10% 4. Eintrag
+      {\rm0\raise.35ex\llap{$\scriptstyle\mathchar"026E$\kern.02em}}%
+   \else\ifx#11% 5. Eintrag
+      {\rm1\raise.35ex\llap{$\scriptscriptstyle\mathchar"026E$\kern.05em}}%
+   \else\ifx#1-% 6. Eintrag
+      \hbox{\lower1ex\hbox{$\acute{\raise1ex\hbox{{\tt\char95 }}}\>$}}%
+   \else\ifx#1~% 7. Eintrag
+     \hbox{%
+      \lower.7ex\hbox{$\acute{\raise.3ex\hbox{\smash{$\mathchar"0\hexno\msafam60$}}}\>$}}%
+   \else\ifx#1_% 8. Eintrag
+      \mathbin{\hbox{%
+         \vrule width0.4pt  height0.25ex depth0pt
+         \vrule width0.6em  height0.4pt  depth0pt
+         \vrule width0.4pt  height0.25ex depth0pt}}%
+   \else\ifx#1;% 9. Eintrag
+      \mathbin{\mskip-2mu;}%
+   \else\ifx#1<% 10. Eintrag
+     \mathbin{{\scriptstyle\mathchar"026E}%
+       \hskip-.375em \hbox to.5em{\rm
+         \leaders\hrule height 1.35ex depth -1.22ex\hfill}}%
+   \else\ifx#1*% 11. Eintrag
+     \mathord{{}_{\textstyle*\,}}%
+   \else\ifx#16% 12. Eintrag
+      \mathchar"0\hexno\msbfam67
+   \else\errhelp\ggkeinbekanntessymbol
+      \errmessage{^^JUnknown symbol after \string\G}%
+      ???
+   \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi
+}
+\newif\ifgefunden
+\def\ist #1 in #2?{%
+   \def\finde##1#1##2\ednif{%
+      \ifx\empty##2\empty
+         \gefundenfalse
+      \else
+         \gefundentrue
+      \fi
+   \ignorespaces}%
+   \finde#2#1\ednif
+}
+\def\gfwerteverlauf#1{%
+   \ist #1 in ae?\ifgefunden
+      \hbox{{$\mathaccent"0027\csname k#1\endcsname$}}%
+   \else\errhelp=\ggkeinvokalbuchstabe
+      \errmessage{The operator must be applied to a lowercase (greek) vowel}%
+      \mathaccent"0027\ka
+   \fi}%
+\def\kasl{\gfwerteverlauf{a}}
+\def\kesl{\gfwerteverlauf{e}}
+\def\GI{\hbox{\rm I\kern.05em}}
+\def\GU{\hbox{\ufont
+   \setbox0=\hbox{\ufont U}\dimen0=\wd0 \advance\dimen0 by.05em
+   \rlap{\raise.1ex\hbox to\dimen0{\leaders\hrule height.11ex\hfill\kern.1em}}\kern-.01em
+   \lower\ufdimii\box0\kern\ufdimi
+   \llap{\raise.4ex\hbox{$\the\gftextfontaenderung\mathchar"0\hexno\msbfam1F$}}%
+   \kern0.1em
+}}
+\ifggsymloaded
+   \let\GUorg=\GU 
+   \def\GU{\setbox0=\hbox{$\GUorg$}%
+      \mathord{\hbox to \wd0{\hss$\mathchar"0\hexno\ggfam55$\hss}}}%
+\fi
+\def\Gn{\hbox{\lower.2ex\hbox{\nfont
+      n\kern.1em}%
+      \llap{\raise.2ex\hbox{$\the\gftextfontaenderung\scriptstyle\mathchar"015E$}}}\kern.01em}
+\ifggsymloaded 
+   \let\Gnorg=\Gn
+   \def\Gn{\setbox0=\hbox{$\Gnorg$}%
+      \mathord{\hbox to \wd0{\hss$\the\gftextfontaenderung\mathchar"0\hexno\ggfam11$\hss}}}%
+\fi
+\def\Gbf{\mkern0mu \setbox0=\hbox{{\ffont f}}\ffont
+   \kern-.02em\copy0\kern-\wd0 \kern.04em\copy0\kern-\wd0
+   \kern-.02em\raise.03ex\box0 \kern.1em
+   \llap{\raise2ex\hbox{\ffont.}}}
+\let\Gff\Gbf
+\def\Guu{\mathop{\kern0pt
+   \smash{\hbox{$\scriptscriptstyle\mathchar"0\hexno\cmmibfam5E\mkern-4mu\mathchar"0\hexno\cmmibfam5E$}}}%
+   \limits^{\lower.1ex\hbox{{$\the\gftextfontaenderung\mathchar"015F$}}}}
+\def\Gfm{\mathbin{\mathop{\kern0pt \smash{-}}%
+   \limits^{\raise.2ex\hbox{$\scriptstyle\mathchar"2\hexno\msafam61$}}}}
+\def\Gsm{\mathbin{\mathop{\kern0pt \smash{-}}%
+  \limits^{\raise.2ex\hbox{$\scriptstyle\mathchar"2\hexno\msafam60$}}}}
+\newbox\ggunrotbox \newbox\ggrotbox
+\def\ggrotate#1#2#3{\global\setbox\ggunrotbox=\hbox{#1}%
+   \expandafter\ifx\csname rot#2\endcsname\relax
+     \message{^^JCan't do that kind of rotation.^^J}%
+     \global\setbox\ggrotbox=\copy\ggunrotbox
+   \else
+     \ifnum#3=0 \else\ht\ggunrotbox=#3ex \fi
+     \global\setbox\ggrotbox=\hbox{\csname rot#2\endcsname\ggunrotbox}%
+     \global\setbox\ggunrotbox=\hbox to\wd\ggrotbox{\hss#1\hss}%
+   \fi}
+\def\prtggrotbox{\ifggrotiere\box\ggrotbox\else\box\ggunrotbox\fi}
+\def\Gy{\ggrotate{\hbox{\accent22 y}}u1%
+   \mathbin{\prtggrotbox}}
+\def\Ge{\ggrotate{\lower.65ex\hbox{%
+       $\scriptscriptstyle\mathchar"0\hexno\cmmibfam2C$}%
+     \llap{e\kern-.1em}}u1%
+   \mathbin{\,\prtggrotbox\,}}
+\def\Gc{\ggrotate{\lower.64ex\hbox{%
+       $\scriptscriptstyle\mathchar"0\hexno\cmmibfam2C$}%
+     \llap{c\kern-.1em}}u1%
+   \mathbin{\,\prtggrotbox\,}}
+\def\Gmf{\mathbin{\mathop{\kern0pt \smash{\scriptstyle\mathchar"2\hexno\msafam61}}%
+   \limits^{\lower1ex\hbox{$\scriptstyle-$}}}}
+\def\Gf{\ggrotate{$f$}u0%
+   \mathord{\ifggrotiere\rlap{\raise.1ex\hbox{$\scriptstyle\gamma$}}\kern.025em\lower.5ex\box\ggrotbox
+            \else\rlap{\raise.4ex\hbox{$\scriptstyle\gamma$}}\kern.02em\box\ggunrotbox\fi}}
+\def\GF{\ggrotate{$F$}u1%
+   \mathbin{\prtggrotbox}}
+\def\Gl{\mathbin{\hbox{\l}}}
+\def\Gp{\mathord{%
+   \rlap{\raise.45ex\hbox{$\scriptstyle\gamma$}}\kern.15em
+   \hbox{$p$}\,}}
+\def\Gss{\ggrotate{\ss}u0%
+   \mathbin{\ifggrotiere\lower.5ex\box\ggrotbox\else\box\ggunrotbox\fi}}
+\let\Gsz\Gss
+% Zuordnung nach TUGboat, V.9, p.20
+\def\gA{A}
+\def\gB{B}
+\def\gG{{\it\Gamma}}
+\def\gD{{\it\Delta}}
+\def\gL{{\it\Lambda}}
+\def\gM{M}
+\def\gN{N}
+\def\gR{P}
+\def\gS{{\it\Sigma}}
+\def\gF{{\it\Phi}}
+\def\gQ{X}
+\def\gY{{\it\Psi}}
+\def\gE{E}
+\def\gZ{Z}
+\def\gH{H}
+\def\gJ{{\it\Theta}}
+\def\gI{I}
+\def\gK{K}
+\def\gX{{\it\Xi}}
+\def\gO{O}
+\def\gP{{\it\Pi}}
+\def\gT{T}
+\def\gU{{\it\Upsilon}}
+\def\gW{{\it\Omega}}
+\def\ka{\alpha}
+\def\kb{\beta}
+\def\kg{\gamma}
+\def\kd{\delta}
+\def\ke{\epsilon}
+\def\kz{\zeta}
+\def\kh{\eta}
+\def\kj{\vartheta}
+\def\ki{\iota}
+\def\kk{\kappa}
+\def\kl{\lambda}
+\def\km{\mu}
+\def\kn{\nu}
+\def\kx{\xi}
+\def\ko{o}
+\def\kp{\pi}
+\def\kr{\varrho}
+\def\ks{\sigma}
+\def\kt{\tau}
+\def\ku{\upsilon}
+\def\kf{\varphi}
+\def\kq{\chi}
+\def\ky{\psi}
+\def\kw{\omega}
+\def\da{{\frak a}}
+\def\dd{{\frak d}}
+\def\de{{\frak e}}
+\def\df{{\frak f}}
+\def\dF{{\frak F}}
+\def\dc{{\frak c}}
+\def\dg{{\frak g}}
+\def\dm{{\frak m}}
+\def\dn{{\frak n}}
+\def\ddo{{\frak o}}
+\def\ddp{{\frak p}}
+\def\dq{{\frak q}}
+\def\dr{{\frak r}}
+\def\dt{{\frak t}}
+\def\du{{\frak u}}
+\def\trenner #1{%
+   \vskip 0pt plus 0.5\baselineskip minus 0.25\baselineskip
+   \centerline{\hbox to 0.#1\hsize{\leaders\hrule height 1pt\hfill}}%
+   \vskip 2pt plus 0.5\baselineskip minus 0.25\baselineskip 
+}
+\def\gfggtrenner{\hbox to 6\gfbseinheit{\leaders\hrule height 1pt\hfill}%
+      \ \lower.5ex\hbox{$\bullet$}\
+      \hbox to 6\gfbseinheit{\leaders\hrule height 1pt\hfill}%
+}
+\def\ggtrenner{%
+   \vskip 0pt plus 0.5\baselineskip minus 0.25\baselineskip
+   \centerline{\hskip\leftskip\gfggtrenner\hskip\rightskip}%
+   \vskip 2pt plus 0.5\baselineskip minus 0.25\baselineskip 
+}
+\let\nlpc\nzpz  % NewLine Position Character
+\let\ci\zi      % Character Inside
+\let\ce\ze      % Character End
+\let\rep\wdh    % REPeat
+\def\bcc#1/#2#3:#4#5\ecc{% ConClusion
+   \bss#1/#2#3:#4#5\ess
+}
+\let\formula\formel
+\let\followswith\folgtmit
+\let\named\genannt
+\let\use\verwende
+\let\decollator\trenner
+\let\separator\ggtrenner
+\outer\def\outof p#1,#2"#3"with#4\thatis{%
+   \gfbsaus p#1,#2"#3"mit#4\also
+}
+\outer\def\substituting p#1 #2\whichgives{%
+   \gfbsdurch p#1 #2\folgende
+}
+\let\gfdefinition\erklaerung
+% Local Variables:
+% coding: iso-latin-9-unix
+% End:

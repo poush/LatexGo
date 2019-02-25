@@ -1,0 +1,444 @@
+%%
+%% This is file `bidipagegrid.sty'.
+%% 
+%%   __________________________________________________
+%%   Copyright © 2014  Vafa Khalighi <persian-tex@tug.org>
+%% 
+%%   It may be distributed and/or modified under the LaTeX Project Public License,
+%%   version 1.3c or higher (your choice). The latest version of
+%%   this license is at: http://www.latex-project.org/lppl.txt
+%% 
+%%   This work is “author-maintained” (as per LPPL maintenance status)
+%%   by Vafa Khalighi.
+%% 
+%% 
+\begingroup\catcode61\catcode48\catcode32=10\relax%
+  \catcode13=5 % ^^M
+  \endlinechar=13 %
+  \catcode35=6 % #
+  \catcode39=12 % '
+  \catcode44=12 % ,
+  \catcode45=12 % -
+  \catcode46=12 % .
+  \catcode58=12 % :
+  \catcode64=11 % @
+  \catcode123=1 % {
+  \catcode125=2 % }
+  \expandafter\let\expandafter\x\csname ver@bidipagegrid.sty\endcsname
+  \ifx\x\relax % plain-TeX, first loading
+  \else
+    \def\empty{}%
+    \ifx\x\empty % LaTeX, first loading,
+      % variable is initialized, but \ProvidesPackage not yet seen
+    \else
+      \expandafter\ifx\csname PackageInfo\endcsname\relax
+        \def\x#1#2{%
+          \immediate\write-1{Package #1 Info: #2.}%
+        }%
+      \else
+        \def\x#1#2{\PackageInfo{#1}{#2, stopped}}%
+      \fi
+      \x{bidipagegrid}{The package is already loaded}%
+      \aftergroup\endinput
+    \fi
+  \fi
+\endgroup%
+\begingroup\catcode61\catcode48\catcode32=10\relax%
+  \catcode13=5 % ^^M
+  \endlinechar=13 %
+  \catcode35=6 % #
+  \catcode39=12 % '
+  \catcode40=12 % (
+  \catcode41=12 % )
+  \catcode44=12 % ,
+  \catcode45=12 % -
+  \catcode46=12 % .
+  \catcode47=12 % /
+  \catcode58=12 % :
+  \catcode64=11 % @
+  \catcode91=12 % [
+  \catcode93=12 % ]
+  \catcode123=1 % {
+  \catcode125=2 % }
+  \expandafter\ifx\csname ProvidesPackage\endcsname\relax
+    \def\x#1#2#3[#4]{\endgroup
+      \immediate\write-1{Package: #3 #4}%
+      \xdef#1{#4}%
+    }%
+  \else
+    \def\x#1#2[#3]{\endgroup
+      #2[{#3}]%
+      \ifx#1\@undefined
+        \xdef#1{#3}%
+      \fi
+      \ifx#1\relax
+        \xdef#1{#3}%
+      \fi
+    }%
+  \fi
+\expandafter\x\csname ver@bidipagegrid.sty\endcsname
+\ProvidesPackage{bidipagegrid}%
+  [2014/07/13 v0.2 Print bidi page grid in background]%
+\begingroup\catcode61\catcode48\catcode32=10\relax%
+  \catcode13=5 % ^^M
+  \endlinechar=13 %
+  \catcode123=1 % {
+  \catcode125=2 % }
+  \catcode64=11 % @
+  \def\x{\endgroup
+    \expandafter\edef\csname bidipagegrid@AtEnd\endcsname{%
+      \endlinechar=\the\endlinechar\relax
+      \catcode13=\the\catcode13\relax
+      \catcode32=\the\catcode32\relax
+      \catcode35=\the\catcode35\relax
+      \catcode61=\the\catcode61\relax
+      \catcode64=\the\catcode64\relax
+      \catcode123=\the\catcode123\relax
+      \catcode125=\the\catcode125\relax
+    }%
+  }%
+\x\catcode61\catcode48\catcode32=10\relax%
+\catcode13=5 % ^^M
+\endlinechar=13 %
+\catcode35=6 % #
+\catcode64=11 % @
+\catcode123=1 % {
+\catcode125=2 % }
+\def\TMP@EnsureCode#1#2{%
+  \edef\bidipagegrid@AtEnd{%
+    \bidipagegrid@AtEnd
+    \catcode#1=\the\catcode#1\relax
+  }%
+  \catcode#1=#2\relax
+}
+\TMP@EnsureCode{9}{10}% (tab)
+\TMP@EnsureCode{10}{12}% ^^J
+\TMP@EnsureCode{33}{12}% !
+\TMP@EnsureCode{34}{12}% "
+\TMP@EnsureCode{36}{3}% $
+\TMP@EnsureCode{38}{4}% &
+\TMP@EnsureCode{39}{12}% '
+\TMP@EnsureCode{40}{12}% (
+\TMP@EnsureCode{41}{12}% )
+\TMP@EnsureCode{42}{12}% *
+\TMP@EnsureCode{43}{12}% +
+\TMP@EnsureCode{44}{12}% ,
+\TMP@EnsureCode{45}{12}% -
+\TMP@EnsureCode{46}{12}% .
+\TMP@EnsureCode{47}{12}% /
+\TMP@EnsureCode{58}{12}% :
+\TMP@EnsureCode{59}{12}% ;
+\TMP@EnsureCode{60}{12}% <
+\TMP@EnsureCode{62}{12}% >
+\TMP@EnsureCode{63}{12}% ?
+\TMP@EnsureCode{91}{12}% [
+\TMP@EnsureCode{93}{12}% ]
+\TMP@EnsureCode{94}{7}% ^ (superscript)
+\TMP@EnsureCode{95}{8}% _ (subscript)
+\TMP@EnsureCode{96}{12}% `
+\TMP@EnsureCode{124}{12}% |
+\edef\bidipagegrid@AtEnd{\bidipagegrid@AtEnd\noexpand\endinput}
+\RequirePackage{tikz}
+\RequirePackage{atbegshi}[2009/12/02]
+\RequirePackage{kvoptions}[2009/07/17]
+\begingroup\expandafter\expandafter\expandafter\endgroup
+\expandafter\ifx\csname stockwidth\endcsname\relax
+  \def\bidipagegrid@width{\paperwidth}%
+  \def\bidipagegrid@height{\paperheight}%
+\else
+  \def\bidipagegrid@width{\stockwidth}%
+  \def\bidipagegrid@height{\stockheight}%
+\fi
+\SetupKeyvalOptions{%
+  family=bidipagegrid,%
+  prefix=bidipagegrid@,%
+}
+\def\bidipagegrid@init{%
+  \let\bidipagegrid@origin@a\@empty
+  \let\bidipagegrid@origin@b\@empty
+  \let\bidipagegrid@init\relax
+}
+\let\bidipagegrid@@init\bidipagegrid@init
+\def\bidipagegrid@origin@a{%
+    \ifnum\bidipagegrid@direction=\z@%
+        bl%
+    \else%
+        \ifnum\bidipagegrid@direction=\@ne%
+            br%
+        \fi%
+    \fi%
+}
+\def\bidipagegrid@origin@b{%
+    \ifnum\bidipagegrid@direction=\z@%
+        tr%
+    \else%
+        \ifnum\bidipagegrid@direction=\@ne%
+            tl%
+        \fi%
+    \fi%
+}
+\def\bidipagegrid@SetOrigin#1{%
+  \bidipagegrid@init
+  \ifx\bidipagegrid@origin@a\@empty
+    \def\bidipagegrid@origin@a{#1}%
+  \else
+    \ifx\bidipagegrid@origin@b\@empty
+    \else
+      \let\bidipagegrid@origin@a\bidipagegrid@origin@b
+    \fi
+    \def\bidipagegrid@origin@b{#1}%
+  \fi
+}
+\def\bidipagegrid@temp#1{%
+  \DeclareVoidOption{#1}{\bidipagegrid@SetOrigin{#1}}%
+  \@namedef{bidipagegrid@N@#1}{#1}%
+}
+\bidipagegrid@temp{bl}
+\bidipagegrid@temp{br}
+\bidipagegrid@temp{tl}
+\bidipagegrid@temp{tr}
+\def\bidipagegrid@temp#1#2{%
+  \DeclareVoidOption{#2}{\bidipagegrid@SetOrigin{#1}}%
+}%
+\bidipagegrid@temp{bl}{lb}
+\bidipagegrid@temp{br}{rb}
+\bidipagegrid@temp{tl}{lt}
+\bidipagegrid@temp{tr}{rt}
+\bidipagegrid@temp{bl}{bottom-left}
+\bidipagegrid@temp{br}{bottom-right}
+\bidipagegrid@temp{tl}{top-left}
+\bidipagegrid@temp{tr}{top-right}
+\bidipagegrid@temp{bl}{left-bottom}
+\bidipagegrid@temp{br}{right-bottom}
+\bidipagegrid@temp{tl}{left-top}
+\bidipagegrid@temp{tr}{right-top}
+\DeclareBoolOption[true]{enable}
+\DeclareComplementaryOption{disable}{enable}
+\DeclareBoolOption{foreground}
+\newlength{\bidipagegrid@step}
+\define@key{bidipagegrid}{step}{%
+  \setlength{\bidipagegrid@step}{#1}%
+}
+\DeclareStringOption[red]{firstcolor}
+\DeclareStringOption[blue]{secondcolor}
+\DeclareBoolOption[true]{arrows}
+\newlength\bidipagegrid@arrowlength
+\bidipagegrid@arrowlength=\z@
+\define@key{bidipagegrid}{arrowlength}{%
+  \setlength{\bidipagegrid@arrowlength}{#1}%
+}
+\define@key{bidipagegrid}{double}[true]{%
+  \@ifundefined{bidipagegrid@double@#1}{%
+    \PackageWarning{bidipagegrid}{%
+      Unsupported value `#1' for option `double'.\MessageBreak
+      Known values are:\MessageBreak
+      `false', `first', `last', `true'.\MessageBreak
+      Now `false' is used%
+    }%
+    \chardef\bidipagegrid@double\z@
+  }{%
+    \chardef\bidipagegrid@double\csname bidipagegrid@double@#1\endcsname\relax
+  }%
+}
+\@namedef{bidipagegrid@double@false}{0}
+\@namedef{bidipagegrid@double@first}{1}
+\@namedef{bidipagegrid@double@last}{2}
+\@namedef{bidipagegrid@double@true}{2}
+\chardef\bidipagegrid@double\z@
+
+\define@key{bidipagegrid}{direction}[RTL]{%
+  \@ifundefined{bidipagegrid@direction@#1}{%
+    \PackageWarning{bidipagegrid}{%
+      Unsupported value `#1' for option `direction'.\MessageBreak
+      Known values are:\MessageBreak
+      `LTR', `RTL'.\MessageBreak
+      Now `RTL' is used%
+    }%
+    \chardef\bidipagegrid@direction\@ne
+  }{%
+    \chardef\bidipagegrid@direction\csname bidipagegrid@direction@#1\endcsname\relax
+  }%
+}
+\@namedef{bidipagegrid@direction@LTR}{0}
+\@namedef{bidipagegrid@direction@RTL}{1}
+\chardef\bidipagegrid@direction\@ne
+
+\newcommand*{\bidipagegridsetup}{%
+  \let\bidipagegrid@init\bidipagegrid@@init
+  \setkeys{bidipagegrid}%
+}
+\bidipagegridsetup{%
+  step=1mm%
+}
+\InputIfFileExists{bidipagegrid.cfg}{}%
+\ProcessKeyvalOptions*\relax
+\AtBeginDocument{%
+  \ifdim\bidipagegrid@arrowlength>\z@
+  \else
+    \bidipagegrid@arrowlength=10\bidipagegrid@step
+  \fi
+}
+\def\bidipagegridShipoutDoubleBegin{%
+  \begingroup
+  \let\newlabel\@gobbletwo
+  \let\zref@newlabel\@gobbletwo
+  \let\@writefile\@gobbletwo
+  \let\select@language\@gobble
+}
+\def\bidipagegridShipoutDoubleEnd{%
+  \endgroup
+}
+\def\bidipagegrid@WriteDouble#1#2{%
+  \immediate\write#1{%
+    \@backslashchar csname %
+    bidipagegridShipoutDouble#2%
+    \@backslashchar endcsname%
+  }%
+}
+\def\bidipagegrid@ShipoutDouble#1{%
+  \begingroup
+    \if@filesw
+      \bidipagegrid@WriteDouble\@mainaux{Begin}%
+      \ifx\@auxout\@partaux
+        \bidipagegrid@WriteDouble\@partaux{Begin}%
+        \def\bidipagegrid@temp{%
+          \bidipagegrid@WriteDouble\@mainaux{End}%
+          \bidipagegrid@WriteDouble\@partaux{End}%
+        }%
+      \else
+        \def\bidipagegrid@temp{%
+          \bidipagegrid@WriteDouble\@mainaux{End}%
+        }%
+      \fi
+    \else
+      \def\bidipagegrid@temp{}%
+    \fi
+    \let\protect\noexpand
+    \AtBeginShipoutOriginalShipout\copy#1\relax
+    \bidipagegrid@temp
+  \endgroup
+}
+
+
+\newcommand*{\bidipagegrid@x@coordinate}{%
+    \ifnum\bidipagegrid@direction=\z@%
+        0%
+    \else%
+        \ifnum\bidipagegrid@direction=\@ne%
+            \strip@pt\textwidth%
+        \fi%
+    \fi%
+}
+         
+\newcommand*{\setLTRpagegrid}{\chardef\bidipagegrid@direction\z@}
+\newcommand*{\setRTLpagegrid}{\chardef\bidipagegrid@direction\@ne}
+
+\AtBeginShipout{%
+  \ifdim\bidipagegrid@step>\z@
+  \else
+    \bidipagegrid@enablefalse
+  \fi
+  \ifbidipagegrid@enable
+    \ifnum\bidipagegrid@double=\@ne
+      \bidipagegrid@ShipoutDouble\AtBeginShipoutBox
+    \else
+      \ifnum\bidipagegrid@double=\tw@
+        \@ifundefined{bidipagegrid@DoubleBox}{%
+          \newbox\bidipagegrid@DoubleBox
+        }{}%
+        \setbox\bidipagegrid@DoubleBox=\copy\AtBeginShipoutBox
+      \fi
+    \fi
+    \ifbidipagegrid@foreground
+      \expandafter\AtBeginShipoutUpperLeftForeground
+    \else
+      \expandafter\AtBeginShipoutUpperLeft
+    \fi
+    {%
+      \put(\bidipagegrid@x@coordinate,0){%
+        \makebox(0,0)[lt]{%
+          \begin{tikzpicture}[%
+            bl/.style={},%
+            br/.style={xshift=\bidipagegrid@width,xscale=-1},%
+            tl/.style={yshift=\bidipagegrid@height,yscale=-1},%
+            tr/.style={xshift=\bidipagegrid@width,%
+                       yshift=\bidipagegrid@height,scale=-1}%
+          ]%
+            \useasboundingbox
+              (0mm,\bidipagegrid@height) rectangle (0mm,\bidipagegrid@height);%
+            \draw[%
+              \bidipagegrid@origin@a,%
+              step=\bidipagegrid@step,%
+              style=help lines,%
+              ultra thin%
+            ] (0mm,0mm) grid (\bidipagegrid@width,\bidipagegrid@height);%
+            \ifx\bidipagegrid@origin@b\@empty
+            \else
+              \draw[%
+                \bidipagegrid@origin@b,%
+                step=10\bidipagegrid@step,%
+                {\bidipagegrid@secondcolor},%
+                very thin%
+              ] (0mm,0mm) grid (\bidipagegrid@width,\bidipagegrid@height);%
+            \fi
+            \draw[%
+               \bidipagegrid@origin@a,%
+               step=10\bidipagegrid@step,%
+               {\bidipagegrid@firstcolor},%
+               very thin%
+            ] (0mm,0mm) grid (\bidipagegrid@width,\bidipagegrid@height);%
+            \ifx\bidipagegrid@origin@b\@empty
+            \else
+              \draw[%
+                \bidipagegrid@origin@b,%
+                step=50\bidipagegrid@step,%
+                {\bidipagegrid@secondcolor},%
+                thick%
+              ] (0mm,0mm) grid (\bidipagegrid@width,\bidipagegrid@height);%
+            \fi
+            \draw[%
+              \bidipagegrid@origin@a,%
+              step=50\bidipagegrid@step,%
+              {\bidipagegrid@firstcolor},%
+              thick%
+            ] (0mm,0mm) grid (\bidipagegrid@width,\bidipagegrid@height);%
+            \ifbidipagegrid@arrows
+              \ifx\bidipagegrid@origin@b\@empty
+              \else
+                \draw[%
+                  \bidipagegrid@origin@b,%
+                  {\bidipagegrid@secondcolor},%
+                  stroke,%
+                  line width=1pt,%
+                  line cap=round%
+                ] (0mm,0mm) %
+                -- (\bidipagegrid@arrowlength,\bidipagegrid@arrowlength) %
+                   (\bidipagegrid@arrowlength,.5\bidipagegrid@arrowlength) %
+                -- (\bidipagegrid@arrowlength,\bidipagegrid@arrowlength) %
+                -- (.5\bidipagegrid@arrowlength,\bidipagegrid@arrowlength);%
+              \fi
+              \draw[%
+                \bidipagegrid@origin@a,%
+                {\bidipagegrid@firstcolor},%
+                stroke,%
+                line width=1pt,%
+                line cap=round%
+              ] (0mm,0mm) %
+              -- (\bidipagegrid@arrowlength,\bidipagegrid@arrowlength) %
+                 (\bidipagegrid@arrowlength,.5\bidipagegrid@arrowlength) %
+              -- (\bidipagegrid@arrowlength,\bidipagegrid@arrowlength) %
+              -- (.5\bidipagegrid@arrowlength,\bidipagegrid@arrowlength);%
+            \fi
+          \end{tikzpicture}%
+        }%
+      }%
+    }%
+    \ifnum\bidipagegrid@double=\tw@
+      \bidipagegrid@ShipoutDouble\bidipagegrid@DoubleBox
+    \fi
+  \fi
+}
+\bidipagegrid@AtEnd%
+\endinput
+%%
+%% End of file `bidipagegrid.sty'.

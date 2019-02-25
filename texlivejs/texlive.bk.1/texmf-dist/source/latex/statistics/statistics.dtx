@@ -1,0 +1,3613 @@
+% \iffalse meta-comment
+% vim: tw=80 spl=en
+%
+%% File: statistics.dtx (C) Copyright 2014-2018 RIVAUD Julien
+%%
+%% It may be distributed and/or modified under the conditions of the
+%% General Public License (GPL), either version 3 of this
+%% license or (at your option) any later version.
+%
+%<*driver|package>
+% The version of expl3 required is tested as early as possible, as
+% some really old versions do not define \ProvidesExplPackage.
+\NeedsTeXFormat{LaTeX2e}[1995/12/01]
+\RequirePackage{expl3}[2016/01/19]
+%</driver|package>
+%<*driver>
+\documentclass[full]{l3doc}
+\usepackage{statistics}
+\usepackage{fontspec}
+\usepackage{xparse}
+\usepackage{xcolor}
+\usepackage{geometry}
+\geometry{
+    a4paper,
+    vmargin=2.5cm, right=1.5cm, textwidth=385pt,
+    marginparwidth=21cm-1.5cm-0.5cm-0.4cm-385pt,
+    %marginparsep=0.4cm,
+}
+%</driver>
+%<*driver|package>
+\def\ExplFileName{statistics}
+\def\ExplFileDescription{Compute and typeset statistics table and graphics}
+\def\ExplFileDate{2018/07/21}
+\def\ExplFileVersion{2.0}
+%</driver|package>
+%<*driver>
+\ExplSyntaxOn
+\let\tltostr\tl_to_str:N
+\NewDocumentEnvironment{demo}{}{
+    \char_set_catcode_other:N \\
+    \peek_meaning:NTF [ {
+        \__statsdocs_demo_begin:
+    }{
+        \__statsdocs_demo_begin: []
+    }
+}{
+    \mode_if_vertical:TF {
+        \penalty 0
+    }{
+        \par\nobreak
+    }
+    \skip_vertical:N \abovedisplayskip
+    \noindent\leavevmode
+    \hbox_set:Nn \l_tmpb_box {
+    \colorbox{yellow!5!white}{
+        \parbox{\linewidth}{
+            \raggedright
+            \tl_use:N \l_tmpb_tl
+        }
+    }
+    }
+    \hbox_set:Nn \l_tmpa_box {
+    \colorbox{blue!5!white}{
+        \parbox{\linewidth}{
+            \ttfamily
+            \raggedright
+            \tl_use:N \l_tmpa_tl
+        }
+    }
+    }
+    \fp_set:Nn \l_tmpa_fp {
+        round(
+            3000 *
+            \dim_ratio:nn { \box_ht:N \l_tmpb_box } { \box_ht:N \l_tmpa_box }
+        )
+    }
+    \box_use:N \l_tmpa_box \\ \box_use:N \l_tmpb_box
+    \int_set:Nn \interlinepenalty {\fp_to_int:N \l_tmpa_fp}
+    \par
+    \penalty 0
+    \skip_vertical:N \belowdisplayskip
+}
+\cs_new_protected:Nn \__statsdocs_demo_begin: {
+    \char_set_catcode_escape:N \\
+    \__statsdocs_demo_begin:w
+}
+\NewDocumentCommand \__statsdocs_demo_begin:w { +O{} } {
+    \char_set_catcode_other:N \^^M
+    \char_set_catcode_other:n {32}
+    \char_set_catcode_other:N \#
+    \char_set_catcode_other:N \\
+    \char_set_catcode_other:N \{
+    \char_set_catcode_other:N \}
+    \__statsdocs_read_demo:w
+}
+\group_begin:
+\char_set_catcode_group_begin:N \[
+\char_set_catcode_group_end:N \]
+\char_set_catcode_escape:N \|
+\char_set_catcode_other:N \{
+\char_set_catcode_other:N \}
+\char_set_catcode_other:N \\
+|cs_new_protected:Npn |__statsdocs_read_demo:w #1 \end{demo}[
+    |__statsdocs_do_demo:n [#1]
+]
+|group_end:
+\cs_new_protected:Nn \__statsdocs_do_demo:n {
+    \str_set:Nn \l_tmpa_str {#1}
+    \tl_trim_spaces:N \l_tmpa_str
+    \str_set:Nx \l_tmpb_str {\char_generate:nn{`\^^M}{12}}
+    \str_if_eq_x:nnT \l_tmpb_str { \str_head:N \l_tmpa_str } {
+        \str_set:Nx \l_tmpa_str { \str_tail:N \l_tmpa_str }
+    }
+    \tl_reverse:N \l_tmpa_str
+    \str_if_eq_x:nnT \l_tmpb_str { \str_head:N \l_tmpa_str } {
+        \str_set:Nx \l_tmpa_str { \str_tail:N \l_tmpa_str }
+    }
+    \tl_reverse:N \l_tmpa_str
+    \tl_set:Nx \l_tmpa_tl {~\l_tmpa_str}
+    \exp_args:NNV \tl_replace_all:Nnn \l_tmpa_tl \l_tmpb_str {\par}
+    \tl_set:Nx \l_tmpb_tl {\char_generate:nn{32}{12}}
+    \exp_args:NNnV \tl_replace_all:Nnn \l_tmpa_tl {~} \l_tmpb_tl
+    \exp_args:NNnV \tl_set_rescan:Nnn \l_tmpb_tl {
+        \char_set_catcode_escape:N \\
+        \char_set_catcode_space:n {32}
+        \char_set_catcode_parameter:N \#
+        \char_set_catcode_end_line:N \^^M
+        \char_set_catcode_group_begin:N \{
+        \char_set_catcode_group_end:N \}
+    } \l_tmpa_str
+    \end{demo}
+}
+\ExplSyntaxOff
+\NewDocumentEnvironment{key}{}{\begin{variable}}{\end{variable}}
+\begin{document}
+  \DocInput{\jobname.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \title{^^A
+%   The \textsf{\ExplFileName} package\\ \ExplFileDescription^^A
+%   \thanks{This file describes v\ExplFileVersion,
+%     last revised \ExplFileDate.}^^A
+% }
+%
+% \author{^^A
+%  Julien ``\_FrnchFrgg\_'' \textsc{Rivaud}\thanks
+%    {^^A
+%      E-mail:
+%        \href{mailto:frnchfrgg@free.fr}
+%             {frnchfrgg@free.fr}^^A
+%    }^^A
+% }
+%
+% \date{Released \ExplFileDate}
+%
+% \maketitle
+%
+% \tableofcontents
+%
+% \begin{documentation}
+%
+% \section{\pkg{\ExplFileName} documentation}
+%
+% The \pkg{\ExplFileName} package can compute and typeset statistics like
+% frequency tables, cumulative distribution functions (increasing or decreasing,
+% in frequency or absolute count domain), from the counts of individual values,
+% or ranges, or even the raw value list with repetitions.
+%
+% It can also compute and draw a bar diagram in case of individual values, or,
+% when the data repartition is known from ranges, an histogram or the continuous
+% cumulative distribution function.
+%
+% You can ask \pkg{\ExplFileName} to display no result, selective results or all
+% of them. Similarly \pkg{\ExplFileName} can draw only some parts of the graphs.
+% Every part of the generated tables or graphics is customizable.
+%
+% \subsection{Specifying and converting data}
+%
+% To compute and typeset things, \pkg{\ExplFileName} starts from what this
+% documentation calls a \meta{data source}. Such a source can take two forms:
+% \begin{itemize}
+%   \item A comma-separated list of \meta{value} |[=| \meta{count} |]|;
+%   \item A \cs{\meta{macro}} containing such a list.
+% \end{itemize}
+%
+% If \meta{count} is missing, it defaults to~$1$. \emph{A priori} the
+% \meta{value}s need not be unique nor sorted, but \cs{StatsTable} and
+% \cs{StatsGraph} expect them to be. If you want your data to be in the form of
+% a raw list of unsorted and repeated values, you can thus use the following
+% command to convert the data to a form suitable for \cs{StatsTable} and
+% \cs{StatsGraph}:
+%
+% \begin{function}{\StatsSortData}
+%   \begin{syntax}
+%       \cs{StatsSortData} \cs{\meta{destination}} = \marg{data source}
+%   \end{syntax}
+%   This command expect each \meta{value} in the \meta{data source} to be
+%   convertible to a floating point number (as understood by \pkg{l3fp} from the
+%   \LaTeX3 kernel). It defines \cs{\meta{destination}} to hold an equivalent
+%   data source, where \meta{value}s are sorted in increasing order, and
+%   \meta{count}s are consolidated. As for all other \pkg{\ExplFileName}
+%   commands, \meta{data source} can be either given directly between braces, or
+%   as a \cs{\meta{macro}} which contains the list.
+% \end{function}
+%
+% \begin{demo}
+% \StatsSortData \mydata = { 2, 11=8, 6=3, 2=2, 11=1 }
+% \def \rawdata { 2=2, 11=9, 6, 2, 6, 6 }
+% \StatsSortData \yourdata = \rawdata
+% mydata contains [\mydata]\\
+% yourdata contains [\yourdata]
+% \end{demo}
+%
+% The \cs{StatsTable} command will always assume that the \meta{data source} is
+% sorted and will not try to parse the \meta{value}s. On the contrary,
+% \cs{StatsGraph} \emph{will} parse each \meta{value}, and will act differently
+% depending on whether every \meta{value} is a \meta{range} or the form
+% \hbox{\cs{IN} \meta{|[| or |]|} \meta{min} |;| \meta{max} \meta{|[| or |]|}},
+% or not.
+%
+% If your \meta{data source} is not given in ranges, but you want to count the
+% values falling in each \meta{range} of a list you can use:
+%
+% \begin{function}{\StatsRangeData}
+%   \begin{syntax}
+%\cs{StatsSortData}\
+%\cs{\meta{destination}}\
+%=\
+%\marg{data source}\
+%(\meta{range list})
+%   \end{syntax}
+%   This command expect each \meta{value} in the \meta{data source} to be
+%   convertible to a floating point number (as understood by \pkg{l3fp} from the
+%   \LaTeX3 kernel). It also expects \meta{range list} to be a comma-separated
+%   list of \meta{range}s, and will define \cs{\meta{destination}} to a
+%   \meta{data source} whose \meta{value}s are the said \meta{range}s and whose
+%   counts are, well\dots\ the number of floating point values that lie in those
+%   \meta{range}s.
+%
+%   \cs{StatsRangeData} does not need the \meta{range}s to be sorted, nor even
+%   disjoint, but in that case the behavior of \cs{StatsGraph} is unspecified.
+% \end{function}
+%
+% Here is an example\footnote{The \cs{tltostr} command is defined in this
+% documentation to be an alias for the \LaTeX3 command \cs{tl_to_str:N} which is
+% equivalent to \cs{detokenize}\cs{expandafter}|\{|\cs{\meta{macro}}|\}|.}:
+% \begin{demo}
+% \StatsRangeData \facebook = { 0, 1, 1.5, 1.5, 2, 3, 2.4, 2, 2.4=5,
+%                                3, 4=10, 5=6, 6=9, 6.5=5, 7, 7.1, 7.2,
+%                                7.3, 7.4, 7.5, 7.6, 7.7, 7, 7, 8, 8, 8,
+%                                9=5, 12=12}
+%                               (\IN[0;1;[, \IN[1;2;[, \IN[2;4;[,
+%                               \IN[4;7;[, \IN[7;10;[, \IN[10;14;[)
+% \tltostr \facebook
+% \end{demo}
+% \def \facebook {
+%   \IN[0;1;[ = 1, \IN[1;2;[ = 3, \IN[2;4;[ = 10,
+%   \IN[4;7;[ = 30, \IN[7;10;[ = 18, \IN[10;14;[ = 12
+% }
+%
+% This data source will be used throughout the documentation.
+% \label{def:datasource}
+%
+% \subsection{Setting options}
+%
+% \begin{function}{\statisticssetup}
+% \begin{syntax}
+% \cs{statisticssetup} \oarg{module} \marg{options}
+% \end{syntax}
+% This command lets you specify options for several tables or graphs. The
+% options are set locally to the current group. Options for tables are in the
+% |table| \meta{module} and are the same as in the optional arguments of
+% \cs{StatsTable}. Options for grapsh are in the |graph| \meta{module} and are
+% the same as in the optional arguments of \cs{StatsGraph}. You can also use
+% \cs{statisticssetup} without a \meta{module} and prefix all keys by the module
+% name and a forward slash.
+% % \end{function}
+%
+% \begin{demo}
+% \statisticssetup{table/values=My values}
+% \statisticssetup[table]{counts=FooBar}
+% \StatsTable \facebook
+% \end{demo}
+%
+% \subsection{Statistics tables}
+%
+% \subsubsection{\cs{StatsTable} invocation}
+%
+% To typeset a table full of statistics values, you use the command:
+%
+% \begin{function}{\StatsTable}
+%   \begin{syntax}
+%       \cs{StatsTable} \oarg{options_1} \marg{data source} \oarg{options_2}
+%   \end{syntax}
+%   \meta{options_1} and \meta{options_2} are both optional and taken into
+%   account. You will probably not use both at the same time even if
+%   \cs{StatsTable} will accept it (and apply \meta{options_2} after
+%   \meta{options_1}, potentially overriding some settings). The idea is to let
+%   you decide where you feel the options should be. I find more logical to
+%   specify options after a \cs{macro} data source, but before an inline
+%   \marg{data source}. Your mileage may vary.
+% \end{function}
+%
+% If you do not use any option, you only get the line of values\footnote{The
+% \cs{facebook} data source is defined on page \pageref{def:datasource}.}:
+% \begin{demo}
+% \StatsTable \facebook
+% \end{demo}
+%
+% OK, this is ugly. Let us add some reasonable amount of space (a better choice
+% would be to use the \pkg{cellprops} package to control the spacing and a lot
+% more):
+% \begin{demo}
+% \setlength\extrarowheight{1.5pt}
+% \StatsTable \facebook
+% \end{demo}
+% \setlength\extrarowheight{1.5pt}
+%
+% \subsubsection{Choosing and naming rows}
+%
+% Let's add some rows to the table:
+%
+% \begin{key}{values, counts, frequencies, icc, icf, dcc, dcf}
+% \begin{syntax}
+% values $[$ = \meta{row header text} $]$
+% counts $[$ = \meta{row header text} $]$
+% frequencies $[$ = \meta{row header text} $]$
+% icc $[$ = \meta{row header text} $]$
+% icf $[$ = \meta{row header text} $]$
+% dcc $[$ = \meta{row header text} $]$
+% dcf $[$ = \meta{row header text} $]$
+% \end{syntax}
+% These keys add the corresponding rows to the table. |icc| means increasing
+% cumulative counts, |icf| is the same with frequencies, |dcc| is the row of
+% decreasing cumulative counts and |dcf| for frequencies. If you omit
+% \meta{row header text} the key only activates the corresponding row; if you
+% additionally use a value then the first cell of the row will use that value as
+% text.
+%
+% The initial header is |\valuename| for values, |\countname| for counts,
+% |\freqname| for frequencies, |\iccname| for icc, |\icfname| for icf,
+% |\dccname| for dcc and |\dcfname| for dcf.
+% \end{key}
+%
+% \begin{demo}
+% \StatsTable \facebook[
+%                    values=Time in \si{h},
+%                    counts, frequencies, icc, dcc, icf, dcf
+%                ]
+% \end{demo}
+%
+% \begin{key}{novalues, nocounts, nofrequencies,
+%             noicc, nodcc, noicf, nodcf}
+% \begin{syntax}
+% novalues, nocounts, nofrequencies, noicc, nodcc, noicf, nodcf
+% \end{syntax}
+% If you want to \emph{disable} a row you can use the \texttt{no\meta{row}}~key.
+% This is particularly useful for the |values| row, but you might need these
+% keys to disable a row that you previously enabled with \cs{statisticssetup}.
+%
+% \begin{demo}
+% \StatsTable \facebook [novalues, counts, icc]
+% \end{demo}
+% \end{key}
+%
+% \begin{key}{values/header, counts/header, frequencies/header,
+%                  icc/header, icf/header, dcc/header, dcf/header}
+% \begin{syntax}
+% values/header = \meta{row header text}
+% counts/header = \meta{row header text}
+% frequencies/header = \meta{row header text}
+% icc/header = \meta{row header text}
+% icf/header = \meta{row header text}
+% dcc/header = \meta{row header text}
+% dcf/header = \meta{row header text}
+% \end{syntax}
+% These keys set the corresponding row header text, which will be used as the
+% first cell of the row if the row is enabled. These keys does not enable their
+% row by themselves, contrary to keys like |values| or |counts|.
+%
+% The initial header is |\valuename| for values, |\countname| for counts,
+% |\freqname| for frequencies, |\iccname| for icc, |\icfname| for icf,
+% |\dccname| for dcc and |\dcfname| for dcf.
+% \end{key}
+%
+% \begin{demo}
+% \statisticssetup{table/counts/header=People count}
+% \StatsTable \facebook[counts, frequencies, icc]
+% \end{demo}
+%
+% \subsubsection{Formatting cells}
+%
+% \begin{key}[label={table/values/format, table/counts/format,
+%   table/frequencies/format, table/icc/format, table/icf/format,
+%   table/dcc/format, table/dcf/format}]
+%   {values/format, counts/format, frequencies/format,
+%   icc/format, icf/format, dcc/format, dcf/format}
+% \begin{syntax}
+% values/format = \meta{formatting code}
+% counts/format = \meta{formatting code}
+% frequencies/format = \meta{formatting code}
+% icc/format = \meta{formatting code}
+% icf/format = \meta{formatting code}
+% dcc/format = \meta{formatting code}
+% dcf/format = \meta{formatting code}
+% \end{syntax}
+% Each key in this list takes a value which will be used for each cell in the
+% corresponding row. In this value, every occurrence of |#1| will be replaced by
+% the content of the cell, which can be further configured by the
+% |allcounts/format| key (for the rows |counts|, |icc| and~|dcc|) or the
+% |allfreqs/format| key (for the rows |frequencies|, |icf| and~|dcf|). The idea
+% is that the latter keys are intended for number formatting (decimal count,
+% decimal separator, etc.) while the \texttt{\meta{row}/format} keys are
+% intended for font/color changes. In this key, \cs{currentcolumn} expands to
+% the data column number, starting from~$1$, to enable different formatting
+% depending on the column. These keys are all initially equal to |#1| which means
+% they pass-through the content unmodified.
+% \end{key}
+%
+% \begin{demo}
+% \StatsTable \facebook[
+%   counts, icc,
+%   icc/format = \colorbox{blue!\currentcolumn 0!white}{#1}
+% ]
+% \end{demo}
+%
+% \begin{key}{allcounts/format}
+% \begin{syntax}
+% allcounts/format = \meta{formatting code}
+% \end{syntax}
+% This key take some formatting code, in which every occurrence of |#1| will be
+% replaced by the integer count\footnotemark in each cell of every row
+% containing counts. The initial value is |\num{#1}|, using the \pkg{siunitx}
+% package.
+%
+% The result of this formatting code will then be passed to |counts/format|,
+% |icc/format| or |dcc/format| depending on the row, for further parsing and
+% formatting.
+% \end{key}
+% \footnotetext{As returned by \cs{fp_use:N} or \cs{fp_eval:n}.}
+%
+% \begin{demo}
+% \StatsTable \facebook[
+%   counts, icc,
+%   icc/format = \colorbox{blue!\currentcolumn 0!white}{#1},
+%   allcounts/format = {\num[round-integer-to-decimal,
+%                            round-mode=figures]{#1}}
+% ]
+% \end{demo}
+%
+% \begin{key}{allfreqs/format}
+% \begin{syntax}
+% allfreqs/format = \meta{formatting code}
+% \end{syntax}
+% This key take some formatting code, in which every occurrence of |#1| will be
+% replaced by the current frequency\footnotemark in each cell of every row
+% containing frequencies. The initial value is |\num{#1}|, using the
+% \pkg{siunitx} package.
+%
+% The result of this formatting code will then be passed to |freqs/format|,
+% |icf/format| or |dcf/format| depending on the row, for further parsing and
+% formatting.
+%
+% The initial value is set by the |allfreqs/format/percent| key and typesets
+% values in percentage (that is, multiplied by~$100$ with a trailing~$\%$).
+% \end{key}
+% \footnotetext{As returned by \cs{fp_use:N} or \cs{fp_eval:n}.}
+%
+% \begin{demo}
+% \StatsTable \facebook[
+%   icc, frequencies, icf,
+%   allfreqs/format = {\num[round-mode=places,
+%                           round-integer-to-decimal,
+%                           round-precision=3]{#1}}
+% ]
+% \end{demo}
+% Note that if you use |allfreqs/format| to round the frequencies to an
+% acceptable precision, your frequencies might not add up to~$1$ anymore, and
+% summing the frequencies up to some value might not give the same result as
+% computing the cumulative frequency from the cumulative count. If you
+% want to avoid that, consider using the |digits| key of the |table| module,
+% which rounds the cumulative frequencies \emph{then} computes the individual
+% frequencies as differences of consecutive cumulative ones. This essentially
+% spreads the rounding errors so that they cancel each other, with a result not
+% unlike that of the \textsc{Bresenham} algorithm.
+%
+% \begin{key}{allfreqs/format/percent}
+% \begin{syntax}
+% allfreqs/format/percent
+% \end{syntax}
+% This key sets up |allfreqs/format| to display the frequencies as percentages,
+% that is, multiplied by~$100$ with a trailing~$\%$. This is the initial
+% setting.
+%
+% \begin{texnote}
+% This key is a shorthand for\\
+% |allfreqs/format = \SI{\fp_eval:n{#1*100}}{\percent}|.
+% \end{texnote}
+% \end{key}
+%
+% \begin{demo}
+% \StatsTable \facebook[ frequencies, icf, allfreqs/format/percent ]
+% \end{demo}
+%
+% \begin{key}{allfreqs/format/real}
+% \begin{syntax}
+% allfreqs/format/real
+% \end{syntax}
+% This key sets up |allfreqs/format| to |\num{#1}| which displays the
+% frequencies as straight real numbers.
+% \end{key}
+%
+% \begin{demo}
+% \StatsTable \facebook[ frequencies, icf, allfreqs/format/real ]
+% \end{demo}
+%
+% \begin{key}{digits}
+% \begin{syntax}
+% digits = \meta{integer}
+% \end{syntax}
+% This key sets the number of digits after the decimal point to use for rounding
+% cumulative frequencies. Point-wise frequencies are computed from these rounded
+% cumulative frequencies to ensure consistency with the cumulative counts, and
+% ensure the sum of frequencies equals~$1$. This essentially
+% spreads the rounding errors so that they cancel each other, with a result not
+% unlike that of the \textsc{Bresenham} algorithm.
+%
+% The rounding takes place before any formatting by |allfreqs/format| or
+% individual \texttt{\meta{row}/format}. The initial value is~$3$ (which means
+% one digit after the decimal separator in percentage).
+% \end{key}
+%
+% \begin{demo}
+% \StatsTable \facebook[ frequencies, icf, digits=2 ]
+% \end{demo}
+%
+% \subsubsection{Hiding and showing column contents}
+%
+% In addition to \texttt{\meta{row}/format}, |allcounts/format| and
+% |allfreqs/format| which can all use \cs{currentcolumn} to apply different
+% formatting to different columns, you can also use the following keys:
+%
+% \begin{key}[label=table/showonly]{showonly, showonly/hidden, showonly/shown}
+% \begin{syntax}
+% showonly = \meta{integer and integer range list}
+% showonly/hidden = \meta{formatting code}
+% showonly/shown = \meta{formatting code}
+% \end{syntax}
+% The |showonly| key enables you to choose which columns you want \emph{shown}
+% --- and thus which ones you want to have their contents hidden. It takes a
+% comma-separated list of single numbers or \texttt{\meta{start}-\meta{end}}
+% ranges of numbers. An empty value means \emph{show everything}, and this is
+% the initial value. To hide all contents, you can set |showonly| to a
+% non-existent column number like~$0$.
+%
+% Every column whose number is in the |showonly| list (of ranges) is deemed
+% \emph{shown}, which means all cells will be ultimately wrapped in the
+% |showonly/shown| formatting code, where as usual |#1|~is replaced by the
+% contents. That key initially just passes through the contents as-is.
+%
+% Every column whose number is \emph{not} in the list is \emph{hidden},
+% \emph{i.e.} its cell contents are wrapped in the |showonly/hidden| formatting
+% code. This key is initially empty which means the contents are ignored and the
+% cell stays empty --- which means its width will collapse and only the column
+% separation will remain. You can decide to still typeset the contents in white,
+% or even put them in a PDF~``OCG layer'' with the \pkg{ocgx2} package for
+% instance.
+% \end{key}
+%
+% \begin{demo}
+% \StatsTable \facebook[ counts, frequencies, showonly={2,4-6} ]
+% \StatsTable \facebook[ counts, frequencies, showonly={2,4-6},
+%                        showonly/hidden = \color{white}#1 ]
+% \end{demo}
+%
+% \subsubsection{Formatting the table}
+%
+% \begin{key}{maxcols}
+% \begin{syntax}
+% maxcols = \meta{integer}
+% \end{syntax}
+% Setting this key to a positive integer~$n$ makes \cs{StatsTable} wrap after
+% having added $n$~columns to the current table. The table is closed, and a new
+% one is created with the row headers typeset anew. Setting this key to a
+% negative number or zero disables wrapping. The initial value is~$0$.
+% \end{key}
+%
+% \begin{key}{tablesep}
+% \begin{syntax}
+% tablesep = \meta{\TeX\ content}
+% \end{syntax}
+% This key holds some \TeX\ content that will be inserted after each table when
+% wrapping. It should probably contain something that creates a line return
+% (either |\\| or |\par|), but can contain arbitrary code.
+% The initial value is |\\|.
+% \end{key}
+%
+% \begin{demo}
+% \StatsTable \facebook[ counts, maxcols=4,
+%                        tablesep=\par{\color{red}\hrule} ]
+% \end{demo}
+%
+% \begin{key}{preline}
+% \begin{syntax}
+% preline = \meta{array content}
+% \end{syntax}
+% This key holds some \TeX\ content that will be inserted first in the
+% \env{array} environment, before any row content. It should probably be some
+% kind of \cs{noalign} material, like a \cs{hline} or similar constructs.
+% The initial value is \cs{firsthline}, with a fallback to \cs{hline} if the
+% former doesn't exist.
+% \end{key}
+%
+% \begin{key}{postline}
+% \begin{syntax}
+% postline = \meta{array content}
+% \end{syntax}
+% This key holds some \TeX\ content that will be inserted last in the
+% \env{array} environment, after any row content. It should probably be some
+% kind of \cs{noalign} material, like a \cs{hline} or similar constructs.
+% The initial value is \cs{lasthline}, with a fallback to \cs{hline} if the
+% former doesn't exist.
+% \end{key}
+%
+% \begin{key}{outline}
+% \begin{syntax}
+% outline = \meta{array content}
+% \end{syntax}
+% This key sets both |preline| and |postline| to the same value.
+% \end{key}
+%
+% \begin{key}{newline}
+% \begin{syntax}
+% newline = \meta{array content}
+% \end{syntax}
+% This key holds some \TeX\ content that will be inserted at the end of each
+% row, to separate it from the next. \emph{It should contain some kind of
+% \cs{cr}}, probably in the form of |\\|, but can also contain \cs{hline}s after
+% the |\\|. The initial value is |\\| which creates tables without lines
+% separating rows (as \pkg{booktabs} would recommend).
+% \end{key}
+%
+% \begin{demo}
+% \setlength\extrarowheight{1ex}
+% \StatsTable \facebook[ counts, preline=\hline\hline,
+%                        postline=\hline\hline\hline,
+%                        newline=\\[1ex]\hline ]
+% \end{demo}
+%
+% \begin{key}{coltype}
+% \begin{syntax}
+% coltype = \meta{preamble elements}
+% \end{syntax}
+% This key sets the part of the array preamble that will be repeated for each
+% content column in the table. It can contain any preamble content, like "|" for
+% vertical lines, but should only countain a single column specifier.
+% The initial value is "c".
+% \end{key}
+%
+% \begin{key}{headcoltype}
+% \begin{syntax}
+% headcoltype = \meta{preamble elements}
+% \end{syntax}
+% This key sets the part of the array preamble that will be used for the first
+% column in the table, which contains the headers. It can contain any preamble
+% content, like "|" for vertical lines, but should only countain a single column
+% specifier.  The initial value is "l".
+% \end{key}
+%
+% \begin{demo}
+% \StatsTable \facebook[ counts, coltype=@{}c, headcoltype=r ]
+% \end{demo}
+%
+% Note: these keys are here for convenience, but if you find yourself trying to
+% do very clever things in them, you should consider using the \pkg{cellprops}
+% package which is able to do much more complex border and background layouts
+% with ease. In particular they probably shouldn't be used to workaround the
+% very poor spacing of \env{array}: there are better solutions.
+%
+% Several classic uses of these keys can be replaced by the following key:
+% \begin{key}{frame}
+% \begin{syntax}
+% frame = none $\vert$ clean $\vert$ full
+% \end{syntax}
+% The |frame| key selects a preset for |preline|, |postline|, |headcoltype| and
+% |coltype|. The possible presets are:
+% \begin{itemize}
+%   \item |none|: clears |preline| and |postline|, sets |headcoltype = l| and
+%       |coltype = c|. This removes all lines in the table and is useful if you
+%       use other means like \pkg{cellprops} to style the table.
+%   \item |clean|: sets |preline = \firsthline|, |postline = \lasthline|,
+%       |headcoltype = l| and |coltype = c|. This corresponds to the initial
+%       setting, and yields a layout similar to \pkg{booktabs} recommendations,
+%       especially if you set \cs{firsthline} and \cs{lasthline} to be a little
+%       thicker.
+%   \item |full|: sets |preline = \firsthline|, |postline = \lasthline|,
+%       "headcoltype = |l|" and "coltype = c|". This separates all cells
+%       with rules.
+% \end{itemize}
+% \end{key}
+%
+% \begin{demo}
+% \statisticssetup{table/showonly/hidden=\color{white}#1}
+% \StatsTable \facebook[ counts, frequencies, frame=none ]
+% \StatsTable \facebook[ counts, frequencies, frame=full, showonly=2-4 ]
+% \end{demo}
+%
+% \begin{key}{valign}
+% \begin{syntax}
+% valign = t $\vert$ c $\vert$ b
+% \end{syntax}
+% The value of this key is used for the optional argument of the \env{array}
+% environment. This enables to align either the baseline of the first line, that
+% of the last line, or the vertical center of the table with the surrounding
+% baseline. The initial value is |t|.
+% \end{key}
+%
+%
+% \subsection{Statistics graphs}
+%
+% \subsubsection{\cs{StatsGraph} invocation}
+%
+% To typeset a graphic from the statistics values, you use the command:
+% \begin{function}{\StatsGraph}
+%   \begin{syntax}
+%       \cs{StatsGraph} \oarg{options_1} \marg{data source} \oarg{options_2}
+%   \end{syntax}
+%   \meta{options_1} and \meta{options_2} are both optional and taken into
+%   account. You will probably not use both at the same time even if
+%   \cs{StatsGraph} will accept it (and apply \meta{options_2} after
+%   \meta{options_1}, potentially overriding some settings). The idea is to let
+%   you decide where you feel the options should be. I find more logical to
+%   specify options after a \cs{macro} data source, but before an inline
+%   \marg{data source}. Your mileage may vary.
+% \end{function}
+%
+% \begin{demo}
+% \StatsGraph \facebook
+% \end{demo}
+%
+% \cs{StatsGraph} will draw a different kind of graph depending on the
+% \meta{data source} itself, and the |cumulative| option key. A summary is
+% shown in the table below:
+% \begin{center}
+% \setlength\extrarowheight{1ex}
+% \begin{tabular}{ccc}
+%   \firsthline
+%   values are ranges & without |cumulative| & with |cumulative| \\[0.8ex]
+%   \hline
+%   no & bar diagram\footnotemark & \emph{not implemented yet} \\[1ex]
+%   yes & histogram &
+%       \parbox[c]{10em}{\centering cumulative distribution function} \\[2ex]
+%   \lasthline
+% \end{tabular}
+% \footnotetext{In this documentation this is called a \emph{comb graph}.}
+% \end{center}
+%
+% \begin{demo}
+% \def \combdata { 36=3, 37=8, 38=2, 39=6, 40=6, 41=3, 42=2, 45=2, 46=2 }
+% \StatsGraph \combdata
+% \end{demo}
+% \def \combdata { 36=3, 37=8, 38=2, 39=6, 40=6, 41=3, 42=2, 45=2, 46=2 }
+%
+% \begin{demo}
+% \StatsGraph \facebook [cumulative]
+% \end{demo}
+%
+% \subsubsection{TikZ picture and datavisualization settings}
+%
+% \begin{key}{picture, picture/reset}
+% \begin{syntax}
+% picture = \meta{TikZ key options}
+% picture/reset
+% \end{syntax}
+% The |picture| key \emph{appends} content to the optional argument of the
+% \env{tikzpicture} environment. It can contain any list of TikZ keys. The
+% |picture/reset| key clears all content accumulated by the |picture| key,
+% including the initial value.
+%
+% The initial value is:\\
+% |baseline = (current bounding box.center), label position = right|.
+% \end{key}
+%
+% \begin{key}{axissystem, axissystem/reset}
+% \begin{syntax}
+% axissystem = \meta{TikZ cartesian axis system options}
+% axissystem/reset
+% \end{syntax}
+% The |axissystem| key adds keys to the list of options passed to the
+% |scientific axes| datavisualization key, The |axissystem/reset| key clears all
+% content accumulated by the |axissystem| key, including the initial value,
+% which is set by the initial value of the |width| key.
+% \end{key}
+%
+% \begin{demo}
+% \StatsGraph \combdata [axissystem={end labels, clean}]
+% \end{demo}
+%
+% Two small helper keys are provided for a very common usage of |axissystem|:
+%
+% \begin{key}{width}
+% \begin{syntax}
+% width = \meta{\TeX\ dimension expression}
+% \end{syntax}
+% This key sets the width of the graphic to the given \meta{\TeX\ dimension
+% expression}, labels and padding excluded. The expression is evaluated at graph
+% creation time. The initial value is |0.75\columnwidth|.
+% \begin{texnote}
+% This key is a shortcut for |axissystem = { width = |\meta{dimension}| }|
+% \end{texnote}
+% \end{key}
+%
+% \begin{key}{height}
+% \begin{syntax}
+% height = \meta{\TeX\ dimension expression}
+% \end{syntax}
+% This key sets the width of the graphic to the given \meta{\TeX\ dimension
+% expression}, labels and padding excluded. The expression is evaluated at graph
+% creation time. Initially this is \emph{unset}, which means the default of
+% the cartesian axis system will be used, that is the choosen width divided by
+% the golden ratio $\varphi = \frac{1+\sqrt{5}}{2}$.
+% \begin{texnote}
+% This key is a shortcut for |axissystem = { height = |\meta{dimension}| }|
+% \end{texnote}
+% \end{key}
+%
+% To have more precise control over the scale of the graph, you can use the
+% individual axis options provided by \pkg{\ExplFileName} to set an explicit
+% scaling with TikZ DataVisualization keys like |unit length|. See the PGF/TikZ
+% manual for more information.
+%
+% \begin{demo}
+% \statisticssetup[graph]{ width = 0.25\columnwidth, height=4cm }
+% \centering
+% \StatsGraph \facebook
+% \StatsGraph \facebook [cumulative]
+% \StatsGraph \combdata
+% \end{demo}
+%
+% \begin{key}{tikzinfo', tikzinfo'/reset}
+% \begin{syntax}
+% tikzinfo' = \meta{TikZ picture code}
+% tikzinfo'/reset
+% \end{syntax}
+% This key \emph{appends} content to be added in the |info'| section of the
+% |\datavisualization| command. It can contain any TikZ code, and can use the
+% |visualization cs| coordinate system. The result of this TikZ code is drawn
+% \emph{before} the data itself and will end up behind unless you play with TikZ
+% layers. Some information might be unavailable or wrong since the data has not
+% been drawn yet.
+%
+% The |tikzinfo'/reset| key clears all content accumulated by the |tikzinfo'|
+% key. The initial value is empty.
+% \end{key}
+%
+% \begin{key}{tikzinfo, tikzinfo/reset}
+% \begin{syntax}
+% tikzinfo = \meta{TikZ picture code}
+% tikzinfo/reset
+% \end{syntax}
+% This key \emph{appends} content to be added in the |info| section of the
+% |\datavisualization| command. It can contain any TikZ code, and can use the
+% |visualization cs| coordinate system. The result of this TikZ code is drawn
+% \emph{after} the data itself and will end up in front of it unless you play
+% with TikZ layers.
+%
+% The |tikzinfo/reset| key clears all content accumulated by the |tikzinfo|
+% key. The initial value is empty.
+% \end{key}
+%
+% \begin{demo}
+% \StatsGraph \facebook [
+%   cumulative,
+%   tikzinfo = {
+%       \path (data bounding box.south west) coordinate (O);
+%       \path (visualization cs:x=8, y=50) coordinate (A);
+%       \draw[red] (O |- A) -- (A) -- (A |- O);
+%   }
+% ]
+% \end{demo}
+%
+% \subsubsection{Selecting which parts of the graph are shown}
+%
+% By default, the complete graph is shown; you can ask \cs{StatsGraph} to only
+% show the parts corresponding to some of the input data:
+%
+% \begin{key}[label=graph/showonly]{showonly}
+% \begin{syntax}
+% showonly = \meta{integer and integer range list}
+% \end{syntax}
+% The |showonly| key enables you to set which parts of the graph you want
+% \emph{shown}. It takes a comma-separated list of single numbers or
+% \texttt{\meta{start}-\meta{end}} ranges of numbers. An empty value means
+% \emph{show everything}, and this is the initial value. To hide all contents,
+% you can set |showonly| to a non-existent part number like~$-1$.
+% \end{key}
+%
+% \medskip
+% For comb graphs, the $n$-th part is the vertical bar corresponding to the
+% $n$-th value in the data source. For histograms, this is the rectangle
+% corresponding to the $n$-th range.
+%
+% For cumulative distribution functions of data sources with ranges, this is the
+% direct image of the $n$-th range by the function. The horizontal segment
+% between $-\infty$ and the lower bound of the first range is assigned
+% number~$0$, and the part right of the last range is selected by number~$N+1$
+% where $N$~is the total number of ranges.
+%
+% Currently, the drawing of hidden parts is inhibited altogether, but in the
+% future it is planned to have them drawn with another visualizer and a separate
+% style.
+%
+% \begin{demo}
+% \statisticssetup{ graph/width=0.45\columnwidth }
+% \StatsGraph \facebook [ showonly={2,4-6} ]
+% \StatsGraph \facebook [ cumulative, showonly={1,3-5,7} ]
+% \end{demo}
+%
+% \subsubsection{Unit selection and vertical axis settings}
+%
+% \begin{key}[label={graph/counts, graph/frequencies}]{counts, frequencies}
+% \begin{syntax}
+% counts $[$ = \meta{label} $]$
+% frequencies $[$ = \meta{label} $]$
+% \end{syntax}
+% These keys select the corresponding unit to use for the vertical axis of comb
+% graphs and cumulative distribution graphs, and for the area display of
+% histograms. Additionnally, if a \meta{label} is provided, it is passed to the
+% |counts/label| or the |frequencies/label| key.
+%
+% The initially selected unit is |counts|.
+% \end{key}
+%
+% \begin{key}{comb/counts, comb/frequencies,
+%             histogram/counts, histogram/frequencies,
+%             cumulative/counts, cumulative/frequencies}
+% \begin{syntax}
+% \meta{graph type}/counts $[$ = \meta{label} $]$
+% \meta{graph type}/frequencies $[$ = \meta{label} $]$
+% \end{syntax}
+% These keys select the unit to use for specific types of graphs separately.
+% They can be used in the inline options of \cs{StatsGraph} too, but they
+% probably only make sense in \cs{statisticssetup} to define different defaults
+% for different graph types.
+% \begin{texnote}
+% The |counts| key is actually a meta-key for\\
+% |comb/counts, histogram/counts, cumulative/counts|, which applies the same
+% value (or no value at all) to all three type-specific keys. The |frequencies|
+% key is similar.
+% \end{texnote}
+% \end{key}
+%
+% \begin{demo}
+% \statisticssetup[graph]{
+%   width=0.4\columnwidth,
+%   frequencies=Hello world, comb/counts=Students
+% }
+% \StatsGraph \facebook              \hfill \StatsGraph \combdata \\
+% \StatsGraph \facebook [cumulative] \hfill \StatsGraph \facebook[counts]
+% \end{demo}
+%
+% Note that setting a label for the vertical axis of histogram does not make
+% much sense, even if your decision will be respected.
+%
+% \begin{key}{counts/label, frequencies/label,
+%             comb/counts/label, comb/frequencies/label,
+%             histogram/counts/label, histogram/frequencies/label,
+%             cumulative/counts/label, cumulative/frequencies/label}
+% \begin{syntax}
+% \meta{unit}/label = \meta{label}
+% \meta{graph type}/\meta{unit}/label = \meta{label}
+% \end{syntax}
+% These keys set the label to use for the $y$~axis of the graph when the
+% corresponding unit is selected, \emph{without} selecting it at that point.
+% This is useful to provide your own defaults through \cs{statisticssetup}.
+%
+% The keys |counts/label| and |frequencies/label| set the label for all three
+% graph types, while the others are here to set individual defaults.
+% \end{key}
+%
+% Initial values are as follows:
+% \begin{itemize}
+% \item |comb/counts/label = \countname|
+% \item |comb/frequencies/label = \freqname|
+% \item |cumulative/counts/label = \ccountname|
+% \item |cumulative/frequencies/label = \cfreqname|
+% \item |histogram/counts/label| and |histogram/frequencies/label| are unset
+% \end{itemize}
+%
+% \begin{texnote}
+% The \texttt{\meta{type}/\meta{unit}/label} key is a shorthand for
+% \texttt{\meta{type}/\meta{unit}/axis} | = { label = |\meta{label}| }|, which
+% means that using \texttt{\meta{type}/\meta{unit}/axis/reset} will also remove
+% any defined label.
+% \end{texnote}
+% \begin{texnote}
+% As before, \texttt{\meta{unit}/label = \meta{label}} is equivalent to\par
+% \begingroup\obeylines\ttfamily
+% comb/\meta{unit}/label = \meta{label},
+% histogram/\meta{unit}/label = \meta{label},
+% cumulative/\meta{unit}/label = \meta{label}
+% \endgroup
+% \end{texnote}
+%
+% \begin{key}{y/label, comb/y/label, histogram/y/label, cumulative/y/label}
+% \begin{syntax}
+% y/label = \meta{label}
+% \meta{graph type}/y/label = \meta{label}
+% \end{syntax}
+% These keys set the label to use for the $y$~axis of the graph for both units
+% at the same time. |y/label| sets the label for all graph types and all units
+% simultaneously, while \texttt{\meta{graph type}/y/label} can be used for
+% individual graph types.
+% \end{key}
+%
+% This can be useful to set the label in inline options without having to
+% explicitely type the graph type or the selected unit:
+%
+% \begin{demo}
+% \statisticssetup[graph]{
+%   width=0.38\columnwidth,
+%   comb/frequencies, cumulative/counts,
+% }
+% \StatsGraph \combdata [ y/label=Students ]
+% \StatsGraph \facebook [ cumulative, y/label=Respondents ]
+% \end{demo}
+%
+% \begin{key}{counts/axis, frequencies/axis,
+%             comb/counts/axis, comb/frequencies/axis,
+%             histogram/counts/axis, histogram/frequencies/axis,
+%             cumulative/counts/axis, cumulative/frequencies/axis,
+%             counts/axis/reset, frequencies/axis/reset,
+%             comb/.../axis/reset,
+%             histogram/.../axis/reset,
+%             cumulative/.../axis/reset}
+% \begin{syntax}
+% \meta{unit}/axis = \meta{TikZ datavisualization axis options}
+% \meta{unit}/axis/reset
+% \meta{graph type}/\meta{unit}/axis =\
+%\meta{TikZ datavisualization axis options}
+% \meta{graph type}/\meta{unit}/axis/reset
+% \end{syntax}
+% The \texttt{\meta{unit}/axis} keys append options to the TikZ $y$~axis when
+% the corresponding unit is selected. You can clear these options with
+% \texttt{\meta{unit}/axis/reset}. The \texttt{\meta{graph
+% type}/\meta{unit}/axis} and \texttt{\meta{graph type}/\meta{unit}/axis/reset}
+% keys do the same, but only for a specific graph type.
+%
+% Initial values are as follows:
+% \begin{itemize}
+% \item |comb/counts/axis| and |cumulative/counts/axis| are equal to\\
+%   |ticks and grid={many, int about strategy, integer minor steps},|\\
+%   |label=|\meta{initial value of the label key}
+% \item |cumulative/counts/axis| and |cumulative/frequencies/axis| are
+%   equal to\\
+%   |ticks and grid=many, label=|\meta{initial value of the label key}
+% \item |histogram/counts/axis| and |histogram/frequencies/axis| are equal to\\
+%   |ticks=none, grid=|\meta{code to auto-compute the step} (see the
+%   |histogram/autostep| key below).
+% \end{itemize}
+% \end{key}
+%
+% \begin{key}{y/axis, y/axis/reset,
+%             comb/axis, comb/axis/reset,
+%             histogram/axis, histogram/axis/reset,
+%             cumulative/axis, cumulative/axis/reset}
+% \begin{syntax}
+% y/axis = \meta{TikZ datavisualization axis options}
+% y/axis/reset
+% \meta{graph type}/y/axis = \meta{TikZ datavisualization axis options}
+% \meta{graph type}/y/axis/reset
+% \end{syntax}
+% The \texttt{y/axis} keys append options to the TikZ $y$~axis for all possible
+% units and all graph types at the same time. The \texttt{y/axis/reset} key
+% clears these options for all units and all types simultaneously.
+%
+% The \texttt{\meta{graph type}/y/axis} and \texttt{\meta{graph
+% type}/y/axis/reset} keys do the same, but only for a specific graph type.
+% \end{key}
+%
+% \begin{demo}
+% \statisticssetup[graph]{
+%   width=0.4\columnwidth,
+%   comb/frequencies/axis = { ticks={step=0.08} },
+%   histogram/y/axis = { grid = none },
+% }
+% \StatsGraph \combdata [ frequencies, y/axis = {
+%   ticks={style=blue}, unit length=4cm per 0.25 units,
+% } ]
+% \hfill \StatsGraph \facebook
+% \end{demo}
+%
+% \begin{key}{/tikz/datavisualization/integer minor steps}
+% \begin{syntax}
+% integer minor steps $[$ = \meta{integer expression} $]$
+% \end{syntax}
+% This is not a key in the |graph| module, but a TikZ key. It adds code to
+% automatically compute |minor steps between steps| after the axis step has been
+% computed with the choosen strategy, so that the following constraints are
+% respected:
+% \begin{itemize}
+%   \item a minor step corresponds to an integer number;
+%   \item at most \meta{integer expression} ticks are present on the axis (minor
+%   and major included, subminor not counted).
+% \end{itemize}
+% \end{key}
+%
+% If ommited, the \meta{integer expression} defaults to~$50$.
+%
+% This TikZ key should not explode if the computed step is not an integer, but
+% will probably not give a useful result, and in particular whether the minor
+% step will be integer is not defined in that case.
+%
+% \begin{texnote}
+% The key is independent of \pkg{statistics} and could be reused elsewhere.
+% \end{texnote}
+%
+% \begin{key}{counts/format, frequencies/format, y/format,
+%             comb/counts/format, comb/frequencies/format, comb/y/format,
+%             histogram/counts/format, histogram/frequencies/format,
+%             histogram/y/format,
+%             cumulative/counts/format, cumulative/frequencies/format,
+%             cumulative/y/format}
+% \begin{syntax}
+% \meta{unit}/format = \meta{formatting code}
+% \meta{graph type}/\meta{unit}/format = \meta{formatting code}
+% \end{syntax}
+% These keys set the format to use for all counts or frequenties that are
+% typeset on the graphs. This includes the ticks on axes, and areas above
+% histogram rectangles. The value should be \TeX\ code to render the actual
+% number, in which all occurrences of |#1| are replaced by the number to
+% typeset.
+%
+% Keys of the form |\meta{graph type}/\meta{unit}/format| are used to set the
+% formatter of numbers in a specific unit when used in a specific graph. Keys of
+% the form |\meta{unit}/format| set the formatter for all graph types at the
+% same time, which is often desirable since it is rare that a frequency needs to
+% be typeset differently in \emph{e.g.} comb graphs and histograms.
+%
+% You can use |\meta{graph type}/y/format| or |y/format| to set the formatter
+% for both units at the same time, which is mainly useful for inline options to
+% avoid repeating the selected unit for each key.
+%
+% Initial settings are: |counts/format = \num{#1}| and
+% |frequencies/format/percent| (see below for an exlpanation of that key).
+% \end{key}
+%
+% \begin{demo}
+% \StatsGraph \combdata [
+%       y/label=, width=0.4\columnwidth,
+%       y/format=#1\text{ student\ifnum#1=1\else s\fi}
+% ]
+% \end{demo}
+%
+% \begin{key}{frequencies/format/real,
+%             comb/frequencies/format/real,
+%             histogram/frequencies/format/real,
+%             cumulative/frequencies/format/real}
+% \begin{syntax}
+% frequencies/format/real = \meta{number of decimals}
+% \meta{graph type}/frequencies/format/real = \meta{number of decimals}
+% \end{syntax}
+% These keys make the corresponding format typeset its argument as a real
+% number, using the \cs{num} command of the \pkg{siunitx} package.
+% \begin{texnote}
+% This is equivalent to:\\
+% |frequencies/format = \num[round-mode=places,round-precision=##1]{####1}|
+% \end{texnote}
+% \end{key}
+%
+% \begin{key}{frequencies/format/percent,
+%             comb/frequencies/format/percent,
+%             histogram/frequencies/format/percent,
+%             cumulative/frequencies/format/percent}
+% \begin{syntax}
+% frequencies/format/percent = \meta{number of decimals}
+% \meta{graph type}/frequencies/format/percent = \meta{number of decimals}
+% \end{syntax}
+% These keys make the corresponding format typeset its argument as a percentage,
+% using the \cs{num} command of the \pkg{siunitx} package. This is the initial
+% setting.
+% \begin{texnote}
+% This is equivalent to:\\
+% |frequencies/format = { \SI[round-mode=places,round-precision=##1]{| \\
+% |     \fp_eval:n{####1*100}| \\
+% |}{\percent}|
+% \end{texnote}
+% \end{key}
+%
+% \begin{key}{counts/margin, frequencies/margin, y/margin,
+%             comb/counts/margin, comb/frequencies/margin, comb/y/margin,
+%             histogram/counts/margin, histogram/frequencies/margin,
+%             histogram/y/margin,
+%             cumulative/counts/margin, cumulative/frequencies/margin,
+%             cumulative/y/margin}
+% \begin{syntax}
+% \meta{unit}/margin = \meta{numeric expression}
+% \meta{graph type}/\meta{unit}/margin = \meta{numeric expression}
+% \end{syntax}
+% These keys set the margin that will be used for the relevant axis in the
+% corresponding graph type, that is the amount of space above the data that
+% will be reserved by \cs{StatsGraph}. The \meta{numeric expression} should
+% compute a count or a frequency depending on the selected unit, and will
+% correspond to the empty space reserved above the graph \emph{in this very
+% unit}.
+%
+% In this expression, the following constants will be available: \cs{min} which
+% is the minimum count or frequency where something is drawn in the graph
+% (currently this is always zero); \cs{max} which is the maximum count or
+% frequency in the graph; and \cs{range} which is |\max - \min|.
+%
+% As usual, keys of the form |\meta{graph type}/\meta{unit}/margin| are used to
+% define the margin in a specific unit when used in a specific graph, whereas
+% keys of the form |\meta{unit}/margin| set the margin for all graph types at
+% the same time.
+%
+% You can use |\meta{graph type}/y/margin| or |y/margin| to set the margin
+% for both units at the same time, which is mainly useful for inline options to
+% avoid repeating the selected unit for each key.
+%
+% The inital value is |y/margin = \range / 10|.
+% \end{key}
+%
+% \begin{texnote}
+% This expression will be evaluated with the rules of |\fp_eval:n|
+% (with |\fp_gset:Nn| to be exact).
+% \end{texnote}
+%
+% \begin{demo}
+% \StatsGraph \combdata [ width=0.4\columnwidth, y/margin=2 ]
+% \end{demo}
+%
+% \subsubsection{Horizontal axis settings}
+%
+% \begin{key}{values/label, x/label,
+%             comb/values/label, comb/x/label,
+%             histogram/values/label, histogram/x/label,
+%             cumulative/values/label, cumulative/x/label}
+% \begin{syntax}
+% values/label = \meta{label}, x/label = \meta{label}
+% \meta{graph type}/values/label = \meta{label}
+% \meta{graph type}/x/label = \meta{label}
+% \end{syntax}
+% These keys set the label to use for the $x$~axis of the graph when the
+% corresponding graph type is used. The keys with |x| are aliases for the
+% similar keys with |values|. If you omit the graph type, this sets the label
+% for all graph types simultaneously.
+%
+% The initial value is |values/label = \valuename|.
+% \end{key}
+%
+% \begin{texnote}
+% The \texttt{\meta{type}/values/label} key is a shorthand for
+% \texttt{\meta{type}/values/axis} | = { label = |\meta{label}| }|, which
+% means that using \texttt{\meta{type}/values/axis/reset} will also remove
+% any defined label.
+% \end{texnote}
+%
+% \begin{demo}
+% \statisticssetup[graph]{
+%   width=0.38\columnwidth,
+%   comb/frequencies, cumulative/counts,
+% }
+% \StatsGraph \combdata [ values/label=Shoe size ]
+% \StatsGraph \facebook [ cumulative, x/label=Time spent on Facebook ]
+% \end{demo}
+%
+% \begin{key}{values/axis, x/axis,
+%             comb/values/axis, comb/x/axis,
+%             histogram/values/axis, histogram/x/axis,
+%             cumulative/values/axis, cumulative/x/axis,
+%             values/axis/reset, x/axis/reset,
+%             comb/values/axis/reset, comb/x/axis/reset,
+%             histogram/values/axis/reset, histogram/x/axis/reset,
+%             cumulative/values/axis/reset, cumulative/x/axis/reset}
+% \begin{syntax}
+% \meta{graph type}/values/axis = \meta{TikZ datavisualization axis options}
+% \meta{graph type}/x/axis = \meta{TikZ datavisualization axis options}
+% \meta{graph type}/values/axis/reset, \meta{graph type}/x/axis/reset
+% \end{syntax}
+% The \texttt{\meta{graph type}/values/axis} key append options to the TikZ
+% $x$~axis when the corresponding graph type is used. You can clear these
+% options with \texttt{\meta{graph type}/values/axis}. The keys with |x| are
+% aliases for the similar keys with |values|. If you omit the graph type, this
+% sets the label for all graph types simultaneously.
+%
+% The initial value is:
+% \begin{verbatim}
+% values/axis = {
+%   label = \valuename,
+%   ticks and grid={many, integer minor steps}
+% }
+% \end{verbatim}
+% \end{key}
+%
+% \begin{demo}
+% \statisticssetup[graph]{
+%   width=0.4\columnwidth,
+%   comb/frequencies/axis = { ticks={step=0.08} },
+%   histogram/y/axis = { grid = none },
+% }
+% \StatsGraph \combdata [ frequencies, y/axis = {
+%   ticks={style=blue}, unit length=4cm per 0.25 units,
+% } ]
+% \hfill \StatsGraph \facebook
+% \end{demo}
+%
+% \begin{key}{values/format, x/format,
+%             comb/values/format, comb/x/format,
+%             histogram/values/format, histogram/x/format,
+%             cumulative/values/format, cumulative/x/format}
+% \begin{syntax}
+% values/format = \meta{formatting code}, x/format = \meta{formatting code}
+% \meta{graph type}/values/format = \meta{formatting code}
+% \meta{graph type}/x/format = \meta{formatting code}
+% \end{syntax}
+% These keys set the format to use for all values that are typeset on the
+% graphs, which currently means the values typeset alongside ticks on the
+% x~axis. The \meta{formatting code} should be \TeX\ code to render the actual
+% number, in which all occurrences of |#1| are replaced by the value to
+% typeset. The formatting code is typeset in math mode.
+%
+% Keys of the form |\meta{graph type}/value/format| are used to set the
+% formatter of values when used in a specific graph. The keys with |x| are
+% aliases for the similar keys with |values|. If you omit the graph type, this
+% sets the label for all graph types simultaneously.
+%
+% The initial value is |values/format = \num{#1}|.
+% \end{key}
+%
+% \begin{demo}
+% \StatsGraph \combdata [
+%       width=0.5\columnwidth,
+%       x/format=\fbox{$#1$}
+% ]
+% \end{demo}
+%
+% \begin{key}{values/margin, x/margin,
+%             comb/values/margin, comb/x/margin,
+%             histogram/values/margin, histogram/x/margin,
+%             cumulative/values/margin, cumulative/x/margin}
+% \begin{syntax}
+% values/margin = \meta{numeric expression},\
+%x/margin = \meta{numeric expression}
+% \meta{graph type}/values/margin = \meta{numeric expression}
+% \meta{graph type}/x/margin = \meta{numeric expression}
+% \end{syntax}
+% These keys set the margin that will be used for the x~axis in the
+% corresponding graph type, that is the amount of space left and right of the
+% data that will be reserved by \cs{StatsGraph}. The \meta{numeric expression},
+% when evaluated, will correspond to the empty space reserved left of the
+% smallest value and right of the biggest one, with the same scale as the values
+% themselves.
+%
+% In this expression, the following constants will be available: \cs{min} which
+% is the minimum value in the graph; \cs{max} which is the maximum value;
+% \cs{range} which is |\max - \min|; and \cs{xstep} which is the distance
+% between two minor ticks in the graph (this is the axis step if
+% |minor steps between steps| is empty).
+%
+% The inital value is |x/margin = \xstep / 2|.
+% \end{key}
+%
+% \begin{texnote}
+% This expression will be evaluated with the rules of |\fp_eval:n|
+% (with |\fp_gset:Nn| to be exact).
+% \end{texnote}
+%
+% \begin{demo}
+% \StatsGraph \combdata [ width=0.5\columnwidth, x/margin=2 ]
+% \end{demo}
+%
+% \subsubsection{Settings specific to cumulative graphs}
+%
+% \begin{key}{cumulative}
+% \begin{syntax}
+% cumulative $[$ = \meta{truth value} $]$
+% \end{syntax}
+% This key activates or deactivates the cumulative mode of \cs{StatsGraph}. The
+% \meta{truth value} must be either |true| or |false| or be ommited, in which
+% case it defaults to |true|.
+%
+% This mode is currently ignored if the counts are given for pointwise values,
+% as opposed to value ranges. Support is planned but a suitable interface still
+% needs to be devised for settings corresponding to the discontinuities.
+%
+% The initial value is |cumulative = false|.
+% \end{key}
+%
+% \begin{key}{decreasing}
+% \begin{syntax}
+% decreasing $[$ = \meta{truth value} $]$
+% \end{syntax}
+% This key selects whether the cumulative mode of \cs{StatsGraph} plots the
+% decreasing cumulative distribution function (that maps $x$ to the frequency of
+% $\left[x;+\infty\right[$) instead of the classical increasing one (mapping $x$
+% to the frequency of $\left]-\infty;x\right]$). The \meta{truth value} must be
+% either |true| or |false| or be ommited, in which case it defaults to |true|.
+%
+% The initial value is |decreasing = false|.
+% \end{key}
+%
+% \begin{demo}
+% \statisticssetup[graph]{ width = 0.25\columnwidth, height=4cm }
+% \centering
+% \StatsGraph \facebook
+% \StatsGraph \facebook [cumulative]
+% \StatsGraph \facebook [cumulative, decreasing]
+% \end{demo}
+%
+% \subsubsection{Settings specific to histograms}
+%
+% \begin{key}{histogram/areas}
+% \begin{syntax}
+% histogram/areas $[$ = \meta{truth value} $]$
+% \end{syntax}
+% This key activates or deactivates the typesetting of counts or frequencies
+% above the rectangles in the histogram. They correspond to the area of the
+% rectangle according to histogram rules, which explains the name of the key.
+%
+% If ommited the \meta{truth value} defaults to |true|, which is also the
+% initial value.
+% \end{key}
+%
+% \begin{demo}
+% \StatsGraph \facebook [width=0.5\columnwidth, histogram/areas = false]
+% \end{demo}
+%
+% \begin{key}{histogram/areas/style, histogram/areas/style/reset}
+% \begin{syntax}
+% histogram/areas/style = \meta{TikZ node options}
+% histogram/areas/style/reset
+% \end{syntax}
+% This key appends options to the TikZ nodes containing the areas (counts or
+% frequencies). Note that the typesetting of the areas will be controlled by
+% the \texttt{histogram/\meta{unit}/format} keys, which means that the
+% |histogram/areas/style| is intended for common styling.
+%
+% The initial value is |histogram/areas/style = { auto, font=\small }|.
+%
+% \begin{texnote}
+% The node is positionned in the middle of the top edge of the rectangle so if
+% you do not want it there some style option like |auto| or |above| should be
+% used.
+% \end{texnote}
+% \end{key}
+%
+% \begin{demo}
+% \StatsGraph \facebook [ histogram/areas/style/reset,
+%                         histogram/areas/style = { fill=white } ]
+% \end{demo}
+%
+% \begin{key}{histogram/counts/autostep, histogram/frequencies/autostep,
+%             histogram/y/autostep}
+% \begin{syntax}
+% histogram/\meta{unit}/autostep $[$ = \meta{floating point expression} $]$
+% histogram/y/autostep $[$ = \meta{floating point expression} $]$
+% \end{syntax}
+% This key setups the y~axis grid so that a grid tile corresponds to
+% \meta{floating point expression} items. This expression is interpreted as a
+% count, but you can use the \cs{total} constant which is the total count.
+% In particular, |\total/100| represents exactly \SI{1}{\percent}.
+%
+% This key essentially divides the \meta{floating point expression} by the
+% horizontal distance between minor steps of the values axis, then uses the
+% result as the vertical step. As a convenience, |histogram/y/autostep| forwards
+% its value to |histogram/legend/area| in addition to the
+% \texttt{histogram/\meta{unit}/autostep} keys.
+%
+% If ommited the \meta{floating point expression} defaults to $1$.
+% The initial value is |histogram/y/autostep = 1|.
+%
+% \begin{texnote}
+% \texttt{histogram/\meta{unit}/autostep} uses
+% \texttt{histogram/\meta{unit}/axis} internally, so
+% \texttt{histogram/\meta{unit}/axis/reset} will neuter its effect.
+% \end{texnote}
+% \end{key}
+%
+% \begin{demo}
+% \StatsGraph \facebook [frequencies, histogram/y/autostep=2*\total/100]
+% \end{demo}
+%
+% \begin{key}{histogram/legend, histogram/legend/x, histogram/legend/w}
+% \begin{syntax}
+% histogram/legend = "{" \meta{legend keys} "}"
+% histogram/legend/x = $[$ \meta{floating point expression} $]$
+% histogram/legend/w = \meta{floating point expression}
+% \end{syntax}
+% If |histogram/legend/x| is set to an empty value, no legend will be typeset.
+% Else, it should be a \meta{floating point expression} which corresponds to the
+% \emph{value} at which the left side of the legend rectangle will lie. In that
+% case |histogram/legend/w| should be a \meta{floating point expression}
+% representing the width (in value units) of the legend rectangle.
+%
+% In both of these expressions, the following constants are available:
+% \end{key}
+% \begin{itemize}
+% \item \cs{min} which is the minimum value where data is present;
+% \item \cs{max} which is the maximum value where data is present;
+% \item \cs{range} which is |\max - \min|;
+% \item \cs{xstep} which is the distance between two minor steps of the x axis.
+% \end{itemize}
+%
+% In fact, you probably will not set these keys directly, but will use the
+% |histogram/legend| key, which requires as value a comma-separated list of
+% sub-keys that will be used under the |histogram/legend/| path. In particular,
+% |histogram/legend = { x=2, y=3 }| is equivalent to
+% |histogram/legend/x=2, histogram/legend/y=3|.
+%
+% \begin{key}{histogram/legend/y, histogram/legend/h, histogram/legend/area}
+% \begin{syntax}
+% histogram/legend/y = \meta{floating point expression}
+% histogram/legend/h = \meta{floating point expression}
+% histogram/legend/area = \meta{floating point expression}
+% \end{syntax}
+% If |histogram/legend/x| is not empty, |histogram/legend/y| and
+% |histogram/legend/h| should be \meta{floating point expression}s which
+% correspond to the y~coordinate of the bottom side and the vertical dimension
+% respectively of the legend rectangle, in count per value units.
+%
+% In both of these expressions, the following constants are available:
+% \end{key}
+% \begin{itemize}
+% \item \cs{min} which is the $y$~coordinate of the bottom of all histogram
+% rectangles (this is always~$0$);
+% \item \cs{max} which is the $y$~coordinate of the tallest histogram rectangle;
+% \item \cs{range} which is |\max - \min|;
+% \item \cs{xstep} which is the distance between two minor steps of the x axis.
+% \item \cs{width} which is the width of the legend rectangle as computed by
+% evaluating |histogram/legend/w|;
+% \item \cs{total} which is the total number of elements, useful when you want
+% to size the legend using frequencies (the dimensions here always use counts).
+% \end{itemize}
+% Additionnally, when evaluating |histogram/legend/y| the |\height|~constant
+% will be available and equal to the just computed value of
+% |histogram/legend/h|.
+%
+% The key |histogram/legend/area = |\meta{fp expression} is a shorthand for:\\
+% |histogram/legend/h = (|\meta{fp expression}|) / \width|.
+%
+% Again,  you probably will not set these keys directly but using the
+% |histogram/legend| key.
+%
+% \begin{key}{histogram/legend/options, histogram/legend/options/reset,
+%            histogram/legend/label}
+% \begin{syntax}
+% histogram/legend/options = \meta{TikZ node options}
+% histogram/legend/options/reset
+% histogram/legend/label = \meta{TikZ label value}
+% \end{syntax}
+% The key |histogram/legend/options| appends the \meta{TikZ node options} to the
+% list of options that will be passed to the TikZ node responsible for the
+% legend rectangle, \emph{after} the options in |histogram/style|. You can use
+% it to tweak the apparance of the legend.
+%
+% The key |histogram/legend/label = |\meta{label} is a shorthand for:\\
+% |histogram/legend/options = { label = {|\meta{fp expression}|} }|, and thus
+% uses the TikZ label syntax.
+%
+% Again,  you probably will not set these keys directly but using the
+% |histogram/legend| key.
+% \end{key}
+%
+% The initial value is |histogram/legend = { x=, y=0, w=\xstep, area=1 }| which
+% means that no legend is typeset, and the legend options are empty.
+%
+% \begin{texnote}
+% |area=1| is actually set by the initial value of |histogram/y/autostep|.
+% \end{texnote}
+%
+% \begin{demo}
+% \statisticssetup[graph]{ width = 0.48\columnwidth }
+% \StatsGraph \facebook [
+%   histogram/legend = { x=9, y=8, label=1 student }
+% ]
+% \StatsGraph \facebook [
+%   frequencies, histogram/y/autostep=0.02*\total,
+%   histogram/legend = { x=12, y=2*\height, w=2, area=0.08*\total,
+%                        label=above:\SI{8}{\percent} }
+% ]
+% \end{demo}
+%
+% \end{documentation}
+%
+% \cleardoublepage
+% \begin{implementation}
+%
+% \section{\pkg{\ExplFileName} implementation}
+%
+%    \begin{macrocode}
+%<*package>
+%<@@=statistics>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\ProvidesExplPackage
+  {\ExplFileName}{\ExplFileDate}{\ExplFileVersion}{\ExplFileDescription}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\RequirePackage{xparse}
+\RequirePackage{siunitx}
+\RequirePackage{tikz}
+\RequirePackage{etoolbox}
+
+\ExplSyntaxOff
+\usetikzlibrary{datavisualization, fit}
+\ExplSyntaxOn
+%    \end{macrocode}
+%
+% Translations
+%
+%    \begin{macrocode}
+\tl_new:N \valuename
+\tl_new:N \countname
+\tl_new:N \freqname
+\tl_new:N \ccountname
+\tl_new:N \cfreqname
+\tl_new:N \iccname
+\tl_new:N \icfname
+\tl_new:N \dccname
+\tl_new:N \dcfname
+
+\tl_set:Nn \valuename   { Values }
+\tl_set:Nn \countname   { Count }
+\tl_set:Nn \ccountname  { Cumulative~count }
+\tl_set:Nn \freqname    { Frequency }
+\tl_set:Nn \cfreqname   { Cumulative~frequency }
+\tl_set:Nn \iccname     { ICC }
+\tl_set:Nn \icfname     { ICF }
+\tl_set:Nn \dccname     { DCC }
+\tl_set:Nn \dcfname     { DCF }
+
+\AtEndPreamble {
+    \tl_if_exist:NT \captionsfrench {
+        \tl_put_right:Nn \captionsfrench {
+            \tl_set:Nn \valuename   { Modalit\'e }
+            \tl_set:Nn \countname   { Effectif }
+            \tl_set:Nn \ccountname  { Effectif~cumul\'e }
+            \tl_set:Nn \freqname    { Fr\'equence }
+            \tl_set:Nn \cfreqname   { Fr\'equence~cumul\'ee }
+            \tl_set:Nn \iccname     { ECC }
+            \tl_set:Nn \icfname     { FCC }
+            \tl_set:Nn \dccname     { ECD }
+            \tl_set:Nn \dcfname     { FCD }
+        }
+    }
+}
+%    \end{macrocode}
+%
+% \subsection{Common facilities}
+%
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_keys_define:nn {
+    \keys_define:nn { statistics / #1 } { #2 }
+}
+\cs_new_protected:Nn \@@_setup:nn {
+    \keys_set:nn { statistics / #1 } { #2 }
+}
+\NewDocumentCommand \statisticssetup { o +m } {
+    \IfNoValueTF { #1 } {
+        \keys_set:nn { statistics } { #2 }
+    }{
+        \keys_set:nn { statistics / #1 } { #2 }
+    }
+}
+
+\tl_new:N \l_@@_data_tl
+\seq_new:N \l_@@_show_seq
+
+\int_new:N \l_@@_nbvals_int
+\int_new:N \l_@@_currange_int
+
+\fp_new:N \l_@@_total_fp
+\fp_new:N \l_@@_curtotal_fp
+
+\fp_new:N \l_@@_range_min_fp
+\fp_new:N \l_@@_range_max_fp
+\tl_new:N \l_@@_range_minrel_tl
+\tl_new:N \l_@@_range_maxrel_tl
+\cs_new_protected_nopar:Npn
+            \@@_parse_range:w \IN#1#2;#3;#4#5\q_stop {
+%    \end{macrocode}
+%
+%    \begin{itemize}
+%        \item |#1| is the first |[| or |]|
+%        \item |#4| is the second |[| or |]| and |#5| eats all trailing tokens
+%    \end{itemize}
+%
+%    \begin{macrocode}
+    \fp_set:Nn \l_@@_range_min_fp { #2 }
+    \fp_set:Nn \l_@@_range_max_fp { #3 }
+}
+\cs_new_protected_nopar:Npn
+            \@@_parse_range_full:w \IN#1#2;#3;#4#5\q_stop {
+    \fp_set:Nn \l_@@_range_min_fp { #2 }
+    \fp_set:Nn \l_@@_range_max_fp { #3 }
+    \tl_if_eq:nnTF { #1 } { [ } {
+        \tl_set:Nn \l_@@_range_minrel_tl { <=}
+    }{
+        \tl_set:Nn \l_@@_range_minrel_tl { < }
+    }
+    \tl_if_eq:nnTF { #4 } { ] } {
+        \tl_set:Nn \l_@@_range_maxrel_tl { <= }
+    }{
+        \tl_set:Nn \l_@@_range_maxrel_tl { < }
+    }
+    \exp_args:NNnx
+    \prg_set_conditional:Nnn \@@_if_in_range:n { T } {
+        \exp_not:N \fp_compare:nTF {
+                \exp_not:N \l_@@_range_min_fp
+                \exp_not:V \l_@@_range_minrel_tl
+                \exp_not:n { ##1 }
+                \exp_not:V \l_@@_range_maxrel_tl
+                \exp_not:N \l_@@_range_max_fp }{
+            \exp_not:N \prg_return_true:
+        }{
+            \exp_not:N \prg_return_false:
+        }
+    }
+}
+%    \end{macrocode}
+%
+% \subsection{Compute and typeset statistics tables}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \@@_IN:w { m u{;} u{;} m } {
+    \ensuremath{ \left#1 \num{#2} \mathbin{;} \num{#3} \right#4 }
+}
+
+\cs_new_protected:Nn \@@_setshow:n {
+    \seq_clear:N \l_@@_show_seq
+    \clist_map_inline:nn {#1} {
+        \tl_if_in:nnTF {##1} {-} {
+            \@@_setshow_aux:w ##1 \q_stop
+        }{
+            \seq_put_right:Nn \l_@@_show_seq {##1}
+        }
+    }
+}
+\cs_new_protected:Npn \@@_setshow_aux:w #1 - #2 \q_stop {
+    \int_step_inline:nnnn {#1} {1} {#2} {
+        \seq_put_right:Nn \l_@@_show_seq {##1}
+    }
+}
+\cs_new_protected_nopar:Nn \@@_set_if_shown:N {
+    \seq_if_empty:NTF \l_@@_show_seq {
+        \bool_set_true:N #1
+    }{
+        \seq_if_in:NVTF
+                \l_@@_show_seq
+                \l_@@_currange_int {
+            \bool_set_true:N #1
+        }{
+            \bool_set_false:N #1
+        }
+    }
+}
+
+\@@_keys_define:nn { table } {
+    showonly    .value_required:n = true,
+    showonly    .code:n = \@@_setshow:n{#1},
+
+    showonly/hidden .value_required:n = true,
+    showonly/hidden .code:n = {
+                    \cs_set_protected:Nn
+                            \@@_table_hidden_format:n
+                            { #1 }
+                },
+    showonly/hidden .initial:n = ,
+
+    showonly/shown  .value_required:n = true,
+    showonly/shown  .code:n = {
+                    \cs_set_protected:Nn
+                            \@@_table_shown_format:n
+                            { #1 }
+                },
+    showonly/shown  .initial:n = #1,
+
+    maxcols     .int_set:N  = \l_@@_table_maxcols_int,
+    maxcols     .value_required:n = true,
+    maxcols     .initial:n  = 0,
+
+    tablesep    .tl_set:N   = \l_@@_table_sep_tl,
+    tablesep    .value_required:n = true,
+    tablesep    .initial:n  = \\,
+
+    valign      .tl_set:N   = \l_@@_table_valign_tl,
+    valign      .value_required:n = true,
+    valign      .initial:n  = t,
+
+    coltype     .tl_set:N   = \l_@@_table_coltype_tl,
+    coltype     .value_required:n = true,
+
+    headcoltype .tl_set:N   = \l_@@_table_headcoltype_tl,
+    headcoltype .value_required:n = true,
+
+    newline     .tl_set:N   = \l_@@_table_newline_tl,
+    newline     .value_required:n = true,
+
+    preline     .tl_set:N   = \l_@@_table_preline_tl,
+    preline     .value_required:n = true,
+
+    postline    .tl_set:N   = \l_@@_table_postline_tl,
+    postline    .value_required:n = true,
+
+    outline     .meta:n     = { preline={#1}, postline={#1} },
+    outline     .value_required:n = true,
+
+    frame       .choice:,
+    frame/full  .meta:n     = { preline=\firsthline, postline=\lasthline,
+                                newline=\\\hline,
+                                headcoltype=|l|, coltype=c| },
+    frame/full  .value_forbidden:n = true,
+
+    frame/none  .meta:n     = { outline=, newline=\\,
+                                headcoltype=l, coltype=c },
+    frame/none  .value_forbidden:n = true,
+
+    frame/clean .meta:n     = { preline=\firsthline, postline=\lasthline,
+                                newline=\\,
+                                headcoltype=l, coltype=c },
+    frame/clean .initial:n  = ,
+    frame/clean .value_forbidden:n = true,
+
+    digits      .int_set:N  = \l_@@_table_round_int,
+    digits      .initial:n  = 3,
+
+    allcounts/format    .code:n = {
+                    \cs_set_protected:Nn
+                            \@@_table_allcounts_format:n
+                            { #1 }
+                },
+    allcounts/format    .value_required:n = true,
+    allcounts/format    .initial:n = { \num{#1} },
+
+    allfreqs/format     .code:n = {
+                    \cs_set_protected:Nn
+                            \@@_table_allfreqs_format:n
+                            { #1 }
+                },
+    allfreqs/format     .value_required:n = true,
+
+    allfreqs/format/real .meta:n = {
+                    allfreqs/format = \num{##1}
+                },
+    allfreqs/format/real .value_forbidden:n = true,
+
+    allfreqs/format/percent .meta:n = {
+                    allfreqs/format = \SI{\fp_eval:n{##1*100}}{\percent}
+                },
+    allfreqs/format/percent .initial:n = ,
+    allfreqs/format/percent .value_forbidden:n = true,
+
+    allfreqs/format/scaled .meta:n = {
+                    allfreqs/format = \num{\fp_eval:n{##1*#1}}
+                },
+    allfreqs/format/scaled .value_required:n = true,
+}
+
+\cs_new:Nn \@@_define_row:nnn {
+%    \end{macrocode}
+%
+%    \begin{itemize}
+%        \item |#1| (tl): row name;
+%        \item |#2| (bool): enabled by default
+%        \item |#3| (tl): default header;
+%    \end{itemize}
+%
+%    \begin{macrocode}
+    \tl_new:c { l_@@_table_#1_name_tl }
+    \bool_new:c { l_@@_table_#1_bool }
+    \@@_keys_define:nn { table } {
+        #1          .code:n = {
+                        \bool_set_true:c { l_@@_table_#1_bool }
+                        \quark_if_no_value:nF { ##1 } {
+                            \@@_setup:nn { table } {
+                                #1/header = { ##1 }
+                            }
+                        }
+                    },
+        #1          .default:n = \q_no_value,
+
+        no#1        .code:n =
+                        \bool_set_false:c { l_@@_table_#1_bool },
+        no#1        .value_forbidden:n = true,
+
+        #1/header   .tl_set:c = { l_@@_table_#1_name_tl },
+        #1/header   .value_required:n = true,
+        #1/header   .initial:n = { #3 },
+
+        #1/format   .code:n = {
+                        \cs_set_protected:cn
+                                { _@@_table_#1_format:n }
+                                { ##1 }
+                    },
+        #1/format   .value_required:n = true,
+        #1/format   .initial:n = { ##1 },
+    }
+    \bool_set:cn { l_@@_table_#1_bool } { #2 }
+}
+
+\@@_define_row:nnn { values } \c_true_bool \valuename
+\@@_define_row:nnn { counts } \c_false_bool \countname
+\@@_define_row:nnn { frequencies }  \c_false_bool \freqname
+\@@_define_row:nnn { icc }   \c_false_bool \iccname
+\@@_define_row:nnn { icf }   \c_false_bool \icfname
+\@@_define_row:nnn { dcc }   \c_false_bool \dccname
+\@@_define_row:nnn { dcf }   \c_false_bool \dcfname
+
+\@@_setup:nn { table } {
+    values/format = \ensuremath{#1},
+}
+
+\cs_undefine:N \@@_define_row:nnn
+
+\seq_new:N \l_@@_table_contents_seq
+\tl_new:N \l_@@_table_preamble_tl
+
+\tl_new:N \l_@@_table_values_tl
+\tl_new:N \l_@@_table_counts_tl
+\tl_new:N \l_@@_table_frequencies_tl
+\tl_new:N \l_@@_table_icc_tl
+\tl_new:N \l_@@_table_icf_tl
+\tl_new:N \l_@@_table_dcc_tl
+\tl_new:N \l_@@_table_dcf_tl
+
+\fp_new:N \l_@@_table_curICF_fp
+\fp_new:N \l_@@_table_prevICF_fp
+
+\bool_new:N \l_@@_table_firstrow_bool
+
+
+\cs_generate_variant:Nn \keyval_parse:NNn { NNV }
+\NewDocumentCommand \StatsTable { +O{} +m +O{} } {
+    \group_begin:
+%    \end{macrocode}
+%
+% Ensure some macros exist with sensible definitions
+%
+%    \begin{macrocode}
+    \cs_if_exist:NF \firsthline {
+        \cs_set_eq:NN \firsthline \hline
+    }
+    \cs_if_exist:NF \lasthline {
+        \cs_set_eq:NN \lasthline \hline
+    }
+    \cs_if_exist:NF \IN {
+        \cs_set_eq:NN \IN \@@_IN:w
+    }
+%    \end{macrocode}
+%
+% Handle optional settings
+%
+%    \begin{macrocode}
+    \@@_setup:nn { table } { #1, #3 }
+%    \end{macrocode}
+%
+% Get the data inline or from a variable
+%
+%    \begin{macrocode}
+    \tl_if_single:nTF { #2 } {
+%    \end{macrocode}
+%
+% Generate meaningful error by using the non-existent variable
+%
+%    \begin{macrocode}
+        \cs_if_exist:NF #2 { #2 }
+        \tl_set_eq:NN \l_@@_data_tl #2
+    }{
+        \tl_set:Nn \l_@@_data_tl { #2 }
+    }
+%    \end{macrocode}
+%
+% Compute the total population count/frequency
+%
+%    \begin{macrocode}
+    \fp_zero:N \l_@@_total_fp
+    \keyval_parse:NNV
+            \@@_table_count:n
+            \@@_table_count:nn
+            \l_@@_data_tl
+%    \end{macrocode}
+%
+% Loop again and output the table
+%
+%    \begin{macrocode}
+    \@@_table_start:
+    \fp_zero:N \l_@@_table_prevICF_fp
+    \keyval_parse:NNV
+            \@@_table_make:n
+            \@@_table_make:nn
+            \l_@@_data_tl
+    \@@_table_end:
+%    \end{macrocode}
+%
+% Done
+%
+%    \begin{macrocode}
+    \group_end:
+}
+%    \end{macrocode}
+%
+% table building functions
+%
+%    \begin{macrocode}
+\cs_new_protected_nopar:Nn \@@_table_start: {
+%    \end{macrocode}
+%
+% Init column count
+%
+%    \begin{macrocode}
+    \int_zero:N \l_@@_nbvals_int
+%    \end{macrocode}
+%
+% Start rows with headers
+%
+%    \begin{macrocode}
+    \clist_map_inline:nn { values, counts, frequencies, icc, icf, dcc, dcf } {
+        \tl_set:cx { l_@@_table_##1_tl } {
+            \exp_not:N \ensuremath { \exp_not:N \hbox {
+                \exp_not:c { l_@@_table_##1_name_tl }
+            } }
+        }
+    }
+}
+\cs_new_protected_nopar:Nn \@@_table_end: {
+%    \end{macrocode}
+%
+% Build-up the table preamble
+%
+%    \begin{macrocode}
+    \tl_set:Nx \l_@@_table_preamble_tl {
+        \exp_not:n { \begin{array}[ }
+            \exp_not:V \l_@@_table_valign_tl
+        \exp_not:n { ] }
+                { \exp_not:V \l_@@_table_headcoltype_tl
+                  \prg_replicate:nn { \l_@@_nbvals_int }
+                    { \exp_not:V \l_@@_table_coltype_tl } }
+    }
+%    \end{macrocode}
+%
+% Add each row if needed.
+%
+%    \begin{macrocode}
+    \seq_clear:N \l_@@_table_contents_seq
+    \clist_map_inline:nn { values, counts, icc, dcc, frequencies, icf, dcf } {
+        \bool_if:cT { l_@@_table_##1_bool } {
+            \seq_put_right:Nv
+                    \l_@@_table_contents_seq
+                    { l_@@_table_##1_tl }
+        }
+    }
+    $\tl_use:N \l_@@_table_preamble_tl
+        \l_@@_table_preline_tl
+        \seq_use:Nn
+                \l_@@_table_contents_seq
+                { \l_@@_table_newline_tl }
+        \\ \l_@@_table_postline_tl
+    \end{array}$
+}
+%    \end{macrocode}
+%
+% Counting auxiliaries
+%
+%    \begin{macrocode}
+\cs_new_protected_nopar:Nn \@@_table_count:n {
+    \@@_table_count:nn {} { 1 }
+}
+\cs_new_protected_nopar:Nn \@@_table_count:nn {
+    \fp_add:Nn \l_@@_total_fp { #2 }
+}
+%    \end{macrocode}
+%
+% Accumulating content
+%
+%    \begin{macrocode}
+\cs_new_protected_nopar:Nn \@@_table_make:n {
+    \@@_table_make:nn { #1 } { 1 }
+}
+\cs_new_protected_nopar:Nn \@@_table_make:nn {
+%    \end{macrocode}
+%
+% Maybe close the table and create a new one
+%
+%    \begin{macrocode}
+    \int_compare:nT
+            { 0 < \l_@@_table_maxcols_int
+                = \l_@@_nbvals_int } {
+        \@@_table_end:
+        \tl_use:N \l_@@_table_sep_tl
+        \@@_table_start:
+    }
+    \int_incr:N \l_@@_nbvals_int
+    \int_incr:N \l_@@_currange_int
+    \fp_add:Nn \l_@@_curtotal_fp { #2 }
+%    \end{macrocode}
+%
+% Hidden or not
+%
+%    \begin{macrocode}
+    \@@_set_if_shown:N \l_tmpa_bool
+    \tl_set:Nx \l_tmpa_tl {
+        \exp_not:n { & \tl_set:Nn \currentcolumn } {
+            \int_use:N \l_@@_currange_int
+        }
+    }
+    \bool_if:NTF \l_tmpa_bool {
+        \tl_put_right:Nn \l_tmpa_tl
+            {\@@_table_shown_format:n}
+    }{
+        \tl_put_right:Nn \l_tmpa_tl
+            {\@@_table_hidden_format:n}
+    }
+%    \end{macrocode}
+%
+% Values
+%
+%    \begin{macrocode}
+    \bool_if:NT \l_@@_table_values_bool {
+        \tl_put_right:Nx \l_@@_table_values_tl {
+            \exp_not:V \l_tmpa_tl {
+                \exp_not:n {
+                    \@@_table_values_format:n { #1 }
+                }
+            }
+        }
+    }
+%    \end{macrocode}
+%
+% Counts
+%
+%    \begin{macrocode}
+    \bool_if:NT \l_@@_table_counts_bool {
+        \tl_put_right:Nx \l_@@_table_counts_tl {
+            \exp_not:V \l_tmpa_tl {
+                \exp_not:n {
+                    \@@_table_counts_format:n {
+                        { \@@_table_allcounts_format:n { #2 } }
+                    }
+                }
+            }
+        }
+    }
+%    \end{macrocode}
+%
+% ICC
+%
+%    \begin{macrocode}
+    \bool_if:NT \l_@@_table_icc_bool {
+        \tl_put_right:Nx \l_@@_table_icc_tl {
+            \exp_not:V \l_tmpa_tl {
+                \exp_not:n { \@@_table_icc_format:n }
+                {
+                    \exp_not:n{ \@@_table_allcounts_format:n }
+                        { \fp_use:N \l_@@_curtotal_fp }
+                }
+            }
+        }
+    }
+%    \end{macrocode}
+%
+% DCC ( = 1 - ICC + curcount )
+%
+%    \begin{macrocode}
+    \bool_if:NT \l_@@_table_dcc_bool {
+        \tl_put_right:Nx \l_@@_table_dcc_tl {
+            \exp_not:V \l_tmpa_tl {
+                \exp_not:n { \@@_table_dcc_format:n }
+                {
+                    \exp_not:n{ \@@_table_allcounts_format:n }
+                    {
+                        \fp_eval:n {
+                            \l_@@_total_fp
+                                - \l_@@_curtotal_fp
+                                + #2
+                        }
+                    }
+                }
+            }
+        }
+    }
+%    \end{macrocode}
+%
+% Frequencies (we compute them from the ICFs so that rounded freqs add up to 1)
+%
+%    \begin{macrocode}
+    \fp_set:Nn \l_@@_table_curICF_fp {
+        round(\l_@@_curtotal_fp
+                / \l_@@_total_fp,
+              \l_@@_table_round_int)
+    }
+    \bool_if:NT \l_@@_table_frequencies_bool {
+        \tl_put_right:Nx \l_@@_table_frequencies_tl {
+            \exp_not:V \l_tmpa_tl {
+                \exp_not:n { \@@_table_frequencies_format:n }
+                {
+                    \exp_not:n{ \@@_table_allfreqs_format:n }
+                    {
+                        \fp_eval:n {
+                            \l_@@_table_curICF_fp
+                                - \l_@@_table_prevICF_fp
+                        }
+                    }
+                }
+            }
+        }
+    }
+%    \end{macrocode}
+%
+% ICF
+%
+%    \begin{macrocode}
+    \bool_if:NT \l_@@_table_icf_bool {
+        \tl_put_right:Nx \l_@@_table_icf_tl {
+            \exp_not:V \l_tmpa_tl {
+                \exp_not:n { \@@_table_icf_format:n }
+                {
+                    \exp_not:n{ \@@_table_allfreqs_format:n }
+                        { \fp_to_decimal:N \l_@@_table_curICF_fp }
+                }
+            }
+        }
+    }
+%    \end{macrocode}
+%
+% DCF ( = 1 - ICF + curfreq = 1 - prevICF )
+%
+%    \begin{macrocode}
+    \bool_if:NT \l_@@_table_dcf_bool {
+        \tl_put_right:Nx \l_@@_table_dcf_tl {
+            \exp_not:V \l_tmpa_tl {
+                \exp_not:n { \@@_table_dcf_format:n }
+                {
+                    \exp_not:n{ \@@_table_allfreqs_format:n }
+                    {
+                        \fp_eval:n {
+                            1 - \l_@@_table_prevICF_fp
+                        }
+                    }
+                }
+            }
+        }
+    }
+%    \end{macrocode}
+%
+% Prepare for next iteration
+%
+%    \begin{macrocode}
+    \fp_set_eq:NN
+        \l_@@_table_prevICF_fp
+        \l_@@_table_curICF_fp
+}
+%    \end{macrocode}
+%
+% \subsection{Compute and typeset statistics graphics}
+%
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_make_forwarded_key:nnnn {
+%    \end{macrocode}
+%
+% \begin{itemize}
+%   \item |#1| (tl):    common prefix
+%   \item |#2| (tl):    middle
+%   \item |#3| (clist): replacements
+%   \item |#4| (tl):    common suffix
+% \end{itemize}
+%
+%    \begin{macrocode}
+    \tl_clear:N \l_tmpa_tl
+    \clist_map_inline:nn {#3} {
+        \tl_put_right:Nx \l_tmpa_tl {
+            \exp_not:n {#1}
+            \tl_if_empty:nF {#1} { \tl_if_empty:nF {##1} {\exp_not:N /} }
+            \exp_not:n {##1}
+            \tl_if_empty:nF {#4} { \tl_if_empty:nF {##1} {\exp_not:N /} }
+            \exp_not:n {#4,}
+        }
+    }
+    \tl_set:Nx \l_tmpb_tl {
+        \exp_not:n {#1}
+        \tl_if_empty:nF {#1} { \tl_if_empty:nF {#2} {\exp_not:N /} }
+        \exp_not:n {#2}
+        \tl_if_empty:nF {#4} { \tl_if_empty:nF {#2} {\exp_not:N /} }
+        \exp_not:n {#4}
+    }
+    \use:x {
+        \exp_not:n { \@@_keys_define:nn { graph } }
+        {
+            \exp_not:V \l_tmpb_tl \exp_not:n { .default:n = \q_no_value, }
+            \exp_not:V \l_tmpb_tl
+                \exp_not:n { .code:n = \@@_forwarded_key:nn }
+                    { \exp_not:V \l_tmpa_tl }
+                    { \exp_not:n { ##1 } }
+        }
+    }
+}
+\cs_new_protected:Nn \@@_forwarded_key:nn {
+    \quark_if_no_value:nTF { #2 } {
+        \@@_setup:nn { graph } { #1 }
+    }{
+        \clist_set:Nn \l_tmpa_clist { #1,{} }
+        \use:x {
+            \exp_not:n { \@@_setup:nn { graph } } {
+                \clist_use:Nn \l_tmpa_clist { = {#2}, }
+            }
+        }
+    }
+}
+\cs_new_protected_nopar:Nn \@@_forward_keys:nn {
+%    \end{macrocode}
+%
+% \begin{itemize}
+%   \item |#1| (clist): destination prefixes
+%   \item |#2| (clist): keys
+% \end{itemize}
+%
+%    \begin{macrocode}
+    \clist_map_inline:nn {#2} {
+        \@@_make_forwarded_key:nnnn {} {} { #1 } { ##1 }
+    }
+}
+
+\cs_new:Nn \@@_create_append_reset:nn {
+%    \end{macrocode}
+%
+% \begin{itemize}
+%   \item |#1| (tl): key basename
+%   \item |#2| (var): suffix of variable to store options into
+% \end{itemize}
+%
+%    \begin{macrocode}
+    \tl_new:c { l_@@_graph_#2_tl }
+    \@@_keys_define:nn { graph } {
+        #1          .value_required:n = true,
+        #1          .code:n = \tl_put_right:cn
+                                { l_@@_graph_#2_tl }
+                                { ##1, },
+
+        #1/reset    .value_forbidden:n = true,
+        #1/reset    .code:n = \tl_clear:c
+                                { l_@@_graph_#2_tl },
+    }
+}
+
+\cs_new:Nn \@@_DO:nn { \@@_create_append_reset:nn {#1}{options_#2} }
+
+\cs_new:Nn \@@_define_unit:nn {
+%    \end{macrocode}
+%
+% \begin{itemize}
+%   \item |#1| (tl): unit name (plural)
+%   \item |#2| (tl): graph type
+% \end{itemize}
+%
+%    \begin{macrocode}
+    \@@_DO:nn { #2/#1/axis }       { #2_#1axis }
+    \@@_keys_define:nn { graph } {
+        #2/#1       .code:n = {
+                        \tl_set:cn {l_@@_graph_#2_unit_tl} { #1 }
+                        \quark_if_no_value:nF { ##1 } {
+                            \@@_setup:nn { graph }{ #2/#1/label = { ##1 } }
+                        }
+                    },
+        #2/#1       .default:n = \q_no_value,
+
+        #2/#1/label .meta:n = { #2/#1/axis = { label = { ##1 } } },
+        #2/#1/label .value_required:n = true,
+
+        #2/#1/format .code:n = {
+                        \cs_set_protected:cn
+                                { @@_graph_#2_#1_format:n }
+                                { ##1 }
+                    },
+        #2/#1/format .value_required:n = true,
+
+        #2/#1/margin .tl_set:c = l_@@_graph_#2_#1_vmargin_tl,
+        #2/#1/margin .value_required:n = true,
+    }
+}
+
+\@@_DO:nn { picture }                  { pic }
+\@@_DO:nn { axissystem }               { system }
+
+\@@_DO:nn { histogram/areas/style }    { areas }
+\@@_DO:nn { histogram/legend/options } { legend }
+
+\clist_map_inline:nn { histogram, cumulative, comb } {
+    \@@_define_unit:nn                 { counts } { #1 }
+    \@@_define_unit:nn                 { frequencies } { #1 }
+    \@@_DO:nn { #1/style }             { #1 }
+    \@@_DO:nn { #1/values/axis }       { #1_xaxis }
+    \@@_keys_define:nn { graph/#1 } {
+        values/margin .value_required:n = true,
+        values/margin .tl_set:c = l_@@_graph_#1_hmargin_tl,
+
+        values/label .meta:n = { values/axis = { label = { ##1 } } },
+        values/label .value_required:n = true,
+
+        values/format .code:n = { \cs_set_protected:cn
+                                    {@@_graph_#1_values_format:n} { ##1 }
+        },
+        values/format .value_required:n = true,
+
+        frequencies/format/real .meta:n = {
+            frequencies/format = {
+                \num[round-mode=places,round-precision=##1]{####1}
+            }
+        },
+        frequencies/format/real .default:n = 1,
+
+        frequencies/format/percent .meta:n = {
+            frequencies/format = {
+                \SI[round-mode=places,round-precision=##1]{
+                    \fp_eval:n{####1*100}
+                }{\percent}
+            }
+        },
+        frequencies/format/percent .default:n = 1,
+    }
+    \@@_make_forwarded_key:nnnn {#1/values}{}{label}{}
+    \clist_map_inline:nn { axis, axis/reset, label, margin, format } {
+        \@@_make_forwarded_key:nnnn {#1}{x}{values}{##1}
+        \@@_make_forwarded_key:nnnn {#1}{y}{counts, frequencies}{##1}
+    }
+}
+
+\cs_undefine:N \@@_DO:nn
+\cs_undefine:N \@@_define_unit:nnn
+
+\@@_forward_keys:nn { histogram, cumulative, comb } {
+    values, values/label, values/margin, values/format,
+    values/axis, values/axis/reset,
+    x/label, x/axis, x/axis/reset, x/margin, x/format,
+    counts, counts/label, counts/margin, counts/format,
+    counts/axis, counts/axis/reset,
+    frequencies, frequencies/label, frequencies/margin,
+    frequencies/format, frequencies/format/real, frequencies/format/percent,
+    frequencies/axis, frequencies/axis/reset,
+    y/label, y/axis, y/axis/reset, y/margin, y/format,
+    style, style/reset
+}
+
+\@@_create_append_reset:nn { tikzinfo' } { userpreinfo }
+\@@_create_append_reset:nn { tikzinfo }  { userpostinfo }
+
+\cs_undefine:N \@@_forward_keys:nn
+\cs_undefine:N \@@_make_forwarded_key:nnnn
+\cs_undefine:N \@@_create_append_reset:nn
+
+\@@_keys_define:nn { graph } {
+    showonly    .value_required:n = true,
+    showonly    .code:n = \@@_setshow:n{#1},
+
+    height      .value_required:n = true,
+    height      .meta:n = { axissystem = { height = { #1 } } },
+
+    width       .value_required:n = true,
+    width       .meta:n = { axissystem = { width = { #1 } } },
+
+    cumulative  .bool_set:N = \l_@@_graph_cumulative_bool,
+    cumulative  .default:n = true,
+
+    decreasing  .bool_set:N = \l_@@_graph_decreasing_bool,
+    decreasing  .default:n = true,
+
+    histogram/areas .bool_set:N = \l_@@_graph_areas_bool,
+    histogram/areas .default:n = true,
+
+    histogram/legend/label .value_required:n = true,
+    histogram/legend/label .meta:n = {
+                histogram/legend/options = {label={#1}} },
+
+    histogram/legend/area .value_required:n = true,
+    histogram/legend/area .meta:n = {
+                histogram/legend/h = (#1)/\width },
+
+    histogram/legend    .value_required:n = true,
+    histogram/legend    .code:n = {
+                \@@_setup:nn { graph / histogram/legend  } {
+                    #1
+                }
+            },
+
+    histogram/y/autostep .value_required:n = true,
+    histogram/y/autostep .meta:n = {
+                histogram/counts/autostep = {#1},
+                histogram/frequencies/autostep = {#1},
+                histogram/legend/area = {#1},
+            },
+}
+\tl_map_inline:nn {xywh} {
+    \@@_keys_define:nn { graph / histogram / legend } {
+        #1 .value_required:n = true,
+        #1 .tl_set:c = {l_@@_graph_legend_#1_tl},
+    }
+}
+\clist_map_inline:nn { counts, frequencies } {
+    \@@_keys_define:nn { graph/histogram/#1 } {
+        autostep .default:n = 1,
+        autostep .meta:n = { axis = {
+                grid = { compute~step =
+                    \group_begin:
+                    \tl_set:Nx \total { \fp_to_decimal:N \l_@@_total_fp }
+                    \fp_gset:Nn \g_tmpa_fp { ##1 }
+                    \group_end:
+                    \tl_set:Nx \tikz@lib@dv@step {
+                        \fp_eval:n {\g_tmpa_fp / \g_@@_graph_xstep_fp }
+                    }
+                }
+        }},
+    }
+}
+
+\@@_setup:nn { graph }{
+    width = 0.75\columnwidth,
+    cumulative = false,
+    decreasing = false,
+
+    values/axis = {
+        label = \valuename,
+        ticks~and~grid={many, integer~minor~steps}
+    },
+    values/margin = \xstep / 2,
+    values/format = \num{#1},
+
+    y/margin = \range/10,
+
+    counts/format = { \num{#1} },
+    counts/axis = { ticks~and~grid={
+        many, int~about~strategy, integer~minor~steps,
+        } },
+    comb/counts/label = \countname,
+    cumulative/counts/label = \ccountname,
+
+    frequencies/format/percent,
+    frequencies/axis = { ticks~and~grid=many },
+    comb/frequencies/label = \freqname,
+    cumulative/frequencies/label = \cfreqname,
+
+    histogram/y/axis/reset,
+    histogram/y/axis = {ticks = none},
+    histogram/y/autostep = 1,
+    histogram/legend = { x=, y=0, w=\xstep },
+    histogram/style  = { semithick, black, fill=black, fill~opacity=0.1 },
+    histogram/areas,
+    histogram/areas/style = { auto, font=\small },
+
+    comb/style  = { ultra~thick },
+
+    counts,
+
+    picture = {
+        baseline = (current~bounding~box.center),
+        label~position = right,
+    },
+}
+
+\tl_const:Nn \c_@@_graph_savexstep_tl {
+    grid = { compute~step/.append = {
+        \cs_if_eq:NNF \tikz@lib@dv@step \relax {
+            \pgfkeysgetvalue
+                {/tikz/data~visualization/minor~steps~between~steps}
+                \l_tmpa_tl
+            \fp_gset:Nn \g_@@_graph_xstep_fp {
+                \tikz@lib@dv@step
+                / (\fp_max:nn{0\l_tmpa_tl + 1}{1})
+            }
+        }
+    }}
+}
+%    \end{macrocode}
+%
+% To detect that the user didn't set |minor steps between steps| himself after
+% having used |integer minor steps| (which can be a default setting), we add a
+% handler to the key that sets its value but also empties
+% \cs{l_@@_graph_maxminor_tl} so that we do not overwrite anything.
+%
+%    \begin{macrocode}
+\tl_new:N \l_@@_graph_maxminor_tl
+\int_new:N \l_@@_graph_minorsteps_int
+\fp_new:N \l_@@_graph_ims_step_fp
+\fp_new:N \l_@@_graph_ims_range_fp
+\fp_new:N \l_@@_graph_ims_threshold_fp
+\tikzdatavisualizationset{
+integer~minor~steps/.style={
+    /utils/exec = \tl_set:Nn \l_@@_graph_maxminor_tl {#1},
+    minor~steps~between~steps/.code=
+            \tl_clear:N \l_@@_graph_maxminor_tl
+            \pgfkeyssetvalue
+                {/tikz/data~visualization/minor~steps~between~steps}
+                {##1} ,
+    compute~step/.append = {
+        \tl_set_eq:NN \l_tmpa_tl \tikz@lib@dv@step
+        \tl_if_empty:NT \l_@@_graph_maxminor_tl {
+            \tl_set_eq:NN \l_tmpa_tl \relax
+        }
+        \tl_if_eq:NNF \l_tmpa_tl \relax {
+            \fp_set:Nn \l_@@_graph_ims_step_fp { \l_tmpa_tl }
+            \tikz@lib@dv@mapper.get~in~range~interval()
+            \pgfdvinrangeinterval.get~min~and~max()
+            \pgfdvmathexitbyscientificformat \l_tmpa_tl \pgfdvmin
+            \pgfdvmathexitbyscientificformat \l_tmpb_tl \pgfdvmax
+            \fp_set:Nn \l_@@_graph_ims_range_fp { \l_tmpb_tl - \l_tmpa_tl }
+            \fp_set:Nn \l_@@_graph_ims_threshold_fp {
+                \fp_max:nn {
+                    \l_@@_graph_ims_step_fp * (\l_@@_graph_maxminor_tl)
+                }{
+                    \l_@@_graph_ims_range_fp
+                }
+            }
+            \int_set:Nn \l_@@_graph_minorsteps_int
+                    { \fp_to_int:N \l_@@_graph_ims_step_fp }
+            \bool_while_do:nn {
+                \fp_compare_p:n {
+                    \l_@@_graph_minorsteps_int * \l_@@_graph_ims_range_fp
+                    > \l_@@_graph_ims_threshold_fp
+                }
+            }{
+                \tl_map_inline:nn {{2}{5}{10}} {
+                    \fp_compare:nF {
+                        \l_@@_graph_minorsteps_int * \l_@@_graph_ims_range_fp
+                        > \l_@@_graph_ims_threshold_fp * ##1
+                    }{
+                        \int_compare:nT {
+                            \int_mod:nn{\l_@@_graph_minorsteps_int}{##1} = 0
+                        }{
+                            \int_set:Nn
+                                \l_@@_graph_minorsteps_int
+                                { \l_@@_graph_minorsteps_int / ##1 }
+                            \tl_map_break:
+                        }
+                    }
+                }
+                \fp_compare:nT {
+                    \l_@@_graph_minorsteps_int * \l_@@_graph_ims_range_fp
+                    > \l_@@_graph_ims_threshold_fp
+                }{
+                    \tl_map_inline:nn {{3}{2}{5}{\l_@@_graph_minorsteps_int}} {
+                        \int_compare:nT {
+                            \int_mod:nn{\l_@@_graph_minorsteps_int}{##1} = 0
+                        }{
+                            \int_set:Nn
+                                \l_@@_graph_minorsteps_int
+                                { \l_@@_graph_minorsteps_int / ##1 }
+                            \tl_map_break:
+                        }
+                    }
+                }
+            }
+            \int_compare:nNnTF \l_@@_graph_minorsteps_int > 1 {
+                \use:x { \exp_not:n {
+                    \pgfkeyssetvalue
+                    {/tikz/data~visualization/minor~steps~between~steps}
+                    }
+                    { \int_eval:n {\l_@@_graph_minorsteps_int-1} }
+                }
+            }{
+                \pgfkeyssetvalue
+                    {/tikz/data~visualization/minor~steps~between~steps}
+                    {}
+            }
+            \tl_clear:N \l_@@_graph_maxminor_tl
+        }
+    }
+},
+integer~minor~steps/.default=50,
+}
+%    \end{macrocode}
+%
+% First define a lot of variables:
+%
+%    \begin{macrocode}
+\bool_new:N \l_@@_graph_allranges_bool
+
+\fp_new:N \l_@@_graph_curvalue_fp
+\fp_new:N \l_@@_graph_curheight_fp
+\fp_new:N \l_@@_graph_prevheight_fp
+\fp_new:N \l_@@_graph_maxheight_fp
+\fp_new:N \l_@@_graph_minvalue_fp
+\fp_new:N \l_@@_graph_maxvalue_fp
+\fp_new:N \g_@@_graph_xstep_fp
+\int_new:N \g_@@_graph_last_int
+
+\tl_new:N \l_@@_graph_tikzdata_tl
+\tl_new:N \l_@@_graph_tikzinfo_tl
+\clist_new:N \l_@@_graph_tikzincludex_clist
+\clist_new:N \l_@@_graph_tikzincludey_clist
+\tl_new:N \l_@@_graph_tikzpicture_tl
+%    \end{macrocode}
+%
+% No scale for counts, divide by total for freqs
+%
+%    \begin{macrocode}
+\fp_new:N \l_@@_graph_scale_fp
+\fp_new:N \l_@@_graph_counts_scale_fp
+\fp_new:N \l_@@_graph_frequencies_scale_fp
+\fp_set:Nn \l_@@_graph_counts_scale_fp { 1 }
+
+
+\NewDocumentCommand \StatsGraph { +O{} +m +O{} } {
+    \group_begin:
+    \int_gincr:N \g_@@_graph_last_int
+%    \end{macrocode}
+%
+% Read saved x step, for automatic margin and histogram y step
+%
+%    \begin{macrocode}
+    \tl_set:Nx \l_tmpa_tl {
+        \exp_not:n { g_@@_graph_xstep_ }
+        \int_use:N \g_@@_graph_last_int
+        \exp_not:n { _tl }
+    }
+    \tl_if_exist:cTF { \l_tmpa_tl } {
+        \fp_gset:Nn \g_@@_graph_xstep_fp
+            { \tl_use:c {\l_tmpa_tl} }
+    }{
+        \fp_gset:Nn \g_@@_graph_xstep_fp { \c_one }
+    }
+%    \end{macrocode}
+%
+% Handle optional settings
+%
+%    \begin{macrocode}
+    \@@_setup:nn { graph } { #1, #3 }
+%    \end{macrocode}
+%
+% Get the data inline or from a variable
+%
+%    \begin{macrocode}
+    \tl_if_single:nTF { #2 } {
+%    \end{macrocode}
+%
+% Generate meaningful error by using the non-existent variable.
+%
+%    \begin{macrocode}
+        \cs_if_exist:NF #2 { #2 }
+        \tl_set_eq:NN \l_@@_data_tl #2
+    }{
+        \tl_set:Nn \l_@@_data_tl { #2 }
+    }
+%    \end{macrocode}
+%
+% Zero the maximum height in the graph, and setup min and max values.
+%
+%    \begin{macrocode}
+    \fp_zero:N \l_@@_graph_maxheight_fp
+    \fp_set:Nn \l_@@_graph_minvalue_fp {inf}
+    \fp_set:Nn \l_@@_graph_maxvalue_fp {-inf}
+%    \end{macrocode}
+%
+% The following loop does 2 things:
+% \begin{itemize}
+%   \item Counting the number of ranges and the total population count
+%   \item Detecting whether the ranges are intervals or single numbers
+% \end{itemize}
+%
+%    \begin{macrocode}
+    \fp_zero:N \l_@@_total_fp
+    \int_zero:N \l_@@_nbvals_int
+    \bool_set_true:N \l_@@_graph_allranges_bool
+    \keyval_parse:NNV
+            \@@_graph_prepare:n
+            \@@_graph_prepare:nn
+            \l_@@_data_tl
+%    \end{macrocode}
+%
+% The remainder is different whether we do histogram, cumulative, or comb
+%
+%    \begin{macrocode}
+    \tl_clear:N \l_@@_graph_tikzdata_tl
+    \tl_clear:N \l_@@_graph_tikzinfo_tl
+    \int_zero:N \l_@@_currange_int
+    \bool_if:NTF \l_@@_graph_allranges_bool {
+        \bool_if:NTF \l_@@_graph_cumulative_bool {
+%    \end{macrocode}
+%
+% We draw a cumulative distribution function
+%
+%    \begin{macrocode}
+            \@@_graph_dopicture_cumulative:
+        }{
+%    \end{macrocode}
+%
+% We draw an histogram
+%
+%    \begin{macrocode}
+            \@@_graph_dopicture_hist:
+        }
+    }{
+%    \end{macrocode}
+%
+% We draw a comb graph
+%
+%    \begin{macrocode}
+        \@@_graph_dopicture_comb:
+    }
+%    \end{macrocode}
+%
+% Write xstep info to aux file
+%
+%    \begin{macrocode}
+    \iow_now:Nx \@auxout {
+        \exp_not:n {
+            \ExplSyntaxOn
+            \tl_gset:cn
+        }
+        {
+            \exp_not:n {g_@@_graph_xstep_}
+            \int_use:N \g_@@_graph_last_int
+            \exp_not:n {_tl}
+        }
+        {
+            \fp_to_decimal:N \g_@@_graph_xstep_fp
+        }
+        \exp_not:n {
+            \ExplSyntaxOff
+        }
+    }
+    \group_end:
+}
+%    \end{macrocode}
+%
+% First pass
+%
+%    \begin{macrocode}
+\cs_new_protected_nopar:Nn \@@_graph_prepare:n {
+    \@@_graph_prepare:nn { #1 } { 1 }
+}
+\cs_new_protected_nopar:Nn \@@_graph_prepare:nn {
+    \int_incr:N \l_@@_nbvals_int
+    \fp_add:Nn \l_@@_total_fp { #2 }
+    \exp_args:Nx \tl_if_eq:nnF { \tl_head:n {#1} }{ \IN } {
+        \bool_set_false:N \l_@@_graph_allranges_bool
+    }
+}
+%    \end{macrocode}
+%
+% Shared utility functions
+%
+%    \begin{macrocode}
+\cs_new_protected_nopar:Nn \@@_graph_addpoint:nnn {
+    \tl_put_right:Nx \l_@@_graph_tikzdata_tl {
+        \exp_not:N \pgfkeys {
+            \exp_not:n { /data~point/name = #1 }
+                \int_use:N \l_@@_currange_int
+            \exp_not:n { ,/data~point/x = } \fp_eval:n { #2 }
+            \exp_not:n { ,/data~point/y = } \fp_eval:n { #3 }
+        }
+        \exp_not:n { \pgfdatapoint }
+    }
+}
+\cs_new_protected_nopar:Nn \@@_graph_outlier: {
+    \tl_put_right:Nn \l_@@_graph_tikzdata_tl {
+        \pgfkeys{/data~point/outlier = true}
+        \pgfdatapoint
+        \pgfkeys{/data~point/outlier = }
+    }
+}
+\cs_new_protected_nopar:Nn \@@_graph_setup:n {
+    \fp_set_eq:Nc \l_@@_graph_hmargin_tl {l_@@_graph_#1_hmargin_tl}
+    \tl_set_eq:Nc \l_@@_graph_unit_tl { l_@@_graph_#1_unit_tl }
+    \tl_set_eq:Nc \l_@@_graph_vmargin_tl
+        {l_@@_graph_#1_ \l_@@_graph_unit_tl _vmargin_tl}
+    \tl_set_eq:Nc
+        \l_@@_graph_options_yaxis_tl
+        {l_@@_graph_options_#1_ \l_@@_graph_unit_tl axis_tl}
+    \cs_set_eq:Nc
+        \@@_graph_y_format:n
+        {@@_graph_#1_ \l_@@_graph_unit_tl _format:n}
+    \cs_set_eq:Nc
+        \@@_graph_values_format:n
+        {@@_graph_#1_values_format:n}
+    \fp_set_eq:NN
+        \l_@@_graph_frequencies_scale_fp
+        \l_@@_total_fp
+    \fp_set_eq:Nc
+        \l_@@_graph_scale_fp
+        {l_@@_graph_ \l_@@_graph_unit_tl _scale_fp}
+}
+\cs_new_protected_nopar:Nn \@@_graph_update_minmaxval:NN {
+    \fp_set:Nn \l_@@_graph_minvalue_fp {
+        min( \l_@@_graph_minvalue_fp, #1 )
+    }
+    \fp_set:Nn \l_@@_graph_maxvalue_fp {
+        max( \l_@@_graph_maxvalue_fp, #2 )
+    }
+}
+\cs_new_protected_nopar:Nn \@@_graph_update_maxheight: {
+    \fp_set:Nn \l_@@_graph_maxheight_fp {
+        max( \l_@@_graph_maxheight_fp , \l_@@_graph_curheight_fp )
+    }
+}
+\cs_new_protected_nopar:Nn \@@_graph_handle_hmargin: {
+    \group_begin:
+    \tl_set:Nx \min { \fp_to_decimal:N \l_@@_graph_minvalue_fp }
+    \tl_set:Nx \max { \fp_to_decimal:N \l_@@_graph_maxvalue_fp }
+    \tl_set:Nx \range {
+        \fp_eval:n { \l_@@_graph_maxvalue_fp - \l_@@_graph_minvalue_fp }
+    }
+    \tl_set:Nx \xstep { \fp_to_decimal:N \g_@@_graph_xstep_fp }
+    \exp_args:NNV \fp_gset:Nn \g_tmpa_fp \l_@@_graph_hmargin_tl
+    \group_end:
+    \clist_put_right:Nx \l_@@_graph_tikzincludex_clist {
+        \fp_eval:n { \l_@@_graph_minvalue_fp - \g_tmpa_fp }
+    }
+    \clist_put_right:Nx \l_@@_graph_tikzincludex_clist {
+        \fp_eval:n { \l_@@_graph_maxvalue_fp + \g_tmpa_fp }
+    }
+}
+\cs_new_protected_nopar:Nn \@@_graph_handle_vmargin: {
+    \group_begin:
+    \tl_set:Nn \min { 0 }
+    \tl_set:Nx \max { \fp_to_decimal:N \l_@@_graph_maxheight_fp }
+    \tl_set_eq:NN \range \max
+    \exp_args:NNV \fp_gset:Nn \g_tmpa_fp \l_@@_graph_vmargin_tl
+    \group_end:
+    \clist_put_right:Nx \l_@@_graph_tikzincludey_clist {
+        \fp_eval:n { \l_@@_graph_maxheight_fp + \g_tmpa_fp }
+    }
+}
+%    \end{macrocode}
+%
+% Second pass, histogram
+%
+%    \begin{macrocode}
+\cs_new_protected_nopar:Nn \@@_graph_dopicture_hist: {
+    \@@_graph_setup:n {histogram}
+%    \end{macrocode}
+%
+% Loop through the list again to fill tikz data and labels
+%
+%    \begin{macrocode}
+    \keyval_parse:NNV
+            \@@_graph_make_hist:n
+            \@@_graph_make_hist:nn
+            \l_@@_data_tl
+%    \end{macrocode}
+%
+% Maybe add a legend
+%
+%    \begin{macrocode}
+    \tl_if_empty:NF \l_@@_graph_legend_x_tl {
+        \group_begin:
+        \tl_set:Nx \min { \fp_to_decimal:N \l_@@_graph_minvalue_fp }
+        \tl_set:Nx \max { \fp_to_decimal:N \l_@@_graph_maxvalue_fp }
+        \tl_set:Nx \range {
+            \fp_eval:n { \l_@@_graph_maxvalue_fp - \l_@@_graph_minvalue_fp }
+        }
+        \tl_set:Nx \xstep { \fp_to_decimal:N \g_@@_graph_xstep_fp }
+        \exp_args:NNV \fp_gset:Nn \g_tmpa_fp \l_@@_graph_legend_x_tl
+        \exp_args:NNV \fp_gset:Nn \g_tmpb_fp \l_@@_graph_legend_w_tl
+        \group_end:
+        \tl_set:Nx \l_@@_graph_legend_x_tl { \fp_to_decimal:N \g_tmpa_fp }
+        \tl_set:Nx \l_@@_graph_legend_w_tl { \fp_to_decimal:N \g_tmpb_fp }
+
+        \group_begin:
+        \tl_set:Nn \min { 0 }
+        \tl_set:Nx \max { \fp_to_decimal:N \l_@@_graph_maxheight_fp }
+        \tl_set_eq:NN \range \max
+        \tl_set:Nx \xstep { \fp_to_decimal:N \g_@@_graph_xstep_fp }
+        \tl_set_eq:NN \width \l_@@_graph_legend_w_tl
+        \tl_set:Nx \total { \fp_to_decimal:N \l_@@_total_fp }
+        \exp_args:NNV \fp_gset:Nn \g_tmpb_fp \l_@@_graph_legend_h_tl
+        \tl_set:Nx \height { \fp_to_decimal:N \g_tmpb_fp }
+        \exp_args:NNV \fp_gset:Nn \g_tmpa_fp \l_@@_graph_legend_y_tl
+        \group_end:
+
+        \tl_put_right:Nx \l_@@_graph_tikzinfo_tl {
+            \exp_not:n { \path (visualization~cs }
+            \token_to_str:N : \exp_not:n { x= }
+            \exp_not:V \l_@@_graph_legend_x_tl
+            \exp_not:n { ,y= }
+            \fp_to_decimal:N \g_tmpa_fp
+            \exp_not:n { ) coordinate (LSW) (visualization~cs }
+            \token_to_str:N : \exp_not:n { x= }
+            \fp_eval:n {
+                \l_@@_graph_legend_x_tl +
+                \l_@@_graph_legend_w_tl
+            }
+            \exp_not:n { ,y= }
+            \fp_eval:n { \g_tmpa_fp + \g_tmpb_fp }
+            \exp_not:n { ) coordinate (LNE);
+                \node[ fit=(LSW)~(LNE), draw, inner~sep=0pt,
+            }
+            \exp_not:V \l_@@_graph_options_histogram_tl
+            \exp_not:N ,
+            \exp_not:V \l_@@_graph_options_legend_tl
+            \exp_not:n { ] {}; }
+        }
+    }
+%    \end{macrocode}
+%
+% Create the picture itself
+%
+%    \begin{macrocode}
+    \@@_graph_handle_hmargin:
+    \@@_graph_handle_vmargin:
+    \tl_set:Nx \l_@@_graph_tikzpicture_tl {
+        \exp_not:n { \begin{tikzpicture}[ }
+            \exp_not:V \l_@@_graph_options_pic_tl
+        \exp_not:n { ] \datavisualization
+                [scientific~axes = } {
+                        \exp_not:V
+                            \l_@@_graph_options_system_tl
+                    }
+        \exp_not:n { , x~axis = } {
+                    \exp_not:n { include~value/.list = } {
+                        \exp_not:V \l_@@_graph_tikzincludex_clist
+                    }
+                    \exp_not:n { , ticks = { tick~typesetter/.code = {
+                        $\@@_graph_values_format:n { \fp_eval:n{####1} }$ }}, }
+                    \exp_not:V
+                        \l_@@_graph_options_histogram_xaxis_tl
+                    \exp_not:n { , }
+                    \exp_not:V
+                        \c_@@_graph_savexstep_tl
+                }
+        \exp_not:n { , y~axis = } {
+                    \exp_not:n { include~value/.list = } {
+                        \exp_not:V \l_@@_graph_tikzincludey_clist
+                    }
+                    \exp_not:n { , }
+                    \exp_not:V
+                        \l_@@_graph_options_yaxis_tl
+                }
+        \exp_not:n { , visualize~as~line = histogram,
+                       histogram = } {
+            \exp_not:n { polygon, style = } {
+                \exp_not:n { every~path/.append~style = } {
+                        \exp_not:V \l_@@_graph_options_histogram_tl
+                    } } }
+        \exp_not:n { ] data [set = histogram, format = TeX~code] } {
+            \exp_not:V \l_@@_graph_tikzdata_tl
+        }
+        \exp_not:n { info' } {
+            \exp_not:V \l_@@_graph_userpreinfo_tl
+        }
+        \exp_not:n { info } {
+            \exp_not:V \l_@@_graph_tikzinfo_tl
+            \exp_not:V \l_@@_graph_userpostinfo_tl
+        }
+        \exp_not:n { ; \end{tikzpicture} }
+    }
+    \tl_use:N \l_@@_graph_tikzpicture_tl
+}
+\cs_new_protected_nopar:Nn \@@_graph_make_hist:n {
+    \@@_graph_make_hist:nn { #1 } { 1 }
+}
+\cs_new_protected_nopar:Nn \@@_graph_make_hist:nn {
+    \int_incr:N \l_@@_currange_int
+%    \end{macrocode}
+%
+% Extract interval data
+%
+%    \begin{macrocode}
+    \@@_parse_range:w #1 \q_stop
+%    \end{macrocode}
+%
+% Compute rectangle height
+%
+%    \begin{macrocode}
+    \fp_set:Nn \l_@@_graph_curheight_fp {
+        (#2) / ( \l_@@_range_max_fp -
+                    \l_@@_range_min_fp)
+    }
+%    \end{macrocode}
+%
+% Add margins to axes
+%
+%    \begin{macrocode}
+    \@@_graph_update_minmaxval:NN \l_@@_range_min_fp \l_@@_range_max_fp
+    \@@_graph_update_maxheight:
+%    \end{macrocode}
+%
+% Check if we want to show this element
+%
+%    \begin{macrocode}
+    \@@_set_if_shown:N \l_tmpa_bool
+%    \end{macrocode}
+%
+% Append the rectangle to the TikZ datavisualization content
+%
+%    \begin{macrocode}
+    \@@_graph_addpoint:nnn { SW }
+        { \l_@@_range_min_fp }
+        { 0 }
+    \bool_if:NF \l_tmpa_bool {
+%    \end{macrocode}
+%
+% Add an outlier point to inhibit the rectangle drawing
+%
+%    \begin{macrocode}
+        \@@_graph_outlier:
+    }
+    \@@_graph_addpoint:nnn { NW }
+        { \l_@@_range_min_fp }
+        { \l_@@_graph_curheight_fp }
+    \bool_if:NF \l_tmpa_bool { \@@_graph_outlier: }
+    \@@_graph_addpoint:nnn { NE }
+        { \l_@@_range_max_fp }
+        { \l_@@_graph_curheight_fp }
+    \bool_if:NF \l_tmpa_bool { \@@_graph_outlier: }
+    \@@_graph_addpoint:nnn { SE }
+        { \l_@@_range_max_fp }
+        { 0 }
+    \bool_if:NT \l_tmpa_bool {
+%    \end{macrocode}
+%
+% Maybe append a freq or count label on middle top of the rect
+%
+%    \begin{macrocode}
+        \bool_if:NT \l_@@_graph_areas_bool {
+            \@@_graph_addlabel:nn
+                \@@_graph_y_format:n
+                { \fp_eval:n {#2 / \l_@@_graph_scale_fp} }
+        }
+    }
+    \@@_graph_outlier:
+}
+\cs_new_protected_nopar:Nn \@@_graph_addlabel:nn {
+    \tl_put_right:Nx \l_@@_graph_tikzinfo_tl {
+        \exp_not:n { \path (NW }
+        \int_use:N \l_@@_currange_int
+        \exp_not:n { ) -- node[ }
+            \exp_not:V \l_@@_graph_options_areas_tl
+        \exp_not:N ] {
+            \exp_not:n { $ #1 } { #2 } \exp_not:N $
+        } \exp_not:n { (NE }
+        \int_use:N \l_@@_currange_int
+        \exp_not:n { ); }
+    }
+}
+%    \end{macrocode}
+%
+% second pass, comb
+%
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_graph_dopicture_comb: {
+    \@@_graph_setup:n {comb}
+%    \end{macrocode}
+%
+% Loop through the list again to fill tikz data and labels
+%
+%    \begin{macrocode}
+    \keyval_parse:NNV
+            \@@_graph_make_comb:n
+            \@@_graph_make_comb:nn
+            \l_@@_data_tl
+%    \end{macrocode}
+%
+% Create the picture itself
+%
+%    \begin{macrocode}
+    \@@_graph_handle_hmargin:
+    \@@_graph_handle_vmargin:
+    \tl_set:Nx \l_@@_graph_tikzpicture_tl {
+        \exp_not:n { \begin{tikzpicture}[ }
+            \exp_not:V \l_@@_graph_options_pic_tl
+        \exp_not:n { ] \datavisualization
+                [scientific~axes = } {
+                        \exp_not:V
+                            \l_@@_graph_options_system_tl
+                    }
+        \exp_not:n { , x~axis = } {
+                    \exp_not:n { include~value/.list = } {
+                        \exp_not:V \l_@@_graph_tikzincludex_clist
+                    }
+                    \exp_not:n { , ticks = { tick~typesetter/.code = {
+                        $\@@_graph_values_format:n { \fp_eval:n{####1} }$ }}, }
+                    \exp_not:V
+                        \l_@@_graph_options_comb_xaxis_tl
+                    \exp_not:n { , }
+                    \exp_not:V
+                        \c_@@_graph_savexstep_tl
+                }
+        \exp_not:n { , y~axis = } {
+                    \exp_not:n { include~value/.list = } {
+                        \exp_not:V \l_@@_graph_tikzincludey_clist
+                    }
+                    \exp_not:n { , }
+                    \exp_not:n { , ticks = { tick~typesetter/.code = {
+                        $\@@_graph_y_format:n { \fp_eval:n{####1} }$ }}, }
+                    \exp_not:V
+                        \l_@@_graph_options_yaxis_tl
+                }
+        \exp_not:n { , visualize~as~line = bar~graph,
+                       bar~graph = } {
+            \exp_not:n { style = } {
+                \exp_not:n { every~path/.append~style = } {
+                        \exp_not:V \l_@@_graph_options_comb_tl
+                    } } }
+        \exp_not:n { ] data [set = bar~graph, format = TeX~code] } {
+            \exp_not:V \l_@@_graph_tikzdata_tl
+        }
+        \exp_not:n { info' } {
+            \exp_not:V \l_@@_graph_userpreinfo_tl
+        }
+        \exp_not:n { info } {
+            \exp_not:V \l_@@_graph_tikzinfo_tl
+            \exp_not:V \l_@@_graph_userpostinfo_tl
+        }
+        \exp_not:n { ; \end{tikzpicture} }
+    }
+    \tl_use:N \l_@@_graph_tikzpicture_tl
+}
+\cs_new_protected_nopar:Nn \@@_graph_make_comb:n {
+    \@@_graph_make_comb:nn { #1 } { 1 }
+}
+\cs_new_protected_nopar:Nn \@@_graph_make_comb:nn {
+    \int_incr:N \l_@@_currange_int
+%    \end{macrocode}
+%
+% Set value
+%
+%    \begin{macrocode}
+    \fp_set:Nn \l_@@_graph_curvalue_fp {
+        #1
+    }
+%    \end{macrocode}
+%
+% Compute height
+%
+%    \begin{macrocode}
+    \fp_set:Nn \l_@@_graph_curheight_fp {
+        (#2) / \l_@@_graph_scale_fp
+    }
+%    \end{macrocode}
+%
+% Add margins to axes
+%
+%    \begin{macrocode}
+    \@@_graph_update_minmaxval:NN
+        \l_@@_graph_curvalue_fp \l_@@_graph_curvalue_fp
+    \@@_graph_update_maxheight:
+%    \end{macrocode}
+%
+% Check if we want to show this element
+%
+%    \begin{macrocode}
+    \@@_set_if_shown:N \l_tmpa_bool
+%    \end{macrocode}
+%
+% Append the bar to the TikZ datavisualization content
+%
+%    \begin{macrocode}
+    \@@_graph_addpoint:nnn { S }
+        { \l_@@_graph_curvalue_fp }
+        { 0 }
+    \bool_if:NF \l_tmpa_bool {
+%    \end{macrocode}
+%
+% add an outlier to inhibit the bar drawing
+%
+%    \begin{macrocode}
+        \@@_graph_outlier:
+    }
+    \@@_graph_addpoint:nnn { N }
+        { \l_@@_graph_curvalue_fp }
+        { \l_@@_graph_curheight_fp }
+    \@@_graph_outlier:
+}
+%    \end{macrocode}
+%
+% second pass, cumulative
+%
+%    \begin{macrocode}
+\cs_new_protected_nopar:Nn \@@_graph_dopicture_cumulative: {
+    \@@_graph_setup:n {cumulative}
+%    \end{macrocode}
+%
+% Increasing or decreasing starting point
+%
+%    \begin{macrocode}
+    \bool_if:NTF \l_@@_graph_decreasing_bool {
+        \fp_set_eq:NN \l_@@_curtotal_fp
+                    \l_@@_total_fp
+    }{
+        \fp_zero:N \l_@@_curtotal_fp
+    }
+    \fp_set:Nn \l_@@_graph_curheight_fp {
+        \l_@@_curtotal_fp
+            / \l_@@_graph_scale_fp
+    }
+    \@@_graph_update_maxheight:
+%    \end{macrocode}
+%
+% Loop through the list again to fill tikz data and labels
+%
+%    \begin{macrocode}
+    \keyval_parse:NNV
+            \@@_graph_make_cumulative:n
+            \@@_graph_make_cumulative:nn
+            \l_@@_data_tl
+%    \end{macrocode}
+%
+% After the last point we should be piecewise constant, which is the $N+1$-th
+% item for |showonly| purposes. We call \cs{@@_graph_handle_hmargin:} even if we
+% will add actual data in the margin, because that method computes the correct
+% value for the margin from the options.
+%
+%    \begin{macrocode}
+    \@@_graph_handle_hmargin:
+    \int_incr:N \l_@@_currange_int
+    \@@_set_if_shown:N \l_tmpa_bool
+    \bool_if:NF \l_tmpa_bool { \@@_graph_outlier: }
+    \@@_graph_addpoint:nnn { E }
+        { \l_@@_graph_maxvalue_fp + \g_tmpa_fp }
+        { \l_@@_graph_curheight_fp }
+%    \end{macrocode}
+%
+% Before the first point we should be piecewise constant. We stash the TikZ data
+% away to prepend the first point and maybe an outlier if the segment should be
+% hidden, then append the stashed data. The initial segment is numbered~$0$.
+%
+%    \begin{macrocode}
+    \tl_set_eq:NN \l_tmpa_tl \l_@@_graph_tikzdata_tl
+    \tl_clear:N \l_@@_graph_tikzdata_tl
+    \int_zero:N \l_@@_currange_int
+    \@@_graph_addpoint:nnn { B }
+        { \l_@@_graph_minvalue_fp - \g_tmpa_fp }
+        { \l_@@_graph_maxheight_fp - \l_@@_graph_curheight_fp }
+    \@@_set_if_shown:N \l_tmpa_bool
+    \bool_if:NF \l_tmpa_bool { \@@_graph_outlier: }
+    \tl_put_right:NV \l_@@_graph_tikzdata_tl \l_tmpa_tl
+%    \end{macrocode}
+%
+% Create the picture itself
+%
+%    \begin{macrocode}
+    \@@_graph_handle_vmargin:
+    \tl_set:Nx \l_@@_graph_tikzpicture_tl {
+        \exp_not:n { \begin{tikzpicture}[ }
+            \exp_not:V \l_@@_graph_options_pic_tl
+        \exp_not:n { ] \datavisualization
+                [scientific~axes = } {
+                        \exp_not:V
+                            \l_@@_graph_options_system_tl
+                    }
+        \exp_not:n { , x~axis = } {
+                    \exp_not:n { include~value/.list = } {
+                        \exp_not:V \l_@@_graph_tikzincludex_clist
+                    }
+                    \exp_not:n { , ticks = { tick~typesetter/.code = {
+                        $\@@_graph_values_format:n { \fp_eval:n{####1} }$ }}, }
+                    \exp_not:V
+                        \l_@@_graph_options_cumulative_xaxis_tl
+                    \exp_not:n { , }
+                    \exp_not:V
+                        \c_@@_graph_savexstep_tl
+                }
+        \exp_not:n { , y~axis = } {
+                    \exp_not:n { include~value/.list = } {
+                        \exp_not:V \l_@@_graph_tikzincludey_clist
+                    }
+                    \exp_not:n { , }
+                    \exp_not:n { , ticks = { tick~typesetter/.code = {
+                        $\@@_graph_y_format:n { \fp_eval:n{####1} }$ }}, }
+                    \exp_not:V
+                        \l_@@_graph_options_yaxis_tl
+                }
+        \exp_not:n { , visualize~as~line = cumulative,
+                       cumulative = } {
+            \exp_not:n { style = } {
+                \exp_not:n { every~path/.append~style = } {
+                        \exp_not:V \l_@@_graph_options_cumulative_tl
+                    } } }
+        \exp_not:n { ] data [set = cumulative, format = TeX~code] } {
+            \exp_not:V \l_@@_graph_tikzdata_tl
+        }
+        \exp_not:n { info' } {
+            \exp_not:V \l_@@_graph_userpreinfo_tl
+        }
+        \exp_not:n { info } {
+            \exp_not:V \l_@@_graph_tikzinfo_tl
+            \exp_not:V \l_@@_graph_userpostinfo_tl
+        }
+        \exp_not:n { ; \end{tikzpicture} }
+    }
+    \tl_use:N \l_@@_graph_tikzpicture_tl
+}
+\cs_new_protected_nopar:Nn \@@_graph_make_cumulative:n {
+    \@@_graph_make_hist:nn { #1 } { 1 }
+}
+\cs_new_protected_nopar:Nn \@@_graph_make_cumulative:nn {
+%    \end{macrocode}
+%
+% Extract interval data
+%
+%    \begin{macrocode}
+    \@@_parse_range:w #1 \q_stop
+%    \end{macrocode}
+%
+% Compute running total and new height
+%
+%    \begin{macrocode}
+    \fp_set_eq:NN
+        \l_@@_graph_prevheight_fp
+        \l_@@_graph_curheight_fp
+    \bool_if:NTF \l_@@_graph_decreasing_bool {
+        \fp_sub:Nn \l_@@_curtotal_fp { #2 }
+    }{
+        \fp_add:Nn \l_@@_curtotal_fp { #2 }
+    }
+    \fp_set:Nn \l_@@_graph_curheight_fp {
+        \l_@@_curtotal_fp
+            / \l_@@_graph_scale_fp
+    }
+    \@@_graph_update_minmaxval:NN \l_@@_range_min_fp \l_@@_range_max_fp
+    \@@_graph_update_maxheight:
+%    \end{macrocode}
+%
+% Add points
+%
+%    \begin{macrocode}
+    \int_incr:N \l_@@_currange_int
+    \@@_graph_addpoint:nnn { L }
+        { \l_@@_range_min_fp }
+        { \l_@@_graph_prevheight_fp }
+%    \end{macrocode}
+%
+% If we don't want to show this segment, add an outlier so that the
+% line is not drawn.
+%
+%    \begin{macrocode}
+    \@@_set_if_shown:N \l_tmpa_bool
+    \bool_if:NF \l_tmpa_bool { \@@_graph_outlier: }
+    \@@_graph_addpoint:nnn { R }
+        { \l_@@_range_max_fp }
+        { \l_@@_graph_curheight_fp }
+%    \end{macrocode}
+%
+% TODO: Median and co
+%
+%    \begin{macrocode}
+}
+%    \end{macrocode}
+%
+% \subsection{Consolitate and sort values}
+%
+%    \begin{macrocode}
+\clist_new:N \l_@@_compute_data_clist
+\int_new:N \l_@@_compute_count_int
+
+\fp_new:N \l_@@_compute_curvalue_fp
+\seq_new:N \l_@@_data_seq
+
+\NewDocumentCommand \StatsSortData { +O{} u{=} m +O{} } {
+    \group_begin:
+%    \end{macrocode}
+%
+% Handle optional settings (there are none currently)
+% |\@@_setup:nn { rangedata } { #1, #5 }|
+% Get the data inline or from a variable
+%
+%    \begin{macrocode}
+    \tl_if_single:nTF { #3 } {
+%    \end{macrocode}
+%
+% Generate meaningful error by using the non-existent variable.
+%
+%    \begin{macrocode}
+        \cs_if_exist:NF #3 { #3 }
+        \tl_set_eq:NN \l_@@_data_tl #3
+    }{
+        \tl_set:Nn \l_@@_data_tl { #3 }
+    }
+%    \end{macrocode}
+%
+% Sort the data according to values.
+% We go through sequences because \cs{clist_sort:Nn} puts braces around the
+% elements which prevents \cs{keyval_parse:NNn} to detect the equal sign.
+%
+%    \begin{macrocode}
+    \seq_set_from_clist:NN \l_@@_data_seq \l_@@_data_tl
+    \seq_sort:Nn \l_@@_data_seq {
+        \seq_set_split:Nnn \l_tmpa_seq {=} { ##1 }
+        \seq_set_split:Nnn \l_tmpb_seq {=} { ##2 }
+        \fp_compare:nNnTF
+            { \seq_item:Nn \l_tmpa_seq {1} } > { \seq_item:Nn \l_tmpb_seq {1} }
+        {
+            \sort_return_swapped:
+        }{
+            \sort_return_same:
+        }
+    }
+%    \end{macrocode}
+%
+% Append a sentinel NaN to ensure the last value is not trimmed. This value is
+% particularly suitable because NaN is equal to no fp (even itself).
+%
+%    \begin{macrocode}
+    \seq_put_right:Nn \l_@@_data_seq { nan = 0 }
+    \tl_set:Nx \l_@@_data_tl { \seq_use:Nn \l_@@_data_seq {,} }
+%    \end{macrocode}
+%
+% Build the resulting clist while grouping equal values
+%
+%    \begin{macrocode}
+    \clist_clear:N \l_@@_compute_data_clist
+    \int_zero:N \l_@@_compute_count_int
+    \fp_zero:N \l_@@_compute_curvalue_fp
+    \keyval_parse:NNV
+            \@@_accumulate:n
+            \@@_accumulate:nn
+            \l_@@_data_tl
+    \exp_args:NNNV
+    \group_end:
+    \clist_set:Nn #2 \l_@@_compute_data_clist
+}
+\cs_new_protected_nopar:Nn \@@_accumulate:n {
+    \@@_accumulate:nn { #1 } { 1 }
+}
+\cs_new_protected_nopar:Nn \@@_accumulate:nn {
+    \fp_compare:nNnTF { #1 } = { \l_@@_compute_curvalue_fp } {
+        \int_add:Nn \l_@@_compute_count_int { #2 }
+    }{
+        \int_compare:nNnT { \l_@@_compute_count_int } > { 0 } {
+            \clist_put_right:Nx \l_@@_compute_data_clist {
+                \fp_to_decimal:N \l_@@_compute_curvalue_fp
+                \exp_not:n { = }
+                \exp_not:V \l_@@_compute_count_int
+            }
+        }
+        \fp_set:Nn \l_@@_compute_curvalue_fp { #1 }
+        \int_set:Nn \l_@@_compute_count_int { #2 }
+    }
+}
+%    \end{macrocode}
+%
+% \subsection{Count values in ranges to generate grouped counts}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \StatsRangeData { +O{} u{=} m +r() +O{} } {
+    \group_begin:
+%    \end{macrocode}
+%
+% Handle optional settings (there are none currently)
+% |\@@_setup:nn { rangedata } { #1, #5 }|
+% Get the data inline or from a variable
+%
+%    \begin{macrocode}
+    \tl_if_single:nTF { #3 } {
+%    \end{macrocode}
+%
+% Generate meaningful error by using the non-existent variable.
+%
+%    \begin{macrocode}
+        \cs_if_exist:NF #3 { #3 }
+        \tl_set_eq:NN \l_@@_data_tl #3
+    }{
+        \tl_set:Nn \l_@@_data_tl { #3 }
+    }
+%    \end{macrocode}
+%
+% Loop through the ranges and count values into them
+%
+%    \begin{macrocode}
+    \clist_clear:N \l_@@_compute_data_clist
+    \clist_map_inline:nn { #4 } {
+%    \end{macrocode}
+%
+% If not a range, bail out
+%
+%    \begin{macrocode}
+        \exp_args:Nx \tl_if_eq:nnF { \tl_head:n {##1} }{ \IN } {
+%    \end{macrocode}
+%
+% TODO: error message
+%
+%    \begin{macrocode}
+            \clist_map_break:
+        }
+%    \end{macrocode}
+%
+% Extract interval data
+%
+%    \begin{macrocode}
+        \@@_parse_range_full:w ##1 \q_stop
+%    \end{macrocode}
+%
+% Loop through the point data and count matching values
+%
+%    \begin{macrocode}
+        \int_zero:N \l_@@_compute_count_int
+        \keyval_parse:NNV
+                \@@_range_count:n
+                \@@_range_count:nn
+                \l_@@_data_tl
+        \clist_put_right:Nx \l_@@_compute_data_clist {
+            \exp_not:n { ##1 = }
+            \exp_not:V \l_@@_compute_count_int
+        }
+    }
+    \exp_args:NNNV
+    \group_end:
+    \clist_set:Nn #2 \l_@@_compute_data_clist
+}
+\cs_new_protected_nopar:Nn \@@_range_count:n {
+    \@@_range_count:nn { #1 } { 1 }
+}
+\cs_new_protected_nopar:Nn \@@_range_count:nn {
+    \@@_if_in_range:nT { #1 } {
+        \int_add:Nn \l_@@_compute_count_int { #2 }
+    }
+}
+%</package>
+%    \end{macrocode}
+%
+% \end{implementation}

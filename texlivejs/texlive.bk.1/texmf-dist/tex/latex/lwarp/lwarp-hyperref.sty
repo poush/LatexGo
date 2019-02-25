@@ -1,0 +1,205 @@
+%%
+%% This is file `lwarp-hyperref.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `hyperref')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+
+
+\typeout{Using the lwarp html version of package `hyperref', discarding options.}
+\typeout{    Are not using ProvidesPackage, so that other packages}
+\typeout{    do not attempt to patch lwarp's version of `hyperref'.}
+\DeclareOption*{}
+\ProcessOptions\relax
+
+\newcommand*{\hypersetup}[1]{}
+\newcommand*{\hyperbaseurl}[1]{}
+
+\NewDocumentCommand{\LWR@hyperimageb}{m +m}{%
+\LWR@ensuredoingapar%
+\def\LWR@templink{#1}%
+\@onelevel@sanitize\LWR@templink%
+\LWR@htmltag{img src="\LWR@templink" alt="#2" class="hyperimage"}%
+\LWR@ensuredoingapar%
+\endgroup%
+}
+
+\newrobustcmd*{\hyperimage}{%
+\begingroup%
+\catcode`\#=12%
+\catcode`\%=12%
+\catcode`\&=12%
+\catcode`\~=12%
+\catcode`\_=12%
+\LWR@hyperimageb%
+}
+
+\NewDocumentCommand{\LWR@hyperdefb}{m m +m}{%
+\LWR@ensuredoingapar%
+\LWR@sublabel{#1.#2}%
+#3%
+\endgroup%
+}
+
+\newcommand*{\hyperdef}{%
+\begingroup%
+\catcode`\#=12%
+\catcode`\%=12%
+\catcode`\&=12%
+\catcode`\~=12%
+\catcode`\_=12%
+\LWR@hyperdefb%
+}
+
+\newcommand{\LWR@hyperreffinish}[1]{%
+\begingroup%
+\RenewDocumentCommand{\ref}{}{\LWR@ref@ignorestar}%
+#1%
+\endgroup%
+\LWR@htmltag{/a}%
+}
+
+\newcommand*{\LWR@hyperrefbb}[3]{%
+\LWR@htmltag{%
+    a href="%
+        \detokenize\expandafter{#1}\LWR@hashmark%
+        \detokenize\expandafter{#2}.\detokenize\expandafter{#3}%
+    "%
+}%
+\endgroup%
+\LWR@hyperreffinish%
+}
+
+\newrobustcmd*{\LWR@hyperrefb}{%
+\begingroup%
+\catcode`\#=12%
+\catcode`\%=12%
+\catcode`\&=12%
+\catcode`\~=12%
+\catcode`\_=12%
+\LWR@hyperrefbb%
+}
+
+
+\NewDocumentCommand{\LWR@hyperrefcb}{O{label}}{%
+\LWR@startref{#1}%
+\endgroup%
+\LWR@hyperreffinish%
+}
+
+\newcommand*{\LWR@hyperrefc}{%
+\begingroup%
+\catcode`\#=12%
+\catcode`\%=12%
+\catcode`\&=12%
+\catcode`\~=12%
+\catcode`\_=12%
+\LWR@hyperrefcb%
+}
+
+\DeclareRobustCommand*{\hyperref}{%
+\LWR@ensuredoingapar%
+\@ifnextchar[\LWR@hyperrefc\LWR@hyperrefb%
+}
+
+\NewDocumentCommand{\LWR@hypertargetb}{m +m}{%
+\label{LWR-ht-#1}%
+#2%
+\endgroup%
+}
+
+\newcommand*{\hypertarget}{%
+\begingroup%
+\catcode`\#=12%
+\catcode`\%=12%
+\catcode`\&=12%
+\catcode`\~=12%
+\catcode`\_=12%
+\LWR@hypertargetb%
+}
+
+\DeclareDocumentCommand{\LWR@hyperlinkb}{m}{%
+\LWR@hyperrefcb[LWR-ht-#1]%
+}
+
+\DeclareDocumentCommand{\hyperlink}{}{%
+\LWR@ensuredoingapar%
+\begingroup%
+\catcode`\#=12%
+\catcode`\%=12%
+\catcode`\&=12%
+\catcode`\~=12%
+\catcode`\_=12%
+\LWR@hyperlinkb%
+}
+
+\NewDocumentCommand{\autoref}{s m}{%
+\IfBooleanTF{#1}{\ref{#2}}{\cref{#2}}%
+}
+\NewDocumentCommand{\autopageref}{s m}{%
+\IfBooleanTF{#1}{\cpageref{#2}}{\cref{#2}}%
+}
+
+\newcommand{\pdfstringdef}[2]{}
+
+\newcommand{\pdfbookmark}[3][]{}
+
+\newcommand{\currentpdfbookmark}[2]{}
+
+\newcommand{\subpdfbookmark}[2]{}
+
+\newcommand{\belowpdfbookmark}[2]{}
+
+\newcommand{\texorpdfstring}[2]{#1}
+
+\def\hypercalcbp#1{%
+\strip@pt\dimexpr 0.99626401\dimexpr(#1)\relax\relax
+}%
+
+\newcommand{\Acrobatmenu}[2]{}
+
+\DeclareRobustCommand{\TextField}[2][]{}
+
+\DeclareRobustCommand{\CheckBox}[2][]{}
+
+\DeclareRobustCommand{\ChoiceMenu}[3][]{}
+
+\DeclareRobustCommand{\PushButton}[2][]{}
+
+\DeclareRobustCommand{\Submit}[2][]{}
+
+\DeclareRobustCommand{\Reset}[2][]{}
+
+\DeclareRobustCommand{\Gauge}[2][]{}
+
+\newcommand*{\LayoutTextField}[2]{}
+
+\newcommand*{\LayoutChoiceField}[2]{}
+
+\newcommand*{\LayoutCheckField}[2]{}
+
+\newcommand*{\MakeRadioField}[2]{}
+
+\newcommand*{\MakeCheckField}[2]{}
+
+\newcommand*{\MakeTextField}[2]{}
+
+\newcommand*{\MakeChoiceField}[2]{}
+
+\newcommand{\MakeFieldButton}[1]{}
+
+\endinput
+%%
+%% End of file `lwarp-hyperref.sty'.

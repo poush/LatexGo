@@ -1,0 +1,1897 @@
+% ======================================================================
+% scrlttr2-experts.tex
+% Copyright (c) Markus Kohm, 2002-2019
+%
+% This file is part of the LaTeX2e KOMA-Script bundle.
+%
+% This work may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License, version 1.3c of the license.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3c or later is part of all distributions of LaTeX 
+% version 2005/12/01 or later and of this work.
+%
+% This work has the LPPL maintenance status "author-maintained".
+%
+% The Current Maintainer and author of this work is Markus Kohm.
+%
+% This work consists of all files listed in manifest.txt.
+% ----------------------------------------------------------------------
+% scrlttr2-experts.tex
+% Copyright (c) Markus Kohm, 2002-2019
+%
+% Dieses Werk darf nach den Bedingungen der LaTeX Project Public Lizenz,
+% Version 1.3c, verteilt und/oder veraendert werden.
+% Die neuste Version dieser Lizenz ist
+%   http://www.latex-project.org/lppl.txt
+% und Version 1.3c ist Teil aller Verteilungen von LaTeX
+% Version 2005/12/01 oder spaeter und dieses Werks.
+%
+% Dieses Werk hat den LPPL-Verwaltungs-Status "author-maintained"
+% (allein durch den Autor verwaltet).
+%
+% Der Aktuelle Verwalter und Autor dieses Werkes ist Markus Kohm.
+% 
+% Dieses Werk besteht aus den in manifest.txt aufgefuehrten Dateien.
+% ======================================================================
+%
+% Chapter about scrlttr2 of the KOMA-Script guide expert part
+% Maintained by Markus Kohm
+%
+% ----------------------------------------------------------------------
+%
+% Kapitel ueber scrlttr2 im Experten-Teil der KOMA-Script-Anleitung
+% Verwaltet von Markus Kohm
+%
+% ============================================================================
+
+\KOMAProvidesFile{scrlttr2-experts.tex}
+                 [$Date: 2019-01-15 08:29:44 +0100 (Tue, 15 Jan 2019) $
+                  KOMA-Script guide (chapter: scrlttr2 for experts)]
+
+\translator{Harald Bongartz\and Georg Grandke\and Raimund Kohl\and Jens-Uwe
+  Morawski\and Stephan Hennig\and Gernot Hassenpflug\and Markus Kohm\and
+  Karl Hagen}
+
+% Date of the translated German file: 2018-07-20
+
+\chapter{Additional Information about the \Class{scrlttr2} Class and the
+ \Package{scrletter} Package}
+\labelbase{scrlttr2-experts}
+
+\BeginIndexGroup
+\BeginIndex{Class}{scrlttr2}
+This chapter provides additional information about the \KOMAScript{} class
+\Class{scrlttr2}. \iffree{Some parts of the chapter are found only in the
+  German \KOMAScript{} book \cite{book:komascript}. This should not be a
+  problem, because the}{The} average user, who only wants to use the class
+or package, will not normally need this information. Part of this information
+is addressed to users for whom the default options are insufficient. Thus,
+for example, the first section describes in detail the pseudo-lengths that
+specify the letterhead page and which can be used be used to modify the its
+layout.%
+\iffalse% Es wird Zeit das komplett rauszuwerfen!
+  In addition, this chapter also describes features that exist only to
+  provide compatibility with the deprecated \Class{scrlettr} class. It also
+  explains in detail how to convert a document from this obsolete class
+  to the current  class.
+\fi
+
+\BeginIndex{Package}{scrletter}%
+Starting with \KOMAScript~3.15\ChangedAt[2014/11]{v3.15}{\Package{scrletter}},
+you can use the \Package{scrletter} package with one of the \KOMAScript{}
+classes \Class{scrartcl}, \Class{scrreprt}, or \Class{scrbook}. It provides
+nearly all the features of \Class{scrlttr2} for those classes. There are,
+however, a few differences described later in this chapter.%
+
+
+\section{Pseudo-Lengths for Experienced Users}
+\seclabel{pseudoLengths}
+\BeginIndexGroup
+\BeginIndex{}{pseudo-lengths}
+
+\TeX{} works with a fixed number of registers. There are registers for tokens,
+for boxes, for counters, for skips, and for dimensions. Overall there are 256
+registers for each of these categories. For \LaTeX{} lengths, which are
+defined with \Macro{newlength}, skip registers are used. Once all these
+registers are in use, you can not define any more lengths. Both
+\Class{scrlttr2} and \Package{scrletter} would normally use more than 20 of
+these registers for the first page alone. \LaTeX{} itself already uses 40 of
+these registers. The \hyperref[cha:typearea]{\Package{typearea}}%
+\IndexPackage{typearea} package needs some of them too; thus, approximately a
+quarter of these precious registers would already be in use. For this reason,
+\KOMAScript{} stores letter-specific lengths in macros instead of lengths. The
+drawback of this approach is that computations with macros are somewhat more
+complicated than with real lengths.
+
+Note\textnote{Attention!} that even though these pseudo-lengths are internally
+implemented as macros, the commands for pseudo-length management expect only
+the names of the pseudo-lengths not the macros representing the
+pseudo-lengths. The names of pseudo-lengths are written without the initial
+backslash, like the names of \LaTeX{} counters and unlike macros or \LaTeX{}
+lengths.
+
+Anyone who wants to argue that the recommended \LaTeX{} installation with
+\eTeX{}, which is required for \KOMAScript{} anyway, no longer suffers from
+the above-mentioned limitation would be right. However, that improvement came
+too late for \Class{scrlttr2}. With \Package{scrletter}, the concept of
+psuedo-lengths was adopted for reasons of compatibility.
+
+The pseudo-lengths defined and uses by \KOMAScript{} are listed in
+\autoref{tab:scrlttr2-experts.pseudoLength}, which also provides cross
+references to the detailed descriptions of each pseudo-lengths in the
+following sub-sections.
+
+A schematic display of the most important distances of the letterhead page is
+shown in \autoref{fig:scrlttr2-experts.pseudoLength} on
+\autopageref{fig:scrlttr2-experts.pseudoLength}. In addition to the
+pseudo-lengths for the configurable distances, some non-configurable lengths
+are also shown in light gray. For the sake of clarity, however, some rarely
+required pseudo-lengths have been omitted.
+%
+\begin{desclist}
+  \renewcommand{\abovecaptionskipcorrection}{-\normalbaselineskip}%
+  \desccaption{%
+    Pseudo-lengths provided by \Class{scrlttr2} and \Package{scrletter}%
+    \label{tab:scrlttr2-experts.pseudoLength}%
+  }{%
+    Pseudo-lengths provided by \Class{scrlttr2} and \Package{scrletter}
+    (\emph{continued})%
+  }%
+  \pentry{backaddrheight}{%
+    the height of the return address at the upper edge of the address field
+    (\autoref{sec:scrlttr2-experts.addressee},
+    \DescPageRef{scrlttr2-experts.plength.backaddrheight})%
+  }%
+  \pentry{bfoldmarklength}{%
+    the length of the bottommost fold mark
+    (\autoref{sec:scrlttr2-experts.foldmarks},
+    \DescPageRef{scrlttr2-experts.plength.bfoldmarkvpos})%
+  }%
+  \pentry{bfoldmarkvpos}{%
+    the vertical distance of the bottommost fold mark from the top edge of the
+    paper (\autoref{sec:scrlttr2-experts.foldmarks},
+    \DescPageRef{scrlttr2-experts.plength.bfoldmarkvpos})%
+  }%
+  \pentry{firstfoothpos}{%
+    the horizontal distance of the letterhead page footer from the left edge
+    of the paper; values greater than the width of the paper or less than the
+    negative value of the width of the paper activate special handling %
+    (\autoref{sec:scrlttr2-experts.firstFoot},
+    \DescPageRef{scrlttr2-experts.plength.firstfoothpos})%
+  }%
+  \pentry{firstfootvpos}{%
+    the vertical distance of letterhead page footer from the top edge of the
+    paper (\autoref{sec:scrlttr2-experts.firstFoot},
+    \DescPageRef{scrlttr2-experts.plength.firstfootvpos})%
+  }%
+  \pentry{firstfootwidth}{%
+    the width of the letterhead page footer
+    (\autoref{sec:scrlttr2-experts.firstFoot},
+    \DescPageRef{scrlttr2-experts.plength.firstfootwidth})%
+  }%
+  \pentry{firstheadhpos}{%
+    the horizontal distance of the letterhead from the left edge of the paper;
+    values greater than the width of the paper or less than the negative value
+    of the width of the paper activate special handling
+    (\autoref{sec:scrlttr2-experts.firstHead},
+    \DescPageRef{scrlttr2-experts.plength.firstheadhpos})%
+  }%
+  \pentry{firstheadvpos}{%
+    the vertical distance of the letterhead from the top edge of the paper
+    (\autoref{sec:scrlttr2-experts.firstHead},
+    \DescPageRef{scrlttr2-experts.plength.firstheadvpos})%
+  }%
+  \pentry{firstheadwidth}{%
+    the width of the letterhead (\autoref{sec:scrlttr2-experts.firstHead},
+    \DescPageRef{scrlttr2-experts.plength.firstheadwidth})%
+  }%
+  \pentry{foldmarkhpos}{%
+    the horizontal distance of the horizontal fold marks from the left edge of
+    the paper (\autoref{sec:scrlttr2-experts.foldmarks},
+    \DescPageRef{scrlttr2-experts.plength.foldmarkhpos})%
+  }%
+  \pentry{foldmarkvpos}{%
+    the vertical distance of the vertical fold marks from the top edge of the
+    paper (\autoref{sec:scrlttr2-experts.foldmarks},
+    \DescPageRef{scrlttr2-experts.plength.foldmarkvpos})%
+  }%
+  \pentry{fromrulethickness}{%
+    the thickness of an optional horizontal rule in the letterhead
+    (\autoref{sec:scrlttr2-experts.firstHead},
+    \DescPageRef{scrlttr2-experts.plength.fromrulethickness})%
+  }%
+  \pentry{fromrulewidth}{%
+    the length of an optional horizontal rule in the letterhead
+    (\autoref{sec:scrlttr2-experts.firstHead},
+    \DescPageRef{scrlttr2-experts.plength.fromrulewidth})%
+  }%
+  \pentry{lfoldmarkhpos}{%
+    the horizontal distance of the vertical fold mark from the left edge of
+    the paper (\autoref{sec:scrlttr2-experts.foldmarks},
+    \DescPageRef{scrlttr2-experts.plength.lfoldmarkhpos})%
+  }%
+  \pentry{lfoldmarklength}{%
+    the length of the vertical fold mark
+    (\autoref{sec:scrlttr2-experts.foldmarks},
+    \DescPageRef{scrlttr2-experts.plength.lfoldmarklength})%
+  }%
+  \pentry{locheight}{%
+    the height of the field containing the additional sender information if
+    the value is not 0; if it is 0, \PLength{toaddrheight} is used instead
+    (\autoref{sec:scrlttr2-experts.locationField},
+    \DescPageRef{scrlttr2-experts.plength.locheight})%
+  }%
+  \pentry{lochpos}{%
+    the horizontal distance of the field containing the additional sender
+    information; if the value is positive, the distance is measured from the
+    right paper edge; if negative, from the left paper edge; if 0, the
+    negative value of \PLength{toaddrhpos} is used instead
+    (\autoref{sec:scrlttr2-experts.locationField},
+    \DescPageRef{scrlttr2-experts.plength.lochpos})%
+  }%
+  \pentry{locvpos}{%
+    the vertical distance of the field containing the additional sender
+    information from the top edge of the paper if the value is not 0; if it is
+    0, \PLength{toaddrvpos} is used instead
+    (\autoref{sec:scrlttr2-experts.locationField},
+    \DescPageRef{scrlttr2-experts.plength.locvpos})%
+  }%
+  \pentry{locwidth}{%
+    the width of the field containing the additional sender information; if it
+    is 0, the width is calculated automatically based on the
+    \DescRef{scrlttr2.option.locfield} option described in
+    \autoref{sec:scrlttr2.firstpage}, \DescPageRef{scrlttr2.option.locfield} %
+    (\autoref{sec:scrlttr2-experts.locationField},
+    \DescPageRef{scrlttr2-experts.plength.locwidth})%
+  }%
+  \pentry{mfoldmarklength}{%
+    the length of the middle horizontal fold mark
+    (\autoref{sec:scrlttr2-experts.foldmarks},
+    \DescPageRef{scrlttr2-experts.plength.mfoldmarklength})%
+  }%
+  \pentry{mfoldmarkvpos}{%
+    the vertical distance of the middle horizontal fold mark from the top edge
+    of the paper (\autoref{sec:scrlttr2-experts.foldmarks},
+    \DescPageRef{scrlttr2-experts.plength.mfoldmarkvpos})%
+  }%
+  \pentry{pfoldmarklength}{%
+    the length of the hole-punch mark
+    (\autoref{sec:scrlttr2-experts.foldmarks},
+    \DescPageRef{scrlttr2-experts.plength.pfoldmarklength})%
+  }%
+  \pentry{PPdatamatrixvskip}{%
+    the vertical distance between the postpaid header and the data array with
+    \OptionValueRef{scrlttr2}{addrfield}{PP}
+    (\autoref{sec:scrlttr2-experts.addressee},
+    \DescPageRef{scrlttr2-experts.plength.PPdatamatrixvskip})%
+  }%
+  \pentry{PPheadheight}{%
+    the height of the postpaid header
+    (\autoref{sec:scrlttr2-experts.addressee},
+    \DescPageRef{scrlttr2-experts.plength.PPheadheight})%
+  }%
+  \pentry{PPheadwidth}{%
+    the width of the left postpaid field with
+    \OptionValueRef{scrlttr2}{addrfield}{PP}
+    (\autoref{sec:scrlttr2-experts.addressee},
+    \DescPageRef{scrlttr2-experts.plength.PPheadwidth})%
+  }%
+  \pentry{refaftervskip}{%
+    vertical skip below reference-field line %
+    (\autoref{sec:scrlttr2-experts.refLine},
+    \DescPageRef{scrlttr2-experts.plength.refaftervskip})%
+  }%
+  \pentry{refhpos}{%
+    the horizontal distance of reference-field line from the left
+    edge of the paper; if the value is 0, the reference-field line is centred
+    horizontally on the letterhead page
+    (\autoref{sec:scrlttr2-experts.refLine},
+    \DescPageRef{scrlttr2-experts.plength.refhpos})%
+  }%
+  \pentry{refvpos}{%
+    the vertical distance of reference-field line from the top
+    edge of the paper (\autoref{sec:scrlttr2-experts.refLine},
+    \DescPageRef{scrlttr2-experts.plength.refvpos})%
+  }%
+  \pentry{refwidth}{%
+    the width of the reference-field line
+    (\autoref{sec:scrlttr2-experts.refLine},
+    \DescPageRef{scrlttr2-experts.plength.refwidth})%
+  }%
+  \pentry{sigbeforevskip}{%
+    the vertical skip between the closing and the signature
+    (\autoref{sec:scrlttr2-experts.closing},
+    \DescPageRef{scrlttr2-experts.plength.sigbeforevskip})%
+  }%
+  \pentry{sigindent}{%
+    the indentation of the signature with respect to the text body
+    (\autoref{sec:scrlttr2-experts.closing},
+    \DescPageRef{scrlttr2-experts.plength.sigindent})%
+  }%
+  \pentry{specialmailindent}{%
+    the left indentation of the delivery method within the address field
+    (\autoref{sec:scrlttr2-experts.addressee},
+    \DescPageRef{scrlttr2-experts.plength.specialmailindent})%
+  }%
+  \pentry{specialmailrightindent}{%
+    the right indentation of the delivery method within the address field
+    (\autoref{sec:scrlttr2-experts.addressee},
+    \DescPageRef{scrlttr2-experts.plength.specialmailrightindent})%
+  }%
+  \pentry{subjectaftervskip}{%
+    the vertical skip after the subject
+    (\autoref{sec:scrlttr2-experts.subject},
+    \DescPageRef{scrlttr2-experts.plength.subjectaftervskip})%
+  }%
+  \pentry{subjectbeforevskip}{%
+    additional vertical skip before the subject
+    (\autoref{sec:scrlttr2-experts.subject},
+    \DescPageRef{scrlttr2-experts.plength.subjectbeforevskip})%
+  }%
+  \pentry{subjectvpos}{%
+    the vertical distance of the subject from the top edge of the paper; if it
+    is 0, the position is calculated based on the
+    \DescRef{scrlttr2.option.subject} option
+    (\autoref{sec:scrlttr2-experts.subject},
+    \DescPageRef{scrlttr2-experts.plength.subjectaftervskip})%
+  }%
+  \pentry{tfoldmarklength}{%
+    the length of the topmost horizontal fold mark
+    (\autoref{sec:scrlttr2-experts.foldmarks},
+    \DescPageRef{scrlttr2-experts.plength.tfoldmarklength})%
+  }%
+  \pentry{tfoldmarkvpos}{%
+    the vertical distance of the topmost horizontal folding mark from the top
+    edge of the paper (\autoref{sec:scrlttr2-experts.foldmarks},
+    \DescPageRef{scrlttr2-experts.plength.tfoldmarkvpos})%
+  }%
+  \pentry{toaddrheight}{%
+    the height of the address field (\autoref{sec:scrlttr2-experts.addressee},
+    \DescPageRef{scrlttr2-experts.plength.toaddrheight})%
+  }%
+  \pentry{toaddrhpos}{%
+    the horizontal distance of the address field from left edge of the paper,
+    if the value is positive; if it is negative, the negative horizontal
+    distance of the address field from the right edge of the paper
+    (\autoref{sec:scrlttr2-experts.addressee},
+    \DescPageRef{scrlttr2-experts.plength.toaddrhpos})%
+  }%
+  \pentry{toaddrindent}{%
+    the left and right indentation of the address within the address field
+    (\autoref{sec:scrlttr2-experts.addressee},
+    \DescPageRef{scrlttr2-experts.plength.toaddrindent})%
+  }%
+  \pentry{toaddrvpos}{%
+    the vertical distance of the address field from the the top edge of the
+    paper (\autoref{sec:scrlttr2-experts.addressee},
+    \DescPageRef{scrlttr2-experts.plength.toaddrvpos})%
+  }%
+  \pentry{toaddrwidth}{%
+    the width of the address field %
+    (\autoref{sec:scrlttr2-experts.addressee},
+    \DescPageRef{scrlttr2-experts.plength.toaddrwidth})%
+  }%
+\end{desclist}
+
+\begin{figure}
+  \centering
+  \includegraphics{plenDIN}
+  \caption{Schematic of the pseudo-lengths for a letter}
+  \label{fig:scrlttr2-experts.pseudoLength}
+\end{figure}
+
+
+\begin{Declaration}
+  \Macro{newplength}\Parameter{name}
+\end{Declaration}
+This\ChangedAt{v3.26}{\Class{scrlttr2}\and \Package{scrletter}} command
+defines a new pseudo-length. The new pseudo-length is uniquely identified by
+its \PName{name}. Each name can therefore be assigned only once. If you
+attempt to redefine an existing pseudo-length, the commands exits with an
+error message.
+
+\BeginIndex{Cmd}{@newplength}%
+Since the ordinary user does not normally need to define pseudo-lengths, this
+command was not a user instruction until \KOMAScript~3.26. Before then,
+\Macro{@newplength} existed with the same functionality. This instruction still
+exists for package authors.%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \Macro{setplength}%
+    \OParameter{factor}\Parameter{pseudo-length}\Parameter{value}%
+  \Macro{addtoplength}%
+    \OParameter{factor}\Parameter{pseudo-length}\Parameter{value}
+\end{Declaration}
+Using \Macro{setplength}, you can assign the multiple of a
+\PName{value} to a \PName{pseudo-length}. The \PName{factor} is given as an
+optional argument (see also \DescRef{scrlttr2.cmd.setlengthtoplength},
+\autoref{sec:scrlttr2.pseudoLength},
+\DescPageRef{scrlttr2.cmd.setlengthtoplength}).
+
+With \Macro{addtoplength} you can add the multiple of a \PName{value} to a
+\PName{pseudo-length}. Again, you can pass a \PName{factor} as an optional
+argument.
+
+To assign or to add the multiple of one \PName{pseudo-length} to another
+pseudo-length, use the \Macro{useplength} command (see
+\autoref{sec:scrlttr2.pseudoLength}, \DescPageRef{scrlttr2.cmd.useplength})
+within the \PName{value}. To subtract the value of one \PName{pseudo-length}
+from another \PName{pseudo-length}, you use should use at the same time a
+minus sign or \PValue{-1} as the \PName{factor}.
+
+\BeginIndex{Cmd}{@setplength}%
+\BeginIndex{Cmd}{@addtoplength}%
+Since the ordinary user does not normally need to define pseudo-lengths, these
+commands were not user instructions until \KOMAScript~3.26. Before then,
+\Macro{@setplength} and \Macro{@addtoplength} existed with the
+same functionality. These commands still exist for the use of package authors.%
+\EndIndexGroup
+
+\begin{Declaration}
+  \Macro{setplengthtowidth}
+    \OParameter{factor}\Parameter{pseudo-length}\Parameter{content}%
+  \Macro{setplengthtoheight}
+    \OParameter{factor}\Parameter{pseudo-length}\Parameter{content}%
+  \Macro{setplengthtodepth}
+    \OParameter{factor}\Parameter{pseudo-length}\Parameter{content}%
+  \Macro{setplengthtototalheight}
+    \OParameter{factor}\Parameter{pseudo-length}\Parameter{content}%
+\end{Declaration}
+The\ChangedAt{v3.26}{\Class{scrlttr2}\and \Package{scrletter}} first three
+commands essentially correspond with \Macro{settowidth},
+\Macro{settoheight}, and \Macro{settodepth} from the \LaTeX{} kernel, but set
+\PName{pseudo-length}s instead of lengths. Like 
+\DescRef{\LabelBase.cmd.setplength}, these commands extend their \LaTeX{}
+kernel equivalents with an optional \PName{factor}. They set a
+\PName{pseudo-length} to the natural width, height or depth of the given
+\PName{content}, multiplied by the optional \PName{factor}. The additional
+command \Macro{setplengthtototalheight} sets the \PName{pseudo-length} to the
+sum of the height and depth of \PName{content} multiplied by the optional
+\PName{factor}.%
+\EndIndexGroup
+
+
+\subsection{Fold Marks}
+\seclabel{foldmarks}
+\BeginIndexGroup
+\BeginIndex{}{fold marks}%
+\index{marks>folding|see{fold marks}}
+
+Fold marks, or folding marks, are short horizontal lines at the left edge, and
+short vertical lines at the upper edge of the paper. \KOMAScript{} currently
+supports three configurable horizontal and one configurable vertical fold
+marks. In addition, there is support for a hole-punch mark, or centre mark,
+which cannot be shifted vertically.
+
+\begin{Declaration}
+  \PLength{tfoldmarkvpos}%
+  \PLength{mfoldmarkvpos}%
+  \PLength{bfoldmarkvpos}
+\end{Declaration}
+\KOMAScript{} recognises a total of three fold marks whose vertical position
+can be configured. The distance of the top fold mark from the upper edge of
+the paper is determined by the \PLength{tfoldmarkvpos} pseudo-length; the
+distance of the middle fold mark, by the
+\PLength{mfoldmarkvpos}\ChangedAt{v2.97e}{\Class{scrlttr2}} pseudo-length; the
+distance of the bottommost fold mark, by \PLength{bfoldmarkvpos}
+pseudo-length. With the addition of the hole-punch\Index{hole-punch mark} or
+centre\Index{centre mark|see{hole-punch mark}} mark, there is yet a fourth
+horizontal mark. This one is however always placed at the vertical centre of
+the paper.
+\iftrue% Umbruchkorrekturtext
+There is no pseudo-length for this last mark because its vertical position is
+not configurable.
+\fi
+
+The\textnote{Attention!} top and bottom fold marks do not serve to divide the
+paper exactly into equal thirds. Instead, the paper should be folded with
+their help such that the address field can be seen in a window envelope. The
+settings are therefore different depending on the \File{lco} file chosen.
+Several such files are available offering predefined formats. One format
+particularly worth noting is \Option{DINmtext}. This format assumes an
+envelope format of C6/5 (also known as ``C6 long''). Letters written with this
+option are typically not suited for C5 or C4 envelopes.
+
+The middle fold mark is not normally required for Western letters. In Japan,
+however, a larger number of envelope formats exists, requiring one more fold
+mark (see the Japanese \File{lco} files). Note that the terms ``top'',
+``middle'', and ``bottom'' fold marks only represent a naming convention. In
+fact, it is not required that \PLength{tfoldmarkvpos} must be smaller than
+\PLength{mfoldmarkvpos}, which in turn must be smaller than
+\PLength{bfoldmarkvpos}. If, though, one of the pseudo-lengths is zero, then
+the corresponding fold mark will not be set even if the
+\DescRef{scrlttr2.option.foldmarks}\IndexOption{foldmarks~=\PName{setting}}%
+\important{\DescRef{scrlttr2.option.foldmarks}} option (see
+\autoref{sec:scrlttr2.firstpage}, \DescPageRef{scrlttr2.option.foldmarks}) is
+explicitly activated.
+%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{tfoldmarklength}%
+  \PLength{mfoldmarklength}%
+  \PLength{bfoldmarklength}%
+  \PLength{pfoldmarklength}
+\end{Declaration}
+These\ChangedAt{v2.97e}{\Class{scrlttr2}} four pseudo-lengths determine the
+lengths of the four horizontal fold marks. One\textnote{Attention!} feature is
+particularly worth noting. If the length is given as zero, then the three
+vertically configurable pseudo-lengths \PLength{tfoldmarklength},
+\PLength{mfoldmarklength} and \PLength{bfoldmarklength} are set to 2\Unit{mm}.
+The length of the hole-punch mark, \PLength{pfoldmarklength}, however, is set
+to 4\Unit{mm}.%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{foldmarkhpos}
+\end{Declaration}
+This pseudo-length gives the distance of all horizontal fold marks from the
+left edge of the paper. Normally, this is 3.5\Unit{mm}. You\textnote{Hint!}
+can change this value in your own \File{lco} file if you are using a printer
+that has a wider unprintable left margin. Whether the fold marks are typeset
+at all depends on the option \DescRef{scrlttr2.option.foldmarks}%
+\important{\DescRef{scrlttr2.option.foldmarks}}%
+\IndexOption{foldmarks~=\PName{setting}} (see
+\autoref{sec:scrlttr2.firstpage}, \DescPageRef{scrlttr2.option.foldmarks}).
+%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{lfoldmarkhpos}
+\end{Declaration}
+In\ChangedAt{v2.97e}{\Class{scrlttr2}} addition to the horizontal fold marks,
+there is also a vertical fold mark. Its distance from the left margin is set
+via the \PLength{lfoldmarkhpos} pseudo-length. This fold mark is used, for
+example, in Japanese Chou- or You-format envelopes if you want to use them
+with A4 paper. It can also be useful for envelopes in C6 format.%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{lfoldmarklength}
+\end{Declaration}
+The\ChangedAt{v2.97e}{\Class{scrlttr2}} \PLength{lfoldmarklength}
+pseudo-length determines the length of the vertical fold mark. Once again, a
+feature worth noting is that if the length is given as zero, a length of
+4\Unit{mm} is actually used.%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{foldmarkvpos}
+\end{Declaration}
+This\ChangedAt{v2.97e}{\Class{scrlttr2}} pseudo-length determines the distance of
+all vertical fold marks from the upper edge of the paper. Normally this is
+3.5\Unit{mm}, but\textnote{Hint!} you can change the value in your own
+\File{lco} file in case your printer has a wider unprintable
+top margin. Whether or not the foldmarks are actually typeset depends on the 
+\DescRef{scrlttr2.option.foldmarks}%
+\important{\DescRef{scrlttr2.option.foldmarks}}%
+\IndexOption{foldmarks~=\PName{setting}} option (see
+\autoref{sec:scrlttr2.firstpage}, \DescPageRef{scrlttr2.option.foldmarks}).
+\iffree{At present there is only one vertical fold mark, called the left
+  vertical fold mark.}{}%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{foldmarkthickness}
+\end{Declaration}
+This\ChangedAt{v2.97c}{\Class{scrlttr2}} pseudo-length determines the
+thickness of all fold marks. The default is 0.2\Unit{pt}, in other words a
+very thin hairline. In\textnote{Hint!} particular, if the colour of the fold
+marks is changed, this may not be enough.%
+\EndIndexGroup
+%
+\EndIndexGroup
+
+
+\subsection{Letterhead}
+\seclabel{firstHead}
+\BeginIndexGroup
+\BeginIndex{}{letterhead}%
+
+The term letterhead refers here to all of the information concerning the
+sender that appears above the recipient's address. Normally you would expect
+that this information would be set through the page-style settings. In fact,
+this was the case with the old letter class, \Class{scrlettr}.
+But\textnote{Attention!} \Class{scrlttr2} and \Package{scrletter} output the
+letterhead independently of the page style by means of the
+\DescRef{scrlttr2.cmd.opening}\IndexCmd{opening} command.
+% Fuellmaterial
+\iftrue%
+  The letterhead is positioned absolutely, so that it is independent of the
+  type area. In fact, the first page of a letter, the page that holds the
+  letterhead, is set using the page style
+  \DescRef{scrlttr2.pagestyle.empty}\IndexPagestyle{empty}.%
+\fi
+% Ende des Fuellmaterials
+
+
+\begin{Declaration}
+  \PLength{firstheadvpos}
+\end{Declaration}
+The \PLength{firstheadvpos} pseudo-length gives the distance between the top
+edge of the paper and the start of the letterhead. This value is set
+differently in the various predefined
+\File{lco} files\textnote{\File{lco} file}\Index{lco file=\File{lco} file}. A
+typical value is 8\Unit{mm}.%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{firstheadhpos}
+\end{Declaration}
+A positive value of the
+\PLength{firstheadhpos}\ChangedAt{v3.05}{\Class{scrlttr2}} pseudo-length gives
+the distance between the left edge of the paper and the start of the
+letterhead. If\textnote{Attention!} the value is actually greater than or
+equal to the paper width,
+\Length{paperwidth}\important{\Length{paperwidth}}\IndexLength{paperwidth},
+the letterhead will be centred horizontally on the letterhead paper. A
+negative value gives the distance between the right edge of the paper and the
+right edge of the letterhead. If the value actually less than or equal to the
+negative value of the width of the paper, the letterhead is placed flush with
+the left edge of the type area.
+
+The default\textnote{Attention!} value is typically
+\Length{maxdimen}\IndexLength{maxdimen}, which is the maximum allowed value of
+a length. This results in horizontal centring.%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{firstheadwidth}
+\end{Declaration}
+The \PLength{firstheadwidth} pseudo-length gives the width of the letterhead.
+This value is set differently in the various predefined \File{lco}
+files\textnote{\File{lco} file}\Index{lco file=\File{lco} file}. While this
+value usually depends on the paper width and the distance between the left
+edge of the paper and the recipient's address field, it was the width of the
+type area in \Option{KOMAold} and has a fixed value of 170\Unit{mm} in
+\Option{NF}.%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{fromrulethickness}%
+  \PLength{fromrulewidth}
+\end{Declaration}
+As mentioned in the explanation of the
+\DescRef{scrlttr2.option.fromrule}\IndexOption{fromrule} option in
+\autoref{sec:scrlttr2.firstpage}, \DescPageRef{scrlttr2.option.fromrule}, you
+can put a horizontal rule within or below the sender's address in the
+predefined letterheads. If\textnote{Attention!} the \PLength{fromrulewidth}
+pseudo-length has a value of 0\Unit{pt}, which is the default in the
+predefined \File{lco} files, the length of this rule is calculated
+automatically taking into account, for example, letterhead width or an
+optional logo. You can adjust rule length manually in your own \File{lco}
+files by setting this pseudo-length to positive values using
+\Macro{setplength} (see \DescPageRef{scrlttr2-experts.cmd.setplength}). The
+default thickness of the line\ChangedAt{v2.97c}{\Class{scrlttr2}},
+\PLength{fromrulethickness}, is 0.4\Unit{pt}.%
+\EndIndexGroup
+%
+\EndIndexGroup
+
+
+\subsection{Addressee}
+\seclabel{addressee}%
+\BeginIndexGroup
+\BeginIndex{}{addressee}
+\index{recipient|seealso{addressee}}
+
+The term \emph{addressee} normally refers only to the recipient's name and
+address, which are output in an address field. Additional information,
+however, can be placed within this address field, including the delivery
+method, for example registered mail or special delivery. For window envelopes,
+the return address also counts as part of the address field, as it will be
+displayed in the address window. The address field directly follows the
+letterhead.
+
+\begin{Declaration}
+  \PLength{toaddrvpos}%
+  \PLength{toaddrhpos}
+\end{Declaration}
+These pseudo-lengths define the vertical and horizontal distance of the
+address field from the top-left corner of the paper. Values are set
+differently in the various predefined \File{lco} files\textnote{\File{lco}
+file}\Index{lco file=\File{lco} file}, according to standard envelope window
+measures. For \PLength{toaddrhpos}, one property worth noting is that with
+negative values, the offset is the distance from the right edge of the address
+field to the right edge of the paper. You will find this, for instance, in
+\Option{SN} or \Option{NF}. The smallest value of \PLength{toaddrvpos} is
+found with \Option{DINmtext}. With this setting, the letterhead can easily
+protrude into the address window. Whether the address field is output or not
+depends on the \Option{addrfield} option (see
+\autoref{sec:scrlttr2.firstpage}, \DescPageRef{scrlttr2.option.addrfield}).%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{toaddrheight}
+\end{Declaration}
+This pseudo-length defines the height of the address field, including the
+delivery method. Whether the name and address of the recipient are vertically
+centred in the address field, taking into account the presence or absence of
+the delivery method, depends on the \DescRef{scrlttr2.option.addrfield}
+option.%
+\EndIndexGroup
+ 
+
+\begin{Declaration}
+  \PLength{toaddrwidth}
+\end{Declaration}
+This pseudo-length defines the width of the address field. The various
+predefined \File{lco} files\textnote{\File{lco} files}\Index{lco
+file=\File{lco} files} use different settings according to the different
+standards for window envelopes. Typical values are between 70\Unit{mm} and
+100\Unit{mm}.
+\begin{Example}
+  Suppose your printer has very wide, non-printable left and right margins of 15\Unit{mm}.
+  This means that the letterhead, the additional sender information, and the address field cannot
+  be completely printed if you use the \Option{SN} option. You therefore
+  create a new \File{lco} file with the following content:
+\begin{lstcode}
+  \ProvidesFile{SNmmarg.lco}
+               [2002/06/04 v0.1 my lco]
+  \LoadLetterOption{SN}
+  \addtoplength{toaddrwidth}{%
+    -\useplength{toaddrhpos}}
+  \setplength{toaddrhpos}{-15mm}
+  \addtoplength{toaddrwidth}{%
+    \useplength{toaddrhpos}}
+  \endinput
+\end{lstcode}
+  Then, until you can obtain a printer with smaller page margins, you
+  simply use the option \Option{SNmmarg} instead of \Option{SN}.%
+\end{Example}%
+%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{toaddrindent}
+\end{Declaration}
+Sometimes you do not want the address field to extend the full width of the
+address window but to be indented a bit. You can set the amount of this
+indentation with the \PLength{toaddrindent} pseudo-length. Typically, the
+default value is 0\Unit{pt}.
+
+For\textnote{Attention!} the\ChangedAt{v3.03}{\Class{scrlttr2}}
+\OptionValueRef{scrlttr2}{addrfield}{PP}\important{%
+  \OptionValueRef{scrlttr2}{addrfield}{PP}\\
+  \OptionValueRef{scrlttr2}{addrfield}{image}\\
+  \OptionValueRef{scrlttr2}{addrfield}{backgroundimage}
+}\IndexOption{addrfield~=\textKValue{PP}},
+\OptionValueRef{scrlttr2}{addrfield}{image}%
+\IndexOption{addrfield~=\textKValue{image}}, and
+\OptionValueRef{scrlttr2}{addrfield}{backgroundimage}%
+\IndexOption{addrfield~=\textKValue{backgroundimage}} settings (see
+\autoref{sec:scrlttr2.firstpage}, \DescPageRef{scrlttr2.option.addrfield}) a
+value of 0\Unit{pt} will be replaced by a value of 8\Unit{mm}. If you really
+do not want any indentation, you can use a value of 1\Unit{sp} to set a
+negligibly small indentation. Furthermore, \PLength{toaddrindent} is also used
+for the distance to the right edge of the address window with the these
+\Option{addrfield} settings.%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{backaddrheight}
+\end{Declaration}
+For window envelopes, the sender is often printed in a small font on one line
+above the addressee. This sender information is called the return
+address\textnote{return address}\Index{return address}, because it is visible
+in the address window and will be used by the post office to return an
+undeliverable letter to the sender. This return address, therefore, requires
+only the information necessary for that purpose.
+
+The height reserved for the return address within the address window is given
+by the \PLength{backaddrheight} pseudo-length. This value is typically
+5\Unit{mm} in the predefined \File{lco} files\textnote{\File{lco}
+file}\Index{}{lco file=\File{lco} file}. Whether to print the return address
+at all depends on the \Option{addrfield} (see
+\autoref{sec:scrlttr2.firstpage}, \DescPageRef{scrlttr2.option.addrfield}) and
+\DescRef{scrlttr2.option.backaddress} options (see
+\autoref{sec:scrlttr2.firstpage}, \DescPageRef{scrlttr2.option.backaddress}).%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{specialmailindent}%
+  \PLength{specialmailrightindent}
+\end{Declaration}
+You can print an optional delivery method between the return address and the
+recipient's address. This field is printed only if the
+\DescRef{scrlttr2.variable.specialmail} variable has non-empty contents. Its
+alignment is determined by the \PLength{specialmailindent} and
+\PLength{specialmailrightindent} pseudo-lengths, which specify the left and
+right indentation, respectively. In the predefined \File{lco}
+files\textnote{\File{lco} file}\Index{lco file=\File{lco} file},
+\PLength{specialmailindent} is set to rubber length \Macro{fill}, while
+\PLength{specialmailrightindent} is set to 1\Unit{em}. Thus the delivery
+method is set 1\Unit{em} from the address field's right margin.%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{PPheadheight}%
+  \PLength{PPheadwidth}
+\end{Declaration}
+The \PLength{PPheadheight}\ChangedAt{v3.03}{\Class{scrlttr2}} pseudo-length
+specifies the height reserved for the postpaid header at the start of the
+address field for the two options
+\OptionValueRef{scrlttr2}{addrfield}{PP}\important{%
+  \OptionValueRef{scrlttr2}{addrfield}{PP}\\
+  \OptionValueRef{scrlttr2}{addrfield}{backgroundimage}}%
+\IndexOption{addrfield~=\textKValue{PP}} and
+\OptionValueRef{scrlttr2}{addrfield}{backgroundimage}%
+\IndexOption{addrfield~=\textKValue{backgroundimage}}. The
+\PLength{PPheadwidth} pseudo-length is used only with
+\OptionValueRef{scrlttr2}{addrfield}{PP} (see
+\autoref{sec:scrlttr2.firstpage}, \DescPageRef{scrlttr2.option.addrfield}) and
+gives the width of the left-hand field within the postpaid header, which
+contains the postpaid logo, the postal code, and the location. The width of
+the right-hand field containing the sender's code and the priority is the
+remaining width.
+
+\KOMAScript{}\textnote{Attention!} automatically changes the default value of
+0\Unit{mm} for the \PLength{PPheadheight} pseudo-length to 20.74\Unit{pt}, and
+\PLength{PPheadwidth}'s default from 0\Unit{mm} to 42\Unit{mm}.%
+%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{PPdatamatrixvskip}
+\end{Declaration}
+This\ChangedAt{v3.03}{\Class{scrlttr2}} pseudo-length specifies the vertical
+distance between the postpaid header and the data array used with
+\OptionValueRef{scrlttr2}{addrfield}{PP}%
+\important{\OptionValueRef{scrlttr2}{addrfield}{PP}}%
+\IndexOption{addrfield~=\PValue{PP}} (see \autoref{sec:scrlttr2.firstpage},
+\DescPageRef{scrlttr2.option.addrfield}). \KOMAScript{}\textnote{Attention!}
+automatically changes the default value of 0\Unit{mm} to 9\Unit{mm}. The data
+matrix is flush right within the postpaid header.%
+\EndIndexGroup
+%
+\EndIndexGroup
+
+
+\subsection{Extra Sender Information}
+\seclabel{locationField}
+\BeginIndexGroup
+\BeginIndex{}{extra sender information}
+\index{sender>extra information|see{extra sender information}}
+
+Often, especially with business letters, there is not enough space in the
+letterhead and footer to accommodate all the information about the sender that
+you want to include. For such additional information, you can use the space
+next to the addressee. In this manual, this field is called the
+\emph{extra sender information}. In earlier versions of this manual, it
+was called the \emph{sender's extension} or the \emph{location field}.
+
+\begin{Declaration}
+  \PLength{locheight}%
+  \PLength{lochpos}%
+  \PLength{locvpos}%
+  \PLength{locwidth}
+\end{Declaration}
+The \PLength{locwidth} and
+\PLength{locheight}\ChangedAt{v2.97d}{\Class{scrlttr2}} pseudo-lengths set the
+width and height of the extra-sender-information field. The \PLength{lochpos}
+and \PLength{locvpos} pseudo-lengths determine the distances from the
+top-right edge of the paper. These values are typically set to 0\Unit{pt} in
+the predefined \File{lco} files. These\textnote{Attention!} zero-length values
+have a special meaning. They result in the actual values being set within
+\DescRef{scrlttr2.cmd.opening} based on the paper width, the address-window
+width, the address window's distance from the top-left edge of the paper, and
+the \DescRef{scrlttr2.option.locfield} option (see
+\autoref{sec:scrlttr2.firstpage}, \DescPageRef{scrlttr2.option.locfield}). As
+is the case for \PLength{toaddrhpos}, negative values of \PLength{lochpos}
+also take on a special meaning. Instead of referring to the distance from the
+right edge of the paper, \PLength{lochpos} then refers to the distance from
+the left edge of the paper. The meaning is thus the opposite of that of
+\PLength{toaddrhpos} (see \autoref{sec:scrlttr2-experts.addressee},
+\DescPageRef{scrlttr2-experts.plength.toaddrhpos}).%
+\EndIndexGroup
+%
+\EndIndexGroup
+
+
+\subsection{Reference Line}
+\seclabel{refLine}%
+\BeginIndexGroup
+\BeginIndex{}{reference line}
+\index{business line|see{reference line}}
+
+The reference line can actually be longer than just one line. It is printed
+only if at least one of variables for the reference line is not empty. Only
+non-empty fields will be printed. To\textnote{Hint!} set a seemingly empty
+field, you can provide content for the variable that appears empty, such as
+\Macro{mbox}\Parameter{}. If the reference line is omitted, the description
+and contents of the \DescRef{scrlttr2.variable.date} variable are printed in
+its place. You can find information about adding variables to or removing them
+from the reference line in \autoref{sec:scrlttr2-experts.variables},
+\DescPageRef{scrlttr2-experts.cmd.removereffields}.
+
+
+\begin{Declaration}
+  \PLength{refvpos}
+\end{Declaration}
+This pseudo-length specifies the distance from the upper edge of the paper to
+the reference line. Its value is set differently in the various predefined
+\File{lco} files\textnote{\File{lco} file}\Index{lco file=\File{lco} file}.
+Typical values are between 80.5\Unit{mm} and 98.5\Unit{mm}.%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{refwidth}%
+  \PLength{refhpos}
+\end{Declaration}
+The \PLength{refwidth} pseudo-length specifies the width available for the
+reference line. Its value is typically set to 0\Unit{pt} in the predefined
+\File{lco} files\textnote{\File{lco} file}\Index{lco file=\File{lco} file}.
+This\textnote{Attention!} value has a special meaning. In no way does it
+indicate that there is no available width for the reference line. Instead, it
+indicates that the width will be calculated within the
+\DescRef{scrlttr2.cmd.opening}\IndexCmd{opening} command. This calculated
+width then depends on the value of the \DescRef{scrlttr2.option.refline}%
+\important{\DescRef{scrlttr2.option.refline}}%
+\IndexOption{refline~=\PName{setting}} options (see
+\autoref{sec:scrlttr2.firstpage}, \DescPageRef{scrlttr2.option.refline}). At
+the same time, \PLength{refhpos} will also be set according to this option.
+With \OptionValueRef{scrlttr2}{refline}{wide}%
+\IndexOption{refline~=\textKValue{wide}}, the reference fields line is
+centred, while with \OptionValueRef{scrlttr2}{refline}{narrow}%
+\IndexOption{refline~=\textKValue{narrow}} it is aligned flush left with the
+type area.
+
+If \PLength{refwidth} is not zero, the width of the reference line is not
+determined by the  \DescRef{scrlttr2.option.refline} option, and so
+\PLength{refhpos} specifies the distance of the reference line from the left
+edge of the paper. If\textnote{Attention!} this distance is zero, the the
+reference line is placed so that the ratio between its distances from the left
+and right edges of the paper corresponds to the ratio of distance of the type
+area from the left and right edges of the paper. Thus, for a type area
+horizontally centred on the paper, the reference line will also be centred.
+
+As a rule, these special cases are likely of little interest to the normal
+user. The\textnote{Attention!} simplest rule is as follows: either
+\PLength{refhpos} remains zero, and so the width and alignment of the
+reference line are determined with the \DescRef{scrlttr2.option.refline}
+option, or the user sets both \PLength{refwidth} and \PLength{refhpos}.%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{refaftervskip}
+\end{Declaration}
+This pseudo-length specifies the vertical skip to be inserted beneath the
+reference line. The value is set in the predefined \File{lco}
+files\textnote{\File{lco} file}\Index{lco file=\File{lco} file}. It directly
+affects the height of the text area on the first page. A typical value is
+between one and two lines.%
+\EndIndexGroup
+%
+\EndIndexGroup
+
+
+\subsection{Subject}
+\seclabel{subject}%
+\BeginIndexGroup
+\BeginIndex{}{subject}
+
+Different countries have different conventions for placing the subject line of
+a letter. Some place it before the opening phrase; others place it after. Some
+professional groups even want it before the reference line.
+
+\begin{Declaration}
+  \PLength{subjectvpos}
+\end{Declaration}
+\ChangedAt{v3.01}{\Class{scrlttr2}}%
+If\textnote{Attention!} the value of this pseudo-length is 0\Unit{pt}, the
+\DescRef{scrlttr2.option.subject}\important{\DescRef{scrlttr2.option.subject}}%
+\IndexOption{subject~=\PName{Einstellung}} option (see
+\autoref{sec:scrlttr2.firstpage}, \DescPageRef{scrlttr2.option.subject})
+determines the position of the subject. Any other value defines the distance
+between the top edge of the paper and the subject. In this
+case\textnote{Hint!}, you should ensure that there is enough space available
+that overlapping with other elements is unlikely.
+\begin{Example}
+  A few professionals prefer to have the subject above the reference line. For
+  this, you can specify the position as follows, which also changes the
+  position of the reference line itself:
+\begin{lstcode}
+  \ProvidesFile{lawsubj.lco}
+               [2008/11/03 lawyers lco file]
+  \setplength{subjectvpos}{\useplength{refvpos}}
+  \addtoplength{refvpos}{3\baselineskip}
+  \endinput
+\end{lstcode}
+  If you want to leave at least one empty line between the subject and the
+  reference, you have space for a maximum of two lines.
+\end{Example}
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{subjectbeforevskip}%
+  \PLength{subjectaftervskip}
+\end{Declaration}
+\ChangedAt{v3.01}{\Class{scrlttr2}}%
+If the subject is placed not absolutely but before or after the salutation,
+you can insert additional vertical space before and after the subject. The
+space before the subject may interfere with other distances, such as the
+automatic distance of one line after the title. Therefore the default is to
+use no additional space here. The default of the class and the package for the
+space after the subject is two lines.%
+\EndIndexGroup
+%
+\EndIndexGroup
+
+
+\subsection{Closing}
+\seclabel{closing}
+\BeginIndexGroup
+\BeginIndex{}{closing}
+
+The closing of a letter consists of three parts: In addition to the closing
+phrase, there is a hand-written signature and a printed text such as a name,
+which acts as a kind of explanation of the hand-written signature.
+
+\begin{Declaration}
+  \PLength{sigindent}%
+  \PLength{sigbeforevskip}
+\end{Declaration}
+The closing phrase\Index{closing>phrase}\Index{signature} and signature
+explanation are typeset in a box whose width is determined by the length of
+the longest line of the closing phrase or explanation.
+
+The box will be indented by the distance specified in the \PLength{sigindent}
+pseudo-length. In the predefined \File{lco} files\textnote{\File{lco}
+file}\Index{lco file=\File{lco} file}, this length is set to 0\Unit{mm}.
+
+Between the closing phrase and the signature explanation, a vertical skip is
+inserted whose height is defined in the \PLength{sigbeforevskip}
+pseudo-length. In the predefined \File{lco} files\textnote{\File{lco}
+file}\Index{lco file=\File{lco} file} this value is set to two lines. In this
+space you can then write your signature.%
+\iffalse% Umbruchkorrekturtext
+\ If you decide to include a facsimile of your signature in the
+\DescRef{scrlttr2.variable.signature}\IndexVariable{signature}%
+\important{\DescRef{scrlttr2.variable.signature}} with the
+\Package{graphicx}\IndexPackage{graphicx} package, it would be useful
+to reduce the value of \PLength{sigbeforevskip} and thus the gap between
+the closing phrase and the signature.%
+\fi%
+\EndIndexGroup
+%
+\EndIndexGroup
+
+
+\subsection{Letterhead Page Footer}
+\seclabel{firstFoot}%
+\BeginIndexGroup
+\BeginIndex{}{letterhead page>footer}%
+
+The first page of a letter, the letterhead page, contains not just its own
+header, the letterhead, but also its own footer\Index{footer>letterhead
+page}\Index{footer}. Just like the letterhead, it will be set not by the page
+style but directly within \DescRef{scrlttr2.cmd.opening}\IndexCmd{opening}%
+\important{\DescRef{scrlttr2.cmd.opening}}.
+
+\begin{Declaration}
+  \PLength{firstfootvpos}
+\end{Declaration}
+This pseudo-length gives the distance from the top of the paper to the footer
+of the letterhead page. It also ensures that the text area does not protrude
+into the footer. To do so, the height of the text area on the first page will
+be decreased, if necessary, using
+\Macro{enlargethispage}\IndexCmd{enlargethispage}%
+\important{\Macro{enlargethispage}}. The
+\DescRef{scrlttr2.option.enlargefirstpage}%
+\important{\DescRef{scrlttr2.option.enlargefirstpage}} option (see
+\autoref{sec:scrlttr2.firstpage},
+\DescPageRef{scrlttr2.option.enlargefirstpage}) can also ensure that the
+height of the text area is increased, if necessary. Thus, the distance between
+text area and the letterhead page footer can be reduced to the value of the
+\Length{footskip}\IndexLength{footskip}\important{\Length{footskip}} length.
+
+With\textnote{Attention!} the compatibility option
+set\ChangedAt{v2.9t}{\Class{scrlttr2}} to versions up to
+2.9t\IndexOption{version~=\PValue{2.9t}} (see
+\DescRef{scrlttr2.option.version} in
+\autoref{sec:scrlttr2.compatibilityOptions},
+\DescPageRef{scrlttr2.option.version}) the footer is set independently of the
+type area in all predefined \File{lco} files\textnote{\File{lco}
+file}\Index{lco file=\File{lco} file} (see \autoref{sec:scrlttr2.lcoFile})
+except for \Option{KOMAold} and \Option{NF}. Thus the
+\DescRef{scrlttr2.option.enlargefirstpage}%
+\important{\DescRef{scrlttr2.option.enlargefirstpage}} option has no effect.
+From version 2.9u on, the footer is placed at the bottom edge of the paper.
+Thus, the height of the letterhead page's type area may also depend on the
+\DescRef{scrlttr2.option.enlargefirstpage} option.
+
+If the letter footer is deactivated with the
+\OptionValueRef{scrlttr2}{firstfoot}{false}%
+\important{\OptionValueRef{scrlttr2}{firstfoot}{false}}%
+\IndexOption{firstfoot~=\PValue{false}}\ChangedAt{v2.97e}{\Class{scrlttr2}}
+option (see \autoref{sec:scrlttr2.firstpage},
+\DescPageRef{scrlttr2.option.firstfoot}), the setting of
+\PLength{firstfootvpos} is ignored, and instead
+\Length{paperheight}\IndexLength{paperheight} is applied. There remains then a
+minimum bottom margin of length \Length{footskip}\IndexLength{footskip}.%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{firstfoothpos}
+\end{Declaration}
+\ChangedAt{v3.05}{\Class{scrlttr2}}%
+A\textnote{Attention!} positive value of the \PLength{firstfoothpos}
+pseudo-length specifies the distance from the left edge of the paper to the
+letterhead page footer. If the value is greater than or equal to the paper
+width, \Length{paperwidth}\IndexLength{paperwidth}, the footer is centred
+horizontally on the letterhead page. But if the value is less than or equal to
+the negative width of the paper, the footer is placed flush with the left edge
+of the typing area.
+
+The typical default for this value is \Length{maxdimen}\IndexLength{maxdimen},
+which is the maximum possible value for a length. This results in horizontal
+centring.%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \PLength{firstfootwidth}
+\end{Declaration}
+This pseudo-length specifies the width of the footer of the first page of the
+letter, that is the letterhead page. The value in the predefined \File{lco}
+files\textnote{\File{lco} file}\Index{lco file=\File{lco} file} matches
+\PLength{firstheadwidth}\important{\PLength{firstheadwidth}}%
+\IndexPLength{firstheadwidth}.%
+%
+\EndIndexGroup
+%
+\EndIndexGroup
+%
+\EndIndexGroup
+
+
+\section{Variables for Experienced Users}
+\seclabel{variables}
+\BeginIndexGroup
+\BeginIndex{}{variables}
+
+\KOMAScript{} provides commands not only to use predefined variables but also
+to define new variables or to change their automatic use within the reference
+line\Index{reference line}.
+
+\begin{Declaration}
+  \Macro{newkomavar}\OParameter{description}\Parameter{name}%
+  \Macro{newkomavar*}\OParameter{description}\Parameter{name}%
+  \Macro{removereffields}%
+  \Macro{defaultreffields}%
+  \Macro{addtoreffields}\Parameter{name}
+\end{Declaration}
+\Macro{newkomavar} defines a new variable. This variable is referenced as
+\PName{name}. Optionally, you can define a \PName{description} for the
+\PName{name} variable. Unlike the \PName{name}, the \PName{description} is not
+used to reference a variable. Instead, the \PName{description} acts as a
+supplement to the content of a variable that can be printed as a label along
+with its content.
+
+You can use the \Macro{addtoreffields} command to add the \PName{name}
+variable to the reference line\Index{reference line} (see
+\autoref{sec:scrlttr2.firstpage}, \DescPageRef{scrlttr2.option.refline}). The
+\PName{description} and the content of the variable are added to the end of
+the reference line. The starred version \Macro{newkomavar*} is similar to the
+unstarred version but also calls the \Macro{addtoreffields} command. Thus, the
+starred version automatically adds the variable to the reference line.
+\begin{Example}
+  Suppose you need an additional field for a telephone extension in the
+  reference line. You can define this field with
+\begin{lstcode}
+  \newkomavar[Extension]{myphone}
+  \addtoreffields{myphone}
+\end{lstcode}
+  or more concisely with
+\begin{lstcode}
+  \newkomavar*[Extension]{myphone}
+\end{lstcode}
+\end{Example}
+When\textnote{Attention!} you define a variable for the reference line, you
+should always give it a description.
+
+You can use the \Macro{removereffields} command to remove all variables from
+the reference field. This includes the predefined variables of the class. The
+reference line is then empty. This can be useful, for example, if you wish to
+change the order of the variables in the reference fields line.
+
+The \Macro{defaultreffields} command resets the reference fields line to its
+predefined format. In doing so, all custom-defined variables are removed from
+the reference fields line.
+
+You\textnote{Attention!} should not add the date to the reference line with
+the \Macro{addtoreffields} command. Instead you should use the
+\DescRef{scrlttr2.option.refline}%
+\important{\OptionValueRef{scrlttr2}{refline}{dateleft}\\
+\OptionValueRef{scrlttr2}{refline}{dateright}\\
+\OptionValueRef{scrlttr2}{refline}{nodate}}%
+\IndexOption{refline~=\textKValue{dateleft}}%
+\IndexOption{refline~=\textKValue{dateright}}%
+\IndexOption{refline~=\textKValue{nodate}} option to select whether the date
+should appear on the left or right side of the reference line, or not at all.
+These settings also affect the position of the date when no reference line is
+used.%
+%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \Macro{usekomavar}\OParameter{command}\Parameter{name}%
+  \Macro{usekomavar*}\OParameter{command}\Parameter{name}
+\end{Declaration}
+The \DescRef{scrlttr2.cmd.usekomavar} and \DescRef{scrlttr2.cmd.usekomavar*}
+commands are, like all commands where a starred version exists or which can
+take an optional argument, not fully expandable. Nevertheless, if you use them
+within \DescRef{scrlttr2.cmd.markboth}\IndexCmd{markboth},
+\DescRef{scrlttr2.cmd.markright}\IndexCmd{markright} or similar commands, you
+need not insert \Macro{protect}\IndexCmd{protect} beforehand. Of course
+this is also true for
+\DescRef{scrlayer-scrpage.cmd.markleft}\IndexCmd{markleft} if you use the
+\hyperref[cha:scrlayer-scrpage]{\Package{scrlayer-scrpage}}%
+\IndexPackage{scrlayer-scrpage} package. These\textnote{Attention!} commands
+cannot be used within commands that directly affect their argument, such as
+\Macro{MakeUppercase}\important{\Macro{MakeUppercase}}%
+\IndexCmd{MakeUppercase}. To avoid this problem you can use commands like
+\Macro{MakeUppercase} as an optional argument to \Macro{usekomavar} or
+\Macro{usekomavar*}. Then you will get the upper-case content of a variable
+with
+\begin{lstcode}[escapeinside=`']
+  \usekomavar[\MakeUppercase]{`\PName{Name}'}
+\end{lstcode}
+%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \Macro{ifkomavarempty}\Parameter{name}\Parameter{true}\Parameter{false}%
+  \Macro{ifkomavarempty*}\Parameter{name}\Parameter{true}\Parameter{false}
+\end{Declaration}
+It is important to know that the content of the variable will be expanded as
+far as this is possible with \Macro{edef}. If this results in spaces or
+unexpandable macros like \Macro{relax}, the result will be not empty even
+where the use of the variable would not result in any visible output.
+
+Once\textnote{Attention!} again, this command cannot be used as the argument
+of \Macro{MakeUppercase}\IndexCmd{MakeUppercase} or similar commands However,
+it is robust enough to be used as the argument of
+\DescRef{scrlttr2.cmd.markboth} or \DescRef{scrlttr2.cmd.footnote}, for
+example.%
+%
+\EndIndexGroup
+%
+\EndIndexGroup
+
+
+\section{Additional Information about Page Styles}
+\seclabel{pagestyleatscrletter}
+\BeginIndexGroup
+\BeginIndex{}{page>style}
+
+\LoadNonFree{scrlttr2-experts}{0}%
+\EndIndexGroup
+
+\iffalse% Wurde bereits in Kapitel 4.21 behandelt
+\section{Differences in How \Package{scrletter} Handles \File{lco} Files}
+\seclabel{lcoatscrletter}
+\BeginIndexGroup
+\BeginIndex{File}{lco}
+\BeginIndex{}{lco file=\File{lco} file}
+
+As\ChangedAt{v3.15}{\Package{scrletter}} explained in
+\autoref{sec:scrlttr2.lcoFile}, \Class{scrlttr2} can load \File{lco} files via
+the optional argument of \Macro{documentclass}. The \Package{scrletter} package
+does not support this.
+
+\begin{Declaration}
+  \Macro{LoadLetterOption}\Parameter{name}%
+  \Macro{LoadLetterOptions}\Parameter{list of names}
+\end{Declaration}
+For \Class{scrlttr2}, load \File{lco} files with
+\DescRef{scrlttr2.cmd.LoadLetterOption} or
+\DescRef{scrlttr2.cmd.LoadLetterOptions} is only a recommendation. For
+\Package{scrletter}, it is mandatory. Of course, you can only load the
+\File{lco} files after you load \Package{scrletter}.
+%
+\EndIndexGroup
+%
+\EndIndexGroup
+\fi
+
+
+\section{\File{lco} Files for Experienced Users}
+\seclabel{lcoFile}
+\BeginIndexGroup
+\BeginIndex{File}{lco}
+\BeginIndex{}{lco file=\File{lco} file}
+
+\BeginIndexGroup%
+\BeginIndex{}{paper>format}%
+Although you can use any paper size that the
+\hyperref[cha:typearea]{\Package{typearea}}%
+\IndexPackage{typearea} package can configure, the output of the letterhead
+page may produce undesirable results with some formats. Unfortunately, there
+are no general rules to calculate the position of the address fields and the
+like for every available paper size. Instead, different parameter sets are
+needed for different paper sizes.%
+
+%\subsection{Verifying the Paper Size}
+%\seclabel{papersize}
+
+At present parameter sets and \File{lco} files exist only for A4-sized and
+letter-sized paper. Theoretically, however, the \Class{scrlttr2} class can
+support many more paper sizes. Therefore, it's necessary to verify that the
+correct paper size is used. This is even more true if you use
+\Package{scrletter}, since the paper size depends on the class you use.
+
+\begin{Declaration}
+  \Macro{LetterOptionNeedsPapersize}%
+    \Parameter{option name}\Parameter{paper size}
+\end{Declaration}
+To provide at least a warning when another \PName{paper size} is used, you can
+find a \Macro{LetterOptionNeedsPapersize} command in every \File{lco} file
+distributed with {\KOMAScript}. The first argument is the name of the
+\File{lco} file without the ``\File{.lco}'' suffix. The second argument is the
+paper size for which the \File{lco} file is designed.
+
+If several \File{lco} files are loaded in succession, a
+\Macro{LetterOptionNeedsPapersize} command can be contained in each of them,
+but the \DescRef{scrlttr2.cmd.opening} command will only check the last given
+\PName{paper size}. As the following example shows, an experienced user can
+thus easily write \File{lco} files with parameter sets for other paper sizes.
+\iffalse% Umbruchoptimierung
+If you do not plan to set up such \File{lco} files yourself, you can just
+forget about this option and skip the example.%
+\fi
+\begin{Example}
+  Suppose you use A5-sized paper in normal, that is upright or portrait,
+  orientation for your letters. Let's assume that you want to put them into
+  standard C6 window envelopes. In that case, the position of the address
+  field would be the same as for a standard letter on A4-sized paper. The main
+  difference is that A5 paper needs only one fold. So you want to disable the
+  top and bottom fold marks. You can do this, for example, by placing the
+  marks outside the paper area.
+\begin{lstcode}
+  \ProvidesFile{a5.lco}
+               [2002/05/02 letter class option]
+  \LetterOptionNeedsPapersize{a5}{a5}
+  \setplength{tfoldmarkvpos}{\paperheight}
+  \setplength{bfoldmarkvpos}{\paperheight}
+\end{lstcode}
+  Of course, it would be more elegant to deactivate the marks with the
+  \DescRef{scrlttr2.option.foldmarks} option. In addition, you must adjust the
+  position of the footer, that is, the \PLength{firstfootvpos} pseudo-length.
+  I leave it to the reader to find an appropriate value. When using such an
+  \File{lco} file, you must declare other \File{lco} file options like
+  \File{SN} before you load ``\File{a5.lco}''.
+\end{Example}
+%
+\EndIndexGroup%
+\EndIndexGroup%
+\vskip-\ht\strutbox% Wegen Beispiel am Ende der Erklaerung
+
+
+%\subsection{Visualizing Positions}
+%\seclabel{visualize}
+%\BeginIndexGroup
+\begin{Declaration}
+  \File{visualize.lco}
+\end{Declaration}
+\BeginIndex{Option}{visualize}%
+If you develop your own \File{lco} file, for example to modify the positions
+of various fields on the letterhead page because your own desires or
+requirements, it is helpful if you can make at least some elements directly
+visible. The \File{lco} file
+\File{visualize.lco}\ChangedAt{v3.04}{\Class{scrlttr2}} exists for this
+purpose. You can load this file as you would any other \File{lco} file. But
+this \emph{letter class options} file must be loaded in the document preamble,
+and its effects cannot be deactivated. The \File{lco} file uses the
+\Package{eso-pic}\IndexPackage{eso-pic}%
+\important[i]{\Package{eso-pic}\\\Package{graphicx}} and
+\Package{graphicx}\IndexPackage{graphicx} packages, which are not part of
+\KOMAScript.
+
+
+\begin{Declaration}
+  \Macro{showfields}\Parameter{field list}
+\end{Declaration}
+This command makes the space occupied by the fields on the letterhead page
+visible. The \PName{field list} argument is a comma-separated list of fields
+to be shown. The following fields are supported:
+\begin{labeling}[~--]{\PValue{location}}
+\item[\PValue{test}] is a 10\Unit{cm} by 15\Unit{cm} test field, 1\Unit{cm}
+  from the top and left edges of the paper. This field exists for debugging.
+  You can use it as a benchmark to check whether the measurements have been
+  distorted during the creation of the document.
+\item[\PValue{head}] is the header area of the letterhead page. This field
+  is open at the bottom.
+\item[\PValue{foot}] is the footer area of the letterhead page. This field is
+  open at the top.
+\item[\PValue{address}] is the address window area used by window envelopes.
+\item[\PValue{location}] is the field for the extra sender information.
+\item[\PValue{refline}] is the reference line. This field is open at the
+  bottom.
+\end{labeling}%
+\BeginIndex{FontElement}{field}\LabelFontElement{field}%
+You can change the colour of the visualisation with
+the\DescRef{scrlttr2.cmd.setkomafont} and \DescRef{scrlttr2.cmd.addtokomafont}
+(see \autoref{sec:scrlttr2.textmarkup},
+\DescPageRef{scrlttr2.cmd.setkomafont}) commands using the
+\FontElement{field}\important{\FontElement{field}} element. The default is
+\Macro{normalcolor}.%
+\EndIndex{FontElement}{field}%
+%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \Macro{setshowstyle}\Parameter{style}%
+  \Macro{edgesize}
+\end{Declaration}
+By default, \File{visualize.lco} indicates the individual areas with
+frames\important{\PValue{frame}}, which corresponds to the \PName{style}
+\PValue{frame}. Areas open at top or bottom are not completely framed but have
+an open edge with with small arrows pointing up or down.
+Alternatively\important{\PValue{rule}}, you can use the \PName{style}
+\PValue{rule}. In this case, the area is highlighted by a background colour.
+It isnot possible to distinguish open and closed areas. Instead a minimal
+height will be used for open areas. The third\important{\PValue{edges}}
+available \PName{style} is \PValue{edges}, which shows the corners of the
+areas. The corner marks at the open edge of open areas will be omitted. The
+size of two edges of the corner marks are given by the \Macro{edgesize} macro
+with a default of 1\Unit{ex}.%
+\EndIndexGroup
+
+
+\begin{Declaration}
+  \Macro{showenvelope}\AParameter{width\textup{,}height}%
+                      \AParameter{h-offset\textup{,}v-offset}%
+                      \OParameter{instructions}%
+  \Macro{showISOenvelope}\Parameter{format}\OParameter{instructions}%
+  \Macro{showUScommercial}\Parameter{format}\OParameter{instructions}%
+  \Macro{showUScheck}\OParameter{instructions}%
+  \Macro{unitfactor}
+\end{Declaration}
+If you have loaded \File{visualize.lco}, you can use these commands to output
+a page with a drawing of an envelope. The envelope drawing is always rotated
+by 90\textdegree{} on a separate page and printed in 1:1~scale. The addressee
+window is generated automatically from the current data for the address
+position of the letterhead page: \PLength{toaddrvpos}, \PLength{toaddrheight},
+\PLength{toaddrwidth}, and \PLength{toaddrhpos}. To do so requires knowing how
+much smaller the folded letter pages are than the width and height of the
+envelope. If you do not specify these two values, \PName{h-offset} and
+\PName{v-offset}, when calling \Macro{showenvelope}, they are calculated from
+the fold marks and the paper size itself.
+
+The \Macro{showISOenvelope}, \Macro{showUScommercial}, and \Macro{showUScheck}
+commands are based on \Macro{showenvelope}. With \Macro{showISOenvelope}, you
+can create ISO-envelopes in C4, C5, C5/6, DL (also known as C5/6) or C6
+\PName{format}. With \Macro{showUScommercial}, you can create a US commercial
+envelope in the 9 or 10 \PName{format}. You can use \Macro{showUScheck} for
+envelopes in US check format.
+
+\BeginIndex{FontElement}{letter}\LabelFontElement{letter}%
+The position of the letterhead page inside the envelope is indicated with
+dashed lines. You can change the colour of these lines with the
+\DescRef{scrlttr2.cmd.setkomafont} and \DescRef{scrlttr2.cmd.addtokomafont}
+(see \autoref{sec:scrlttr2.textmarkup},
+\DescPageRef{scrlttr2.cmd.setkomafont}) using the
+\FontElement{letter}\important{\FontElement{letter}} element. The default is
+\Macro{normalcolor}.%
+\EndIndex{FontElement}{letter}%
+
+\BeginIndex{FontElement}{measure}\LabelFontElement{measure}%
+The envelope drawing will be provided with dimensions automatically. You can
+change the colour of these dimension labels with the commands
+\DescRef{scrlttr2.cmd.setkomafont} and \DescRef{scrlttr2.cmd.addtokomafont}
+(see \autoref{sec:scrlttr2.textmarkup},
+\DescPageRef{scrlttr2.cmd.setkomafont}) using the
+\FontElement{measure}\important{\FontElement{measure}} element. The default is
+\Macro{normalcolor}. The dimensions are given in multiples of
+\Length{unitlength}, with an accuracy of $1/\Macro{unitfactor}$, where the
+accuracy of \TeX{} arithmetic is the actual limits. The default is 1. You can
+redefine \Macro{unitfactor} using \Macro{renewcommand}.%
+\EndIndex{FontElement}{measure}%
+
+\begin{Example}
+  You are generating a sample letter using the ISO-A4 format. The supported
+  fields should be marked with yellow borders to check their position.
+  Furthermore, the position of the window for a DL-size envelope should be
+  checked with drawing. The dimension lines in this drawing should be red, and
+  the numbers should use a smaller font, with the dimensions printed in cm
+  with an accuracy of 1\Unit{mm}. The dashed letterhead page in the envelope
+  should be coloured green.
+\begin{lstcode}
+  \documentclass[visualize]{scrlttr2}
+  \usepackage{xcolor}
+  \setkomafont{field}{\color{yellow}}
+  \setkomafont{measure}{\color{red}\small}
+  \setkomafont{letter}{\color{green}}
+  \showfields{head,address,location,refline,foot}
+  \usepackage[british]{babel}
+  \usepackage{lipsum}
+  \begin{document}
+  \setkomavar{fromname}{Joe Public}
+  \setkomavar{fromaddress}{2 Valley\\
+                           SAMPLEBY\\
+                           ZY32 1XW}
+  \begin{letter}{%
+      1 Hillside\\
+      SAMPLESTEAD\\
+      WX12 3YZ%
+    }
+  \opening{Hello,}
+  \lipsum[1]
+  \closing{Good bye}
+  \end{letter}
+  \setlength{\unitlength}{1cm}
+  \renewcommand*{\unitfactor}{10}
+  \showISOenvelope{DL}
+  \end{document}
+\end{lstcode}
+  This will show the letterhead page as the first page and the drawing of the
+  envelope on the second page.
+\end{Example}
+
+Note that poorly chosen combinations of \Length{unitlength} and
+\Macro{unitfactor} can quickly lead to a \TeX{} \emph{arithmetic overflow}
+error. The dimension numbers shown may also differ slightly from the actual
+values. Neither are errors in \Option{visualize} but merely implementation
+limitations of \TeX.
+%
+\EndIndexGroup
+%
+\EndIndexGroup
+%
+\EndIndexGroup
+
+
+\section{Language Support}
+\seclabel{languages}%
+\BeginIndexGroup
+\BeginIndex{}{languages}%
+
+The \Class{scrlttr2} class and the \Package{scrletter} package support many
+languages. These include German\Index{language>German} (\PValue{german} for
+the old German orthography, \PValue{ngerman} for the new orthography;
+\PValue{austrian} for Austrian with the old German orthography,
+\PValue{naustrian}\ChangedAt{v3.09}{\Class{scrlttr2}} for Austrian with the
+new orthography; and \PValue{nswissgerman}\ChangedAt{v3.13}{\Class{scrlttr2}}
+for Swiss German with the new orthogrphy, \PValue{swissgerman} for Swiss
+German with the old orthography), English\Index{language>English} (among
+others, \PValue{english} without specification as to whether American or
+British should be used, \PValue{american} and \PValue{USenglish} for American
+English, and \PValue{british} and \PValue{UKenglish} for British English),
+French\Index{language>French}, Italian\Index{language>Italian},
+Spanish\Index{language>Spanish}, Dutch\Index{language>Dutch},
+Croatian\Index{language>Croatian}, Finnish\Index{language>Finnish},
+Norwegian\Index{language>Norwegian}\ChangedAt{v3.02}{\Class{scrlttr2}},
+Swedish\Index{language>Swedish}\ChangedAt{v3.08}{\Class{scrlttr2}},
+Polish\ChangedAt{v3.13}{\Class{scrlttr2}},
+Czech\ChangedAt{v3.13}{\Class{scrlttr2}}, and Slovak.
+
+You can switch languages using the \Package{babel}\IndexPackage{babel} package
+(see \cite{package:babel}) with the \Macro{selectlanguage}\Parameter{language}
+command.  Other packages like \Package{german}\IndexPackage{german} (see
+\cite{package:german}) and \Package{ngerman}\IndexPackage{ngerman} (see
+\cite{package:ngerman}) also define this command.  As a rule though, the
+language selection occurs immediately as a direct consequence of loading such
+a package.
+\iffalse% Umbruchkorrekturtext
+For details, please refer to the documentation of the relevant packages.
+\fi
+
+There\textnote{Attention!} is one more point to note about language-switching
+packages. The
+\Package{french}\IndexPackage{french}\important{\Package{french}} package (see
+\cite{package:french}) makes changes well beyond redefining the terms in
+\autoref{tab:scrlttr2-experts.languageTerms}. For instance, it redefines the
+\DescRef{scrlttr2.cmd.opening} command, since the package simply assumes that
+\DescRef{scrlttr2.cmd.opening} is always defined as it is in the standard
+\Class{letter} class. This, however, is not the case with \KOMAScript{}. The
+\Package{french} package thus overwrites the definition and does not work
+correctly with \KOMAScript. I regard this as a fault in the \Package{french}
+package which, although reported decades ago, was unfortunately never
+eliminated.
+
+If you use the \Package{babel}\IndexPackage{babel} package to switch to
+\PValue{french}, problems can occasionally occur. With \Package{babel},
+however, you can usually deactivate changes to a language in a targeted
+manner.%
+\iffalse% This is actually outdated!
+\ If the package \Package{french} is not installed, the problem with
+  \Package{babel} does not arise. Similarly, the problem usually does not
+  exist when you use \Package{babel} with other varieties of French such as
+  \PValue{acadian}, \PValue{canadien}, \PValue{francais} or \PValue{frenchb}
+  instead of \PValue{french}.
+\fi
+
+\iffalse% This is also outdated!
+  However, with \Package{babel} version 3.7j and above, this problem only occurs
+  if the option explicitly indicates that \Package{babel} should use the
+  \Package{french} package.
+%
+\iftrue
+  If you cannot be sure you are not using an old version of \Package{babel}, I
+  recommend you use
+\begin{lstcode}
+  \usepackage[...,frenchb,...]{babel}
+\end{lstcode}
+  to select French.
+    \iffalse %
+      If necessary, you can still switch to French with
+      \Macro{selectlanguage}\PParameter{french}.%
+    \fi%
+\fi 
+\fi  
+
+\iftrue
+  It cannot be ruled out that similar problems will not occur with other
+  languages or packages. For German and English, however, there are currently
+  no known problems with the \Package{babel} package.
+\fi
+
+
+\begin{Declaration}
+  \Macro{yourrefname}%
+  \Macro{yourmailname}%
+  \Macro{myrefname}%
+  \Macro{customername}%
+  \Macro{invoicename}%
+  \Macro{subjectname}%
+  \Macro{ccname}%
+  \Macro{enclname}%
+  \Macro{headtoname}%
+  \Macro{headfromname}%
+  \Macro{datename}%
+  \Macro{pagename}%
+  \Macro{mobilephonename}%
+  \Macro{phonename}%
+  \Macro{faxname}%
+  \Macro{emailname}%
+  \Macro{wwwname}%
+  \Macro{bankname}
+\end{Declaration}
+These commands contain the language-dependent terms. These\important[i]{%
+  \DescRef{scrbase.cmd.newcaptionname}\\
+  \DescRef{scrbase.cmd.renewcaptionname}\\
+  \DescRef{scrbase.cmd.providecaptionname}} definitions can be
+modified to support a new language or for your private customization, as
+described in
+\autoref{sec:scrbase.languageSupport}. \KOMAScript{} sets these terms only in
+\Macro{begin}\PParameter{document}. Therefore they are not available in the
+preamble and cannot be redefined there. The default settings for
+\Option{english} and \Option{ngerman} are listed in
+\autoref{tab:scrlttr2-experts.languageTerms}.%
+\EndIndexGroup
+%\iffree{}{\clearpage}% Siehe Kommentar zur Tabelle
+
+\begin{Declaration}
+  \Macro{captionsacadian}
+  \Macro{captionsamerican}
+  \Macro{captionsaustralien}
+  \Macro{captionsaustrian}
+  \Macro{captionsbritish}
+  \Macro{captionscanadian}
+  \Macro{captionscanadien}
+  \Macro{captionscroatian}
+  \Macro{captionsczech}
+  \Macro{captionsdutch}
+  \Macro{captionsenglish}
+  \Macro{captionsfinnish}
+  \Macro{captionsfrancais}
+  \Macro{captionsfrench}
+  \Macro{captionsgerman}
+  \Macro{captionsitalian}
+  \Macro{captionsnaustrian}
+  \Macro{captionsnewzealand}
+  \Macro{captionsngerman}
+  \Macro{captionsnorsk}
+  \Macro{captionsnswissgerman}
+  \Macro{captionspolish}
+  \Macro{captionsslovak}
+  \Macro{captionsspanish}
+  \Macro{captionsswedish}
+  \Macro{captionsswissgerman}
+  \Macro{captionsUKenglish}
+  \Macro{captionsUSenglish}
+\end{Declaration}
+If you change the language of a letter, the language-dependent terms listed in
+\autoref{tab:scrlttr2-experts.languageTerms},
+\autopageref{tab:scrlttr2-experts.languageTerms} are redefined using these
+commands. If your language-switching package does not support this, you can
+also use the above commands directly.
+%
+\begin{table}
+  \begin{minipage}{\textwidth}
+  \centering
+%    \KOMAoptions{captions=topbeside}%
+%    \setcapindent{0pt}%
+   \caption[{%
+        Defaults for language-dependent terms
+      }]{%
+        Defaults for language-dependent terms for the languages
+        \Option{english} and \Option{ngerman}, if they are not already defined
+        by the packages used for language switching%
+        \label{tab:scrlttr2-experts.languageTerms}%
+      }[l]
+      \begin{tabular}[t]{lll}
+        \toprule
+        Command         & \Option{english} & \Option{ngerman} \\
+        \midrule
+        \Macro{bankname}     & Bank account   & Bankverbindung \\
+        \Macro{ccname}\footnotemark[1]       & cc             & Kopien an \\
+        \Macro{customername} & Customer no.   & Kundennummer \\
+        \Macro{datename}     & Date           & Datum \\
+        \Macro{emailname}    & Email          & E-Mail \\
+        \Macro{enclname}\footnotemark[1]     & encl           & Anlagen \\
+        \Macro{faxname}      & Fax            & Fax \\
+        \Macro{headfromname} & From           & Von \\
+        \Macro{headtoname}\footnotemark[1]   & To             & An \\
+        \Macro{invoicename}  & Invoice no.    & Rechnungsnummer \\
+        \Macro{myrefname}    & Our ref.       & Unser Zeichen \\
+        \Macro{pagename}\footnotemark[1]     & Page           & Seite \\
+        \Macro{mobilephonename} & Mobile phone & Mobiltelefon \\
+        \Macro{phonename}    & Phone          & Telefon \\
+        \Macro{subjectname}  & Subject        & Betrifft \\
+        \Macro{wwwname}      & Url            & URL \\
+        \Macro{yourmailname} & Your letter of & Ihr Schreiben vom\\
+        \Macro{yourrefname}  & Your ref.      & Ihr Zeichen \\
+        \bottomrule
+      \end{tabular}
+      \deffootnote{1em}{1em}{1\ }% brutal aber effektiv
+      \footnotetext[1000]{Normally these terms are defined by language
+        packages like \Package{babel}. In this case, \KOMAScript{} does not
+        redefine them. The actual wording may therefore differ and can
+        be found in the documentation for the language package used.}
+%    \end{captionbeside}
+  \end{minipage}
+\end{table}
+%
+\EndIndexGroup
+\iffree{}{\clearpage}% Umbruchkorrektur
+
+\begin{Declaration}
+  \Macro{dateacadian}
+  \Macro{dateamerican}
+  \Macro{dateaustralien}
+  \Macro{dateaustrian}
+  \Macro{datebritish}
+  \Macro{datecanadian}
+  \Macro{datecanadien}
+  \Macro{datecroatian}
+  \Macro{dateczech}
+  \Macro{datedutch}
+  \Macro{dateenglish}
+  \Macro{datefinnish}
+  \Macro{datefrancais}
+  \Macro{datefrench}
+  \Macro{dategerman}
+  \Macro{dateitalian}
+  \Macro{datenaustrian}
+  \Macro{datenewzealand}
+  \Macro{datengerman}
+  \Macro{datenorsk}
+  \Macro{datenswissgerman}
+  \Macro{datepolish}
+  \Macro{dateslovak}
+  \Macro{datespanish}
+  \Macro{dateswedish}
+  \Macro{dateswissgerman}  
+  \Macro{dateUKenglish}
+  \Macro{dateUSenglish}
+\end{Declaration}
+Depending on the language used, the numerical representation of the date\Index{date} (see option
+\DescRef{scrlttr2.option.numericaldate} in \autoref{sec:scrlttr2.firstpage},
+\DescPageRef{scrlttr2.option.numericaldate}) is formatted in various ways.
+The exact format can be found in \autoref{tab:date}.%
+\EndIndexGroup
+%
+\EndIndexGroup
+\iffree{}{\clearpage}% Umbruchkorrektur zwecks Ausgabe der Tabellen
+
+\begin{table}[!tp]% Umbruchoptimierung
+%  \centering
+  \KOMAoptions{captions=topbeside}%
+  \setcapindent{0pt}%
+%  \caption
+  \begin{captionbeside}{Language-dependent forms of the date}[l]
+  \begin{tabular}[t]{ll}
+    \toprule
+    Command & Date Example \\
+    \midrule
+      \Macro{dateacadian}   & 24.\,12.\,1993\\
+      \Macro{dateamerican}  & 12/24/1993\\
+      \Macro{dateaustralien}& 24/12/1993\\
+      \Macro{dateaustrian}  & 24.\,12.\,1993\\
+      \Macro{datebritish}   & 24/12/1993\\
+      \Macro{datecanadian}  & 1993/12/24\\
+      \Macro{datecanadien}  & 1993/12/24\\
+      \Macro{datecroatian}  & 24.\,12.\,1993.\\
+      \Macro{dateczech}     & 24.\,12.\,1993\\
+      \Macro{datedutch}     & 24.\,12.\,1993\\
+      \Macro{dateenglish}   & 24/12/1993\\
+      \Macro{datefinnish }  & 24.12.1993.\\
+      \Macro{datefrancais}  & 24.\,12.\,1993\\
+      \Macro{datefrench}    & 24.\,12.\,1993\\
+      \Macro{dategerman}    & 24.\,12.\,1993\\
+      \Macro{dateitalian}   & 24.\,12.\,1993\\
+      \Macro{datenaustrian} & 24.\,12.\,1993\\
+      \Macro{datenewzealand}& 24/12/1993\\
+      \Macro{datengerman}   & 24.\,12.\,1993\\
+      \Macro{datenorsk}     & 24.12.1993\\
+      \Macro{datenswissgerman}   & 24.\,12.\,1993\\
+      \Macro{datepolish}    & 24.\,12.\,1993\\
+      \Macro{dateslovak}    & 24.\,12.\,1993\\
+      \Macro{datespanish}   & 24.\,12.\,1993\\
+      \Macro{dateswedish}   & 24/12 1993\\
+      \Macro{dateswissgerman}    & 24.\,12.\,1993\\
+      \Macro{dateUKenglish} & 24/12/1993\\
+      \Macro{dateUSenglish} & 12/24/1993\\
+    \bottomrule
+  \end{tabular}
+  \end{captionbeside}
+  \label{tab:date}
+\end{table}
+%
+\section{Obsolete Commands in \Class{scrlttr2}}
+\seclabel{obsolete}
+\BeginIndexGroup
+
+\LoadNonFree{scrlttr2-experts}{1}
+\EndIndexGroup
+%
+\iffalse% Es wird Zeit das komplett rauszuwerfen!
+\section{From Obsolete \Class{scrlettr} to Current \Class{scrlttr2}}
+\seclabel{fromscrlettr}
+
+With\textnote{Attention!} the 2002 release of \Class{scrlttr2} (see
+\autoref{cha:scrlttr2}), the old letter class, \Class{scrlettr}, became
+obsolete, and it is no longer part of \KOMAScript. If you still need the class
+or information about it, you will find it in
+\cite{package:koma-script-obsolete}.
+
+To facilitate the transition to the new class, there is the compatibility
+option \Option{KOMAold}. Basically, all the older functionality still
+exists in the new class.  Without \Option{KOMAold}, however, the user
+interface and the defaults are different. More details on
+this option are provided in \autoref{sec:scrlttr2.lcoFile},
+\autoref{tab:lcoFiles}.
+
+\LoadNonFree{scrlttr2-experts}{2}
+%
+\EndIndexGroup
+\fi
+%
+\EndIndexGroup
+
+\endinput
+
+%%% Local Variables: 
+%%% mode: latex
+%%% mode: flyspell
+%%% ispell-local-dictionary: "english"
+%%% coding: us-ascii
+%%% TeX-master: "../guide"
+%%% End: 

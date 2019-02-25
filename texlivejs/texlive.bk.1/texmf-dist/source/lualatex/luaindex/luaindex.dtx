@@ -1,0 +1,1602 @@
+% \CheckSum{421}
+% \iffalse meta-comment
+% ==========================================================================
+% luaindex.dtx
+% Copyright (c) Markus Kohm, 2011
+%
+% This file is part of the luaTeX package `luaindex'.
+% 
+% This work may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License, version 1.3c of the license.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3c or later is part of all distributions of LaTeX 
+% version 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status "maintained".
+%
+% The Current Maintainer and author of this work is Markus Kohm.
+%
+% This work consists of the files `luaindex.dtx' and `README'.
+% ==========================================================================
+% \fi^^A meta-comment
+%
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%   Dollar        \$     Percent       \%     Ampersand     \&
+%   Acute accent  \'     Left paren    \(     Right paren   \)
+%   Asterisk      \*     Plus          \+     Comma         \,
+%   Minus         \-     Point         \.     Solidus       \/
+%   Colon         \:     Semicolon     \;     Less than     \<
+%   Equals        \=     Greater than  \>     Question mark \?
+%   Commercial at \@     Left bracket  \[     Backslash     \\
+%   Right bracket \]     Circumflex    \^     Underscore    \_
+%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%   Right brace   \}     Tilde         \~}
+%
+% \iffalse meta-comment
+%<*dtx|ins>
+\def\batchfile{luaindex.dtx}
+\input docstrip.tex
+\ifToplevel{%
+  \Msg{********************************************************************}
+  \Msg{*}
+  \Msg{* Steps of luaindex generation:}
+  \Msg{* =============================}
+  \Msg{*}
+  \Msg{* - Generation of all needed files:}
+  \keepsilent
+  \askforoverwritefalse
+}
+{
+\obeyspaces\obeylines
+\global\def\preambletext{
+\space
+Copyright (c) 2011 by Markus Kohm <komascript(at)gmx.info>
+
+This file was generated from file(s) of luaindex distribution.
+--------------------------------------------------------------
+
+This work may be distributed and/or modified under the conditions of
+the LaTeX Project Public License, version 1.3c of the license.
+The latest version of this license is in
+  http://www.latex-project.org/lppl.txt
+and version 1.3c or later is part of all distributions of LaTeX
+version 2005/12/01 or later.
+
+This work has the LPPL maintenance status "maintained".
+
+The Current Maintainer and author of this work is Markus Kohm.
+
+This file may only be distributed together with the files listed in
+`luaindex.dtx'. You may however distribute the files listed in 
+`luaindex.dtx' without this file.
+
+NOTE: THIS IS AN ALPHA-VERSION!
+}
+}
+\expandafter\preamble
+\preambletext
+\endpreamble
+\def\ThreeHyphens{---}
+\let\MetaPrefix\ThreeHyphens
+\expandafter\declarepreamble\expandafter\luapreamble
+\preambletext
+\endpreamble
+
+\generate{%
+  \let\MetaPrefix\DoubleperCent
+  \usepreamble\defaultpreamble
+  \file{luaindex.ltx}{\from{luaindex.dtx}{manual}}%
+  \file{luaindex.sty}{\from{luaindex.dtx}{package}}%
+  \file{luaindex-example.ltx}{\from{luaindex.dtx}{example}}%
+  \let\MetaPrefix\ThreeHyphens
+  \usepreamble\luapreamble
+  \nopostamble
+  \file{luaindex.lua}{\from{luaindex.dtx}{lua}}%
+}
+
+\ifToplevel{%
+  \Msg{* \space\space done.}
+  \Msg{* - Generation of examples:}
+  \directlua{%
+    local retval = os.execute( "lualatex --jobname=luaindex-example
+                                --interaction=batchmode luaindex-example.ltx" );
+    if ( retval == nil ) then
+      tex.error( "Shell escape not enabled!",
+        { "You should try",
+          " `luatex --shell-escape --jobname=luaindex luaindex.dtx'",
+          "to enable shell escape.",
+          "Otherwise you will get no example." } )
+    elseif ( retval == 0 ) then
+    else
+      tex.error( "Failed to generate the example",
+        { "I've tried to call",
+          " `lualatex --jobname=luaindex luaindex-example.ltx'",
+          "but got unexpected return value:",
+          retval } 
+      )
+    end
+  }%
+}
+
+\ifToplevel{%
+  \Msg{* \space\space implemented not yet.}
+  \Msg{* - Generation of manual:}
+  \directlua{%
+    local retval = os.execute( "lualatex --jobname=luaindex 
+                                --interaction=batchmode luaindex.ltx" );
+    if ( retval == 0 ) then
+      retval = os.execute( "lualatex --jobname=luaindex 
+                            --interaction=batchmode luaindex.ltx" );
+    end
+    if ( retval == 0 ) then
+      retval = os.execute( "makeindex -q -s gind.ist luaindex" );
+    end
+    if ( retval == 0 ) then
+      retval = os.execute( "makeindex -q -s gglo.ist
+                            -o luaindex.gls luaindex.glo" );
+    end
+    if ( retval == 0 ) then
+      retval = os.execute( "lualatex --jobname=luaindex  
+                            --interaction=batchmode luaindex.ltx" );
+    end
+    if ( retval == nil ) then
+      tex.error( "Shell escape not enabled!",
+        { "You should try",
+          " `luatex --shell-escape --jobname=luaindex luaindex.dtx'",
+          "to enable shell escape.",
+          "Otherwise you will get no manual." } )
+    elseif ( retval == 0 ) then
+    else
+      tex.error( "Failed to generate the manual",
+        { "I've tried to call",
+          " `lualatex --jobname=luaindex luaindex.ltx'",
+          "but got unexpected return value:",
+          retval } 
+      )
+    end
+  }%
+}
+
+\ifToplevel{%
+  \Msg{* \space\space done.}
+  \Msg{*}
+  \Msg{* Now you may install all the files.}
+  \Msg{*}
+  \Msg{********************************************************************}
+}
+
+\csname endinput\endcsname
+%</dtx|ins>
+%<*dtx>
+\ProvidesFile{luaindex.dtx}
+%</dtx>
+%<package|manuel|example>\NeedsTeXFormat{LaTeX2e}[1995/06/01]
+%<package>\ProvidesPackage{luaindex}
+%<manual>\ProvidesFile{luaindex.ltx}
+%<example>\ProvidesFile{luaindex-example.ltx}
+%<lua>if luatexbase.provides_module then
+%<lua>   luatexbase.provides_module({
+%<lua>      name = "luaindex",
+%<lua>      date = "2011/02/18",
+%<lua>      version = "0.1b",
+%<lua>      description = "LuaTeX index processor",
+%<lua>      author = "Markus Kohm",
+%<lua>      licence = "LPPL v1.3c or later"
+%<lua>  })
+%<lua>end
+%<*package|manual|dtx>
+    [2011/02/18 v0.1b LuaLaTeX Package
+%<*manual>
+    documentation:
+%</manual>
+    index processor]%
+%</package|manual|dtx>
+%<*manual>
+\documentclass{scrdoc}
+\usepackage{tabularx}
+\usepackage[english]{babel}
+\usepackage{xcolor}
+\colorlet{mcode}{teal}
+\usepackage{fontspec}
+\providecommand*{\LuaTeX}{Lua\kern-.125em\TeX}
+\providecommand*{\LuaLaTeX}{Lua\kern-.025em\LaTeX}
+\CodelineIndex
+\RecordChanges
+\GetFileInfo{luaindex.ltx}
+\title{%
+  Usage of\\
+  \LuaTeX{} module \texttt{luaindex}\\
+  and\\
+  \LuaLaTeX{} Package \texttt{luaindex}\\
+  for Generating Indexes\\
+}
+\date{\fileversion}
+\author{Markus Kohm\thanks{komascript%
+@%
+gmx%
+.%
+info}}
+\begin{document}
+\maketitle
+\DocInput{luaindex.dtx}
+\end{document}
+%</manual>
+%\fi^^A meta-comment
+%
+% \changes{v0.1}{2011/01/26}{start of new package}
+% \changes{v0.1b}{2011/02/18}{prefix `koma.' removed from Lua module}
+%
+% \begin{abstract}
+%   With \LuaTeX{} it would not be a problem to call an index processor like
+%   MakeIndex while running \LuaTeX{}.  So the user would not longer require
+%   to call the index processor on his own.  But on the other side Lua hat
+%   enough power to process the index itself.  Package \texttt{luaindex} was
+%   made to do this.  It consists primary of a Lua module:
+%   \texttt{luaindex.lua}.  This provides functions to generate a new index
+%   (or several new indexes), add entries to it and print the index.  To make
+%   the world easier there's an additional \LaTeX{} package:
+%   \texttt{luaindex.sty}.
+% \end{abstract}
+%
+% \tableofcontents
+%
+% \section{Idea}
+%
+% We will explain this in a future release.
+%
+% \section{General Options}
+%
+% See implementation documentation.
+%
+% \section{Generating Index Entries}
+%
+% See implementation documentation.
+%
+% \section{Print an Index}
+%
+% See implementation documentation.
+%
+% \section{Known Issues}
+%
+% Currently the user documentation is not existing. Please use the
+% implementation documentation and the example instead of. This will be
+% changed in a future release but maybe not at a near future.
+%
+% Currently there are no attributes to give the different indexes different
+% headings. You may redefine |\indexname| before printing an index to do
+% so. Future releases will do this simply by option.
+%
+% Currently repeated pre-sort-replaces are not supported. Maybe they will in a
+% future release.
+%
+% Currently page ranges are not supported. They will in a future release.
+%
+% Note: This is not even a beta version. It's only a proof of concept. Almost
+% everything my be designed and implemented in a better kind. The author
+% himself is just learning \LuaTeX{}.
+%
+% Nevertheless you may report bugs and patches to komascript^^A
+% @^^A
+% gmx^^A
+% .^^A
+% info.
+%
+%
+% \StopEventually{%
+%   \PrintIndex
+%   \PrintChanges
+% }
+%
+% \section{Implementation of Lua Module \texttt{luaindex.lua}}
+%
+% \iffalse meta-comment
+%<*lua>
+% \fi^^A meta-comment
+%
+% First of all wie define a new module named \texttt{luaindex}. All
+% variables and functions will be local to this module.
+%    \begin{macrocode}
+module("luaindex", package.seeall)
+%    \end{macrocode}
+%
+% To handle all indexes we have a variable named \texttt{indexes}. This is a
+% table of index tables \emph{assoziated by the name of the index
+% table}\marginpar{\makebox[0pt][l]{\color{mcode}^^A
+%   \begin{tabular}[t]{@{}l@{}}
+%     \texttt{indexes}=\{\\
+%     \enskip\emph{name}=\{\\
+%     \enskip\enskip\texttt{presortreplaces}=\{\\
+%     \enskip\enskip\enskip\{[\emph{pattern}]=\emph{replace}, \dots\kern.1em\},
+%     \dots\\
+%     \enskip\enskip\},\\
+%     \enskip\enskip\texttt{sortorderbychar}=\{\\
+%     \enskip\enskip\enskip[\emph{char}]=\emph{position}, \dots\\
+%     \enskip\enskip\},\\
+%     \enskip\enskip\{\\
+%     \enskip\enskip\enskip\texttt{sort}="\dots\kern.1em",\\
+%     \enskip\enskip\enskip\texttt{value}="\dots\kern.1em",\\
+%     \enskip\enskip\enskip\texttt{pages}=\{\dots\kern.1em\},\\
+%     \enskip\enskip\enskip\texttt{subindex}=\{\dots\kern.1em\}\\
+%     \enskip\enskip\}\\
+%     \enskip\}\\
+%     \}\\
+%   \end{tabular}
+% }}
+% \begin{itemize}
+% \item Each index table has at least \emph{two elements} assoziated to
+%   \texttt{presortreplaces} and
+%   \texttt{sortorderbychar}.
+% \item There may be additional numericly assoziated elements, the \emph{index
+% entries}.
+%   \begin{itemize}
+%   \item Each index entry has a least \emph{two elements} assoziated to
+%     \texttt{sort} und \texttt{value}. Element \texttt{sort} is the sort key
+%     of the index entry. Element \texttt{value} is the print value of the
+%     index entry.
+%   \item Each index entry may have an element assoziated to
+%     \texttt{pages}. This is a table of print values, that will be used as
+%     page number of the entry. It need not to be numeric. This table hat
+%     numeric assoziations. Later addeed pages will be appended to the end of
+%     the table.
+%   \item Each index entry may habe an element assoziated to
+%     \texttt{subindex}. This is an index table too, but do not have elements
+%     \texttt{presortreplaces} or \texttt{sortorderbychar}.
+%   \end{itemize}
+% \end{itemize}
+%    \begin{macrocode}
+local indexes = {}
+%    \end{macrocode}
+%
+% Next we have a function\marginpar{\makebox[0pt][l]{\color{mcode}^^A
+% \texttt{newindex(\emph{index name})}}} to generate a new \emph{index table}
+% at \texttt{indexes}:
+%    \begin{macrocode}
+function newindex( indexname )
+   indexes[indexname]={ presortreplaces = {},
+                        sortorderbychar = {} }
+end
+%    \end{macrocode}
+% The function parameter is the name of the index. This is not realy a print
+% name, but a simple assoziation name.
+%
+% Don't be impressed because of empty initialization of
+% \texttt{presortreplaces} and \texttt{sortorderbychar}. We will have
+% functions to change this.
+%
+% First of all, we have a function\marginpar{\makebox[0pt][l]{\color{mcode}^^A
+%     \begin{tabular}[t]{@{}l@{}l@{}}
+%       \texttt{sortorder(} & \texttt{\emph{index name},} \\
+%                           & \texttt{\emph{sort-order})}\\
+%     \end{tabular}%
+% }} to add a new sort order.
+%    \begin{macrocode}
+function sortorder( indexname, sortorder )
+   local i, value
+%    \end{macrocode}
+% The first parameter of the function is the name if the index table. If an
+% index table with the given name does not exist, \TeX{} should release an
+% error message with some optional help.
+%    \begin{macrocode}
+   local index = indexes[indexname]
+   if index == nil then
+      tex.error( "Unknown index `" .. indexname .. "'",
+                 { "You've tried to add a new sortorder to an index, but there's no index with the",
+                   "given name.",
+                   "You should define the index using lua function ",
+                   "  `luaindex.newindex(\"" .. indexname .. "\")'",
+                   "before."
+                 } 
+               )
+   else
+      if type(sortorder) == "string" then
+%    \end{macrocode}
+% The second parameter of the function may be a string. The string simply is
+% an concatenation of the character in the order that should be used to sort
+% the index entries of this index. The index table assoziatione
+% \texttt{sortorderbychar} is a table. The characters are the assoziation and
+% the wanted sort position is the assoziated value.
+%    \begin{macrocode}
+         local value
+         i = 1
+         repeat
+            value = unicode.utf8.sub( sortorder, i, i )
+%<debug>            print( i, value )
+            if value then
+               index.sortorderbychar[value] = i
+            end
+            i = i + 1
+         until value == ""
+      else -- should be table
+%    \end{macrocode}
+% The second parameter of the function may also be a table with numerical
+% assoziations.
+%    \begin{macrocode}
+         for i, value in ipairs( sortorder ) do
+            index.sortorderbychar[value] = i
+         end
+     end
+   end
+end     
+%    \end{macrocode}
+%
+% Second manipulation function\marginpar{\makebox[0pt][l]{\color{mcode}^^A
+%     \begin{tabular}[t]{@{}l@{}l@{}}
+%       \texttt{presortreplace(} & \texttt{\emph{index name},} \\
+%                           & \texttt{\emph{pass},} \\
+%                           & \texttt{\emph{pattern},} \\
+%                           & \texttt{\emph{replace})}\\
+%     \end{tabular}%
+% }} is to add presort entries to a presort pass of
+% an index. \texttt{\emph{pattern}} and \texttt{\emph{replace}} are
+% strings. See Lua function \texttt{unicode.utf8.sub} for more information
+% about these.
+%    \begin{macrocode}
+function presortreplace( indexname, pass, pattern, replace )
+   local n
+%    \end{macrocode}
+% The first parameter of the function is the name if the index table. If an
+% index table with the given name does not exist, \TeX{} should release an
+% error message with some optional help.
+%    \begin{macrocode}
+   local index = indexes[indexname]
+   if index == nil then
+      tex.error( "Unknown index `" .. indexname .. "'",
+                 { "You've tried to add a new presort-replace to an index, but there's no index",
+                   "with the given name.",
+                   "You should define the index using lua function ",
+                   "  `luaindex.newindex(\"" .. indexname .. "\")'",
+                   "before."
+                 } 
+               )
+   else
+%    \end{macrocode}
+% If the index exists, we have to create replace tables for every pass until
+% the given.
+%    \begin{macrocode}
+      for n = table.maxn(index.presortreplaces), pass, 1 do
+         if ( index.presortreplaces[n] == nil ) then
+            index.presortreplaces[n] = {}
+         end
+      end
+%    \end{macrocode}
+% Last but not least we have to add a new replace to the pass:
+%    \begin{macrocode}
+      index.presortreplaces[pass][pattern]=replace
+   end
+end
+%    \end{macrocode}
+%
+% Indexes are normally separated into single letters, all numbers and all
+% other symbols. To do so, we have a new
+% function\marginpar{\makebox[0pt][l]{\color{mcode}^^A
+%     \begin{tabular}[b]{@{}l@{~}l@{}}
+%       \texttt{local} & \texttt{getclass(} \\
+%                      & \enskip\texttt{\emph{utf8-char})}\\
+%     \end{tabular}%
+% }} that returns 1 for all other symbols, 2 for all numbers and 3 for all
+% letters. Wether an UTF-8 character is a letter or not depends on the
+% locale type ``\texttt{collate}''. You may set it using
+% \texttt{os.setlocale("\emph{locale}", "collate")}.
+%    \begin{macrocode}
+local function getclass( utfc )
+   local i
+   for i in unicode.utf8.gmatch( utfc, "%n" ) do
+%<debug>   print( utfc .. " is a number" )
+      return 2
+   end
+   for i in unicode.utf8.gmatch( utfc, "%a" ) do
+%<debug>   print( utfc .. " is a letter" )
+      return 3
+   end
+%<debug>   print( utfc .. " is a symbol" )
+   return 1
+end
+%    \end{macrocode}
+%
+% Before printing or sorting we may want to replace\marginpar{%^^A
+%   \makebox[0pt][l]{\color{mcode}^^A
+%     \begin{tabular}[t]{@{}l@{~}l@{}}
+%       \texttt{local} & \texttt{do\_presortreplaces(} \\
+%                      & \enskip\texttt{\emph{utf8-string},}\\
+%                      & \enskip\texttt{\emph{replace table})}\\
+%     \end{tabular}%
+% }} some strings. We have a table of those. At the string each occurence of
+% the assoziation should be replaced by the assoziated value.
+%    \begin{macrocode}
+local function do_presortreplaces( srcstr, presortreplace )
+   if presortreplace then
+      local pat, rep
+      for pat, rep in pairs( presortreplace ) do
+         srcstr = unicode.utf8.gsub( srcstr, pat, rep )
+      end
+   end
+   return srcstr
+end
+%    \end{macrocode}
+%
+% Now let's print the index.\marginpar{\makebox[0pt][l]{\color{mcode}^^A
+%     \begin{tabular}[t]{@{}l@{~}l@{}}
+%       \texttt{local} & \texttt{printsubindex(} \\
+%                      & \enskip\texttt{\emph{level},}\\
+%                      & \enskip\texttt{\emph{index},}\\
+%                      & \enskip\texttt{\emph{presortreplace\_zero})}\\
+%     \end{tabular}%
+% }}
+% There aren't much differences in printing an index or a sub-index to an
+% index entry. We only need to know the level of the (sub-) index. level 0
+% is the main index.
+%    \begin{macrocode}
+local function printsubindex( level, index, presortreplace_zero )
+   local i,t,n,p,l
+   local group=""
+   local class=-1
+%    \end{macrocode}
+% We build the \TeX{} index item command: \verb|\item|, \verb|\subitem|,
+% \verb|\subsubitem| etc. depending on the level. So \texttt{level} is simply
+% the number of \verb|sub| at the index item command.
+%    \begin{macrocode}
+   local item="\\"
+   for l = 1, level, 1 do
+      item = item .. "sub"
+   end
+   item = item .. "item "
+%    \end{macrocode}
+% Walk through all index items.
+%    \begin{macrocode}
+   for i,t in ipairs( index ) do
+%    \end{macrocode}
+% If \texttt{level} is 0, we are at the root index. We want to group this
+% Index into numbers, symbols and single letters. To do so, we detect the
+% class of the first character at the sort string and add \verb|\indexgroup|
+% commands if neccessary.
+%    \begin{macrocode}
+      if ( level == 0 ) then
+         local sort=do_presortreplaces( t["sort"], presortreplace_zero )
+         local firstchar=unicode.utf8.upper( unicode.utf8.sub( sort, 1, 1 ) )
+         if ( firstchar ~= group ) then
+            local newclass
+%    \end{macrocode}
+% The character differ, but we have to print the group only if the groups of
+% the characters differ.
+%    \begin{macrocode}
+            newclass=getclass( firstchar )
+            if ( newclass == 1 and class ~= newclass ) then
+               tex.print( "\\indexgroup{\\symbolsname}" )
+            elseif ( newclass == 3 ) then
+               tex.print( "\\indexgroup{" .. firstchar .. "}" )
+            elseif ( newclass == 2 and class ~= newclass ) then
+               tex.print( "\\indexgroup{\\numbersname}" )
+            end
+            group=firstchar
+            class=newclass
+         end
+      end
+%    \end{macrocode}
+% Now we have to print the index item. We use the \texttt{value} to be
+% printed. If one or more pagenumbers are stored, we print them too. If the
+% index entry has a sub index, we call \texttt{printsubindex} for this one
+% with increased level.
+%    \begin{macrocode}
+      tex.sprint( item, t["value"] )
+      if t["pages"] then
+         tex.sprint( "\\indexpagenumbers{" )
+         for n,p in ipairs( t["pages"] ) do
+            tex.sprint( "\\indexpagenumber{", p, "}" )
+         end
+         tex.print( "}" )
+      end
+      if t["subindex"] then
+         printsubindex( level+1, t["subindex"], presortreplaces_zero )
+      end
+   end
+end
+%    \end{macrocode}
+% Printing\marginpar{\makebox[0pt][l]{\color{mcode}^^A
+%     \begin{tabular}[t]{@{}l@{}}
+%       \texttt{printindex(\emph{index name})}\\
+%     \end{tabular}%
+% }} a whole index is simply the same like printing a sub index, but before
+% printing the index, we have to test, wether the named index exists or
+% not.
+%    \begin{macrocode}
+function printindex( indexname )
+   local index=indexes[indexname]
+   if index == nil then
+      tex.error( "Unknown index `" .. indexname .. "'",
+                 { "You've tried to print an index, but there's no index with the",
+                   "given name.",
+                   "You should define the index using lua function ",
+                   "  `luaindex.newindex(\"" .. indexname .. "\")'",
+                   "before."
+                 } 
+               )
+   else
+      print( "Index: \"" .. indexname .. "\" with " .. table.maxn( index ) .. " level-0-entries" )
+      tex.print( "\\begin{theindex}" )
+      printsubindex(0,indexes[indexname],indexes[indexname].presortreplaces[0])
+      tex.print( "\\end{theindex}" )
+   end
+end
+%    \end{macrocode}
+%
+% To sort the index character classes numbers, letters and other are not
+% enough. So we build sub-classes\marginpar{\makebox[0pt][l]{\color{mcode}^^A
+%     \begin{tabular}[b]{@{}l@{~}l@{}}
+%       \texttt{local} & \texttt{getsubclass(} \\
+%                      & \enskip\texttt{\emph{utf8-char})}\\
+%     \end{tabular}%
+% }} inside these three classes.
+%    \begin{macrocode}
+local function getsubclass( utfc )
+   local i
+%    \end{macrocode}
+% Inside letters we want so sort upper case before lower case.
+%    \begin{macrocode}
+   for i in unicode.utf8.gmatch( utfc, "%l" ) do
+      return 1
+   end
+   for i in unicode.utf8.gmatch( utfc, "%u" ) do
+      return 2
+   end
+%    \end{macrocode}
+% Inside other symbols we want so sort controls before spaces before
+% punctuations before numbers before unknown.
+%    \begin{macrocode}
+   for i in unicode.utf8.gmatch( utfc, "%c" ) do
+      return 1
+   end
+   for i in unicode.utf8.gmatch( utfc, "%s" ) do
+      return 2
+   end
+   for i in unicode.utf8.gmatch( utfc, "%p" ) do
+      return 3
+   end
+   for i in unicode.utf8.gmatch( utfc, "%n" ) do
+      return 4
+   end
+   return 10 -- unkown is the biggest sub class
+end
+%    \end{macrocode}
+% To compare\marginpar{\makebox[0pt][l]{\color{mcode}^^A
+%     \begin{tabular}[t]{@{}l@{~}l@{}}
+%       \texttt{local} & \texttt{do\_strcmp(} \\
+%                      & \enskip\texttt{\emph{first string},} \\
+%                      & \enskip\texttt{\emph{second string},} \\
+%                      & \enskip\texttt{\emph{sort order table})}\\
+%     \end{tabular}%
+% }} two UTF8-strings we could simply use the string compare of
+% Lua. But for our purpose this is not enough. So we've added a configurable
+% sort order and now have to compare character by character depeding on this
+% sort order.
+%    \begin{macrocode}
+local function do_strcmp( first, second, sortorderbychar )
+   local secondtable = string.explode( second, "" )
+   local firstutf
+   local n = 1
+%<debug>   print( first .. ", " .. second );
+   for firstutf in string.utfcharacters( first ) do
+      local secondutf = unicode.utf8.sub( second, n, n )
+      n = n + 1;
+      if firstutf then
+         if secondutf ~= "" then
+%<debug>            print( " " .. firstutf .. ", " .. secondutf )
+            if firstutf ~= secondutf then
+               local firstn, secondn
+               if sortorderbychar then
+                  firstn = sortorderbychar[firstutf]
+                  secondn = sortorderbychar[secondutf]
+               end
+%    \end{macrocode}
+% If both characters were in the sort order table with different index we may
+% return -1, if the index of first was lower than second, and 1, if the index
+% of first was higher than second.
+%    \begin{macrocode}
+               if firstn and secondn then
+%<debug>                  print( " n: " .. firstn .. ", " .. secondn )
+                  if firstn < secondn then
+                     return -1
+                  elseif firstn > secondn then
+                     return 1
+                  end
+               else
+%    \end{macrocode}
+% If one character was not in the sort order table, we compare the classes and
+% if same the sub-classes.
+%    \begin{macrocode}
+                  local firstclass = getclass( firstutf )
+                  local secondclass = getclass( secondutf )
+                  if firstclass < secondclass then
+                     return -1
+                  elseif firstclass == secondclass then
+                     local firstsubclass = getsubclass( firstutf)
+                     local secondsubclass = getsubclass( secondutf )
+                     if firstsubclass < secondsubclass then
+                        return -1
+                     elseif firstsubclass == secondsubclass then
+                        if firstutf < secondutf then
+                           return -1
+                        else
+                           return 1
+                        end
+                     else
+                        return 1
+                     end
+                  else
+                     return 1
+                  end
+               end
+            end
+         else
+%    \end{macrocode}
+% If the first string was longer than the second, it is greater.
+%    \begin{macrocode}
+            return 1
+         end
+      else
+%    \end{macrocode}
+% If the first string was shorter than the second, it is lower.
+%    \begin{macrocode}
+         if secondutf ~= "" then
+            return -1
+         else
+            return 0 -- This should never happen!
+         end
+      end
+   end
+%    \end{macrocode}
+% If the first string was shorter than the second, it is lower. If not they
+% are same.
+%    \begin{macrocode}
+   if unicode.utf8.sub( second, n, n ) ~= "" then
+      return -1
+   else
+      return 0
+   end
+end
+%    \end{macrocode}
+%
+% Now we are able to compare\marginpar{%^^A
+%   \makebox[0pt][l]{\color{mcode}^^A
+%     \begin{tabular}[t]{@{}l@{~}l@{}}
+%       \texttt{local} & \texttt{do\_indexcmp(} \\
+%                      & \enskip\texttt{\emph{first string},}\\
+%                      & \enskip\texttt{\emph{second string},}\\
+%                      & \enskip\texttt{\emph{replace tables},}\\
+%                      & \enskip\texttt{\emph{sort order table})}\\
+%     \end{tabular}%
+% }} the sort value of two index entries. Before the
+% first compare we do the first pre-sort replace. All other pre-sort replaces
+% will be done only, if the sort entries are not same!
+%    \begin{macrocode}
+local function do_indexcmp( firstsort, secondsort, 
+                            presortreplaces, sortorderbychar )
+   local pass = 0
+   local ncmp = 0
+   repeat
+      if presortreplaces and presortreplaces[pass] then
+         firstsort = do_presortreplaces( firstsort, presortreplaces[pass] )
+         secondsort = do_presortreplaces( secondsort, presortreplaces[pass] )
+%<debug>         print( "Replace-Pass " .. pass .. ": " .. firstsort .. ", " .. secondsort )
+      end
+      pass = pass + 1
+      ncmp = do_strcmp( firstsort, secondsort, sortorderbychar )
+   until ( ncmp ~= 0 ) or ( pass > table.maxn( presortreplaces ) )
+%<*debug>
+   if ncmp < 0 then
+      print( firstsort .. "<" .. secondsort )
+   elseif ncmp == 0 then
+      print ( firstsort .. "=" .. secondsort )
+   else
+      print( firstsort .. ">" .. secondsort )
+   end
+%</debug>
+   return ncmp
+end
+%    \end{macrocode}
+%
+% Inserting\marginpar{%^^A
+%   \makebox[0pt][l]{\color{mcode}^^A
+%     \begin{tabular}[t]{@{}l@{~}l@{}}
+%       \texttt{local} & \texttt{subinsert(} \\
+%                      & \enskip\texttt{\emph{index table},}\\
+%                      & \enskip\texttt{\emph{replace tables},}\\
+%                      & \enskip\texttt{\emph{sort order table},}\\
+%                      & \enskip\texttt{\emph{page string},}\\
+%                      & \enskip\texttt{\emph{sort value},}\\
+%                      & \enskip\texttt{\emph{print value},}\\
+%                      & \enskip\dots\kern.1em\texttt{)}\\
+%     \end{tabular}%
+% }} a new entry to an index is same like inserting a new entry to a
+% sub-index of an already existing entry. So we have only one local function
+% for this. A new entry consists of a page string, that should be added to the
+% page list of the entry, a sort value, that should be used to find the
+% correct entry and a print value, that should be shown at the index. Entries
+% are only same, if the compare of the sort value is 0 and the print values
+% are same. A new entry may be not only a new entry to the top level but to
+% sub levels. Because of this, there may be several pairs of sort- and print
+% values. We use bisection search to find the insert position.
+%    \begin{macrocode}
+local function subinsert( index, presortreplaces, sortorderbychar,
+                          pagestring, sortvalue, outputvalue, ... )
+   local min = 1
+   local max = table.maxn(index)
+   local updown = 0
+   
+   local n = math.ceil(( min + max ) / 2)
+   while min <= max do
+      updown = do_indexcmp( sortvalue, index[n].sort, 
+                            presortreplaces, sortorderbychar )
+      if updown == 0 then
+%    \end{macrocode}
+% The sort values are compared to be same (after serveral replaces). But only
+% if the print values are (without any replaces) same, we have to use this
+% entry. In this case we add a new sub-entry to this entry and if no new sub
+% entry was given the page string to the page table.
+%    \begin{macrocode}
+         if outputvalue == index[n].value then
+%<debug>            print( "The entries are same." )
+            if ( ... ) then
+%<debug>               print( " Adding subentry to already existing entry" )
+               if ( index[n].subindex == nil ) then
+                  index[n].subindex = {}
+               end
+               subinsert( index[n].subindex, presortreplaces, sortorderbychar,
+                          pagestring, ... )
+            else
+%<debug>               print( " Is the pagestring already at the pages table?" )
+               local i, p
+               for i, p in ipairs( index[n].pages ) do
+                  if pagestring == p then
+%<debug>                     print( "The pagestring is already at the pages table." )
+%<debug>                     print( " We have nothing to do." )
+                     return
+                  end
+%<debug>                  print( pagestring, "!=", p )
+               end
+%<debug>               print( "The pagestring was not at the pages table.",
+%<debug>                      "Add the new pagestring to the pages table",
+%<debug>                      "and stop processing." )
+               table.insert( index[n].pages, pagestring )
+            end
+            return
+         else
+%    \end{macrocode}
+% If the print values are not same, we use sequential search for the position
+% after the last entry with same sort value but different print value. This is
+% the position to use for the new entry.
+%    \begin{macrocode}
+%<debug>            print( "The entries are not same.",
+%<debug>                   "Search for the last entry, with same sort." )
+            repeat
+               n = n + 1
+               if n <= max then
+                  updown = do_indexcmp( sortvalue, index[min].sort, 
+                                        presortreplaces, sortorderbychar )
+               end
+            until n > max or updown ~= 0
+            min = n
+            max = n-1
+         end
+      elseif updown > 0 then
+         min = n+1
+      else
+         max = n-1
+      end
+      n = math.ceil(( min + max ) / 2)
+%<debug>      print ( min, max, n )
+   end
+%    \end{macrocode}
+% if we have a new sub entry we add this to the new position. If not we simply
+% add the new entry with the page table.
+%    \begin{macrocode}
+   if ( ... ) then
+%<debug>      print( "Generating new entry without page but subindex" )
+      table.insert( index, n,
+                    { sort=sortvalue, value=outputvalue, subindex={} } )
+%<debug>      print( "Add subindex to new generated entry" )
+      subinsert( index[n].subindex, presortreplaces, sortorderbychar, 
+                 pagestring, ... )
+   else
+%<debug>      print( "Generating new entry with page" )
+      table.insert( index, n, 
+                    { sort=sortvalue, value=outputvalue, pages={pagestring} } )
+   end
+end
+%    \end{macrocode}
+% We've explained before, that inserting\marginpar{%^^A
+%   \makebox[0pt][l]{\color{mcode}^^A
+%     \begin{tabular}[t]{@{}l@{}}
+%       \texttt{insert(\emph{index name},}\\
+%         \enskip\texttt{\emph{page string},}\\
+%         \enskip\texttt{\emph{sort value},}\\
+%         \enskip\texttt{\emph{print value},}\\
+%         \enskip\dots\kern.1em\texttt{)}\\
+%     \end{tabular}%
+% }} a new entry is same like inserting a entry to a sub entry. There's only
+% one tiny difference: the replace tables and sort order are members of the
+% index table.
+%    \begin{macrocode}
+function insert( indexname, pagestring, sortvalue, outputvalue, ... )
+   local index=indexes[indexname]
+   subinsert( index, index.presortreplaces, index.sortorderbychar,
+              pagestring, sortvalue, outputvalue, ... )
+end      
+%    \end{macrocode}
+%
+% Last we will need a function,\marginpar{^^A
+%   \makebox[0pt][l]{\color{mcode}^^A
+%     \texttt{removeentries(\emph{index name})}}} that only removes all index
+% entries but not presortreplaces or sortorderbychar.
+%    \begin{macrocode}
+function removeentries( indexname )
+   local p = indexes[indexname].presortreplaces
+   local s = indexes[indexname].sortorderbychar
+   indexes[indexname]={ presortreplaces = p,
+                        sortorderbychar = s }
+end
+%    \end{macrocode}
+%
+% \iffalse meta-comment
+%</lua>
+% \fi^^A meta-comment
+%
+% \section{Implementation of \LaTeX{} Package  \texttt{luaindex.sty}}
+%
+% \iffalse meta-comment
+%<*package>
+% \fi^^A meta-comment
+%
+% The \LaTeX{} package is user's candy but not necessary. You may use
+% \texttt{luaindex.lua} directly, but \LaTeX{} users will expect a \LaTeX{}
+% interface.
+% 
+% \subsection{Package Startup}
+%
+% \LuaLaTeX{} must be used to use the package.
+%    \begin{macrocode}
+\RequirePackage{ifluatex}
+\ifluatex\else
+  \PackageError{luaindex}{lualatex needed}{%
+    Package `luaindex' needs LuaTeX.\MessageBreak
+    So you should use `lualatex' to process you document!\MessageBreak
+    See documentation of `luaindex' for further information.}%
+  \expandafter\expandafter\expandafter\csname endinput\endcsname
+\fi
+%    \end{macrocode}
+% \changes{v0.1b}{2011/02/18}{Using package \texttt{luatexbase-compat}}
+%    \begin{macrocode}
+\RequirePackage{luatexbase-compat}[2010/10/10]
+%    \end{macrocode}
+% \changes{v0.1b}{2011/02/18}{Using package \texttt{luatexbase-modutils}}
+%    \begin{macrocode}
+\RequirePackage{luatexbase-modutils}[2010/10/10]
+%    \end{macrocode}
+%
+% We need some \LuaTeX{} primitives:
+%    \begin{macrocode}
+\luatexbase@ensure@primitive{luaescapestring}
+%    \end{macrocode}
+%
+% We need some Lua functions:
+%    \begin{macrocode}
+\directlua{%
+   if not tex.error then
+      luatexbase.module_error('luaindex', 
+         'undefined function!\string\n%
+          LuaTeX function tex.error() needed but not defined.\string\n%
+          Maybe you are using the wrong version of LuaTeX.')
+   end
+   if not tex.print then
+      luatexbase.module_error('luaindex',
+         'undefined function!\string\n%
+          LuaTeX function tex.print() needed but not defined.\string\n%
+          Maybe you are using the wrong version of LuaTeX.')
+   end
+   if not tex.sprint then
+      luatexbase.module_error('luaindex',
+         'undefined function!\string\n%
+          LuaTeX function tex.sprint() needed but not defined.\string\n%
+          Maybe you are using the wrong version of LuaTeX.')
+   end
+}
+%    \end{macrocode}
+%
+% Load an initialize lua module. We could do this much later, but it is very,
+% very important, so we do is as soon as possible.
+%    \begin{macrocode}
+\RequireLuaModule{luaindex}
+%    \end{macrocode}
+%
+% With \texttt{luaindex} we use a temporary index file, too. This is
+% necessary, because page numbers are only valid while output routine. So
+% usage of a temporary index file is a good solution to have correct page
+% numbers. If this file exists, we load it simply while |\begin{document}| and
+% then produce an new one. But loading the old one is not simply an
+% |\input|. Out temporary index file is a Lua file, so we use Lua function
+% \texttt{dofile} to load it.
+%    \begin{macrocode}
+\newwrite\@indexfile
+\AtBeginDocument{%
+  \IfFileExists{\jobname.ldx}{\directlua{dofile('\jobname.ldx')}}{}%
+  \openout\@indexfile=\jobname.ldx
+}
+%    \end{macrocode}
+%
+% \subsection{Options}
+%
+% We use a key-value interface even for options. Because of this we're using
+% \KOMAScript{} package scrbase.
+%    \begin{macrocode}
+\RequirePackage{scrbase}
+\DefineFamily{luaindex}
+\DefineFamilyMember{luaindex}
+%    \end{macrocode}
+%
+% \begin{option}{sortorder}
+% \begin{macro}{\luaindex@sortorder}
+% Support for individual sort order. Sort order is an attribute of the index
+% root Lua table. Because of this the option simply saves it and it will be
+% setup later while defining new indexes.
+%    \begin{macrocode}
+\newcommand*{\luaindex@sortorder}{}
+\DefineFamilyKey{luaindex}{sortorder}{%
+  \edef\luaindex@sortorder{#1}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{option}
+%
+% \begin{option}{locale}
+% If no individual sort order is given, the \emph{collate} locale would cause
+% the sort order. So we add an option make this locale changable. Note, that
+% changing this locale may also affect to other Lua functions!
+%    \begin{macrocode}
+\DefineFamilyKey{luaindex}{locale}{%
+  \if@atdocument
+    \expandafter\@firstofone
+  \else
+    \expandafter\AtBeginDocument
+  \fi
+  {%
+    \protected@write\@indexfile{}{%
+      os.setlocale('#1','collate')
+    }%
+  }%
+}
+%    \end{macrocode}
+% \end{option}
+%
+% \begin{option}{pageformat}
+% \begin{macro}{\luaindex@pageformat}
+% The page format is an attribute of every index entry. But you may define a
+% primary page format to be used, if no individual page format will be given.
+%    \begin{macrocode}
+\newcommand*{\luaindex@pageformat}{}
+\DefineFamilyKey{luaindex}{pageformat}{%
+  \def\luaindex@pageformat{#1}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{option}
+%
+% \begin{option}{singlepass}
+% This option changes the general behavior of |\printindex|. See definition of
+% |\printindex| for more information about.
+%    \begin{macrocode}
+\FamilyBoolKey{luaindex}{singlepass}{@luaindexsinglepass}
+%    \end{macrocode}
+% \end{option}
+%
+% Processing all the options while loading the package.
+%    \begin{macrocode}
+\FamilyProcessOptions{luaindex}\relax
+%    \end{macrocode}
+%
+% \begin{macro}{\setupluaindex}
+% This is only an convenience command for run time setup of \texttt{luadindex}
+% options.
+%    \begin{macrocode}
+\newcommand*{\setupluaindex}{\FamilyOptions{luaindex}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Some Usual Index Commands}
+%
+% \begin{macro}{\see}
+% \begin{macro}{\seealso}
+% |\see| and |\seealso| are common commands used at the page number
+% format. They are defined for compatibility. ^^A Fixme: Is this a good idea?
+% \begin{macro}{\seename}
+% \begin{macro}{\alsoname}
+% The two terms |\seename| and |\alsoname| are used by |\see| and |\seealso|
+% and needed to be defined also.
+%    \begin{macrocode}
+\newcommand*\see[2]{\emph{\seename} #1}
+\providecommand*\seealso[2]{\emph{\alsoname} #1}
+\providecommand\seename{see}
+\providecommand*\alsoname{see also}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+%
+% \subsection{Generation of  Indexes and Index Entries}
+%
+% \begin{macro}{\newindex}
+% We can handle not only one index but several indexes. To do so, we have to
+% create a new lua index table for each index. Just use
+% \begin{quote}|\newindex|\marg{index name}\end{quote} to do so. Additional
+% features may be set up using: \begin{quote}|\newindex|\oarg{index
+%   options}\marg{index name}\end{quote} Currently all global options are
+% supported for \meta{index options}, but some will be ignored.
+%    \begin{macrocode}
+\newcommand*{\newindex}[2][]{%
+  \directlua{luaindex.newindex('\luatexluaescapestring{#2}')}%
+  \begingroup
+    \setupluaindex{#1}%
+    \ifx\luaindex@sortorder\@empty\else
+      \AtBeginDocument{%
+        \protected@write\@indexfile{}{%
+          luaindex.sortorder('\luatexluaescapestring{#2}',
+                                  '\luaindex@sortorder')
+      }}%
+    \fi
+  \endgroup
+}
+%    \end{macrocode}
+% You may use |\newindex| at the document preamble only.
+%    \begin{macrocode}
+\@onlypreamble\newindex
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\luaindex}
+% This command will be used to add a new root level entry to an index:
+% \begin{quote}|\luaindex|\marg{index
+% name}\oarg{options}\marg{entry}\end{quote}
+% \begin{description}
+% \item[\normalfont\meta{index name}] -- the name of the index to be
+%   used. This has to be the same like you've used to create the new index
+%   using |\newindex|.
+% \item[\normalfont\meta{options}] -- several options for the index
+%   entry. Currently supported are:
+%   \begin{description}
+%   \item[\normalfont\texttt{locale=}\meta{locale specifier}] -- just calls
+%     |\luaindexsetup|\marg{locale specifier}. Note, that this is a global
+%     action!
+%   \item[\normalfont\texttt{pageformat=}\meta{command}] -- is a command with
+%     at most one argument to format the page number of the index entry. You
+%     may, e.\,g., use |sort=\see|\marg{reference} or
+%     |sort=\seealso|{\marg{reference}} to produce a ``see'' or ``see also''
+%     cross reference to \meta{reference} instead of showing a real page
+%     number.
+%   \item[\normalfont\texttt{sort=}\meta{sort entry}] -- destines the sort
+%     position of the index entry. If it is omitted \meta{entry} will be used
+%     instead.
+%   \end{description}
+% \item[\normalfont\meta{entry}] -- this will be shown in the index.
+% \end{description}
+% Note: An index entry is only same, if \meta{sort entry} is same (after
+% several presort replaces) and \meta{entry} is same. Index entries
+% with same \meta{sort entry} but different \meta{entry} will be placed
+% at the current end of the entries with same \meta{sort entry}.
+%    \begin{macrocode}
+\newcommand*{\luaindex}[1]{%
+  \@bsphack
+  \begingroup
+    \edef\luaindex@name{#1}%
+    \lua@index
+}
+\newcommand*{\lua@index}[2][]{%
+    \set@display@protect
+    \edef\luaindex@sort{#2}%
+    \define@key{luaindex.setindex}{sort}{\edef\luaindex@sort{##1}}%
+    \define@key{luaindex.setindex}{pageformat}{\def\luaindex@pageformat{##1}}%
+    \define@key{luaindex.setindex}{locale}{\luaindexsetup{locale=#1}}%
+    \setkeys{luaindex.setindex}{#1}%
+    \protected@write\@indexfile{\let\luatexluaescapestring\relax}{%
+        luaindex.insert('\luatexluaescapestring{\luaindex@name}',
+                             '{\luatexluaescapestring{\luaindex@pageformat{\thepage}}}',
+                             '\luatexluaescapestring{\luaindex@sort}',
+                             '\luatexluaescapestring{#2}')
+    }%
+  \endgroup
+  \@esphack
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\luasubindex}
+% \begin{macro}{\lua@subindex}
+% \begin{macro}{\lua@@subindex}
+% Same like |\luaindex| but to produce a sub entry:
+% \begin{quote}|\luasubindex|\marg{index name}\oarg{options}\marg{entry}^^A
+%   \linebreak[2]\oarg{options}\marg{sub-entry}\end{quote} Note, that the
+% \meta{options} for the \meta{sub-entry} only allows a sub-set of the options
+% shown for |\luaindex|. Currently only \texttt{sort=}\meta{sort entry}.
+%    \begin{macrocode}
+\newcommand*{\luasubindex}[1]{%
+  \@bsphack
+  \begingroup
+    \edef\luaindex@name{#1}%
+    \lua@subindex
+}
+\newcommand*{\lua@subindex}[2][]{%
+    \set@display@protect
+    \edef\luaindex@sort{#2}%
+    \define@key{luaindex.setindex}{sort}{\edef\luaindex@sort{##1}}%
+    \define@key{luaindex.setindex}{pageformat}{\def\luaindex@pageformat{##1}}%
+    \define@key{luaindex.setindex}{locale}{\luaindexsetup{locale=#1}}%
+    \setkeys{luaindex.setindex}{#1}%
+    \protected@write\@indexfile{\let\luatexluaescapestring\relax}{%
+        luaindex.insert('\luatexluaescapestring{\luaindex@name}',
+                             '{\luatexluaescapestring{\luaindex@pageformat{\thepage}}}',
+                             '\luatexluaescapestring{\luaindex@sort}',
+                             '\luatexluaescapestring{#2}',
+    }%
+    \aftergroup\lua@@subindex
+  \endgroup
+}
+\newcommand*{\lua@@subindex}[2][]{%
+  \begingroup
+    \set@display@protect
+    \edef\luaindex@sort{#2}%
+    \define@key{luaindex.setindex}{sort}{\edef\luaindex@sort{##1}}%
+    \setkeys{luaindex.setindex}{#1}%
+    \protected@write\@indexfile{\let\luatexluaescapestring\relax}{%
+                             \@spaces
+                             '\luatexluaescapestring{\luaindex@sort}',
+                             '\luatexluaescapestring{#2}')
+    }%
+  \endgroup
+  \@esphack
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\luasubsubindex}
+% \begin{macro}{\lua@subsubindex}
+% \begin{macro}{\lua@@@subindex}
+% Same like |\luaindex| but to produce a sub-sub-entry, that is a sub-entry to
+% a sub-entry:
+% \begin{quote}|\luasubindex|\marg{index
+%   name}\oarg{options}\marg{entry}\linebreak[2]^^A
+%   \oarg{options}\marg{sub-entry}\linebreak[2]^^A
+%   \oarg{options}\linebreak[2]\marg{sub-sub-entry}\end{quote}
+% Note, that the \meta{options} for the \meta{sub-entry} and the
+% \meta{sub-sub-entry} only allows a sub-set of the options shown for
+% |\luaindex|. Currently only \texttt{sort=}\meta{sort entry}.
+%    \begin{macrocode}
+\newcommand*{\luasubsubindex}[1]{%
+  \@bsphack
+  \begingroup
+    \edef\luaindex@name{#1}%
+    \lua@subsubindex
+}
+\newcommand*{\lua@subsubindex}[2][]{%
+    \set@display@protect
+    \edef\luaindex@sort{#2}%
+    \define@key{luaindex.setindex}{sort}{\edef\luaindex@sort{##1}}%
+    \define@key{luaindex.setindex}{pageformat}{\def\luaindex@pageformat{##1}}%
+    \define@key{luaindex.setindex}{locale}{%
+      \luaindexsetup{locale=#1}%
+    }
+    \setkeys{luaindex.setindex}{#1}%
+    \protected@write\@indexfile{\let\luatexluaescapestring\relax}{%
+        luaindex.insert('\luatexluaescapestring{\luaindex@name}',
+                             '{\luatexluaescapestring{\luaindex@pageformat{\thepage}}}',
+                             '\luatexluaescapestring{\luaindex@sort}',
+                             '\luatexluaescapestring{#2}',
+    }%
+    \aftergroup\lua@@@subindex
+  \endgroup
+}
+\newcommand*{\lua@@@subindex}[2][]{%
+  \begingroup
+    \set@display@protect
+    \edef\luaindex@sort{#2}%
+    \define@key{luaindex.setindex}{sort}{\edef\luaindex@sort{##1}}%
+    \setkeys{luaindex.setindex}{#1}%
+    \protected@write\@indexfile{\let\luatexluaescapestring\relax}{%
+                             \@spaces
+                             '\luatexluaescapestring{\luaindex@sort}',
+                             '\luatexluaescapestring{#2}',
+    }%
+    \aftergroup\lua@@subindex
+  \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\makeindex}
+% \begin{macro}{\index}
+% \begin{macro}{\subindex}
+% \begin{macro}{\subsubindex}
+% These are defined to increase compatibility to old index packages
+% only. Command |\makeindex| simply generates the new index named
+% \texttt{general} and the other commands to add entries to that index. Note,
+% that adding a sub-entry or sub-sub-entry is not yet compatible to other
+% index packages. You need to use the command |\subindex| and |\subsubindex|
+% instead of something like
+% |\index{|\meta{entry}|!|\meta{sub-entry}|!|\meta{sub-sub-entry}|}|. Note
+% also, that changing the format of the page number is not compatible with
+% other index packages. You have to use |\index[pageformat=|\meta{page
+% format}|]{|\dots\kern.1em|}| instead of something like
+% |\index{|\meta{entry}\verb+|+\meta{page format}|}|.
+%    \begin{macrocode}
+\renewcommand*{\makeindex}{%
+  \newindex{general}%
+  \renewcommand*\index{\luaindex{general}}%
+  \newcommand*\subindex{\luasubindex{general}}%
+  \newcommand*\subsubindex{\luasubsubindex{general}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+%
+% \subsection{Printing an Index}
+%
+% We do not only want to create an index, we also need to print it.
+%
+% \begin{macro}{\printindex}
+% With
+% \begin{quote}|\printindex|\oarg{options}\end{quote}
+% you can print an index. The known options are
+% \begin{description}
+% \item[\normalfont\texttt{index=}\meta{index name}] -- print the index with
+%   the given name as declared at |\newindex|. If you omit this option, index
+%   ``\texttt{general}'' will be printed.
+% \item[\normalfont\texttt{singlepass=}\meta{boolean value}] -- you may switch
+%   on and of the single pass feature. For the differences of single pass
+%   feature on and off, see table~\ref{tab:singlepass}
+%   \begin{table}
+%     \centering
+%     \caption{Implications of option \texttt{singlepass} to
+%       \texttt{\string\printindex}}
+%     \label{tab:singlepass}
+%     \begin{tabularx}{\linewidth}{@{}>{\raggedright}X>{\raggedright}X}
+%     \firsthline
+%     \texttt{singlepass=false} & \texttt{singlepass=true} \tabularnewline
+%     \hline
+%     index of previous \LuaLaTeX{} run will be printed
+%     & index of current \LuaLaTeX{} run will be printed
+%     \tabularnewline[1ex]
+%     start of index depends on the class
+%     & start of the index at next page earliest
+%     \tabularnewline[1ex]
+%     index entries may be added to an index even after it has been printed
+%     & no more index entries may be added to the index after it has been
+%       printed
+%     \tabularnewline
+%     \lasthline
+%     \end{tabularx}
+%   \end{table}
+% \end{description}
+%    \begin{macrocode}
+\newcommand*{\printindex}[1][]{%
+  \begingroup
+    \edef\luaindex@name{general}%
+    \define@key{luaindex.setindex}{index}{\edef\luaindex@name{##1}}%
+    \define@key{luaindex.setindex}{singlepass}[true]{%
+      \setupluaindex{singlepass}{##1}%
+    }%
+    \setkeys{luaindex.setindex}{#1}%
+    \if@luaindexsinglepass
+      \closeout\@indexfile
+      \clearpage
+      \directlua{%
+        luaindex.removeentries('\luatexluaescapestring{\luaindex@name}')
+        dofile('\jobname.ldx')
+      }%
+    \fi
+    \directlua{%
+      luaindex.printindex('\luatexluaescapestring{\luaindex@name}')
+    }%
+  \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \texttt{luaindex.lua} uses several macros while printing the index. First of
+% all it uses the environment \texttt{theindex}. But several additional macros
+% will be used:
+%
+% \begin{macro}{\indexgroup}
+% \begin{macro}{\indexspace}
+% \begin{macro}{\symbolsname}
+% \begin{macro}{\numbersname}
+% Each index is grouped. Index groups are symbols, numbers and each first
+% letter. Each group starts with |\indexgroup|\marg{group} with group is
+% either |\symbolsname|, |\numbersname| or a upper case letter. In difference
+% to other index processors no automatic |\indexspace| will be added before
+% each group. So we define |\indexgroup| to add it.
+%    \begin{macrocode}
+\providecommand*{\indexgroup}[1]{%
+  \indexspace\textbf{#1}\nopagebreak
+}
+\providecommand*{\indexspace}{%
+  \def\indexspace{\vskip\baselineskip}
+}
+\providecommand*{\symbolsname}{Symbols}
+\providecommand*{\numbersname}{Numbers}
+\AtBeginDocument{%
+  \providecaptionname{english}\symbolsname{Symbols}%
+  \providecaptionname{english}\numbersname{Numbers}%
+  \providecaptionname{german}\symbolsname{Symbole}%
+  \providecaptionname{german}\numbersname{Zahlen}%
+  \providecaptionname{ngerman}\symbolsname{Symbole}%
+  \providecaptionname{ngerman}\numbersname{Zahlen}%
+  \providecaptionname{austrian}\symbolsname{Symbole}%
+  \providecaptionname{austrian}\numbersname{Zahlen}%
+  \providecaptionname{naustrian}\symbolsname{Symbole}%
+  \providecaptionname{naustrian}\numbersname{Zahlen}%
+  \providecaptionname{french}\symbolsname{Symbole}%
+  \providecaptionname{french}\numbersname{Chiffres}%
+  \providecaptionname{spanish}\symbolsname{Simbolos}%
+  \providecaptionname{spanish}\numbersname{N\'umeros}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\indexpagenumbers}
+% \begin{macro}{\indexpagenumber}
+% \begin{macro}{\indexpagenumbersep}
+% \begin{macro}{\index@pagenumbersep}
+% The page numbers of an entry are printed all together as argument of
+% |\indexpagenumbers|\marg{page number}. Each single page number is printed as
+% argument of |\indexpagenumber|\marg{page number}. So separate the single
+% page numbers |\indexpagenumber| is predefined to add internal macro
+% |\index@pagenumbersep| before the page number. This will add
+% |\indexpagenumbersep| before each page number but the first one.
+%    \begin{macrocode}
+\providecommand*{\indexpagenumbers}[1]{%
+  \def\index@pagenumbersep{\let\index@pagenumbersep\indexpagenumbersep}%
+  \nobreakspace-- #1}
+\providecommand*{\indexpagenumber}[1]{\index@pagenumbersep #1}
+\providecommand*{\indexpagenumbersep}{, }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \iffalse meta-comment
+%</package>
+% \fi^^A meta-comment
+%
+% \section{Examples}
+%
+% \iffalse meta-comment
+%<*example>
+% \fi^^A meta-comment
+%
+% Currently only one example file will be produced:
+% \begin{description}
+% \item[\normalfont\texttt{luaindex-example}] -- This should show index
+% entries, index sub-entries, index sub-sub-entries.
+%    \begin{macrocode}
+\documentclass{article}
+\usepackage[ngerman]{babel}
+\usepackage{blindtext}
+\usepackage{fontspec}
+%    \end{macrocode}
+% We load package \texttt{luaindex} with option \texttt{locale=de\_DE}. At
+% least at Linux this will add \"A, \"O, \"U, \"a, \"o, \"u, and \ss{} to the
+% letters and even set a valid sort order for those.
+%
+% We load package \texttt{luaindex} with option \texttt{singlepass} to produce
+% a valid index with one \LuaLaTeX{} run instead of two or more. But with this
+% printing of the index will produce a new page.
+%    \begin{macrocode}
+\usepackage[
+  locale=de_DE,
+  singlepass % Wenn der Index ohnehin eine neue Seite produziert,
+             % dann kann er direkt beim ersten Lauf ein korrektes
+             % Ergebnis liefern.
+]{luaindex}
+%    \end{macrocode}
+%
+% We use the compatibility command |\makeindex| to generate the ``general''
+% index and the further compatibility commands, e.g., |\index|.
+%    \begin{macrocode}
+\makeindex
+%    \end{macrocode}
+%
+% We want |\textbf| to be ignored at the sort:
+%    \begin{macrocode}
+\directlua{luaindex.presortreplace('general',0,
+  '\luatexluaescapestring{\string\textbf}\space*\string\{([\string^\string\}]*)\string\}','\%1')}
+%    \end{macrocode}
+%
+% Now we can start our document. This consist of some text and several index
+% entries.
+%    \begin{macrocode}
+\begin{document}
+
+\blindtext[10]
+A\index{B ist der zweite Buchstabe}
+aber\index{aber ist ein Wort}
+D\index{D ist der vierte Buchstabe}
+A\index{A ist der erste Buchstabe}
+A\index{A ist der erste Buchstabe}
+%    \end{macrocode}
+% Now, let's do something different. Let's show that babel shorthands may be
+% used inside index entries:
+%    \begin{macrocode}
+C\index{C ist "`der"' dritte Buchstabe}
+X\index{X ist der drittletzte Buchstabe}
+%    \end{macrocode}
+% And macros may also be used but change the sort sequence of the index!
+%    \begin{macrocode}
+D\index{\textbf{D} ist der Buchstabe nach C}
+Y\index{Y ist der \textbf{vorletzte} Buchstabe}
+Z\index{Z ist der letzte Buchstabe}
+A\index{Ä ist auch ein Buchstabe}
+%    \end{macrocode}
+% We may change the sort sequence manually by adding the \texttt{sort}
+% option. The page number format may also be changed using the
+% \texttt{pageformat} option.
+%    \begin{macrocode}
+Ä\index[sort={Ä ist aber auch ein Buchstabe},%
+        pageformat=\emph]{Ä ist wirklich auch
+  ein Buchstabe (und hier stimmt die Sortierung
+  nicht -- \emph{aber eigentlich doch})}
+%    \end{macrocode}
+% Let's add one more page with some more index entries:
+%    \begin{macrocode}
+\clearpage
+
+A\index{A ist der erste Buchstabe}
+Ae\index{Ae ist kein Buchstabe, sondern zwei}
+
+%    \end{macrocode}
+% And now, let's have some sub-entries and even a sub-sub-entry. One of the
+% sub-entries will become a different sort position and will be marked with an
+% emphasized page number.
+%    \begin{macrocode}
+Kompliziert\subindex{Diverses}{Untereintrag}
+Noch komplizierter\subindex{Diverses}{Obereintrag}
+Noch komplizierter\%
+subindex{Diverses}[sort=Obereintra,pageformat=\emph]{Untereintrag}
+Noch komplizierter%
+\subsubindex{Diverses}{Untereintrag}{Unteruntereintrag}
+
+%    \end{macrocode}
+% That's enough. Time time to print the index. Remember, that this is already
+% a valid index, because we are using option \texttt{singlepass}.
+%    \begin{macrocode}
+\printindex
+\end{document}
+%    \end{macrocode}
+% \end{description}
+%
+% \iffalse meta-comment
+%</example>
+% \fi^^A meta-comment
+%
+% \Finale
+%
+\endinput
+%% Local Variables:
+%% TeX-master: t
+%% TeX-PDF-mode: t
+%% TeX-engine: luatex
+%% flyspell-mode: t
+%% End:

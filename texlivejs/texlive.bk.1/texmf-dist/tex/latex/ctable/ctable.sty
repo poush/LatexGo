@@ -1,0 +1,348 @@
+%%
+%% This is file `ctable.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% ctable.dtx  (with options: `package')
+%% 
+%% This is a generated file.
+%% 
+%% Copyright (C) 2005 by Wybo Dekker <wybo@dekkerdocumenten.nl>
+%% 
+%% This file may be distributed and/or modified under the conditions of
+%% the LaTeX Project Public License, either version 1.2 of this license
+%% or (at your option) any later version.  The latest version of this
+%% license is in:
+%% 
+%%    http://www.latex-project.org/lppl.txt
+%% 
+%% and version 1.2 or later is part of all distributions of LaTeX version
+%% 1999/12/01 or later.
+%% 
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesPackage{ctable}
+    [2015/10/17 v1.31 ctable package for flexible typesetting of table and
+     figure floats using key/value directives]
+\RequirePackage{ifpdf,etoolbox,xcolor,xkeyval,array,tabularx,booktabs,rotating}
+\ifpdf
+  \@ifpackageloaded{tikz}{
+    \PackageWarning{ctable}{
+      Transparency disabled: incompatible with tikz package
+    }
+    \def\transparent#1{}
+  }{
+    \RequirePackage{transparent}
+  }
+\else
+  \PackageWarningNoLine{ctable}{\MessageBreak
+    Transparency disabled: pdfTeX is not running in PDF mode
+  }
+  \def\transparent#1{}
+\fi
+\newif\if@CTcaptionloaded
+\AtBeginDocument{
+  \makeatletter
+  \@ifpackageloaded{tikz}{
+    \@ifpackageloaded{transparent}{
+      \PackageError{ctable}{You must load ctable after tikz}{}
+    }
+  }{}
+  \@ifpackageloaded{caption}{\@CTcaptionloadedtrue}{\@CTcaptionloadedfalse}
+  \makeatother
+}
+\def\NN{\tabularnewline}
+\def\FL{\toprule}
+\def\ML{\NN\midrule}
+\def\LL{\NN\bottomrule}
+\def\@dfltCTfgcolor#1 #2 #3={\definecolor{@dfltCTframefg}{rgb}{#1,#2,#3}}
+\def\@dfltCTbgcolor#1 #2 #3={\definecolor{@dfltCTframebg}{rgb}{#1,#2,#3}}
+\def\@CTfgcolor#1 #2 #3={%
+  \definecolor{@CTframefg}{rgb}{#1,#2,#3}
+  \def\@CTfgactual{@CTframefg}}
+\def\@CTbgcolor#1 #2 #3={%
+  \definecolor{@CTframebg}{rgb}{#1,#2,#3}
+  \def\@CTbgactual{@CTframebg}}
+\def\@CTtextsuperscript#1{%
+  \ifx\@CTsuper\@CTtrue\@textsuperscript{#1}\else{\footnotesize#1}\fi
+}
+\def\@CTtrue{1}
+\def\@CTfalse{0}
+\def\@CTdoinside{\relax}
+\newif\if@CTusex
+\newif\if@CTinmemoir
+\@ifclassloaded{memoir}{\@CTinmemoirtrue}{\@CTinmemoirfalse}
+\newdimen\@CTframesep         \newdimen\@dfltCTframesep
+\newdimen\@CTframerule        \newdimen\@dfltCTframerule
+\newdimen\@CTwidth            \newdimen\@dfltCTwidth
+\newdimen\@CTcaptionskip      \newdimen\@dfltCTcaptionskip
+\newdimen\@CTmaxwidth         \newdimen\@dfltCTmaxwidth
+\newdimen\@CTmincapwidth      \newdimen\@dfltCTmincapwidth
+\newdimen\@CTfooterwidth      \newdimen\@dfltCTfooterwidth
+\newdimen\@CTw % the final width
+\newdimen\@CTfloatwidth
+\newdimen\@CToldsep
+\newdimen\@CToldrule
+\newbox\CT@t          % tabular saved and measured here
+
+\define@key{suCT}{bgopacity}{\def\@dfltCTbgopacity{#1}}
+\define@key{suCT}{botcap}[]{\let\@dfltCTbotcap\@CTtrue}
+\define@key{suCT}{captionsinside}[]{\def\rot@LR{-1}
+                                      \if@twoside\@rot@twosidetrue
+                                      \else\@rot@twosidefalse\fi}
+\define@key{suCT}{captionsleft}[]{\@rot@twosidefalse\def\rot@LR{-1}}
+\define@key{suCT}{captionsright}[]{\@rot@twosidefalse\def\rot@LR{0}}
+\define@key{suCT}{captionskip}{\@dfltCTcaptionskip=#1}
+\define@key{suCT}{center}[]{\let\@dfltCTalign\centering}
+\define@key{suCT}{continued}{\def\@dflttextcontinued{#1}}
+\define@key{suCT}{doinside}{\def\@dfltCTdoinside{#1}}
+\define@key{suCT}{figure}[]{\def\@dfltCTtaborfig{figure}}
+\define@key{suCT}{framebg}{\@dfltCTbgcolor#1=}
+\define@key{suCT}{framefg}{\@dfltCTfgcolor#1=}
+\define@key{suCT}{framerule}{\@dfltCTframerule=#1}
+\define@key{suCT}{framesep}{\@dfltCTframesep=#1}
+\define@key{suCT}{left}[]{\let\@dfltCTalign\raggedright}
+\define@key{suCT}{maxwidth}{\@dfltCTmaxwidth=#1}
+\define@key{suCT}{mincapwidth}{\@dfltCTmincapwidth=#1}
+\define@key{suCT}{footerwidth}[-1pt]{\@dfltCTfooterwidth=#1}
+\define@key{suCT}{nonotespar}[]{\let\@dfltCTnotespar\@CTfalse}
+\define@key{suCT}{nosideways}[]{\let\@dfltCTsideways\empty}
+\define@key{suCT}{nostar}[]{\def\@dfltCTstarred{}}
+\define@key{suCT}{nosuper}[]{\let\@dfltCTsuper\@CTfalse}
+\define@key{suCT}{notespar}[]{\let\@dfltCTnotespar\@CTtrue}
+\define@key{suCT}{pos}{\def\@dfltCTpos{#1}}
+\define@key{suCT}{right}[]{\let\@dfltCTalign\raggedleft}
+\define@key{suCT}{sideways}[]{\def\@dfltCTsideways{sideways}}
+\define@key{suCT}{star}[]{\def\@dfltCTstarred{*}}
+\define@key{suCT}{super}[]{\let\@dfltCTsuper\@CTtrue}
+\define@key{suCT}{table}[]{\def\@dfltCTtaborfig{table}}
+\define@key{suCT}{topcap}[]{\let\@dfltCTbotcap\@CTfalse}
+\define@key{suCT}{width}{\@dfltCTwidth=#1}
+
+\newcommand{\setupctable}[1]{\setkeys{suCT}{#1}}
+\setupctable{
+  bgopacity=1,
+  captionskip=0pt,
+  center,
+  continued=(continued),
+  doinside={},
+  footerwidth=0pt,
+  framebg=1 1 1,
+  framefg=0 0 0,
+  framerule=0pt,
+  framesep=0pt,
+  maxwidth=0pt,
+  mincapwidth=0pt,
+  nonotespar,
+  nosideways,
+  nostar,
+  super,
+  table,
+  topcap,
+  width=0pt,
+}
+
+\define@key{CT}{bgopacity}{\def\@CTbgopacity{#1}}
+\define@key{CT}{botcap}[]{\let\@CTbotcap\@CTtrue}
+\define@key{CT}{captionskip}{\@CTcaptionskip=#1}
+\define@key{CT}{caption}{\def\@CTcaption{#1}}
+\define@key{CT}{cap}{\def\@CTcap{#1}}
+\define@key{CT}{center}[]{\let\@CTalign\centering}
+\define@key{CT}{continued}[\@dflttextcontinued]{\def\@CTcontinued{#1}}
+\define@key{CT}{doinside}{\def\@CTdoinside{#1}}
+\define@key{CT}{figure}[]{\def\@CTtaborfig{figure}}
+\define@key{CT}{framebg}{\@CTbgcolor#1=}
+\define@key{CT}{framefg}{\@CTfgcolor#1=}
+\define@key{CT}{framerule}{\@CTframerule=#1}
+\define@key{CT}{framesep}{\@CTframesep=#1}
+\define@key{CT}{label}{\def\@CTlabel{#1}}
+\define@key{CT}{left}[]{\let\@CTalign\raggedright}
+\define@key{CT}{maxwidth}{\@CTmaxwidth=#1}
+\define@key{CT}{mincapwidth}{\@CTmincapwidth=#1}
+\define@key{CT}{footerwidth}[-1pt]{\@CTfooterwidth=#1}
+\define@key{CT}{nonotespar}[]{\let\@CTnotespar\@CTfalse}
+\define@key{CT}{nosideways}[]{\let\@CTsideways\empty}
+\define@key{CT}{nostar}[]{\def\@CTstarred{}}
+\define@key{CT}{nosuper}[]{\let\@CTsuper\@CTfalse}
+\define@key{CT}{notespar}[]{\let\@CTnotespar\@CTtrue}
+\define@key{CT}{pos}{\def\@CTpos{#1}\def\@CTbegin{\@CTbeg[#1]}}
+\define@key{CT}{right}[]{\let\@CTalign\raggedleft}
+\define@key{CT}{sidecap}[]{\let\@CTbotcap\undefined}
+\define@key{CT}{sideways}[]{\def\@CTsideways{sideways}}
+\define@key{CT}{star}[]{\def\@CTstarred{*}}
+\define@key{CT}{super}[]{\let\@CTsuper\@CTtrue}
+\define@key{CT}{table}[]{\def\@CTtaborfig{table}}
+\define@key{CT}{topcap}[]{\let\@CTbotcap\@CTfalse}
+\define@key{CT}{width}{\@CTwidth=#1}
+\def\@CTCaption{
+   \ifx\@CTcaption\empty\else
+      \def\@CTcaptionarg{\ifx\@CTlabel\empty\else\label{\@CTlabel}\fi
+         \@CTcaption\ \@CTcontinued\strut}
+      \begingroup
+        \ifx\@CTcap\empty
+          \edef\x{\endgroup\noexpand\caption[]{\expandonce\@CTcaptionarg}}
+        \else
+        \edef\x{\endgroup\noexpand\caption[\expandonce\@CTcap]%
+                                          {\expandonce\@CTcaptionarg}}
+        \fi
+      \x
+   \fi
+}
+\newcolumntype{Y}{X}
+\def\@CTXcolumntype#1{%
+  \let\NC@find@X\undefined
+  \newcolumntype{X}{#1}%
+}
+\long\def\@CTframe#1#2#3{%
+   \@CToldsep\fboxsep\fboxsep\@CTframesep%
+   \@CToldrule\fboxrule\fboxrule\@CTframerule%
+   \transparent{\@CTbgopacity}%
+   \fcolorbox{#1}{#2}{\fboxsep\@CToldsep\fboxrule\@CToldrule\transparent{1}#3}%
+}
+\newcommand{\tnote}[2][a]{%
+   \ifx\@CTnotespar\@CTtrue%
+     \@CTtextsuperscript{\normalfont\textit{#1}}\,#2
+   \else%
+     \hbox{\@CTtextsuperscript{\normalfont\textit{#1}}}&#2\NN
+   \fi
+}
+\newcommand{\tmark}[1][a]{%
+   \hbox{\textsuperscript{\normalfont\textit{#1}}}}
+\newdimen\@CTcurftwidth
+\newcommand{\ctable}[4][]{%
+   \let\@CTtaborfig  \@dfltCTtaborfig
+   \let\@CTalign     \@dfltCTalign
+   \let\@CTsideways  \@dfltCTsideways
+   \let\@CTcontinued \empty
+   \let\@CTpos       \@dfltCTpos
+   \let\@CTcaption   \empty
+   \let\@CTcap       \undefined
+   \let\@CTlabel     \empty
+   \let\@CTbotcap    \@dfltCTbotcap
+   \let\@CTstarred   \@dfltCTstarred
+   \let\@CTsuper     \@dfltCTsuper
+   \let\@CTnotespar  \@dfltCTnotespar
+   \let\@CTdoinside  \@dfltCTdoinside
+   \let\@CTbgopacity \@dfltCTbgopacity
+   \@CTframerule     \@dfltCTframerule
+   \@CTcaptionskip   \@dfltCTcaptionskip
+   \@CTframesep      \@dfltCTframesep
+   \@CTwidth         \@dfltCTwidth
+   \@CTmaxwidth      \@dfltCTmaxwidth
+   \@CTmincapwidth   \@dfltCTmincapwidth
+   \@CTfooterwidth   \@dfltCTfooterwidth
+   \def\@CTfgactual {@dfltCTframefg}%
+   \def\@CTbgactual {@dfltCTframebg}%
+   \def\@CTbeg      {\begin{\@CTsideways\@CTtaborfig\@CTstarred}}%
+   \def\@CTbegin    {\@CTbeg}%
+   \def\@CTend      {\end{\@CTsideways\@CTtaborfig\@CTstarred}}%
+   \setkeys{CT}{#1}%
+   \ifx\@CTcap\undefined\let\@CTcap\@CTcaption\fi
+   \ifx\@CTcap\empty
+     \if@CTcaptionloaded\else
+       \PackageWarningNoLine{ctable}{\MessageBreak
+          An empty cap= option prevents lot/loc entry only\MessageBreak
+          if the caption package is loaded!}
+     \fi
+   \fi
+   \if@CTinmemoir\else
+      \ifx\@CTbotcap\undefined
+         \PackageError{ctable}{\MessageBreak
+            You can, currently, use the sidecap option only with\MessageBreak
+            memoir documents. Use topcap or botcap only}
+      \fi
+   \fi
+   \ifdim\@CTwidth=0pt\else
+      \ifdim\@CTmaxwidth=0pt\else
+         \PackageError{ctable}{\MessageBreak
+            You may not use the width and maxwidth options together\MessageBreak
+            Use either width or maxwidth}
+      \fi
+   \fi
+   \ifx\@CTpos\empty
+      \ifx\@CTsideways\empty\else
+      \PackageError{ctable}{\MessageBreak
+         You may not use the pos and sideways options together\MessageBreak
+         Rotated tables and figures are always typeset on a separate page}
+      \fi
+   \fi
+   \ifx\@CTcaption\empty
+      \ifx\@CTlabel\empty\else
+         \PackageError{ctable}{\MessageBreak
+            You may not label a captionless table\MessageBreak
+            Such a label can't be referenced}
+      \fi
+   \fi
+   \sbox\CT@t{%
+      \@CTXcolumntype{l}% temporarily make  type X = l
+      \@CTframe{\@CTfgactual}{\@CTbgactual}{%
+         \@CTdoinside
+         \begin{tabular}{#2}
+            #4%
+         \end{tabular}%
+      }%
+   }%
+   \@CTusexfalse
+   \ifdim\@CTmaxwidth=0pt
+      \ifdim\@CTwidth=0pt
+      \else
+         \@CTusextrue
+      \fi
+   \else
+      \ifdim\wd\CT@t>\@CTmaxwidth
+         \@CTusextrue
+      \fi
+   \fi
+   \if@CTusex
+      \sbox\CT@t{%
+         \@CTXcolumntype{Y}% restore X
+         \@CTframe{\@CTfgactual}{\@CTbgactual}{%
+            \@CTdoinside
+            \begin{tabularx}{\ifdim\@CTwidth>0pt\@CTwidth\else\@CTmaxwidth\fi}{#2}
+               #4%
+            \end{tabularx}%
+         }%
+      }%
+   \fi
+   \@CTw=\wd\CT@t
+   \@CTfloatwidth=\ifdim\@CTmincapwidth>\@CTw
+      \@CTmincapwidth
+   \else
+      \@CTw
+   \fi
+   \@CTbegin
+      \ifx\@CTcontinued\empty\else\addtocounter{\@CTtaborfig}{-1}\fi
+      \@CTalign
+      \begin{minipage}{\@CTfloatwidth}\parindent0pt
+         \ifx\@CTbotcap\@CTfalse\@CTCaption\vskip\@CTcaptionskip\fi
+         \ifx\@CTbotcap\undefined%
+             \begin{sidecaption}[\@CTcap]{\@CTcaption}[\@CTlabel]
+         \fi
+         \centering{\usebox\CT@t}% insert the tabular
+         \def\@CTfootnotes{#3}%
+         \ifx#3\empty\else{% append footnotes, if any
+            \@CTcurftwidth=\ifdim\@CTfooterwidth=-1pt\@CTw\else
+                                \ifdim\@CTfooterwidth=0pt\hsize\else
+                                \@CTfooterwidth\fi\fi
+            \footnotesize
+            \ifx\@CTnotespar\@CTtrue%
+               \\[.2ex]
+               \begin{minipage}{\@CTcurftwidth}%
+                  #3%
+               \end{minipage}%
+            \else%
+               \\
+               \begin{tabularx}{\@CTcurftwidth}{r@{\,}>{\raggedright}X}
+                  #3%
+               \end{tabularx}%
+            \fi
+         }
+         \fi
+         \ifx\@CTbotcap\undefined\end{sidecaption}\fi
+         \ifx\@CTbotcap\@CTtrue\vskip\@CTcaptionskip\@CTCaption\fi
+      \end{minipage}
+   \@CTend
+}
+\endinput
+%%
+%% End of file `ctable.sty'.

@@ -1,0 +1,264 @@
+% \iffalse meta-comment
+%
+%% File: l3deprecation.dtx
+%
+% Copyright (C) 2017-2019 The LaTeX3 Project
+%
+% It may be distributed and/or modified under the conditions of the
+% LaTeX Project Public License (LPPL), either version 1.3c of this
+% license or (at your option) any later version.  The latest version
+% of this license is in the file
+%
+%    https://www.latex-project.org/lppl.txt
+%
+% This file is part of the "l3kernel bundle" (The Work in LPPL)
+% and all files in that bundle must be distributed together.
+%
+% -----------------------------------------------------------------------
+%
+% The development version of the bundle can be found at
+%
+%    https://github.com/latex3/latex3
+%
+% for those people who are interested.
+%
+%<*driver>
+\documentclass[full,kernel]{l3doc}
+\begin{document}
+  \DocInput{\jobname.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \title{^^A
+%   The \pkg{l3deprecation} package\\ Deprecation errors^^A
+% }
+%
+% \author{^^A
+%  The \LaTeX3 Project\thanks
+%    {^^A
+%      E-mail:
+%        \href{mailto:latex-team@latex-project.org}
+%          {latex-team@latex-project.org}^^A
+%    }^^A
+% }
+%
+% \date{Released 2019-02-15}
+%
+% \maketitle
+%
+% \begin{documentation}
+%
+% \section{\pkg{l3deprecation} documentation}
+%
+% A few commands have had to be deprecated over the years.  This module
+% defines deprecated and deleted commands to produce an error.
+%
+% \end{documentation}
+%
+% \begin{implementation}
+%
+% \section{\pkg{l3deprecation} implementation}
+%
+%    \begin{macrocode}
+%<*initex|package>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%<@@=deprecation>
+%    \end{macrocode}
+%
+% \begin{macro}{\__kernel_deprecation_error:Nnn}
+%   The \tn{outer} definition here ensures the command cannot appear
+%   in an argument.  Use this auxiliary on all commands that have been
+%   removed since 2015.
+%    \begin{macrocode}
+\cs_new_protected:Npn \__kernel_deprecation_error:Nnn #1#2#3
+  {
+    \tex_protected:D \tex_outer:D \tex_edef:D #1
+      {
+        \exp_not:N \__kernel_msg_expandable_error:nnnnn
+          { kernel } { deprecated-command }
+          { \tl_to_str:n {#3} } { \token_to_str:N #1 } { \tl_to_str:n {#2} }
+        \exp_not:N \__kernel_msg_error:nnxxx
+          { kernel } { deprecated-command }
+          { \tl_to_str:n {#3} } { \token_to_str:N #1 } { \tl_to_str:n {#2} }
+      }
+  }
+\__kernel_deprecation_error:Nnn \box_resize:cnn
+  { \box_resize_to_wd_and_ht_plus_dp:cnn } { 2018-12-27 }
+\__kernel_deprecation_error:Nnn \box_resize:Nnn
+  { \box_resize_to_wd_and_ht_plus_dp:Nnn } { 2018-12-27 }
+\__kernel_deprecation_error:Nnn \box_use_clear:c
+  { \box_use_drop:c } { 2018-12-27 }
+\__kernel_deprecation_error:Nnn \box_use_clear:N
+  { \box_use_drop:N } { 2018-12-27 }
+\__kernel_deprecation_error:Nnn \c_job_name_tl
+  { \c_sys_jobname_str } { 2017-01-01 }
+\__kernel_deprecation_error:Nnn \c_minus_one
+  { -1 } { 2018-12-27 }
+\__kernel_deprecation_error:Nnn \dim_case:nnn
+  { \dim_case:nnF } { 2015-07-14 }
+\__kernel_deprecation_error:Nnn \file_add_path:nN
+  { \file_get_full_name:nN } { 2018-12-27 }
+\__kernel_deprecation_error:Nnn \file_if_exist_input:nT
+  { \file_if_exist:nT and~ \file_input:n } { 2018-03-05 }
+\__kernel_deprecation_error:Nnn \file_if_exist_input:nTF
+  { \file_if_exist:nT and~ \file_input:n } { 2018-03-05 }
+\__kernel_deprecation_error:Nnn \file_list:
+  { \file_log_list: } { 2018-12-27 }
+\__kernel_deprecation_error:Nnn \file_path_include:n
+  { \seq_put_right:Nn \l_file_search_path_seq } { 2018-12-27 }
+\__kernel_deprecation_error:Nnn \file_path_remove:n
+  { \seq_remove_all:Nn \l_file_search_path_seq } { 2018-12-27 }
+\__kernel_deprecation_error:Nnn \g_file_current_name_tl
+  { \g_file_current_name_str } { 2018-12-27 }
+\__kernel_deprecation_error:Nnn \int_case:nnn
+  { \int_case:nnF } { 2015-07-14 }
+\__kernel_deprecation_error:Nnn \int_from_binary:n
+  { \int_from_bin:n } { 2016-01-05 }
+\__kernel_deprecation_error:Nnn \int_from_hexadecimal:n
+  { \int_from_hex:n } { 2016-01-05 }
+\__kernel_deprecation_error:Nnn \int_from_octal:n
+  { \int_from_oct:n } { 2016-01-05 }
+\__kernel_deprecation_error:Nnn \int_to_binary:n
+  { \int_to_bin:n } { 2016-01-05 }
+\__kernel_deprecation_error:Nnn \int_to_hexadecimal:n
+  { \int_to_hex:n } { 2016-01-05 }
+\__kernel_deprecation_error:Nnn \int_to_octal:n
+  { \int_to_oct:n } { 2016-01-05 }
+\__kernel_deprecation_error:Nnn \ior_get_str:NN
+  { \ior_str_get:NN } { 2018-03-05 }
+\__kernel_deprecation_error:Nnn \ior_list_streams:
+  { \ior_show_list: } { 2018-12-27 }
+\__kernel_deprecation_error:Nnn \ior_log_streams:
+  { \ior_log_list: } { 2018-12-27 }
+\__kernel_deprecation_error:Nnn \luatex_if_engine_p:
+  { \sys_if_engine_luatex_p: } { 2017-01-01 }
+\__kernel_deprecation_error:Nnn \luatex_if_engine:F
+  { \sys_if_engine_luatex:F } { 2017-01-01 }
+\__kernel_deprecation_error:Nnn \luatex_if_engine:T
+  { \sys_if_engine_luatex:T } { 2017-01-01 }
+\__kernel_deprecation_error:Nnn \luatex_if_engine:TF
+  { \sys_if_engine_luatex:TF } { 2017-01-01 }
+\__kernel_deprecation_error:Nnn \pdftex_if_engine_p:
+  { \sys_if_engine_pdftex_p: } { 2017-01-01 }
+\__kernel_deprecation_error:Nnn \pdftex_if_engine:F
+  { \sys_if_engine_pdftex:F } { 2017-01-01 }
+\__kernel_deprecation_error:Nnn \pdftex_if_engine:T
+  { \sys_if_engine_pdftex:T } { 2017-01-01 }
+\__kernel_deprecation_error:Nnn \pdftex_if_engine:TF
+  { \sys_if_engine_pdftex:TF } { 2017-01-01 }
+\__kernel_deprecation_error:Nnn \prop_get:cn
+  { \prop_item:cn } { 2016-01-05 }
+\__kernel_deprecation_error:Nnn \prop_get:Nn
+  { \prop_item:Nn } { 2016-01-05 }
+\__kernel_deprecation_error:Nnn \quark_if_recursion_tail_break:N
+  { } { 2015-07-14 }
+\__kernel_deprecation_error:Nnn \quark_if_recursion_tail_break:n
+  { } { 2015-07-14 }
+\__kernel_deprecation_error:Nnn \scan_align_safe_stop:
+  { protected~commands } { 2017-01-01 }
+\__kernel_deprecation_error:Nnn \sort_ordered:
+  { \sort_return_same: } { 2018-12-27 }
+\__kernel_deprecation_error:Nnn \sort_reversed:
+  { \sort_return_swapped: } { 2018-12-27 }
+\__kernel_deprecation_error:Nnn \str_case:nnn
+  { \str_case:nnF } { 2015-07-14 }
+\__kernel_deprecation_error:Nnn \str_case:onn
+  { \str_case:onF } { 2015-07-14 }
+\__kernel_deprecation_error:Nnn \str_case_x:nnn
+  { \str_case_e:nnF } { 2015-07-14 }
+\__kernel_deprecation_error:Nnn \tl_case:cnn
+  { \tl_case:cnF } { 2015-07-14 }
+\__kernel_deprecation_error:Nnn \tl_case:Nnn
+  { \tl_case:NnF } { 2015-07-14 }
+\__kernel_deprecation_error:Nnn \tl_to_lowercase:n
+  { \tex_lowercase:D } { 2018-03-05 }
+\__kernel_deprecation_error:Nnn \tl_to_uppercase:n
+  { \tex_uppercase:D } { 2018-03-05 }
+\__kernel_deprecation_error:Nnn \token_new:Nn
+  { \cs_new_eq:NN } { 2018-12-29 }
+\__kernel_deprecation_error:Nnn \xetex_if_engine_p:
+  { \sys_if_engine_xetex_p: } { 2017-01-01 }
+\__kernel_deprecation_error:Nnn \xetex_if_engine:F
+  { \sys_if_engine_xetex:F } { 2017-01-01 }
+\__kernel_deprecation_error:Nnn \xetex_if_engine:T
+  { \sys_if_engine_xetex:T } { 2017-01-01 }
+\__kernel_deprecation_error:Nnn \xetex_if_engine:TF
+  { \sys_if_engine_xetex:TF } { 2017-01-01 }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[deprecated = 2019-12-31]{\etex_beginL:D}
+% \begin{macro}{\@@_primitive:NN, \@@_primitive:w}
+%   We renamed all primitives to \cs[no-index]{tex_\ldots{}:D} so all
+%   others are deprecated.  In \pkg{l3names}, \cs{__kernel_primitives:}
+%   is defined to contain \cs{__kernel_primitive:NN} \cs{beginL}
+%   \cs{etex_beginL:D} and so on, one for each deprecated primitive.  We
+%   apply \cs{exp_not:N} to the second argument of
+%   \cs{__kernel_primitive:NN} because it may be outer (both when doing
+%   and undoing deprecation actually), then \cs{@@_primitive:NN} uses
+%   \cs{tex_let:D} to change the meaning of this potentially outer
+%   token.  Then, either turn it into an error or make it equal to the
+%   primitive~|#1|.  To be more precise, |#1| may not be defined, so try
+%   a \cs[no-index]{tex_\ldots{}:D} command as well.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_primitive:NN #1#2 { }
+\exp_last_unbraced:NNNNo
+  \cs_new:Npn \@@_primitive:w #1 { \token_to_str:N _ } { }
+\__kernel_deprecation_code:nn
+  {
+    \cs_set_protected:Npn \__kernel_primitive:NN #1
+      {
+        \exp_after:wN \@@_primitive:NN
+        \exp_after:wN #1
+        \exp_not:N
+      }
+    \cs_set_protected:Npn \@@_primitive:NN #1#2
+      {
+        \tex_let:D #2 \scan_stop:
+        \exp_args:NNx \__kernel_deprecation_error:Nnn #2
+          {
+            \iow_char:N \\
+            \cs_if_exist:NTF #1
+              { \cs_to_str:N #1 }
+              {
+                tex_
+                \exp_last_unbraced:Nf
+                \@@_primitive:w { \cs_to_str:N #2 }
+              }
+          }
+          { 2019-12-31 }
+      }
+    \__kernel_primitives:
+  }
+  {
+    \cs_set_protected:Npn \__kernel_primitive:NN #1
+      {
+        \exp_after:wN \@@_primitive:NN
+        \exp_after:wN #1
+        \exp_not:N
+      }
+    \cs_set_protected:Npn \@@_primitive:NN #1#2
+      {
+        \tex_let:D #2 #1
+        \cs_if_exist:cT { tex_ \cs_to_str:N #1 :D }
+          {
+            \exp_args:NNc \cs_set_eq:NN #2
+              { tex_ \cs_to_str:N #1 :D }
+          }
+      }
+    \__kernel_primitives:
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+%    \begin{macrocode}
+%</initex|package>
+%    \end{macrocode}
+%
+% \end{implementation}
+%
+% \PrintIndex

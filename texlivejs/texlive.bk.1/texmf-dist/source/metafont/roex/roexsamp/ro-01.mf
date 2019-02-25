@@ -1,0 +1,26 @@
+%%%%
+%%%% This file belongs to the ROEX package.
+%%%%
+%%% draw write_preamble write_postamble find_BB set_BB fill_C draw_C
+%%% draw fix_fill_cmyk fix_draw_cmyk
+% RO-01.MF, ``PROPELLER'':
+%  Removing overlaps applied to a circle and three rectangles; rectangles
+%  are positively oriented, circle is negatively oriented and has weight |2|.
+% ---
+input mftoeps; eps_mode_setup; input roex; tracingremoving:=1;
+% ---
+beginchar("0",in#,in#,0);
+ path A,B,C,D;
+ A=unitsquare xscaled 1/5w yscaled h shifted (2/5w,0);
+ B=A rotatedaround((1/2w,1/2h), 60);
+ C=B rotatedaround((1/2w,1/2h), 60);
+ D=reverse fullcircle scaled 3/4w shifted (1/2w,1/2h);
+ remove_overlap (A,B,C,D) ((4,2)) R;
+ find_BB make_list(1,R.num) R;
+ write_preamble jobname;
+ fill_C make_list(1,R.num) R;
+ write_postamble;
+endchar;
+end.
+%%\end
+

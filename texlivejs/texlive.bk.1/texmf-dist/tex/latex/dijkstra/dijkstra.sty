@@ -1,0 +1,424 @@
+% !TeX encoding = ISO-8859-1
+% Ce fichier contient le code de l'extension "dijkstra"
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                    %
+\def\dijkname                   {dijkstra}                           %
+\def\dijkver                      {0.11}                             %
+%                                                                    %
+\def\dijkdate                  {2017/09/09}                          %
+%                                                                    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% --------------------------------------------------------------------
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%
+% %     http://www.latex-project.org/lppl.txt
+%
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+% --------------------------------------------------------------------
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Christian Tellechea
+% Copyright : Christian Tellechea 2017
+% email: unbonpetit@netc.fr
+%        Commentaires, suggestions et signalement de bugs bienvenus !
+%        Comments, bug reports and suggestions are welcome.
+% Copyright: Christian Tellechea 2017
+% --------------------------------------------------------------------
+% L'extension dijkstra est composée des 4 fichiers suivants :
+%   - code               : dijkstra.sty
+%   - manuel en français : dijkstra-fr.tex & dijkstra-fr.pdf
+%   - fichier lisezmoi   : README
+% --------------------------------------------------------------------
+%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{dijkstra}[\dijkdate\space v\dijkver\space Dijkstra Algorithm (CT)]
+\RequirePackage{simplekv}
+
+\expandafter\edef\csname dijk_restorecatcode\endcsname{\expandafter\catcode\number`\_=\number\catcode`\_\relax}
+\catcode`\_=11
+
+\newcount\dijk_nest
+\newcount\dijk_cnt
+\newif\ifdijk_oriented
+
+\def\dijk_maxint{1073741823}
+\def\dijk_quark{\dijk_quark}
+\def\dijk_cscmd#1#2{\expandafter#1\csname#2\endcsname}
+\def\dijk_gobarg#1{}
+\def\dijk_addtomacro#1#2{\expandafter\def\expandafter#1\expandafter{#1#2}}
+\def\dijk_eaddtomacro#1#2{\skv_exparg{\dijk_addtomacro#1}{#2}}
+\def\dijk_eeaddtomacro#1#2{\skv_eearg{\dijk_addtomacro#1}{#2}}
+\long\def\dijk_exptwoargs#1#2#3{\skv_exparg{\skv_exparg{#1}{#2}}{#3}}
+\def\dijk_ifnum#1{\ifnum#1\expandafter\skv_first\else\expandafter\skv_second\fi}
+\def\dijk_swapargs#1#2#3{#1{#3}{#2}}
+\def\dijk_ifstar#1#2{\def\dijk_ifstar_i{\skv_ifx{*\dijk_nxttok}{\skv_first{#1}}{#2}}\futurelet\dijk_nxttok\dijk_ifstar_i}
+\def\dijk_ifopt#1#2{\def\dijk_ifopt_i{\skv_ifx{[\dijk_nxttok}{#1}{#2}}\futurelet\dijk_nxttok\dijk_ifopt_i}
+
+\def\dijk_foreach#1\in#2#3%
+{%
+	\global\advance\dijk_nest1
+	\dijk_cscmd\def{dijk_loopcode_\number\dijk_nest}{#3}%
+	\dijk_foreach_i#1#2,\dijk_quark,%
+	\dijk_cscmd\let{dijk_loopcode_\number\dijk_nest}\empty
+	\global\advance\dijk_nest-1
+}%
+
+\def\dijk_foreach_i#1#2,%
+{%
+	\def#1{#2}%
+	\skv_ifx{\dijk_quark#1}
+		{}
+		{%
+			\skv_ifx{#1\empty}{}{\csname dijk_loopcode_\number\dijk_nest\endcsname}%
+			\dijk_foreach_i#1%
+		}%
+}%
+
+\def\dijk_ifinst#1#2%
+{% #2 est-il dans #1 ?
+	\def\dijk_ifinst_i##1#2##2\_nil{\dijk_swapargs{\skv_ifempty{##2}}}%
+	\dijk_ifinst_i#1#2\_nil
+}
+
+\def\readgraph
+{%
+	\dijk_ifstar{\dijk_orientedtrue\readgraph_a}{\dijk_orientedfalse\readgraph_a}%
+}
+
+\def\readgraph_a#1%
+{%
+	\let\dijk_initlistofnodes\empty% liste des sommets
+	\let\dijk_graph\empty% argument #1 où l'on va enlever les espaces
+	\dijk_sanitizegraph#1,\dijk_quark[],% enlever tous les espaces indésirables et évaluer les nombres dans l'argument #1
+	\expandafter\readgraph_b\dijk_graph,\dijk_quark[],%
+}
+
+\def\dijk_sanitizegraph#1[#2],%
+{%
+	\skv_ifx{\dijk_quark#1}
+		{%
+			\dijk_removelastcommainmacro\dijk_graph
+		}
+		{%
+			\skv_eearg{\def\dijk_childnodes}{\skv_removeextremespaces{#1}[}%
+			\dijk_foreach\dijk_temp\in{#2}{\expandafter\dijk_sanitizegraph_i\dijk_temp\_nil}%
+			\dijk_removelastcommainmacro\dijk_childnodes
+			\dijk_eaddtomacro\dijk_graph{\dijk_childnodes],}%
+			\dijk_sanitizegraph
+		}%
+}
+
+\def\dijk_sanitizegraph_i#1=#2\_nil
+{%
+	\dijk_eeaddtomacro\dijk_childnodes{\skv_removeextremespaces{#1}=}%
+	\dijk_eaddtomacro\dijk_childnodes{\the\numexpr#2\relax,}%
+}
+
+\def\dijk_removelastcommainmacro#1%
+{%
+	\expandafter\dijk_removelastcommainmacro_i#1\_nil#1%
+}
+
+\def\dijk_removelastcommainmacro_i#1,\_nil#2%
+{%
+	\def#2{#1}%
+}
+
+\def\readgraph_b#1#2[#3]#4,%
+{%
+	\skv_ifx{\dijk_quark#1}
+		{%
+			\skv_exparg{\dijk_foreach\dijk_tempnodename\in}{\dijk_initlistofnodes}
+				{% pour chaque sommet
+					\skv_eearg{\dijk_foreach\dijk_tempnodechild\in}{\csname dijknode\dijk_tempnodename\endcsname}
+						{% pour chaque enfant
+							\expandafter\readgraph_c\dijk_tempnodechild\_nil\dijk_currentnodechildname\dijk_currentnodechilddist% capturer nom et distance de l'enfant
+							\dijk_exptwoargs\dijk_ifinst\dijk_initlistofnodes{\dijk_currentnodechildname,}% si l'enfant n'est pas dans la liste des sommets
+								{}%
+								{%
+									\dijk_eaddtomacro\dijk_initlistofnodes{\dijk_currentnodechildname,}% l'y mettre
+									\dijk_cscmd\let{dijknode\dijk_currentnodechildname}\empty% et initialiser la liste de ses enfants
+								}%
+							\unless\ifdijk_oriented% si graphe non orienté, ajouter les distances inverses
+								\skv_exparg{\skv_eearg\dijk_ifinst{\csname dijknode\dijk_currentnodechildname\endcsname}}{\dijk_tempnodename=}% si le parent est dans déjà un des enfants de l'enfant
+									{%
+										\expandafter\def\expandafter\readgraph_d\expandafter########\expandafter1\dijk_tempnodename=########2,########3\_nil{%
+											\unless\ifnum########2=\dijk_currentnodechilddist\relax% si distance différente  : erreur, c'est pas normal
+												\errmessage{Distance "\dijk_tempnodename=########2" incorrecte dans \dijk_currentnodechildname{} comprise comme "\dijk_tempnodename=\dijk_currentnodechilddist"}%
+												\dijk_cscmd\edef{dijknode\dijk_currentnodechildname}{########1\dijk_tempnodename=\dijk_currentnodechilddist,########3}%
+											\fi
+											}%
+										\expandafter\expandafter\expandafter\readgraph_d\csname dijknode\dijk_currentnodechildname\endcsname\_nil
+									}%
+									{% sinon, l'y mettre
+										\dijk_cscmd\edef{dijknode\dijk_currentnodechildname}{\dijk_tempnodename=\dijk_currentnodechilddist,\csname dijknode\dijk_currentnodechildname\endcsname}%
+									}%
+							\fi
+						}%
+				}%
+			\dijk_cnt0
+			\skv_exparg{\dijk_foreach\dijk_tempnodename\in}{\dijk_initlistofnodes}
+				{% pour chaque sommet, construire la liste de ses enfants
+					\advance\dijk_cnt1
+					\dijk_cscmd\let{listofchilds_\dijk_tempnodename}\empty
+					\skv_eearg{\dijk_foreach\dijk_tempnodechild\in}{\csname dijknode\dijk_tempnodename\endcsname}
+						{%
+							\expandafter\readgraph_c\dijk_tempnodechild\_nil\dijk_currentnodechildname\dijk_currentnodechilddist
+							\expandafter\dijk_eaddtomacro\csname listofchilds_\dijk_tempnodename\endcsname{\dijk_currentnodechildname,}%
+						}%
+				}%
+			\edef\dijk_numberofnodes{\the\dijk_cnt}%
+		}%
+		{%
+			\def\dijk_currentnodename{#1}%
+			\dijk_eaddtomacro\dijk_initlistofnodes{\dijk_currentnodename,}%
+			\dijk_cscmd\def{dijknode\dijk_currentnodename}{#3,}%
+			\readgraph_b
+		}%
+}%
+
+\def\readgraph_c#1=#2\_nil#3#4%
+{%
+	\def#3{#1}\edef#4{\number\numexpr#2\relax}%
+}
+
+\def\dijk_nodedist#1#2#3%
+{% renvoit la distance du sommet #1 vers #2 dans la macro #3
+	\def\dijk_nodedist_i##1#2=##2,##3\_nil{\def#3{##2}}%
+	\expandafter\expandafter\expandafter\dijk_nodedist_i\csname dijknode#1\endcsname,#2=1073741823,\_nil%
+}
+
+\def\dijk_removenode#1%
+{% enlève le sommet #1 de la liste des sommets non vus
+	\skv_exparg{\dijk_ifinst}{\expandafter,\dijk_nodestoexplore}{,#1,}
+		{\def\dijk_removenode_i##1,#1,##2\_nil{\skv_exparg{\def\dijk_nodestoexplore}{\dijk_gobarg##1,##2}}%
+		\expandafter\dijk_removenode_i\expandafter,\dijk_nodestoexplore\_nil}
+		{}%
+}
+
+\def\dijkstra
+{%
+	\dijk_ifopt{\dijkstra_i}{\dijkstra_i[]}%
+}
+\def\dijkstra_i[#1]#2#3%
+{% #1=sommet départ   #2=sommet arrivée
+	\begingroup
+		\skv_ifempty{#1}{}{\setdijk{#1}}%
+		\let\dijk_listofnodes\dijk_initlistofnodes
+		\let\dijk_nodestoexplore\dijk_initlistofnodes
+		\dijk_cnt0
+		\skv_eearg{\def\dijk_currentnode}{\skv_removeextremespaces{#2}}%
+		\skv_eearg{\def\dijk_endnode}{\skv_removeextremespaces{#3}}%
+		\edef\dijk_tab{%
+			\unexpanded\expandafter\expandafter\expandafter{\useKV[\dijkname]{pre-tab}}%
+			\noexpand
+				\begin{tabular}[\useKV[\dijkname]{v-position}]{%
+						*{\dijk_numberofnodes}{|c}|%
+						\ifboolKV[\dijkname]{show-lastcol}
+							{\unexpanded\expandafter\expandafter\expandafter{\useKV[\dijkname]{lastcol-type}}}
+							{}%
+						}%
+					\noexpand\hline
+			}%
+		\def\dijk_autoamp{\def\dijk_autoamp{\dijk_addtomacro\dijk_tab&}}%
+		\skv_exparg{\dijk_foreach\dijk_tempnodename\in}\dijk_listofnodes
+			{% pour tous le sommets du graphe
+				\dijk_autoamp% ajouter "&", sauf la première fois
+				\dijk_cscmd\let{dist_\dijk_tempnodename}\dijk_maxint% toutes les distances à +inf
+				\dijk_cscmd\let{prev_\dijk_tempnodename}\dijk_quark% tous les prédecesseurs à <quark>
+				\dijk_eaddtomacro\dijk_tab{\dijk_tempnodename}% peupler 1re ligne du tableau
+			}%
+		\ifboolKV[\dijkname]{show-lastcol}
+			{\dijk_eaddtomacro\dijk_tab{\expandafter&\unexpanded\expandafter\expandafter\expandafter{\useKV[\dijkname]{lastcol-label}}}}
+			{}%
+		\dijk_addtomacro\dijk_tab{\\\hline}%
+		\dijk_cscmd\def{dist_\dijk_currentnode}{0}% distance sommet de départ = 0
+		\dijk_whilenotempty\dijk_nodestoexplore
+			{%
+				\dijk_findmindist\dijk_currentnode% retourne \dijk_currentnode : le sommet enfant ayant la distance la plus faible
+				\skv_ifx{\dijk_quark\dijk_currentnode}
+					{% si le sommet n'est pas trouvé (graphe non connexe)
+						\skv_eearg{\gdef\dijkdist}{\useKV[\dijkname]{infinity-code}}%
+						\let\dijk_nodestoexplore\empty% sortir de la boucle
+					}
+					{%
+						\xdef\dijkdist{\csname dist_\dijk_currentnode\endcsname}%
+						\unless\ifx\dijk_nodestoexplore\empty
+							\dijk_addstep
+						\fi
+						\skv_ifx{\dijk_currentnode\dijk_endnode}
+							{% si le sommet de sortie est atteint
+								\let\dijk_nodestoexplore\empty% sortir de la boucle
+							}
+							{% sinon
+								\skv_exparg\dijk_removenode\dijk_currentnode% enlever ce sommet du graphe à explorer
+								\skv_eearg{\dijk_foreach\dijk_temp\in}{\csname listofchilds_\dijk_currentnode\endcsname}
+								{%
+									\dijk_exptwoargs\dijk_ifinst\dijk_nodestoexplore{\dijk_temp,}
+									{%
+										\dijk_exptwoargs\dijk_updatedist\dijk_currentnode\dijk_temp
+									}%
+									{}%
+								}%
+								\advance\dijk_cnt1
+							}%
+					}%
+			}%
+		\ifboolKV[\dijkname]{h-rules}
+			{}
+			{\dijk_addtomacro\dijk_tab\hline}%
+		\dijk_addtomacro\dijk_tab{\end{tabular}}%
+		\dijk_eeaddtomacro\dijk_tab{\useKV[\dijkname]{post-tab}}%
+		\skv_ifx{\dijk_quark\dijk_currentnode}
+			{\skv_eearg{\gdef\dijkpath}{\useKV[\dijkname]{nopath-string}}}
+			{\skv_exparg\dijk_createpath\dijk_currentnode}% calculer le chemin sauf s'il est impossible à trouver
+		\ifboolKV[\dijkname]{show-tab}\dijk_tab{}% afficher le tableau
+	\endgroup
+}
+
+\def\dijk_createpath
+{%
+	\global\let\dijkpath\dijk_currentnode
+	\dijk_createpathi
+}
+\def\dijk_createpathi#1%
+{% #1=sommet en cours
+	\skv_eearg{\def\dijk_temp}{\csname prev_#1\endcsname}%
+	\skv_ifx{\dijk_quark\dijk_temp}
+		{}
+		{\xdef\dijkpath{\dijk_temp\useKV[\dijkname]{path-sep}\dijkpath}%
+		\skv_exparg\dijk_createpathi\dijk_temp
+		}%
+}
+
+\def\dijk_findmindist#1%
+{% trouve dans "sommets à explorer" celui ayant la distance mini
+	\let\dijk_mindist\dijk_maxint
+	\let#1\dijk_quark
+	\skv_exparg{\dijk_foreach\dijk_currentnodechildname\in}\dijk_nodestoexplore
+		{%
+			\ifnum\csname dist_\dijk_currentnodechildname\endcsname<\dijk_mindist\relax
+				\expandafter\let\expandafter\dijk_mindist\csname dist_\dijk_currentnodechildname\endcsname
+				\let#1\dijk_currentnodechildname
+			\fi
+		}%
+}
+
+\def\dijk_whilenotempty#1#2%
+{% tant que la macro #1 n'est pas \ifx-vide, exécuter #2
+	\skv_ifx{#1\empty}{}{#2\dijk_whilenotempty#1{#2}}%
+}
+
+\def\dijk_updatedist#1#2%
+{%
+	\dijk_nodedist{#1}{#2}\tempdist
+	\ifnum\numexpr\csname dist_#1\endcsname+\tempdist\relax<\csname dist_#2\endcsname\relax
+		\dijk_cscmd\edef{dist_#2}{\the\numexpr\csname dist_#1\endcsname+\tempdist\relax}%
+		\dijk_cscmd\edef{distwithprev_#2}{\noexpand\formatnodewithprev{\the\numexpr\csname dist_#1\endcsname+\tempdist\relax}{\unexpanded{#1}}}%
+		\dijk_cscmd\def{prev_#2}{#1}%
+	\fi
+}
+
+\def\dijk_addstep
+{%
+	\def\dijk_autoamp{\def\dijk_autoamp{\dijk_addtomacro\dijk_tab&}}%
+	\skv_exparg{\dijk_foreach\dijk_temp\in}\dijk_listofnodes
+		{%
+			\dijk_autoamp
+			\dijk_exptwoargs\dijk_ifinst\dijk_nodestoexplore\dijk_temp
+				{%
+					\ifnum\csname dist_\dijk_temp\endcsname=\dijk_maxint\relax
+						\dijk_eeaddtomacro\dijk_tab{\useKV[\dijkname]{infinity-code}}%
+					\else
+						\skv_ifx{\dijk_temp\dijk_currentnode}% si c'est le sommet fixé, le mettre en valeur
+							{%
+								\skv_ifcsname{distwithprev_\dijk_temp}
+									{%
+										\dijk_eeaddtomacro\dijk_tab{\expandafter\expandafter\expandafter\dijk_highlightnode
+											\csname distwithprev_\dijk_temp\endcsname}% forme \dijk_highlightnode\formatnodewithprev{<dist>}{<sommet>}
+									}
+									{%
+										\dijk_eeaddtomacro\dijk_tab{\expandafter\expandafter\expandafter
+										\highlightfirstnode\expandafter\expandafter\expandafter
+										{\csname dist_\dijk_temp\endcsname}}% forme \highlightfirstnode{0}
+									}%
+							}
+							{% sinon, afficher normalement (forme \formatnodewithprev{<dist>}{<sommet>})
+								\dijk_eeaddtomacro\dijk_tab{\csname dist\ifcsname distwithprev_\dijk_temp\endcsname withprev\fi _\dijk_temp\endcsname}%
+							}%
+					\fi
+				}%
+				{%
+					\dijk_eeaddtomacro\dijk_tab{\useKV[\dijkname]{norevisit-code}}% sommet déjà fixé
+				}%
+		}%
+	\ifboolKV[\dijkname]{show-lastcol}
+		{\dijk_eaddtomacro\dijk_tab{\expandafter&\detokenize\expandafter{\dijk_currentnode}}}% ajout du sommet fixé
+		{}%
+	\dijk_addtomacro\dijk_tab{\\}%
+	\ifboolKV[\dijkname]{h-rules}
+		{\dijk_addtomacro\dijk_tab\hline}
+		{}%
+}
+
+\def\dijk_highlightnode\formatnodewithprev{\highlightnode}
+
+\dijk_restorecatcode
+
+\expandafter\let\expandafter\initdijk\csname skv_[\dijkname]\endcsname
+
+% Macros permettant de modifier les <valeurs> des <clés>
+\def\setdijk#{\setKV[\dijkname]}
+
+% ... ainsi que les <valeurs> par défaut
+\def\setdijkdefault#{\setKVdefault[\dijkname]}
+
+\newcommand*\formatnodewithprev[2]%
+{% #1=distance, #2=nom du noeud de provenance
+	$#1_{\mathrm{#2}}$%
+}
+
+\newcommand*\highlightnode[2]%
+{% #1=distance, #2=nom du noeud de provenance
+	$\mathbf{#1}_{\mathrm{\mathbf{#2}}}$%
+}
+
+\newcommand*\highlightfirstnode[1]%
+{%
+	$\mathbf{#1}$%
+}
+
+\setdijkdefault{
+	show-tab       = true,% afficher le tableau
+	v-position     = c,% argument optionnel de \begin{tabular}[<arg>]
+	pre-tab        = {},% juste avant le \begin{tabular}
+	post-tab       = {},% juste après le \end{tabular}
+	col-type       = c,% colonnes de type "c" pour les colonnes de distances
+	infinity-code  = $\infty$,% pour distance infinie
+	norevisit-code = ---,% pour les sommets préalablement fixés
+	h-rules        = false,% pas de filets entre les lignes des étapes
+	show-lastcol   = false,% si vrai : mettre en plus la colonne "sommet fixé"
+	lastcol-type   =  c|,% dernière colonne
+	lastcol-label  = sommet fix\'e,
+	nopath-string  = Pas de chemin possible,% si chemin impossible
+	path-sep       = -,% séparateur entre sommets dans le chemin
+}
+
+\endinput
+
+Versions :
+ _____________________________________________________________________________
+| Version |    Date    | Changements                                          |
+|---------+------------+------------------------------------------------------|
+|   0.1   | 06/09/2017 | Première version                                     |
+|---------+------------+------------------------------------------------------|
+|   0.11  | 09/09/2017 | - retrait d'un \show, laissé par oubli après les     |
+|         |            |   phases de débogage                                 |
+|         |            | - petit nettoyage du code                            |
+|---------+------------+------------------------------------------------------|

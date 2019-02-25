@@ -1,0 +1,299 @@
+%%
+%% This is file `lwarp-mdframed.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `mdframed')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+
+\RequirePackage{xcolor}% for \convertcolorspec
+
+\LWR@ProvidesPackageDrop{mdframed}[2013/07/01]
+\LWR@origRequirePackage[framemethod=none]{mdframed}
+\AtBeginDocument{
+\def\mdf@trivlist#1{%
+  \edef\mdf@temp{%
+  }%
+  \let\@itemlabel\@empty%
+  \def\makelabel##1{##1}%
+}
+
+\renewcommand*{\endmdf@trivlist}{%
+\LWR@traceinfo{endmdf@trivlist}%
+\LWR@listend%
+}
+}% AtBeginDocument
+\mdfsetup{
+startcode={\LWR@mdframedstart\LWR@print@raggedright},
+endcode={\LWR@mdframedend},
+startinnercode={\LWR@startpars\LWR@print@raggedright},
+endinnercode={\LWR@stoppars},
+}
+\newcommand*{\LWR@mdfprintcolor}[1]{%
+\convertcolorspec{named}{\@nameuse{mdf@#1}}{HTML}\LWR@tempcolor%
+\LWR@origpound\LWR@tempcolor
+}
+
+\newcommand*{\LWR@mdfprintlength}[1]{%
+\LWR@forceminwidth{\@nameuse{mdf@#1@length}}%
+\LWR@printlength{\LWR@atleastonept}%
+}
+\newcommand*{\LWR@mdframedstart}{%
+\LWR@traceinfo{LWR@mdframedstart start}%
+\LWR@stoppars%
+\LWR@htmltagc{div class="%
+mdframed%
+\ifdefstring{\LWR@mdthisenv}{mdframed}{}{ \LWR@mdthisenv}%
+" \LWR@orignewline
+style=" \LWR@orignewline
+background: \LWR@mdfprintcolor{backgroundcolor} ; \LWR@orignewline
+border: \LWR@mdfprintlength{linewidth} solid
+\LWR@mdfprintcolor{linecolor} ; \LWR@orignewline
+border-radius: \LWR@mdfprintlength{roundcorner} ; \LWR@orignewline
+\ifbool{mdf@shadow}{%
+    box-shadow:
+    \LWR@mdfprintlength{shadowsize}
+    \LWR@mdfprintlength{shadowsize}
+    \LWR@mdfprintlength{shadowsize}
+    \LWR@mdfprintcolor{shadowcolor} ;
+}
+{box-shadow: none ;}
+\LWR@orignewline
+"}
+\LWR@select@print@hspace%
+\renewcommand*{\rule}{\LWR@print@rule}
+\LetLtxMacro\makebox\LWR@print@makebox%
+\LWR@startpars%
+\LWR@traceinfo{LWR@mdframedstart done}%
+}
+\newcommand*{\LWR@mdframedend}{
+\LWR@traceinfo{LWR@mdframedend start}%
+\LWR@htmldivclassend{\LWR@mdthisenv}
+\gdef\LWR@mdthisenv{mdframed}
+\LWR@startpars%
+\LWR@traceinfo{LWR@mdframedend done}%
+}
+\renewenvironment{mdframed}[1][]{%
+ \color@begingroup%
+   \mdfsetup{userdefinedwidth=\linewidth,#1}%
+   \mdf@startcode%
+   \mdf@preenvsetting%
+   \ifdefempty{\mdf@firstframetitle}{}%
+           {\let\mdf@frametitlesave\mdf@frametitle%
+            \let\mdf@frametitle\mdf@firstframetitle%
+           }%
+   \ifvmode\nointerlineskip\fi%
+        \ifdefempty{\mdf@frametitle}{}%
+            {\mdfframedtitleenv{\mdf@frametitle}%
+            }%
+   \mdf@trivlist{\mdf@skipabove@length}%%
+   \mdf@settings%
+  }%
+  {%
+   \par%
+   \ifmdf@footnoteinside%
+      \def\mdf@reserveda{%
+        \mdf@footnoteoutput%
+      }%
+   \else%
+      \def\mdf@reserveda{%
+        \mdf@footnoteoutput%
+        }%
+   \fi%
+   \mdf@reserveda%
+  \aftergroup\endmdf@trivlist%
+ \color@endgroup%
+ \mdf@endcode%
+}
+\renewrobustcmd*\mdf@footnoteoutput{%
+    \LWR@printpendingmpfootnotes%
+}
+\newlength{\LWR@titleroundcorner}
+
+\renewrobustcmd\mdfframedtitleenv[1]{%
+\LWR@traceinfo{LWR@mdframedtitleenv start}%
+\begin{BlockClass}[%
+background:
+\LWR@mdfprintcolor{frametitlebackgroundcolor}
+; \LWR@orignewline
+\ifbool{mdf@frametitlerule}{%
+    border-bottom:
+    \LWR@mdfprintlength{frametitlerulewidth}
+    solid
+    \LWR@mdfprintcolor{frametitlerulecolor}
+    ; \LWR@orignewline
+}{}%
+]{mdframedtitle}%
+\mdf@frametitlefont{\LWR@textcurrentfont{#1}}%
+\end{BlockClass}%
+\LWR@traceinfo{LWR@mdframedtitleenv end}%
+}
+\NewDocumentCommand{\LWR@mdfsubtitlecommon}{m o m}
+{% the following empty line is required
+
+\LWR@traceinfo{LWR@mdframedsubtitlecommon start}%
+\begin{BlockClass}[%
+background:
+\LWR@mdfprintcolor{#1titlebackgroundcolor}
+; \LWR@orignewline
+\ifbool{mdf@#1titleaboveline}{%
+    border-top:
+    \LWR@mdfprintlength{#1titleabovelinewidth}
+    solid
+    \LWR@mdfprintcolor{#1titleabovelinecolor}
+    ; \LWR@orignewline
+}{}%
+\ifbool{mdf@#1titlebelowline}{%
+    border-bottom:
+    \LWR@mdfprintlength{#1titlebelowlinewidth}
+    solid
+    \LWR@mdfprintcolor{#1titlebelowlinecolor}
+    ; \LWR@orignewline
+}{}%
+]{mdframed#1title}%
+\IfNoValueTF{#2}
+{\@nameuse{LWR@origmdf#1title}{\csuse{mdf@#1titlefont}{\LWR@textcurrentfont{#3}}}}%
+{\@nameuse{LWR@origmdf#1title}[#2]{\csuse{mdf@#1titlefont}{\LWR@textcurrentfont{#3}}}}%
+\end{BlockClass}%
+\LWR@traceinfo{LWR@mdframedsubtitlecommon end}%
+}
+\newcommand*{\LWR@mdfsubtitle}{%
+\LWR@mdfsubtitlecommon{sub}%
+}
+\let\mdfsubtitle\LWR@mdfsubtitle
+\newcommand*{\LWR@mdfsubsubtitle}{%
+\LWR@mdfsubtitlecommon{subsub}%
+}
+\let\mdfsubsubtitle\LWR@mdfsubsubtitle
+\newcommand*{\LWR@mdthisenv}{mdframed}
+\renewrobustcmd*\newmdenv[2][]{%
+\newenvironment{#2}%
+{%
+\mdfsetup{#1}%
+\renewcommand*{\LWR@mdthisenv}{md#2}%
+\begin{mdframed}%
+}
+{\end{mdframed}}%
+}
+\renewrobustcmd*{\surroundwithmdframed}[2][]{%
+\BeforeBeginEnvironment{#2}{%
+\renewcommand*{\LWR@mdthisenv}{md#2}%
+\begin{mdframed}[#1]}%
+\AfterEndEnvironment{#2}{\end{mdframed}}%
+}
+\DeclareDocumentCommand{\mdtheorem}{ O{} m o m o }%
+ {\ifcsdef{#2}%
+   {\mdf@PackageWarning{Environment #2 already exits\MessageBreak}}%
+   {%
+    \IfNoValueTF {#3}%
+     {%#3 not given -- number relationship
+      \IfNoValueTF {#5}%
+        {%#3+#5 not given
+        \@definecounter{#2}%
+        \expandafter\xdef\csname the#2\endcsname{\@thmcounter{#2}}%
+        \newenvironment{#2}[1][]{%
+          \refstepcounter{#2}%
+          \ifstrempty{##1}%
+            {\let\@temptitle\relax}%
+            {%
+             \def\@temptitle{\mdf@theoremseparator%
+                             \mdf@theoremspace%
+                             \mdf@theoremtitlefont%
+                             \LWR@textcurrentfont{##1}}% lwarp
+             \mdf@thm@caption{#2}{{#4}{\csname the#2\endcsname}{##1}}%
+             }%
+          \begin{mdframed}[#1,frametitle={\strut#4\ \csname the#2\endcsname%
+                                          \@temptitle}]}%
+          {\end{mdframed}}%
+        \newenvironment{#2*}[1][]{%
+          \ifstrempty{##1}{\let\@temptitle\relax}{\def\@temptitle{:\ ##1}}%
+          \begin{mdframed}[#1,frametitle={\strut#4\@temptitle}]}%
+          {\end{mdframed}}%
+        }%
+        {%#5 given -- reset counter
+        \@definecounter{#2}\@newctr{#2}[#5]%
+        \expandafter\xdef\csname the#2\endcsname{\@thmcounter{#2}}%
+        \expandafter\xdef\csname the#2\endcsname{%
+               \expandafter\noexpand\csname the#5\endcsname \@thmcountersep%
+                  \@thmcounter{#2}}%
+        \newenvironment{#2}[1][]{%
+          \refstepcounter{#2}%
+          \ifstrempty{##1}%
+            {\let\@temptitle\relax}%
+            {%
+             \def\@temptitle{\mdf@theoremseparator%
+                             \mdf@theoremspace%
+                             \mdf@theoremtitlefont%
+                             \LWR@textcurrentfont{##1}}% lwarp
+             \mdf@thm@caption{#2}{{#4}{\csname the#2\endcsname}{##1}}%
+             }
+          \begin{mdframed}[#1,frametitle={\strut#4\ \csname the#2\endcsname%
+                                          \@temptitle}]}%
+          {\end{mdframed}}%
+        \newenvironment{#2*}[1][]{%
+          \ifstrempty{##1}%
+            {\let\@temptitle\relax}%
+            {%
+             \def\@temptitle{\mdf@theoremseparator%
+                             \mdf@theoremspace%
+                             \mdf@theoremtitlefont%
+                             \LWR@textcurrentfont{##1}}% lwarp
+             \mdf@thm@caption{#2}{{#4}{\csname the#2\endcsname}{##1}}%
+             }%
+          \begin{mdframed}[#1,frametitle={\strut#4\@temptitle}]}%
+          {\end{mdframed}}%
+        }%
+     }%
+     {%#3 given -- number relationship
+        \global\@namedef{the#2}{\@nameuse{the#3}}%
+        \newenvironment{#2}[1][]{%
+          \refstepcounter{#3}%
+          \ifstrempty{##1}%
+            {\let\@temptitle\relax}%
+            {%
+             \def\@temptitle{\mdf@theoremseparator%
+                             \mdf@theoremspace%
+                             \mdf@theoremtitlefont%
+                             \LWR@textcurrentfont{##1}}% lwarp
+             \mdf@thm@caption{#2}{{#4}{\csname the#2\endcsname}{##1}}%
+             }
+          \begin{mdframed}[#1,frametitle={\strut#4\ \csname the#2\endcsname%
+                                          \@temptitle}]}%
+          {\end{mdframed}}%
+        \newenvironment{#2*}[1][]{%
+          \ifstrempty{##1}{\let\@temptitle\relax}{\def\@temptitle{:\ ##1}}%
+          \begin{mdframed}[#1,frametitle={\strut#4\@temptitle}]}%
+          {\end{mdframed}}%
+     }%
+    \BeforeBeginEnvironment{#2}{\renewcommand*{\LWR@mdthisenv}{md#2}}% lwarp
+    \BeforeBeginEnvironment{#2*}{\renewcommand*{\LWR@mdthisenv}{md#2}}% lwarp
+   }%
+ }
+\DeclareDocumentCommand\newmdtheoremenv{O{} m o m o }{%
+ \ifboolexpr{ test {\IfNoValueTF {#3}} and test {\IfNoValueTF {#5}} }%
+    {\newtheorem{#2}{#4}}%
+    {%
+     \IfValueT{#3}{\newtheorem{#2}[#3]{#4}}%
+     \IfValueT{#5}{\newtheorem{#2}{#4}[#5]}%
+    }%
+\BeforeBeginEnvironment{#2}{%
+\renewcommand*{\LWR@mdthisenv}{md#2}%
+\begin{mdframed}[#1]}%
+\AfterEndEnvironment{#2}{%
+\end{mdframed}}%
+}
+
+\endinput
+%%
+%% End of file `lwarp-mdframed.sty'.

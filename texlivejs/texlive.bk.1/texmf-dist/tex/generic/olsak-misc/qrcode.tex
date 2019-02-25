@@ -1,0 +1,2870 @@
+% qrcode.tex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Petr Olsak <petr@olsak.net>                  Jul. 2015
+
+% This macro qrcode.tex is (roughly speaking) a copy of qrcode.sty
+% macro by Anders Hendrickson <ahendric@cord.edu>, see 
+% http://www.ctan.org/tex-archive/macros/latex/contrib/qrcode
+
+% The main difference between qrcode.sty and qrcode.tex is, that
+% the LaTeX ballast was removed from qrcode.sty by Petr Olsak. The result:
+% The qrcode.tex macro can be used in plain TeX format too.
+
+% Usage: after \input qrcode
+% you can type \qrcode{encoded text}.
+
+% More information about options can be found at the end of this file.
+
+\edef\tmp{\catcode`@=\the\catcode`@\relax}\catcode`\@=11 % LaTeX special character :(
+
+\newcount\qr@i
+\newcount\qr@j
+\newcount\qr@a
+\newcount\qr@b
+\newcount\qr@c
+
+\def\theqr@i{\the\qr@i}
+\def\theqr@j{\the\qr@j}
+
+\def\@relax{\relax}%
+
+\def\preface@macro#1#2{%
+  % #1 = macro name
+  % #2 = text to add to front of macro
+  \def\tempb{#2}%
+  \xa\xa\xa\def\xa\xa\xa#1\xa\xa\xa{\xa\tempb #1}%
+}%
+
+\def\g@preface@macro#1#2{%
+  % #1 = macro to be appended to
+  % #2 = code to add
+  \edef\codeA{#2}%
+  \expandafter\expandafter\expandafter
+  \gdef\expandafter\expandafter\expandafter#1\expandafter\expandafter\expandafter
+  {\expandafter\codeA#1}%
+}
+
+\def\qr@getstringlength#1{%
+  \bgroup
+    \qr@a=0%
+    \xdef\thestring{#1}%
+    \expandafter\qr@stringlength@recursive\expandafter(\thestring\relax\relax)%
+    \xdef\qr@stringlength{\the\qr@a}%
+  \egroup
+}%
+
+\def\qr@stringlength@recursive(#1#2){%
+  \def\testi{#1}%
+  \ifx\testi\@relax
+    %we are done.
+    \let\qr@next=\relax%
+  \else
+    \advance\qr@a by 1%
+    \def\qr@next{\qr@stringlength@recursive(#2)}%
+  \fi
+  \qr@next
+}%
+
+\def\qr@for#1=#2to#3by#4#{\forA{#1}{#2}{#3}{#4}}
+\long\def\forA#1#2#3#4#5{\begingroup
+   {\escapechar=`\\ % allocation of #1 as counter:
+      \expandafter \ifx\csname for:\string#1\endcsname \relax
+         \csname newcount\expandafter\endcsname \csname for:\string#1\endcsname\fi
+    \expandafter}\expandafter\let\expandafter#1\csname for:\string#1\endcsname
+   #1=#2%
+   \def\forB{#5\advance#1by#4\relax \expandafter\forC}%
+   \ifnum#4>0 \def\forC{\ifnum#1>#3\relax\else\forB\fi}%
+   \else      \def\forC{\ifnum#1<#3\relax\else\forB\fi}%
+   \fi
+   \ifnum#4=0 \let\forC=\relax \fi
+   \forC \endgroup
+}
+
+\def\qr@padatfront#1#2{%
+  % #1 = macro containing text to pad
+  % #2 = desired number of characters
+  % Pads a number with initial zeros.
+  \qr@getstringlength{#1}%
+  \qr@a=\qr@stringlength\relax%
+  \advance\qr@a by 1\relax%
+  \qr@for \i = \qr@a to #2 by 1
+    {\g@preface@macro{#1}{0}}%
+}
+
+\qr@a=-1\relax%
+\def\qr@savehexsymbols(#1#2){%
+  \advance\qr@a by 1\relax%
+  \expandafter\def\csname qr@hexchar@\the\qr@a\endcsname{#1}%
+  \expandafter\edef\csname qr@hextodecimal@#1\endcsname{\the\qr@a}%
+  \ifnum\qr@a=15\relax
+    %Done.
+    \let\qr@next=\relax%
+  \else
+    \def\qr@next{\qr@savehexsymbols(#2)}%
+  \fi%
+  \qr@next%
+}%
+\qr@savehexsymbols(0123456789abcdef\relax\relax)%
+
+\def\qr@decimaltobase#1#2#3{%
+  % #1 = macro to store result
+  % #2 = decimal representation of a positive integer
+  % #3 = new base
+  \bgroup
+    \edef\qr@newbase{#3}%
+    \gdef\qr@base@result{}%
+    \qr@a=#2\relax%
+    \qr@decimaltobase@recursive%
+    \xdef#1{\qr@base@result}%
+  \egroup
+}
+\def\qr@decimaltobase@recursive{%
+  \qr@b=\qr@a%
+  \divide\qr@b by \qr@newbase\relax
+  \multiply\qr@b by -\qr@newbase\relax
+  \advance\qr@b by \qr@a\relax%
+  \divide\qr@a by \qr@newbase\relax%
+  \ifnum\qr@b<10\relax
+    \edef\newdigit{\the\qr@b}%
+  \else
+    \edef\newdigit{\csname qr@hexchar@\the\qr@b\endcsname}%
+  \fi
+  \edef\qr@argument{{\noexpand\qr@base@result}{\newdigit}}%
+  \expandafter\g@preface@macro\qr@argument%
+  \ifnum\qr@a=0\relax
+    \relax
+  \else
+    \expandafter\qr@decimaltobase@recursive
+  \fi
+}
+
+
+\long\def\isnextchar#1#2#3{\def\tmpa{#2}\def\tmpb{#3}%
+   \let\tmp=#1\futurelet\next\isnextcharA
+}
+\def\isnextcharA{\ifx\tmp\next\expandafter\tmpa\else\expandafter\tmpb\fi}
+
+\long\def\xaddto#1#2{\expandafter\xdef\expandafter#1\expandafter{#1#2}}
+\let\g@addto@macro=\xaddto
+
+\def\qr@decimaltohex[#1]#2#3{%
+  % #1 (opt.) = number of hex digits to create
+  % #2 = macro to store result
+  % #3 = decimal digits to convert
+  \qr@decimaltobase{#2}{#3}{16}%
+  \qr@padatfront{#2}{#1}%
+}
+
+\def\qr@decimaltobinary[#1]#2#3{%
+  % #1 (opt.) = number of bits to create
+  % #2 = macro to store result
+  % #3 = decimal digits to convert
+  \qr@decimaltobase{#2}{#3}{2}%
+  \qr@padatfront{#2}{#1}%
+}
+
+\qr@for \i = 0 to 15 by 1%
+  {%
+   \qr@decimaltohex[1]{\qr@hexchar}{\the\i}%
+   \qr@decimaltobinary[4]{\qr@bits}{\the\i}%
+   \expandafter\xdef\csname qr@b2h@\qr@bits\endcsname{\qr@hexchar}%
+   \expandafter\xdef\csname qr@h2b@\qr@hexchar\endcsname{\qr@bits}%
+  }%
+
+\def\qr@binarytohex[#1]#2#3{%
+  % #1 (optional) = # digits desired
+  % #2 = macro to save to
+  % #3 = binary string (must be multiple of 4 bits)
+  \def\test@i{#1}%
+  \ifx\test@i\@relax%
+    %No argument specified
+    \def\qr@desireddigits{0}%
+  \else
+    \def\qr@desireddigits{#1}%
+  \fi
+  \gdef\qr@base@result{}%
+  \edef\qr@argument{(#3\relax\relax\relax\relax\relax)}%
+  \xa\qr@binarytohex@int\qr@argument%
+  \qr@padatfront{\qr@base@result}{\qr@desireddigits}%
+  \xdef#2{\qr@base@result}%
+}
+\def\qr@binarytohex@int(#1#2#3#4#5){%
+  % #1#2#3#4 = 4 bits
+  % #5 = remainder, including \relax\relax\relax\relax\relax terminator
+  \def\test@i{#1}%
+  \ifx\test@i\@relax%
+    %Done.
+    \def\qr@next{\relax}%
+  \else%
+    \xdef\qr@base@result{\qr@base@result\csname qr@b2h@#1#2#3#4\endcsname}%
+    \def\qr@next{\qr@binarytohex@int(#5)}%
+  \fi%
+  \qr@next%
+}
+
+\def\qr@hextobinary[#1]#2#3{%
+  % #1 (optional) = # bits desired
+  % #2 = macro to save to
+  % #3 = hexadecimal string
+  \bgroup
+  \def\test@i{#1}%
+  \ifx\test@i\@relax%
+    %No argument specified
+    \def\qr@desireddigits{0}%
+  \else
+    \def\qr@desireddigits{#1}%
+  \fi
+  \gdef\qr@base@result{}%
+  \edef\qr@argument{(#3\relax\relax)}%
+  \xa\qr@hextobinary@int\qr@argument%
+  \qr@padatfront{\qr@base@result}{\qr@desireddigits}%
+  \xdef#2{\qr@base@result}%
+  \egroup
+}
+\def\qr@hextobinary@int(#1#2){%
+  % #1 = hexadecimal character
+  % #2 = remainder, including \relax\relax terminator
+  \def\test@@i{#1}%
+  \ifx\test@@i\@relax%
+    %Done.
+    \def\qr@next{\relax}%
+  \else%
+    \xdef\qr@base@result{\qr@base@result\csname qr@h2b@#1\endcsname}%
+    \def\qr@next{\qr@hextobinary@int(#2)}%
+  \fi%
+  \qr@next%
+}
+
+\def\qr@hextodecimal#1#2{%
+  \edef\qr@argument{#2}%
+  \xa\qr@a\xa=\xa\number\xa"\qr@argument\relax%
+  \edef#1{\the\qr@a}%
+}
+
+\def\qr@hextodecimal#1#2{%
+  % #1 = macro to store result
+  % #2 = hexadecimal representation of a positive integer
+  \bgroup
+    \qr@a=0\relax%
+    \edef\qr@argument{(#2\relax)}%
+    \xa\qr@hextodecimal@recursive\qr@argument%
+    \xdef#1{\the\qr@a}%
+  \egroup
+}
+\def\qr@hextodecimal@recursive(#1#2){%
+  % #1 = first hex char
+  % #2 = remainder
+  \advance \qr@a by \csname qr@hextodecimal@#1\endcsname\relax%
+  \edef\testii{#2}%
+  \ifx\testii\@relax%
+    %Done.
+    \let\qr@next=\relax%
+  \else
+    %There's at least one more digit.
+    \multiply\qr@a by 16\relax
+    \edef\qr@next{\noexpand\qr@hextodecimal@recursive(#2)}%
+  \fi%
+  \qr@next%
+}
+
+\def\qrverbatim{\def\do##1{\catcode`##1=12}\dospecials
+  \catcode`\\=0 \catcode`\{=1 \catcode`\}=2
+  \escapechar=-1 \def\do##1{\edef##1{\string##1}}\dospecials
+  \def\?{^^J}\let\ =\qr@letterspace
+  \catcode`\^^M=13 \qr@setMtoJ
+  \ifx\mubytein\undefined \else \mubytein=0 \fi
+}
+{\lccode`\?=`\ \lowercase{\gdef\qr@letterspace{?}}}
+{\catcode`\^^M=13 \gdef\qr@setMtoJ{\def^^M{^^J}}}
+
+\def\qr@creatematrix#1{%
+  \expandafter\gdef\csname #1\endcsname##1##2{%
+    \csname #1@##1@##2\endcsname
+  }%
+}%
+
+\def\qr@storetomatrix#1#2#3#4{%
+  % #1 = matrix name
+  % #2 = row number
+  % #3 = column number
+  % #4 = value of matrix entry
+  \xa\gdef\csname #1@#2@#3\endcsname{#4}%
+}%
+
+\def\qr@estoretomatrix#1#2#3#4{%
+  % This version performs exactly one expansion on #4.
+  % #1 = matrix name
+  % #2 = row number
+  % #3 = column number
+  % #4 = value of matrix
+  \expandafter\gdef\csname #1@#2@#3\expandafter\endcsname\expandafter{#4}%
+}%
+
+\def\qr@matrixentry#1#2#3{%
+  % #1 = matrix name
+  % #2 = row number
+  % #3 = column number
+  \csname #1@#2@#3\endcsname%
+}%
+
+\def\qr@createsquareblankmatrix#1#2{%
+  \qr@creatematrix{#1}%
+  \xa\gdef\csname #1@numrows\endcsname{#2}%
+  \xa\gdef\csname #1@numcols\endcsname{#2}%
+  \qr@for \i = 1 to #2 by 1%
+    {\qr@for \j = 1 to #2 by 1%
+      {\qr@storetomatrix{#1}{\the\i}{\the\j}{\@blank}}}%
+}%
+
+\def\qr@numberofrowsinmatrix#1{%
+  \csname #1@numrows\endcsname%
+}%
+
+\def\qr@numberofcolsinmatrix#1{%
+  \csname #1@numcols\endcsname%
+}%
+
+\def\qr@setnumberofrows#1#2{%
+  \xa\xdef\csname #1@numrows\endcsname{#2}%
+}%
+
+\def\qr@setnumberofcols#1#2{%
+  \xa\xdef\csname #1@numcols\endcsname{#2}%
+}%
+
+\newdimen\qrdesiredheight
+\newdimen\qrmodulesize
+
+\def\qr@link#1#2{\hbox{\pdfstartlink height\ht0 depth0pt \qr@border
+   user{/Subtype/Link/A <</Type/Action/S/URI/URI(#1)>>}\relax #2\pdfendlink}%
+}
+\def\qr@border{\expandafter\ifx \csname kv:qrborder\endcsname\relax \else
+   attr{/C[\kv{qrborder}] /Border[0 0 .6]}\fi
+}
+
+\def\qr@createliteralmatrix#1#2#3{%
+  % #1 = matrix name
+  % #2 = m, the number of rows and columns in the square matrix
+  % #3 = a string of m^2 tokens to be written into the matrix
+  \qr@creatematrix{#1}%
+  \expandafter\xdef\csname #1@numrows\endcsname{#2}%
+  \expandafter\xdef\csname #1@numcols\endcsname{#2}%
+  \gdef\qr@literalmatrix@tokens{#3}%
+  \qr@for \i = 1 to #2 by 1%
+    {\qr@for \j = 1 to #2 by 1%
+      {\expandafter\qr@createliteralmatrix@int\expandafter(\qr@literalmatrix@tokens)%
+       \qr@estoretomatrix{#1}{\the\i}{\the\j}{\qr@entrytext}%
+      }%
+    }%
+}
+\def\qr@createliteralmatrix@int(#1#2){%
+  \def\qr@entrytext{#1}%
+  \gdef\qr@literalmatrix@tokens{#2}%
+}
+
+\qr@createliteralmatrix{finderpattern}{8}{%
+  \qr@black@fixed\qr@black@fixed\qr@black@fixed\qr@black@fixed\qr@black@fixed\qr@black@fixed\qr@black@fixed\qr@white@fixed%
+  \qr@black@fixed\qr@white@fixed\qr@white@fixed\qr@white@fixed\qr@white@fixed\qr@white@fixed\qr@black@fixed\qr@white@fixed%
+  \qr@black@fixed\qr@white@fixed\qr@black@fixed\qr@black@fixed\qr@black@fixed\qr@white@fixed\qr@black@fixed\qr@white@fixed%
+  \qr@black@fixed\qr@white@fixed\qr@black@fixed\qr@black@fixed\qr@black@fixed\qr@white@fixed\qr@black@fixed\qr@white@fixed%
+  \qr@black@fixed\qr@white@fixed\qr@black@fixed\qr@black@fixed\qr@black@fixed\qr@white@fixed\qr@black@fixed\qr@white@fixed%
+  \qr@black@fixed\qr@white@fixed\qr@white@fixed\qr@white@fixed\qr@white@fixed\qr@white@fixed\qr@black@fixed\qr@white@fixed%
+  \qr@black@fixed\qr@black@fixed\qr@black@fixed\qr@black@fixed\qr@black@fixed\qr@black@fixed\qr@black@fixed\qr@white@fixed%
+  \qr@white@fixed\qr@white@fixed\qr@white@fixed\qr@white@fixed\qr@white@fixed\qr@white@fixed\qr@white@fixed\qr@white@fixed%
+}%
+
+\qr@createliteralmatrix{alignmentpattern}{5}{%
+  \qr@black@fixed\qr@black@fixed\qr@black@fixed\qr@black@fixed\qr@black@fixed%
+  \qr@black@fixed\qr@white@fixed\qr@white@fixed\qr@white@fixed\qr@black@fixed%
+  \qr@black@fixed\qr@white@fixed\qr@black@fixed\qr@white@fixed\qr@black@fixed%
+  \qr@black@fixed\qr@white@fixed\qr@white@fixed\qr@white@fixed\qr@black@fixed%
+  \qr@black@fixed\qr@black@fixed\qr@black@fixed\qr@black@fixed\qr@black@fixed%
+}%
+
+\def\qr@copymatrixentry#1#2#3#4#5#6{%
+  % Copy the (#2,#3) entry of matrix #1
+  % to the (#5,#6) position of matrix #4.
+  \xa\xa\xa\global%
+  \xa\xa\xa\let\xa\xa\csname #4@#5@#6\endcsname%
+                     \csname #1@#2@#3\endcsname%
+}%
+
+\def\qr@createduplicatematrix#1#2{%
+  % #1 = name of copy
+  % #2 = original matrix to be copied
+  \qr@creatematrix{#1}%
+  \qr@for \i = 1 to \qr@numberofrowsinmatrix{#2} by 1%
+    {\qr@for \j = 1 to \qr@numberofcolsinmatrix{#2} by 1%
+      {\qr@copymatrixentry{#2}{\the\i}{\the\j}{#1}{\the\i}{\the\j}%
+      }%
+    }%
+  \qr@setnumberofrows{#1}{\qr@numberofrowsinmatrix{#2}}%
+  \qr@setnumberofcols{#1}{\qr@numberofcolsinmatrix{#2}}%
+}%
+
+\def\qr@placefinderpattern@int#1#2#3#4#5{%
+  % Work on matrix #1.
+  % Start in position (#2, #3) -- should be a corner
+  % #4 indicates horizontal direction (1=right, -1=left)
+  % #5 indicates vertical direction (1=down, -1=up)
+  %
+  % In this code, \sourcei and \sourcej are TeX counts working through the finderpattern matrix,
+  % and i and j are LaTeX counters indicating positions in the big matrix.
+  \setcounter{qr@i}{#2}%
+  \qr@for \sourcei=1 to 8 by 1%
+    {\setcounter{qr@j}{#3}%
+     \qr@for \sourcej=1 to 8 by 1%
+       {\qr@copymatrixentry{finderpattern}{\the\sourcei}{\the\sourcej}%
+                        {#1}{\theqr@i}{\theqr@j}%
+        \addtocounter{qr@j}{#5}%
+       }%
+     \addtocounter{qr@i}{#4}%
+    }%
+}%
+
+\def\qr@placefinderpatterns#1{%
+  % #1=matrix name
+  \qr@placefinderpattern@int{#1}{1}{1}{1}{1}%
+  \qr@placefinderpattern@int{#1}{\qr@numberofrowsinmatrix{#1}}{1}{-1}{1}%
+  \qr@placefinderpattern@int{#1}{1}{\qr@numberofcolsinmatrix{#1}}{1}{-1}%
+}%
+
+\def\qr@placetimingpatterns#1{%
+  %Set \endingcol to n-8.
+  \qr@a=\qr@size\relax%
+  \advance\qr@a by -8\relax%
+  \edef\endingcol{\the\qr@a}%
+  \qr@for \j = 9 to \endingcol by 1%
+    {\ifodd\j\relax%
+       \qr@storetomatrix{#1}{7}{\the\j}{\qr@black@fixed}%
+       \qr@storetomatrix{#1}{\the\j}{7}{\qr@black@fixed}%
+     \else%
+       \qr@storetomatrix{#1}{7}{\the\j}{\qr@white@fixed}%
+       \qr@storetomatrix{#1}{\the\j}{7}{\qr@white@fixed}%
+     \fi%
+    }%
+}%
+
+\def\qr@placealignmentpattern@int#1#2#3{%
+  % Work on matrix #1.
+  % Write an alignment pattern into the matrix, centered on (#2,#3).
+  \qr@a=#2\relax%
+  \advance\qr@a by -2\relax%
+  \qr@b=#3\relax%
+  \advance\qr@b by -2\relax%
+  \setcounter{qr@i}{\the\qr@a}%
+  \qr@for \i=1 to 5 by 1%
+    {\setcounter{qr@j}{\the\qr@b}%
+     \qr@for \j=1 to 5 by 1%
+      {\qr@copymatrixentry{alignmentpattern}{\the\i}{\the\j}%
+                       {#1}{\theqr@i}{\theqr@j}%
+       \stepcounter{qr@j}%
+      }%
+     \stepcounter{qr@i}%
+    }%
+}%
+
+\newif\ifqr@incorner%
+\def\qr@placealignmentpatterns#1{%
+  %There are k^2-3 alignment patterns,
+  %arranged in a (k x k) grid within the matrix.
+  %They begin in row 7, column 7,
+  %except that the ones in the NW, NE, and SW corners
+  %are omitted because of the finder patterns.
+  %Recall that
+  %  * \qr@k stores k,
+  %  * \qr@alignment@firstskip stores how far between the 1st and 2nd row/col, &
+  %  * \qr@alignment@generalskip stores how far between each subsequent row/col.
+  \xa\ifnum\qr@k>0\relax
+    %There will be at least one alignment pattern.
+    %N.B. k cannot equal 1.
+    \xa\ifnum\qr@k=2\relax
+      % 2*2-3 = exactly 1 alignment pattern.
+      \qr@a=7\relax
+      \advance\qr@a by \qr@alignment@firstskip\relax
+      \xdef\qr@target@ii{\the\qr@a}%
+      \qr@placealignmentpattern@int{#1}{\qr@target@ii}{\qr@target@ii}%
+    \else
+      % k is at least 3, so the following loops should be safe.
+      \xdef\qr@target@ii{7}%
+      \qr@for \ii = 1 to \qr@k by 1%
+        {\ifcase\ii\relax%
+           \relax% \ii should never equal 0.
+         \or
+           \xdef\qr@target@ii{7}% If \ii = 1, we start in row 7.
+         \or
+           %If \ii = 2, we add the firstskip.
+           \qr@a=\qr@target@ii\relax%
+           \advance\qr@a by \qr@alignment@firstskip\relax%
+           \xdef\qr@target@ii{\the\qr@a}%
+         \else
+           %If \ii>2, we add the generalskip.
+           \qr@a=\qr@target@ii\relax%
+           \advance\qr@a by \qr@alignment@generalskip\relax%
+           \xdef\qr@target@ii{\the\qr@a}%
+         \fi
+         \qr@for \jj = 1 to \qr@k by 1%
+           {\ifcase\jj\relax%
+              \relax% \jj should never equal 0.
+            \or
+              \xdef\qr@target@jj{7}% If \jj=1, we start in row 7.
+            \or
+              %If \jj=2, we add the firstskip.
+              \qr@a=\qr@target@jj\relax%
+              \advance\qr@a by \qr@alignment@firstskip%
+              \xdef\qr@target@jj{\the\qr@a}%
+            \else
+              %If \jj>2, we add the generalskip.
+              \qr@a=\qr@target@jj\relax%
+              \advance\qr@a by \qr@alignment@generalskip%
+              \xdef\qr@target@jj{\the\qr@a}%
+            \fi
+            \qr@incornerfalse%
+            \ifnum\ii=1\relax
+              \ifnum\jj=1\relax
+                \qr@incornertrue
+              \else
+                \ifnum\qr@k=\jj\relax
+                  \qr@incornertrue
+                \fi
+              \fi
+            \else
+              \xa\ifnum\qr@k=\ii\relax
+                \ifnum\jj=1\relax
+                  \qr@incornertrue
+                \fi
+              \fi
+            \fi
+            \ifqr@incorner
+              \relax
+            \else
+              \qr@placealignmentpattern@int{#1}{\qr@target@ii}{\qr@target@jj}%
+            \fi
+           }% ends \qr@for \jj
+        }% ends \qr@for \ii
+    \fi
+  \fi
+}%
+
+\def\qr@placedummyformatpatterns#1{%
+  \qr@for \j = 1 to 9 by 1%
+    {\ifnum\j=7\relax%
+     \else%
+       \qr@storetomatrix{#1}{9}{\the\j}{\qr@format@square}%
+       \qr@storetomatrix{#1}{\the\j}{9}{\qr@format@square}%
+     \fi%
+    }%
+  \setcounter{qr@j}{\qr@size}%
+  \qr@for \j = 1 to 8 by 1%
+    {\qr@storetomatrix{#1}{9}{\theqr@j}{\qr@format@square}%
+     \qr@storetomatrix{#1}{\theqr@j}{9}{\qr@format@square}%
+     \addtocounter{qr@j}{-1}%
+    }%
+  %Now go back and change the \qr@format@square in (n-8,9) to \qr@black@fixed.
+  \addtocounter{qr@j}{1}%
+  \qr@storetomatrix{#1}{\theqr@j}{9}{\qr@black@fixed}%
+}%
+
+\def\qr@placedummyversionpatterns#1{%
+  \xa\ifnum\qr@version>6\relax
+    %Must include version information.
+    \global\qr@i=\qr@size%
+    \global\advance\qr@i by -10\relax%
+    \qr@for \i = 1 to 3 by 1%
+      {\qr@for \j = 1 to 6 by 1%
+        {\qr@storetomatrix{#1}{\theqr@i}{\the\j}{\qr@format@square}%
+         \qr@storetomatrix{#1}{\the\j}{\theqr@i}{\qr@format@square}%
+        }%
+       \stepcounter{qr@i}%
+      }%
+  \fi
+}%
+
+\def\qr@writebit(#1#2)#3{%
+  % #3 = matrix name
+  % (qr@i,qr@j) = position to write in (LaTeX counters)
+  % #1 = bit to be written
+  % #2 = remaining bits plus '\relax' as an end-of-file marker
+  \edef\qr@datatowrite{#2}%
+  \ifnum#1=1
+    \qr@storetomatrix{#3}{\theqr@i}{\theqr@j}{\qr@black}%
+  \else
+    \qr@storetomatrix{#3}{\theqr@i}{\theqr@j}{\@white}%
+  \fi
+}%
+
+\newif\ifqr@rightcol
+\newif\ifqr@goingup
+
+\def\qr@writedata@hex#1#2{%
+  % #1 = name of a matrix that has been prepared with finder patterns, timing patterns, etc.
+  % #2 = a string consisting of bytes to write into the matrix, in two-char hex format.
+  \setcounter{qr@i}{\qr@numberofrowsinmatrix{#1}}%
+  \setcounter{qr@j}{\qr@numberofcolsinmatrix{#1}}%
+  \qr@rightcoltrue%
+  \qr@goinguptrue%
+  \edef\qr@argument{{#1}(#2\relax\relax\relax)}%
+  \xa\qr@writedata@hex@recursive\qr@argument%
+}%
+
+\def\qr@writedata@hex@recursive#1(#2#3#4){%
+  % #1 = name of a matrix that has been prepared with finder patterns, timing patterns, etc.
+  % (qr@i,qr@j) = position to write in LaTeX counters
+  % #2#3#4 contains the hex codes of the bytes to be written, plus \relax\relax\relax
+  % as an end-of-file marker
+  \edef\testii{#2}%
+  \ifx\testii\@relax%
+    % #2 is \relax, so there is nothing more to write.
+    \relax
+    \let\go=\relax
+  \else
+    % #2 is not \relax, so there is another byte to write.
+    \qr@hextobinary[8]{\bytetowrite}{#2#3}%
+    \xdef\qr@datatowrite{\bytetowrite\relax}% %Add terminating "\relax"
+    \qr@writedata@recursive{#1}% %This function actually writes the 8 bits.
+    \edef\qr@argument{{#1}(#4)}%
+    \xa\def\xa\go\xa{\xa\qr@writedata@hex@recursive\qr@argument}% %Call self to write the next bit.
+  \fi
+  \go
+}%
+
+\def\qr@writedata#1#2{%
+  % #1 = name of a matrix that has been prepared with finder patterns, timing patterns, etc.
+  % #2 = a string consisting of 0's and 1's to write into the matrix.
+  \setcounter{qr@i}{\qr@numberofrowsinmatrix{#1}}%
+  \setcounter{qr@j}{\qr@numberofcolsinmatrix{#1}}%
+  \qr@rightcoltrue
+  \qr@goinguptrue
+  \edef\qr@datatowrite{#2\relax}%
+  \qr@writedata@recursive{#1}%
+}%
+
+\def\@@blank{\@blank}%
+
+\def\qr@writedata@recursive#1{%
+  % #1 = matrix name
+  % (qr@i,qr@j) = position to write in (LaTeX counters)
+  % \qr@datatowrite contains the bits to be written, plus '\relax' as an end-of-file marker
+  \xa\let\xa\squarevalue\csname #1@\theqr@i @\theqr@j\endcsname%
+  \ifx\squarevalue\@@blank
+    %Square is blank, so write data in it.
+    \xa\qr@writebit\xa(\qr@datatowrite){#1}%
+    %The \qr@writebit macro not only writes the first bit of \qr@datatowrite into the matrix,
+    %but also removes the bit from the 'bitstream' of \qr@datatowrite.
+  \fi
+  %Now adjust our position in the matrix.
+  \ifqr@rightcol
+    %From the right-hand half of the two-bit column, we always move left.  Easy peasy.
+    \addtocounter{qr@j}{-1}%
+    \qr@rightcolfalse
+  \else
+    %If we're in the left-hand column, things are harder.
+    \ifqr@goingup
+      %First, suppose we're going upwards.
+      \ifnum\qr@i>1\relax%
+        %If we're not in the first row, things are easy.
+        %We move one to the right and one up.
+        \addtocounter{qr@j}{1}%
+        \addtocounter{qr@i}{-1}%
+        \qr@rightcoltrue
+      \else
+        %If we are in the first row, then we move to the left,
+        %and we are now in the right-hand column on a downward pass.
+        \addtocounter{qr@j}{-1}%
+        \qr@goingupfalse
+        \qr@rightcoltrue
+      \fi
+    \else
+      %Now, suppose we're going downwards.
+      \xa\ifnum\qr@size>\qr@i\relax%
+        %If we're not yet in the bottom row, things are easy.
+        %We move one to the right and one down.
+        \addtocounter{qr@j}{1}%
+        \addtocounter{qr@i}{1}%
+        \qr@rightcoltrue
+      \else
+        %If we are in the bottom row, then we move to the left,
+        %and we are now in the right-hand column on an upward pass.
+        \addtocounter{qr@j}{-1}%
+        \qr@rightcoltrue
+        \qr@goinguptrue
+      \fi
+    \fi
+    %One problem: what if we just moved into the 7th column?
+    %Das ist verboten.
+    %If we just moved (left) into the 7th column, we should move on into the 6th column.
+    \ifnum\qr@j=7\relax%
+      \setcounter{qr@j}{6}%
+    \fi
+  \fi
+  %Now check whether there are any more bits to write.
+  \ifx\qr@datatowrite\@relax
+    % \qr@datatowrite is just `\relax', so we're done.
+    \let\nexttoken=\relax
+    \relax
+  \else
+    % Write some more!
+    \def\nexttoken{\qr@writedata@recursive{#1}}%
+  \fi
+  \nexttoken
+}%
+
+\def\qr@writeremainderbits#1{%
+  % #1 = name of a matrix that has been prepared and partly filled.
+  % (qr@i,qr@j) = position to write in LaTeX counters
+  \xa\ifnum\qr@numremainderbits>0\relax
+    \def\qr@datatowrite{}%
+    \qr@for \i = 1 to \qr@numremainderbits by 1%
+      {\g@addto@macro{\qr@datatowrite}{0}}%
+    \g@addto@macro{\qr@datatowrite}{\relax}% terminator
+    \qr@writedata@recursive{#1}%
+  \fi
+}%
+
+\newif\ifqr@cellinmask
+
+\def\qr@setmaskingfunction#1{%
+  % #1 = 1 decimal digit for the mask. (I see no reason to use the 3-bit binary code.)
+  % The current position is (\themaski,\themaskj), with indexing starting at 0.
+  \edef\maskselection{#1}%
+  \xa\ifcase\maskselection\relax
+    %Case 0: checkerboard
+    \def\qr@parsemaskingfunction{%
+      % Compute mod(\themaski+\themaskj,2)%
+      \qr@a=\maski%
+      \advance\qr@a by \maskj%
+      \qr@b=\qr@a%
+      \divide\qr@b by 2%
+      \multiply\qr@b by 2%
+      \advance\qr@a by -\qr@b%
+      \edef\qr@maskfunctionresult{\the\qr@a}%
+    }%
+  \or
+    %Case 1: horizontal stripes
+    \def\qr@parsemaskingfunction{%
+      % Compute mod(\themaski,2)%
+      \ifodd\maski\relax%
+        \def\qr@maskfunctionresult{1}%
+      \else%
+        \def\qr@maskfunctionresult{0}%
+      \fi%
+    }%
+  \or
+    %Case 2: vertical stripes
+    \def\qr@parsemaskingfunction{%
+      % Compute mod(\themaskj,3)%
+      \qr@a=\maskj%
+      \divide\qr@a by 3%
+      \multiply\qr@a by 3%
+      \advance\qr@a by -\maskj%
+      \edef\qr@maskfunctionresult{\the\qr@a}%
+    }%
+  \or
+    %Case 3: diagonal stripes
+    \def\qr@parsemaskingfunction{%
+      % Compute mod(\themaski+\themaskj,3)%
+      \qr@a=\maski%
+      \advance\qr@a by \maskj%
+      \qr@b=\qr@a%
+      \divide\qr@b by 3%
+      \multiply\qr@b by 3%
+      \advance\qr@b by -\qr@a%
+      \edef\qr@maskfunctionresult{\the\qr@b}%
+    }%
+  \or
+    %Case 4: wide checkerboard
+    \def\qr@parsemaskingfunction{%
+      % Compute mod(floor(\themaski/2) + floor(\themaskj/3),2) %
+      \qr@a=\maski%
+      \divide\qr@a by 2%
+      \qr@b=\maskj%
+      \divide\qr@b by 3%
+      \advance\qr@a by \qr@b%
+      \qr@b=\qr@a%
+      \divide\qr@a by 2%
+      \multiply\qr@a by 2%
+      \advance\qr@a by -\qr@b%
+      \edef\qr@maskfunctionresult{\the\qr@a}%
+    }%
+  \or
+    %Case 5: quilt
+    \def\qr@parsemaskingfunction{%
+      % Compute mod(\themaski*\themaskj,2) + mod(\themaski*\themaskj,3) %
+      \qr@a=\maski%
+      \multiply\qr@a by \maskj%
+      \qr@b=\qr@a%
+      \qr@c=\qr@a%
+      \divide\qr@a by 2%
+      \multiply\qr@a by 2%
+      \advance\qr@a by -\qr@c% (result will be -mod(i*j,2), which is negative.)
+      \divide\qr@b by 3%
+      \multiply\qr@b by 3%
+      \advance\qr@b by -\qr@c% (result will be -mod(i*j,3), which is negative.)
+      \advance\qr@a by \qr@b% (result is negative of what's in the spec.)
+      \edef\qr@maskfunctionresult{\the\qr@a}%
+    }%
+  \or
+    %Case 6: arrows
+    \def\qr@parsemaskingfunction{%
+      % Compute mod( mod(\themaski*\themaskj,2) + mod(\themaski*\themaskj,3) , 2 ) %
+      \qr@a=\maski%
+      \multiply\qr@a by \maskj%
+      \qr@b=\qr@a%
+      \qr@c=\qr@a%
+      \multiply\qr@c by 2% % \qr@c equals 2*i*j.
+      \divide\qr@a by 2%
+      \multiply\qr@a by 2%
+      \advance\qr@c by -\qr@a% Now \qr@c equals i*j + mod(i*j,2).
+      \divide\qr@b by 3%
+      \multiply\qr@b by 3%
+      \advance\qr@c by -\qr@b% (Now \qr@c equals mod(i*j,2) + mod(i*j,3).
+      \qr@a=\qr@c%
+      \divide\qr@a by 2%
+      \multiply\qr@a by 2%
+      \advance\qr@c by-\qr@a%
+      \edef\qr@maskfunctionresult{\the\qr@c}%
+    }%
+  \or
+    %Case 7: shotgun
+    \def\qr@parsemaskingfunction{%
+      % Compute mod( mod(\themaski+\themaskj,2) + mod(\themaski*\themaskj,3) , 2 ) %
+      \qr@a=\maski%
+      \advance\qr@a by \maskj% %So \qr@a = i+j
+      \qr@b=\maski%
+      \multiply\qr@b by \maskj% %So \qr@b = i*j
+      \qr@c=\qr@a%
+      \advance\qr@c by \qr@b% So \qr@c = i+j+i*j
+      \divide\qr@a by 2%
+      \multiply\qr@a by 2%
+      \advance\qr@c by -\qr@a% So \qr@c = mod(i+j,2) + i*j
+      \divide\qr@b by 3%
+      \multiply\qr@b by 3%
+      \advance\qr@c by -\qr@b% So \qr@c = mod(i+j,2) + mod(i*j,3)
+      \qr@a=\qr@c%
+      \divide\qr@c by 2%
+      \multiply\qr@c by 2%
+      \advance\qr@a by -\qr@c%
+      \edef\qr@maskfunctionresult{\the\qr@a}%
+    }%
+  \fi
+}%
+
+\def\qr@checkifcellisinmask{%
+  % The current position is (\i,\j), in TeX counts,
+  % but the LaTeX counters (maski,maskj) should contain
+  % the current position with indexing starting at 0.
+  % That is, maski = \i-1 and maskj = \j-1.
+  %
+  % \qr@parsemaskingfunction must have been set by a call to \qr@setmaskingfunction
+  \qr@parsemaskingfunction
+  \xa\ifnum\qr@maskfunctionresult=0\relax
+    \qr@cellinmasktrue
+  \else
+    \qr@cellinmaskfalse
+  \fi
+}%
+
+\newcount\maski
+\newcount\maskj
+
+\def\qr@applymask#1#2#3{%
+  % #1 = name of a matrix that should be filled out completely
+  %      except for the format and/or version information.
+  % #2 = name of a new matrix to contain the masked version
+  % #3 = 1 decimal digit naming the mask
+  \qr@createduplicatematrix{#2}{#1}%
+  \qr@setmaskingfunction{#3}%
+  \setcounter{maski}{-1}%
+  \qr@for \i = 1 to \qr@size by 1%
+    {\stepcounter{maski}%
+     \setcounter{maskj}{-1}%
+     \qr@for \j = 1 to \qr@size by 1%
+     {\stepcounter{maskj}%
+      \qr@checkifcellisinmask
+      \ifqr@cellinmask
+        \qr@checkifcurrentcellcontainsdata{#2}%
+        \ifqr@currentcellcontainsdata
+          \qr@flipcurrentcell{#2}%
+        \fi
+      \fi
+      }%
+    }%
+}%
+
+\newif\ifqr@currentcellcontainsdata
+\qr@currentcellcontainsdatafalse
+
+\def\@@white{\@white}%
+\def\@@black{\qr@black}%
+
+\def\qr@checkifcurrentcellcontainsdata#1{%
+  % #1 = name of matrix
+  \qr@currentcellcontainsdatafalse
+  \xa\ifx\csname #1@\the\i @\the\j\endcsname\@@white
+    \qr@currentcellcontainsdatatrue
+  \fi
+  \xa\ifx\csname #1@\the\i @\the\j\endcsname\@@black
+    \qr@currentcellcontainsdatatrue
+  \fi
+}%
+
+\def\qr@flipped@black{\qr@black}%
+\def\qr@flipped@white{\@white}%
+
+\def\qr@flipcurrentcell#1{%
+  % #1 = name of matrix
+  % (\i, \j) = current position, in TeX counts.
+  % This assumes the cell contains data, either black or white!
+  \xa\ifx\csname #1@\the\i @\the\j\endcsname\@@white
+    \qr@storetomatrix{#1}{\the\i}{\the\j}{\qr@flipped@black}%
+  \else
+    \qr@storetomatrix{#1}{\the\i}{\the\j}{\qr@flipped@white}%
+  \fi
+}%
+
+\def\qr@chooseandapplybestmask#1{%
+  % #1 = name of a matrix that should be filled out completely
+  %      except for the format and/or version information.
+  % This function applies all eight masks in succession,
+  % calculates their penalties, and remembers the best.
+  % The number indicating which mask was used is saved in \qr@mask@selected.
+  \qr@createduplicatematrix{originalmatrix}{#1}%
+  \qrmessage{<Applying Mask 0...}%
+  \qr@applymask{originalmatrix}{#1}{0}%
+  \qrmessage{done. Calculating penalty...}%
+  \qr@evaluatemaskpenalty{#1}%
+  \xdef\currentbestpenalty{\qr@penalty}%
+  \qrmessage{penalty is \qr@penalty>^^J}%
+  \gdef\currentbestmask{0}%
+  \qr@for \i = 1 to 7 by 1%
+    {\qrmessage{<Applying Mask \the\i...}%
+     \qr@applymask{originalmatrix}{currentmasked}{\the\i}%
+     \qrmessage{done. Calculating penalty...}%
+     \qr@evaluatemaskpenalty{currentmasked}%
+     \qrmessage{penalty is \qr@penalty>^^J}%
+     \xa\xa\xa\ifnum\xa\qr@penalty\xa<\currentbestpenalty\relax
+       %We found a better mask.
+       \xdef\currentbestmask{\the\i}%
+       \qr@createduplicatematrix{#1}{currentmasked}%
+       \xdef\currentbestpenalty{\qr@penalty}%
+     \fi
+    }%
+  \xdef\qr@mask@selected{\currentbestmask}%
+  \qrmessage{<Selected Mask \qr@mask@selected>^^J}%
+}%
+
+\def\qr@Ni{3}%
+\def\qr@Nii{3}%
+\def\qr@Niii{40}%
+\def\qr@Niv{10}%
+\def\@fiveones{11111}%
+\def\@fivezeros{11111}%
+\def\@twoones{11}%
+\def\@twozeros{00}%
+\def\@finderA{00001011101}%
+\def\@finderB{10111010000}%
+\def\@finderB@three{1011101000}%
+\def\@finderB@two{101110100}%
+\def\@finderB@one{10111010}%
+\def\@finderB@zero{1011101}%
+\newif\ifstringoffive
+\def\addpenaltyiii{%
+  \addtocounter{penaltyiii}{\qr@Niii}%
+}%
+\newcount\totalones
+\newcount\penaltyi
+\newcount\penaltyii
+\newcount\penaltyiii
+\newcount\penaltyiv
+\def\qr@evaluatemaskpenalty#1{%
+  % #1 = name of a matrix that we will test for the penalty
+  % according to the specs.
+  \setcounter{penaltyi}{0}%
+  \setcounter{penaltyii}{0}%
+  \setcounter{penaltyiii}{0}%
+  \setcounter{penaltyiv}{0}%
+  \bgroup%localize the meanings we give to the symbols
+    \def\qr@black{1}\def\@white{0}%
+    \def\qr@black@fixed{1}\def\qr@white@fixed{0}%
+    \def\qr@format@square{0}% This is not stated in the specs, but seems
+                            % to be the standard implementation.
+    \def\@blank{0}% These would be any bits at the end.
+    %
+    \setcounter{totalones}{0}%
+    \qr@for \i=1 to \qr@size by 1%
+      {\def\lastfive{z}% %The z is a dummy, that will be removed before any testing.
+       \stringoffivefalse
+       \def\lasttwo@thisrow{z}% %The z is a dummy.
+       \def\lasttwo@nextrow{z}% %The z is a dummy.
+       \def\lastnine{z0000}% %The 0000 stands for the white space to the left. The z is a dummy.
+       \def\ignore@finderB@at{0}%
+       \qr@for \j=1 to \qr@size by 1%
+         {\edef\newbit{\qr@matrixentry{#1}{\the\i}{\the\j}}%
+          %
+          % LASTFIVE CODE FOR PENALTY 1
+          % First, add the new bit to the end.
+          \xa\g@addto@macro\xa\lastfive\xa{\newbit}%
+          \ifnum\j<5\relax%
+            %Not yet on the 5th entry.
+            %Don't do any testing.
+          \else
+            % 5th entry or later.
+            % Remove the old one, and then test.
+            \removefirsttoken\lastfive%
+            \ifx\lastfive\@fiveones%
+              \ifstringoffive%
+                %This is a continuation of a previous block of five or more 1's.
+                \stepcounter{penaltyi}%
+              \else
+                %This is a new string of five 1's.
+                \addtocounter{penaltyi}{\qr@Ni}%
+                \global\stringoffivetrue
+              \fi
+            \else
+              \ifx\lastfive\@fivezeros%
+                \ifstringoffive
+                  %This is a continuation of a previous block of five or more 0's.
+                  \stepcounter{penaltyi}%
+                \else
+                  %This is a new string of five 0's.
+                  \addtocounter{penaltyi}{\qr@Ni}%
+                  \global\stringoffivetrue
+                \fi
+              \else
+                %This is not a string of five 1's or five 0's.
+                \global\stringoffivefalse
+              \fi
+            \fi
+          \fi
+          %
+          % 2x2 BLOCKS FOR PENALTY 2
+          % Every 2x2 block of all 1's counts for \qr@Nii penalty points.
+          % We do not need to run this test in the last row.
+          \xa\ifnum\xa\i\xa<\qr@size\relax
+            \xa\g@addto@macro\xa\lasttwo@thisrow\xa{\newbit}%
+            %Compute \iplusone
+            \qr@a=\i\relax%
+            \advance\qr@a by 1%
+            \edef\iplusone{\the\qr@a}%
+            %
+            \edef\nextrowbit{\qr@matrixentry{#1}{\iplusone}{\the\j}}%
+            \xa\g@addto@macro\xa\lasttwo@nextrow\xa{\nextrowbit}%
+            \ifnum\j<2\relax%
+              %Still in the first column; no check.
+            \else
+              %Second column or later.  Remove the old bits, and then test.
+              \removefirsttoken\lasttwo@thisrow
+              \removefirsttoken\lasttwo@nextrow
+              \ifx\lasttwo@thisrow\@twoones
+                \ifx\lasttwo@nextrow\@twoones
+                  \addtocounter{penaltyii}{\qr@Nii}%
+                \fi
+              \else
+                \ifx\lasttwo@thisrow\@twozeros
+                  \ifx\lasttwo@nextrow\@twozeros
+                    \addtocounter{penaltyii}{\qr@Nii}%
+                  \fi
+                \fi
+              \fi
+            \fi
+          \fi
+          %
+          % LASTNINE CODE FOR PENALTY 3
+          % First, add the new bit to the end.
+          \xa\g@addto@macro\xa\lastnine\xa{\newbit}%
+          \ifnum\j<7\relax%
+            %Not yet on the 7th entry.
+            %Don't do any testing.
+          \else
+            % 7th entry or later.
+            % Remove the old one, and then test.
+            \removefirsttoken\lastnine
+            \xa\ifnum\qr@size=\j\relax%
+              % Last column.  Any of the following should count:
+              %     1011101 (\@finderB@zero)
+              %    10111010 (\@finderB@one)
+              %   101110100 (\@finderB@two)
+              %  1011101000 (\@finderB@three)
+              % 10111010000 (\@finderB)
+              \ifx\lastnine\@finderB
+                \addpenaltyiii
+              \else
+                \removefirsttoken\lastnine
+                \ifx\lastnine\@finderB@three
+                  \addpenaltyiii
+                \else
+                  \removefirsttoken\lastnine
+                  \ifx\lastnine\@finderB@two
+                    \addpenaltyiii
+                  \else
+                    \removefirsttoken\lastnine
+                    \ifx\lastnine\@finderB@one
+                      \addpenaltyiii
+                    \else
+                      \removefirsttoken\lastnine
+                      \ifx\lastnine\@finderB@zero
+                        \addpenaltyiii
+                      \fi
+                    \fi
+                  \fi
+                \fi
+              \fi
+            \else
+              \ifx\lastnine\@finderA% %Matches 0000 1011101
+                \addpenaltyiii
+                %Also, we record our discovery, so that we can't count this pattern again
+                %if it shows up four columns later as 1011101 0000.
+                %
+                %Set \ignore@finderB@at to \j+4.
+                \qr@a=\j\relax%
+                \advance\qr@a by 4%
+                \xdef\ignore@finderB@at{\the\qr@a}%
+              \else
+                \ifx\lastfive\@finderB% %Matches 1011101 0000.
+                  \xa\ifnum\ignore@finderB@at=\j\relax
+                    %This pattern was *not* counted already earlier.
+                    \addpenaltyiii
+                  \fi
+                \fi
+              \fi
+            \fi
+          \fi
+          %
+          %COUNT 1's FOR PENALTY 4
+          \xa\ifnum\newbit=1\relax%
+            \stepcounter{totalones}%
+          \fi
+         }% end of j-loop
+      }% end of i-loop
+    %
+    %NOW WE ALSO NEED TO RUN DOWN THE COLUMNS TO FINISH CALCULATING PENALTIES 1 AND 3.
+    \qr@for \j=1 to \qr@size by 1%
+      {\def\lastfive{z}% %The z is a dummy, that will be removed before any testing.
+       \stringoffivefalse
+       \def\lastnine{z0000}% %The 0000 stands for the white space to the left. The z is a dummy.
+       \def\ignore@finderB@at{0}%
+       \qr@for \i=1 to \qr@size by 1%
+         {\edef\newbit{\qr@matrixentry{#1}{\the\i}{\the\j}}%
+          %
+          % LASTFIVE CODE FOR PENALTY 1
+          % First, add the new bit to the end.
+          \xa\g@addto@macro\xa\lastfive\xa{\newbit}%
+          \ifnum\i<5\relax%
+            %Not yet on the 5th entry.
+            %Don't do any testing.
+          \else
+            % 5th entry or later.
+            % Remove the old one, and then test.
+            \removefirsttoken\lastfive%
+            \ifx\lastfive\@fiveones%
+              \ifstringoffive%
+                %This is a continuation of a previous block of five or more 1's.
+                \stepcounter{penaltyi}%
+              \else
+                %This is a new string of five 1's.
+                \addtocounter{penaltyi}{\qr@Ni}%
+                \global\stringoffivetrue
+              \fi
+            \else
+              \ifx\lastfive\@fivezeros%
+                \ifstringoffive
+                  %This is a continuation of a previous block of five or more 0's.
+                  \stepcounter{penaltyi}%
+                \else
+                  %This is a new string of five 0's.
+                  \addtocounter{penaltyi}{\qr@Ni}%
+                  \global\stringoffivetrue
+                \fi
+              \else
+                %This is not a string of five 1's or five 0's.
+                \global\stringoffivefalse
+              \fi
+            \fi
+          \fi
+          %
+          % HAPPILY, WE DON'T NEED TO CALCULATE PENALTY 2 AGAIN.
+          %
+          % LASTNINE CODE FOR PENALTY 3
+          % First, add the new bit to the end.
+          \xa\g@addto@macro\xa\lastnine\xa{\newbit}%
+          \ifnum\i<7\relax%
+            %Not yet on the 7th entry.
+            %Don't do any testing.
+          \else
+            % 7th entry or later.
+            % Remove the old one, and then test.
+            \removefirsttoken\lastnine
+            \xa\ifnum\qr@size=\i\relax%
+              % Last column.  Any of the following should count:
+              %     1011101 (\@finderB@zero)
+              %    10111010 (\@finderB@one)
+              %   101110100 (\@finderB@two)
+              %  1011101000 (\@finderB@three)
+              % 10111010000 (\@finderB)
+              \ifx\lastnine\@finderB
+                \addpenaltyiii
+              \else
+                \removefirsttoken\lastnine
+                \ifx\lastnine\@finderB@three
+                  \addpenaltyiii
+                \else
+                  \removefirsttoken\lastnine
+                  \ifx\lastnine\@finderB@two
+                    \addpenaltyiii
+                  \else
+                    \removefirsttoken\lastnine
+                    \ifx\lastnine\@finderB@one
+                      \addpenaltyiii
+                    \else
+                      \removefirsttoken\lastnine
+                      \ifx\lastnine\@finderB@zero
+                        \addpenaltyiii
+                      \fi
+                    \fi
+                  \fi
+                \fi
+              \fi
+            \else
+              \ifx\lastnine\@finderA% %Matches 0000 1011101
+                \addpenaltyiii
+                %Also, we record our discovery, so that we can't count this pattern again
+                %if it shows up four columns later as 1011101 0000.
+                %
+                %Set \ignore@finderB@at to \i+4.
+                \qr@a=\i\relax%
+                \advance\qr@a by 4%
+                \xdef\ignore@finderB@at{\the\qr@a}%
+              \else
+                \ifx\lastfive\@finderB% %Matches 1011101 0000.
+                  \xa\ifnum\ignore@finderB@at=\i\relax
+                    %This pattern was *not* counted already earlier.
+                    \addpenaltyiii
+                  \fi
+                \fi
+              \fi
+            \fi
+          \fi
+          %
+         }% end of i-loop
+      }% end of j-loop
+  \egroup%
+  %
+  %CALCULATE PENALTY 4
+  %According to the spec, penalty #4 is computed as
+  % floor( |(i/n^2)-0.5|/0.05 )
+  % where i is the total number of 1's in the matrix.
+  % This is equal to abs(20*i-10n^2) div n^2.
+  %
+  \qr@a=\totalones\relax
+  \multiply\qr@a by 20\relax
+  \qr@b=\qr@size\relax
+  \multiply\qr@b by \qr@size\relax
+  \qr@c=10\relax
+  \multiply\qr@c by \qr@b\relax
+  \advance\qr@a by -\qr@c\relax
+  \ifnum\qr@a<0\relax
+    \multiply\qr@a by -1\relax
+  \fi
+  \divide\qr@a by \qr@b\relax
+  \setcounter{penaltyiv}{\the\qr@a}%
+  %
+  %CALCULATE TOTAL PENALTY
+  \qr@a=\the\penaltyi\relax%
+  \advance\qr@a by \the\penaltyii\relax%
+  \advance\qr@a by \the\penaltyiii\relax%
+  \advance\qr@a by \the\penaltyiv\relax%
+  \edef\qr@penalty{\the\qr@a}%
+}%
+
+\def\removefirsttoken#1{%
+  %Removes the first token from the macro named in #1.
+  \edef\qr@argument{(#1)}%
+  \xa\removefirsttoken@int\qr@argument%
+  \xdef#1{\removefirsttoken@result}%
+}%
+\def\removefirsttoken@int(#1#2){%
+  \def\removefirsttoken@result{#2}%
+}%
+
+\def\qr@writeformatstring#1#2{%
+  % #1 = matrix name
+  % #2 = binary string representing the encoded and masked format information
+  \setcounter{qr@i}{9}%
+  \setcounter{qr@j}{1}%
+  \edef\qr@argument{{#1}(#2\relax)}%
+  \xa\qr@writeformatA@recursive\qr@argument
+  %
+  \setcounter{qr@i}{\qr@numberofrowsinmatrix{#1}}%
+  \setcounter{qr@j}{9}%
+  \xa\qr@writeformatB@recursive\qr@argument
+}%
+
+\def\qr@writeformatA@recursive#1(#2#3){%
+  % #1 = matrix name
+  % #2 = first bit of string
+  % #3 = rest of bitstream
+  % (qr@i,qr@j) = current (valid) position to write (in LaTeX counters)
+  \def\formattowrite{#3}%
+  \ifnum#2=1\relax
+    \qr@storetomatrix{#1}{\theqr@i}{\theqr@j}{\qr@black@format}%
+  \else
+    \qr@storetomatrix{#1}{\theqr@i}{\theqr@j}{\qr@white@format}%
+  \fi
+  % Now the tricky part--moving \i and \j to their next positions.
+  \ifnum\qr@j<9\relax
+    %If we're not yet in column 9, move right.
+    \stepcounter{qr@j}%
+    \ifnum\qr@j=7\relax
+      %But we skip column 7!
+      \stepcounter{qr@j}%
+    \fi
+  \else
+    %If we're in column 9, we move up.
+    \addtocounter{qr@i}{-1}%
+    \ifnum\qr@i=7\relax
+      %But we skip row 7!
+      \addtocounter{qr@i}{-1}%
+    \fi
+  \fi
+  %N.B. that at the end of time, this will leave us at invalid position (0,9).
+  %That makes for an easy test to know when we are done.
+  \ifnum\qr@i<1
+    \let\nexttoken=\relax
+  \else
+    \def\nexttoken{\qr@writeformatA@recursive{#1}(#3)}%
+  \fi
+  \nexttoken
+}%
+
+\def\qr@writeformatB@recursive#1(#2#3){%
+  % #1 = matrix name
+  % #2 = first bit of string
+  % #3 = rest of bitstream
+  % (qr@i,qr@j) = current (valid) position to write (in LaTeX counters)
+  \def\formattowrite{#3}%
+  \ifnum#2=1\relax
+    \qr@storetomatrix{#1}{\theqr@i}{\theqr@j}{\qr@black@format}%
+  \else
+    \qr@storetomatrix{#1}{\theqr@i}{\theqr@j}{\qr@white@format}%
+  \fi
+  % Now the tricky part--moving counters i and j to their next positions.
+  \qr@a=\qr@size%
+  \advance\qr@a by -6\relax%
+  \ifnum\qr@a<\qr@i\relax
+    %If we're not yet in row n-6, move up.
+    \addtocounter{qr@i}{-1}%
+  \else
+    \ifnum\qr@a=\qr@i\relax
+      %If we're actually in row n-6, we jump to position (9,n-7).
+      \setcounter{qr@i}{9}%
+      %Set counter j equal to \qr@size-7.
+      \global\qr@j=\qr@size\relax%
+      \global\advance\qr@j by -7\relax%
+    \else
+      %Otherwise, we must be in row 9.
+      %In this case, we move right.
+      \stepcounter{qr@j}%
+    \fi
+  \fi
+  %N.B. that at the end of time, this will leave us at invalid position (9,n+1).
+  %That makes for an easy test to know when we are done.
+  \xa\ifnum\qr@size<\qr@j\relax
+    \let\nexttoken=\relax
+  \else
+    \def\nexttoken{\qr@writeformatB@recursive{#1}(#3)}%
+  \fi
+  \nexttoken
+}%
+
+\def\qr@writeversionstring#1#2{%
+  % #1 = matrix name
+  % #2 = binary string representing the encoded version information
+  %
+  % Plot the encoded version string into the matrix.
+  % This is only done for versions 7 and higher.
+  \xa\ifnum\qr@version>6\relax
+    %Move to position (n-8,6).
+    \setcounter{qr@i}{\qr@size}\relax%
+    \addtocounter{qr@i}{-8}\relax%
+    \setcounter{qr@j}{6}%
+    \edef\qr@argument{{#1}(#2\relax)}%
+    \xa\qr@writeversion@recursive\qr@argument
+  \fi
+}%
+
+\def\qr@writeversion@recursive#1(#2#3){%
+  % #1 = matrix name
+  % #2 = first bit of string
+  % #3 = rest of bitstream
+  % (qr@i,qr@j) = current (valid) position to write (in LaTeX counters)
+  %
+  % The version information is stored symmetrically in the matrix
+  % In two transposed regions, so we can write both at the same time.
+  % In the comments, we describe what happens in the lower-left region,
+  % not the upper-right.
+  %
+  \def\versiontowrite{#3}%
+  %
+  %Set \topline equal to n-10.
+  \qr@a=\qr@size\relax%
+  \advance\qr@a by -10\relax%
+  \edef\topline{\the\qr@a}%
+  %
+  \ifnum#2=1\relax
+    \qr@storetomatrix{#1}{\theqr@i}{\theqr@j}{\qr@black@format}%
+    \qr@storetomatrix{#1}{\theqr@j}{\theqr@i}{\qr@black@format}%
+  \else
+    \qr@storetomatrix{#1}{\theqr@i}{\theqr@j}{\qr@white@format}%
+    \qr@storetomatrix{#1}{\theqr@j}{\theqr@i}{\qr@white@format}%
+  \fi
+  % Now the tricky part--moving counters i and j to their next positions.
+  \addtocounter{qr@i}{-1}%
+  \xa\ifnum\topline>\qr@i\relax
+    %We've overshot the top of the region.
+    %We need to move left one column and down three.
+    \addtocounter{qr@j}{-1}%
+    \addtocounter{qr@i}{3}%
+  \fi
+  %N.B. that at the end of time, this will leave us at invalid position (n-8,0).
+  %That makes for an easy test to know when we are done.
+  \ifnum\qr@j<1\relax
+    \let\nexttoken=\relax
+  \else
+    \def\nexttoken{\qr@writeversion@recursive{#1}(#3)}%
+  \fi
+  \nexttoken
+}%
+\newcount\qr@hexchars
+
+\def\qr@string@binarytohex#1{%
+  \qr@binarytohex{\qr@hex@result}{#1}%
+}%
+
+\def\qr@encode@binary#1{%
+  % #1 = string of ascii characters, to be converted into bitstream
+  %
+  % We do this one entirely in hex, rather than binary, because we can.
+  \edef\plaintext{#1}%
+  %
+  %First, the mode indicator.
+  \def\qr@codetext{4}% %This means `binary'
+  %
+  %Next, the character count.
+  \qr@getstringlength{\plaintext}%
+  %Set \charactercountlengthinhex to \qr@charactercountbits@byte/4%
+  \qr@a=\qr@charactercountbits@byte\relax%
+  \divide \qr@a by 4\relax%
+  \edef\charactercountlengthinhex{\the\qr@a}%
+  \qr@decimaltohex[\charactercountlengthinhex]{\charactercount}{\qr@stringlength}%
+  \xa\g@addto@macro\xa\qr@codetext\xa{\charactercount}%
+  %
+  %Now comes the actual data.
+  \edef\qr@argument{(,\plaintext\relax\relax\relax)}%
+  \xa\qr@encode@ascii@recursive\qr@argument%
+  %
+  %Now the terminator.
+  \g@addto@macro\qr@codetext{0}% %This is '0000' in binary.
+  %
+  %There is no need to pad bits to make a multiple of 8,
+  %because the data length is already 4 + 8 + 8n + 4.
+  %
+  %Now add padding codewords if needed.
+  \setcounter{qr@hexchars}{0}%
+  \qr@getstringlength{\qr@codetext}%
+  \setcounter{qr@hexchars}{\qr@stringlength}%
+  %Set \qr@numpaddingcodewords equal to \qr@totaldatacodewords - hexchars/2.
+  \qr@a=-\qr@hexchars\relax
+  \divide\qr@a by 2\relax
+  \advance\qr@a by \qr@totaldatacodewords\relax
+  \edef\qr@numpaddingcodewords{\the\qr@a}%
+  %
+  \xa\ifnum\qr@numpaddingcodewords<0%
+    \edef\ds{ERROR: Too much data!  Over by \qr@numpaddingcodewords bytes.}\show\ds%
+  \fi%
+  \xa\ifnum\qr@numpaddingcodewords>0%
+    \qr@for \i = 2 to \qr@numpaddingcodewords by 2%
+      {\g@addto@macro{\qr@codetext}{ec11}}%
+    \xa\ifodd\qr@numpaddingcodewords\relax%
+      \g@addto@macro{\qr@codetext}{ec}%
+    \fi%
+  \fi%
+}%
+
+\def\qr@encode@ascii@recursive(#1,#2#3){%
+  % #1 = hex codes translated so far
+  % #2 = next plaintext character to translate
+  % #3 = remainder of plaintext
+  \edef\testii{#2}%
+  \ifx\testii\@relax%
+    % All done!
+    \g@addto@macro\qr@codetext{#1}%
+  \else%
+    % Another character to translate.
+    \edef\asciicode{\number`#2}%
+    \qr@decimaltohex[2]{\newhexcodes}{\asciicode}%
+    \edef\qr@argument{(#1\newhexcodes,#3)}%
+    %\show\qr@argument
+    \xa\qr@encode@ascii@recursive\qr@argument%
+  \fi%
+}%
+
+\def\qr@splitcodetextintoblocks{%
+  \setcounter{qr@i}{0}%
+  \qr@for \j = 1 to \qr@numshortblocks by 1%
+    {\stepcounter{qr@i}%
+     \qr@splitoffblock{\qr@codetext}{\theqr@i}{\qr@shortblock@size}%
+    }%
+  \xa\ifnum\qr@numlongblocks>0\relax%
+    \qr@for \j = 1 to \qr@numlongblocks by 1%
+      {\stepcounter{qr@i}%
+       \qr@splitoffblock{\qr@codetext}{\theqr@i}{\qr@longblock@size}%
+      }%
+  \fi%
+}%
+
+\def\qr@splitoffblock#1#2#3{%
+  % #1 = current codetext in hexadecimal
+  % #2 = number to use in csname "\datablock@#2".
+  % #3 = number of bytes to split off
+  \qrmessage{<Splitting off block #2>}%
+  \xa\gdef\csname datablock@#2\endcsname{}% %This line is important!
+  \qr@for \i = 1 to #3 by 1%
+    {\edef\qr@argument{{#2}(#1)}%
+     \xa\qr@splitoffblock@int\qr@argument%
+    }%
+}%
+
+\def\qr@splitoffblock@int#1(#2#3#4){%
+  % #1 = number to use in csname "\datablock@#1".
+  % #2#3 = next byte to split off
+  % #4 = remaining text
+  %
+  % We add the next byte to "\datablock@#1",
+  % and we remove it from the codetext.
+  \xa\xdef\csname datablock@#1\endcsname{\csname datablock@#1\endcsname#2#3}%
+  \xdef\qr@codetext{#4}%
+}%
+
+\def\qr@createerrorblocks{%
+  \qr@for \ii = 1 to \qr@numblocks by 1%
+    {\qrmessage{<Making error block \the\ii>}%
+     \FX@generate@errorbytes{\csname datablock@\the\ii\endcsname}{\qr@num@eccodewords}%
+     \xa\xdef\csname errorblock@\the\ii\endcsname{\FX@errorbytes}%
+    }%
+}%
+
+\def\qr@interleave{%
+  \setcounter{qr@i}{0}%
+  \def\qr@interleaved@text{}%
+  \qrmessage{<Interleaving datablocks of length \qr@shortblock@size\space and \qr@longblock@size: }%
+  \qr@for \ii = 1 to \qr@shortblock@size by 1%
+    {\qr@for \jj = 1 to \qr@numblocks by 1%
+      {\qr@writefromblock{datablock}{\the\jj}%
+      }%
+     \qrmessage{\the\ii,}%
+    }%
+  %The long blocks are numbered \qr@numshortblocks+1, \qr@numshortblocks+2, ..., \qr@numblocks.
+  \qr@a=\qr@numshortblocks\relax%
+  \advance\qr@a by 1\relax%
+  \qr@for \jj = \qr@a to \qr@numblocks by 1%
+      {\qr@writefromblock{datablock}{\the\jj}}%
+  \xa\ifnum\qr@numlongblocks>0\relax%
+    \qrmessage{\qr@longblock@size.>}%
+  \else
+    \qrmessage{.>}%
+  \fi
+  \qrmessage{<Interleaving errorblocks of length \qr@num@eccodewords: }%
+  \qr@for \ii = 1 to \qr@num@eccodewords by 1%
+    {\qrmessage{\the\ii,}%
+     \qr@for \jj = 1 to \qr@numblocks by 1%
+      {\qr@writefromblock{errorblock}{\the\jj}%
+      }%
+    }%
+  \qrmessage{.><Interleaving complete.>}%
+}%
+
+\def\qr@writefromblock#1#2{%
+  % #1 = either 'datablock' or 'errorblock'
+  % #2 = block number, in {1,...,\qr@numblocks}%
+  \edef\qr@argument{(\csname #1@#2\endcsname\relax\relax\relax)}%
+  \xa\qr@writefromblock@int\qr@argument
+  \xa\xdef\csname #1@#2\endcsname{\qr@writefromblock@remainder}%
+}%
+
+\def\qr@writefromblock@int(#1#2#3){%
+  % #1#2 = first byte (in hex) of text, which will be written to \qr@interleaved@text
+  % #3 = remainder, including \relax\relax\relax terminator.
+  \g@addto@macro{\qr@interleaved@text}{#1#2}%
+  \qr@writefromblock@intint(#3)%
+}%
+
+\def\qr@writefromblock@intint(#1\relax\relax\relax){%
+  \xdef\qr@writefromblock@remainder{#1}%
+}%
+\let\xa=\expandafter
+
+\def\preface@macro#1#2{%
+  % #1 = macro name
+  % #2 = text to add to front of macro
+  \def\tempb{#2}%
+  \xa\xa\xa\gdef\xa\xa\xa#1\xa\xa\xa{\xa\tempb #1}%
+}%
+
+\newif\ifqr@leadingcoeff
+\def\qr@testleadingcoeff(#1#2){%
+  % Tests whether the leading digit of #1#2 is 1.
+  \ifnum#1=1\relax
+    \qr@leadingcoefftrue
+  \else
+    \qr@leadingcoefffalse
+  \fi
+}%
+
+\def\qr@polynomialdivide#1#2{%
+  \edef\qr@numerator{#1}%
+  \edef\qr@denominator{#2}%
+  \qr@divisiondonefalse%
+  \xa\xa\xa\qr@oneroundofdivision\xa\xa\xa{\xa\qr@numerator\xa}\xa{\qr@denominator}%
+}%
+
+\def\@qr@empty{}%
+\def\qr@oneroundofdivision#1#2{%
+  % #1 = f(x), of degree n
+  % #2 = g(x), of degree m
+  % Obtains a new polynomial h(x), congruent to f(x) modulo g(x),
+  % but of degree at most n-1.
+  %
+  % If leading coefficient of f(x) is 1, subtracts off g(x) * x^(n-m).
+  % If leading coefficient of f(x) is 0, strips off that leading zero.
+  %
+  \qr@testleadingcoeff(#1)%
+  \ifqr@leadingcoeff
+    \qr@xorbitstrings{#1}{#2}%
+    \ifqr@xorfailed
+      %If xor failed, that means our #1 was already the remainder!
+      \qr@divisiondonetrue
+      \edef\theremainder{#1}%
+    \else
+      %xor succeeded. We need to recurse.
+      \xa\xa\xa\edef\xa\xa\xa\qr@numerator\xa\xa\xa{\xa\qr@stripleadingzero\xa(\xorresult)}%
+    \fi
+  \else
+    \xa\def\xa\qr@numerator\xa{\qr@stripleadingzero(#1)}%
+    \ifx\qr@numerator\@qr@empty
+      \qr@divisiondonetrue
+      \def\theremainder{0}%
+    \fi
+  \fi
+  \ifqr@divisiondone
+    \relax
+  \else
+    \xa\qr@oneroundofdivision\xa{\qr@numerator}{#2}%
+  \fi
+}%
+
+\def\qr@stripleadingzero(0#1){#1}%Strips off a leading zero.
+
+\newif\ifqr@xorfailed% This flag will trigger when #2 is longer than #1.
+
+\def\qr@xorbitstrings#1#2{%
+ % #1 = bitstring
+ % #2 = bitstring no longer than #1
+ \qr@xorfailedfalse
+ \edef\qr@argument{(,#1\relax\relax)(#2\relax\relax)}%
+ \xa\qr@xorbitstrings@recursive\qr@argument
+ %\qr@xorbitstrings@recursive(,#1\relax\relax)(#2\relax\relax)%
+}%
+
+\def\qr@xorbitstrings@recursive(#1,#2#3)(#4#5){%
+ % #1#2#3 is the first bitstring, xor'ed up through #1.
+ % #4#5 is the remaining portion of the second bitstring.
+ \def\testii{#2}%
+ \def\testiv{#4}%
+ \ifx\testii\@relax
+   % #1 contains the whole string.
+   % Now if #4 is also \relax, that means the two strings started off with equal lengths.
+   % If, however, #4 is not \relax, that means the second string was longer than the first, a problem.
+   \ifx\testiv\@relax
+     %No problem.  We are done.
+     \qr@xorbit@saveresult(#1#2#3)%
+   \else
+     %Problem!  The second string was longer than the first.
+     \qr@xorfailedtrue
+     \def\xorresult{}%
+   \fi
+ \else
+   % There is still a bit to manipulate in #2.
+   % Check whether #4 contains anything.
+   \ifx\testiv\@relax
+     % No, #4 is empty.  We are done. "#2#3" contains the remainder of the first string,
+     % which we append untouched and then strip off the two \relax-es.
+     \qr@xorbit@saveresult(#1#2#3)%
+   \else
+     % Yes, #4 still has something to XOR. Do the task.
+     \ifnum#2=#4\relax
+       \qr@xorbitstrings@recursive(#1%
+                                 0,#3)(#5)%
+     \else
+       \qr@xorbitstrings@recursive(#1%
+                                 1,#3)(#5)%
+     \fi
+   \fi
+ \fi
+}%
+
+\def\qr@xorbit@saveresult(#1\relax\relax){%
+  %Strips off the extra '\relax'es at the end.
+  \def\xorresult{#1}%
+}%
+
+\newif\ifqr@divisiondone
+\def\dodivision#1#2{%
+  \qr@divisiondonefalse
+  \dodivision@recursive{#1}{#2}%
+}%
+
+\def\BCHcode#1{%
+  \edef\formatinfo{#1}%
+  \def\formatinfopadded{\formatinfo 0000000000}%
+  \def\qr@divisor{10100110111}%
+  \qr@divisiondonefalse
+  \qr@polynomialdivide{\formatinfopadded}{\qr@divisor}%
+  %
+  \qr@getstringlength{\theremainder}%
+  %Run loop from stringlength+1 to 10.
+  \qr@a=\qr@stringlength\relax%
+  \advance\qr@a by 1\relax%
+  \qr@for \i = \qr@a to 10 by 1%
+    {\preface@macro{\theremainder}{0}%
+     \xdef\theremainder{\theremainder}%
+    }%
+  \edef\BCHresult{\formatinfo\theremainder}%
+}%
+
+\def\qr@formatmask{101010000010010}%
+
+\def\qr@encodeandmaskformat#1{%
+  \BCHcode{#1}%
+  \qr@xorbitstrings{\BCHresult}{\qr@formatmask}%
+  \edef\qr@format@bitstring{\xorresult}%
+}%
+
+\def\qr@Golaycode#1{%
+  % #1 = 6-bit version number
+  \edef\qr@versioninfo{#1}%
+  \def\qr@versioninfopadded{\qr@versioninfo 000000000000}% %Append 12 zeros.
+  \def\qr@divisor{1111100100101}%
+  \qr@divisiondonefalse
+  \qr@polynomialdivide{\qr@versioninfopadded}{\qr@divisor}%
+  %
+  \qr@getstringlength{\theremainder}%
+  %Run loop from stringlength+1 to 12.
+  \qr@a=\qr@stringlength\relax%
+  \advance\qr@a by 1\relax%
+  \qr@for \i = \qr@a to 12 by 1%
+    {\preface@macro{\theremainder}{0}%
+     \xdef\theremainder{\theremainder}%
+    }%
+  \edef\Golayresult{\qr@versioninfo\theremainder}%
+}%
+\def\F@result{}%
+
+\def\qr@xorbitstring#1#2#3{%
+  % #1 = new macro to receive result
+  % #2, #3 = bitstrings to xor.  The second can be shorter than the first.
+  \def\qr@xor@result{}%
+  \edef\qr@argument{(#2\relax\relax)(#3\relax\relax)}%
+  \xa\qr@xorbitstring@recursive\qr@argument%
+  \edef#1{\qr@xor@result}%
+}%
+\def\qr@xorbitstring@recursive(#1#2)(#3#4){%
+  \edef\testi{#1}%
+  \ifx\testi\@relax%
+    %Done.
+    \let\qr@next=\relax%
+  \else
+    \if#1#3\relax
+      \g@addto@macro{\qr@xor@result}{0}%
+    \else
+      \g@addto@macro{\qr@xor@result}{1}%
+    \fi
+    \edef\qr@next{\noexpand\qr@xorbitstring@recursive(#2)(#4)}%
+  \fi
+  \qr@next
+}
+
+\def\F@addchar@raw#1#2{%
+  %Add two hexadecimal digits using bitwise xor
+  \qr@hextobinary[4]{\summandA}{#1}%
+  \qr@hextobinary[4]{\summandB}{#2}%
+  \qr@xorbitstring{\F@result}{\summandA}{\summandB}%
+  \qr@binarytohex[1]{\F@result}{\F@result}%
+}%
+
+\def\canceltwos#1{%
+  \edef\qr@argument{(#1\relax\relax)}%
+  \xa\canceltwos@int\qr@argument%
+}%
+
+\def\canceltwos@int(#1#2){%
+  \xa\canceltwos@recursion(,#1#2)%
+}%
+
+\def\canceltwos@recursion(#1,#2#3){%
+  \def\testii{#2}%
+  \ifx\testii\@relax
+    %Cancelling complete.
+    \striptworelaxes(#1#2#3)%
+    %Now \F@result contains the answer.
+  \else
+    \relax
+    \ifnum#2=2\relax
+      \canceltwos@recursion(#10,#3)%
+    \else
+      \canceltwos@recursion(#1#2,#3)%
+    \fi
+  \fi
+}%
+
+\def\striptworelaxes(#1\relax\relax){%
+  \gdef\F@result{#1}%
+}%
+
+\qr@for \i = 0 to 15 by 1%
+  {\qr@decimaltohex[1]{\qr@tempa}{\the\i}%
+   \qr@for \j = 0 to 15 by 1%
+    {\qr@decimaltohex[1]{\qr@tempb}{\the\j}%
+     \F@addchar@raw\qr@tempa\qr@tempb
+     \xa\xdef\csname F@addchar@\qr@tempa\qr@tempb\endcsname{\F@result}%
+    }%
+  }%
+
+\def\F@addchar#1#2{%
+  \xa\def\xa\F@result\xa{\csname F@addchar@#1#2\endcsname}%
+}%
+
+\def\F@addstrings#1#2{%
+  \edef\qr@argument{(,#1\relax\relax)(#2\relax\relax)}%
+  \xa\F@addstrings@recursion\qr@argument%
+}%
+
+\def\F@addstrings@recursion(#1,#2#3)(#4#5){%
+  %Adds two hexadecimal strings, bitwise, from left to right.
+  %The second string is allowed to be shorter than the first.
+  \def\testii{#2}%
+  \def\testiv{#4}%
+  \ifx\testii\@relax
+    %The entire string has been processed.
+    \gdef\F@result{#1}%
+  \else
+    \ifx\testiv\@relax
+      %The second string is over.
+      \striptworelaxes(#1#2#3)%
+      %Now \F@result contains the answer.
+    \else
+      %We continue to add.
+      \F@addchar{#2}{#4}%
+      \edef\qr@argument{(#1\F@result,#3)(#5)}%
+      \xa\F@addstrings@recursion\qr@argument%
+    \fi
+  \fi
+}%
+\gdef\F@stripleadingzero(0#1){\edef\F@result{#1}}%
+
+\qr@i=0%
+\def\poweroftwo{1}%
+\qr@for \i = 1 to 254 by 1%
+  {\global\advance\qr@i by1%
+   \qr@a=\poweroftwo\relax
+   \multiply\qr@a by 2\relax
+   \edef\poweroftwo{\the\qr@a}%
+   %\show\poweroftwo
+   \qr@decimaltohex[2]{\poweroftwo@hex}{\poweroftwo}%
+   \xa\ifnum\poweroftwo>255\relax
+     %We need to bitwise add the polynomial represented by 100011101, i.e. 0x11d.
+     \F@addstrings{\poweroftwo@hex}{11d}%               %Now it should start with 0.
+     \xa\F@stripleadingzero\xa(\F@result)%              %Now it should be two hex digits.
+     \edef\poweroftwo@hex{\F@result}%                   %Save the hex version.
+     \qr@hextodecimal{\poweroftwo}{\F@result}%
+   \fi
+   \xdef\poweroftwo{\poweroftwo}%
+   \xa\xdef\csname F@twotothe@\theqr@i\endcsname{\poweroftwo@hex}%
+   \xa\xdef\csname F@logtwo@\poweroftwo@hex\endcsname{\theqr@i}%
+  }%
+\xa\xdef\csname F@twotothe@0\endcsname{01}%
+\xa\xdef\csname F@logtwo@01\endcsname{0}%
+
+\def\F@twotothe#1{%
+  \xa\xdef\xa\F@result\xa{\csname F@twotothe@#1\endcsname}%
+}%
+\def\F@logtwo#1{%
+  \xa\xdef\xa\F@result\xa{\csname F@logtwo@#1\endcsname}%
+}%
+
+\def\@zerozero{00}%
+
+\def\F@multiply#1#2{%
+  % #1 and #2 are two elements of F_256,
+  % given as two-character hexadecimal strings.
+  % Multiply them within F_256, and place the answer in \F@result
+  \edef\argA{#1}%
+  \edef\argB{#2}%
+  \ifx\argA\@zerozero
+    \def\F@result{00}%
+  \else
+    \ifx\argB\@zerozero
+      \def\F@result{00}%
+    \else
+      \xa\F@logtwo\xa{\argA}%
+        \edef\logA{\F@result}%
+      \xa\F@logtwo\xa{\argB}%
+        \edef\logB{\F@result}%
+      \xa\qr@a\xa=\logA\relax%  \qr@a = \logA
+      \xa\advance\xa\qr@a\logB\relax% \advance \qr@a by \logB
+      \ifnum\qr@a>254\relax%
+        \advance\qr@a by -255\relax%
+      \fi%
+      \xa\F@twotothe\xa{\the\qr@a}%
+      % Now \F@result contains the product, as desired.
+    \fi
+  \fi
+}%
+
+\def\F@multiply#1#2{%
+  % #1 and #2 are two elements of F_256,
+  % given as two-character hexadecimal strings.
+  % Multiply them within F_256, and place the answer in \F@result
+  \edef\argA{#1}%
+  \edef\argB{#2}%
+  \ifx\argA\@zerozero
+    \def\F@result{00}%
+  \else
+    \ifx\argB\@zerozero
+      \def\F@result{00}%
+    \else
+      \xa\F@logtwo\xa{\argA}%
+        \edef\logA{\F@result}%
+      \xa\F@logtwo\xa{\argB}%
+        \edef\logB{\F@result}%
+      \xa\qr@a\xa=\logA\relax%  \qr@a = \logA
+      \xa\advance\xa\qr@a\logB\relax% \advance \qr@a by \logB
+      \ifnum\qr@a>254\relax%
+        \advance\qr@a by -255\relax%
+      \fi%
+      \xa\F@twotothe\xa{\the\qr@a}%
+      % Now \F@result contains the product, as desired.
+    \fi
+  \fi
+}%
+
+\def\FX@getstringlength#1{%
+  %Count number of two-character coefficients
+  \setcounter{qr@i}{0}%
+  \xdef\qr@argument{(#1\relax\relax\relax)}%
+  \xa\FX@stringlength@recursive\qr@argument%
+  \xdef\stringresult{\arabic{qr@i}}%
+}%
+
+\def\FX@stringlength@recursive(#1#2#3){%
+  \def\testi{#1}%
+  \ifx\testi\@relax
+    %we are done.
+  \else
+    \stepcounter{qr@i}%
+    %\showthe\c@qr@i
+    \qr@stringlength@recursive(#3)%
+  \fi
+}%
+
+\newif\ifFX@leadingcoeff@zero
+\def\FX@testleadingcoeff(#1#2#3){%
+  % Tests whether the leading coefficient of the hex-string #1#2#3 is '00'.
+  \edef\FX@leadingcoefficient{#1#2}%
+  \FX@leadingcoeff@zerofalse
+  \ifx\FX@leadingcoefficient\@zerozero
+    \FX@leadingcoeff@zerotrue
+  \fi
+}%
+
+\newif\ifFX@divisiondone
+
+\newcount\qr@divisionsremaining %Keep track of how many divisions to go!
+\def\FX@polynomialdivide#1#2{%
+  \edef\FX@numerator{#1}%
+  \edef\denominator{#2}%
+  \qr@getstringlength\FX@numerator%
+  \setcounter{qr@divisionsremaining}{\qr@stringlength}%
+  \qr@getstringlength\denominator%
+  \addtocounter{qr@divisionsremaining}{-\qr@stringlength}%
+  \addtocounter{qr@divisionsremaining}{2}%
+  \divide\qr@divisionsremaining by 2\relax% %2 hex chars per number
+  \FX@divisiondonefalse%
+  \xa\xa\xa\FX@polynomialdivide@recursive\xa\xa\xa{\xa\FX@numerator\xa}\xa{\denominator}%
+}%
+
+\def\FX@polynomialdivide@recursive#1#2{%
+  % #1 = f(x), of degree n
+  % #2 = g(x), of degree m
+  % Obtains a new polynomial h(x), congruent to f(x) modulo g(x),
+  % but of degree at most n-1.
+  %
+  % If leading coefficient of f(x) is 0, strips off that leading zero.
+  % If leading coefficient of f(x) is a, subtracts off a * g(x) * x^(n-m).
+  % N.B. we assume g is monic.
+  %
+  \FX@testleadingcoeff(#1)%
+  \ifFX@leadingcoeff@zero%
+    %Leading coefficient is zero, so remove it.
+    \xa\def\xa\FX@numerator\xa{\FX@stripleadingzero(#1)}%
+  \else%
+    %Leading coefficient is nonzero, and contained in \FX@leadingcoefficient
+    \FX@subtractphase{#1}{#2}{\FX@leadingcoefficient}%
+    \ifFX@subtract@failed%
+      %If subtraction failed, that means our #1 was already the remainder!
+      \FX@divisiondonetrue%
+      \edef\theremainder{#1}%
+    \else%
+      %xor succeeded. We need to recurse.
+      \xa\xa\xa\edef\xa\xa\xa\FX@numerator\xa\xa\xa{\xa\FX@stripleadingzero\xa(\FX@subtraction@result)}%
+    \fi%
+  \fi%
+  \addtocounter{qr@divisionsremaining}{-1}%
+  \ifnum\qr@divisionsremaining=0\relax
+    %Division is done!
+    \FX@divisiondonetrue%
+    \edef\theremainder{\FX@numerator}%
+    \relax%
+  \else%
+    \xa\FX@polynomialdivide@recursive\xa{\FX@numerator}{#2}%
+  \fi%
+}%
+
+\def\FX@stripleadingzero(00#1){#1}%Strips off a single leading zero of F_256.
+
+\newif\ifFX@subtract@failed% This flag will trigger when #2 is longer than #1.
+
+\def\FX@subtractphase#1#2#3{%
+ % #1 = bitstring
+ % #2 = bitstring no longer than #1
+ % #3 = leading coefficient
+ \FX@subtract@failedfalse%
+ \edef\qr@argument{(,#1\relax\relax\relax)(#2\relax\relax\relax)(#3)}%
+ \xa\FX@subtract@recursive\qr@argument%
+}%
+
+\def\FX@subtract@recursive(#1,#2#3#4)(#5#6#7)(#8){%
+ % This is a recursive way to compute f(x) - a*g(x)*x^k.
+ % #1#2#3#4 is the first bitstring, subtracted up through #1.
+ %          Thus #2#3 constitutes the next two-character coefficient.
+ % #5#6#7 is the remaining portion of the second bitstring.
+ %          Thus #5#6 constitutes the next two-character coefficient
+ % #8 is the element a of F_256.  It should contain two characters.
+ \def\testii{#2}%
+ \def\testv{#5}%
+ \ifx\testii\@relax
+   % #1 contains the whole string.
+   % Now if #5 is also \relax, that means the two strings started off with equal lengths.
+   % If, however, #5 is not \relax, that means the second string was longer than the first, a problem.
+   \ifx\testv\@relax
+     %No problem.  We are done.
+     \FX@subtract@saveresult(#1#2#3#4)% %We keep the #2#3#4 to be sure we have all three relax-es to strip off.
+   \else
+     %Problem!  The second string was longer than the first.
+     %This usually indicates the end of the long division process.
+     \FX@subtract@failedtrue
+     \def\FX@subtraction@result{}%
+   \fi
+ \else
+   % There is still a coefficient to manipulate in #2#3.
+   % Check whether #5 contains anything.
+   \ifx\testv\@relax
+     % No, #5 is empty.  We are done. "#2#3#4" contains the remainder of the first string,
+     % which we append untouched and then strip off the three \relax-es.
+     \FX@subtract@saveresult(#1#2#3#4)%
+   \else
+     % Yes, #5#6 still has something to XOR. Do the task.
+     \F@multiply{#5#6}{#8}% Multiply by the factor 'a'.
+     \F@addstrings{#2#3}{\F@result}% Subtract.  (We're in characteristic two, so adding works.)
+     \edef\qr@argument{(#1\F@result,#4)(#7)(#8)}%
+     \xa\FX@subtract@recursive\qr@argument%
+   \fi
+ \fi
+}%
+
+\def\FX@subtract@saveresult(#1\relax\relax\relax){%
+  %Strips off the three extra '\relax'es at the end.
+  \def\FX@subtraction@result{#1}%
+}%
+
+\def\FX@creategeneratorpolynomial#1{%
+  % #1 = n, the number of error codewords desired.
+  % We need to create \prod_{j=0}^{n-1} (x-2^j).
+  \edef\FX@generator@degree{#1}%
+  \def\FX@generatorpolynomial{01}% Initially, set it equal to 1.
+  \setcounter{qr@i}{0}%
+  \FX@creategenerator@recursive%
+  %The result is now stored in \FX@generatorpolynomial
+}%
+
+\def\FX@creategenerator@recursive{%
+  % \c@qr@i contains the current value of i.
+  % \FX@generatorpolynomial contains the current polynomial f(x),
+  %   which should be a degree-i polynomial
+  %   equal to \prod_{j=0}^{i-1} (x-2^j).
+  %   (If i=0, then \FX@generatorpolynomial should be 01.)
+  % This recursion step should multiply the existing polynomial by (x-2^i),
+  % increment i by 1, and check whether we're done or not.
+  \edef\summandA{\FX@generatorpolynomial 00}% This is f(x) * x
+  \edef\summandB{00\FX@generatorpolynomial}% This is f(x), with a 0x^{i+1} in front.
+  \F@twotothe{\theqr@i}%
+  \edef\theconstant{\F@result}%
+  \FX@subtractphase{\summandA}{\summandB}{\theconstant}%
+     %This calculates \summandA + \theconstant * \summandB
+     %and stores the result in \FX@subtraction@result
+  \edef\FX@generatorpolynomial{\FX@subtraction@result}%
+  \stepcounter{qr@i}%
+  \xa\ifnum\FX@generator@degree=\qr@i\relax%
+    %We just multiplied by (x-2^{n-1}), so we're done.
+    \relax%
+  \else%
+    %We need to do this again!
+    \xa%
+    \FX@creategenerator@recursive%
+  \fi%
+}%
+
+\def\FX@generate@errorbytes#1#2{%
+  % #1 = datastream in hex
+  % #2 = number of error correction bytes requested
+  \edef\numerrorbytes{#2}%
+  \xa\FX@creategeneratorpolynomial\xa{\numerrorbytes}%
+  \edef\FX@numerator{#1}%
+  \qr@for \i = 1 to \numerrorbytes by 1%
+    {\g@addto@macro\FX@numerator{00}}% %One error byte means two hex codes.
+  \FX@polynomialdivide{\FX@numerator}{\FX@generatorpolynomial}%
+  \edef\FX@errorbytes{\theremainder}%
+}%
+\newif\ifqr@versionmodules
+
+\def\qr@level@char#1{%
+    \xa\ifcase#1
+      M\or L\or H\or Q\fi}%
+
+\newif\ifqr@versiongoodenough
+\def\qr@choose@best@version#1{%
+  % \qr@desiredversion = user-requested version
+  % \qr@desiredlevel = user-requested error-correction level
+  \edef\qr@plaintext{#1}%
+  \qr@getstringlength{\qr@plaintext}%
+  %
+  %Run double loop over levels and versions, looking for
+  %the smallest version that can contain our data,
+  %and then choosing the best error-correcting level at that version,
+  %subject to the level being at least as good as the user desires.
+  \global\qr@versiongoodenoughfalse%
+  \gdef\qr@bestversion{0}%
+  \gdef\qr@bestlevel{0}%
+  \ifnum\qr@desiredversion=0\relax
+    \qr@a=1\relax
+  \else
+    \qr@a=\qr@desiredversion\relax
+  \fi
+  \qr@for \i=\qr@a to 40 by 1
+    {\edef\qr@version{\the\i}%
+     \global\qr@versiongoodenoughfalse
+     \qr@for \j=0 to 3 by 1%
+      {%First, we map {0,1,2,3} to {1,0,4,3}, so that we loop through {M,L,H,Q}
+       %in order of increasing error-correction capabilities.
+       \qr@a = \j\relax
+       \divide \qr@a by 2\relax
+       \multiply \qr@a by 4\relax
+       \advance \qr@a by 1\relax
+       \advance \qr@a by -\j\relax
+       \edef\qr@level{\the\qr@a}%
+       \ifnum\qr@desiredlevel=\qr@a\relax
+         \global\qr@versiongoodenoughtrue
+       \fi
+       \ifqr@versiongoodenough
+         \qr@calculate@capacity{\qr@version}{\qr@level}%
+         \xa\xa\xa\ifnum\xa\qr@truecapacity\xa<\qr@stringlength\relax
+           %Too short
+           \relax
+         \else
+           %Long enough!
+           \xdef\qr@bestversion{\qr@version}%
+           \xdef\qr@bestlevel{\qr@level}%
+           \global\i=40%
+         \fi
+       \fi
+      }%
+     }%
+  \edef\qr@version{\qr@bestversion}%
+  \edef\qr@level{\qr@bestlevel}%
+  \xa\ifnum\qr@desiredversion>0\relax
+    \ifx\qr@bestversion\qr@desiredversion\relax
+      %No change from desired version.
+    \else
+      %Version was increased
+      \qrmessage{<Requested QR version '\qr@desiredversion' is too small for desired text.}%
+      \qrmessage{Version increased to '\qr@bestversion' to fit text.>^^J}%
+    \fi
+  \fi
+  \ifx\qr@bestlevel\qr@desiredlevel\relax
+    %No change in level.
+  \else
+    \qrmessage{<Error-correction level increased from \qr@level@char{\qr@desiredlevel}}%
+    \qrmessage{to \qr@level@char{\qr@bestlevel} at no cost.>^^J}%
+  \fi
+}%
+
+\def\qr@calculate@capacity#1#2{%
+  \edef\qr@version{#1}%
+  \edef\qr@level{#2}%
+  %Calculate \qr@size, the number of modules per side.
+  % The formula is 4\qr@version+17.
+  \qr@a=\qr@version\relax%
+  \multiply\qr@a by 4\relax%
+  \advance\qr@a by 17\relax%
+  \xdef\qr@size{\the\qr@a}%
+  %
+  % Calculate \qr@k, which governs the number of alignment patterns.
+  % The alignment patterns lie in a kxk square, except for 3 that are replaced by finding patterns.
+  % The formula is 2 + floor( \qr@version / 7 ), except that k=0 for version 1.
+  \xa\ifnum\qr@version=1\relax%
+    \def\qr@k{0}%
+  \else%
+    \qr@a=\qr@version\relax
+    \divide \qr@a by 7\relax
+    \advance\qr@a by 2\relax
+    \edef\qr@k{\the\qr@a}%
+  \fi%
+  %
+  %Calculate number of function pattern modules.
+  %This consists of the three 8x8 finder patterns, the two timing strips, and the (k^2-3) 5x5 alignment patterns.
+  %The formula is 160+2n+25(k^2-3)-10(k-2), unless k=0 in which case we just have 160+2n.
+  \qr@a=\qr@size\relax
+  \multiply\qr@a by 2\relax
+  \advance\qr@a by 160\relax
+  \xa\ifnum\qr@k=0\relax\else
+    %\qr@k is nonzero, hence at least 2, so we continue to add 25(k^2-3)-10(k-2).
+    \qr@b=\qr@k\relax
+    \multiply\qr@b by \qr@k\relax
+    \advance\qr@b by -3\relax
+    \multiply\qr@b by 25\relax
+    \advance\qr@a by \qr@b\relax
+    \qr@b=\qr@k\relax
+    \advance\qr@b by -2\relax
+    \multiply\qr@b by 10\relax
+    \advance\qr@a by -\qr@b\relax
+  \fi
+  \edef\qr@numfunctionpatternmodules{\the\qr@a}%
+  %
+  %Calculate the number of version modules, either 36 or 0.
+  \xa\ifnum\qr@version>6\relax
+    \qr@versionmodulestrue
+    \def\qr@numversionmodules{36}%
+  \else
+    \qr@versionmodulesfalse
+    \def\qr@numversionmodules{0}%
+  \fi
+  %
+  %Now calculate the codeword capacity and remainder bits.
+  %Take n^2 modules, subtract all those dedicated to finder patterns etc., format information, and version information,
+  %and what's left is the number of bits we can play with.
+  %The number of complete bytes is \qr@numdatacodewords;
+  %the leftover bits are \qr@numremainderbits.
+  \qr@a=\qr@size\relax
+  \multiply \qr@a by \qr@size\relax
+  \advance \qr@a by -\qr@numfunctionpatternmodules\relax
+  \advance \qr@a by -31\relax% % There are 31 format modules.
+  \advance \qr@a by -\qr@numversionmodules\relax
+  \qr@b=\qr@a\relax
+  \divide \qr@a by 8\relax
+  \edef\qr@numdatacodewords{\the\qr@a}%
+  \multiply\qr@a by 8\relax
+  \advance \qr@b by -\qr@a\relax
+  \edef\qr@numremainderbits{\the\qr@b}%
+  %
+  %The size of the character count indicator also varies by version.
+  %There are only two options, so hardcoding seems easier than expressing these functionally.
+  \xa\ifnum\qr@version<10\relax
+    \def\qr@charactercountbytes@byte{1}%
+    \def\qr@charactercountbits@byte{8}%
+  \else
+    \def\qr@charactercountbytes@byte{2}%
+    \def\qr@charactercountbits@byte{16}%
+  \fi
+  %
+  %Now we call on the table, from the QR specification,
+  %of how many blocks to divide the message into, and how many error bytes each block gets.
+  %This affects the true capacity for data, which we store into \qr@totaldatacodewords.
+  % The following macro sets \qr@numblocks and \qr@num@eccodewords
+  % based on Table 9 of the QR specification.
+  \qr@settableix
+  \qr@a = -\qr@numblocks\relax
+  \multiply \qr@a by \qr@num@eccodewords\relax
+  \advance\qr@a by \qr@numdatacodewords\relax
+  \edef\qr@totaldatacodewords{\the\qr@a}%
+  \advance\qr@a by -\qr@charactercountbytes@byte\relax%Subtract character count
+  \advance\qr@a by -1\relax% Subtract 1 byte for the 4-bit mode indicator and the 4-bit terminator at the end.
+  \edef\qr@truecapacity{\the\qr@a}%
+}
+
+\def\qr@setversion#1#2{%
+  % #1 = version number, an integer between 1 and 40 inclusive.
+  % #2 = error-correction level, as an integer between 0 and 3 inclusive.
+  %      0 = 00 = M
+  %      1 = 01 = L
+  %      2 = 10 = H
+  %      3 = 11 = Q
+  % This macro calculates and sets a variety of global macros and/or counters
+  % storing version information that is used later in construction the QR code.
+  % Thus \setversion should be called every time!
+  %
+  \edef\qr@version{#1}%
+  \edef\qr@level{#2}%
+  %
+  \qr@calculate@capacity{\qr@version}{\qr@level}%
+  %The capacity-check code sets the following:
+  % * \qr@size
+  % * \qr@k
+  % * \ifqr@versionmodules
+  % * \qr@numversionmodules
+  % * \qr@numdatacodewords
+  % * \qr@numremainderbits
+  % * \qr@charactercountbits@byte
+  % * \qr@charactercountbytes@byte
+  % * \qr@numblocks (via \qr@settableix)
+  % * \qr@num@eccodewords (via \qr@settableix)
+  % * \qr@totaldatacodewords
+  %
+  % The alignment patterns' square is 7 modules in from each edge.
+  % They are spaced "as evenly as possible" with an even number of modules between each row/column,
+  % unevenness in division being accommodated by making the first such gap smaller.
+  % The formula seems to be
+  %    general distance = 2*round((n-13)/(k-1)/2+0.25)
+  %                     = 2*floor((n-13)/(k-1)/2+0.75)
+  %                     = 2*floor( (2*(n-13)/(k-1)+3) / 4 )
+  %                     = (((2*(n-13)) div (k-1) + 3 ) div 4 ) * 2
+  %    first distance = leftovers
+  % The 0.25 is to accommodate version 32, which is the only time we round down.
+  % Otherwise a simple 2*ceiling((n-13)/(k-1)/2) would have sufficed.
+  %
+  \qr@a = \qr@size\relax
+  \advance\qr@a by -13\relax
+  \multiply\qr@a by 2\relax
+  \qr@b = \qr@k\relax
+  \advance \qr@b by -1\relax
+  \divide\qr@a by \qr@b\relax
+  \advance\qr@a by 3\relax
+  \divide\qr@a by 4\relax
+  \multiply\qr@a by 2\relax
+  \edef\qr@alignment@generalskip{\the\qr@a}%
+  %
+  %Now set \qr@alignment@firstskip to (\qr@size-13)-(\qr@k-2)*\qr@alignment@generalskip %
+  \qr@a = \qr@k\relax
+  \advance\qr@a by -2\relax
+  \multiply\qr@a by -\qr@alignment@generalskip\relax
+  \advance\qr@a by \qr@size\relax
+  \advance\qr@a by -13\relax
+  \edef\qr@alignment@firstskip{\the\qr@a}%
+  %
+  %
+  %
+  % Our \qr@totaldatacodewords bytes of data are broken up as evenly as possible
+  % into \qr@numblocks datablocks; some may be one byte longer than others.
+  % We set \qr@shortblock@size to floor(\qr@totaldatacodewords / \qr@numblocks)
+  % and \qr@numlongblocks to mod(\qr@totaldatacodewords , \qr@numblocks).
+  \qr@a=\qr@totaldatacodewords\relax
+  \divide\qr@a by \qr@numblocks\relax
+  \edef\qr@shortblock@size{\the\qr@a}%
+  \multiply\qr@a by -\qr@numblocks\relax
+  \advance\qr@a by \qr@totaldatacodewords\relax
+  \edef\qr@numlongblocks{\the\qr@a}%
+  %
+  %Set \qr@longblock@size to \qr@shortblock@size+1.
+  \qr@a=\qr@shortblock@size\relax
+  \advance\qr@a by 1\relax
+  \edef\qr@longblock@size{\the\qr@a}%
+  %
+  %Set \qr@numshortblocks to \qr@numblocks - \qr@numlongblocks
+  \qr@b=\qr@numblocks\relax
+  \advance\qr@b by -\qr@numlongblocks\relax
+  \edef\qr@numshortblocks{\the\qr@b}%
+}%
+
+\def\qr@settableix@int(#1,#2){%
+  \edef\qr@numblocks{#1}%
+  \edef\qr@num@eccodewords{#2}%
+}%
+
+\def\qr@settableix{%
+\xa\ifcase\qr@level\relax
+  %00: Level 'M', medium error correction
+  \edef\tempdata{(%
+    \ifcase\qr@version\relax
+      \relax %There is no version 0.
+    \or1,10%
+    \or1,16%
+    \or1,26%
+    \or2,18%
+    \or2,24%
+    \or4,16%
+    \or4,18%
+    \or4,22%
+    \or5,22%
+    \or5,26%
+    \or5,30%
+    \or8,22%
+    \or9,22%
+    \or9,24%
+    \or10,24%
+    \or10,28%
+    \or11,28%
+    \or13,26%
+    \or14,26%
+    \or16,26%
+    \or17,26%
+    \or17,28%
+    \or18,28%
+    \or20,28%
+    \or21,28%
+    \or23,28%
+    \or25,28%
+    \or26,28%
+    \or28,28%
+    \or29,28%
+    \or31,28%
+    \or33,28%
+    \or35,28%
+    \or37,28%
+    \or38,28%
+    \or40,28%
+    \or43,28%
+    \or45,28%
+    \or47,28%
+    \or49,28%
+  \fi)}%
+\or
+  %01: Level 'L', low error correction
+  \edef\tempdata{%
+  (\ifcase\qr@version\relax
+    \relax %There is no version 0.
+  \or 1,7%
+  \or 1,10%
+  \or 1,15%
+  \or 1,20%
+  \or 1,26%
+  \or 2,18%
+  \or 2,20%
+  \or 2,24%
+  \or 2,30%
+  \or 4,18%
+  \or 4,20%
+  \or 4,24%
+  \or 4,26%
+  \or 4,30%
+  \or 6,22%
+  \or 6,24%
+  \or 6,28%
+  \or 6,30%
+  \or 7,28%
+  \or 8,28%
+  \or 8,28%
+  \or 9,28%
+  \or 9,30%
+  \or 10,30%
+  \or 12,26%
+  \or 12,28%
+  \or 12,30%
+  \or 13,30%
+  \or 14,30%
+  \or 15,30%
+  \or 16,30%
+  \or 17,30%
+  \or 18,30%
+  \or 19,30%
+  \or 19,30%
+  \or 20,30%
+  \or 21,30%
+  \or 22,30%
+  \or 24,30%
+  \or 25,30%
+  \fi)}%
+\or
+  %10: Level 'H', high error correction
+  \edef\tempdata{(%
+    \ifcase\qr@version\relax
+      \relax %There is no version 0.
+    \or1,17%
+    \or1,28%
+    \or2,22%
+    \or4,16%
+    \or4,22%
+    \or4,28%
+    \or5,26%
+    \or6,26%
+    \or8,24%
+    \or8,28%
+    \or11,24%
+    \or11,28%
+    \or16,22%
+    \or16,24%
+    \or18,24%
+    \or16,30%
+    \or19,28%
+    \or21,28%
+    \or25,26%
+    \or25,28%
+    \or25,30%
+    \or34,24%
+    \or30,30%
+    \or32,30%
+    \or35,30%
+    \or37,30%
+    \or40,30%
+    \or42,30%
+    \or45,30%
+    \or48,30%
+    \or51,30%
+    \or54,30%
+    \or57,30%
+    \or60,30%
+    \or63,30%
+    \or66,30%
+    \or70,30%
+    \or74,30%
+    \or77,30%
+    \or81,30%
+  \fi)}%
+\or
+  %11: Level 'Q', quality error correction
+  \edef\tempdata{(%
+    \ifcase\qr@version\relax
+      \relax %There is no version 0.
+    \or1,13%
+    \or1,22%
+    \or2,18%
+    \or2,26%
+    \or4,18%
+    \or4,24%
+    \or6,18%
+    \or6,22%
+    \or8,20%
+    \or8,24%
+    \or8,28%
+    \or10,26%
+    \or12,24%
+    \or16,20%
+    \or12,30%
+    \or17,24%
+    \or16,28%
+    \or18,28%
+    \or21,26%
+    \or20,30%
+    \or23,28%
+    \or23,30%
+    \or25,30%
+    \or27,30%
+    \or29,30%
+    \or34,28%
+    \or34,30%
+    \or35,30%
+    \or38,30%
+    \or40,30%
+    \or43,30%
+    \or45,30%
+    \or48,30%
+    \or51,30%
+    \or53,30%
+    \or56,30%
+    \or59,30%
+    \or62,30%
+    \or65,30%
+    \or68,30%
+    \fi)}%
+\fi
+\xa\qr@settableix@int\tempdata
+}%
+
+\def\@qr@M{M}\def\@qr@z{0}%
+\def\@qr@L{L}\def\@qr@i{1}%
+\def\@qr@H{H}\def\@qr@ii{2}%
+\def\@qr@Q{Q}\def\@qr@iii{3}%
+\def\qr@setlevel#1{%
+  \edef\qr@level@selected{#1}%
+  \ifx\qr@level@selected\@qr@M
+    \edef\qr@desiredlevel{0}%
+  \fi
+  \ifx\qr@level@selected\@qr@L
+    \edef\qr@desiredlevel{1}%
+  \fi
+  \ifx\qr@level@selected\@qr@H
+    \edef\qr@desiredlevel{2}%
+  \fi
+  \ifx\qr@level@selected\@qr@Q
+    \edef\qr@desiredlevel{3}%
+  \fi
+  \ifx\qr@level@selected\@qr@z
+    \edef\qr@desiredlevel{0}%
+  \fi
+  \ifx\qr@level@selected\@qr@i
+    \edef\qr@desiredlevel{1}%
+  \fi
+  \ifx\qr@level@selected\@qr@ii
+    \edef\qr@desiredlevel{2}%
+  \fi
+  \ifx\qr@level@selected\@qr@iii
+    \edef\qr@desiredlevel{3}%
+  \fi
+}%
+
+% key-value pairs (OPmac trick 0069)
+\def\kv#1{\expandafter\ifx\csname kv:#1\endcsname \relax \expandafter\kvunknown
+   \else \csname kv:#1\expandafter\endcsname\fi 
+}
+\def\kvunknown{???}
+\def\kvscan #1#2=#3,{\ifx#1,\else \sdef{kv:#1#2}{#3}\expandafter\kvscan\fi}
+
+\ifx\replacestrings\undefined
+\bgroup \catcode`!=3 \catcode`?=3
+\gdef\replacestrings#1#2{\long\def\replacestringsA##1#1##2!{%
+   \ifx!##2!\addto\tmpb{##1}\else\addto\tmpb{##1#2}\replacestringsA##2!\fi}%
+   \edef\tmpb{\expandafter}\expandafter\replacestringsA\tmpb?#1!%
+   \long\def\replacestringsA##1?{\def\tmpb{##1}}\expandafter\replacestringsA\tmpb
+}
+\egroup
+\long\def\addto#1#2{\expandafter\def\expandafter#1\expandafter{#1#2}}
+\def\sdef#1{\expandafter\def\csname#1\endcsname}
+\fi
+
+\def\qrset#1{\def\tmpb{#1,}%
+   \replacestrings{ =}{=}\replacestrings{= }{=}%
+   \replacestrings{tight,}{qr-border=0,}%
+   \replacestrings{padding,}{qr-border=1,}%
+   \replacestrings{verbose,}{qr-message=1,}%
+   \replacestrings{silent,}{qr-message=0,}%
+   \replacestrings{draft,}{qr-final=0,}%
+   \replacestrings{final,}{qr-final=1,}%
+   \replacestrings{nolink,}{qr-link=0,}%
+   \replacestrings{link,}{qr-link=1,}%
+   \expandafter\kvscan\tmpb,=,%
+   \qrdesiredheight=\kv{height}\relax
+   \qr@setlevel{\kv{level}}%
+   \edef\qr@desiredversion{\kv{version}}%
+}
+\qrset{height=2cm, version=0, level=M, tight, verbose, final, nolink}
+
+\def\qrcode{\begingroup
+   % LaTeX ballast:
+   \def\setcounter##1##2{\global\csname##1\endcsname=##2\relax}%
+   \def\stepcounter##1{\global\advance\csname##1\endcsname by1\relax}%
+   \def\addtocounter##1##2{\global\advance\csname##1\endcsname by##2\relax}%
+   \let\xa=\expandafter \newlinechar=`\^^J
+   \isnextchar[{\qrcodeA}{\qrcodeB}%
+}
+\def\qrcodeA[#1]{\qrset{#1}\expandafter\qrcodeB\romannumeral-`\.}
+\def\qrcodeB{%
+   \ifx\mubyteout\undefined \else \mubyteout=0 \mubytelog=0 \fi
+   \def\xprncodesave{}%
+   \ifx\xprncodes\undefined \else 
+      \ifnum\xprncode255=0 \def\xprncodesave{\xprncodes=0 }\xprncodes=1 \fi\fi
+   \if1\kv{qr-message}\let\qrmessage=\message \else \def\qrmessage##1{}\fi
+   \if1\kv{qr-border}\def\padd{\kern4\qrmodulesize}\else\def\padd{}\fi
+   \bgroup \qrverbatim \qrcode@i
+}
+\def\qrcode@i#1{\xdef\qretext{#1}\gdef\qrtext{#1}\egroup
+   \qrcode@int
+   \xprncodesave
+   \endgroup
+}
+
+\def\qrcode@int{%
+  \qrmessage{<QR code requested for "\qretext" in version
+           \qr@desiredversion-\qr@level@char{\qr@desiredlevel}.>^^J}%
+  %First, choose the version and level.
+  %Recall that \qr@choose@best@version sets \qr@version and \qr@level.
+  \xa\qr@choose@best@version\xa{\qretext}%
+  \if1\kv{qr-final}%
+     \qr@setversion{\qr@version}{\qr@level}%
+     \qrcode@int@new
+  \else
+     \qrmodulesize=\qrdesiredheight%
+     \divide\qrmodulesize by \qr@size\relax%
+     \let\d=\qrdesiredheight
+     \vbox{\padd\hbox{\padd\vbox to\d{\hrule\vss
+        \hbox to\d{\vrule height.7\d depth.3\d \hss ...QR...\hss\vrule}%
+        \vss\hrule}\padd}\padd}%
+  \fi
+}%
+
+\def\qrcode@int@new{%
+  \qrbeginhook
+  \qr@createsquareblankmatrix{newqr}{\qr@size}%
+  \qr@placefinderpatterns{newqr}%
+  \qr@placetimingpatterns{newqr}%
+  \qr@placealignmentpatterns{newqr}%
+  \qr@placedummyformatpatterns{newqr}%
+  \qr@placedummyversionpatterns{newqr}%
+  \qrmessage{<Calculating QR code for "\qretext" in
+            version \qr@version-\qr@level@char{\qr@level}.>^^J}%
+  \xa\qr@encode@binary\xa{\qretext}%
+  \qr@splitcodetextintoblocks
+  \qr@createerrorblocks
+  \qr@interleave
+  \qrmessage{<Writing data...}%
+     \qr@writedata@hex{newqr}{\qr@interleaved@text}%
+  \qrmessage{done.>^^J}%
+  \qr@writeremainderbits{newqr}%
+  \qr@chooseandapplybestmask{newqr}%
+  \qr@decimaltobinary[2]{\level@binary}{\qr@level}%
+  \qr@decimaltobinary[3]{\mask@binary}{\qr@mask@selected}%
+  \edef\formatstring{\level@binary\mask@binary}%
+  \qrmessage{<Encoding and writing format string...}%
+     \xa\qr@encodeandmaskformat\xa{\formatstring}%
+     \qr@writeformatstring{newqr}{\qr@format@bitstring}%
+  \qrmessage{done.>^^J}%
+  \qrmessage{<Encoding and writing version information...}%
+     \qr@decimaltobinary[6]{\version@binary}{\qr@version}%
+     \qr@Golaycode{\version@binary}%
+     \qr@writeversionstring{newqr}{\Golayresult}%
+  \qrmessage{done.>^^J}%
+  \qrmessage{<Printing QR code...}%
+     \qrmatrixtobinary{newqr}%
+     \qrrestore\qrdata
+  \qrmessage{done.>^^J}%
+  \qrendhook
+}%
+
+\def\qrmatrixtobinary#1{%
+   \bgroup
+   \gdef\qrdata{}%
+   \def\qr@black{1}\let\qr@black@fixed=\qr@black \let\qr@black@format=\qr@black
+   \def\@white{0}\let\qr@white@fixed=\@white \let\qr@white@format=\@white
+   \qr@for \i = 1 to \qr@size by 1
+      {\qr@for \j = 1 to \qr@size by 1
+          {\xdef\qrdata{\qrdata\qr@matrixentry{#1}{\the\i}{\the\j}}}}%
+   \xdef\qrdata{{\qr@size}{\qrdata}}%
+   \egroup
+}
+
+\def\qrrestore#1{\expandafter\qrrestoreA#1}
+\def\qrrestoreA#1#2{%
+   \qrmodulesize=\qrdesiredheight \divide\qrmodulesize by#1
+   \if1\kv{qr-link}\setbox0=\fi
+   \vbox\bgroup\padd \offinterlineskip \baselineskip=\qrmodulesize 
+      \qr@i=0 \qr@j=0 \let\next=\qrrestoreB 
+   \hbox\bgroup\padd \qrrestoreB #2%
+   \if1\kv{qr-link}\qr@link{\qretext}{\box0}\fi
+}
+\def\qrrestoreB#1{\advance \qr@j by1
+   \ifx1#1\vrule height\qrmodulesize width\qrmodulesize\else \kern\qrmodulesize\fi
+   \ifnum\qr@size=\qr@j \padd\egroup \advance\qr@i by1
+      \ifnum\qr@size=\qr@i \padd\egroup \let\next=\relax \else \hbox\bgroup\padd \fi
+   \fi \next
+}
+
+\def\qrbeginhook{}
+\def\qrendhook{}
+
+\tmp % \catcode of @ is returned back.
+
+\endinput
+
+
+Options
+-------
+
+You can use \qrset{options} for global-like options and
+\qrcode[options]{encoded text} for local options for one QR code.
+The \qrset{options} is valid within a group (if exists) or in whole
+document. 
+
+Options are separated by comma and they are in two types: single
+word or key=value format. Default options are: 
+
+\qrset{height=2cm, version=0, level=M, tight, verbose, final, nolink}
+
+The options are the same as described in qrcode.pdf at 
+http://www.ctan.org/tex-archive/macros/latex/contrib/qrcode.
+In short:
+
+height=dimen   ... The height of the QRcode without padding.
+
+version=number ... Number 0 to 40 linearly depends on the density of QRcode.
+                   The 0 means that the density is automatically selected.
+
+level=letter   ... L, M, Q o H (low, medium, quality, hight) sets the amount 
+                   of redundancy in the code in order of error recovering.
+
+tight   ... Code without margins.
+padding ... 4module blank margins around the code.
+
+verbose ... Information about calculating in terminal and in the log.
+silent  ... No information about calculating.
+
+final   ... The QR code is calculated and printed.
+draft   ... Only empty rectangle in the same size as QR code is printed.
+
+nolink  ... The QR code is not active hyperlink.
+link    ... The QR code is active hyperlink to "encoded text".
+            Note that link option works in pdfTeX (luaTeX) only.
+
+qrborder={R G B}  ... The color of the frame around active hypertext space
+                      if link option is set. R G B (red green blue) are decimal 
+                      numbers from 0 to 1. The frame is visible only in
+                      pdf viewers. Default: invisible frame.
+
+Example:
+
+\qrset{silent}     % ... all codes will be silent in the log and terminal.
+\qrcode [height=3cm, link, padding, qrborder={1 0 0}] {http://petr.olsak.net}  
+                   % ... 3cm QRcode as hyperlink
+
+Note:
+
+The saving/restoring pre-calculated QRcodes isn't supported by default.
+If you are printing the same QR codes repeatedly, use \setbox/\copy
+technique. For example:
+
+\newbox\mybox
+\setbox\mybox=\hbox{\qrcode{encoded text}}
+\copy\mybox \copy\mybox \copy\mybox etc.
+
+If you have a huge amount of different QR codes, you can use draft/final options
+or you can use REF file from OPmac. See the OPmac trick 
+
+   http://petr.olsak.net/opmac-tricks-e.html#qrcode
+
+The \qrdata macro is saved after each \qrcode calculation in the format
+{size}{111101011...001} where size is the number of columns or rows in QR
+square and second parameter includes size^2 ones or zeros which means black
+or white modules (scanned left to right, top to bottom). Another information
+can be retrieved from \qrtext macro (encoded text before expanding) and
+\qretext macro (encoded text where \{, \\ etc. are expanded to {, \ etc.).
+The macros \qrdata, \qrtext and \qretext are saved globally.
+
+
+Non-ASCII characters
+--------------------
+
+If you are using csplain with pdfTeX (no XeTeX, no LuaTeX) then UTF-8 input
+is correctly interpreted from \qrcode parameter. 
+
+The technical background: the encTeX's \mubyte is set to zero during
+scanning the \qrcode parameter, so the parameter is rawly UTF-8 encoded and
+this is correct for QR codes.
+
+Problems: 
+1. You cannot use \qrcode{parameter} inside another macro, bacause UTF-8
+   encoded parameter is reencoded already.
+2. You cannot use XeTeX or LuaTeX because UTF-8 encoded parameter is
+   reencoded to Unicode already. And the backward conversion from Unicode 
+   to UTF-8 isn't implemented here at macro level.
+
+
+History
+-------
+
+Jun 2015  released
+Jul. 2015 \xprncodes=0space (bug fixed)

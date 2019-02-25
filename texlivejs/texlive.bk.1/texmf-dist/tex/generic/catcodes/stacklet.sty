@@ -1,0 +1,123 @@
+                                                 \input plainpkg
+\ProvidesPackage{stacklet}[2012/11/07 v0.3a private letters (UL)]
+%%
+%% Copyright (C) 2012 Uwe Lueck,
+%% http://www.contact-ednotes.sty.de.vu
+%% -- author-maintained in the sense of LPPL below --
+%%
+%% This file can be redistributed and/or modified under
+%% the terms of the LaTeX Project Public License; either
+%% version 1.3c of the License, or any later version.
+%% The latest version of this license is in
+%%     http://www.latex-project.org/lppl.txt
+%% There is NO WARRANTY (actually somewhat experimental).
+%%
+%% Please report bugs, problems, and suggestions via
+%%
+%%   http://www.contact-ednotes.sty.de.vu
+%%
+%%  == Usage                    ==
+%% === Installing and Calling   ===
+%% The file `stacklet.sty' is provided ready, 
+%% installation only requires
+%% putting it somewhere where \TeX\ finds it
+%% (which may need updating the filename data
+%%  base).\urlfoot{ukfaqref}{inst-wlcf} 
+%% However, the file `plainpkg.tex' must be installed likewise.
+%% 
+%% \emph{With} \LaTeX, the file should be loaded by `\RequirePackage{stacklet}'
+%% or `\usepackage{stacklet}'. 
+%% 
+%% \emph{Without} \LaTeX, both `\input stacklet.sty' and 
+%% `\input plainpkg' load `stacklet.sty'.
+%%
+%% \filbreak                                        %% 2012/11/07
+%% === Commands and Syntax      ===
+%% \label{sec:stacklet-cmds}
+%% 'stacklet.sty' provides 
+%% \[|\PushCatMakeLetter\<char>|
+%%   \quad \textit{and}\quad 
+%%   |\PopLetterCat\<char>|\]
+%% for getting ``private letters" and giving them back
+%% their previous category code
+%% in package files with or without \LaTeX.
+%% As \LaTeX\ has its own stack for `@', there are also 
+%% \[|\PushCatMakeLetterAt|
+%%   \quad \textit{and}\quad 
+%%   |\PopLetterCatAt|\]
+%% that care for `@''s category code \emph{without} \LaTeX\ only.
+%% 
+%%  == The Code                 ==
+%% === Name Space               ===
+%% Each ``private letter" <char> gets its own stack, 
+%% in some name space, determined by |\cat_stack|
+%% (`\withcsname' is from 'plainpkg.tex'):
+\withcsname\xdef cat_stack\endcsname{%
+    \noexpand\string \withcsname\noexpand cat_stack\endcsname
+        \noexpand\string}
+%% I.e., ?`cat_stack' will expand to 
+%% \[?`string'\,?`cat_stack'\,?`string'\]
+%% in the notation of the \ctanpkgref{dowith} package
+%% documentation.                                       %% 2012/11/06
+% \withcsname\show cat_stack\endcsname
+%% 
+%% === Pushing                  ===
+%% |\PushCatMakeLetter\<char>| ...
+\xdef\PushCatMakeLetter#1{%
+  \noexpand\withcsname
+    \withcsname\noexpand pushcat_makeletter\endcsname
+      \withcsname\noexpand cat_stack\endcsname#1\endcsname#1}
+% \show\PushCatMakeLetter
+\withcsname\gdef pushcat_makeletter\endcsname#1#2{%
+%% #1 is the stack token, #2 is the ``quoted" character. Pushing~...
+    \xdef#1{\the\catcode`#2\relax%
+%% ... the new entry. `\relax' separates entries, 
+%% braces instead tend to get lost in popping ...
+%% If the stack has existed before, 
+%% its previous content is appended:
+            \ifx#1\relax \else #1\fi}%
+%% I thought of storing `\catcode's hexadecimally (without braces) 
+%% using \LaTeX's `\hexnumber', but the latter has so many tokens~...
+%% Finally rendering <char> a ``letter":
+    \catcode`#211\relax}
+%% Now we can use a ``private letter stack" for our own package:
+\PushCatMakeLetter\_
+%%
+%% === Popping                  ===
+%% |\PopLetterCat\<char>| passes `\<char>', the corresponding 
+%% stack token, and the latter's expansion to `\popcat_'. 
+%% `\end' serves as argument delimiter for the end of the stack only:
+\gdef\PopLetterCat#1{%
+  \expandafter\expandafter\expandafter
+    \popcat_\csname\cat_stack#1\expandafter\endcsname
+      \expandafter \end \csname\cat_stack#1\endcsname#1}
+%% `\popcat_' parses the expansion, assigns the old 
+%% category code and and stores the reduced stack:
+\gdef\popcat_#1\relax#2\end#3#4{\catcode`#4#1\gdef#3{#2}}
+%% ... check existence? TODO
+%%
+%% === No `@' Stack with \LaTeX ===
+%% |\PushCatMakeLetterAt| is like `\PushCatMakeLetter\@'
+%% except that it has no effect under \LaTeX:
+\gdef\PushCatMakeLetterAt{\ifltx\else\PushCatMakeLetter\@\fi}
+%% |\PopLetterCatAt| by analogy ...
+\gdef\PopLetterCatAt{\ifltx\else\PopLetterCat\@\fi}
+%% 
+%% === Leaving the Package File ===
+%% ... in our new way:
+\PopLetterCat\_
+\endinput
+%%
+%% === VERSION HISTORY ===
+
+v0.1   2012/08/24   started
+       2012/08/25   completed
+       2012/08/26   extending doc.; \def\withcsname removed
+v0.2   2012/08/26   \with_catstack containing \endcsname and with
+                    three popping macros replaced by \csname 
+                    content \cat_stack, cf. memory.tex; 
+                    restructured
+       2012/08/27   \PushCatMakeLetterAt fixed
+v0.3   2012/08/27   def.s global
+v0.3a  2012/11/06   doc.: "documentation"
+       2012/11/07   \filbreak

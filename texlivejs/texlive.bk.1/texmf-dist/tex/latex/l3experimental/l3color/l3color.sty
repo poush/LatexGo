@@ -1,0 +1,364 @@
+%%
+%% This is file `l3color.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% l3color.dtx  (with options: `package')
+%% 
+%% Copyright (C) 2017-2019 The LaTeX3 Project
+%% 
+%% It may be distributed and/or modified under the conditions of
+%% the LaTeX Project Public License (LPPL), either version 1.3c of
+%% this license or (at your option) any later version.  The latest
+%% version of this license is in the file:
+%% 
+%%    http://www.latex-project.org/lppl.txt
+%% 
+%% This file is part of the "l3experimental bundle" (The Work in LPPL)
+%% and all files in that bundle must be distributed together.
+%% 
+%% File: l3color.dtx
+\RequirePackage{expl3}
+\ProvidesExplPackage{l3color}{2019-01-28}{}
+  {L3 Experimental color support}
+\tl_new:N \l__color_tmp_tl
+\prg_new_conditional:Npnn \__color_if_defined:n #1 { T, F, TF }
+  {
+    \tl_if_exist:cTF { l__color_named_ #1 _tl }
+      \prg_return_true:
+      \prg_return_false:
+  }
+\cs_new_protected:Npn \__color_extract:nNN #1#2#3
+  {
+    \exp_after:wN \exp_after:wN \exp_after:wN
+      \__color_extract:NNw
+      \exp_after:wN \exp_after:wN \exp_after:wN #2
+      \exp_after:wN \exp_after:wN \exp_after:wN #3
+        \cs:w l__color_named_ #1 _tl \cs_end: \q_stop
+  }
+\cs_generate_variant:Nn \__color_extract:nNN { V }
+\cs_new_protected:Npn \__color_extract:NNw #1#2 #3 ~ #4 \q_stop
+  {
+    \tl_set:Nn #1 {#3}
+    \tl_set:Nn #2 {#4}
+  }
+\cs_new_protected:Npn \__color_convert:nnN #1#2#3
+  { \__color_convert:nnVN {#1} {#2} #3 #3 }
+\cs_generate_variant:Nn \__color_convert:nnN { VV }
+\cs_new_protected:Npn \__color_convert:nnnN #1#2#3#4
+  {
+    \str_if_eq:nnT {#1} { spot } % TO DO!!!
+      { }
+    \tl_set:Nx #4
+      { \use:c { __color_convert_ #1 _ #2 :w } #3 ~ 0 ~ 0 ~ 0 \q_stop }
+  }
+\cs_generate_variant:Nn \__color_convert:nnnN { nnV }
+\cs_new:Npn \__color_convert_gray_rgb:w #1 ~ #2 \q_stop
+  { #1 ~ #1 ~ #1 }
+\cs_new:Npn \__color_convert_gray_cmyk:w #1 ~ #2 \q_stop
+  { 0 ~ 0 ~ 0 ~ \fp_eval:n { 1 - #1 } }
+\cs_new:Npn \__color_convert_rgb_gray:w #1 ~ #2 ~ #3 ~ #4 \q_stop
+  { \fp_eval:n { 0.3 * #1 + 0.59 * #2 + 0.11 * #3 } }
+\cs_new:Npn \__color_convert_rgb_cmyk:w #1 ~ #2 ~ #3 ~ #4 \q_stop
+  {
+    \exp_args:Nf \__color_convert_rgb_cmyk:nnnn
+      { \fp_eval:n { min ( 1 - #1 , 1 - #2 , 1 - #3 ) } } {#1} {#2} {#3}
+  }
+\cs_new:Npn \__color_convert_rgb_cmyk:nnnn #1#2#3#4
+  {
+    \fp_eval:n { min ( 1 , max ( 0 , 1 - #2 - #1 ) ) } \c_space_tl
+    \fp_eval:n { min ( 1 , max ( 0 , 1 - #3 - #1 ) ) } \c_space_tl
+    \fp_eval:n { min ( 1 , max ( 0 , 1 - #4 - #1 ) ) } \c_space_tl
+    #1
+  }
+\cs_new:Npn \__color_convert_cmyk_gray:w #1 ~ #2 ~ #3 ~ #4 ~ #5 \q_stop
+  { \fp_eval:n { 1 - min ( 1 , 0.3 * #1 + 0.59 * #2 + 0.11 * #3 + #4 ) } }
+\cs_new:Npn \__color_convert_cmyk_rgb:w #1 ~ #2 ~ #3 ~ #4 ~ #5 \q_stop
+  {
+    \fp_eval:n { 1 - min ( 1 , #1 + #4 ) } \c_space_tl
+    \fp_eval:n { 1 - min ( 1 , #2 + #4 ) } \c_space_tl
+    \fp_eval:n { 1 - min ( 1 , #3 + #4 ) }
+  }
+\tl_new:N \l__color_model_tl
+\tl_new:N \l__color_value_tl
+\tl_new:N \l__color_next_model_tl
+\tl_new:N \l__color_next_value_tl
+\cs_new_protected:Npn \color_parse:nN #1#2
+  {
+    \driver_color_pickup:N \l__color_current_tl
+    \tl_set_eq:cN { l__color_named_ . _tl } \l__color_current_tl
+    \group_begin:
+      \seq_map_inline:Nn \l_char_active_seq
+        {
+          \tl_set:Nx \l__color_tmp_tl { \cs_to_str:N ##1 }
+          \char_set_active_eq:NN ##1 \l__color_tmp_tl
+        }
+      \tl_set:Nx \l__color_tmp_tl {#1}
+    \exp_args:NNV \group_end:
+    \__color_parse:nN \l__color_tmp_tl #2
+  }
+\cs_new_protected:Npn \__color_parse:nN #1#2
+  {
+    \tl_if_exist:cTF { l__color_named_ #1 _tl }
+      { \tl_set_eq:Nc #2 { l__color_named_ #1 _tl } }
+      { \__color_parse:Nw #2#1 ! \q_stop }
+    \__color_check_model:N #2
+  }
+\cs_new_protected:Npn \__color_parse:Nw #1#2 ! #3 \q_stop
+  {
+    \__color_if_defined:nTF {#2}
+      {
+        \tl_if_blank:nTF {#3}
+          { \tl_set_eq:Nc #1 { l__color_named_ #2 _tl } }
+          { \__color_parse_loop_init:Nnn #1 {#2} {#3} }
+      }
+      {
+        \__kernel_msg_error:nnn { color } { unknown-color } {#3}
+        \tl_set_eq:NN \l__color_current_tl \l__color_named_black_tl
+      }
+  }
+\cs_new_protected:Npn \__color_parse_loop_init:Nnn #1#2#3
+  {
+    \group_begin:
+      \__color_extract:nNN {#2} \l__color_model_tl \l__color_value_tl
+      \__color_parse_loop:w #3 ! ! ! ! \q_stop
+      \tl_set:Nx \l__color_tmp_tl
+        { \l__color_model_tl \c_space_tl \l__color_value_tl }
+    \exp_args:NNNV \group_end:
+    \tl_set:Nn #1 \l__color_tmp_tl
+  }
+\cs_new_protected:Npn \__color_parse_loop:w #1 ! #2 ! #3 ! #4 ! #5 \q_stop
+  {
+    \bool_lazy_or:nnF
+      { \tl_if_blank_p:n {#1} }
+      { \int_compare_p:nNn {#1} = { 100 } }
+      {
+        \int_compare:nNnTF {#1} = { 0 }
+          {
+            \tl_if_blank:nTF {#2}
+              { \__color_extract:nNN { white } }
+              { \__color_extract:nNN {#2} }
+                \l__color_model_tl \l__color_value_tl
+          }
+          {
+            \use:x
+              {
+                \__color_parse_loop:nn {#1}
+                  { \tl_if_blank:nTF {#2} { white } {#2} }
+              }
+          }
+      }
+    \tl_if_blank:nF {#3}
+      { \__color_parse_loop:w #3 ! #4 ! #5 \q_stop }
+    \__color_parse_end:
+  }
+\cs_new_protected:Npn \__color_parse_loop:nn #1#2
+  {
+    \__color_if_defined:nTF {#2}
+      {
+        \__color_extract:nNN {#2} \l__color_next_model_tl \l__color_next_value_tl
+        \tl_if_eq:NNF \l__color_model_tl \l__color_next_model_tl
+          {
+            \str_if_eq:VnT \l__color_model_tl { gray }
+              {
+                \use:x
+                  {
+                    \tl_set:Nn \exp_not:N \l__color_model_tl
+                      { \l__color_next_model_tl }
+                    \tl_set:Nn \exp_not:N \l__color_value_tl
+                      { \l__color_next_value_tl }
+                    \tl_set:Nn \exp_not:N \l_next__color_model_tl
+                      { \l__color_model_tl }
+                    \tl_set:Nn \exp_not:N \l_next__color_value_tl
+                      { \l__color_value_tl }
+                  }
+              }
+            \__color_convert:VVN
+              \l__color_next_model_tl
+              \l__color_model_tl
+              \l__color_next_value_tl
+          }
+        \tl_set:Nx \l__color_value_tl
+          {
+            \__color_parse_mix:NVVn
+              \l__color_model_tl \l__color_value_tl \l__color_next_value_tl {#1}
+          }
+      }
+      {
+        \__kernel_msg_error:nnn { color } { unknown-color } {#2}
+        \__color_extract:nNN { black } \l__color_model_tl \l__color_value_tl
+        \__color_parse_break:w
+      }
+  }
+\cs_new_protected:Npn \__color_parse_break:w #1 \__color_parse_end: { }
+\cs_new_protected:Npn \__color_parse_end: { }
+\cs_new:Npn \__color_parse_mix:Nnnn #1#2#3#4
+  {
+    \exp_args:Nf \__color_parse_mix:nNnn
+      { \fp_eval:n { #4 / 100 } }
+      #1 {#2} {#3}
+  }
+\cs_generate_variant:Nn \__color_parse_mix:Nnnn { NVV }
+\cs_new:Npn \__color_parse_mix:nNnn #1#2#3#4
+  {
+    \use:c { __color_parse_mix_ #2 :nw } {#1}
+      #3 \q_mark #4 \q_stop
+  }
+\cs_new:Npn \__color_parse_mix_gray:nw #1#2 \q_mark #3 \q_stop
+  { \fp_eval:n { #2 * #1 + #3 * ( 1 - #1 ) } }
+\cs_new:Npn \__color_parse_mix_rgb:nw
+  #1#2 ~ #3 ~ #4 \q_mark #5 ~ #6 ~ #7 \q_stop
+  {
+    \fp_eval:n { #2 * #1 + #5 * ( 1 - #1 ) } \c_space_tl
+    \fp_eval:n { #3 * #1 + #6 * ( 1 - #1 ) } \c_space_tl
+    \fp_eval:n { #4 * #1 + #7 * ( 1 - #1 ) }
+  }
+\cs_new:Npn \__color_parse_mix_cmyk:nw
+  #1#2 ~ #3 ~ #4 ~ #5 \q_mark #6 ~ #7 ~ #8 ~ #9 \q_stop
+  {
+    \fp_eval:n { #2 * #1 + #6 * ( 1 - #1 ) } \c_space_tl
+    \fp_eval:n { #3 * #1 + #7 * ( 1 - #1 ) } \c_space_tl
+    \fp_eval:n { #4 * #1 + #8 * ( 1 - #1 ) } \c_space_tl
+    \fp_eval:n { #5 * #1 + #9 * ( 1 - #1 ) }
+  }
+\cs_new:Npn \__color_parse_gray:w #1 , #2 \q_stop {#1}
+\cs_new:Npn \__color_parse_rgb:w #1 , #2 , #3 , #4 \q_stop { #1 ~ #2 ~ #3 }
+\cs_new:Npn \__color_parse_cmyk:w #1 , #2 , #3 , #4 , #5 \q_stop
+  { #1 ~ #2 ~ #3 ~ #4 }
+\cs_new:Npn \__color_parse_spot:w #1 , #2 \q_stop
+  { \__color_parse_spot_aux:w #1 ! 100 ! \q_stop }
+\cs_new:Npn \__color_parse_spot_aux:w #1 ! #2 ! #3 \q_stop
+  { #1 ~ \fp_eval:n { #2 / 100 } }
+\tl_new:N \l_color_fixed_model_tl
+\cs_new_protected:Npn \__color_check_model:N #1
+  {
+    \tl_if_empty:NF \l_color_fixed_model_tl
+      {
+        \exp_after:wN \__color_check_model:w #1 \q_stop
+        \tl_if_eq:NNF \l__color_model_tl \l_color_fixed_model_tl
+          {
+            \__color_convert:VVN \l__color_model_tl \l_color_fixed_model_tl
+              \l__color_value_tl
+          }
+        \tl_set:Nx #1
+          { \l_color_fixed_model_tl \c_space_tl \l__color_value_tl }
+      }
+  }
+\cs_new_protected:Npn \__color_check_model:w #1 ~ #2 \q_stop
+  {
+    \tl_set:Nn \l__color_model_tl {#1}
+    \tl_set:Nn \l__color_value_tl {#2}
+  }
+\cs_new_protected:Npn \__color_select:
+  {
+    \tl_set_eq:cN { l__color_named_ . _tl } \l__color_current_tl
+    \__color_select:V \l__color_current_tl
+  }
+\cs_new_protected:Npn \color_select:n #1
+  {
+    \color_parse:nN {#1} \l__color_current_tl
+    \__color_select:
+  }
+\cs_new_protected:Npn \color_select:nn #1#2
+  {
+    \__color_direct:nnN {#1} {#2} \l__color_current_tl
+    \__color_select:
+  }
+\cs_new_protected:Npn \__color_direct:nnN #1#2#3
+  {
+    \cs_if_exist:cTF { __color_parse_ #1 :w }
+      {
+        \tl_set:Nx #3
+          { #1 ~ \use:c {  __color_parse_ #1 :w } #2 , 0 , 0 , 0 , 0 \q_stop }
+        \__color_check_model:N #3
+      }
+      {
+        \__kernel_msg_error:nnn { color } { invalid-model } {#1}
+      }
+  }
+\tl_new:N \l__color_named_tl
+\cs_new_protected:Npn \__color_store:Nn #1#2
+  {
+    \str_if_eq:nnF {#2} { . }
+      {
+        \tl_clear_new:c { l__color_named_ #2 _tl }
+        \tl_set_eq:cN { l__color_named_ #2 _tl } #1
+      }
+  }
+\cs_new_protected:Npn \color_set:nn #1#2
+  {
+    \color_parse:nN {#2} \l__color_named_tl
+    \__color_store:Nn \l__color_named_tl {#1}
+  }
+\cs_new_protected:Npn \color_set:nnn #1#2#3
+  {
+    \__color_direct:nnN {#2} {#3} \l__color_named_tl
+    \__color_store:Nn \l__color_named_tl {#1}
+  }
+\cs_new_protected:Npn \color_set_eq:nn #1#2
+  {
+    \__color_if_defined:nTF {#2}
+      {
+        \tl_clear_new:c { l__color_named_ #1 _tl }
+        \str_if_eq:nnTF {#2} { . }
+          { \tl_set_eq:cN { l__color_named_ #1 _tl } \l__color_current_tl }
+          { \tl_set_eq:cc { l__color_named_ #1 _tl } { l__color_named_ #2 _tl } }
+      }
+      {
+        \__kernel_msg_error:nnn { color } { unknown-color } {#2}
+      }
+  }
+\color_set:nnn { black } { gray } { 0 }
+\color_set:nnn { white } { gray } { 1 }
+\color_set:nnn { cyan }    { cmyk } { 1 , 0 , 0 , 0 }
+\color_set:nnn { magenta } { cmyk } { 0 , 1 , 0 , 0 }
+\color_set:nnn { yellow }  { cmyk } { 0 , 0 , 1 , 0 }
+\color_set:nnn { red }   { rgb } { 1 , 0 , 0 }
+\color_set:nnn { green } { rgb } { 0 , 1 , 0 }
+\color_set:nnn { blue }  { rgb } { 0 , 0 , 1 }
+\tl_new:c { l__color_named_._tl }
+\tl_set_eq:cN { l__color_named_._tl } \l__color_current_tl
+\cs_new_protected:Npn \color_show:n #1
+  {
+    \msg_show:nnxxxx { LaTeX / color } { show }
+      {#1}
+      {
+        \__color_if_defined:nTF {#1}
+          { \exp_last_unbraced:Nv \__color_show:w { l__color_named_ #1 _tl } \q_stop }
+          { }
+      }
+      { }
+      { }
+  }
+\cs_new:Npn \__color_show:w #1 ~ #2 \q_stop
+  {
+    \msg_show_item_unbraced:nn { model } {#1}
+    \exp_args:Nnf \msg_show_item_unbraced:nn { value }
+      { \use:c { __color_show_ #1 :w } #2 \q_stop }
+  }
+\cs_new:Npn \__color_show_gray:w #1 \q_stop { #1 }
+\cs_new:Npn \__color_show_rgb:w #1 ~ #2 ~ #3 \q_stop { #1 ,~ #2 ,~ #3 }
+\cs_new:Npn \__color_show_cmyk:w #1 ~ #2 ~ #3 ~ #4 \q_stop { #1 ,~ #2 ,~ #3 ,~ #4 }
+\__kernel_msg_new:nnnn { color } { invalid-model }
+  { Invalid~color~model~'#1'. }
+  {
+    LaTeX~has~been~asked~to~use~a~color~model~called~'#1',~
+    but~this~model~is~not~set~up.
+  }
+\__kernel_msg_new:nnnn { color } { unknown-color }
+  { Unknown~color~'#1'. }
+  {
+    LaTeX~has~been~asked~to~use~a~color~named~'#1',~
+    but~this~has~never~been~defined.
+  }
+\__kernel_msg_new:nnn { color } { show }
+  {
+    The~color~#1~
+    \tl_if_empty:nTF {#2}
+      { is~undefined. }
+      { has~the~properties: #2 }
+  }
+%% 
+%%
+%% End of file `l3color.sty'.

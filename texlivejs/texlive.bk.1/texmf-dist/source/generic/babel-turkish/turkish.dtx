@@ -1,0 +1,446 @@
+% \iffalse meta-comment
+%
+% Copyright 1989-2014 Johannes L. Braams and any individual authors
+% listed elsewhere in this file.  All rights reserved.
+% 
+% This file is part of the Babel system.
+% --------------------------------------
+% 
+% It may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2003/12/01 or later.
+% 
+% This work has the LPPL maintenance status "maintained".
+% 
+% The Current Maintainer of this work is Javier Bezos.
+% 
+% The list of all files belonging to the Babel system is
+% given in the file `manifest.bbl. See also `legal.bbl' for additional
+% information.
+% 
+% The list of derived (unpacked) files belonging to the distribution
+% and covered by LPPL is defined by the unpacking scripts (with
+% extension .ins) which are part of the distribution.
+% \fi
+% \CheckSum{347}
+% \iffalse
+%    Tell the \LaTeX\ system who we are and write an entry on the
+%    transcript.
+%<*dtx>
+\ProvidesFile{turkish.dtx}
+%</dtx>
+%<code>\ProvidesLanguage{turkish}
+%\fi
+%\ProvidesFile{turkish.dtx}
+        [2014/03/22 v1.3b Turkish support from the babel system]
+%\iffalse
+%% File `turkish.dtx'
+%
+%% Turkish Language Definition File
+%% Copyright (C) 1994 - 2005
+%%           by Mustafa Burc
+%%           rz6001@rziris01.rrz.uni-hamburg.de
+%%          (40) 2503476
+%
+%    This file is part of the babel system, it provides the source
+%    code for the Turkish language definition file.
+%<*filedriver>
+\documentclass{ltxdoc}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\title{The Turkish style for babel}
+\author{Mustafa Burc, Johannes Braams, Javier Bezos} 
+\newcommand*\TeXhax{\TeX hax}
+\newcommand*\babel{\textsf{babel}}
+\newcommand*\langvar{$\langle \it lang \rangle$}
+\newcommand*\note[1]{}
+\newcommand*\Lopt[1]{\textsf{#1}}
+\newcommand*\file[1]{\texttt{#1}}
+\begin{document}
+ \maketitle
+ \DocInput{turkish.dtx}
+\end{document}
+%</filedriver>
+%\fi
+% \GetFileInfo{turkish.dtx}
+%
+% \changes{turkish-1.2}{1994/02/27}{Update for \LaTeXe}
+% \changes{turkish-1.2c}{1994/06/26}{Removed the use of \cs{filedate}
+%    and moved identification after the loading of \file{babel.def}}
+% \changes{turkish-1.2h}{1996/07/13}{Replaced \cs{undefined} with
+%    \cs{@undefined} and \cs{empty} with \cs{@empty} for consistency
+%    with \LaTeX}
+% \changes{turkish-1.2i}{1996/10/10}{Moved the definition of
+%    \cs{atcatcode} right to the beginning.}
+%
+%  \section{The Turkish language}
+%
+%    The file \file{\filename}\footnote{The file described in this
+%    section has version number \fileversion\ and was last revised on
+%    \filedate.}  defines all the language definition macros for the
+%    Turkish language\footnote{Mustafa Burc,
+%    \texttt{z6001@rziris01.rrz.uni-hamburg.de} provided the code for
+%    this file. It is based on the work by Pierre Mackay; Turgut Uyar,
+%    \texttt{uyar@cs.itu.edu.tr} supplied additional translations in
+%    version 1.2j and later. Version 1.3 was prepared by Javier Bezos.}.
+%
+%    Turkish typographic rules specify that a little `white space'
+%    should be added before the characters `\texttt{:}', `\texttt{!}'
+%    and `\texttt{=}'. In order to insert this white space
+%    automatically these characters are made `active'. Also
+%    |\frenhspacing| is set.
+%
+%    Typical usage with pdf\TeX{} is:
+%\begin{verbatim}
+%\usepackage[T1]{fontenc}
+%\usepackage[utf8]{inputenc} % also latin5
+%\usepackage[turkish]{babel}
+%\end{verbatim}
+%
+%    The |=| shorthand is potentially dangerous. You can deactivate
+%    with the \textsf{babel} option |shorthands| or with |\shorthandoff|:
+%
+%\begin{verbatim}
+%\usepackage[turkish,shorthands=:!]{babel}
+%\end{verbatim}
+%
+%
+% This style doesn't handle the fi ligature (yet). You can break it by
+% hand with |f{}i| or |f{\kern0pt}i|, but this can be
+% done automatically, too. With pdf\TeX{} and monolingual documents,
+% use \textsf{microtype}, as for example:
+%\begin{verbatim}
+%\usepackage{microtype}
+%\DisableLigatures[f]{encoding = *, family = *}
+%\end{verbatim}
+%
+%    With Xe\TeX, ligatures are handled internally by the font, provided the
+%    corresponding feature has been implemented (not all fonts do); e.~g.:
+%\begin{verbatim}
+%\usepackage{fontspec}
+%\setmainfont[Language=Turkish]{Iwona}
+%\end{verbatim}
+%
+%    With Lua\TeX{} you can use either method (remember with
+%    \textsf{microtype} you have also to set |Renderer=Basic|, at
+%    least at the time of this writing). Alternative approachs with
+%    Lua\TeX{} are the \textsf{setnolig} package or a |fea| file (not
+%    provided here).
+%
+% \StopEventually{}
+%
+%  \subsection*{The code}
+%
+%    The macro |\LdfInit| takes care of preventing that this file is
+%    loaded more than once, checking the category code of the
+%    \texttt{@} sign, etc.
+% \changes{turkish-1.2i}{1996/11/03}{ow use \cs{LdfInit} to perform
+%    initial checks} 
+%    \begin{macrocode}
+%<*code>
+\LdfInit{turkish}\captionsturkish
+%    \end{macrocode}
+%
+%    When this file is read as an option, i.e. by the |\usepackage|
+%    command, \texttt{turkish} could be an `unknown' language in which
+%    case we have to make it known. So we check for the existence of
+%    |\l@turkish| to see whether we have to do something here.
+%
+% \changes{turkish-1.2c}{1994/06/26}{Now use \cs{@nopatterns} to
+%    produce the warning}
+%    \begin{macrocode}
+\ifx\l@turkish\@undefined
+  \@nopatterns{Turkish}
+  \adddialect\l@turkish0\fi
+%    \end{macrocode}
+%
+%    The next step consists of defining commands to switch to (and
+%    from) the Turkish language.
+%
+% \begin{macro}{\captionsturkish}
+%    The macro |\captionsturkish| defines all strings used in the four
+%    standard documentclasses provided with \LaTeX.
+% \changes{turkish-1.1}{1993/07/15}{\cs{headpagename} should be
+%    \cs{pagename}}
+% \changes{turkish-1.2b}{1994/06/04}{Added braces behind \cs{i} in
+%    strings}
+% \changes{turkish-1.2f}{1995/07/04}{Added \cs{proofname} for
+%    AMS-\LaTeX} 
+% \changes{turkish-1.2j}{1997/09/29}{Added and modified translations}
+% \changes{turkish-1.2k}{1999/04/18}{Incorporated some more
+%    corrections} 
+% \changes{turkish-1.2m}{2000/09/20}{Added \cs{glossaryname}}
+%    \begin{macrocode}
+\addto\captionsturkish{%
+  \def\prefacename{\"Ons\"oz}%
+  \def\refname{Kaynaklar}%
+  \def\abstractname{\"Ozet}%
+  \def\bibname{Kaynak\c ca}%
+  \def\chaptername{B\"ol\"um}%
+  \def\appendixname{Ek}%
+  \def\contentsname{\.I\c cindekiler}%
+  \def\listfigurename{\c Sekil Listesi}%
+  \def\listtablename{Tablo Listesi}%
+  \def\indexname{Dizin}%
+  \def\figurename{\c Sekil}%
+  \def\tablename{Tablo}%
+  \def\partname{K\i s\i m}%
+  \def\enclname{\.Ili\c sik}%
+  \def\ccname{Di\u ger Al\i c\i lar}%
+  \def\headtoname{Al\i c\i}%
+  \def\pagename{Sayfa}%
+  \def\subjectname{\.Ilgili}%
+  \def\seename{bkz.}%
+  \def\alsoname{ayr\i ca bkz.}%
+  \def\proofname{Kan\i t}%
+  \def\glossaryname{L\"ugat\c ce}% <-- Tentative
+}%
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\dateturkish}
+%    The macro |\dateturkish| redefines the command |\today| to
+%    produce Turkish dates.
+% \changes{turkish-1.2b}{1994/06/04}{Added braces behind \cs{i} in
+%    strings}
+% \changes{turkish-1.2d}{1995/01/31}{removed extra closing brace,
+%    \cs{mont} should be \cs{month}}
+% \changes{turkish-1.2j}{1997/10/01}{Use \cs{edef} to define
+%    \cs{today} to save memory}
+% \changes{turkish-1.2j}{1998/03/28}{use \cs{def} instead of
+%    \cs{edef}}
+% \changes{turkish-1.2l}{1999/05/17}{removed dot from the date format}
+%    \begin{macrocode}
+\def\dateturkish{%
+  \def\today{\number\day~\ifcase\month\or
+    Ocak\or \c Subat\or Mart\or Nisan\or May\i s\or Haziran\or
+    Temmuz\or A\u gustos\or Eyl\"ul\or Ekim\or Kas\i m\or
+    Aral\i k\fi
+    \space\number\year}}
+%    \end{macrocode}
+%
+%   The following code is taken into account only with babel 3.9g and
+%   later. Defines case and hyphen mapping, as well as UTF-8
+%   strings. First the Unicode branch.
+% \changes{turkish-1.3a}{2014/01/02}{Code for babel 3.9: case and
+%     hyphen mapping, utf8 strings}
+% \changes{turkish-1.3a}{2014/01/03}{Use space instead of braces after
+%   \cs{i}}
+% \changes{turkish-1.3b}{2014/03/22}{Now only tests \cs{BabelLower}. babel
+%    >=3.9i required}
+%    \begin{macrocode}
+\ifx\BabelLower\@undefined\else
+\StartBabelCommands*{turkish}{captions}
+  [unicode, charset=utf8, fontenc=EU1 EU2]
+  \SetString\prefacename{Önsöz}
+  \SetString\refname{Kaynaklar}
+  \SetString\abstractname{Özet}
+  \SetString\bibname{Kaynakça}
+  \SetString\chaptername{Bölüm}
+  \SetString\appendixname{Ek}
+  \SetString\contentsname{İçindekiler}
+  \SetString\listfigurename{Şekil Listesi}
+  \SetString\listtablename{Tablo Listesi}
+  \SetString\indexname{Dizin}
+  \SetString\figurename{Şekil}
+  \SetString\tablename{Tablo}
+  \SetString\partname{Kısım}
+  \SetString\enclname{İlişik}
+  \SetString\ccname{Diğer Alıcılar}
+  \SetString\headtoname{Alıcı}
+  \SetString\pagename{Sayfa}
+  \SetString\subjectname{İlgili}
+  \SetString\seename{bkz.}
+  \SetString\alsoname{ayrıca bkz.}
+  \SetString\proofname{Kanıt}
+  \SetString\glossaryname{Lügatçe}% <-- Tentative
+  \SetCase
+    {\uccode`i=`İ\relax
+     \uccode`ı=`I\relax}
+    {\lccode`İ=`i\relax
+     \lccode`I=`ı\relax}
+  \SetHyphenMap{%
+    \BabelLower{`İ}{`i}%
+    \BabelLower{`I}{`ı}}
+\StartBabelCommands*{turkish}{date}
+  [unicode, charset=utf8, fontenc=EU1 EU2]
+  \SetStringLoop{month#1name}{%
+    Ocak,Şubat,Mart,Nisan,Mayıs,Haziran,%
+    Temmuz,Ağustos,Eylül,Ekim,Kasım,Aralık}
+%    \end{macrocode}
+%    Now the OT1 branch, only partially, because this encoding is not
+%    suited for Turkish (no dotted I).
+%    \begin{macrocode}
+\StartBabelCommands{turkish}{}[ot1enc, fontenc=OT1]
+  \SetCase
+    {\uccode"10=`I\relax}
+    {\lccode`I="10\relax}
+%    \end{macrocode}
+%    And finally, the generic branch, using the LICR and assuming T1.
+%    \begin{macrocode}
+\StartBabelCommands*{turkish}{captions}
+  \SetString\prefacename{\"Ons\"oz}
+  \SetString\refname{Kaynaklar}
+  \SetString\abstractname{\"Ozet}
+  \SetString\bibname{Kaynak\c ca}
+  \SetString\chaptername{B\"ol\"um}
+  \SetString\appendixname{Ek}
+  \SetString\contentsname{\.I\c cindekiler}
+  \SetString\listfigurename{\c Sekil Listesi}
+  \SetString\listtablename{Tablo Listesi}
+  \SetString\indexname{Dizin}
+  \SetString\figurename{\c Sekil}
+  \SetString\tablename{Tablo}
+  \SetString\partname{K\i s\i m}
+  \SetString\enclname{\.Ili\c sik}
+  \SetString\ccname{Di\u ger Al\i c\i lar}
+  \SetString\headtoname{Al\i c\i}
+  \SetString\pagename{Sayfa}
+  \SetString\subjectname{\.Ilgili}
+  \SetString\seename{bkz.}
+  \SetString\alsoname{ayr\i ca bkz.}
+  \SetString\proofname{Kan\i t}
+  \SetString\glossaryname{L\"ugat\c ce}% <-- Tentative
+  \SetCase
+    {\uccode`i="9D\relax
+     \uccode"19=`I\relax}
+    {\lccode"9D=`i\relax
+     \lccode`I="19\relax}
+  \SetHyphenMap{%
+    \BabelLower{"9D}{`i}%
+    \BabelLower{`I}{"19}}
+\StartBabelCommands*{turkish}{date}
+  \SetStringLoop{month#1name}{%
+    Ocak,\c Subat,Mart,Nisan,May\i s,Haziran,%
+    Temmuz,A\u gustos,Eyl\"ul,Ekim,Kas\i m,Aral\i k}
+  \SetString\today{%
+    \number\day~\@nameuse{month\romannumeral\month name}%
+    \space\number\year}
+\EndBabelCommands
+\fi
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\extrasturkish}
+% \changes{turkish-1.2e}{1995/05/15}{Completely rewrote macro}
+% \begin{macro}{\noextrasturkish}
+%    The macro |\extrasturkish| will perform all the extra definitions
+%    needed for the Turkish language. The macro |\noextrasturkish| is
+%    used to cancel the actions of |\extrasturkish|.
+%
+%    Turkish typographic rules specify that a little `white space'
+%    should be added before the characters `\texttt{:}', `\texttt{!}'
+%    and `\texttt{=}'. In order to insert this white space
+%    automatically these characters are made |\active|, so they have
+%    to be treated in a special way.
+%    \begin{macrocode}
+\initiate@active@char{:}
+\initiate@active@char{!}
+%    \end{macrocode}
+%    We specify that the turkish group of shorthands should be used.
+%    These characters are `turned on' once, later their definition may
+%    vary. 
+%    \begin{macrocode}
+\addto\extrasturkish{%
+  \languageshorthands{turkish}%
+  \bbl@activate{:}%
+  \bbl@activate{!}%
+  \bbl@activate{=}%
+  \bbl@frenchspacing}
+%    \end{macrocode}
+%
+%    For Turkish texts |\frenchspacing| should be in effect. We
+%    make sure this is the case and reset it if necessary.
+% \changes{turkish-1.2e}{1995/05/15}{now use \cs{bbl@frenchspacing}
+%    and \cs{bbl@nonfrenchspacing}}
+%    \begin{macrocode}
+\addto\noextrasturkish{\bbl@nonfrenchspacing}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\turkish@sh@!@}
+% \begin{macro}{\turkish@sh@=@}
+% \begin{macro}{\turkish@sh@:@}
+%    The definitions for the three active characters were made using
+%    intermediate macros. These are defined now. The insertion of
+%    extra `white space' should only happen outside math mode, hence
+%    the check |\ifmmode| in the macros.
+% \changes{turkish-1.2d}{1995/01/31}{Added missing \cs{def}}
+% \changes{turkish-1.2e}{1995/05/15}{Use the new mechanism of
+%    \cs{declare@shorthand}}
+%    \begin{macrocode}
+\declare@shorthand{turkish}{:}{%
+  \ifmmode
+    \string:%
+  \else\relax
+    \ifhmode
+      \ifdim\lastskip>\z@
+        \unskip\penalty\@M\thinspace
+      \fi
+    \fi
+    \string:%
+  \fi}
+\declare@shorthand{turkish}{!}{%
+  \ifmmode
+    \string!%
+  \else\relax
+    \ifhmode
+      \ifdim\lastskip>\z@
+        \unskip\penalty\@M\thinspace
+      \fi
+    \fi
+    \string!%
+  \fi}
+\initiate@active@char{=}
+\declare@shorthand{turkish}{=}{%
+  \ifmmode
+    \string=%
+  \else\relax
+    \ifhmode
+      \ifdim\lastskip>\z@
+        \unskip\kern\fontdimen2\font
+        \kern-1.4\fontdimen3\font
+      \fi
+    \fi
+    \string=%
+  \fi}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+%    The macro |\ldf@finish| takes care of looking for a
+%    configuration file, setting the main language to be switched on
+%    at |\begin{document}| and resetting the category code of
+%    \texttt{@} to its original value.
+% \changes{turkish-1.2i}{1996/11/03}{Now use \cs{ldf@finish} to wrap
+%    up} 
+%    \begin{macrocode}
+\ldf@finish{turkish}
+%</code>
+%    \end{macrocode}
+%
+% \Finale
+%%
+%% \CharacterTable
+%%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%%   Digits        \0\1\2\3\4\5\6\7\8\9
+%%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%%   Dollar        \$     Percent       \%     Ampersand     \&
+%%   Acute accent  \'     Left paren    \(     Right paren   \)
+%%   Asterisk      \*     Plus          \+     Comma         \,
+%%   Minus         \-     Point         \.     Solidus       \/
+%%   Colon         \:     Semicolon     \;     Less than     \<
+%%   Equals        \=     Greater than  \>     Question mark \?
+%%   Commercial at \@     Left bracket  \[     Backslash     \\
+%%   Right bracket \]     Circumflex    \^     Underscore    \_
+%%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%%   Right brace   \}     Tilde         \~}
+%%
+\endinput

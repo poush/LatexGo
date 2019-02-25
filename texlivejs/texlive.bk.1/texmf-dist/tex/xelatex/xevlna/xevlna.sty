@@ -1,0 +1,63 @@
+\expandafter\ifx\csname ProvidesPackage\endcsname\relax % No identification in plain XeTeX
+\else % Identification for XeLaTeX
+\ProvidesPackage{xevlna}[2016/09/05 vlna for both XeLaTeX and plain XeTeX]
+\PackageInfo{xevlna}{$Id: xevlna.sty 533 2016-09-07 00:22:25Z zw $\@gobble}
+\fi
+
+\edef\CSat{\the\catcode`\@} % in order to work in plain XeTeX
+\catcode`\@=11
+\ifdefined\e@alloc@intercharclass@top
+  \chardef\CSboundary=\e@alloc@intercharclass@top
+\else
+  \ifdefined\XeTeXinterwordspaceshaping
+    \chardef\CSboundary=4095 %
+    \def\newXeTeXintercharclass{%
+      \e@alloc\XeTeXcharclass\chardef
+              \xe@alloc@intercharclass\m@ne\@ucharclass@boundary}
+  \else
+    \chardef\CSboundary=255
+  \fi
+\fi
+\catcode`\@=\CSat
+
+\XeTeXinterchartokenstate 1
+\newXeTeXintercharclass\CSopenpunctuation
+\newXeTeXintercharclass\CSnonsyllabicpreposition
+\XeTeXcharclass`\(\CSopenpunctuation
+\XeTeXcharclass`\[\CSopenpunctuation
+\XeTeXcharclass`\„\CSopenpunctuation
+\XeTeXcharclass`\»\CSopenpunctuation
+\XeTeXcharclass`\K\CSnonsyllabicpreposition
+\XeTeXcharclass`\k\CSnonsyllabicpreposition
+\XeTeXcharclass`\S\CSnonsyllabicpreposition
+\XeTeXcharclass`\s\CSnonsyllabicpreposition
+\XeTeXcharclass`\V\CSnonsyllabicpreposition
+\XeTeXcharclass`\v\CSnonsyllabicpreposition
+\XeTeXcharclass`\Z\CSnonsyllabicpreposition
+\XeTeXcharclass`\z\CSnonsyllabicpreposition
+\XeTeXcharclass`\O\CSnonsyllabicpreposition
+\XeTeXcharclass`\o\CSnonsyllabicpreposition
+\XeTeXcharclass`\U\CSnonsyllabicpreposition
+\XeTeXcharclass`\u\CSnonsyllabicpreposition
+\XeTeXcharclass`\A\CSnonsyllabicpreposition
+\XeTeXcharclass`\a\CSnonsyllabicpreposition
+\XeTeXcharclass`\I\CSnonsyllabicpreposition
+\XeTeXcharclass`\i\CSnonsyllabicpreposition
+\XeTeXinterchartoks \CSboundary \CSnonsyllabicpreposition {\CSinterchartoks}
+\XeTeXinterchartoks \CSopenpunctuation \CSnonsyllabicpreposition {\CSinterchartoks}
+\def\CSnointerchartoks{\let\CSinterchartoks\PreCSpreposition}
+\def\PreCSpreposition{\def\next{}%
+  \ifnum\catcode`\ =10 % nothing will be done in verbatim
+  \ifmmode % nothing in math
+  \else
+    \let\CSinterchartoks\CSnointerchartoks
+    \let\next\ExamineCSpreposition
+  \fi \fi
+  \next}
+\def\ExamineCSpreposition #1{#1\futurelet\next\ProcessCSpreposition}
+\def\ProcessCSpreposition{\ifx\next\xevlnaXeTeXspace\nobreak\fi}
+\futurelet\xevlnaXeTeXspace{ }\CSnointerchartoks
+
+% Enabling and disabling
+\def\xevlnaDisable{\def\CSinterchartoks{}}
+\let\xevlnaEnable\CSnointerchartoks

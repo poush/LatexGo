@@ -1,0 +1,84 @@
+%%
+%% This is file `lwarp-xtab.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `xtab')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+
+\LWR@ProvidesPackageDrop{xtab}[2011/07/31]
+\newcommand{\LWRXT@firsthead}{}
+
+\newcommand{\tablefirsthead}[1]{%
+    \long\gdef\LWRXT@firsthead{#1}%
+}
+
+\newcommand{\tablehead}[1]{}
+
+\newcommand{\tablelasthead}[1]{}
+
+\newcommand{\notablelasthead}{}
+
+\newcommand{\tabletail}[1]{}
+
+\newcommand{\LWRXT@lasttail}{}
+
+\newcommand{\tablelasttail}[1]{%
+    \long\gdef\LWRXT@lasttail{#1}%
+}
+\newcommand{\tablecaption}[2][]{%
+    \long\gdef\LWRXT@caption{%
+        \ifblank{#1}%
+            {\caption{#2}}%
+            {\caption[#1]{#2}}%
+    }%
+}
+
+\let\topcaption\tablecaption
+\let\bottomcaption\tablecaption
+\newcommand*{\LWRXT@caption}{}
+
+\newcommand*{\shrinkheight}[1]{}
+
+\newcommand*{\xentrystretch}[1]{}
+
+\NewDocumentEnvironment{xtabular}{s o m}
+{%
+\LWR@traceinfo{xtabular}%
+\table%
+\LWRXT@caption%
+\begin{tabular}{#3}%
+\TabularMacro\ifdefvoid{\LWRXT@firsthead}%
+{\LWR@getmynexttoken}%
+{\expandafter\LWR@getmynexttoken\LWRXT@firsthead}%
+}%
+{%
+\ifdefvoid{\LWRXT@lasttail}%
+{}%
+{%
+\TabularMacro\ResumeTabular%
+\LWRXT@lasttail%
+}%
+\end{tabular}%
+\endtable%
+\LWR@traceinfo{xtabular done}%
+}
+
+\NewDocumentEnvironment{mpxtabular}{s o m}
+{\minipage{\linewidth}\xtabular{#3}}
+{\endxtabular\endminipage}
+
+\endinput
+%%
+%% End of file `lwarp-xtab.sty'.

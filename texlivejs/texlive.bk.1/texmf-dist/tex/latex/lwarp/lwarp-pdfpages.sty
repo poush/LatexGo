@@ -1,0 +1,104 @@
+%%
+%% This is file `lwarp-pdfpages.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `pdfpages')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+\LWR@ProvidesPackagePass{pdfpages}[2017-10-31]
+\define@key{pdfpages}{fitpaper}[false]{}
+\define@key{pdfpages}{landscape}[false]{}
+\define@key{pdfpages}{openright}[false]{}
+\define@key{pdfpages}{signature}{}
+\define@key{pdfpages}{signature*}{}
+\define@key{pdfpages}{booklet}[false]{}
+\define@key{pdfpages}{rotateoversize}[false]{}
+\define@key{pdfpages}{doublepages}[false]{}
+\define@key{pdfpages}{doublepagestwist}[false]{}
+\define@key{pdfpages}{doublepagestwistodd}[false]{}
+\define@key{pdfpages}{doublepagestwist*}[false]{}
+\define@key{pdfpages}{doublepagestwistodd*}[false]{}
+\define@key{pdfpages}{duplicatepages}[2]{}
+\define@key{pdfpages}{thread}[false]{}
+\define@key{pdfpages}{threadname}{}
+\define@key{pdfpages}{linkfit}{}
+\define@key{pdfpages}{linktodoc}[false]{}
+\define@key{pdfpages}{linktodocfit}{}
+\define@key{pdfpages}{linkfilename}{}
+\define@key{pdfpages}{survey}[false]{}
+\define@key{pdfpages}{survey-nolink}[false]{}
+\define@key{pdfpages}{newwindow}[false]{}
+\xpretocmd{\AM@getpagecount}{\LWR@restoreorigformatting}{}{}
+\newif\ifESO@texcoord
+
+\newcommand{\ESO@HookIIBG}{}
+
+\renewcommand{\AM@AddToShipoutPicture}{\g@addto@macro\ESO@HookIIBG}
+
+\renewcommand{\ClearShipoutPicture}{}
+\newcommand*{\LWR@esopic@newpage}{%
+\ifdefvoid{\ESO@HookIIBG}%
+{}%
+{%
+    \ifAM@link%
+        \hypertarget{\AM@linkname.\AM@page}{}%
+    \fi%
+    \begingroup%
+    \setlength{\unitlength}{1in}%
+    \begin{picture}(8,10.5)%
+    \ESO@HookIIBG%
+    \end{picture}%
+    \endgroup%
+    \global\let\ESO@HookIIBG\@empty%
+}
+}
+\xpatchcmd{\AM@output}
+    {\newpage}
+    {\LWR@esopic@newpage}
+    {}
+    {\LWR@patcherror{pdfpages}{AM@output-1}}
+
+\xpatchcmd{\AM@output}
+    {\newpage}
+    {\LWR@esopic@newpage}
+    {}
+    {\LWR@patcherror{pdfpages}{AM@output-2}}
+
+\xpatchcmd{\AM@output}
+    {\newpage}
+    {\LWR@esopic@newpage}
+    {}
+    {\LWR@patcherror{pdfpages}{AM@output-3}}
+\xpretocmd{\includepdf}{%
+    \begingroup%
+    \setlength{\paperwidth}{8in}%
+    \setlength{\paperheight}{10.5in}%
+}{}{}
+
+\xapptocmd{\includepdf}{%
+    \endgroup%
+}{}{}
+
+\xpretocmd{\includepdfmerge}{%
+    \begingroup%
+    \setlength{\paperwidth}{8in}%
+    \setlength{\paperheight}{10.5in}%
+}{}{}
+
+\xapptocmd{\includepdfmerge}{%
+    \endgroup%
+}{}{}
+\renewcommand{\AM@hyper@begin@i}{}
+\endinput
+%%
+%% End of file `lwarp-pdfpages.sty'.

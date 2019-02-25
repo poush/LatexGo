@@ -1,0 +1,628 @@
+% \iffalse meta-comment
+%
+%% File: l3fp-convert.dtx
+%
+% Copyright (C) 2011-2019 The LaTeX3 Project
+%
+% It may be distributed and/or modified under the conditions of the
+% LaTeX Project Public License (LPPL), either version 1.3c of this
+% license or (at your option) any later version.  The latest version
+% of this license is in the file
+%
+%    https://www.latex-project.org/lppl.txt
+%
+% This file is part of the "l3kernel bundle" (The Work in LPPL)
+% and all files in that bundle must be distributed together.
+%
+% -----------------------------------------------------------------------
+%
+% The development version of the bundle can be found at
+%
+%    https://github.com/latex3/latex3
+%
+% for those people who are interested.
+%
+%<*driver>
+\documentclass[full,kernel]{l3doc}
+\begin{document}
+  \DocInput{\jobname.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \title{^^A
+%   The \textsf{l3fp-convert} package\\ Floating point conversion^^A
+% }
+%
+% \author{^^A
+%  The \LaTeX3 Project\thanks
+%    {^^A
+%      E-mail:
+%        \href{mailto:latex-team@latex-project.org}
+%          {latex-team@latex-project.org}^^A
+%    }^^A
+% }
+%
+% \date{Released 2019-02-15}
+%
+% \maketitle
+%
+% \begin{documentation}
+%
+% \end{documentation}
+%
+% \begin{implementation}
+%
+% \section{\texttt{l3fp-convert} implementation}
+%
+%    \begin{macrocode}
+%<*initex|package>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%<@@=fp>
+%    \end{macrocode}
+%
+% \subsection{Dealing with tuples}
+%
+% \begin{macro}[EXP]
+%   {\@@_tuple_convert:Nw, \@@_tuple_convert_loop:nNw, \@@_tuple_convert_end:w}
+%   The first argument is for instance \cs{@@_to_tl_dispatch:w}, which
+%   converts any floating point object to the appropriate
+%   representation.  We loop through all items, putting |,~| between all
+%   of them and making sure to remove the leading |,~|.
+%    \begin{macrocode}
+\cs_new:Npn \@@_tuple_convert:Nw #1 \s_@@_tuple \@@_tuple_chk:w #2 ;
+  {
+    \int_case:nnF { \@@_array_count:n {#2} }
+      {
+        { 0 } { ( ) }
+        { 1 } { \@@_tuple_convert_end:w @ { #1 #2 , } }
+      }
+      {
+        \@@_tuple_convert_loop:nNw { } #1
+          #2 { ? \@@_tuple_convert_end:w } ;
+          @ { \use_none:nn }
+      }
+  }
+\cs_new:Npn \@@_tuple_convert_loop:nNw #1#2#3#4; #5 @ #6
+  {
+    \use_none:n #3
+    \exp_args:Nf \@@_tuple_convert_loop:nNw { #2 #3#4 ; } #2 #5
+      @ { #6 , ~ #1 }
+  }
+\cs_new:Npn \@@_tuple_convert_end:w #1 @ #2
+  { \exp_after:wN ( \exp:w \exp_end_continue_f:w #2 ) }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Trimming trailing zeros}
+%
+% \begin{macro}[EXP]{\@@_trim_zeros:w}
+% \begin{macro}[EXP]
+%   {\@@_trim_zeros_loop:w, \@@_trim_zeros_dot:w, \@@_trim_zeros_end:w}
+%   If |#1| ends with a $0$, the \texttt{loop} auxiliary takes that zero
+%   as an end-delimiter for its first argument, and the second argument
+%   is the same \texttt{loop} auxiliary.  Once the last trailing zero is
+%   reached, the second argument is the \texttt{dot} auxiliary,
+%   which removes a trailing dot if any.  We then clean-up with the
+%   \texttt{end} auxiliary, keeping only the number.
+%    \begin{macrocode}
+\cs_new:Npn \@@_trim_zeros:w #1 ;
+  {
+    \@@_trim_zeros_loop:w #1
+      ; \@@_trim_zeros_loop:w 0; \@@_trim_zeros_dot:w .; \s_stop
+  }
+\cs_new:Npn \@@_trim_zeros_loop:w #1 0; #2 { #2 #1 ; #2 }
+\cs_new:Npn \@@_trim_zeros_dot:w #1 .; { \@@_trim_zeros_end:w #1 ; }
+\cs_new:Npn \@@_trim_zeros_end:w #1 ; #2 \s_stop { #1 }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Scientific notation}
+%
+% \begin{macro}[EXP]
+%   {\fp_to_scientific:N, \fp_to_scientific:c, \fp_to_scientific:n}
+%   The three public functions evaluate their argument, then pass it to
+%   \cs{@@_to_scientific_dispatch:w}.
+%    \begin{macrocode}
+\cs_new:Npn \fp_to_scientific:N #1
+  { \exp_after:wN \@@_to_scientific_dispatch:w #1 }
+\cs_generate_variant:Nn \fp_to_scientific:N { c }
+\cs_new:Npn \fp_to_scientific:n
+  {
+    \exp_after:wN \@@_to_scientific_dispatch:w
+    \exp:w \exp_end_continue_f:w \@@_parse:n
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]
+%   {\@@_to_scientific_dispatch:w, \@@_to_scientific_recover:w, \@@_tuple_to_scientific:w}
+%   We allow tuples.
+%    \begin{macrocode}
+\cs_new:Npn \@@_to_scientific_dispatch:w #1
+  {
+    \@@_change_func_type:NNN
+      #1 \@@_to_scientific:w \@@_to_scientific_recover:w
+    #1
+  }
+\cs_new:Npn \@@_to_scientific_recover:w #1 #2 ;
+  {
+    \@@_error:nffn { fp-unknown-type } { \tl_to_str:n { #2 ; } } { } { }
+    nan
+  }
+\cs_new:Npn \@@_tuple_to_scientific:w
+  { \@@_tuple_convert:Nw \@@_to_scientific_dispatch:w }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]
+%   {
+%     \@@_to_scientific:w,
+%     \@@_to_scientific_normal:wnnnnn,
+%     \@@_to_scientific_normal:wNw
+%   }
+%   Expressing an internal floating point number in scientific notation
+%   is quite easy: no rounding, and the format is very well defined.
+%   First cater for the sign: negative numbers ($|#2|=2$) start
+%   with~|-|; we then only need to care about positive numbers and
+%   \texttt{nan}.  Then filter the special cases: $\pm0$~are represented
+%   as~|0|; infinities are converted to a number slightly larger than
+%   the largest after an \enquote{invalid_operation} exception;
+%   \texttt{nan} is represented as~|0| after an
+%   \enquote{invalid_operation} exception.  In the normal case,
+%   decrement the exponent and unbrace the $4$ brace groups, then in a
+%   second step grab the first digit (previously hidden in braces) to
+%   order the various parts correctly.
+%    \begin{macrocode}
+\cs_new:Npn \@@_to_scientific:w \s_@@ \@@_chk:w #1#2
+  {
+    \if_meaning:w 2 #2 \exp_after:wN - \exp:w \exp_end_continue_f:w \fi:
+    \if_case:w #1 \exp_stop_f:
+         \@@_case_return:nw { 0.000000000000000e0 }
+    \or: \exp_after:wN \@@_to_scientific_normal:wnnnnn
+    \or:
+      \@@_case_use:nw
+        {
+          \@@_invalid_operation:nnw
+            { \fp_to_scientific:N \c_@@_overflowing_fp }
+            { fp_to_scientific }
+        }
+    \or:
+      \@@_case_use:nw
+        {
+          \@@_invalid_operation:nnw
+            { \fp_to_scientific:N \c_zero_fp }
+            { fp_to_scientific }
+        }
+    \fi:
+    \s_@@ \@@_chk:w #1 #2
+  }
+\cs_new:Npn \@@_to_scientific_normal:wnnnnn
+  \s_@@ \@@_chk:w 1 #1 #2 #3#4#5#6 ;
+  {
+    \exp_after:wN \@@_to_scientific_normal:wNw
+    \exp_after:wN e
+    \int_value:w \@@_int_eval:w #2 - 1
+    ; #3 #4 #5 #6 ;
+  }
+\cs_new:Npn \@@_to_scientific_normal:wNw #1 ; #2#3;
+  { #2.#3 #1 }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Decimal representation}
+%
+% \begin{macro}[EXP]
+%   {\fp_to_decimal:N, \fp_to_decimal:c, \fp_to_decimal:n}
+%   All three public variants are based on the same
+%   \cs{@@_to_decimal_dispatch:w}
+%   after evaluating their argument to an internal floating point.
+%    \begin{macrocode}
+\cs_new:Npn \fp_to_decimal:N #1
+  { \exp_after:wN \@@_to_decimal_dispatch:w #1 }
+\cs_generate_variant:Nn \fp_to_decimal:N { c }
+\cs_new:Npn \fp_to_decimal:n
+  {
+    \exp_after:wN \@@_to_decimal_dispatch:w
+    \exp:w \exp_end_continue_f:w \@@_parse:n
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]
+%   {\@@_to_decimal_dispatch:w, \@@_to_decimal_recover:w, \@@_tuple_to_decimal:w}
+%   We allow tuples.
+%    \begin{macrocode}
+\cs_new:Npn \@@_to_decimal_dispatch:w #1
+  {
+    \@@_change_func_type:NNN
+      #1 \@@_to_decimal:w \@@_to_decimal_recover:w
+    #1
+  }
+\cs_new:Npn \@@_to_decimal_recover:w #1 #2 ;
+  {
+    \@@_error:nffn { fp-unknown-type } { \tl_to_str:n { #2 ; } } { } { }
+    nan
+  }
+\cs_new:Npn \@@_tuple_to_decimal:w
+  { \@@_tuple_convert:Nw \@@_to_decimal_dispatch:w }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]
+%   {
+%     \@@_to_decimal:w,
+%     \@@_to_decimal_normal:wnnnnn,
+%     \@@_to_decimal_large:Nnnw,
+%     \@@_to_decimal_huge:wnnnn,
+%   }
+%   The structure is similar to \cs{@@_to_scientific:w}.
+%   Insert |-| for
+%   negative numbers.  Zero gives $0$, $\pm\infty$ and \nan{} yield an
+%   \enquote{invalid operation} exception; note that $\pm\infty$
+%   produces a very large output, which we don't expand now since it
+%   most likely won't be needed.  Normal numbers with an exponent in the
+%   range $[1,15]$ have that number of digits before the decimal
+%   separator: \enquote{decimate} them, and remove leading zeros with
+%   \cs{int_value:w}, then trim trailing zeros and dot.  Normal
+%   numbers with an exponent $16$ or larger have no decimal separator,
+%   we only need to add trailing zeros.  When the exponent is
+%   non-positive, the result should be $0.\meta{zeros}\meta{digits}$,
+%   trimmed.
+%    \begin{macrocode}
+\cs_new:Npn \@@_to_decimal:w \s_@@ \@@_chk:w #1#2
+  {
+    \if_meaning:w 2 #2 \exp_after:wN - \exp:w \exp_end_continue_f:w \fi:
+    \if_case:w #1 \exp_stop_f:
+         \@@_case_return:nw { 0 }
+    \or: \exp_after:wN \@@_to_decimal_normal:wnnnnn
+    \or:
+      \@@_case_use:nw
+        {
+          \@@_invalid_operation:nnw
+            { \fp_to_decimal:N \c_@@_overflowing_fp }
+            { fp_to_decimal }
+        }
+    \or:
+      \@@_case_use:nw
+        {
+          \@@_invalid_operation:nnw
+            { 0 }
+            { fp_to_decimal }
+        }
+    \fi:
+    \s_@@ \@@_chk:w #1 #2
+  }
+\cs_new:Npn \@@_to_decimal_normal:wnnnnn
+    \s_@@ \@@_chk:w 1 #1 #2 #3#4#5#6 ;
+  {
+    \int_compare:nNnTF {#2} > 0
+      {
+        \int_compare:nNnTF {#2} < \c_@@_prec_int
+          {
+            \@@_decimate:nNnnnn { \c_@@_prec_int - #2 }
+              \@@_to_decimal_large:Nnnw
+          }
+          {
+            \exp_after:wN \exp_after:wN
+            \exp_after:wN \@@_to_decimal_huge:wnnnn
+            \prg_replicate:nn { #2 - \c_@@_prec_int } { 0 } ;
+          }
+        {#3} {#4} {#5} {#6}
+      }
+      {
+        \exp_after:wN \@@_trim_zeros:w
+        \exp_after:wN 0
+        \exp_after:wN .
+        \exp:w \exp_end_continue_f:w \prg_replicate:nn { - #2 } { 0 }
+        #3#4#5#6 ;
+      }
+  }
+\cs_new:Npn \@@_to_decimal_large:Nnnw #1#2#3#4;
+  {
+    \exp_after:wN \@@_trim_zeros:w \int_value:w
+      \if_int_compare:w #2 > 0 \exp_stop_f:
+        #2
+      \fi:
+      \exp_stop_f:
+      #3.#4 ;
+  }
+\cs_new:Npn \@@_to_decimal_huge:wnnnn #1; #2#3#4#5 { #2#3#4#5 #1 }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Token list representation}
+%
+% \begin{macro}[EXP]{\fp_to_tl:N, \fp_to_tl:c, \fp_to_tl:n}
+%   These three public functions evaluate their argument, then pass it
+%   to \cs{@@_to_tl_dispatch:w}.
+%    \begin{macrocode}
+\cs_new:Npn \fp_to_tl:N #1 { \exp_after:wN \@@_to_tl_dispatch:w #1 }
+\cs_generate_variant:Nn \fp_to_tl:N { c }
+\cs_new:Npn \fp_to_tl:n
+  {
+    \exp_after:wN \@@_to_tl_dispatch:w
+    \exp:w \exp_end_continue_f:w \@@_parse:n
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\@@_to_tl_dispatch:w, \@@_to_tl_recover:w, \@@_tuple_to_tl:w}
+%   We allow tuples.
+%    \begin{macrocode}
+\cs_new:Npn \@@_to_tl_dispatch:w #1
+  { \@@_change_func_type:NNN #1 \@@_to_tl:w \@@_to_tl_recover:w #1 }
+\cs_new:Npn \@@_to_tl_recover:w #1 #2 ;
+  {
+    \@@_error:nffn { fp-unknown-type } { \tl_to_str:n { #2 ; } } { } { }
+    nan
+  }
+\cs_new:Npn \@@_tuple_to_tl:w
+  { \@@_tuple_convert:Nw \@@_to_tl_dispatch:w }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]
+%   {
+%     \@@_to_tl:w, \@@_to_tl_normal:nnnnn,
+%     \@@_to_tl_scientific:wnnnnn, \@@_to_tl_scientific:wNw
+%   }
+%   A structure similar to \cs{@@_to_scientific_dispatch:w} and
+%   \cs{@@_to_decimal_dispatch:w}, but without the \enquote{invalid operation}
+%   exception.  First filter special cases.  We express normal numbers
+%   in decimal notation if the exponent is in the range $[-2,16]$, and
+%   otherwise use scientific notation.
+%    \begin{macrocode}
+\cs_new:Npn \@@_to_tl:w \s_@@ \@@_chk:w #1#2
+  {
+    \if_meaning:w 2 #2 \exp_after:wN - \exp:w \exp_end_continue_f:w \fi:
+    \if_case:w #1 \exp_stop_f:
+           \@@_case_return:nw { 0 }
+    \or:   \exp_after:wN \@@_to_tl_normal:nnnnn
+    \or:   \@@_case_return:nw { inf }
+    \else: \@@_case_return:nw { nan }
+    \fi:
+  }
+\cs_new:Npn \@@_to_tl_normal:nnnnn #1
+  {
+    \int_compare:nTF
+      { -2 <= #1 <= \c_@@_prec_int }
+      { \@@_to_decimal_normal:wnnnnn }
+      { \@@_to_tl_scientific:wnnnnn }
+    \s_@@ \@@_chk:w 1 0 {#1}
+  }
+\cs_new:Npn \@@_to_tl_scientific:wnnnnn
+  \s_@@ \@@_chk:w 1 #1 #2 #3#4#5#6 ;
+  {
+    \exp_after:wN \@@_to_tl_scientific:wNw
+    \exp_after:wN e
+    \int_value:w \@@_int_eval:w #2 - 1
+    ; #3 #4 #5 #6 ;
+  }
+\cs_new:Npn \@@_to_tl_scientific:wNw #1 ; #2#3;
+  { \@@_trim_zeros:w #2.#3 ; #1 }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Formatting}
+%
+% This is not implemented yet, as it is not yet clear what a correct
+% interface would be, for this kind of structured conversion from a
+% floating point (or other types of variables) to a string.  Ideas
+% welcome.
+%
+% \subsection{Convert to dimension or integer}
+%
+% \begin{macro}[EXP]{\fp_to_dim:N, \fp_to_dim:c, \fp_to_dim:n}
+% \begin{macro}[EXP]{\@@_to_dim_dispatch:w, \@@_to_dim_recover:w, \@@_to_dim:w}
+%   All three public variants are based on the same
+%   \cs{@@_to_dim_dispatch:w} after evaluating their argument to an
+%   internal floating point.
+%   We only allow floating point numbers, not tuples.
+%    \begin{macrocode}
+\cs_new:Npn \fp_to_dim:N #1
+  { \exp_after:wN \@@_to_dim_dispatch:w #1 }
+\cs_generate_variant:Nn \fp_to_dim:N { c }
+\cs_new:Npn \fp_to_dim:n
+  {
+    \exp_after:wN \@@_to_dim_dispatch:w
+    \exp:w \exp_end_continue_f:w \@@_parse:n
+  }
+\cs_new:Npn \@@_to_dim_dispatch:w #1#2 ;
+  {
+    \@@_change_func_type:NNN #1 \@@_to_dim:w \@@_to_dim_recover:w
+    #1 #2 ;
+  }
+\cs_new:Npn \@@_to_dim_recover:w #1
+  { \@@_invalid_operation:nnw { 0pt } { fp_to_dim } }
+\cs_new:Npn \@@_to_dim:w #1 ; { \@@_to_decimal:w #1 ; pt }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\fp_to_int:N, \fp_to_int:c, \fp_to_int:n}
+% \begin{macro}[EXP]{\@@_to_int_dispatch:w, \@@_to_int_recover:w}
+%   For the most part identical to \cs{fp_to_dim:N} but without |pt|,
+%   and where \cs{@@_to_int:w} does more work.
+%   To convert to an integer, first round to $0$ places (to the nearest
+%   integer), then express the result as a decimal number: the
+%   definition of \cs{@@_to_decimal_dispatch:w} is such that there are no
+%   trailing dot nor zero.
+%    \begin{macrocode}
+\cs_new:Npn \fp_to_int:N #1 { \exp_after:wN \@@_to_int_dispatch:w #1 }
+\cs_generate_variant:Nn \fp_to_int:N { c }
+\cs_new:Npn \fp_to_int:n
+  {
+    \exp_after:wN \@@_to_int_dispatch:w
+    \exp:w \exp_end_continue_f:w \@@_parse:n
+  }
+\cs_new:Npn \@@_to_int_dispatch:w #1#2 ;
+  {
+    \@@_change_func_type:NNN #1 \@@_to_int:w \@@_to_int_recover:w
+    #1 #2 ;
+  }
+\cs_new:Npn \@@_to_int_recover:w #1
+  { \@@_invalid_operation:nnw { 0 } { fp_to_int } }
+\cs_new:Npn \@@_to_int:w #1;
+  {
+    \exp_after:wN \@@_to_decimal:w \exp:w \exp_end_continue_f:w
+    \@@_round:Nwn \@@_round_to_nearest:NNN #1; { 0 }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Convert from a dimension}
+%
+% \begin{macro}[EXP]{\dim_to_fp:n}
+% \begin{macro}[EXP]
+%   {
+%     \@@_from_dim_test:ww,
+%     \@@_from_dim:wNw,
+%     \@@_from_dim:wNNnnnnnn,
+%     \@@_from_dim:wnnnnwNw,
+%   }
+%   The dimension expression (which can in fact be a glue expression) is
+%   evaluated, converted to a number (\emph{i.e.}, expressed in scaled
+%   points), then multiplied by $2^{-16} = 0.0000152587890625$ to give a
+%   value expressed in points.  The auxiliary \cs{@@_mul_npos_o:Nww}
+%   expects the desired \meta{final sign} and two floating point
+%   operands (of the form \cs{s_@@} \ldots{} |;|) as arguments.
+%   This set of functions is also used to convert dimension registers to
+%   floating points while parsing expressions: in this context there is
+%   an additional exponent, which is the first argument of
+%   \cs{@@_from_dim_test:ww}, and is combined with the exponent $-4$
+%   of $2^{-16}$.  There is also a need to expand afterwards: this is
+%   performed by \cs{@@_mul_npos_o:Nww}, and cancelled by
+%   \cs{prg_do_nothing:} here.
+%    \begin{macrocode}
+\__kernel_patch_args:nNNpn { { (#1) } }
+\cs_new:Npn \dim_to_fp:n #1
+  {
+    \exp_after:wN \@@_from_dim_test:ww
+    \exp_after:wN 0
+    \exp_after:wN ,
+    \int_value:w \tex_glueexpr:D #1 ;
+  }
+\cs_new:Npn \@@_from_dim_test:ww #1, #2
+  {
+    \if_meaning:w 0 #2
+      \@@_case_return:nw { \exp_after:wN \c_zero_fp }
+    \else:
+      \exp_after:wN \@@_from_dim:wNw
+      \int_value:w \@@_int_eval:w #1 - 4
+        \if_meaning:w - #2
+          \exp_after:wN , \exp_after:wN 2 \int_value:w
+        \else:
+          \exp_after:wN , \exp_after:wN 0 \int_value:w #2
+        \fi:
+    \fi:
+  }
+\cs_new:Npn \@@_from_dim:wNw #1,#2#3;
+  {
+    \@@_pack_twice_four:wNNNNNNNN \@@_from_dim:wNNnnnnnn ;
+    #3 000 0000 00 {10}987654321; #2 {#1}
+  }
+\cs_new:Npn \@@_from_dim:wNNnnnnnn #1; #2#3#4#5#6#7#8#9
+  { \@@_from_dim:wnnnnwNn #1 {#2#300} {0000} ; }
+\cs_new:Npn \@@_from_dim:wnnnnwNn #1; #2#3#4#5#6; #7#8
+  {
+    \@@_mul_npos_o:Nww #7
+      \s_@@ \@@_chk:w 1 #7 {#5} #1 ;
+      \s_@@ \@@_chk:w 1 0 {#8} {1525} {8789} {0625} {0000} ;
+      \prg_do_nothing:
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Use and eval}
+%
+% \begin{macro}[EXP]{\fp_use:N, \fp_use:c, \fp_eval:n}
+%   Those public functions are simple copies of the decimal conversions.
+%    \begin{macrocode}
+\cs_new_eq:NN \fp_use:N \fp_to_decimal:N
+\cs_generate_variant:Nn \fp_use:N { c }
+\cs_new_eq:NN \fp_eval:n \fp_to_decimal:n
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\fp_abs:n}
+%   Trivial but useful.  See the implementation of \cs{fp_add:Nn} for an
+%   explanation of why to use \cs{@@_parse:n}, namely, for better error
+%   reporting.
+%    \begin{macrocode}
+\cs_new:Npn \fp_abs:n #1
+  { \fp_to_decimal:n { abs \@@_parse:n {#1} } }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\fp_max:nn, \fp_min:nn}
+%   Similar to \cs{fp_abs:n}, for consistency with \cs{int_max:nn}, \emph{etc.}
+%    \begin{macrocode}
+\cs_new:Npn \fp_max:nn #1#2
+  { \fp_to_decimal:n { max ( \@@_parse:n {#1} , \@@_parse:n {#2} ) } }
+\cs_new:Npn \fp_min:nn #1#2
+  { \fp_to_decimal:n { min ( \@@_parse:n {#1} , \@@_parse:n {#2} ) } }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Convert an array of floating points to a comma list}
+%
+% \begin{macro}[EXP]{\@@_array_to_clist:n}
+% \begin{macro}[EXP]{\@@_array_to_clist_loop:Nw}
+%   Converts an array of floating point numbers to a comma-list.  If
+%   speed here ends up irrelevant, we can simplify the code for the
+%   auxiliary to become
+%   \begin{verbatim}
+%     \cs_new:Npn \__fp_array_to_clist_loop:Nw #1#2;
+%       {
+%         \use_none:n #1
+%         { , ~ } \fp_to_tl:n { #1 #2 ; }
+%         \__fp_array_to_clist_loop:Nw
+%       }
+%   \end{verbatim}
+%   The \cs{use_ii:nn} function is expanded after \cs{@@_expand:n} is
+%   done, and it removes |,~| from the start of the representation.
+%    \begin{macrocode}
+\cs_new:Npn \@@_array_to_clist:n #1
+  {
+    \tl_if_empty:nF {#1}
+      {
+        \@@_expand:n
+          {
+            { \use_ii:nn }
+            \@@_array_to_clist_loop:Nw #1 { ? \prg_break: } ;
+            \prg_break_point:
+          }
+      }
+  }
+\cs_new:Npx \@@_array_to_clist_loop:Nw #1#2;
+  {
+    \exp_not:N \use_none:n #1
+    \exp_not:N \exp_after:wN
+                 {
+    \exp_not:N     \exp_after:wN ,
+    \exp_not:N     \exp_after:wN \c_space_tl
+    \exp_not:N     \exp:w
+    \exp_not:N     \exp_end_continue_f:w
+    \exp_not:N     \@@_to_tl_dispatch:w #1 #2 ;
+                 }
+    \exp_not:N \@@_array_to_clist_loop:Nw
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+%    \begin{macrocode}
+%</initex|package>
+%    \end{macrocode}
+%
+% \end{implementation}
+%
+% \PrintChanges
+%
+% \PrintIndex

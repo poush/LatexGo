@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definehelp" level="style" category="pdf" file="scrn-hlp.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuphelp"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuphelp" level="style" category="pdf" file="scrn-hlp.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupframed"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="help" generated="yes" variant="instance" level="document" category="pdf" file="scrn-hlp.mkvi">
+        <cd:sequence>
+            <cd:instance value="help"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-optional"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-help"/>
+        </cd:instances>
+    </cd:command>
+
+    <cd:command name="help" type="environment" generated="yes" variant="instance" level="document" category="pdf" file="scrn-hlp.mkvi">
+        <cd:sequence>
+            <cd:instance value="help"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-optional"/>
+        </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-help"/>
+        </cd:instances>
+    </cd:command>
+
+    <cd:command name="doifelsehelp" level="system" category="pdf conditional" file="scrn-hlp.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifhelpelse" level="system" category="pdf conditional" file="scrn-hlp.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placehelp" level="document" category="pdf" file="scrn-hlp.mkvi"/>
+
+    <cd:command name="showhelp" level="document" category="pdf" file="scrn-hlp.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="helptext" level="document" category="pdf" file="scrn-hlp.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-optional"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="helptext" type="environment" level="document" category="pdf" file="scrn-hlp.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

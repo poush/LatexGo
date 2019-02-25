@@ -1,0 +1,595 @@
+%%^^A%% um-code-mathmap.dtx -- part of UNICODE-MATH <wspr.io/unicode-math>
+%%^^A%% Setup of symbol alphabets.
+
+% \section{Defining the math alphabets per style}
+% \label{sec:mathmap}
+%
+%    \begin{macrocode}
+%<*package>
+%    \end{macrocode}
+%
+% \begin{macro}{\@@_setup_alphabets:}
+% This function is called within \cs{setmathfont} to configure the
+% mapping between characters inside math styles. Three modes:
+% \begin{description}
+% \item[IMPLICIT] No ranges specified, set up everything
+% \item[EXPLICIT] Some ranges specified, set up what is requested only
+% \item[INHERIT]  Of the slots in the ranges specified, compare against
+%                 slots in each styled alphabet and only set up those needed
+% \end{description}
+% The INHERIT mode saves less time than I was hoping for but is still beneficial
+% in simple cases.
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_setup_alphabets:
+  {
+    \bool_if:NTF \g_@@_init_bool { \@@_setup_alphabets_implicit: }
+      {
+        \seq_if_empty:NF \g_@@_mathalph_seq { \@@_setup_alphabets_explicit: }
+        \clist_if_empty:NF \l_@@_mathmap_charints_clist { \@@_setup_alphabets_inherit: }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{ \@@_setup_alphabets_implicit:}
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_setup_alphabets_implicit:
+  {
+    \@@_log:n {setup-implicit}
+    \seq_gset_eq:NN \g_@@_mathalph_seq \g_@@_default_mathalph_seq
+    \bool_set_true:N \l_@@_implicit_alph_bool
+    \@@_maybe_init_alphabet:n  {sf}
+    \@@_maybe_init_alphabet:n  {bf}
+    \@@_maybe_init_alphabet:n  {bfsf}
+    \cs_set_eq:NN \@@_set_mathalphabet_char:nnn \@@_mathmap_noparse:nnn
+    \cs_set_eq:NN \@@_map_char_single:nn \@@_map_char_noparse:nn
+    \@@_mathalph_map:
+    \seq_if_empty:NF \l_@@_missing_alph_seq { \@@_log:n { missing-alphabets } }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{ \@@_setup_alphabets_explicit:}
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_setup_alphabets_explicit:
+  {
+    \@@_log:n {setup-explicit}
+    \bool_set_false:N \l_@@_implicit_alph_bool
+    \cs_set_eq:NN \@@_set_mathalphabet_char:nnn \@@_mathmap_noparse:nnn
+    \cs_set_eq:NN \@@_map_char_single:nn \@@_map_char_noparse:nn
+    \@@_mathalph_map:
+    \seq_if_empty:NF \l_@@_missing_alph_seq { \@@_log:n { missing-alphabets } }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{ \@@_setup_alphabets_inherit:}
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_setup_alphabets_inherit:
+  {
+    \seq_gclear:N \g_@@_mathalph_seq
+    \seq_map_inline:Nn \g_@@_default_mathalph_seq
+      {
+        \tl_set:No    \l_@@_style_tl       { \use_i:nnn   ##1 }
+        \clist_set:No \l_@@_alphabet_clist { \use_ii:nnn  ##1 }
+
+        \clist_map_inline:Nn \l_@@_alphabet_clist
+          {
+            \clist_if_exist:cT {g_@@_named_slots_ \l_@@_style_tl _ ####1 _clist}
+              {
+                \clist_map_inline:cn {g_@@_named_slots_ \l_@@_style_tl _ ####1 _clist}
+                  {
+                    \clist_map_inline:Nn \l_@@_mathmap_charints_clist
+                      {
+                        \@@_int_if_slot_in_range:nnT {################1} {########1}
+                          {
+                            \seq_gput_right:Nn \g_@@_mathalph_seq {##1}
+                            \clist_map_break:n { \clist_map_break:n { \clist_map_break: } }
+                          }
+                      }
+                  }
+              }
+          }
+      }
+
+    \cs_set_eq:NN \@@_set_mathalphabet_char:nnn \@@_mathmap_parse:nnn
+    \cs_set_eq:NN \@@_map_char_single:nn \@@_map_char_parse:nn
+    \@@_mathalph_map:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_mathalph_map:}
+%    \begin{macrocode}
+\cs_set:Nn \@@_mathalph_map:
+  {
+   \seq_map_inline:Nn \g_@@_mathalph_seq
+      {
+        \tl_set:No    \l_@@_style_tl       { \use_i:nnn   ##1 }
+        \clist_set:No \l_@@_alphabet_clist { \use_ii:nnn  ##1 }
+        \tl_set:No    \l_@@_remap_style_tl { \use_iii:nnn ##1 }
+
+        % If no set of alphabets is defined:
+        \clist_if_empty:NT \l_@@_alphabet_clist
+          {
+            \cs_set_eq:NN \@@_maybe_init_alphabet:n \@@_init_alphabet:n
+            \prop_get:cnN { g_@@_named_range_ \l_@@_style_tl _prop }
+              { default-alpha } \l_@@_alphabet_clist
+          }
+
+        \@@_check_math_alphabet:
+        \@@_setup_math_alphabet:
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_check_math_alphabet:}
+% First check that at least one of the alphabets for the font shape is defined
+% (this process is fast) \dots
+%    \begin{macrocode}
+\cs_new:Nn \@@_check_math_alphabet:
+  {
+    \clist_map_inline:Nn \l_@@_alphabet_clist
+      {
+        \tl_set:Nn \l_@@_alphabet_tl {##1}
+        \@@_if_alphabet_exists:nnTF \l_@@_style_tl \l_@@_alphabet_tl
+          {
+            \str_if_eq:eeTF {\l_@@_alphabet_tl} {misc}
+              {
+                \@@_maybe_init_alphabet:n \l_@@_style_tl
+                \clist_map_break:
+              }
+              {
+                \@@_glyph_if_exist:NnT \g_@@_curr_font_cmd_tl
+                  { \@@_to_usv:nn {\l_@@_style_tl} {\l_@@_alphabet_tl} }
+                  {
+                    \@@_maybe_init_alphabet:n \l_@@_style_tl
+                    \clist_map_break:
+                  }
+              }
+          }
+          {
+            \msg_warning:nnx {unicode-math} {no-alphabet}
+              { \l_@@_style_tl / \l_@@_alphabet_tl }
+          }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_setup_math_alphabet:}
+% \dots and then loop through them defining the individual ranges:
+% (currently this process is slow)
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_setup_math_alphabet:
+  {
+    \clist_map_inline:Nn \l_@@_alphabet_clist
+      {
+        \tl_set:Nx \l_@@_alphabet_tl { \tl_trim_spaces:n {##1} }
+
+%<debug>\@@_debug:n {_setup_math_alphabet:~\l_@@_style_tl/\l_@@_alphabet_tl}
+
+        \@@_if_alphabet_exists:nnT {\l_@@_style_tl} {\l_@@_alphabet_tl}
+          {
+            \exp_args:No \tl_if_eq:nnTF \l_@@_alphabet_tl {misc}
+              {
+                \@@_log:nx {setup-alph} {sym \l_@@_style_tl~(\l_@@_alphabet_tl)}
+                \@@_alphabet_config:nnn {\l_@@_style_tl} {\l_@@_alphabet_tl} {\l_@@_remap_style_tl}
+              }
+              {
+                \@@_glyph_if_exist:NnTF \g_@@_curr_font_cmd_tl { \@@_to_usv:nn {\l_@@_remap_style_tl} {\l_@@_alphabet_tl} }
+                  {
+                    \@@_log:nx {setup-alph} {sym \l_@@_style_tl~(\l_@@_alphabet_tl)}
+                    \@@_alphabet_config:nnn {\l_@@_style_tl} {\l_@@_alphabet_tl} {\l_@@_remap_style_tl}
+                  }
+                  {
+                    \bool_if:NTF \l_@@_implicit_alph_bool
+                      {
+                        \seq_put_right:Nx \l_@@_missing_alph_seq
+                          {
+                            \@backslashchar sym \l_@@_style_tl \space
+                            (\tl_use:c{c_@@_math_alphabet_name_ \l_@@_alphabet_tl _tl})
+                          }
+                      }
+                      {
+                        \@@_alphabet_config:nnn {\l_@@_style_tl} {\l_@@_alphabet_tl} {up}
+                      }
+                  }
+              }
+          }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% Each alphabet style needs to be configured.
+% This happens in Section~\ref{sec:setupalphabets}.
+%    \begin{macrocode}
+\cs_new:Nn \@@_new_alphabet_config:nnn
+  {
+    \prop_if_exist:cF {g_@@_named_range_#1_prop}
+      { \@@_warning:nnn {no-named-range} {#1} {#2} }
+
+
+    \prop_gput:cnn {g_@@_named_range_#1_prop} { alpha_tl }
+      {
+        \prop_item:cn {g_@@_named_range_#1_prop} { alpha_tl } {#2}
+      }
+    % Q: do I need to bother removing duplicates?
+
+%    \end{macrocode}
+% Create list of all chars defined in this named range:
+%    \begin{macrocode}
+    \cs_new:cn { @@_config_#1_#2:n }
+      {
+        \clist_gclear_new:c {g_@@_named_slots_#1_#2_clist}
+        \tl_set:Nn \l_@@_curr_named_slot { g_@@_named_slots_#1_#2_clist }
+        #3
+        \clist_gremove_duplicates:c {g_@@_named_slots_#1_#2_clist}
+      }
+
+  }
+%    \end{macrocode}
+%    \begin{macrocode}
+\cs_new:Nn \@@_alphabet_config:nnn
+  {
+    \use:c {@@_config_#1_#2:n} {#3}
+  }
+%    \end{macrocode}
+%    \begin{macrocode}
+\prg_new_conditional:Nnn \@@_if_alphabet_exists:nn {T,TF}
+  {
+    \cs_if_exist:cTF {@@_config_#1_#2:n}
+      \prg_return_true: \prg_return_false:
+  }
+%    \end{macrocode}
+%
+% \subsection{Mapping `naked’ math characters}
+%
+% Before we show the definitions of the alphabet mappings using the functions
+% |\@@_alphabet_config:nnn \l_@@_style_tl {##1} {...}|, we first want to define some functions
+% to be used inside them to actually perform the character mapping.
+%
+% \subsubsection{Functions}
+%
+% \begin{macro}{\@@_map_char_single:nn}
+% Wrapper for |\@@_map_char_noparse:nn| or |\@@_map_char_parse:nn|
+% depending on the context.
+%
+% \begin{macro}{\@@_map_char_noparse:nn}
+% \begin{macro}{\@@_map_char_parse:nn}
+%    \begin{macrocode}
+\cs_new:Nn \@@_map_char_noparse:nn
+  {
+    \@@_set_mathcode:nnnn {#1} {\mathalpha} {\l_@@_symfont_label_tl} {#2}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_map_char_parse:nn
+  {
+    \@@_if_char_spec:nNT {#1} {\mathalpha}
+      { \@@_map_char_noparse:nn {#1}{#2} }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\@@_map_char_single:nnn}
+% \darg{char name (`dotlessi’)}
+% \darg{from alphabet(s)}
+% \darg{to alphabet}
+% Logical interface to \cs{@@_map_char_single:nn}.
+%    \begin{macrocode}
+\cs_new:Nn \@@_map_char_single:nnn
+  {
+    \@@_map_char_single:nn { \@@_to_usv:nn {#1} {#3} }
+                           { \@@_to_usv:nn {#2} {#3} }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\@@_map_chars_range:nnnn}
+% \darg{Number of chars (26)}
+% \darg{From style, one or more (it)}
+% \darg{To style (up)}
+% \darg{Alphabet name (Latin)}
+% First the function with numbers:
+%    \begin{macrocode}
+\cs_set:Nn \@@_map_chars_range:nnn
+  {
+    \int_step_inline:nnnn {0} {1} {#1-1}
+      { \@@_map_char_single:nn {#2+##1} {#3+##1} }
+
+    \clist_gput_right:cx { \l_@@_curr_named_slot }
+      { \int_eval:n { #3 } - \int_eval:n { #3 + #1-1 } }
+  }
+%    \end{macrocode}
+% And the wrapper with names:
+%    \begin{macrocode}
+\cs_new:Nn \@@_map_chars_range:nnnn
+  {
+    \@@_map_chars_range:nnn {#1} { \@@_to_usv:nn {#2} {#4} }
+                                 { \@@_to_usv:nn {#3} {#4} }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsubsection{Functions for `normal’ alphabet symbols}
+%
+% \begin{macro}{\@@_set_normal_char:nnn}
+%    \begin{macrocode}
+\cs_set:Nn \@@_set_normal_char:nnn
+  {
+    \@@_usv_if_exist:nnT {#3} {#1}
+      {
+        \clist_map_inline:nn {#2}
+          {
+            \@@_set_mathalphabet_pos:nnnn {normal} {#1} {##1} {#3}
+            \@@_map_char_single:nnn {##1} {#3} {#1}
+
+            \clist_gput_right:cx {\l_@@_curr_named_slot}
+              { \int_eval:n { \@@_to_usv:nn {#3} {#1} } }
+          }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_set_normal_Latin:nn
+  {
+    \clist_map_inline:nn {#1}
+      {
+        \@@_set_mathalphabet_Latin:nnn {normal} {##1} {#2}
+        \@@_map_chars_range:nnnn {26} {##1} {#2} {Latin}
+      }
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_set_normal_latin:nn
+  {
+    \clist_map_inline:nn {#1}
+      {
+        \@@_set_mathalphabet_latin:nnn {normal} {##1} {#2}
+        \@@_map_chars_range:nnnn {26} {##1} {#2} {latin}
+      }
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_set_normal_greek:nn
+  {
+    \clist_map_inline:nn {#1}
+      {
+        \@@_set_mathalphabet_greek:nnn {normal} {##1} {#2}
+        \@@_map_chars_range:nnnn {25} {##1} {#2} {greek}
+        \@@_map_char_single:nnn {##1} {#2} {epsilon}
+        \@@_map_char_single:nnn {##1} {#2} {vartheta}
+        \@@_map_char_single:nnn {##1} {#2} {varkappa}
+        \@@_map_char_single:nnn {##1} {#2} {phi}
+        \@@_map_char_single:nnn {##1} {#2} {varrho}
+        \@@_map_char_single:nnn {##1} {#2} {varpi}
+        \@@_set_mathalphabet_pos:nnnn {normal} {epsilon} {##1} {#2}
+        \@@_set_mathalphabet_pos:nnnn {normal} {vartheta} {##1} {#2}
+        \@@_set_mathalphabet_pos:nnnn {normal} {varkappa} {##1} {#2}
+        \@@_set_mathalphabet_pos:nnnn {normal} {phi} {##1} {#2}
+        \@@_set_mathalphabet_pos:nnnn {normal} {varrho} {##1} {#2}
+        \@@_set_mathalphabet_pos:nnnn {normal} {varpi} {##1} {#2}
+      }
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_set_normal_Greek:nn
+  {
+    \clist_map_inline:nn {#1}
+      {
+        \@@_set_mathalphabet_Greek:nnn {normal} {##1} {#2}
+        \@@_map_chars_range:nnnn {25} {##1} {#2} {Greek}
+        \@@_map_char_single:nnn {##1} {#2} {varTheta}
+        \@@_set_mathalphabet_pos:nnnn {normal} {varTheta} {##1} {#2}
+      }
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_set_normal_numbers:nn
+  {
+    \@@_set_mathalphabet_numbers:nnn {normal} {#1} {#2}
+    \@@_map_chars_range:nnnn {10} {#1} {#2} {num}
+  }
+%    \end{macrocode}
+%
+%
+% \subsection{Mapping chars inside a math style}
+%
+% \subsubsection{Functions for setting up the maths alphabets}
+%
+% \begin{macro}{\@@_set_mathalphabet_char:nnn}
+% \darg{Maths alphabet, \eg, `bb’}
+% \darg{Input slot, \eg, the slot for `A’ (comma separated)}
+% \darg{Output slot, \eg, the slot for `$\mathbb{A}$’}
+% This is a wrapper for either |\@@_mathmap_noparse:nnn| or
+% |\@@_mathmap_parse:nnn|, depending on the context.
+% \end{macro}
+%
+% \begin{macro}{\@@_mathmap_noparse:nnn}
+% \darg{Maths alphabet, \eg, `bb’}
+% \darg{Input slot, \eg, the slot for `A’ (comma separated)}
+% \darg{Output slot, \eg, the slot for `$\mathbb{A}$’}
+% Adds \cs{@@_set_mathcode:nnnn} declarations to the specified maths alphabet’s definition.
+%    \begin{macrocode}
+\cs_new:Nn \@@_mathmap_noparse:nnn
+  {
+    \tl_gput_right:cx { g_@@_switchto_#1_tl }
+      {
+        \@@_set_mathcode:nnnn {#2} {\mathalpha} {\l_@@_symfont_label_tl} {#3}
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_mathmap_parse:nnn}
+% \darg{Maths alphabet, \eg, `bb’}
+% \darg{Input slot, \eg, the slot for `A’ (comma separated)}
+% \darg{Output slot, \eg, the slot for `$\mathbb{A}$’}
+% When \cmd\@@_if_char_spec:nNT\ is executed, it populates the \cmd\l_@@_mathmap_charints_clist\
+% macro with slot numbers corresponding to the specified range. This range is used to
+% conditionally add \cs{@@_set_mathcode:nnnn} declaractions to the maths alphabet definition.
+%    \begin{macrocode}
+\cs_new:Nn \@@_mathmap_parse:nnn
+  {
+    \exp_args:NNx \clist_if_in:NnT \l_@@_mathmap_charints_clist { \int_eval:n {#3} }
+      {
+        \@@_mathmap_noparse:nnn {#1} {#2} {#3}
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_set_mathalphabet_char:nnnn}
+% \darg{math style command}
+% \darg{input math alphabet name}
+% \darg{output math alphabet name}
+% \darg{char name to map}
+%    \begin{macrocode}
+\cs_new:Nn \@@_set_mathalphabet_char:nnnn
+  {
+    \@@_set_mathalphabet_char:nnn {#1} { \@@_to_usv:nn {#2} {#4} }
+                                       { \@@_to_usv:nn {#3} {#4} }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_set_mathalph_range:nnnn}
+% \darg{Number of iterations}
+% \darg{Sym command suffix}
+% \darg{Starting input char}
+% \darg{Starting output char}
+% Loops through character ranges setting \cmd\mathcode.
+% First the version that uses numbers:
+%    \begin{macrocode}
+\cs_new:Nn \@@_set_mathalph_range:nnnn
+  {
+    \int_step_inline:nnnn {0} {1} {#1-1}
+      { \@@_set_mathalphabet_char:nnn {#2} { ##1 + #3 } { ##1 + #4 } }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_set_mathalph_range:nnnn}
+% \darg{Number of iterations}
+% \darg{Sym command suffix}
+% \darg{input style}
+% \darg{output style}
+% \darg{alphabet}
+% Then the wrapper version that uses names:
+%    \begin{macrocode}
+\cs_new:Nn \@@_set_mathalph_range:nnnnn
+  {
+    \clist_gput_right:cx { \l_@@_curr_named_slot }
+      { \int_eval:n { \@@_to_usv:nn {#4} {#5} } - \int_eval:n { (#1-1)+\@@_to_usv:nn {#4} {#5} } }
+
+    \@@_set_mathalph_range:nnnn {#1} {#2} { \@@_to_usv:nn {#3} {#5} }
+                                          { \@@_to_usv:nn {#4} {#5} }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsubsection{Individual mapping functions for different alphabets}
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_set_mathalphabet_pos:nnnn
+  {
+    \@@_usv_if_exist:nnT {#4} {#2}
+      {
+        \clist_map_inline:nn {#3}
+          { \@@_set_mathalphabet_char:nnnn {#1} {##1} {#4} {#2} }
+
+        \clist_gput_right:cx {\l_@@_curr_named_slot}
+          { \int_eval:n { \@@_to_usv:nn {#4} {#2} } }
+      }
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_set_mathalphabet_numbers:nnn
+  {
+    \clist_map_inline:nn {#2}
+      { \@@_set_mathalph_range:nnnnn {10} {#1} {##1} {#3} {num} }
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_set_mathalphabet_Latin:nnn
+  {
+    \clist_map_inline:nn {#2}
+      { \@@_set_mathalph_range:nnnnn {26} {#1} {##1} {#3} {Latin} }
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_set_mathalphabet_latin:nnn
+  {
+    \clist_map_inline:nn {#2}
+      {
+        \@@_set_mathalph_range:nnnnn {26} {#1} {##1} {#3} {latin}
+        \@@_set_mathalphabet_char:nnnn    {#1} {##1} {#3} {h}
+      }
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_set_mathalphabet_Greek:nnn
+  {
+    \clist_map_inline:nn {#2}
+      {
+        \@@_set_mathalph_range:nnnnn {25} {#1} {##1} {#3} {Greek}
+        \@@_set_mathalphabet_char:nnnn    {#1} {##1} {#3} {varTheta}
+      }
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_set_mathalphabet_greek:nnn
+  {
+    \clist_map_inline:nn {#2}
+      {
+        \@@_set_mathalph_range:nnnnn {25} {#1} {##1} {#3} {greek}
+        \@@_set_mathalphabet_char:nnnn    {#1} {##1} {#3} {epsilon}
+        \@@_set_mathalphabet_char:nnnn    {#1} {##1} {#3} {vartheta}
+        \@@_set_mathalphabet_char:nnnn    {#1} {##1} {#3} {varkappa}
+        \@@_set_mathalphabet_char:nnnn    {#1} {##1} {#3} {phi}
+        \@@_set_mathalphabet_char:nnnn    {#1} {##1} {#3} {varrho}
+        \@@_set_mathalphabet_char:nnnn    {#1} {##1} {#3} {varpi}
+      }
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%</package>
+%    \end{macrocode}
+
+\endinput
+
+% /©
+%
+% ------------------------------------------------
+% The UNICODE-MATH package  <wspr.io/unicode-math>
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% Copyright 2006-2019  Will Robertson, LPPL "maintainer"
+% Copyright 2010-2017  Philipp Stephani
+% Copyright 2011-2017  Joseph Wright
+% Copyright 2012-2015  Khaled Hosny
+% ------------------------------------------------
+%
+% ©/

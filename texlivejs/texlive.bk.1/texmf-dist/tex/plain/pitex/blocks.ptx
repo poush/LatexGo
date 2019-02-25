@@ -1,0 +1,40 @@
+\long\def\newblocktype#1#2#3#4{%
+  \def#1{\ptx@newblock_pattern{#2}{#3}{#4}}%
+  }
+\newife\ifptx@newblock_group
+\long\def\ptx@newblock_pattern#1#2#3{%
+  \ifnext*
+    {\ptx@newblock_grouptrue\gobbleoneand{\ptx@newblock{#1}{#2}{#3}}}
+    {\ptx@newblock_groupfalse\ptx@newblock{#1}{#2}{#3}}%
+  }
+\long\def\ptx@newblock#1#2#3#4#5{%
+  \ifnextnospace*
+    {\gobbleoneand{\ptx@newblock_do#4{#1#5}{#2}{#3}}}
+    {\ptx@newblock_do#4{#1#5}{#2}{#3}{}}%
+  }
+\long\def\ptx@newblock_do#1#2#3#4#5#6{%
+  \ifptx@newblock_group
+	  {\defcs{ptx@inner_\commandtoname#1:start}{\bgroup#2}%
+	   \defcs{ptx@inner_\commandtoname#1:stop}{#4#6\egroup}}
+	  {\defcs{ptx@inner_\commandtoname#1:start}{#2}%
+	   \defcs{ptx@inner_\commandtoname#1:stop}{#4#6}}%
+	  \defcs{ptx@inner_\commandtoname#1:continue}{#3#5}%
+  \def#1##1{%
+    \ifelseif{%
+      {\ifstring{##1}{|}} {\skipspace{\usecs{ptx@inner_\commandtoname#1:continue}}}
+      {\ifstring{##1}{/}} {\usecs{ptx@inner_\commandtoname#1:stop}}
+      {\ifstring{##1}{>}} {\skipspace{\usecs{ptx@inner_\commandtoname#1:start}}}
+       \iftrue            {\usecs{ptx@inner_\commandtoname#1:start}##1}}%
+    }%
+  }
+
+\newblocktype\newblock{}{}{}
+
+\def\Indent{\quitvmode\kern\parindent}
+
+\gates new \Everypar {Everypar}
+\Everypar list {everypar} [0]
+  [noindent] ?{status = close} {{\setbox0=\lastbox}}
+\Everypar close {noindent}{everypar}
+\everypar={\Everypar execute {everypar}}
+\def\removenextindent{\Everypar ajar {noindent}{everypar}}

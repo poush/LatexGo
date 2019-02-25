@@ -1,0 +1,192 @@
+\documentclass{article}
+\usepackage{palatino}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{microtype}
+\hypersetup{%
+	hyperindex,
+	% pagebackref,
+	pdftex,
+	pdftitle={Interfaces to macros: the GETOPTK package}
+	pdfdisplaydoctitle,
+	% pdfpagemode=UseNone,
+	breaklinks=true,
+	% extension=pdf,
+	bookmarks=true,
+	% plainpages=false,
+	colorlinks,
+	linkcolor=BlueViolet,
+	citecolor=BrickRed,
+	urlcolor=Plum,
+	pdfpagelabels,
+	pdfpagelayout=TwoPageRight,
+	pdfview=Fit,
+	pdfstartview=Fit
+}%
+%
+% Definitions
+%
+\newcommand\PACKAGE{\emph{getoptk}}
+\newcommand\cs[1]{\texttt{\textbackslash#1}}
+\newcommand\meta[1]{\penalty0 $\langle\textit{#1}\rangle$\penalty0 }
+\begin{document}
+\author{Michael Le Barbier Grünewald}
+\title{The GETOPTK package}%
+\date{6th of June 2011}
+\maketitle
+\begin{abstract}
+The~{\PACKAGE} package eases the definition of macros accepting
+optional arguments in the same style as~\cs{hrule} or~\cs{hbox}.
+It is meant to be used with \emph{plain {\TeX}}.
+\end{abstract}
+\section{Introduction}
+A flexible way to pass optional arguments to a procedure is to rely on
+\emph{dictionaries} of optional arguments, that is, a set of bindings
+between formal names of arguments and their values.  Some~{\TeX}
+primitives, like~\cs{hrule} or~\cs{hbox}, use such an interface style.
+We call this style the~\emph{keyword} interface style.  There is no
+facility in~{\TeX} to define new macros using the~\emph{keyword}
+interface style.  The {\PACKAGE} package provides such a service.
+
+\section{Quick guide}
+
+In order to define a macro using the~\emph{keyword} interface style,
+we have to setup first a~\emph{behaviour dictionary}
+binding \emph{keywords} and \emph{behaviours}.  A~keyword introduces an
+optional argument and a behaviour describes its effect, we will soon
+show an example of this.  In the definition of the macro itself, we
+first select the behaviour dictionary we want to use and
+call~\cs{getoptk}, the control sequence responsible of the detection
+of optional arguments.  In this call, we need to provide
+a~\emph{callback} as argument to~\cs{getoptk}, this callback is a macro
+taking control of the execution after~\cs{getoptk} has completed its
+task.  It will be called with an argument, that is derived from the
+list of optional arguments.
+
+For explanatory purposes, let us assume that we want to define a
+macro \cs{begindisplay} using the \emph{keyword} interface style and
+accepting the following optional arguments:
+\begin{description}
+\item [ragged]
+  Fill, but do not adjust the right margin (only left-justify).
+
+\item [literal]
+  Display block with literal font (usually fixed-width).  Useful for
+  source code or simple tabbed or spaced text.
+
+\item [file \meta{file name}]
+  The file whose name, enclosed in curly braces, follows the
+  \emph{file} keyword is read and displayed using the selected
+  display type.
+
+\item [offset \meta{dimen}]
+  Use~\emph{dimen} as indentation for the display.
+
+\end{description}
+We first create a fresh new behaviour dictionary:
+\begin{verbatim}
+\newgetoptkdictionary{display}
+\end{verbatim}
+and fill it with behaviours:
+\begin{verbatim}
+\defgetoptkflag{ragged}{\raggedright}
+\defgetoptkflag{literal}{\let\displayfont\literalfont}
+\defgetoptktoks{file}{\input #1}
+\defgetoptkdimen{dimen}{\displayindent=#1\relax}
+\end{verbatim}
+Besides registering the behaviours in the dictionary~\emph{display},
+these commands also bind the behaviours to the following control
+sequences:
+\begin{verbatim}
+\getoptk@behaviour@display@ragged
+\getoptk@behaviour@display@literal
+\getoptk@behaviour@display@file
+\getoptk@behaviour@display@dimen
+\end{verbatim}
+The control sequences created with \cs{getoptkflag} must do not have an
+argument, while those created by \cs{getoptktoks} or \cs{getoptkdimen}
+do have one.  The definition of~\cs{begindisplay} is
+\begin{verbatim}
+\def\begindisplay{%
+  \setgetoptkdictionary{display}%
+  \getoptk\display@M
+}
+\end{verbatim}
+The control sequence~\cs{getoptk} is such that the input text
+\begin{verbatim}
+\begindisplay file {chapter1} literal offset 20pt
+\end{verbatim}
+is \emph{replaced} by
+\begin{verbatim}
+\display@M{%
+  \getoptk@behaviour@display@file{chapter1}%
+  \getoptk@behaviour@display@literal
+  \getoptk@behaviour@display@dimen{20pt}%
+}
+\end{verbatim}
+so that \cs{display@M} can do its job and trigger the behaviours at
+the appropriate time.
+
+
+\section{Defining a behaviour dictionary}
+
+The command \cs{newgetoptkdictionary}\meta{dictionary} creates a
+behaviour dictionary that will be filled by subsequent calls to
+commands binding keywords and behaviours.  The bindings commands are:
+\begin{verbatim}
+\defgetoptkflag
+\defgetoptkcount
+\defgetoptkdimen
+\defgetoptkskip
+\defgetoptktoks
+\defgetoptkbracket
+\end{verbatim}
+They all must be called like in the previous examples, following the
+pattern:
+\par\medskip
+\leftline{\meta{binding\_command}\meta{keyword}\meta{behaviour}}
+\smallskip
+\begin{description}
+\newcommand\defgetoptkdescribe[1]{%
+\item [defgetoptk#1]
+  The \meta{behaviour} is the replacement text of a macro having one
+  argument.  When it finds~\meta{keyword}, the \cs{getoptk} macro
+  scans further for an argument that is valid right hand side value
+  for a \emph{#1} register.  This argument will be supplied to the
+  \meta{behaviour} when behaviours are triggered.\par
+}
+\item [defgetoptkflag]
+  The \meta{behaviour} is the replacement text of a macro without
+  arguments.  When it finds~\meta{keyword}, the \cs{getoptk} macro
+  does not look for an argument but starts again scanning for
+  keywords.
+\defgetoptkdescribe{count}
+\defgetoptkdescribe{dimen}
+\defgetoptkdescribe{skip}
+\defgetoptkdescribe{toks}
+\item [defgetoptkbracket]
+  The \meta{behaviour} is the replacement text of a macro having one
+  argument.  When it finds~\meta{keyword}, the \cs{getoptk} macro
+  scans further for an optional argument enclosed by square brackets.
+  If such an argument is found, it is supplied to
+  \meta{behaviour} when behaviours are triggered and the predicate
+  \cs{ifgetoptkbracket} is bound to \cs{iftrue}.  If no such an
+  argument is found, then the empty argument is supplied
+  to~\meta{behaviour} when behaviours are triggered and the predicate
+  \cs{ifgetoptkbracket} is bound to \cs{iffalse}.
+\end{description}
+
+\section{Licence}
+The {\PACKAGE} software id copyright \copyright~2011 Michael Le
+Barbier Grünewald.
+The {\PACKAGE} software is distributed under the terms of the
+CeCILL-B licence, version~1.0.  See the files COPYING and COPYING-FR
+in the distribution.
+\end{document}
+
+% Local Variables:
+% ispell-dictionary: "en_GB-ise"
+% End:

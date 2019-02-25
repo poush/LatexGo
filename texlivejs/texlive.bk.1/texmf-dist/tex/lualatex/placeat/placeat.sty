@@ -1,0 +1,223 @@
+%%
+%% This is file `placeat.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% placeat.dtx  (with options: `package')
+%% 
+%% EXPERIMENTAL CODE
+%% 
+%% This package is copyright © 2017 Arno L. Trautmann. It may be distributed and/or
+%% modified under the conditions of the LaTeX Project Public License, either version 1.3c
+%% of this license or (at your option) any later version. This work has the LPPL mainten-
+%% ance status ‘maintained’.
+\ProvidesPackage{placeat}%
+  [2017/08/19 v0.1d1 absolute content positioning]
+\RequirePackage{luatexbase}
+\RequirePackage{luacode}
+\RequirePackage{atbegshi}
+\RequirePackage{xparse}
+\directlua{dofile(kpse.find_file("placeat.lua",'lua'))}
+\NewDocumentCommand\placeat{ggd()d<>O{}mo}{
+  \IfValueT{#1}{                        %% two coordinates in { }{ } pair.
+    \IfValueT{#2}{                      %% if second argument is not given, everything breaks. not nice.
+      \def\cox{#1}
+      \def\coy{#2}
+    }
+  }
+  \IfValueT{#3}{                        %% one argument as ( , ) coordinate pair.
+    \def\cox{\firstof#3X}
+    \def\coy{\secondof#3X}
+  }
+  \IfValueT{#4}{
+    \luadirect{
+      y   = string.byte('#4',1)-64
+      x   = string.byte('#4',2)-48
+      x2  = string.byte('#4',3)
+      if x2 then x = x*10 + x2-48 end  -- FIXME: what exactly happens here? …
+    }
+    \def\cox{\luadirect{tex.print(x)}}
+    \def\coy{\luadirect{tex.print(y)}}
+  }
+  \placeatthreenumbers{\cox}{\coy}{\llap{#5}#6}
+
+  \IfValueT{#7}{
+    \expandafter\gdef\csname #7x\endcsname{\firstof#3X}
+    \expandafter\gdef\csname #7y\endcsname{\secondof#3X}
+  }
+}
+\NewDocumentCommand\placerelto{oggd()d<>O{}mo}{
+  \IfValueT{#2}{                        %% two coordinates in { }{ } pair.
+    \IfValueT{#3}{                      %% if second argument is not given, everything breaks. not nice.
+      \def\cox{#2}
+      \def\coy{#3}
+    }
+  }
+  \IfValueT{#4}{                        %% one argument as ( , ) coordinate pair.
+    \def\cox{\firstof#4X}
+    \def\coy{\secondof#4X}
+  }
+  \IfValueT{#5}{
+    \luaexec{
+      y   = string.byte('#5',1)-64
+      x   = string.byte('#5',2)-48
+      x2  = string.byte('#5',3)
+      if x2 then x = x*10 + x2-48 end  -- FIXME: what exactly happens here? …
+      tex.print("\\def\\cox{"..(x).."}\\def\\coy{"..(y).."}")
+    }
+  }
+  \placeatthreenumbers
+    {\cox + \csname #1x\endcsname}
+    {\coy + \csname #1y\endcsname}
+    {\llap{#6}#7}
+  \IfValueT{#8}{
+    \expandafter\xdef\csname #8x\endcsname{\cox + \csname #1x\endcsname}
+    \expandafter\xdef\csname #8y\endcsname{\coy + \csname #1y\endcsname}
+  }
+}
+\NewDocumentCommand\placeminipageat{r()O{10cm}m}{
+  \gdef\widthofplaceat{#2}
+  \placeat(#1)
+  {\begin{minipage}{\widthofplaceat}{#3}\end{minipage}}
+}
+\def\placeatthreenumbers#1#2#3{
+  \luaexec{
+    nr = nr+1
+    dacoordtmp = ((#1-1+offsetx)*tex.pagewidth/65536/gridnrx*1.005)..","..(-(#2-1+offsety)*tex.pageheight/65536/gridnry)
+    dacoord[nr] = "\\put("..dacoordtmp..")"
+    tex.print("\\expandafter\\gdef\\csname command"..(nr).."\\endcsname")}% begin of command definition
+  {#3}  %% this is what \command[nr] will contain
+}
+\def\firstof #1,#2X{#1}
+\def\secondof #1,#2X{#2}
+\gdef\drawgridnum{1}
+\luaexec{
+  arrowheadlength = 5
+  drawgrid = false
+  nr       = 0
+  dacoord  = {}
+  gridnr   = 10
+  gridnrx  = 10
+  gridnry  = 10
+  gridlinewidth = 0.01
+  offsetx  = 0
+  offsety  = 0
+}
+\AtBeginDocument{
+  \AtBeginShipout{%
+    \AtBeginShipoutUpperLeftForeground{%
+      \ifnum\drawgridnum = 1 \drawgrid\fi
+      \luaexec{%
+        for i = 1,nr do
+          tex.print(dacoord[i].."{\\csname command"..(i).."\\endcsname}")
+        end
+        nr=0
+      }
+    }
+  }
+}
+\def\drawgrid{
+  \luatexlatelua{
+    pdf_print("q")
+    linewidth(gridlinewidth)
+    local factorh = tex.pageheight/gridnry/65536
+    local factorw = tex.pagewidth/gridnrx/65536
+    for i = 1,math.max(gridnrx,gridnry) do
+      h = i*factorh
+      w = i*factorw
+      move(0,-h) line(tex.pagewidth,-h) stroke()
+      move(w,0) line(w,-tex.pageheight) stroke()
+    end
+    pdf_print("Q")
+  }
+  { %% extra grouping to keep font size change local. Going to normalfont seems to make sense. An explicit font for the grid might also be nice. Implementation only upon request.
+%% would also be nice to maybe adapt the fontsize to the grid size
+    \normalfont\fontsize{8}{10}\selectfont
+    \luaexec{
+      for i=1,math.max(gridnrx+offsetx,gridnry+offsety) do
+        hfac = tex.pageheight/gridnry/65536
+        wfac = tex.pagewidth/gridnrx/65536*1.005  %% another empirical factor
+        h = (i-1)*hfac
+        w = (i-1)*wfac
+        tex.print("\\put("..(w)..",-7){\\rlap{"..(i-offsetx).."}}")
+        if alphanumgrid then
+          tex.print("\\put(0,"..(-h-0.05*hfac).."){\\char00"..(64+i-offsety).."}")  %%-- for alphanumeric grid.
+        else
+          tex.print("\\put(0,"..(-h-0.05*hfac).."){"..(i-offsety).."}")
+        end
+      end
+    }
+  }
+}
+\NewDocumentCommand\placelineat{or()r()}{
+  \placeat(#2){\ignorespaces\IfValueT{#1}{\color{#1}} % only to fix the color!
+    \luatexlatelua{placelineat(#2,#3)}
+  }
+}
+\NewDocumentCommand\placearrowat{or()r()}{
+  \placeat(#2){\ignorespaces\IfValueT{#1}{\color{#1}}%
+    \luatexlatelua{placearrowat(#2,#3)}
+  }
+}
+\NewDocumentCommand\placecircleat{or()D(){.3}}{
+  \placeat(#2){\ignorespaces\IfValueT{#1}{\color{#1}}%
+    \luatexlatelua{placecircleat(#3,1)}
+  }
+}
+\NewDocumentCommand\placefilledcircleat{or()D(){.3}}{
+  \placeat(#2){\ignorespaces\IfValueT{#1}{\color{#1}}%
+    \luatexlatelua{placecircleat(#3,1,true)}
+  }
+}
+\NewDocumentCommand\placesquareat{or()G{3}}{
+  \placeat(#2){\ignorespaces\IfValueT{#1}{\color{#1}}%
+    \luatexlatelua{placesquareat(#3)}
+  }
+}
+\NewDocumentCommand\placecurveat{or()r()r()r()}{
+ \placeat(#2){\ignorespaces\IfValueT{#1}{\color{#1}}%
+    \luatexlatelua{placecurveat(#2,#3,#4,#5)}
+  }
+}
+\NewDocumentCommand\placerectangleat{O{black}r()d()}{
+  \placeat(#2){\ignorespaces\color{#1}%
+    \luatexlatelua{placerectangleat(#2,#3)}
+  }
+}
+\NewDocumentCommand\placefilledrectangleat{O{black}r()r()}{
+  \placeat(#2){\ignorespaces\color{#1}%
+    \luatexlatelua{placerectangleat(#2,#3,true)}
+  }
+}
+\NewDocumentCommand\placeroundedat{sO{black}r()D(){0.1}D<>{1.5}}{
+  \placeat(#3){\ignorespaces\color{#2}%
+    \IfBooleanTF{#1}{\luatexlatelua{placecircleat(#4,#5,true)}}%
+                    {\luatexlatelua{placecircleat(#4,#5)}}
+  }
+}
+\ExplSyntaxOn
+\gdef\drawgridnum{1}
+\keys_define:nn{placeat}{
+  alphanumgrid.code:n    = \directlua{alphanumgrid = true},
+  arrowheadlength.code:n = \directlua{arrowheadlength=#1},
+  final.code:n           = \luaexec{placeat_final = true} \gdef\drawgridnum{0},
+  drawgrid.code:n        = \gdef\drawgridnum{1},
+  gridnumber.code:n      = \directlua{gridnr = #1 gridnrx = gridnr~gridnry = gridnr},
+  gridnumberx.code:n     = \directlua{gridnrx = #1},
+  gridnumbery.code:n     = \directlua{gridnry = #1},
+  gridlinewidth.code:n   = \directlua{gridlinewidth = #1},
+  linewidth.code:n       = {\placeat(1,1){\luatexlatelua{linewidth(#1)}}},  %% FIXME: this is a very nasty hack to implement user's choice of linewidth!
+  nogrid.code:n          =  \gdef\drawgridnum{0},
+  numnumgrid.code:n      = \directlua{alphanumgrid = false},
+  offsetx.code:n         = \directlua{offsetx = #1},
+  offsety.code:n         = \directlua{offsety = #1},
+  startzero.code:n       = \directlua{offsetx = 1 offsety = 1}
+}
+\DeclareDocumentCommand\placeatsetup{m}{
+  \keys_set:nn{placeat}{#1}
+}
+\ExplSyntaxOff
+%% 
+%%
+%% End of file `placeat.sty'.

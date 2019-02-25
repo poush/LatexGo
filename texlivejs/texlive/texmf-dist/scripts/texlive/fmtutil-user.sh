@@ -1,25 +1,3 @@
-#!/bin/sh
-# $Id$
-# fmtutil-user - arrange for fmtutil to affect user directories.
-# Maintained in Master/texmf-dist/scripts/texlive/
-# Public domain.  Originally written by Thomas Esser.
-
-test -f /bin/ksh && test -z "$RUNNING_KSH" \
-  && { UNAMES=`uname -s`; test "x$UNAMES" = xULTRIX; } 2>/dev/null \
-  && { RUNNING_KSH=true; export RUNNING_KSH; exec /bin/ksh $0 ${1+"$@"}; }
-unset RUNNING_KSH
-
-test -f /bin/bsh && test -z "$RUNNING_BSH" \
-  && { UNAMES=`uname -s`; test "x$UNAMES" = xAIX; } 2>/dev/null \
-  && { RUNNING_BSH=true; export RUNNING_BSH; exec /bin/bsh $0 ${1+"$@"}; }
-unset RUNNING_BSH
-
-# preferentially use subprograms from our own directory.
-mydir=`echo "$0" | sed 's,/[^/]*$,,'`
-mydir=`cd "$mydir" && pwd`
-PATH="$mydir:$PATH"; export PATH
-
-# hack around a bug in zsh:
-test -n "${ZSH_VERSION+set}" && alias -g '${1+"$@"}'='"$@"'
-
-exec fmtutil --user ${1+"$@"}
+version https://git-lfs.github.com/spec/v1
+oid sha256:b612610e2c316f53dec3fdf163807311c0cb3c07e6833637c81ea4ff73167bb9
+size 876

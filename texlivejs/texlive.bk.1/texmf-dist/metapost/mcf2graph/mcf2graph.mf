@@ -1,0 +1,1570 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% mcf2graph ver 4.36     Copyright (c) 2013-2019   Akira Yamaji
+%
+% Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+% and associated documentation files (the "Software"), to deal in the Software without restriction,
+% including without limitation the rights to use, copy, modify, merge, publish, distribute,
+% sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+% furnished to do so, subject to the following conditions:
+%
+% The above copyright notice and this permission notice shall be included in all copies
+% or substantial portions of the Software.
+%
+% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,EXPRESS OR IMPLIED,
+% INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,FITNESS FOR A PARTICULAR PURPOSE
+% AND NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+% DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  mcf2graph is METAFONT/METAPOST macro package convert
+%  Molecular Coding Format(MCF) to font(pk)/eps/sgv/png/mdl molfile
+%----------------------------------------------------------------------------------------------
+% This package is located at : http://www.ctan.org/pkg/mcf2graph
+% Suggestion or request mail to : mcf2graph@gmail.com 
+%----------------------------------------------------------------------------------------------
+% Set output no image file                   : mpost -s bboxmargin=0   FILENAME
+% Set output first font only                 : mpost -s bboxmargin=1   FILENAME
+% Set outputformat to "eps"(.mps)            : mpost -s ahangle=0      FILENAME
+% Set outputformat to "png"                  : mpost -s ahangle=1      FILENAME
+% Set outputformat to "svg"                  : mpost -s ahangle=2      FILENAME
+% Set outputformat to "eps" (.eps)           : mpost -s ahangle=3      FILENAME
+% Set output aux file                        : mpost -s ahlength=1     FILENAME
+% Set output report                          : mpost -s ahlength=2     FILENAME
+% Set output MOL(V2000)                      : mpost -s ahlength=5     FILENAME
+% Set output MOL(V3000)                      : mpost -s ahlength=6     FILENAME
+% Set to use plain.mp (label,arrow)          : mpost -s labeloffset=1  FILENAME
+% Set to use plain.mp (label,arrow,atom)     : mpost -s labeloffset=2  FILENAME
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+tracingstats:=1;
+message " This is mcf2graph ver 4.36  2019.02";
+%-------------------------------------------------------------------------------------------------
+newinternal char_num,str_cnt,sub_usr,sub_int,tbl_cnt,sharp_char;
+numeric save_para[],comD[][],parD[][],cntD[],tbl_atom[],tbl_subst[][],tbl_atom_wt[],
+        tbl_atom_mi[],tbl_char_wd[],tbl_char_ht[],andA[],and_rot[],chargeA[];
+string  tbl_atom_str[],strD[],var[],tag[],out_file_name,out_file_aux,out_file_rep,
+        aux_delimiter,atomfont,save_atomfont,save_defaultfont;
+picture mol_stru[];
+path    arrow_path,arrow_head;
+%-------------------------------------------------------------------------------------------------
+char_num:=str_cnt:=proc_end:=sw_label_emu:=0;
+sw_numberA:=sw_numberB:=sw_mol_frame:=sw_aux_out:=sw_solid:=sw_expand:=sw_font_frame:=sw_clip:=0;
+sw_atom_frame:=sw_rep_out:=sw_mol_out:=sw_subst_off:=sw_bond_single:=sw_auxfix:=sw_arrow:=0;
+numberA_start:=numberB_start:=1; numberA_end:=numberB_end:=4095; aux_max:=max_inf_num:=20;
+aux_delimiter:=";";  var1:="jobname";  tag1:="F";  var2:="char_num"; tag2:="C";
+for i=3 upto aux_max: var[i]:=tag[i]:=""; endfor
+%=================================================================================================
+if (known green)and(known ahlength):
+  f_MP:=1;
+  color color_list[];
+  prologues:=3;
+  %-----------------------------------------------------------------------------------------
+  fontmapfile "pdftex.map";
+  %-----------------------------------------------------------------------------------------
+  atomfont:=defaultfont:="";
+  out_file_aux:=jobname&"-info.aux";
+  out_file_rep:=jobname&"-report.txt";
+  def out_file_mol= jobname&"-"&fit_zero(char_num)&"-"&inf_EN&".mol" enddef;
+  %-- default bboxmargin=2------------------------------------------------------------------
+  if     bboxmargin=0: def shipit = enddef;                    % No image file
+  elseif bboxmargin=1: proc_end:=1;                            % output first font only
+  fi
+  %--default ahangle=45---------------------------------------------------------------------
+  if     ahangle=0:  outputformat:="eps";                      % eps format(.mps)
+  elseif ahangle=1:  outputformat:="png"; hppp:=vppp:=0.12;    % png format(600dpi)
+  elseif ahangle=2:  outputformat:="svg";                      % svg format
+  elseif ahangle=3:  outputformat:="eps";                      % eps format(.eps)
+  %
+  elseif ahangle=11: outputformat:="png"; hppp:=vppp:=0.24;    % png format(300dpi)
+  elseif ahangle=12: outputformat:="png"; hppp:=vppp:=0.10;    % png format(720dpi)
+  elseif ahangle=13: outputformat:="png"; hppp:=vppp:=0.06;    % png format(1200dpi)
+  fi
+  %--default ahlength=4---------------------------------------------------------------------
+  if     ahlength=1: sw_aux_out:=1; def shipit = enddef;       % output aux file
+  elseif ahlength=2: sw_rep_out:=1; def shipit = enddef;       % output report
+  elseif ahlength=5: sw_mol_out:=1; def shipit = enddef;       % output MOL(V2000)
+  elseif ahlength=6: sw_mol_out:=2; def shipit = enddef;       % output MOL(V3000)
+  fi
+  %--default labeloffset=3------------------------------------------------------------------
+  if     labeloffset=1: sw_arrow:=1; defaultfont:="uhvr8r";           % plain.mp label
+  elseif labeloffset=2: sw_arrow:=1; defaultfont:=atomfont:="uhvr8r"; % plain.mp label,atom
+  fi
+  %--default outputtemplate:="%j-%3c."&"mps"------------------------------------------------
+  if (outputformat="eps")and(ahangle<>3): outputtemplate:="%j-%3c."&"mps";
+  else:                                   outputtemplate:="%j-%3c."&outputformat;
+  fi
+  %-----------------------------------------------------------------------------------------
+  def beginchar(expr a,b,c,d)= beginfig(a) w:=b*pt; h:=c*pt; enddef;
+  def endchar = endfig enddef;
+  def printf expr s= write s to out_file_name enddef;
+  def # = enddef;
+  def Cp(expr s) = if known s: if s<>0: withcolor color_list[s] fi fi enddef;
+  if atomfont="":    atomfont:="draw";    fi % default atom font
+  if defaultfont="": defaultfont:="draw"; fi % default label font
+  %-----------------------------------------------------------------------------------------
+else: f_MP:=0;
+  string defaultfont;
+  dotlabeldiam:=3bp;
+  def Cp(expr s) = enddef;
+  def color = transform enddef;
+  sw_arrow:=0;
+  atomfont:="draw";
+  defaultfont:="draw";
+  mode_setup;
+fi
+clearit;
+%--------------------------------------------------------------------------------------------------
+for i=0 upto 20: mol_stru[i]:=nullpicture; endfor
+%--------------------------------------------------------------------------------------------------
+let DIV= /; let MUL= *; let LT= <; let GT= >; let AND= &; let :: = : ; let == = =; let ef=elseif;
+%--------------------------------------------------------------------------------------------------
+?3:=?20:=Ph:=Ph1:=Ph2:=hz:=0; vt:=1;
+margin_left_right:=margin_top_bottom:=0.4mm;
+ratio_bond_width:=0.1;        ratio_chain_ring:= 0.66;   ratio_atom_bond:=0.36;
+ratio_thickness_bond:=0.015;  ratio_thickness_char:=0.1;
+ratio_char_bond:=1.5;         ratio_bondgap_bond:=0.15;  ratio_zebragap_bond:=0.12;
+ratio_zebra_black:=0.4;       ratio_wedge_bond:=0.12;    ratio_atomgap_atom:=0.050;
+offset_thickness:=0.2bp;      offset_bond_gap:=0.3bp;    offset_zebra_gap:=0.1bp;
+offset_atom:=0.8pt;           offset_wedge:=0.4bp;
+thickness_font_frame:=0.2bp;  thickness_atom_frame:=0.1bp;
+max_bond_length:=10mm;        bond_len:=8mm;
+font_wd:=30mm;                font_ht:=20mm;
+%==================================================================================================
+ahangle:=45;
+ahlength:=4bp;
+bboxmargin:=2bp;
+defaultsize:=8bp;
+defaultscale:=1;
+labeloffset:=3bp;
+ext_defaultline:=0.5bp;
+%==================================================================================================
+sub_emb_start:=500;      % 500  => 2499   for embedded sub structure (max 2000)
+sub_usr_start:=2500;     % 2500 => 2999   for user     sub structure (max 500)
+sub_int_start:=3000;     % 3000 => 4000   for internal sub structure (max 1000)
+%--------------------------------------------------------------------------------------------------
+def def_com(expr n)(text tx)= nA:=n; forsuffixes list=tx:: list:=nA; nA:=nA+1; endfor enddef;
+def_com(-4000)(_term,_jp_atom,_jp_atom_abs,_jp_bond,_cyc,_cyc_sB,_cyc_eB,_set_line,_chg_line,
+  _dl,_mb,_N,_O,_S,_tmp_line,_chg_len,_get_len,_ring_len,_tmp_len,_rot_ang,_adj_ang,_chg_env,
+  _tmp_env,_set_colorA,_set_colorB,_postA,_postB,_postC,_postD,_postE,_postF,_postG,_postH,
+  _set_clr,_set_adr,_mk_bond,_set_atom,_arg_ang,_chg_atom,_tmp_rot,_fuse,_push,_pop,
+  _size_a,_numeric,_jump_at,_connect_at,_set_and,_chg_charge);
+def_com(1)(si,dl,dr,db,dm,tm,wf,wb,bd,bz,zf,zb,dt,wv,nl,vf,vb,si_,wf_,wb_,bd_);
+%--------------------------------------------------------------------------------------------------
+def parameter_list=
+  sw_rep_out,sw_numberA,sw_numberB,sw_mol_frame,sw_aux_out,sw_solid,sw_expand,sw_mol_out,
+  sw_atom_frame,sw_font_frame,sw_subst_off,sw_bond_single,sw_clip,sw_arrow,sw_label_emu,
+  margin_left_right,margin_top_bottom,ratio_atom_bond,ratio_thickness_bond,ratio_char_bond,
+  ratio_chain_ring,ratio_bondgap_bond,ratio_zebra_black,ratio_zebragap_bond,ratio_thickness_char,
+  ratio_wedge_bond,ratio_atomgap_atom,ratio_bond_width,font_wd,font_ht,
+  bond_len,offset_atom,offset_wedge,max_bond_length,offset_zebra_gap,offset_bond_gap,
+  thickness_font_frame,offset_thickness,numberA_start,numberA_end,numberB_start,numberB_end,
+  defaultsize,defaultscale,labeloffset,
+  Me,Et,Pr,Bu,iPr,tBu,CH3,CF3,CCl3,CBr3,NH,NH2,NO2,OH,CHO,COOH,CN,SH,OMe,OEt,SMe,SEt,
+  !CH3,!NH2,!OH,!CHO,!COOH,!CN,!SH,!NO2
+enddef;
+%--------------------------------------------------------------------------------------------------
+def ]]]=] ] ] enddef;
+vardef iif(expr a,b,c)=if a: b else: c fi enddef;
+vardef pic_c(expr i,s)= substring(i,i+1) of s enddef;
+vardef sfB(expr a,b,c)= a shifted ((b,0) rotated c) enddef;
+%--------------------------------------------------------------------------------------------------
+def store_par(text t)=
+  nA:=0; for list=t: nA:=nA+1; if save_para[nA]<>list: save_para[nA]:=list; fi endfor
+enddef;
+def restore_par(text t)=
+  nA:=0; forsuffixes list=t: nA:=nA+1; if list<>save_para[nA]: list:=save_para[nA]; fi endfor
+enddef;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+def beginfont(text s)=
+  begingroup
+  save cntA,cntB,cntM,minX,minY,f_beginchar,numS,sftX,sftY,f_ext,
+       cal_FM,cal_MW,cal_MW_str,cal_MI,cal_MI_str,wdM,htM,
+       inf_NO,inf_EN,inf_JN,inf_FM,inf_CAS,inf_USE,inf_EXA,inf_EXB,inf_MW,
+       posA,posM,lineB,sB,eB,angB,angA,wdA,dxA,lenB,ang_br,info;
+  numeric lineB[],sB[],eB[],angB[],angA[],lenB[],angX[],numS[],wdM[],htM[],wdA[],dxA[],dx_A[];
+  pair posA[],posM[][];
+  string info[],cal_FM,cal_MW,cal_MW_str,cal_MI,cal_MI_str,
+         inf_NO,inf_EN,inf_JN,inf_FM,inf_CAS,inf_USE,inf_EXA,inf_EXB,inf_MW;
+  %------------------------------------------------------------------------------------------------
+  char_num:=char_num+1;
+  store_par(parameter_list);
+  save_atomfont:=atomfont;
+  save_defaultfont:=defaultfont;
+  %------------------------------------------------------------------------------------------------
+  for i:=1 upto max_inf_num: info[i]:=":"; endfor
+  f_ext:=inf_num:=cntM:=0;
+  for list=s: inf_num:=inf_num+1; info[inf_num]:=list; endfor
+enddef;
+%==================================================================================================
+def endfont=
+  if sw_clip>=1:
+    nA:=nC:=4095; nB:=nD:=-4095;
+    for i=1 upto cntM:
+      if xpart(posM[1][i])<nA: nA:=xpart(posM[1][i]); fi
+      if xpart(posM[2][i])>nB: nB:=xpart(posM[2][i]); fi
+      if ypart(posM[1][i])<nC: nC:=ypart(posM[1][i]); fi
+      if ypart(posM[2][i])>nD: nD:=ypart(posM[2][i]); fi
+    endfor
+    font_wd:=nB-nA+2margin_left_right;
+    font_ht:=nD-nC+2margin_top_bottom;
+    for i=1 upto cntM: posM[0][i]:=posM[0][i]+(margin_left_right-nA,margin_top_bottom-nC);
+    endfor
+  fi
+  %-----------------------------------------------------------------------------------------------
+  beginchar(char_num,font_wd/bp*bp#,font_ht/bp*bp#,0)
+  if (sw_font_frame=1)or(sw_font_frame=3): draw_frame((0,0),w,h,thickness_font_frame); fi
+  if (sw_font_frame=2)or(sw_font_frame=3):
+    nA:=w-2margin_left_right; nB:=h-2margin_top_bottom;
+    draw_frame((margin_left_right,margin_top_bottom),nA,nB,thickness_font_frame);  fi
+  if sw_font_frame=4: draw_corner(w,h,thickness_font_frame); fi
+  for i=1 upto cntM:
+    addto currentpicture also mol_stru[i] shifted posM[0][i]; mol_stru[i]:=nullpicture;
+  endfor
+  if f_ext=1: addto currentpicture also mol_stru[0]; mol_stru[0]:=nullpicture; fi
+  endchar;
+  clearit;
+  restore_par(parameter_list);
+  atomfont:=save_atomfont;
+  defaultfont:=save_defaultfont;
+  endgroup;
+  if proc_end=1: scantokens("bye"); fi
+enddef;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+def set_def_MC=
+  save /,//,/*,*/,**,*/*,~,~~,^,^^,`,'`,<,>,>>,:>,&,:,=,\,\\,*\,\*,*\*,@,$,{,},#,
+       |,||,|<,>|,|<=,|:,:|,_,d,w,z,inside_def_MC;
+  inside_def_MC:=1;
+  _:=Me; d:=db; w:=wf; z:=zf;
+  tertiarydef a=b == change_bond(a,b) enddef; 
+  tertiarydef a:b == change_atom(a,b) enddef;
+  def { == '''( enddef;  let } == );
+  def &primary s == (_set_and,ASCII(s)) enddef;
+  vardef $primary a == a-4095 enddef;
+  def ^^primary n == (_tmp_rot,n) enddef; def ~~primary n == (_tmp_line,n) enddef;
+  def '`primary n == (_tmp_len,n) enddef; def :>primary n == (_tmp_env,n) enddef;
+  def >>primary n == (_chg_env,n) enddef; def ``primary n == (_chg_len,n) enddef;
+  def <primary n  == (_rot_ang,n) enddef;
+  tertiarydef a^b == ^^b,a enddef;  tertiarydef a`b == '`b,a enddef;
+  tertiarydef a~b == ~~b,a enddef;  tertiarydef a>b == :>b,a enddef;
+  def # == _connect_at enddef; def @ == _jump_at enddef; def \ == @,0 enddef;
+  def \\ == \~dm enddef; def *\ == \~wf enddef; def \* == \~zf enddef; def *\* == \~wv enddef;
+  def |: == (_push,0) enddef; def :| == (_pop,0)  enddef;
+  def |< == (_push,1) enddef; def >| == (_pop,1)  enddef;
+  def |<=primary n == ``n,(_push,1) enddef;
+  def | == (_push,2) enddef;  def || == (_pop,2) enddef;
+  def /secondary n ==  (_postA,n) enddef;  def //secondary n == (_postB,n) enddef;
+  def */secondary n == (_postC,n) enddef;  def /*secondary n == (_postD,n) enddef;
+  def **secondary n == (_postF,n) enddef;  def */*secondary n == (_postG,n) enddef;
+enddef;
+%=================================================================================================
+vardef '(text TXT)= ''(incr sub_usr)(TXT); sub_usr enddef;
+%-------------------------------------------------------------------------------------------------
+def ''(expr ADR)(text TXT)=
+  begingroup
+  if unknown inside_def_MC:: set_def_MC fi
+  cntD[ADR]:=0;
+  for list==TXT::
+    if known list::
+      if pair list::
+        cntD[ADR]:=cntD[ADR]+1;
+        comD[ADR][cntD[ADR]]:=xpart(list);
+        parD[ADR][cntD[ADR]]:=ypart(list);
+      elseif numeric list::
+        if list>=sub_emb_start::
+          for i==1 upto cntD[list]::
+            cntD[ADR]:=cntD[ADR]+1;
+            comD[ADR][cntD[ADR]]:=comD[list][i];
+            parD[ADR][cntD[ADR]]:=parD[list][i];
+          endfor 
+        else::
+          cntD[ADR]:=cntD[ADR]+1;
+          comD[ADR][cntD[ADR]]:=_mk_bond;
+          parD[ADR][cntD[ADR]]:=list;
+        fi
+      elseif string list::
+        str_cnt:=str_cnt+1;
+        strD[str_cnt]:=list;
+        cntD[ADR]:=cntD[ADR]+1;
+        comD[ADR][cntD[ADR]]:=_set_atom;
+        parD[ADR][cntD[ADR]]:=str_cnt;
+      fi
+    fi
+  endfor
+  endgroup
+enddef;
+%-------------------------------------------------------------------------------------------------
+vardef '''(text TXT)=
+  sub_int:=sub_int+1;
+  cntD[sub_int]:=0;
+  for list==TXT:: cntD[sub_int]:=cntD[sub_int]+1;
+    if     numeric list::
+      comD[sub_int][cntD[sub_int]]:=_numeric;
+      parD[sub_int][cntD[sub_int]]:=list;
+    elseif pair list::
+      comD[sub_int][cntD[sub_int]]:=xpart(list);
+      parD[sub_int][cntD[sub_int]]:=ypart(list);
+    fi
+  endfor
+  sub_int    %------- Retern value -------
+enddef;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+def FR(expr a,b) =
+  PA(_jp_bond,a) PA(_rot_ang,180) PA(_get_len,a) PA(_push,0)
+  PA(_chg_len,_ring_len) for i==1 upto b-2:: PA(_mk_bond,360 DIV b) endfor  PA(_pop,0)
+  if a>=1:: PA(_cyc_eB,0) elseif a>=-999:: PA(_cyc_eB,a-b+2) else:: PA(_cyc_eB,a) fi
+enddef;
+%-------------------------------------------------------------------------------------------------
+def FFR(expr a,b,c) =
+  PA(_jp_bond,xpart(a)) PA(_rot_ang,180) PA(_push,0)
+  if     b==6:: PA(_chg_len,0) for i==1 upto c-1:: PA(_mk_bond,60) endfor
+  elseif b==5:: if     c==2:: PA(_chg_len,1.25) PA(_mk_bond,80)
+                elseif c==3:: PA(_chg_len,1.1)  PA(_mk_bond,78) PA(_mk_bond,72) fi
+  elseif b==4:: PA(_chg_len,1.225) PA(_mk_bond,105) fi
+  PA(_pop,0) if ypart(a)<=0:: PA(_cyc_eB,ypart(a)-c+1) else:: PA(_cyc_eB,ypart(a)) fi
+enddef;
+%-------------------------------------------------------------------------------------------------
+def FRR(expr a,b,c) =
+  PA(_jp_bond,a) PA(_rot_ang,180) PA(_push,0) PA(_chg_len,c DIV 10)
+  if     b==5:: PA(_mk_bond,72-((c-9) MUL 1.5)) PA(_mk_bond,72+(c-9)) PA(_mk_bond,72+(c-9))
+  elseif b==6:: PA(_mk_bond,60-(c-8)) for i==1 upto 3:: PA(_mk_bond,60+((c-8) DIV 2)) endfor
+  elseif b==7:: PA(_mk_bond,360 DIV 7-(c-8))
+                for i==1 upto 4:: PA(_mk_bond,360 DIV 7+((c-8) DIV 2.5)) endfor
+  elseif b==8:: PA(_mk_bond,45-(c-8))  for i==1 upto 5:: PA(_mk_bond,45+((c-8) DIV 3)) endfor
+  fi
+  PA(_pop,0) if a>=1:: PA(_cyc_eB,0) else:: PA(_cyc_eB,list) fi
+enddef;
+%==================================================================================================
+vardef change_bond(expr a,b) =
+  sub_int:=sub_int+1;
+  cntD[sub_int]:=0;
+  if known b:: if numeric b::
+    if (b>=si)and(b<=bd_):: if b==dl:: PP(a,_dl) else:: PX(a)(_set_line,b) fi
+    elseif (b>=?3)and(b<=?20)::
+      if a>=sub_int_start:: for i==1 upto cntD[a]:: FR(parD[a][i],b-?3+3) endfor
+      else::                FR(a,b-?3+3)
+      fi
+    elseif b==Ph1:: FR(a,6) PA(_dl,-2) PA(_dl,-4)
+    elseif b==Ph2:: FR(a,6) PA(_dl,-1) PA(_dl,-3) PA(_dl,-5)
+    elseif b==_jump_at:: PA(_jp_bond,a)
+    elseif b==_connect_at:: PA(_cyc_sB,a)
+    elseif comD[b][1]==_fuse::
+      if      comD[b][2]<=6::                      FFR(a,parD[b][1],comD[b][2])
+      elseif (comD[b][2]>=11)and(comD[b][2]<=15):: FRR(a,parD[b][1],comD[b][2])
+      fi
+    fi
+  elseif color b:: color_list[incr cntC]:=b; PX(a)(_set_colorB,cntC)
+  fi fi
+  sub_int    %------- Retern value -------
+enddef;
+%-------------------------------------------------------------------------------------------------
+vardef change_atom(expr a,b)=
+  sub_int:=sub_int+1;
+  cntD[sub_int]:=0;
+  if known b:: if numeric b::
+    if (b>=H)and(b<=U):: if b==N:: PP(a,_N) elseif b==O:: PP(a,_O) elseif b==S:: PP(a,_S)
+                         else::    PX(a)(_chg_atom,b)
+                         fi
+    ef b==NH::    PA(_set_clr,1) PP(a,_N) PX(a)(_postH,H) PA(_set_clr,0)
+    ef b==_jump_at:: PA(_jp_atom,a)
+    ef b==_connect_at:: PA(_cyc,a)
+    fi
+  ef pair b::
+    if xpart(b)==_set_and::
+      PA(_set_and,ypart(b)) PA(_chg_charge,a)
+    else::
+      PA(_set_clr,1) PX(a)(xpart(b),ypart(b)) PA(_set_clr,0)
+    fi
+  ef color b:: color_list[incr cntC]:=b; PX(a)(_set_colorA,cntC)
+  fi fi
+  sub_int  %------- Retern value -------
+enddef;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+def puts(expr POS)(expr STR)=
+  begingroup
+  save pA,sA,bA,nB,nC;
+  pair pA;
+  string sA;
+  picture bA;
+  pA:=POS;
+  nB:=defaultscale*defaultsize;
+  nC:=0;
+  %------------------------------------------------------------------------------------------------
+  for i=0 upto length(STR)-1:
+    sA:=pic_c(i,STR);
+    if sw_label_emu=1:
+      if     sA="_": nC:=iif(nC=-0.5,0,-0.5);
+      elseif sA="^": nC:=iif(nC= 0.5,0, 0.5);
+      else:
+        if defaultfont="draw":
+          draw_char(sA,pA+(0,nB*nC),nB,ratio_thickness_char*defaultscale*defaultsize,0);
+          pA:=pA+(nB*tbl_char_wd[ASCII(sA)],0);
+        else:
+          bA:=sA infont defaultfont scaled defaultscale;
+          addto currentpicture also bA shifted (pA+(0,nB*nC));
+          pA:=pA+(lrcorner bA-llcorner bA);
+        fi
+      fi
+    else:
+      draw_char(sA,pA,nB,ratio_thickness_char*defaultscale*defaultsize,0);
+      pA:=pA+(nB*tbl_char_wd[ASCII(sA)],0);
+    fi
+  endfor
+  endgroup;
+enddef;
+%==================================================================================================
+def ext_setup=
+  pickup pencircle scaled ext_defaultline;
+  dotlabeldiam:=3bp;
+  labeloffset:=3bp;
+  save em;
+  em=defaultscale*defaultsize;
+  if (defaultfont="draw")or(f_MP=0)or(sw_label_emu=1):
+    save label,dotlabel;
+    def label = label_emu enddef;
+    def dotlabel = dotlabel_emu enddef;
+  fi
+  if (sw_arrow=0)or(f_MP=0):
+    save drawarrow,drawdblarrow;
+    def drawarrow = drawarrow_emu enddef;
+    def drawdblarrow = drawdblarrow_emu enddef;
+  fi
+enddef;
+%--------------------------------------------------------------------------------------------------
+def EXT(text TXT)=
+  begingroup
+  save w,h,wd,ht,n,p,am,aw;
+  pair p[];
+  ext_setup;
+  w:=font_wd;
+  h:=font_ht;
+  w0:=w-2margin_left_right;
+  h0:=h-2margin_top_bottom;
+  p0:=(margin_left_right,margin_top_bottom);
+  aw:=atom_wd;
+  n:=cntM;
+  for i=1 upto n: p[i]:=posM[1][i]; w[i]:=wdM[i]; h[i]:=htM[i]; endfor
+  TXT addto mol_stru[0] also currentpicture; clearit; f_ext:=1;
+  endgroup;
+enddef;
+%--------------------------------------------------------------------------------------------------
+def ext(text TXT)=
+  begingroup
+  save w,h,n,l,p,am,aw,A,B;
+  numeric A[]dir,B[]dir;
+  pair p[],A[],B[],B[]s,B[]e;
+  ext_setup;
+  w:=mol_wd; h:=mol_ht; l:=bond_len; aw:=atom_wd;
+  p0:=(minX,minY); An:=cntA; Bn:=cntB;
+  for i=1 upto An: A[i]:=posA[i]; A[i]dir:=angX[i]; endfor
+  for i=1 upto Bn:
+    B[i]s:=posA[sB[i]]; B[i]e:=posA[eB[i]]; B[i]:=0.5[B[i]s,B[i]e]; B[i]dir:=angB[i];
+  endfor
+  TXT addto mol_stru[cntM] also currentpicture; clearit;
+  endgroup;
+enddef;
+%--------------------------------------------------------------------------------------------------
+vardef label_emu@#(expr STR,POS) = %% modified 'thelabel@#(expr s,z)' of plain.mp
+  save oft,fx,fy,wds,sC,bA;
+  pair oft,oft.lft,oft.rt,oft.top,oft.bot,oft.ulft,oft.llft,oft.urt,oft.lrt;
+  string sC;
+  picture bA;
+  wds:=0;
+  for i=0 upto length(STR)-1:
+    sC:=pic_c(i,STR);
+    if not((sw_label_emu=1)and((sC="_")or(sC="^"))):
+      if (defaultfont="draw")or(f_MP=0):
+        wds:=wds+defaultscale*defaultsize*tbl_char_wd[ASCII(sC)];
+      else:
+        bA:=sC infont defaultfont scaled defaultscale;
+        wds:=wds+xpart(lrcorner bA-llcorner bA);
+      fi
+    fi
+  endfor
+  oft:=     (  0,  0);   fx:=0.5;      fy:=0.5;
+  oft.lft:= ( -1,  0);   fx.lft:=1;    fy.lft:=0.5;
+  oft.rt := (  1,  0);   fx.rt :=0;    fy.rt :=0.5;
+  oft.bot:= (  0, -1);   fx.bot:=0.5;  fy.bot:=1;
+  oft.top:= (  0,  1);   fx.top:=0.5;  fy.top:=0;
+  oft.ulft:=(-.7, .7);   fx.ulft:=1;   fy.ulft:=0;
+  oft.urt:= ( .7, .7);   fx.urt:=0;    fy.urt:=0;
+  oft.llft:=(-.7,-.7);   fx.llft:=1;   fy.llft:=1;
+  oft.lrt:= ( .7,-.7);   fx.lrt:=0;    fy.lrt:=1;
+  puts(POS+(labeloffset*oft@#)-(wds*fx@#,defaultscale*defaultsize*fy@#))(STR);
+enddef;
+%-------------------------------------------------------------------------------------------------
+vardef dotlabel_emu@#(expr STR,POS)=
+  label_emu@#(STR,POS); draw POS withpen pencircle scaled dotlabeldiam;
+enddef;
+%==================================================================================================
+def drawarrow_emu expr PAT = arrow_path:=PAT; draw_arrow enddef;
+%-------------------------------------------------------------------------------------------------
+def draw_arrow text t =  %% modified 'drawarrow' of plain.mp
+  filldraw arrow_head rotated ahead_angle(reverse arrow_path)
+    shifted point infinity of arrow_path t;
+  draw arrow_path t
+enddef;
+%-------------------------------------------------------------------------------------------------
+def drawdblarrow_emu expr PAT = arrow_path:=PAT; draw_dblarrow enddef;
+%-------------------------------------------------------------------------------------------------
+def draw_dblarrow text t =
+  filldraw arrow_head rotated ahead_angle(arrow_path) shifted point 0 of arrow_path t;
+  filldraw arrow_head rotated ahead_angle(reverse arrow_path)
+     shifted point infinity of arrow_path t;
+  draw arrow_path t
+enddef;
+%-------------------------------------------------------------------------------------------------
+arrow_head:=(0,0)--(ahlength,-(sind 0.5ahangle)*ahlength)--
+            (ahlength, (sind 0.5ahangle)*ahlength)--cycle;
+%-------------------------------------------------------------------------------------------------
+def ahead_angle(expr p) =
+  angle direction .5ahlength/length(point 1 of p - point 0 of p)  of p
+enddef;
+%=================================================================================================
+def sub_add(expr a,b)=
+  cntD[sub_int]:=cntD[sub_int]+1; comD[sub_int][cntD[sub_int]]:=a; parD[sub_int][cntD[sub_int]]:=b;
+enddef;
+%-------------------------------------------------------------------------------------------------
+def sub_add_op(expr a,b)=
+  op_cnt[cntP]:=op_cnt[cntP]+1; op_com[cntP][op_cnt[cntP]]:=a; op_par[cntP][op_cnt[cntP]]:=b;
+enddef;
+%-------------------------------------------------------------------------------------------------
+def sub_pro(expr a,b)=
+  if a>=sub_int_start:: for i==1 upto cntD[a]:: sub_add(b,parD[a][i]) endfor else:: sub_add(b,a) fi
+enddef;
+%-------------------------------------------------------------------------------------------------
+def sub_ext(expr c)(expr a,b)=
+  if c>=sub_int_start::
+    for i==1 upto cntD[c]::
+      if comD[c][i]==_numeric:: sub_add(_set_adr,parD[c][i]) sub_add(a,b)
+      else:: sub_add(comD[c][i],parD[c][i]) fi
+    endfor
+  else:: sub_add(_set_adr,c) sub_add(a,b)
+  fi
+enddef;
+%=================================================================================================
+def MCa(expr FW,FH)(text TXT)= MCd(1,1)(FW,FH)(TXT) enddef;
+def MCc(expr RW,RH)(text TXT)= MCd(RW,RH)(0.5,0.5)(TXT) enddef;
+def MCf(text TXT)=             MCd(1,1)(0.5,0.5)(TXT) enddef;
+%-------------------------------------------------------------------------------------------------
+def MCd(expr RW,RH)(expr FW,FH)(text TXT)=
+  begingroup
+  save com,par,adrA,adrB,f_bra,envT,envB,lenT,lineT,strAT,stkA,stkB,stkL,stkM,cntP,bondL,temp_len,
+       temp_cntB,f_end,f_term,rotT,adrS,f_at,f_lineT,f_rotT,f_lenT,f_envT,angT,tempB,tempA,
+       maxX,maxY,f_char,ps_adr,ps_com,sA,sC,sD,pA,pB,factor,
+       op_com,op_par,op_cnt,crR,colorA,colorB,PA,PO,PP,PX,defaultsize,defaultscale;
+  %-----------------------------------------------------------------------------------------------
+  def PA= sub_add enddef;
+  def PO= sub_add_op enddef;
+  def PP= sub_pro enddef;
+  def PX= sub_ext enddef;
+  %-----------------------------------------------------------------------------------------------
+  numeric stkB[],stkA[],stkL[],stkM[],f_char[],ps_adr[],ps_com[],colorA[],colorB[],
+          op_com[][],op_par[][],op_cnt[];
+  string sA,sC,sD;
+  pair pA,pB;
+  %-----------------------------------------------------------------------------------------------
+  if (sw_numberA>=1)or(sw_numberB>=1): ratio_atom_bond:=0.25; fi
+  if (sw_expand=1)or(sw_mol_out>=1): expand_set; fi
+  sub_usr:=sub_usr_start;
+  sub_int:=sub_int_start;
+  cntA:=cntB:=cntP:=cntC:=0; strD[0]:=""; str_cnt:=2000; crR:=-ratio_chain_ring;
+  %===============================================================================================
+  ''(0)(TXT,(_term,0));
+  %-----------------------------------------------------------------------------------------------
+  proc_bond_atom(1);
+  %-----------------------------------------------------------------------------------------------
+  if (cntP>0)and(sw_subst_off=0): post_get(1); fi
+  %-----------------------------------------------------------------------------------------------
+  char_use_check;
+  %-scaling---------------------------------------------------------------------------------------
+  if     sw_solid=1: bond_len:=font_wd*ratio_bond_width;
+                     proc_size_setup; proc_skeleton; proc_scaling;
+  elseif sw_solid=2: proc_size_setup; proc_skeleton; proc_scaling;
+  else:
+    bond_len:=3mm;
+    proc_size_setup;
+    for i=1 upto 6:
+      proc_skeleton; proc_scaling;
+      if (mol_ht/mol_wd)>(font_ht/font_wd): factor:=(font_ht*RH-2margin_top_bottom)/mol_ht;
+      else:                                 factor:=(font_wd*RW-2margin_left_right)/mol_wd;
+      fi
+      exitif (factor>=1-eps)and(factor<=1+eps);
+      bond_len:=bond_len*factor;
+      proc_size_setup;
+    endfor
+    if bond_len>max_bond_length:
+       bond_len:=max_bond_length; proc_size_setup; proc_skeleton; proc_scaling;  fi
+  fi
+  %-draw atom--------------------------------------------------------------------------------------
+  if (sw_numberA=0)and(sw_numberB=0): for i=1 upto cntA: draw_atom(i); endfor fi
+  %-draw charge------------------------------------------------------------------------------------
+  for i=1 upto cntA:
+    if andA[i]<>0:
+      sA:=char(andA[i]); nA:=angX[i]+and_rot[i]; nC:=nA mod 90;
+      if numS[i]=0: nB:=.5atom_wd;
+      else:         nB:=.85atom_wd+iif(nC<45,sind(nC),cosd(nC))*.5atom_wd;
+      fi
+      pA:=sfB(posA[i]-(.35atom_wd,.35atom_wd),nB,nA);
+      draw_char(sA,pA,atom_wd,bond_pen_wd*ratio_char_bond,0);
+    else: sA:="";
+    fi
+    nA:=length(strD[numS[i]]); sC:=substring(nA-3,nA-2) of strD[numS[i]];
+    if (sA="+")or(sC="+"): chargeA[i]:=1; ef (sA="-")or(sC="-"): chargeA[i]:=-1;
+    else: chargeA[i]:=0;
+    fi
+  endfor
+  %-draw bond-------------------------------------------------------------------------------------
+  for i=1 upto cntB: if lineB[i]<si_ : draw_bond(i); fi endfor
+  for i=1 upto cntB: if lineB[i]>=si_: draw_bond(i); fi endfor
+  %-atom numbering--------------------------------------------------------------------------------
+  if sw_numberA>=1:
+    for i=1 upto cntA:
+      if (i>=numberA_start)and(i<=numberA_end):
+        if     sw_numberA=2: nA:=i-numberA_start+1;
+        elseif sw_numberA=3: nA:=iif(numberA_end<cntA,numberA_end-i+1,cntA-i+1);
+        else:                nA:=i;
+        fi
+        erase fill unitsquare xscaled (.8atom_wd*length(decimal(nA)))
+            yscaled atom_wd shifted (posA[i]-(.5atom_wd,.5atom_wd));
+        defaultsize:=atom_wd; defaultscale:=1;
+        puts(posA[i]-(.5atom_wd,.5atom_wd))(decimal(nA));
+      fi
+    endfor
+  fi
+  %-bond numbering--------------------------------------------------------------------------------
+  if sw_numberB>=1:
+    for i=1 upto cntB:
+      if (i>=numberB_start)and(i<=numberB_end):
+        if     sw_numberB=2: nB:=i-numberB_start+1;
+        elseif sw_numberB=3: nB:=iif(numberB_end<cntB,numberB_end-i+1,cntB-i+1);
+        else:                nB:=i;
+        fi
+        erase fill unitsquare yscaled atom_wd xscaled (.8atom_wd*length(decimal(nB)))
+            shifted (.5[posA[sB[i]],posA[eB[i]]]-(.5atom_wd,.5atom_wd));
+        defaultsize:=atom_wd; defaultscale:=1;
+        puts(0.5[posA[sB[i]],posA[eB[i]]]-(.5atom_wd,.5atom_wd))(decimal(nB));
+      fi
+    endfor
+  fi
+  %-----------------------------------------------------------------------------------------------
+  sftX:=margin_left_right-minX+(font_wd-mol_wd-2margin_left_right)*FW;
+  sftY:=margin_top_bottom-minY+(font_ht-mol_ht-2margin_top_bottom)*FH;
+  cntM:=cntM+1;
+  posM[0][cntM]:=(sftX,sftY);
+  posM[1][cntM]:=(minX+sftX,minY+sftY);
+  posM[2][cntM]:=(maxX+sftX,maxY+sftY);
+  wdM[cntM]:=mol_wd;
+  htM[cntM]:=mol_ht;
+  if sw_mol_frame=1: draw_frame((minX,minY),mol_wd,mol_ht,thickness_font_frame) fi
+  addto mol_stru[cntM] also currentpicture;
+  clearit;
+  endgroup;
+  if ((sw_aux_out=1)or(sw_rep_out=1)or(sw_mol_out>=1))and(f_MP=1): proc_calc_out; fi
+  %-----------------------------------------------------------------------------------------------
+%%%%  message "count of usr ="& decimal(sub_usr) &" "& decimal(sub_usr-sub_usr_start);
+%%%%  message "count of int ="& decimal(sub_int) &" "& decimal(sub_int-sub_int_start);
+  %-----------------------------------------------------------------------------------------------
+enddef;
+%-------------------------------------------------------------------------------------------------
+def post_put=
+  begingroup
+  save nA;
+  if f_at=1: nA:=getA(adrT); check_adrA(nA); else: nA:=cntA+1; fi
+   cntP:=cntP+1; ps_adr[cntP]:=nA; ps_com[cntP]:=par; op_cnt[cntP]:=0;
+  if lineT<>0:  PO(_tmp_line,lineT) fi
+  if rotT<>0:   PO(_rot_ang,rotT) fi
+  if lenT<>crR: PO(_chg_len,lenT) fi
+  if envT<>hz:  PO(_chg_env,envT) fi
+  if lineT=nl:  PO(_chg_len,_size_a) PO(_adj_ang,0) fi
+  if lineT<>0:  PO(_mk_bond,0) fi
+  if f_lineT=0: lineT:=si; fi
+  if f_lenT=0:  lenT:=crR; fi 
+  if f_rotT=0:  rotT:=0;   fi
+  if f_envT=0:  envT:=hz;  fi
+  endgroup
+enddef;
+%-------------------------------------------------------------------------------------------------
+def post_get(expr n)=
+  sub_int:=0;
+  nA:=cntP; nB:=cntD[0];
+  for i=n upto cntP:
+    PA(_jp_atom_abs,ps_adr[i]) PA(_push,1)
+    for j=1 upto op_cnt[i]: PA(op_com[i][j],op_par[i][j]) endfor
+    for j=1 upto cntD[ps_com[i]]: PA(comD[ps_com[i]][j],parD[ps_com[i]][j]) endfor 
+    PA(_pop,1) PA(_term,0)
+  endfor
+  proc_bond_atom(nB+1); if cntP>nA: post_get(nA+1); fi
+enddef;
+%-------------------------------------------------------------------------------------------------
+def draw_frame(expr PS,LX,LY,PN)=
+  draw ((0,0)--(LX,0)--(LX,LY)--(0,LY)--cycle) shifted PS withpen pensquare scaled PN;
+enddef;
+%-------------------------------------------------------------------------------------------------
+def draw_corner(expr LX,LY,PN)=
+  drawdot(0,0) withpen pensquare scaled PN;   drawdot(LX,0) withpen pensquare scaled PN;
+  drawdot(LX,LY) withpen pensquare scaled PN; drawdot(0,LY) withpen pensquare scaled PN;
+enddef;
+%-------------------------------------------------------------------------------------------------
+def proc_size_setup=
+  if (bond_len*ratio_atom_bond+offset_atom)<.8bond_len:
+    atom_wd:=bond_len*ratio_atom_bond+offset_atom;
+  else:
+    atom_wd:=.8bond_len; ratio_chain_ring:= .5;
+  fi
+  wedge_wd:=    bond_len*ratio_wedge_bond+offset_wedge;
+  zebra_gap:=   bond_len*ratio_zebragap_bond+offset_zebra_gap;
+  bondgap:=     bond_len*ratio_bondgap_bond+offset_bond_gap;
+  bond_pen_wd:= bond_len*ratio_thickness_bond+offset_thickness;
+enddef;
+%-------------------------------------------------------------------------------------------------
+def proc_scaling=
+  begingroup
+  save nU,nD,nP,nL,nR,xpos,ypos;
+  minX:=minY:=4095.999;
+  maxX:=maxY:=-4095.999;
+  for i=1 upto cntA:
+    xpos:=xpart(posA[i]);
+    ypos:=ypart(posA[i]);
+    if numS[i]<>0:
+      nU:=nD:=nP:=nL:=nR:=0;
+      for j=0 upto length(strD[numS[i]])-1:
+        sA:=pic_c(j,strD[numS[i]]);
+        if     (sA="^"): nU:=.5atom_wd;
+        elseif (sA="_"): nD:=.5atom_wd;
+        elseif (sA<>"{")and(sA<>"}"): nP:=nP+atom_wd*tbl_char_wd[ASCII(sA)];
+        fi  
+      endfor
+      if     (angX[i]<=90.1)or(angX[i]>=269.9): nR:=nP; else: nL:=nP; fi
+      if     (xpos-nL+.5atom_wd)<minX: minX:=xpos-nL+.5atom_wd;
+      elseif (xpos+nR-.5atom_wd)>maxX: maxX:=xpos+nR-.5atom_wd;
+      fi
+      if     (ypos-nD-.5atom_wd)<minY: minY:=ypos-nD-.5atom_wd;
+      elseif (ypos+nU+.5atom_wd)>maxY: maxY:=ypos+nU+.5atom_wd;
+      fi
+    else: if xpos<minX: minX:=xpos; elseif xpos>maxX: maxX:=xpos; fi
+          if ypos<minY: minY:=ypos; elseif ypos>maxY: maxY:=ypos; fi
+    fi
+  endfor
+  mol_wd:=maxX-minX; mol_ht:=maxY-minY;
+  endgroup
+enddef;
+%-------------------------------------------------------------------------------------------------
+def char_use_check=
+  for i=1 upto 128: f_char[i]:=0; endfor
+  if (sw_numberA<>0)or(sw_numberB<>0):
+    for j=ASCII("0") upto ASCII("9"): f_char[j]:=1; endfor
+  else:
+    for i=1 upto cntA:
+      if numS[i]<>0:
+        for j=0 upto length(strD[numS[i]])-1: f_char[ASCII(pic_c(j,strD[numS[i]]))]:=1; endfor
+      fi
+    endfor
+  fi
+enddef;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+def proc_bond_atom(expr n)=
+  f_bra:=f_end:=f_term:=rotT:=adrS:=f_lineT:=f_rotT:=f_lenT:=f_envT:=envT:=envB:=strAT:=f_at:=0;
+  stkL[0]:=bondL:=crR; lenT:=crR; sB[0]:=0; eB[0]:=1; lineT:=si; andAT:=0;
+  for i=0 upto 5: stkA[i]:=stkB[i]:=0; endfor
+  %-----------------------------------------------------------------------------------------------
+  for i=n upto cntD[0]:
+  nC:=comD[0][i]; par:=parD[0][i];
+  if     nC=_push: 
+    if     par=1: stkL[adrS]:=bondL; adrS:=adrS+1; stkA[adrS]:=adrA:=cntA; stkB[adrS]:=adrB:=cntB;
+    elseif par=0: temp_len:=bondL;
+    elseif par=2: stkA[adrS+1]:=cntA; stkB[adrS+1]:=cntB;
+    fi
+  ef nC=_pop: if par=1: adrS:=adrS-1; adrA:=stkA[adrS]; adrB:=stkB[adrS]; bondL:=stkL[adrS];
+              ef par=0: bondL:=temp_len;
+              ef par=2: stkA[adrS+1]:=0;
+              fi
+  ef nC=_mk_bond:  if (par=0)and(rotT<>0): rotT:=0; fi  add_atom;
+  ef nC=_set_adr:  adrT:=par;
+  ef nC=_set_atom: strAT:=par;
+  ef nC=_postA:            post_put;
+  ef nC=_postB: lineT:=dm; post_put;
+  ef nC=_postC: lineT:=wf; post_put;
+  ef nC=_postD: lineT:=zf; post_put;
+  ef nC=_postE: lineT:=nl; post_put;
+  ef nC=_postF: lineT:=0;  post_put;
+  ef nC=_postG: lineT:=wv; post_put;
+  ef nC=_postH: lineT:=nl; lenT:=_size_a; post_put;
+  ef nC=_jp_bond: termA; tempB:=getB(par); check_adrB(tempB); sB[cntB+1]:=sB[tempB]; f_bra:=1;
+  ef nC=_jp_atom: termA; tempA:=getA(par); check_adrA(tempA); sB[cntB+1]:=tempA; f_bra:=1;
+  ef nC=_jp_atom_abs: sB[cntB+1]:=par; f_bra:=1; temp_cntB:=cntB;
+  ef nC=_chg_atom:   numS[getA(adrT)]:=parD[par][1];
+  ef nC=_N:          numS[getA(par)]:=parD[N][1];
+  ef nC=_O:          numS[getA(par)]:=parD[O][1];
+  ef nC=_S:          numS[getA(par)]:=parD[S][1];
+  ef nC=_chg_len: if par=_ring_len: bondL:=ringL;
+                       ef par=0: if lenT<>crR: bondL:=lenT; else: if bondL<0: bondL:=1; fi fi
+                       else: bondL:=par; fi
+  ef nC=_get_len: if par=0: if bondL=crR: bondL:=lenT; fi else: ringL:=lenB[getB(par)]; fi
+  ef nC=_tmp_len: lenT:=par;
+  ef nC=_set_line: lineB[getB(adrT)]:=par;
+  ef nC=_dl:       lineB[getB(par)]:=dl;
+  ef nC=_mb:       lineB[getB(-1)]:=par;
+  ef (nC=_chg_line)or(nC=_tmp_line): lineT:=par;
+  ef nC=_tmp_rot:  rotT:=par;
+  ef nC=_cyc:     f_end:=getA(par); check_adrA(f_end); add_atom;
+  ef nC=_cyc_eB:  f_end:=eB[getB(par)]; add_atom;
+  ef nC=_cyc_sB:  f_end:=sB[getB(par)]; add_atom;
+  ef nC=_chg_env: envB:=par;
+  ef nC=_tmp_env: envT:=par;
+  ef nC=_set_clr:
+     f_at:=par;
+     if     par=1: if lineT<>si: f_lineT:=1; fi if rotT<>0:  f_rotT:=1; fi
+                   if lenT<>crR: f_lenT:=1;  fi if envT<>hz: f_envT:=1; fi
+     ef par=0: f_lineT:=f_rotT:=f_lenT:=f_envT:=rotT:=envT:=0; lineT:=si; lenT:=crR;
+     fi
+  ef nC=_term:       termA;
+  ef nC=_set_colorA: colorA[getA(adrT)]:=par;
+  ef nC=_set_colorB: colorB[getB(adrT)]:=par;
+  ef nC=_set_and:    andAT:=par;
+  ef nC=_chg_charge: andA[getA(par)]:=andAT; andAT:=0; if rotT<>0: and_rot[getA(par)]:=rotT; fi
+  fi
+  endfor
+enddef;
+%-------------------------------------------------------------------------------------------------
+def add_atom=
+  cntB:=cntB+1;
+  lineB[cntB]:=lineT;
+  lineT:=si;
+  if lenT=crR: lenB[cntB]:=bondL; else: lenB[cntB]:=lenT; lenT:=crR; fi
+  if f_bra=0:  cntA:=cntA+1; sB[cntB]:=cntA; numS[cntA]:=strAT;
+               andA[cntA]:=andAT; andAT:=strAT:=and_rot[cntA]:=0;
+               if rotT<>0: and_rot[cntA]:=rotT; rotT:=0; fi
+               if f_MP=1: colorA[cntA]:=colorB[cntA]:=0; fi  else: f_bra:=0; fi
+  if f_end=0: eB[cntB]:=cntA+1; f_term:=0; else: eB[cntB]:=f_end; f_end:=0; f_term:=1; fi
+enddef;
+%--------------------------------------------------------------------------------------------------
+def check_adrA(expr n)=
+   if (n>iif(f_term=0,cntA+1,cntA))or(n<=0): errmessage("adrA=[ "&decimal(n)&" ]"); fi enddef;
+def check_adrB(expr n)= if (n>cntB)or(n<=0): errmessage("adrB=[ "&decimal(n)&" ]"); fi enddef;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+def proc_skeleton=
+  begingroup
+  save posBs,posBe,nC;
+  pair posBs,posBe;
+  adrA:=adrB:=cntA:=cntB:=angT:=adrS:=f_end:=f_bra:=rotT:=f_term:=f_at:=0;
+  envT:=envB:=f_lineT:=f_rotT:=f_lenT:=f_envT:=stkM[0]:=0; lineT:=si;
+  angA[0]:=angB[0]:=angX[0]:=0; posA[0]:=posBs:=posBe:=(0,0);
+  for i=0 upto 5: stkA[i]:=stkB[i]:=0; endfor
+  %-----------------------------------------------------------------------------------------------
+  for i=1 upto cntD[0]:
+  nC:=comD[0][i]; par:=parD[0][i];
+  if nC=_push: if     par=1: stkM[adrS]:=envB; adrS:=adrS+1; stkA[adrS]:=adrA:=cntA;
+                          stkB[adrS]:=adrB:=cntB;
+               ef par=0: temp_len:=bondL;
+               ef par=2: stkA[adrS+1]:=cntA; stkB[adrS+1]:=cntB;
+               fi
+  ef nC=_pop:  if par=1: adrS:=adrS-1; adrA:=stkA[adrS]; adrB:=stkB[adrS]; envB:=stkM[adrS];
+               ef par=0: temp_len:=bondL;
+               ef par=2: stkA[adrS+1]:=0;
+               fi
+  ef nC=_jp_bond:  termB; tempB:=getB(par); posBs:=posA[sB[tempB]];
+                        angT:=angB[tempB]; f_bra:=1; rotT:=0;
+  ef nC=_jp_atom:     termB; adrT:=getA(par); posBs:=posA[adrT];
+                           angT:=angX[adrT]; f_bra:=1; rotT:=0;
+  ef nC=_jp_atom_abs: adrT:=par; posBs:=posA[adrT];
+                           angT:=angX[adrT]; f_bra:=1; rotT:=0; temp_cntB:=cntB;
+  ef nC=_adj_ang:  if (angT<40)or(angT>320): angT:=0; ef angT<140: angT:=90;
+                        ef angT<220: angT:=180; else: angT:=270; fi
+  ef nC=_mk_bond:  if (par=0)and(rotT<>0):par:=rotT; rotT:=0; fi add_bond(par);
+  ef nC=_rot_ang:  angT:=(angT+par) mod 360;
+  ef nC=_tmp_rot:  rotT:=par;
+  ef (nC>=_postA)and(nC<=_postH): rotT:=0;
+  ef nC=_chg_env: envB:=par;
+  ef nC=_tmp_env: envT:=par;
+  ef nC=_set_clr: f_at:=par; if par=0: lineT:=si; lenT:=crR; rotT:=envT:=0; fi
+  ef nC=_cyc:     f_end:=1; proc_cyc(getA(par));
+  ef nC=_cyc_sB:  f_end:=1; proc_cyc(sB[getB(par)]);
+  ef nC=_cyc_eB:  f_end:=1; proc_cyc(eB[getB(par)]);
+  ef nC=_term:    termB;
+  fi
+  endfor
+  endgroup
+enddef;
+%-------------------------------------------------------------------------------------------------
+def add_bond(expr ROT)=
+  begingroup
+  save nA,nB;
+  if ROT=_arg_ang: nA:=proc_env(angT,envB); else: nA:=ROT; fi
+  if f_bra=0:
+    adrT:=cntA:=cntA+1; posA[cntA]:=posBs; angA[cntA]:=angT;
+    angX[cntA]:=(angT+nA/2+iif(nA>=0,-90,90)) mod 360;
+  else: f_bra:=0;
+  fi
+  angB[cntB+1]:=angT:=(angT+nA) mod 360;
+  if f_end=0:
+    if lenB[cntB+1]=_size_a: posBe:=sfB(posBs,atom_wd,angT);
+    else:
+      nA:=lenB[cntB+1];
+      if nA<0: nB:=glu_atom(adrT)+glu_atom(cntA+1); nA:=abs(nA);
+      else:    nB:=0;
+      fi
+      posBe:=sfB(posBs,nA*bond_len+nB,angT);
+    fi
+    posA[cntA+1]:=posBe; f_term:=0;
+  else:
+    f_end:=0; f_term:=1;
+  fi
+  cntB:=cntB+1; posBs:=posBe;
+  endgroup
+enddef;
+%==================================================================================================
+vardef getA(expr ADR)=
+ if ADR>=0: stkA[adrS+1]+ADR ef ADR>=-999: cntA+ADR+1 else: stkA[adrS]+ADR+4095 fi
+enddef;
+%--------------------------------------------------------------------------------------------------
+vardef getB(expr ADR)=
+ if ADR>=1: stkB[adrS+1]+ADR ef ADR=0: tempB ef ADR>=-999: cntB+ADR+1 else: stkB[adrS]+ADR+4095 fi
+enddef;
+%--------------------------------------------------------------------------------------------------
+def termA=
+  if f_term=0:
+    if f_bra=0:
+      cntA:=cntA+1; numS[cntA]:=strAT; andAT:=strAT:=and_rot[cntA]:=andA[cntA]:=0;
+      if rotT<>0: and_rot[cntA]:=rotT; rotT:=0; fi
+      if f_MP=1: colorA[cntA]:=0; fi
+    else: f_bra:=0;
+    fi
+    f_term:=1;
+  fi
+enddef;
+%--------------------------------------------------------------------------------------------------
+def termB=
+  if f_term=0:
+    if f_bra=0: cntA:=cntA+1; angX[cntA]:=angT mod 360; else:f_bra:=0; fi
+    f_term:=1;
+  fi
+enddef;
+%--------------------------------------------------------------------------------------------------
+def proc_cyc(expr ADR)= add_bond(angle(posA[ADR]-posBs)-angT);  enddef;
+%--------------------------------------------------------------------------------------------------
+vardef glu_atom(expr NUM)=
+  save nB,nC;
+  if numS[NUM]<>0:
+    nB:=angT mod 90; nC:=0.5atom_wd;
+    (iif(nB<45,sind(nB),cosd(nB))*nC)++nC
+    else: 0
+  fi
+enddef;
+%--------------------------------------------------------------------------------------------------
+vardef proc_env(expr ANG,ENV)=
+  save nA,nCW,nCC;
+  nCC:=60; nCW:=-nCC; 
+  nA:=(ANG mod 360);
+  if ENV>=sub_emb_start:
+    parD[ENV][cntB-temp_cntB]
+  else:
+    if ENV=hz: if nA=0:nCC ef nA<=90:nCW ef nA<=180:nCC ef nA<270:nCW  else:nCC fi
+    ef ENV=vt: if nA=0:nCW ef nA<90:nCC  ef nA<=180:nCW ef nA<=270:nCC else:nCW fi
+    ef (ENV>=-180)and(ENV<=180): ENV
+    fi
+  fi
+enddef;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+def draw_atom(expr NUM)=
+  begingroup
+  save slen,f_wd,f_ht,r_ff,pA,pB,bA,sA,sB,dx,nA,nB,nC,nD;
+  string sA,sB;
+  pair pA,pB;
+  picture bA;
+  %----------------------------------------------------------------------------------------------
+  sA:=strD[numS[NUM]]; slen:=length(sA)-1;
+  nA:=angX[NUM]; dxA[NUM]:=dx:=iif((nA<=90)or(nA>=270),1,-1);
+  wdA[NUM]:=nC:=0; pB:=(0,0);
+  pA:=posA[NUM]-(.5atom_wd*dx,.5atom_wd);
+  if (atomfont<>"draw")and(f_MP=1):
+    bA:="C" infont atomfont;
+    r_ff:=atom_wd/(ypart(ulcorner bA)-ypart(llcorner bA));
+  fi
+  for i=0 upto slen:
+    if nC=0:
+      sB:=pic_c(i,sA);
+      if (dx=-1)and(sB="{"):
+        nD:=i+1; nC:=0; for j=nD upto slen: nC:=nC+1; exitif pic_c(j,sA)="}"; endfor
+      fi
+    else: nC:=nC-1; sB:=pic_c(nD+nC,sA);
+    fi
+    if     sB="_": pB:=iif(pB=(0,0),(0,-.5atom_wd),(0,0));
+    elseif sB="^": pB:=iif(pB=(0,0),(0, .5atom_wd),(0,0));
+    elseif (sB<>"{")and(sB<>"}"):
+      if (atomfont<>"draw")and(f_MP=1):
+        bA:=sB infont atomfont;
+        f_wd:=(xpart(lrcorner bA)-xpart(llcorner bA))*r_ff;
+        f_ht:=(ypart(urcorner bA)-ypart(llcorner bA))*r_ff;
+        if dx=-1: pA:=pA-(f_wd,0); fi
+        addto currentpicture also bA scaled (r_ff*(1-2ratio_atomgap_atom))
+          shifted (pA+pB+(f_wd*ratio_atomgap_atom,f_ht*ratio_atomgap_atom)) Cp(colorA[NUM]);
+        if sw_atom_frame=1: draw_frame(pA+pB,f_wd,f_ht,thickness_atom_frame); fi
+        if dx=1: pA:=pA+(f_wd,0); fi
+      else:
+        f_wd:=atom_wd*tbl_char_wd[ASCII(sB)];
+        if dx=-1: pA:=pA-(f_wd,0); fi
+        draw_char(sB,pA+pB,atom_wd,bond_pen_wd*ratio_char_bond,NUM);
+        if sw_atom_frame=1: draw_frame(pA+pB,f_wd,atom_wd,thickness_atom_frame); fi
+        if dx=1: pA:=pA+(f_wd,0); fi
+      fi
+      wdA[NUM]:=wdA[NUM]+f_wd;
+    fi
+  endfor
+  endgroup
+enddef;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+def draw_bond(expr NUM)=
+  begingroup
+  save ww,ap,am,ang,col,len,Ls,Le,nA,nB,nC,nD,nL,nS,nE,pA,zA,zL,wpcs;
+  pair pA,Ls,Le;
+  path zA,zL;
+  def wpcs expr n= withpen pencircle scaled n enddef;
+  %------------------------------------------------------------------------------------------------
+  nL:=lineB[NUM]; ang:=angB[NUM]; nS:=sB[NUM]; nE:=eB[NUM]; col:=colorB[NUM]; 
+  zL:=posA[nS]--posA[nE]; ww:=wedge_wd; ap:=ang+90; am:=ang-90;
+  %------------------------------------------------------------------------------------------------
+  if (numS[nS]=0)and(numS[nE]=0)or(sw_numberA=1)or(sw_numberB=1):
+    Ls:=posA[nS]; Le:=posA[nE]; pA:=(.1,.9);
+  ef numS[nS]=0: Le:=zL intersectionpoint frame_str(nE); Ls:=posA[nS]; pA:=(.15,1);
+  ef numS[nE]=0: Ls:=zL intersectionpoint frame_str(nS); Le:=posA[nE]; pA:=(0,.85);
+  else: Ls:=zL intersectionpoint frame_str(nS); Le:=zL intersectionpoint frame_str(nE); pA:=(0,1);
+  fi
+  zA:=Ls--Le; len:=length(Le-Ls);
+  %------------------------------------------------------------------------------------------------
+  pickup pencircle scaled bond_pen_wd;
+  if (nL=si)or(sw_bond_single=1): draw zA Cp(col);
+  ef nL=dl: draw zA Cp(col); draw sfB(subpath pA of zA,bondgap,ap) Cp(col);
+  ef nL=dr: draw zA Cp(col); draw sfB(subpath pA of zA,bondgap,am) Cp(col);
+  ef nL=dm: draw sfB(zA,bondgap/1.75,ap) Cp(col); draw sfB(zA,bondgap/1.75,am) Cp(col);
+  ef nL=db: nA:=iif(((ang-angX[nS]) mod 360)<=180,ap,am);
+            draw zA Cp(col); draw sfB(subpath pA of zA,bondgap,nA) Cp(col);
+  ef nL=tm: draw zA Cp(col);draw sfB(zA,bondgap,ap) Cp(col); draw sfB(zA,bondgap,am) Cp(col);
+  ef nL=wf: fill Ls--sfB(Le,ww,am)--sfB(Le,ww,ap)--cycle Cp(col);
+  ef nL=wb: fill sfB(Ls,ww,am)--Le--sfB(Ls,ww,ap)--cycle Cp(col);
+  ef nL=bd: draw zA withpen penrazor rotated ap scaled bondgap Cp(col);
+  ef nL=bz: bz_put(sfB(Ls,ww,ap),sfB(Le,ww,ap),sfB(Ls,ww,am),sfB(Le,ww,am));
+  ef nL=zf: wz_put(Ls,sfB(Le,ww,ap),sfB(Le,ww,am));
+  ef nL=zb: wz_put(Le,sfB(Ls,ww,am),sfB(Ls,ww,ap));
+  ef nL=dt: for i=0 step .75zebra_gap/len until 1: drawdot i[Ls,Le] Cp(col); endfor
+  ef nL=wv: nA:=3bond_pen_wd; nB:=len/nA;
+            draw Le for i=1 upto nB:
+              ..controls(((i-.5)/nB)[sfB(Le,nA,iif(odd(i),ap,am)),sfB(Ls,nA,iif(odd(i),ap,am))])
+              ..(i/nB)[Le,Ls] endfor ..Ls Cp(col);
+  ef nL=vf: draw zA Cp(col);draw sfB(Le,bondgap,ang-150)--Le--sfB(Le,bondgap,ang+150) Cp(col);
+  ef nL=vb: draw zA Cp(col);draw sfB(Ls,bondgap,ang-30)--Ls--sfB(Ls,bondgap,ang+30) Cp(col);
+  ef nL=si_: erase draw subpath (0.15,0.85) of zA wpcs 0.8bondgap; draw zA Cp(col);
+  ef nL=wf_: erase draw subpath (0.15,0.85) of (Ls--sfB(Le,ww,am)) wpcs 0.8bondgap;
+             erase draw subpath (0.15,0.85) of (Ls--sfB(Le,ww,ap)) wpcs 0.8bondgap;
+             fill Ls--sfB(Le,ww,am)--sfB(Le,ww,ap)--cycle Cp(col);
+  ef nL=wb_: erase draw subpath (0.15,0.85) of (sfB(Ls,ww,am)--Le) wpcs 0.8bondgap;
+             erase draw subpath (0.15,0.85) of (sfB(Ls,ww,ap)--Le) wpcs 0.8bondgap;
+             fill sfB(Ls,ww,am)--Le--sfB(Ls,ww,ap)--cycle Cp(col);
+  ef nL=bd_: erase draw subpath(0.15,0.85) of zA wpcs 1.6bondgap;
+             draw zA withpen penrazor rotated ap scaled bondgap Cp(col);
+  fi
+  endgroup
+enddef;
+%------------------------------------------------------------------------------------------------
+def wz_put(expr PA,PB,PD)=
+  for i=0 upto len/zebra_gap: 
+    nA:=zebra_gap*i/len; nD:=(zebra_gap*i+ratio_zebra_black*zebra_gap)/len;
+    if nD>((len-zebra_gap)/len): nD:=1; fi
+    fill nA[PB,PA]--nA[PD,PA]--nD[PD,PA]--nD[PB,PA]--cycle Cp(col);
+  endfor
+enddef;
+%------------------------------------------------------------------------------------------------
+def bz_put(expr PA,PB,PC,PD)=
+  for i=0 upto len/zebra_gap: 
+    nA:=zebra_gap*i/len; nD:=(zebra_gap*i+ratio_zebra_black*zebra_gap)/len;
+    fill nA[PB,PA]--nA[PD,PC]--nD[PD,PC]--nD[PB,PA]--cycle Cp(col);
+  endfor
+enddef;
+%------------------------------------------------------------------------------------------------
+vardef frame_str(expr NUM)=
+  save nA,nB;
+  nA:=1.12atom_wd; nB:=wdA[NUM]+.12atom_wd;
+  ((0,0)--(nB,0)--(nB,nA)--(0,nA)--cycle) shifted
+  (posA[NUM]-(.5nA+iif((dxA[NUM]=-1)and(wdA[NUM]>atom_wd),nB-nA,0),.5nA))
+enddef;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+def ring expr n= <((-180 DIV n)-90),(_chg_len,0),
+                 for i==2 upto n:: ,(360 DIV n) endfor,(_cyc_sB,1-n) enddef;
+%-------------------------------------------------------------------------------------------------
+sub_usr:=sub_emb_start;
+%-------------------------------------------------------------------------------------------------
+lr:='(60 for i==1 upto 10:: ,-60,60 endfor); rl:='(-60,lr);
+for i=3 upto 20: ?[i]:='(|:,ring i,:|); endfor
+Ph:=Ph1:='(?6,(_dl,-2),(_dl,-4),(_dl,-6)); Ph2:='(?6,(_dl,-1),(_dl,-3),(_dl,-5));
+!:=!1:='((_mk_bond,_arg_ang)); !!:='(!,(_mb,db)); !!!:='(!,(_mb,tm)); !0:='(<180,180);
+for i=2  upto 20: ![i]:='(|:,(_get_len,0),! for j==2 upto i::,! endfor,:|); endfor
+Me:='(); Et:='(!); Pr:=!x2:='(!,!); Bu:=!x3:='(!,!,!);
+for i=4,5,6:   for j=2 upto i-2: ?[i][j]:='((_fuse,i),(j,0)); endfor endfor
+for i=5,6,7,8: for j=11 upto 15: ?[i][j]:='((_fuse,i),(j,0)); endfor endfor
+%=================================================================================================
+H :='("H");C:='("C");N:='("N");O:='("O");S:='("S");P:='("P");F:='("F");I:='("I");
+Si:='("{Si}");Al:='("{Al}");Mg:='("{Mg}");Zn:='("{Zn}");As:='("{As}");Cu:='("{Cu}");
+Ag:='("{Ag}");Au:='("{Au}");Sn:='("{Sn}");Cl:='("{Cl}");Br:='("{Br}");Li:='("{Li}");
+Na:='("{Na}");Ca:='("{Ca}");Hg:='("{Hg}");Ni:='("{Ni}");Ti:='("{Ti}");U:='("U");
+H[1]:='("{H^+^}");H[-1]:='("{H^-^}");C[1]:='("{C^+^}");C[-1]:='("{C^-^}");
+O[1]:='("{O^+^}");O[-1]:='("{O^-^}");N[1]:='("{N^+^}");N[-1]:='("{N^-^}");
+S[1]:='("{S^+^}");S[-1]:='("{S^-^}");P[1]:='("{P^+^}");P[-1]:='("{P^-^}");
+Li[1]:='("{Li^+^}"); Na[1]:='("{Na^+^}"); Cl[-1]:='("{Cl^-^}"); Br[-1]:='("{Br^-^}");
+%-------------------------------------------------------------------------------------------------
+R:='("R"); R1:='("{R^1^}"); R2:='("{R^2^}"); R3:='("{R^3^}"); R4:='("R^4^"); R5:='("{R^5^}");
+%-------------------------------------------------------------------------------------------------
+CHO:='("CHO"); OH:='("OH"); COOH:='("COOH"); CH2:='("C{H_2_}"); CH3:='("C{H_3_}"); CN:='("CN");
+NH2:='("N{H_2_}"); NO2:='("N{O_2_}"); SH:='("SH"); SO3:='("S{O_3_}"); NH:='(N,(_postE,H));
+NMe:=N!:='(N,/Me); iPr:=Me!:='(/Me,60); tBu:='(/Me,/Me^60,60);
+SO:='(S,//O); SOO :='(S,//O^-35,//O^35);
+OMe:=O!:='(O,!); OEt:=O!2:='(O,!x2); OPr:=O!3:='(O,!x3); OiPr:=OMe!:='(O,!,iPr); 
+SMe:=S!:='(S,!); SEt:=S!2:='(S,!x2); SPr:=S!3:='(S,!x3); SiPr:=SMe!:='(S,!,iPr);
+COO:='(//O,!,O); COOMe:=COO!:='(COO,!); COOEt:=COO!2:='(COO,!x2); COOiPr:=COOMe!:='(COO,!,iPr);
+COOPr:=COO!3:='(COO,!x3); COOtBu:='(COO,!,tBu); COMe:=CO!:='(//O,!); COEt:=CO!2:='(//O,!x2);
+OCOMe:=OCO!:='(O,!,//O,!); NMeMe:=NMe!:='(N!,!); NHCOMe:=NHCO!:='(NH,!,//O,!);
+NHiPr:=NHMe!:='(NH,!,iPr); NHtBu:='(NH,!,tBu); NHMe:=NH!:='(NH,!); NHEt:=NH!2:='(NH,!x2);
+!NH!:='(!,NH,!); !CO!:='(!,//O,!); !OH:='(!,OH); !SH:='(!,SH); !NH2:='(!,NH2); !OMe:=!O!:='(!,OMe);
+!COOH:='(!,COOH); !CH3:='(!,CH3); !CN:='(!,CN); !iPr:=!Me!:='(!,iPr); !tBu:='(!,tBu); !Ph:='(!,Ph);
+!CHO:='(!,CHO); !NO2:='(!,NO2);
+!?3:='(!,?3); !?4:='(!,?4); !?5:='(!,?5); !?6:='(!,?6); CF2:='(/F,60,F); CCl2:='(/Cl,60,Cl);
+CBr2:='(/Br,60,Br); CF3:='(/F,/F^60,60,F); CCl3:='(/Cl,/Cl^60,60,Cl); CBr3:='(/Br,/Br^60,60,Br);
+%==================================================================================================
+nA:=0; for list=parameter_list: nA:=nA+1; save_para[nA]:=list; endfor
+%--------------------------------------------------------------------------------------------------
+%%%%%%message "count of sub_usr =" & decimal(sub_usr);
+%--------------------------------------------------------------------------------------------------
+def expand_set=
+  CH3:='(/H,/H^60,60,H); NH:='(N,/H); NH2:='(N,/H,60,H); NO2:='(N,//O,60~dm,O); OH:='(O,!,H);
+  CHO:='(//O,!,H); COOH:='(//O,!,O,!,H); CN:='(!~tm,N); SH:='(S,!,H); !CH3:='(!,CH3); !OH:='(!,OH);
+  !NH2:='(!,NH2); !CHO:='(!,CHO); !COOH:='(!,COOH); !CN:='(!,CN); !SH:='(!,SH); !NO2:='(!,NO2);
+enddef;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+def char_size_set(expr WD)(expr HT)(expr STR)=
+  for j=0 upto length(STR)-1:
+    nA:=ASCII(pic_c(j,STR));
+    tbl_char_wd[nA]:=WD;
+    tbl_char_ht[nA]:=HT;
+  endfor
+enddef;
+%-------------------------------------------------------------------------------------------------
+char_size_set(  1)(  1)("CGHMNOQ");
+char_size_set( .9)(  1)("ABDEFIJKLPRSTUVWXYZ/><m");
+char_size_set( .7)(  1)(" ()[]0123456789nhj=_tfgpq");
+char_size_set( .7)( .7)("-+*");
+char_size_set(.45)(.95)("l");
+char_size_set(.75)( .8)("o");
+char_size_set( .8)( .8)("e");
+char_size_set( .7)( .8)("abdcksuvxzwry");
+char_size_set(.35)( .9)("i");
+char_size_set( .4)(  1)(".,:;'`^");
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+def draw_char(expr CHR,POS,WD,PEN,NUM)=
+begingroup
+save Z,aW,aH,fW,fH,hW,hW,hH,fP,hP,zO,zOh,pos,dw,dwh,dwv,cdw,ppcs,sbp,sC;
+path zO,zOh;
+string sC;
+pair Z[],pos;
+%-------------------------------------------------------------------------------------------------
+def ppcs expr n= pickup pencircle scaled n enddef;
+def sbp(expr m,n)expr p=subpath(m*length(p),n*length(p)) of p enddef;
+def dw expr p  = draw (p) shifted pos Cp(colorA[NUM]) enddef;
+def dwv expr p = draw (p) withpen penrazor scaled fP shifted pos Cp(colorA[NUM]) enddef;
+def dwvs (expr n)expr p=
+      draw (p) withpen penrazor scaled fP scaled n shifted pos Cp(colorA[NUM]) enddef;
+def dwh expr p=draw (p) withpen penrazor rotated 90 scaled fP shifted pos Cp(colorA[NUM]) enddef;
+def cdw expr p=cutdraw (p) shifted pos Cp(colorA[NUM]) enddef;
+%-------------------------------------------------------------------------------------------------
+sC:=CHR; fP:=PEN; hP:=0.5fP;
+aW:=WD*tbl_char_wd[ASCII(sC)]*(1-2ratio_atomgap_atom);
+aH:=WD*tbl_char_ht[ASCII(sC)]*(1-2ratio_atomgap_atom);
+pos:=POS+(WD*ratio_atomgap_atom,WD*ratio_atomgap_atom);
+fW:=aW-hP; hW:=.5aW; fH:=aH-hP; hH:=.5aH;
+Z01:=( 0,hP); Z02:=(hP, 0); Z03:=(hP,hP); Z04:=(aW,hP); Z05:=(fW, 0); Z06:=(hW,aH); Z07:=(hW, 0);
+Z08:=( 0,hH); Z09:=(hP,hH); Z10:=(fW,hH); Z11:=(hW,aW); Z12:=( 0,fH); Z13:=(hP,fH); Z14:=(hW,fH);
+Z15:=(fW,aH); Z16:=(aW,fH); Z17:=(aW,hH); Z18:=(hP,aH); Z19:=(hW,hP); Z20:=(hW,hH); Z21:=(fW,hP);
+zO:=Z10..(.8aW,fH)..tension 1.5..(.2aW,fH)..Z09..(.2aW,hP)..tension 1.5..(.8aW,hP)..cycle;
+zOh:=(hP,.25aH)..Z19..(fW,.25aH)..Z20..cycle;
+%-------------------------------------------------------------------------------------------------
+ppcs fP;
+if sC="A": dwvs(1.14) Z02--Z06--Z05; dw .33[Z02,Z06]--.33[Z05,Z06];
+ef sC="B": dw Z13--Z14{right}..(.9fH,.75aH)..{left}Z20--Z09--Z20{right}..(.9fH,.25aH)..
+           {left}Z19--Z03;  dwv Z02--Z18;
+ef sC="C": cdw sbp(.05,.95)zO;
+ef sC="D": dw Z13--Z14..Z10..Z19--Z03; dwv Z02--Z18;
+ef sC="E": pickup pensquare scaled fP; dw Z21--Z03--Z13--(fW,fH); dw Z09--Z10;
+ef sC="F": dwh Z12--Z16; dwh (0,.45aH)--(fW,.45aH); dw Z02--Z13;
+ef sC="G": cdw sbp(.06,.97)zO; dwh bot Z20-- bot Z17;
+ef sC="H": dwv Z02--Z18; dw Z09--Z10; dwv Z05--Z15;
+ef sC="I": dwv Z19--Z14; dwh (hW-fP,hP)--(hW+fP,hP); dwh (hW-fP,fH)--(hW+fP,fH);
+ef sC="J": cdw Z09..(hP,.4aH){down}..{right}Z19{right}..{up}(fW,.4aH)..Z15;
+ef sC="K": cdw Z02--Z18; cdw .5[.45[Z02,Z18],Z16]--Z05; cdw .45[Z02,Z18]--Z16;
+ef sC="L": dwh Z04--Z01; dwv Z02--Z18;
+ef sC="M": dwv Z02--Z18; dwvs(1.14) Z18--Z19--Z15; dwv Z15--Z05;
+ef sC="N": dwv Z02--Z18; dwv Z05--Z15; dwvs(1.4) (1.4hP,aH)--(aW-1.4hP,0);
+ef sC="O": dw zO;
+ef sC="P": dwv Z02--Z18; dw Z13--(.3aW,fH){right}..(fW,.7aH)..{left}(.3aW,.44aH)..(hP,.44aH);
+ef sC="Q": dw zO; dw (.6aW,.4aH)--Z05;
+ef sC="R": dwv Z02--Z18; dw Z13--(.3aW,fH){right}..(fW,.7aH)..{left}(.3aW,.44aH)..(hP,.44aH);
+           cdw Z05{up}..{left}(hW,.44aH);
+ef sC="S": cdw sbp(.05,.45)zO; cdw sbp(.55,.95)zO; dw (fW,.3aH){up}..{up}(hP,.7aH);
+ef sC="T": dwh Z12--Z16; dwv .5[Z12,Z16]--Z07;
+ef sC="U": cdw Z18..Z09{down}..{right}Z19{right}..{up}Z10..Z15;
+ef sC="V": dwvs(1.2) Z18--Z07--Z15;
+ef sC="W": dwvs(1.08) Z18--(.25aW,0)--Z06--(.75aW,0)--Z15;
+ef sC="X": dwvs(1.4) Z18..Z05; dwvs(1.4) Z02..Z15;
+ef sC="Y": dwvs(1.2) Z18--Z20--Z15; dwv Z20--Z07;
+ef sC="Z": dwh Z12--Z16; dwvs(1.4) (1.4hP,fP)--(aW-1.4hP,aH-fP); dwh Z01--Z04;
+ef sC="a": dw Z19..Z10..Z14..Z09..cycle; dwv Z05--Z15;
+ef sC="b": dw Z19..Z10..Z11..Z09..cycle; dwv Z02--(hP,1.3aH)
+ef sC="c": cdw sbp(.06,.94)Z10..Z14..Z09..Z19..cycle;
+ef sC="d": dw Z19..Z10..Z11..Z09..cycle; dwv Z05--(fW,1.3aH);
+ef sC="e": cdw sbp(0,.92)Z10..Z14..Z09..Z19..cycle; dw Z10--Z09;
+ef sC="f": cdw (hW,0)--(hW,.75aH){up}..(.75aW,fH)..{down}(fW,.8aH); dwh Z08--Z17;
+ef sC="g": dw Z19..Z10..Z11..Z09..cycle; cdw (Z15--Z21..(hW,0)..(.1aW,fP)) shifted (0,-.3aH);
+ef sC="h": cdw Z02..(hP,.3aH){up}..(hW,.7fH)..{down}(fW,.3aH)..Z05; dwv (hP,.3aH)--Z18;
+ef sC="i": dwv Z07--(hW,.7aH); ppcs 1.4fP; dw Z14;
+ef sC="j": dwv Z19--(hW,.63aH); dw Z19..(.25aW,-hP)..Z01; ppcs 1.4fP; dw Z14;
+ef sC="k": dwv Z02--Z18; cdw .5[.45[Z02,Z18],Z16]--Z05; cdw .45[Z02,Z18]--Z16;
+ef sC="l": dwv Z07--Z06; dwh Z14--Z13; dwh Z19--Z21;
+ef sC="m": cdw Z02..(hP,.3aH){up}..(.28aW,.7fH)..{down}(hW,.3aH)..Z07;
+           cdw (hW,.3aH){up}..(.7aW,.7aH-hP)..{down}(fW,.3aH)..Z05; dwv (hP,.3aH)--(hP,.7aH);
+ef sC="n": cdw Z02{up}..(hW,.8fH)..{down}(fW,.5aH)..Z05; dwv (hP,.4aH)--(hP,.8aH);
+ef sC="o": dw Z19..Z10..Z14..Z09..cycle;
+ef sC="p": dw Z19..Z10..Z11..Z09..cycle; dwv (hP,.7aH)--(hP,-.3aH);
+ef sC="q": dw Z19..Z10..Z11..Z09..cycle; dwv (fW,.7aH)--(fW,-.3aH);
+ef sC="r": cdw (sbp(.35,.72)Z19..Z10..Z14..Z09..cycle) shifted(0,-fP); dwv Z02--Z18;
+ef sC="s": cdw sbp(.05,.45)zO; cdw sbp(.55,.95)zO; dw (fW,.3aH){up}..{up}(hP,.7aH);
+ef sC="t": dwv Z07--Z06; dwh (0,.66aH)--(aW,.66aH);
+ef sC="u": cdw Z18..(hP,.55aH){down}..Z19..(fW,.55aH){up}..Z15; dwv Z15--Z05;
+ef sC="v": dwv Z18--Z07--Z15;
+ef sC="w": dwv Z18--(.25aW,0)--Z06--(.75aW,0)--Z15;
+ef sC="x": dwvs(1.4) Z18--Z05; dwvs(1.4) Z15--Z02;
+ef sC="y": dwvs(1.4) (Z18--Z20) shifted (0,-.3aH); dwvs(1.4) (Z15--Z02) shifted (0,-.3aH);
+ef sC="z": dwh Z12--Z16; dwvs(1.4) (1.4hP,fP)--(aW-1.4hP,aH-fP); dwh Z01--Z04;
+ef sC="0": dw Z09...Z14...Z10...Z19...cycle;
+ef sC="1": dwv Z07--Z06--(hW-hP,fH)--(hW-hP,aH-2.5hP);
+ef sC="2": cdw sbp(0,.71)(hP,1.3hP)--(fW,.55aH)..Z14..(hP,.5aH)..(hW,.27aH); dwh Z04--Z01;
+ef sC="3": cdw sbp(0,.77)zOh; cdw sbp(.23,.95)zOh shifted (0,.5aH-hP); dwh (.3aW,hH)--Z20;
+ef sC="4": dwh (0,.3aH)--(aW,.3aH); dwv (.7aW,0)--(.7aW,aH)--(1.2hP,.3aH+hP);
+ef sC="5": dwh Z12--Z16; dwv Z13--(hP,.49aH); cdw (.5hP,.15aH)..(.65aW,1.3hP)..(fW,.3aH)..
+           (hW,.6aH)..(.6hP,.53aH);
+ef sC="6": dw Z19..(fW,.5fW)..(hW,fW)..(hP,.5fW)..cycle; cdw (hP,.4aH)--Z06;
+ef sC="7": dwh (0,.fH)--Z16; dwvs(1.2) (aW-1.2hP,aH-fP)--(.4aW,0);
+ef sC="8": dw zOh; dw (hP,.75aH)...Z14...(fW,.75aH)...Z20...cycle;
+ef sC="9": dw (Z19..(fW,.5fW)..(hW,fW)..(hP,.5fW)..cycle) shifted (0,.32aH); cdw (fW,.6aH)--Z07;
+ef sC=" ":
+ef sC=".": ppcs 1.4fP; dw Z19;
+ef sC=",": dw (hW+.5fP,hP)..(hW+.3fP,-fP)..(hW-.5fP,hP-2fP); ppcs 1.4fP; dw Z19;
+ef sC="'": dw (hW+.5fP,fH)..(hW+.3fP,fH-fP)..(hW-.5fP,fH-2fP); ppcs 1.4fP; dw Z14;
+ef sC="`": dw (hW-.5fP,fH-2fP)..(hW-.3fP,fH-fP)..(hW+.5fP,fH); ppcs 1.4fP; dw (hW,fH-2fP);
+ef sC=":": ppcs 1.4fP; dw (hW,.2aH); dw (hW,.8aH);
+ef sC=";": dw (hW+hP,.2aH)..(hW-hP,.2aH-2fP); ppcs 1.4fP; dw (hW,.2aH); dw (hW,.8aH);
+ef sC="(": dw Z19...Z09...Z14;
+ef sC=")": dw Z19...Z10...Z14;
+ef sC="[": dwv Z07--Z06; dwh Z14--(fW,fH); dwh Z19--Z21;
+ef sC="]": dwv Z07--Z06; dwh Z14--Z13; dwh Z03--Z19;
+ef sC="<": cdw Z01--Z17--Z12;
+ef sC=">": cdw Z16--Z08--Z04;
+ef sC="-": dwh Z09--Z10;
+ef sC="_": dwh Z03--Z21;
+ef sC="=": dwh (hP,.3aH)--(fW,.3aH); dwh (hP,.6aH)--(fW,.6aH);
+ef sC="/": dw (fW,fH)..Z01;
+ef sC="+": dwv Z19--Z14; dwh Z09--Z10;
+ef sC="*": dw Z19--Z14; dw Z09--Z10; dw (.2aW,.2aH)--(.8aW,.8aH); dw (.2aW,.8aH)--(.8aW,.2aH);
+else:
+fi
+endgroup
+enddef;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+def blank_str:= "            " enddef;
+vardef fixed_r(expr n)(expr s)= (substring(0,n-length(s)) of blank_str)&s enddef;
+vardef fixed_l(expr n)(expr s)= s&(substring(0,n-length(s)) of blank_str) enddef;
+vardef fdr(expr n)(expr s)=fixed_r(n)(decimal(s)) enddef;
+vardef fdl(expr n)(expr s)=fixed_l(n)(decimal(s)) enddef;
+def warning(expr s)= message "% "&decimal(char_num)&fdr(3)(incr warning_cnt)&")"&s; enddef;
+%--------------------------------------------------------------------------------------------------
+def bond_check(expr a)(text s)=
+  nF:=0; for list=s: if list=bond_cnt: nF:=1; fi endfor
+  if nF=0:
+    warning("A"&decimal(a)&" ( "&fixed_l(8)(strD[numS[a]])&") has"&fdr(2)(bond_cnt)&" bonds");
+  fi
+enddef;
+%--------------------------------------------------------------------------------------------------
+vardef stripP(expr ATOM)=
+ if     length(ATOM)=4: substring (1,3) of ATOM
+ elseif length(ATOM)=6: substring (1,2) of ATOM
+ else: ATOM
+ fi
+enddef;
+%==================================================================================================
+def STa(expr ATOM,WT,MI)=
+  tbl_cnt:=tbl_cnt+1;
+  tbl_atom_str[tbl_cnt]:=ATOM;
+  tbl_atom[tbl_cnt]:=0;
+  tbl_atom_wt[tbl_cnt]:=WT;
+  tbl_atom_mi[tbl_cnt]:=MI;
+enddef;
+%----------------------------------------------------------------------------------
+def STb(expr ATOM)(text TXT)=
+  tbl_cnt:=tbl_cnt+1;
+  tbl_atom_str[tbl_cnt]:=ATOM;
+  tbl_atom[tbl_cnt]:=0;
+  for list=TXT:
+    tbl_atom[tbl_cnt]:=tbl_atom[tbl_cnt]+1;
+    for j=1 upto tbl_cnt:
+      if list=tbl_atom_str[j]: tbl_subst[tbl_cnt][tbl_atom[tbl_cnt]]:=j; fi
+    endfor
+  endfor
+enddef;
+%==================================================================================================
+tbl_cnt:=0;
+STa("C"   ,12.0107,   12.0000000);      STa("H"   , 1.00794,   1.00782503223);
+STa("{Al}",26.9815,   26.98153853);     STa("{As}",74.9216,   74.92159457);
+STa("B"   ,10.811,    11.00930536);     STa("{Br}",79.904,    78.9183376);
+STa("{Ca}",40.078,    39.962590863);    STa("{Cl}",35.453,    34.968852);
+STa("{Co}",58.933194, 58.93319429);     STa("{Cr}",51.9961,   51.94050623);
+STa("{Cu}",63.546,    62.92959772);     STa("D"   ,2.012,      2.01410177812);
+STa("F"   ,18.9984,   18.99840316273);  STa("{Fe}",55.845,    55.93493633);
+STa("{Hg}",200.59,   201.97064340);     STa("I"   ,126.90447,126.9044719);
+STa("K"   ,39.0983,   38.9637064864);   STa("{Li}",6.941,      7.0160034366);
+STa("{Mg}",24.305,    23.985041697);    STa("{Mn}",54.938044, 54.93804391);
+STa("N"   ,14.0067,   14.00307400443);  STa("{N^+^}",14.0067, 14.00307400443);
+STa("{N^-^}",14.0067, 14.00307400443);
+STa("{Na}",22.98977,  22.9897692820);   STa("{Ni}",58.693,    57.93534241);
+STa("O"   ,15.9994,   15.99491461957);  STa("{O^-^}",15.9994, 15.99491461957);
+STa("{O^p^}",15.9994, 15.99491461957);  STa("P"   ,30.973762, 30.97376199842);
+STa("S"   ,32.065,    31.9720711744);   STa("{S^p^}",32.065,    31.9720711744);
+STa("{S^m^}",32.065,    31.9720711744);
+STa("{Se}",78.971,    79.9165218);      STa("{Si}",28.0855,   27.97692653465);
+STa("{Sn}",118.71,   119.90220163);     STa("{Ti}",47.867,    47.94794198);
+STa("{Zn}",65.409,    63.92914201);
+%--------------------------------------------------------------------------------------------------
+STb("{H_2_}")("H","H"); STb("OH")("O","H"); STb("O{Na}")("O","{Na}"); STb("CN")("C","N");
+STb("SH")("S","H"); STb("CHO")("C","H","O");  STb("N{O_2_}")("N","O","O");
+STb("N{H_2_}")("N","H","H"); STb("S{O_3_}")("S","O","O","O"); STb("COOH")("C","O","O","H");
+STb("C{H_3_}")("C","H","H","H"); STb("C{F_3_}")("C","F","F","F");
+%==================================================================================================
+def proc_calc_out=
+  begingroup
+  save warning_cnt,MWp,knownA,bondC,tmp_wtp,bond_cnt,cnt_hide_H;
+  numeric sumA[],bondC[],hideH[];
+  string sumA,s_tag,s_var;
+  inf_NO:=inf_EN:=inf_JN:=inf_FM:=inf_CAS:=inf_USE:=inf_EXA:=inf_EXB:=inf_MW:="";
+  cal_MW:=cal_MW_str:=cal_FM:=""; cnt_hide_H:=warning_cnt:=MW_num:=MI_num:=MWp:=0;
+  %------------------------------------------------------------------------------------------
+  for j=1 upto inf_num:
+    nA:=0; for i=0 upto length(info[j]): if pic_c(i,info[j])=":": nA:=i; fi exitif nA>0; endfor
+    if nA>0:
+      s_tag:=substring (0,nA) of info[j];
+      s_var:=substring (nA+1,length(info[j])) of info[j];
+      if known scantokens("inf_"&s_tag): scantokens("inf_"&s_tag):=s_var; fi
+    fi
+  endfor
+  for i=1 upto tbl_cnt: sumA[i]:=0; endfor
+  for i=1 upto cntA:
+    knownA:=bond_cnt:=0;
+    for j=1 upto cntB:
+      if (lineB[j]>=dl)and(lineB[j]<=dm): bondC[j]:=2;
+      ef lineB[j]=tm:                     bondC[j]:=3;
+      ef (lineB[j]=vf)or(lineB[j]=vb):    bondC[j]:=0;
+      else:                               bondC[j]:=1;
+      fi
+      if (sB[j]=i)or(eB[j]=i): bond_cnt:=bond_cnt+bondC[j]; fi
+    endfor
+    Bcnt[i]:=bond_cnt;
+    if numS[i]=0: strD[numS[i]]:="C"; fi
+    if (strD[numS[i]]="C")and(bond_cnt<4):
+      hideH[i]:=4-bond_cnt; cnt_hide_H:=cnt_hide_H+hideH[i]; else: hideH[i]:=0;
+    fi
+    if strD[numS[i]]="C":       bond_check(i)(1,2,3,4);
+    ef strD[numS[i]]="N":       bond_check(i)(3,5);
+    ef strD[numS[i]]="H":       bond_check(i)(1);
+    ef strD[numS[i]]="O":       bond_check(i)(2);
+    ef strD[numS[i]]="S":       bond_check(i)(2,4,6);
+    ef strD[numS[i]]="P":       bond_check(i)(5);
+    ef strD[numS[i]]="OH":      bond_check(i)(1);
+    ef strD[numS[i]]="COOH":    bond_check(i)(1);
+    ef strD[numS[i]]="CN":      bond_check(i)(1);
+    ef strD[numS[i]]="N{H_2_}": bond_check(i)(1);
+    ef strD[numS[i]]="F":       bond_check(i)(1);
+    ef strD[numS[i]]="{Cl}":    bond_check(i)(1);
+    ef strD[numS[i]]="{Br}":    bond_check(i)(1);
+    fi
+    for j=1 upto tbl_cnt:
+      if strD[numS[i]]=tbl_atom_str[j]:
+        if tbl_atom[j]=0: sumA[j]:=sumA[j]+1;
+        else: for k=1 upto tbl_atom[j]: sumA[tbl_subst[j][k]]:=sumA[tbl_subst[j][k]]+1; endfor fi
+        knownA:=1; fi  endfor
+    if knownA=0: warning(" Unknown Str("&strD[numS[i]]&") is used "&decimal(i)); fi
+  endfor
+  sumA[2]:=sumA[2]+cnt_hide_H;
+  for i=1 upto tbl_cnt:
+    if sumA[i]>=1:
+      nA:=tbl_atom_wt[i]/100*sumA[i];
+      MWp:=MWp+nA;
+      if (MWp<40)and(nA<40):
+        MW_num:= MW_num+tbl_atom_wt[i]*sumA[i];
+        MI_num:= MI_num+tbl_atom_mi[i]*sumA[i];
+      fi
+      cal_FM:=cal_FM&stripP(tbl_atom_str[i]) if sumA[i]>=2: &decimal(sumA[i]) fi;
+    fi
+  endfor
+  cal_MI:=substring (0,10) of decimal(MI_num);
+  cal_MW:=substring (0,8)  of decimal(MW_num);
+  if sw_aux_out=1:  proc_auxfile_out; fi
+  if sw_rep_out=1:  proc_report_out;  fi
+  if sw_mol_out>=1: proc_mol_out;     fi
+  endgroup
+enddef;
+%==================================================================================================
+def auxtag_out=
+  for i=1 upto aux_max: exitif tag[i]=""; if i=1: printf tag[1] else: &aux_delimiter&tag[i] fi
+  endfor
+enddef;
+%==================================================================================================
+def proc_auxfile_out=
+  message "["&decimal(char_num)&"]:"&inf_EN;
+  out_file_name:=out_file_aux;
+  for i=1 upto aux_max:  exitif tag[i]="";
+    if i=1: printf "" else: &aux_delimiter fi if sw_auxfix=0: &tag[i]&":" fi &
+    if     string  scantokens(var[i]): scantokens(var[i])
+    elseif numeric scantokens(var[i]): decimal(scantokens(var[i])) fi
+  endfor
+  if sw_auxfix=0: for i=1 upto inf_num: &aux_delimiter&info[i] endfor; fi
+enddef;
+%==================================================================================================
+vardef round_auto(expr n)=
+  if     (n<4)  and(n>-4):   round(n*1000)/1000  elseif (n<40) and(n>-40): round(n*100)/100
+  elseif (n<400)and(n>-400): round(n*10)/10      else: round(n) fi
+enddef;
+%--------------------------------------------------------------------------------------------------
+def proc_report_out=
+  message "["&decimal(char_num)&"]:"&inf_EN;
+  out_file_name:=out_file_rep;
+  printf "------------------------------------------------------------------";
+  printf " Molecular name = "& inf_EN;
+  printf " Warnings = "&fdr(3)(warning_cnt)&" / Expanded command = "&decimal(cntD[0]);
+  printf " Width * Height = " & fdr(10)(mol_wd)&" * "&fdr(10)(mol_ht);
+  printf " Shift width * height  = "& fdr(10)(minX)&" * "&fdr(10)(minY);
+  printf " Bond length = "&fdr(3)(bond_len)&"   Atom size   = "&fdr(3)(atom_wd);
+  printf " Atom count="&fdr(3)(cntA)&" Bond count="&fdr(3)(cntB)&
+          " Ring count="&fdr(3)(cntB-cntA+1)&" Hide H count="&fdr(3)(cnt_hide_H);
+  printf "------------------------------------------------------------------";
+  printf "< NO. >(  x axis   ,   y axis   )< atom  >< bond >< hideH >< chg >";
+  for i=1 upto cntA:
+    printf " A"&fdl(4)(i)&" ("&fdr(10)(round_auto(xpart(posA[i])/bond_len))&" , "&
+            fdr(10)(round_auto(ypart(posA[i])/bond_len))&" )  "&fixed_l(8)(strD[numS[i]])&
+            "  "&fdr(3)(Bcnt[i])
+            &iif(hideH[i]>0,fdr(8)(hideH[i]),"        ")
+            if chargeA[i]<>0: &fdr(8)(chargeA[i]) fi;
+  endfor
+  printf "------------------------------------------------------------------";
+  printf "< NO. ><  bond   (sdt)><angle + (  +-  )><length (   pt   )>";
+  for i=1 upto cntB:
+    nC:=lenB[i]; if nC=_size_a: nC:=ratio_atom_bond; elseif nC<0: nC:=-nC; fi
+    if lineB[i]<>0:
+      nB:=angB[i]; if nB>180: nB:=nB-360; fi
+      printf " B"&fdl(4)(i)&fdr(3)(sB[i])&" -> "&fdr(3)(eB[i])&
+              " ("&fdr(3)(bondC[i]-si+1)&")"&fdr(9)(round_auto(angB[i]))&
+              " ("&fdr(6)(round_auto(nB))&")"&fdr(8)(nC)&" ("&fdr(8)(round_auto(nC*bond_len))&")";
+    fi
+  endfor
+  printf "------------------------------------------------------------------";
+  printf "<atom>( atom wt )[ mi wt   ]  < cnt > < sum wt   >[ sum mi wt  ]";
+  if MWp<=40: cal_MW_str:=cal_MW; cal_MI_str:=cal_MI; 
+  else:       cal_MW_str:=fdr(10)(MWp)&" * 100"; cal_MI_str:=fdr(10)(MIp)&" * 100";
+  fi
+  for i=1 upto tbl_cnt:
+    if sumA[i]>=1:
+       nA:=tbl_atom_wt[i]/100*sumA[i]; nB:=tbl_atom_mi[i]/100*sumA[i];
+       printf " "&
+         fixed_l(5)(stripP(tbl_atom_str[i]))&
+         "("&fdr(9)(tbl_atom_wt[i])&")"&"["&fdr(9)(tbl_atom_mi[i])&"]"&
+         " * "&fdr(4)(sumA[i])&" = "
+       if nA<40: &fdr(12)(tbl_atom_wt[i]*sumA[i])&"["&fdr(12)(tbl_atom_mi[i]*sumA[i])&"]";
+       else:     &fdr(12)(nA)&" * 100"&"["&fdr(12)(nA)&" * 100"&"]";
+       fi
+     fi
+  endfor
+  printf " Molecular Weight  [Mono Isotopic]  = "&
+    fixed_r(12)(cal_MW_str)&"["&fixed_r(12)(cal_MI_str)&"]";
+  printf "------------------------------------------------------------------";
+  printf " Weight  Calc: " &cal_MW_str &" / Input: "
+    if inf_MW<>"": &inf_MW &" / weight gap= " &decimal(MW_num-scantokens(inf_MW)) fi;
+  printf " Fomula  Calc: "&cal_FM&" / Input: "
+    if inf_FM<>"": &inf_FM&" / "& iif(inf_FM=cal_FM,"MACTCH","NOT MACTCH") fi;
+  printf "==================================================================";
+enddef;
+%==================================================================================================
+def proc_mol_out=
+  begingroup
+  save chg_cnt,chg_atm,chg_chg,nA,nB;
+  nA:=nB:=chg_cnt:=0;
+  message "["&decimal(char_num)&"]:"&inf_EN;
+  out_file_name:=out_file_mol;
+  if sw_mol_out<=2:
+    out_file_name:=out_file_mol;
+    if     sw_mol_out=1: proc_vdk;
+    elseif sw_mol_out=2: proc_vtk;
+    fi
+  fi
+  endgroup
+enddef;
+%-V2000------------------------------------------------------------------------------------------
+def proc_vdk=
+  printf ""; printf "  -MCFtoMOL- "&fixed_l(20)(info[1]);
+  printf "";
+  printf fdr(3)(cntA)&fdr(3)(cntB)&"  0  0  0  0  0  0  0  0999 V2000";
+  for i=1 upto cntA:
+    printf fdr(10)(xpart(posA[i])/bond_len)& fdr(10)(ypart(posA[i])/bond_len)&
+           fdr(10)(0)&" "&fixed_l(2)(stripP(strD[numS[i]]))&"  0  0  0  0";
+    if chargeA[i]<>0: chg_atm[incr chg_cnt]:=i; chg_chg[chg_cnt]:=chargeA[i]; fi
+  endfor
+  for i=1 upto cntB:
+    if lineB[i]<>0:
+      proc_bond_class(lineB[i]);
+      printf fdr(3)(sB[i])&fdr(3)(eB[i])&fdr(3)(nA)&fdr(3)(nB)&"     0  0";
+    fi
+  endfor
+  if chg_cnt>0:
+    printf "M  CHG"&fdr(3)(chg_cnt)
+    for i=1 upto chg_cnt: &fdr(4)(chg_atm[i])&fdr(4)(chg_chg[i]) endfor;
+  fi
+  printf "M  END";
+enddef;
+%-V3000---------------------------------------------------------------------------------------
+def proc_vtk=
+  printf ""; printf "  -MCFtoMOL- "&fixed_l(20)(info[1]);
+  printf "";
+  printf "  0  0  0     0  0     999 V3000";
+  printf "M  V30 BEGIN CTAB";
+  printf "M  V30 COUNTS "&decimal(cntA)&" "&decimal(cntB)&" 0 0 0";
+  printf "M  V30 BEGIN ATOM";
+  for i=1 upto cntA:
+     printf "M  V30 "&decimal(i)&" "&stripP(strD[numS[i]])&" "&
+            decimal(xpart(posA[i])/bond_len)&" "&decimal(ypart(posA[i])/bond_len)&" 0 0"
+            if chargeA[i]<>0: &" CHG="&decimal(chargeA[i]) fi;
+  endfor
+  printf "M  V30 END ATOM";
+  printf "M  V30 BEGIN BOND";
+  for i=1 upto cntB:
+    if lineB[i]<>0:
+      proc_bond_class(lineB[i]);
+      printf "M  V30 "&decimal(i)&" "&decimal(nA)&" "&decimal(sB[i])&" "&decimal(eB[i]);
+    fi
+  endfor
+  printf "M  V30 END BOND";
+  printf "M  V30 END CTAB";
+  printf "M  END";
+enddef;
+%-------------------------------------------------------------------------------------------------
+vardef fit_zero(expr n)=if n<=9: "00" elseif n<=99: "0" fi &decimal(n) enddef;
+%-------------------------------------------------------------------------------------------------
+def proc_bond_class(expr n)=
+  if (n=dl)or(n=dr)or(n=dm): nA:=2;
+  ef n=tm:                   nA:=3;
+  ef (n=wf)or(n=zb)or(n=bd): nB:=1;
+  ef (n=zf)or(n=wb)or(n=dt): nB:=6;
+  ef n=wv:                   nB:=4;
+  else: nA:=1; nB:=0;
+  fi
+enddef;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

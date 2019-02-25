@@ -1,0 +1,55 @@
+%%
+%% This is file `lwarp-attachfile.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `attachfile')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+\LWR@ProvidesPackagePass{attachfile}[2016/09/18]
+\newenvironment*{LWR@attachfile@icon}
+{
+    \begin{lateximage}*%
+        [-attachfile-]%
+        [%
+            \detokenize\expandafter{\atfi@icon@icon}-%
+            \detokenize\expandafter{\atfi@color@rgb}%
+        ]%
+}
+{
+    \end{lateximage}
+}
+\xpretocmd{\atfi@acroGraph}{\LWR@attachfile@icon}{}{}
+\xapptocmd{\atfi@acroGraph}{\endLWR@attachfile@icon}{}{}
+
+\xpretocmd{\atfi@acroPaperclip}{\LWR@attachfile@icon}{}{}
+\xapptocmd{\atfi@acroPaperclip}{\endLWR@attachfile@icon}{}{}
+
+\xpretocmd{\atfi@acroPushPin}{\LWR@attachfile@icon}{}{}
+\xapptocmd{\atfi@acroPushPin}{\endLWR@attachfile@icon}{}{}
+
+\xpretocmd{\atfi@acroTag}{\LWR@attachfile@icon}{}{}
+\xapptocmd{\atfi@acroTag}{\endLWR@attachfile@icon}{}{}
+\DeclareRobustCommand{\atfi@embedfile}[1]{}
+\newcommand*{\LWR@attachfile@appearance}{}
+
+\DeclareRobustCommand{\atfi@set@appearance}[1]{%
+    \def\LWR@attachfile@appearance{#1}%
+}
+\DeclareRobustCommand{\atfi@insert@file@annot}[1]{%
+    \href{#1}{\LWR@attachfile@appearance}%
+}
+
+\endinput
+%%
+%% End of file `lwarp-attachfile.sty'.

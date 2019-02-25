@@ -1,0 +1,59 @@
+% File: mfpic.ins
+% A part of mfpic 1.10 2012/12/03
+%
+\input docstrip
+\keepsilent
+\preamble
+
+-------------------------------------------------------------------
+
+Copyright 2002--2012, Daniel H. Luecking
+
+Mfpic may be distributed and/or modified under the conditions of the
+LaTeX Project Public License, either version 1.3c of this license or (at
+your option) any later version. The latest version of this license is in
+   <http://www.latex-project.org/lppl.txt>
+and version 1.3c or later is part of all distributions of LaTeX version
+2008/12/01 or later.
+
+Mfpic has maintenance status "author-maintained". The Current Maintainer
+is Daniel H. Luecking. There are several Base Interpreters associated
+with mfpic: plain TeX, LaTeX, plain Metafont and plain MetaPost.
+
+\endpreamble
+\edef\zyx{%
+endinput.^^J%
+\DoubleperCent^^J%
+\DoubleperCent\space End of file `\outFileName'.}
+
+\askforoverwritefalse
+
+\generate{\file{mfpic.tex}{\from{mfpic.dtx}{tex}}
+          \file{mfpic.sty}{\from{mfpic.dtx}{sty}}
+          \file{mfpicdef.tex}{\from{mfpic.dtx}{defs}}
+          \usepostamble\zyx
+          \file{grafbase.mf}{\from{grafbase.dtx}{MF}}
+          \file{grafbase.mp}{\from{grafbase.dtx}{MP}}
+          \file{dvipsnam.mp}{\from{grafbase.dtx}{dvips}}}
+
+\def\sJ{^^J \space\space\space}
+\immediate\write16{%
+^^J*******************************************************************
+^^J
+^^J To finish the installation:
+^^J
+^^J -- Copy the files mfpic.tex, mfpic.sty and mfppatch.tex to a
+\sJ    location where TeX and LaTeX will find them. For example, in a
+\sJ    TDS compliant system, the directory TEXMF/tex/generic/mfpic/ .
+^^J
+^^J -- Copy the file grafbase.mf to a location where Metafont
+\sJ    will find it, for example TEXMF/metafont/mfpic/ .
+^^J
+^^J -- Copy the files grafbase.mp and dvipsnam.mp to a location where
+\sJ    MetaPost will find them, for example TEXMF/metapost/mfpic/ .
+^^J
+^^J -- Refresh the filename database if your TeX system requires it.
+^^J
+^^J*******************************************************************}
+
+\endbatchfile

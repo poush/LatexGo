@@ -1,0 +1,512 @@
+% \iffalse
+% -------------------------------------------------------------------
+%
+% Copyright 2001--2006, Daniel H. Luecking
+%
+% Mathdots may be distributed and/or modified under the conditions of the
+% LaTeX Project Public License, either version 1.3c of this license or (at
+% your option) any later version. The latest version of this license is in
+%    <http://www.latex-project.org/lppl.txt>
+% and version 1.3c or later is part of all distributions of LaTeX version
+% 2008/05/04 or later.
+%
+% Mathdots has maintenance status "author-maintained". The Current
+% Maintainer is Daniel H. Luecking. The Base Interpreters associated with
+% mathdots are TeX and LaTeX.
+%
+%<*sty|tex>
+%<*driver>
+\ProvidesFile{mathdots.dtx}%
+%</driver>
+%<sty>\ifx\documentclass\UndEfInEd\input mathdots \expandafter\endinput\fi
+%<sty>\ProvidesPackage{mathdots}
+%<*sty>
+[2014/06/11 v0.9 Improve and add various macros for dots in math.]%
+%</sty>
+%<tex>\def\mathdotsfiledate{2014/06/11}%
+%<tex>\def\mathdotsfileversion{0.9}%
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage{amsmath}
+\usepackage{mathdots}
+\addtolength{\textwidth}{.5878pt}
+
+\def\mytt{\upshape\mdseries\ttfamily}
+\renewcommand\marg[1]{{\mytt \{#1\}}}
+\renewcommand\oarg[1]{{\mytt  [#1]}}
+\renewcommand\parg[1]{{\mytt  (#1)}}
+\renewcommand\arg[1]{{\mytt\##1}}
+\renewcommand{\meta}[1]{{$\langle$\rmfamily\itshape#1\/$\rangle$}}
+\DeclareRobustCommand\cs[1]{{\mytt\char`\\#1}}
+\def\prog#1{{\mdseries\scshape #1}}
+\def\opt#1{{\sffamily\upshape#1}}
+\def\mtt#1{{\mytt#1}}
+\let\env\mtt
+\let\file\mtt
+\def\MD{\prog{mathdots}}
+\renewcommand\{{\mtt{\char`\{}}
+\renewcommand\}{\mtt{\char`\}}}
+\renewcommand\|{${}\mathrel{|}{}$}
+
+\makeatletter
+\newcommand\bsl{{\mytt\@backslashchar}}
+% Stupid lists!
+\def\@listi{\leftmargin\leftmargini
+  \parsep \z@ \@plus\p@ \@minus\z@
+  \topsep 4\p@ \@plus\p@ \@minus2\p@
+  \itemsep\parsep}
+\let\@listI\@listi \@listi
+\renewcommand\labelitemi{\normalfont\bfseries \textendash}
+\renewcommand\labelitemii{\textasteriskcentered}
+\renewcommand\labelitemiii{\textperiodcentered}
+\leftmargini\parindent
+% Stupid index!
+\def\usage#1{\textrm{#1}}
+\def\index@prologue{\section*{Index}\markboth{Index}{Index}%
+  Numbers refer to the page(s) where the corresponding entry is described.
+}
+\def\IndexParms{%
+  \parindent \z@ \columnsep 15pt
+  \parskip 0pt plus 1pt
+  \rightskip 5pt plus2em \mathsurround \z@
+  \parfillskip-5pt \small
+  % less hanging:
+  \def\@idxitem{\par\hangindent 20pt}%
+  \def\subitem{\@idxitem\hspace*{15pt}}%
+  \def\subsubitem{\@idxitem\hspace*{25pt}}%
+  \def\indexspace{\par\vspace{10pt plus 2pt minus 3pt}}}
+\makeatother
+
+\title{The \MD{} package\thanks{This file has version number
+        \fileversion, last revised \filedate.}}
+\author{Dan Luecking}
+\date{\filedate}
+\DisableCrossrefs
+\CodelineIndex
+\AlsoImplementation
+\begin{document}
+  \DeleteShortVerb{\|}
+  \DocInput{mathdots.dtx}
+\end{document}
+%</driver>
+%\fi
+% \CheckSum{364}
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%   Dollar        \$     Percent       \%     Ampersand     \&
+%   Acute accent  \'     Left paren    \(     Right paren   \)
+%   Asterisk      \*     Plus          \+     Comma         \,
+%   Minus         \-     Point         \.     Solidus       \/
+%   Colon         \:     Semicolon     \;     Less than     \<
+%   Equals        \=     Greater than  \>     Question mark \?
+%   Commercial at \@     Left bracket  \[     Backslash     \\
+%   Right bracket \]     Circumflex    \^     Underscore    \_
+%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%   Right brace   \}     Tilde         \~}
+%
+% \catcode`\_=12
+% \GetFileInfo{mathdots.dtx}
+% \maketitle
+%
+% \begin{abstract}
+% This package provides vertical dots and diagonal dots in math, slanting
+% in either direction. It should work equally well in \LaTeX{} or plain
+% \TeX{}. It improves on the default definitions of plain \TeX{} and
+% \LaTeX{}. Similar improvements are provided for the triple and
+% quadruple dot accents of AMS\TeX{}/AMS\LaTeX{}.
+% \end{abstract}
+%
+% \StopEventually{\PrintIndex}
+%
+% \section{Introduction}
+%
+% Running \LaTeX{} or \TeX{} on \file{mathdots.ins} generates
+% \file{mathdots.sty}, a \LaTeX{} package, and \file{mathdots.tex} a plain
+% \TeX{} input file. If one puts \verb"\input mathdots.sty" in a plain
+% \TeX{} file, it will cause \file{mathdots.tex} to be input. This is for
+% backward compatibility.
+%
+% Unlike the commands \cs{ddots} and \cs{vdots} provided by \LaTeX{},
+% the versions defined by \MD{} change size with \LaTeX{} size
+% changing commands, as well as in \{sub[sub]\|super[super]\}scripts.
+% After \MD{} is loaded, \verb"{\large$\ddots$}" will be larger and
+% \verb"{\small$\ddots$}" will be smaller than \verb"$\ddots$" at normal
+% size. Moreover, \verb"$2^{2^\ddots}$" will also produce a smaller
+% symbol. This last example is very unlikely to be needed, but the version
+% with the opposite slant is very common (and is provided by \MD{}).
+%
+% The \prog{amsmath} accents \cs{dddot} and \cs{ddddot} have similar
+% problems that \MD{} attempts to correct when \prog{amsmath} is loaded.
+%
+% See Table~\ref{examples} for examples of the \MD{} commands at
+% different sizes and in exponents. See Table~\ref{compare} for
+% comparison, showing the results without \MD{}.
+%
+% \def\dott#1{$#1$}
+% \def\dotts#1{$2^{#1}\quad 2^{2^{#1}}$}
+% \begin{table}[htbp]
+% \centering \renewcommand\arraystretch{1.4}
+% \begin{tabular}{c|cccc}
+% \multicolumn{1}{l}{\large With \MD{}:}\\[4pt]
+% \multicolumn{1}{c}{\textbf{Command}}%
+%                  &\textbf{Large}          &\textbf{normal}   &\textbf{scriptsize}
+% &\textbf{in exponents}\\
+% \hline
+% \verb$\ddots$    & \Large\dott{\ddots}    & \dott{\ddots}    & \scriptsize\dott{\ddots}
+% & \dotts{\ddots}\\
+% \verb$\vdots$    & \Large\dott{\vdots}    & \dott{\vdots}    & \scriptsize\dott{\vdots}
+% & \dotts{\vdots}\\
+% \verb$\iddots$   & \Large\dott{\iddots}   & \dott{\iddots}   & \scriptsize\dott{\iddots}
+% & \dotts{\iddots}\\
+% \verb$\dddot{X}$ & \Large\dott{\dddot{X}} & \dott{\dddot{X}} & \scriptsize\dott{\dddot{X}}
+% & \dotts{\dddot{X}}\\
+% \verb$\ddddot{X}$& \Large\dott{\ddddot{X}}& \dott{\ddddot{X}}& \scriptsize\dott{\ddddot{X}}
+% & \dotts{\ddddot{X}}
+% \end{tabular}
+% \caption{Dots at different sizes and in exponents.}
+% \label{examples}
+% \end{table}
+%
+% \begin{table}[htbp]
+% \centering \renewcommand\arraystretch{1.4}
+% \begin{tabular}{c|cccc}
+% \multicolumn{1}{l}{\large Without \MD{}:}\\[4pt]
+% \multicolumn{1}{c}{\textbf{Command}}%
+%                  &\textbf{Large}                      &\textbf{normal}              &\textbf{scriptsize}
+% &\textbf{in exponents}\\
+% \hline
+% \verb$\ddots$    & \Large\dott{\originalddots}     & \dott{\originalddots}    & \scriptsize\dott{\originalddots}
+% & \dotts{\originalddots}\\
+% \verb$\vdots$    & \Large\dott{\originalvdots}     & \dott{\originalvdots}    & \scriptsize\dott{\originalvdots}
+% & \dotts{\originalvdots}\\
+% \verb$\dddot{X}$ & \Large\dott{\originaldddot{X}}  & \dott{\originaldddot{X}} & \scriptsize\dott{\originaldddot{X}}
+% & \dotts{\originaldddot{X}}\\
+% \verb$\ddddot{X}$& \Large\dott{\originalddddot{X}} & \dott{\originalddddot{X}}& \scriptsize\dott{\originalddddot{X}}
+% & \dotts{\originalddddot{X}}
+% \end{tabular}
+% \caption{Dots without \MD{}.}
+% \label{compare}
+% \end{table}
+%
+% \DescribeMacro{\ddots}
+% The default \LaTeX{} (and plain \TeX) definition changes the size of the
+% dots, and the horizontal dimensions, but not the vertical dimensions,
+% giving them different slants at different sizes. Also, using the default
+% version in 'scripts produces symbols identical to those produced
+% elsewhere. Finally, the default takes the dots from the current text
+% font, whereas the \MD{} package takes them from the current math symbol
+% font, so they should match other dots in math mode. This is only really
+% a concern in \mtt{17pt} sizes or larger where \file{cmr17} is scaled to
+% get text dots, but \file{cmsy12} is scaled to get math dots.
+%
+% \DescribeMacro{\iddots}
+% \MD{} supplies also \cs{iddots}, with behavior similar to \cs{ddots},
+% except it produces the other diagonal. This command is not provided in
+% basic \TeX{} or \LaTeX{}.
+%
+% \DescribeMacro{\vdots}
+% \cs{vdots} produces vertical dots (as in standard \TeX{} or \LaTeX{}),
+% but again, the \MD{} version will change size with size
+% changing commands.
+%
+% \DescribeMacro{\fixedddots}
+% \DescribeMacro{\fixedvdots}
+% \DescribeMacro{\fixediddots}
+% The old behavior is stored in \cs{fixedddots} and \cs{fixedvdots}.
+% If you wish \cs{iddots} to behave similarly then use \cs{fixediddots}.
+%
+% The \cs{fixed...} versions try to maintain the (awful) default behavior,
+% which is to let the horizontal dimensions change size, as well as the
+% dots themselves, but hard code unchanging vertical dimensions. The
+% `fixed' part of the name does not mean `corrected', but rather
+% `unchanging' or `frozen'.
+%
+% \DescribeMacro{\originalddots}
+% \DescribeMacro{\originalvdots}
+% \DescribeMacro{\originaliddots}
+% On the chance that some other package changes the behavior before \MD{}
+% is loaded, use \cs{originalddots}, \cs{originalvdots}, and
+% \cs{originaliddots} to obtain the versions in force before \MD{} is
+% loaded.
+%
+% \DescribeMacro{\dddot}
+% \DescribeMacro{\ddddot}
+% If the \prog{amsmath} package is detected in \LaTeX{}, the commands
+% \cs{dddot} and \cs{ddddot} are modified to get the same size changing
+% behavior in 'scripts. They also correct a positioning bug in the
+% \prog{amsmath} code. Compare the old and new versions and the 2-dot accent
+% (from basic \LaTeX{}): $\originaldddot{X},\dddot{X},\ddot{X}$. I have
+% also taken the liberty of changing the spacing between dots to match
+% that in the 2-dot accent.
+%
+% \DescribeMacro{\originaldddot}
+% \DescribeMacro{\originalddddot}
+% Some of the changes to \cs{dddot} and \cs{ddddot} require the command
+% \cs{text}, and so is only applied if \prog{amsmath} has been loaded
+% \emph{before} \MD{}. The old amsmath commands are saved in
+% \cs{originaldddot} and \cs{originalddddot}. Similar comments apply to
+% plain \TeX{} with regard to \file{amstex.tex}.
+%
+% \DescribeMacro{\MDoprekern}
+% \DescribeMacro{\MDodotkern}
+% \DescribeMacro{\MDopostkern}
+% Different math fonts have different metrics for the \cs{dot} and
+% \cs{ddot} accents. If you use a math font family other than the CM
+% fonts, you can adjust the positioning and spacing of the the dots in
+% \cs{dddot} and \cs{ddddot} to better match the spacing in \cs{ddot}
+% with the following length commands: \cs{MDoprekern}, \cs{MDodotkern} and
+% \cs{MDopostkern}. These adjust the space before the first dot, between
+% the dots and after the last dot, respectively. They are in units of
+% \texttt{mu}, which is $1/3$ the size of the space made by \cs{,}.
+% Reducing the first and/or increasing the last one cause the dots to be
+% shifted left. Reducing the middle one causes the dots to be closer
+% together. As there is usually a bit of white on either side of the dot
+% character, these usually have to be given negative values (so ``reduce''
+% means ``make more negative''). The defaults for the CM fonts are
+% accomplished by the commands
+% \begin{verbatim}
+%   \MDoprekern=0mu
+%   \MDodotkern=-1.3mu
+%   \MDopostkern=-1mu \end{verbatim}
+% I have found that the \prog{mathptmx} package (Times fonts in text and
+% math) benefits from changing these via the following commands
+% \begin{verbatim}
+%   \MDoprekern=-1mu
+%   \MDodotkern=-2mu
+%   \MDopostkern=0mu \end{verbatim}
+% \cs{MDoprekern}, \cs{MDodotkern}, and \cs{MDopostkern} were made
+% user-accessible commands in version 0.9.
+%
+% \DescribeMacro{\MDoddots}
+% \DescribeMacro{\MDovdots}
+% \DescribeMacro{\MDoiddots}
+% \DescribeMacro{\MDodddot}
+% \DescribeMacro{\MDoddddot}
+% In \LaTeX{}, all these commands have been made robust as of version 0.6.
+% On the chance that some later loaded package changes things, the \MD{}
+% versions can be obtained with \cs{MDoddots}, \cs{MDovdots},
+% \cs{MDoiddots}, \cs{MDodddot} and \cs{MDoddddot} (as of version 0.9).
+%
+% \section{The implementation}
+%
+% The following are commands for plain \TeX{} that prevent double loading,
+% announce the package name, and change/restore the category of \mtt{@}.
+%    \begin{macrocode}
+%<*tex>
+\expandafter
+\ifx\csname MathDots\mathdotsfileversion\endcsname\relax
+\else
+  \immediate\write16{Mathdots already loaded.}\expandafter\endinput
+\fi
+\immediate\write16{Package mathdots, \mathdotsfiledate\space version
+  \mathdotsfileversion.}%
+\expandafter\edef\csname MathDots\mathdotsfileversion\endcsname{%
+    \catcode`\noexpand\@=\the\catcode`@}%
+\catcode`\@=11
+\def\@nameuse#1{\csname#1\endcsname}%
+%</tex>
+%    \end{macrocode}
+%
+% Now various shorthands. For example `\cs{MDo@us}\cs{MDo@t}' becomes
+% `\cs{textstyle}' and `\cs{MDo@uf}\cs{MDo@ss}' produces
+% `\cs{scriptscriptfont0}'.
+%    \begin{macrocode}
+\def\MDo@us#1{\@nameuse{#1style}}%
+\def\MDo@uf#1{\@nameuse{#1font}0}%
+\def\MDo@t{text}\def\MDo@s{script}\def\MDo@ss{scriptscript}%
+\newdimen\MDo@unit \MDo@unit\p@
+%    \end{macrocode}
+%
+% The following are the main utility macros to implement changes of style.
+% Since most of our symbols are built with boxes, they have to exit math
+% mode and need \cs{mathchoice} so we know the current style (i.e., size)
+% when we re-enter math mode.
+%
+% We detect differences in sizes (for example, after \cs{large}) by
+% examining the appropriate \cs{fontdimen} of family 0. Instead of the
+% hard coded \mtt{1pt}, we use \mtt{0.1em} from this family.
+%
+% We pass along the current style via \cs{everymath}.
+%
+% In \cs{MDo@palette}, \arg1 is a command which we feed the current
+% style name. For example, \cs{MDo@palette}\cs{MDo@ddots} will be our
+% definition of \cs{ddots}. Then \cs{MDo@ddots} will see the current style
+% as its first argument.
+%    \begin{macrocode}
+\def\MDo@changestyle#1{\relax\MDo@unit0.1\fontdimen6\MDo@uf{#1}%
+  \everymath\expandafter{\the\everymath\MDo@us{#1}}}%
+\def\MDo@dot{$\m@th\ldotp$}%
+\def\MDo@palette#1{\mathchoice{#1\MDo@t}{#1\MDo@t}{#1\MDo@s}{#1\MDo@ss}}%
+%    \end{macrocode}
+%
+% In the following commands, \arg1 is the current style (supplied via
+% \cs{MDo@palette}). Except for the change in the unit used and the dot
+% used, the first two definitions are essentially the same as plain's
+% \cs{ddots} and \cs{vdots}, and the third is the same as the first with
+% the boxes reversed.
+%    \begin{macrocode}
+\def\MDo@ddots#1{{\MDo@changestyle{#1}%
+  \mkern1mu\raise7\MDo@unit\vbox{\kern7\MDo@unit\hbox{\MDo@dot}}%
+  \mkern2mu\raise4\MDo@unit\hbox{\MDo@dot}%
+  \mkern2mu\raise \MDo@unit\hbox{\MDo@dot}\mkern1mu}}%
+\def\MDo@vdots#1{\vbox{\MDo@changestyle{#1}%
+  \baselineskip4\MDo@unit\lineskiplimit\z@
+  \kern6\MDo@unit\hbox{\MDo@dot}\hbox{\MDo@dot}\hbox{\MDo@dot}}}%
+\def\MDo@iddots#1{{\MDo@changestyle{#1}%
+  \mkern1mu\raise \MDo@unit\hbox{\MDo@dot}%
+  \mkern2mu\raise4\MDo@unit\hbox{\MDo@dot}%
+  \mkern2mu\raise7\MDo@unit\vbox{\kern7\MDo@unit\hbox{\MDo@dot}}}}%
+%    \end{macrocode}
+%
+% \DescribeMacro{\fixedddots}
+% \DescribeMacro{\fixedvdots}
+% We include current (as of 2014/06/11) \LaTeX{}/plain\TeX{} definitions
+% so a user can choose them. \LaTeX{} and plain\TeX{} don't have the other
+% diagonal, so we provide a \DescribeMacro{fixediddots}\cs{fixediddots}
+% which is just \cs{fixedddots} with the boxes reversed.
+%
+% \DescribeMacro{\originalvdots}
+% \DescribeMacro{\originalddots}
+% We save the versions at load time so user can use them in case he
+% loads \MD{} for its other features. Chances are the original
+% \DescribeMacro{\originaliddots}\cs{iddots} is undefined.
+%    \begin{macrocode}
+%<sty>\DeclareRobustCommand\fixedvdots{%
+%<tex>\def\fixedvdots{%
+  \vbox{\baselineskip4\p@ \lineskiplimit\z@
+  \kern6\p@\hbox{.}\hbox{.}\hbox{.}}}%
+%<sty>\DeclareRobustCommand\fixedddots{%
+%<tex>\def\fixedddots{%
+  \mathinner{\mkern1mu
+  \raise7\p@\vbox{\kern7\p@\hbox{.}}\mkern2mu
+  \raise4\p@\hbox{.}\mkern2mu
+  \raise\p@\hbox{.}\mkern1mu}}%
+%<sty>\DeclareRobustCommand\fixediddots{%
+%<tex>\def\fixediddots{%
+  \mathinner{\mkern1mu
+  \raise\p@\hbox{.}\mkern2mu
+  \raise4\p@\hbox{.}\mkern2mu
+  \raise7\p@\vbox{\kern7\p@\hbox{.}}\mkern1mu}}%
+\let\originalddots=\ddots
+\let\originalvdots=\vdots
+\let\originaliddots=\iddots
+%    \end{macrocode}
+%
+% \DescribeMacro{\ddots}
+% \DescribeMacro{\vdots}
+% \DescribeMacro{\iddots}
+% Here are the actual (re)definitions of these three commands. The
+% plain\TeX{} version emits messages similar to that produced by
+% \LaTeX{}'s \cs{DeclareRobustCommand}.
+%
+% Since \cs{ddots} et al.\ are defined in \LaTeX{} with
+% \cs{DeclareRobustCommand}, saving the original definition with
+% \verb$\let\originalddots\ddots$ will not work unless the internal
+% command ``\verb*$\ddots $'' is unchanged. Thus we can't use
+% \verb$\DeclareRobustCommand\ddots$ directly because it changes that
+% internal. Instead we define \cs{MDoddots} and then do
+% \verb$\let\ddots\MDoddots$
+%    \begin{macrocode}
+%<sty>\DeclareRobustCommand\MDoddots{%
+%<tex>\def\MDoddots{%
+  \mathinner{\MDo@palette\MDo@ddots}}%
+%<sty>\DeclareRobustCommand\MDoiddots{%
+%<tex>\def\MDoiddots{%
+  \mathinner{\MDo@palette\MDo@iddots}}%
+%<sty>\DeclareRobustCommand\MDovdots{%
+%<tex>\def\MDovdots{%
+  \mathinner{\MDo@palette\MDo@vdots}}%
+%<tex>\wlog{Mathdots Info: Redefining \string\ddots.}%
+%<tex>\wlog{Mathdots Info: Redefining \string\vdots.}%
+\let\ddots \MDoddots
+\let\iddots\MDoiddots
+\let\vdots \MDovdots
+%    \end{macrocode}
+%
+% Now we try to get AMS \cs{dddot} and \cs{ddddot} accents to behave
+% nicely.
+%
+% \DescribeMacro{\dddot}
+% \DescribeMacro{\ddddot}
+% We add a \verb"\kern\z@" to prevent \TeX{} from vertically centering
+% \arg1. I don't know if the \cs{text} command is necessary, but it
+% doesn't seem to hurt. I included it in the original version because that
+% one used text dots and needed the text to change size. Now I use a math
+% symbol (the dot accent) and \cs{mathpalette} to implement the change.
+% Still, I don't really understand how \cs{ex@} works in the AMS packages,
+% so I leave it in.
+% \DescribeMacro{MDoprekern}
+% \DescribeMacro{MDodotkern}
+% \DescribeMacro{MDopostkern}
+% For possible fine tuning, I have used two macros that
+% represent the math spacing placed before and after the sequence of
+% dots (\cs{MDoprekern} and \cs{MDopostkern}). Also, the actual dot is in
+% the definition of \cs{MDo@D} where another spacing command follows the
+% dot (\cs{MDodotkern}). In fact, by redefining \cs{MDo@D} and changing
+% the spacing, one can define other multiple ``dot'' accent commands.
+%
+% \DescribeMacro{\originaldddot}
+% \DescribeMacro{\originalddddot}
+% We also save the original \prog{amsmath} versions.
+%    \begin{macrocode}
+\newbox\MDo@dotsbox
+\newmuskip\MDoprekern
+\newmuskip\MDopostkern
+\newmuskip\MDodotkern
+\MDoprekern 0mu
+\MDopostkern -1mu
+\MDodotkern -1.3 mu
+\def\MDo@dotsaccent#1{\mathpalette{\MDo@@dotsaccent{#1}}}%
+\let\originaldddot \dddot
+\let\originalddddot\ddddot
+%<*sty>
+\def\MDo@@dotsaccent#1#2#3{%
+  {\setbox\MDo@dotsbox\hbox{$#2\mkern\MDoprekern#1\mkern\MDopostkern$}%
+   \mathop{#3\kern\z@}\limits^{%
+   \text{\vbox to-1.4\ex@{\kern-1.8\ex@\copy\MDo@dotsbox\vss}}}}%
+}%
+\@ifpackageloaded{amsmath}{%
+  \def\MDo@D{\mathchar"5F\mkern\MDodotkern}%
+  \DeclareRobustCommand\MDodddot {%
+    \MDo@dotsaccent{\MDo@D\MDo@D\MDo@D}}%
+  \DeclareRobustCommand\MDoddddot{%
+    \MDo@dotsaccent{\MDo@D\MDo@D\MDo@D\MDo@D}}%
+  \let\dddot \MDodddot
+  \let\ddddot\MDoddddot
+}{}%
+%</sty>
+%    \end{macrocode}
+%
+% For plain tex + amstex: \cs{ex@} is set in \file{amstex.tex} to
+% \texttt{.2326ex}, so its value depends on the value of \texttt{ex} when
+% \prog{amstex} is loaded. Unlike \prog{amsmath}, it doesn't seem to be
+% recalculated with size changes. Thus, in plain TeX we add a reset.
+%    \begin{macrocode}
+%<*tex>
+\def\MDo@@dotsaccent#1#2#3{%
+{%
+  \setbox\MDo@dotsbox\hbox{$#2\mkern\MDoprekern#1\mkern\MDopostkern$}%
+  \mathop{#3\kern\z@}\limits^{\text{\ex@.2326ex
+    \vbox to-1.4\ex@{\kern-1.8\ex@\copy\MDo@dotsbox\vss}}}%
+}}%
+\ifx\amstexloaded@\relax % true if amstex has been loaded
+  % A backup test in case \amstexloaded@ became \relax by accident:
+  \ifx\ddddot\UndEfInEd
+  \else
+    \def\MDo@D{\mathchar"5F\mkern\MDodotkern}%
+    \wlog{Mathdots Info: Redefining \string\dddot.}%
+    \wlog{Mathdots Info: Redefining \string\ddddot.}%
+    \def\MDodddot {\MDo@dotsaccent{\MDo@D\MDo@D\MDo@D}}%
+    \def\MDoddddot{\MDo@dotsaccent{\MDo@D\MDo@D\MDo@D\MDo@D}}%
+    \let\dddot \MDodddot
+    \let\ddddot\MDoddddot
+  \fi
+\fi
+\csname MathDots\mathdotsfileversion\endcsname
+%</tex>
+%</sty|tex>
+%    \end{macrocode}
+%\Finale

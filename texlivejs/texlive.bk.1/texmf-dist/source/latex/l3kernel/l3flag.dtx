@@ -1,0 +1,335 @@
+% \iffalse meta-comment
+%
+%% File: l3flag.dtx
+%
+% Copyright (C) 2011-2019 The LaTeX3 Project
+%
+% It may be distributed and/or modified under the conditions of the
+% LaTeX Project Public License (LPPL), either version 1.3c of this
+% license or (at your option) any later version.  The latest version
+% of this license is in the file
+%
+%    https://www.latex-project.org/lppl.txt
+%
+% This file is part of the "l3kernel bundle" (The Work in LPPL)
+% and all files in that bundle must be distributed together.
+%
+% -----------------------------------------------------------------------
+%
+% The development version of the bundle can be found at
+%
+%    https://github.com/latex3/latex3
+%
+% for those people who are interested.
+%
+%<*driver>
+\documentclass[full,kernel]{l3doc}
+\begin{document}
+  \DocInput{\jobname.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \title{^^A
+%   The \textsf{l3flag} package: Expandable flags^^A
+% }
+%
+% \author{^^A
+%  The \LaTeX3 Project\thanks
+%    {^^A
+%      E-mail:
+%        \href{mailto:latex-team@latex-project.org}
+%          {latex-team@latex-project.org}^^A
+%    }^^A
+% }
+%
+% \date{Released 2019-02-15}
+%
+% \maketitle
+%
+% \begin{documentation}
+%
+% Flags are the only data-type that can be modified in expansion-only
+% contexts. This module is meant mostly for kernel use: in almost all
+% cases, booleans or integers should be preferred to flags because they
+% are very significantly faster.
+%
+% A flag can hold any non-negative value, which we call its
+% \meta{height}. In expansion-only contexts, a flag can only be
+% \enquote{raised}: this increases the \meta{height} by $1$. The \meta{height}
+% can also be queried expandably. However, decreasing it, or setting it
+% to zero requires non-expandable assignments.
+%
+% Flag variables are always local. They are referenced by a \meta{flag
+% name} such as \texttt{str_missing}.  The \meta{flag name} is used as
+% part of \cs{use:c} constructions hence is expanded at point of use.
+% It must expand to character tokens only, with no spaces.
+%
+% A typical use case of flags would be to keep track of whether an
+% exceptional condition has occurred during expandable processing, and
+% produce a meaningful (non-expandable) message after the end of the
+% expandable processing.  This is exemplified by \pkg{l3str-convert},
+% which for performance reasons performs conversions of individual
+% characters expandably and for readability reasons produces a single
+% error message describing incorrect inputs that were encountered.
+%
+% Flags should not be used without carefully considering the fact that
+% raising a flag takes a time and memory proportional to its height.
+% Flags should not be used unless unavoidable.
+%
+% \section{Setting up flags}
+%
+% \begin{function}{\flag_new:n}
+%   \begin{syntax}
+%     \cs{flag_new:n} \Arg{flag name}
+%   \end{syntax}
+%   Creates a new flag with a name given by \meta{flag name}, or raises
+%   an error if the name is already taken. The \meta{flag name} may not
+%   contain spaces. The declaration is global, but flags are always
+%   local variables. The \meta{flag} initially has zero height.
+% \end{function}
+%
+% \begin{function}{\flag_clear:n}
+%   \begin{syntax}
+%     \cs{flag_clear:n} \Arg{flag name}
+%   \end{syntax}
+%   The \meta{flag}'s height is set to zero. The assignment is local.
+% \end{function}
+%
+% \begin{function}{\flag_clear_new:n}
+%   \begin{syntax}
+%     \cs{flag_clear_new:n} \Arg{flag name}
+%   \end{syntax}
+%   Ensures that the \meta{flag} exists globally by applying
+%   \cs{flag_new:n} if necessary, then applies \cs{flag_clear:n}, setting
+%   the height to zero locally.
+% \end{function}
+%
+% \begin{function}{\flag_show:n}
+%   \begin{syntax}
+%     \cs{flag_show:n} \Arg{flag name}
+%   \end{syntax}
+%   Displays the \meta{flag}'s height in the terminal.
+% \end{function}
+%
+% \begin{function}{\flag_log:n}
+%   \begin{syntax}
+%     \cs{flag_log:n} \Arg{flag name}
+%   \end{syntax}
+%   Writes the \meta{flag}'s height to the log file.
+% \end{function}
+%
+% \section{Expandable flag commands}
+%
+% \begin{function}[EXP,pTF]{\flag_if_exist:n}
+%   \begin{syntax}
+%     \cs{flag_if_exist:n} \Arg{flag name}
+%   \end{syntax}
+%   This function returns \texttt{true} if the \meta{flag name}
+%   references a flag that has been defined previously, and
+%   \texttt{false} otherwise.
+% \end{function}
+%
+% \begin{function}[EXP,pTF]{\flag_if_raised:n}
+%   \begin{syntax}
+%     \cs{flag_if_raised:n} \Arg{flag name}
+%   \end{syntax}
+%   This function returns \texttt{true} if the \meta{flag} has non-zero
+%   height, and \texttt{false} if the \meta{flag} has zero height.
+% \end{function}
+%
+% \begin{function}[EXP]{\flag_height:n}
+%   \begin{syntax}
+%     \cs{flag_height:n} \Arg{flag name}
+%   \end{syntax}
+%   Expands to the height of the \meta{flag} as an integer denotation.
+% \end{function}
+%
+% \begin{function}[EXP]{\flag_raise:n}
+%   \begin{syntax}
+%     \cs{flag_raise:n} \Arg{flag name}
+%   \end{syntax}
+%   The \meta{flag}'s height is increased by $1$ locally.
+% \end{function}
+%
+% \end{documentation}
+%
+% \begin{implementation}
+%
+% \section{\pkg{l3flag} implementation}
+%
+%    \begin{macrocode}
+%<*initex|package>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%<@@=flag>
+%    \end{macrocode}
+%
+% \TestFiles{m3flag001}
+%
+% \subsection{Non-expandable flag commands}
+%
+% The height $h$ of a flag (initially zero) is stored by setting control
+% sequences of the form \cs[no-index]{flag \meta{name} \meta{integer}}
+% to \tn{relax} for $0\leq\meta{integer}<h$.  When a flag is raised, a
+% \enquote{trap} function \cs[no-index]{flag \meta{name}} is called.
+% The existence of this function is also used to test for the existence
+% of a flag.
+%
+% \begin{macro}{\flag_new:n}
+%   For each flag, we define a \enquote{trap} function, which by default
+%   simply increases the flag by $1$ by letting the appropriate control
+%   sequence to \tn{relax}.  This can be done expandably!
+%   \begin{macrocode}
+\cs_new_protected:Npn \flag_new:n #1
+  {
+    \cs_new:cpn { flag~#1 } ##1 ;
+      { \exp_after:wN \use_none:n \cs:w flag~#1~##1 \cs_end: }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\flag_clear:n}
+% \begin{macro}{\@@_clear:wn}
+%   Undefine control sequences, starting from the |0| flag, upwards,
+%   until reaching an undefined control sequence.  We don't use
+%   \cs{cs_undefine:c} because that would act globally.
+%   When the option \texttt{check-declarations} is used, check for the
+%   function defined by \cs{flag_new:n}.
+%    \begin{macrocode}
+\__kernel_patch:nnNNpn
+  { \exp_args:Nc \__kernel_chk_var_exist:N { flag~#1 } } { }
+\cs_new_protected:Npn \flag_clear:n #1 { \@@_clear:wn 0 ; {#1} }
+\cs_new_protected:Npn \@@_clear:wn #1 ; #2
+  {
+    \if_cs_exist:w flag~#2~#1 \cs_end:
+      \cs_set_eq:cN { flag~#2~#1 } \tex_undefined:D
+      \exp_after:wN \@@_clear:wn
+      \int_value:w \int_eval:w 1 + #1
+    \else:
+      \use_i:nnn
+    \fi:
+    ; {#2}
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\flag_clear_new:n}
+%   As for other datatypes, clear the \meta{flag} or create a new one,
+%   as appropriate.
+%    \begin{macrocode}
+\cs_new_protected:Npn \flag_clear_new:n #1
+  { \flag_if_exist:nTF {#1} { \flag_clear:n } { \flag_new:n } {#1} }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\flag_show:n, \flag_log:n, \@@_show:Nn}
+%   Show the height (terminal or log file) using appropriate \pkg{l3msg}
+%   auxiliaries.
+%    \begin{macrocode}
+\cs_new_protected:Npn \flag_show:n { \@@_show:Nn \tl_show:n }
+\cs_new_protected:Npn \flag_log:n { \@@_show:Nn \tl_log:n }
+\cs_new_protected:Npn \@@_show:Nn #1#2
+  {
+    \exp_args:Nc \__kernel_chk_defined:NT { flag~#2 }
+      {
+        \exp_args:Nx #1
+          { \tl_to_str:n { flag~#2~height } = \flag_height:n {#2} }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Expandable flag commands}
+%
+% \begin{macro}[EXP]{\@@_chk_exist:n}
+%   Analogue of \cs{__kernel_chk_var_exist:N} for flags, and with an
+%   expandable error.  We need to add checks by hand because flags are
+%   not implemented in terms of other variables.  Not all functions need
+%   to be patched since some are defined in terms of others.
+%    \begin{macrocode}
+%<*package>
+\__kernel_if_debug:TF
+  {
+    \cs_new:Npn \@@_chk_exist:n #1
+      {
+        \flag_if_exist:nF {#1}
+          {
+            \__kernel_msg_expandable_error:nnn
+              { kernel } { bad-variable } { flag~#1~ }
+          }
+      }
+  }
+  { }
+%</package>
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP, pTF]{\flag_if_exist:n}
+%   A flag exist if the corresponding trap \cs[no-index]{flag \meta{flag
+%   name}:n} is defined.
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \flag_if_exist:n #1 { p , T , F , TF }
+  {
+    \cs_if_exist:cTF { flag~#1 }
+      { \prg_return_true: } { \prg_return_false: }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP, pTF]{\flag_if_raised:n}
+%   Test if the flag has a non-zero height, by checking the |0| control sequence.
+%    \begin{macrocode}
+\__kernel_patch_conditional:nNNpnn { \@@_chk_exist:n {#1} }
+\prg_new_conditional:Npnn \flag_if_raised:n #1 { p , T , F , TF }
+  {
+    \if_cs_exist:w flag~#1~0 \cs_end:
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\flag_height:n}
+% \begin{macro}[EXP]{\@@_height_loop:wn, \@@_height_end:wn}
+%   Extract the value of the flag by going through all of the
+%   control sequences starting from |0|.
+%    \begin{macrocode}
+\__kernel_patch:nnNNpn { \@@_chk_exist:n {#1} } { }
+\cs_new:Npn \flag_height:n #1 { \@@_height_loop:wn 0; {#1} }
+\cs_new:Npn \@@_height_loop:wn #1 ; #2
+  {
+    \if_cs_exist:w flag~#2~#1 \cs_end:
+      \exp_after:wN \@@_height_loop:wn \int_value:w \int_eval:w 1 +
+    \else:
+      \exp_after:wN \@@_height_end:wn
+    \fi:
+    #1 ; {#2}
+  }
+\cs_new:Npn \@@_height_end:wn #1 ; #2 {#1}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\flag_raise:n}
+%   Simply apply the trap to the height, after expanding the latter.
+%    \begin{macrocode}
+\cs_new:Npn \flag_raise:n #1
+  {
+    \cs:w flag~#1 \exp_after:wN \cs_end:
+    \int_value:w \flag_height:n {#1} ;
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+%</initex|package>
+%    \end{macrocode}
+%
+% \end{implementation}
+%
+% \PrintIndex

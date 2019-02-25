@@ -1,0 +1,311 @@
+\defactiveparameter page {%
+  \settovalue\pdfpagewidth  #1 : width
+  \settovalue\pdfpageheight #1 : height
+  \settovalue\baselineskip  #1 : baselineskip
+  \settovalueor\topskip     #1 : topskip {\topskip=\baselineskip}%
+  \settovalue\pdfhorigin    #1 : left
+  \ifattribute #1 : right
+              {\hsize = \dimexpr(\pdfpagewidth-\pdfhorigin-\usevalue #1 : right )\relax}
+              {\settovalue\hsize #1 : hsize }%
+  \settovalue\pdfvorigin    #1 : top
+  \settovalue\parindent     #1 : parindent
+  \settovalue\parskip       #1 : parskip
+  \ifattribute #1 : lines {\vsize=\usevalue #1 : lines \baselineskip}{}%
+  }
+
+\restrictparameter page : 
+  width
+  height
+  hsize
+  baselineskip
+  topskip
+  left
+  right
+  top
+  lines
+  parindent
+  parskip
+\par
+
+% Defaults... they don't produce anything beautiful.
+% I redefine them on every job.
+\setparameter page:
+  height       = 28cm
+  width        = 21cm
+  hsize        = 15cm
+  baselineskip = 12pt
+  lines        = 42
+  left         = 1in
+  top          = 1in
+  parskip      = 0pt
+
+\widowpenalty151
+\clubpenalty0
+\holdinginserts1
+\newdimen\outputsize
+\newif\ifheader
+
+\gates new \OutputRoutine {OutputRoutine}%
+
+\OutputRoutine list {output}
+  [precheck]
+    {%
+    \global\holdinginserts0
+    \OutputRoutine skip {precheck, shipout}{output}%
+    \ifnum\outputpenalty<\widowpenalty
+      \global\outputsize=\vsize
+    \else
+      \ifnum\outputpenalty=10000
+        \global\outputsize=\vsize
+      \else
+        \ifdim\pagegoal<\vsize
+          \global\advance\vsize-\baselineskip
+          \global\outputsize=\dimexpr\vsize+\baselineskip\relax
+        \else
+          \global\advance\vsize\baselineskip
+          \global\outputsize=\dimexpr\vsize-\baselineskip\relax
+        \fi
+      \fi
+    \fi
+    \unvbox\outputbox
+    \ifnum\outputpenalty=10000
+      \penalty0
+    \else
+      \penalty\outputpenalty
+    \fi}
+%
+  (shipout)
+  . (inserts)
+  . . [inserts_figures]   ?{conditional = \unless\ifvoid\ptx@insert_figures} {%
+        \setbox\outputbox=\vbox to \outputsize{%
+        \box\ptx@insert_figures
+        \unvbox\outputbox}}
+  . . [inserts_footnotes] ?{conditional = \unless\ifvoid\ptx@insert_footnotes} {%
+        \setbox\outputbox=\vbox to \outputsize{%
+          \unvbox\outputbox
+          \vfil
+          \vskip.5\skip\ptx@insert_footnotes
+          \vbox to0pt{\vss\hrule width .3\hsize}%
+          \vskip.5\skip\ptx@insert_footnotes
+          \unvbox\ptx@insert_footnotes}}
+  %
+  . [headers] {%
+      \setbox\outputbox=\vbox{%
+      \kern-3\baselineskip
+      \vbox to3\baselineskip{%
+        \hbox to\hsize{\strut\baselineskip {0pt}%
+          \normalsize\rm\sc
+          \ifodd\pageno
+            \hfill\usevalue chapter : inner_title \rlap{\kern1em \the\pageno}\kern-3em
+          \else
+            \kern-3em\llap{\the\pageno\kern1em }\usevalue chapter : inner_title \hfill
+          \fi}
+          \vfill}
+      \nointerlineskip
+      \box\outputbox}}
+    %
+  . [ship] {%
+      \settovalue\pdfhorigin page : left
+      \shipout\box\outputbox}
+    %
+  . [postship] {%
+      \global\holdinginserts1
+      \global\vsize\outputsize
+      \global\advance\count0 1
+      \ifnum\insertpenalties>0
+        \ifnum\outputpenalty=\clearpagepenalty
+          \hbox{}\vfil\penalty\outputpenalty
+        \fi
+      \fi}
+
+
+\output{%
+  \OutputRoutine execute {output}%
+  }
+
+
+
+% MARGIN NOTES
+\setparameter marginnote :
+  hsize     = 3cm
+  hpos      = fr
+  font      = \it
+  parindent = 0pt
+  side      = right
+  gap       = 1em
+
+\newcount\notecount
+\newattribute\ptx@marginnote_attribute
+\def\marginnote{%
+  \ifnext[
+    {\ptx@marginnote}
+    {\ptx@marginnote[]}%
+  }
+
+\long\def\ptx@marginnote[#1]#2{%
+  \setparameterlist{marginnote@temp}{meta = marginnote, #1}%
+  \global\advance\notecount 1
+  \global\expandafter\newbox\csname marginnote_\the\notecount\endcsname
+  \global\expandafter\setbox\csname marginnote_\the\notecount\endcsname=
+    \vtop{%
+      \settovalue\hsize marginnote@temp : hsize
+      \settovalue{\advance\hsize} marginnote@temp : gap
+      \leftskip=0pt \rightskip=0pt plus 1 fil \parfillskip=0pt\relax
+      \ifcasevalue marginnote@temp : hpos
+        \val ff \rightskip=0pt \parfillskip=0pt plus 1 fil
+        \val rf \leftskip=0pt plus 1 fil \rightskip=1pt
+        \val rr \leftskip=0pt plus 1 fil
+      \endval
+      \ifvalue marginnote@temp : side = left
+        {\settovalue{\advance\rightskip} marginnote@temp : gap }
+        {\settovalue{\advance\leftskip} marginnote@temp : gap }%
+      \settovalue\baselineskip marginnote@temp : baselineskip
+      \settovalue\parindent marginnote@temp : parindent
+      \usevalue marginnote@temp : font
+      #2}%
+  \quitvmode % Must be outside the attribute's scope, otherwise the
+             %  paragraphs DIR whatsit might get in the way.
+  \bgroup
+  \ifvalue marginnote@temp : side = left
+    {\ptx@marginnote_attribute=-\expandafter\the\csname marginnote_\the\notecount\endcsname}
+    {\ptx@marginnote_attribute=\expandafter\the\csname marginnote_\the\notecount\endcsname}\relax
+  \pdfliteral{}%
+  \egroup
+  \deleteparameter marginnote@temp:%
+  }
+
+\luacode
+local WHAT, HLIST, KERN = node.id("whatsit"), node.id("hlist"), node.id("kern")
+local GLUE, SPEC = node.id("glue"), node.id("glue_spec")
+local marginnote_table = {}
+function pitex.misc.mark_lines (head)
+  for line in node.traverse_id(HLIST, head) do
+    local t = {left = {}, right = {}}
+    local item = line.head
+    while item do
+      local next = item.next
+      if item.id == WHAT then
+        local attr = node.has_attribute(item, \attributenumber\ptx@marginnote_attribute)
+        if attr then
+          if attr < 0 then
+            table.insert(t.left, -attr)
+          else
+            table.insert(t.right, attr)
+          end
+          line.head = node.remove(line.head, item)
+        end
+      end
+      item = next
+    end
+    if #t.left > 0 or #t.right > 0 then
+      table.insert(marginnote_table, t)
+      node.set_attribute(line, \attributenumber\ptx@marginnote_attribute, #marginnote_table)
+    end
+  end
+  return head
+end
+
+pitex.callback.register("post_linebreak_filter", "pitex.misc:mark_lines")
+
+local lheight, rheight = 0, 0
+local function update_height (h)
+  lheight = lheight + h
+  rheight = rheight + h
+end
+
+local function first_dim (n, t)
+  while n do
+    if node.has_field(n, "kern") then
+      return n.kern
+    elseif node.has_field(n, "spec") then
+      return n.spec.width
+    elseif node.has_field(n, "height") then
+      return t == "height" and n.height or n.depth
+    else
+      n = t == "height" and n.next or n.prev
+    end
+  end
+  return 0
+end
+
+function process_marginalia (head)
+  lheight, rheight = 0, 0
+  local item, first = node.slide(head), true
+  while item do
+    if node.has_field(item, "kern") then
+      if not first then
+        update_height(item.kern)
+      end
+    elseif node.has_field(item, "spec") then
+      if not first then
+        update_height(item.spec.width)
+      end
+    elseif node.has_field(item, "height") then
+      if first then
+        first = false
+      else
+        update_height(item.depth)
+      end
+      local attr = node.has_attribute(item, \attributenumber\ptx@marginnote_attribute)
+      if attr then
+        for side, notes in pairs (marginnote_table[attr]) do
+          if #notes > 0 then
+            local note
+            for _, n in ipairs(notes) do
+              if note then
+                local n, g, s = tex.box[n], node.new(GLUE), node.new(SPEC)
+                local d = first_dim(node.tail(note.head), "depth")
+                local h = first_dim(n.head, "height")
+                s.width = tex.baselineskip.width - (d + h)
+                g.spec = s
+                note.depth = note.depth + s.width + n.height + n.depth
+                node.insert_after(note.head, node.tail(note.head), g)
+                g.next, n.head.prev = n.head, g
+              else
+                note = tex.box[n]
+              end
+            end
+            first = true
+            local upward = note.depth - first_dim(node.tail(note.head), "depth")
+            local remainingheight = side == "left" and lheight or rheight
+            if upward > remainingheight then
+              upward = remainingheight - upward
+            else
+              upward = 0
+            end
+            local kern = node.new(KERN, 1)
+            kern.kern = upward - note.height - item.depth
+            node.insert_before(note.list, note.list, kern)
+            note.list = kern
+            if side == "left" then
+              note.shift = -note.width
+              lheight = upward
+            else
+              note.shift = item.width
+              rheight = upward
+            end
+            note.height, note.depth = 0, 0
+            node.insert_after(head, item, note)
+          else
+            if side == "left" then
+              lheight = lheight + item.height
+            else
+              rheight = rheight + item.height
+            end
+          end
+        end
+      else
+        update_height(item.height)
+      end
+    end
+    item = item.prev
+  end
+end
+\luacode/
+
+\OutputRoutine def {processmarginalia}{%
+  \ptx@lua{process_marginalia(tex.box[255].list)}%
+  }
+
+\OutputRoutine add {processmarginalia}[first]{shipout}
+

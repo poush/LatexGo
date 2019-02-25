@@ -1,0 +1,282 @@
+\ProvidesFile{plainpkg-doc.tex}[2012/09/19 documenting plainpkg.tex]
+\title{\pkg{\huge plainpkg}\\---\\%%%Rudimentary Package Management 
+%        without \LaTeX\thanks{This document describes 
+       a ``Minimal" Method\\for Making ``Generic" Packages\thanks{%
+       This document describes
+       \file{plainpkg.tex}'s                            %% 2012/08/24
+       version~\textcolor{blue}{\UseVersionOf{plainpkg.tex}} 
+       as of~\textcolor{blue}{\UseDateOf{plainpkg.tex}}.}} 
+% \listfiles  %% 2012/09/16
+% \RequirePackage{inputtrc}\dotracinginputs
+{ \RequirePackage{makedoc} \ProcessLineMessage{}
+  \renewcommand*{\mdSectionLevelOne}{\string\subsection}
+  \renewcommand*{\mdJobName}{plainpkg}
+  \MakeJobDoc[tex]{21}%% 2012/08/25
+  {\SectionLevelTwoParseInput}  }
+\documentclass[fleqn]{article}%% TODO paper dimensions!?
+\input{makedoc.cfg} %% shared formatting settings
+% \ReadFileInfos{plainpkg} %% 2012/09/16 Fehler, wird wohl schon 
+                           %% durch fifinddo via stacklet aufgerufen.
+\MDkeywords{Macro programming, package management}
+\newcommand*{\plpkg}[1]{\pkg{plainpkg} #1ackage}
+\newcommand*{\plpkgpkg}{\plpkg p}
+\newcommand*{\Plpkgpkg}{\plpkg P}
+\sloppy
+\begin{document}
+\maketitle
+\begin{MDabstract}
+'plainpkg.tex' provides some rudimentary \LaTeX-like package
+management for ``generic" packages: \ 
+(i)\enspace a (rather arbitrary) implementation of 
+\LaTeX's `\ProvidesFile' (support for \ctanpkgref{readprov}), \
+(ii)\enspace an implementation of \LaTeX's `\ProvidesPackage' 
+that, in addition to (i), avoids loading twice, \ 
+(iii)\enspace a simple implementation of \LaTeX's `\RequirePackage' %% P 2012/09/19
+to allow nesting of package files with and without \LaTeX\ \ and \
+%% <- 2012/08/25
+(iv)\enspace loading 'stacklet.sty' for managing private letters 
+with nested package files. \ Also, 
+(v)\enspace a rather experimental `\ifltx' is provided indicating 
+whether the format is \LaTeX---or \CtanPkgRef{miniltx}{miniltx.tex} 
+has been loaded earlier~... \
+A by-product is \ (vi)\enspace the helper `\withcsname' for 
+`csname' constructs.                                                %% rm. \ 2012/09/19
+%% 2012/09/19:
+The documentation also introduces a notion of ``\plpkgpkg s" 
+for a central explanation of how to make and work with ``generic" 
+packages based on 'plainpkg'.
+
+\MDaddtoabstract{Related Packages} 
+\ctanpkgref{miniltx}, \ctanpkgref{maybeload};
+\ctanpkgref{catoptions},\\\null\qquad 'pcatcode' from \ctanpkgref{amsrefs}, 
+\ctanpkgref{texapi}
+%% 2012/09/19:
+\MDaddtoabstract{Required Packages} 'stacklet.sty' from 
+\ctanpkgref{catcodes} bundle
+\end{MDabstract}
+% \newpage
+\tableofcontents
+\section{Purpose and Usage}
+\label{sec:pu}
+\subsection{Purpose}
+'plainpkg.tex' in the first instance is a tool for \TeX\ macro packages 
+to work with \LaTeX\ as well as with Plain \TeX, perhaps even with other 
+\TeX\ formats. 
+When \LaTeX\ seems to be missing, a definition for `\ProvidesPackage' 
+is provided that avoids loading such a package a second time. 
+Earlier (in the \ctanpkgref{dowith} package), I tried to ``hide" 
+the `\ProvidesPackage' command when it was not defined, 
+the original motive was to have that command somewhere so 
+its version information can be accessed by the \ctanpkgref{readprov} package.
+As such ``generic" packages often use private \LaTeX\ internals, 
+I thought that 'plainpkg' also should offer a stack for handling category 
+codes of `@' in nested package files. Rather than providing such a stack 
+in `plainpkg.tex', I use the more general 'stacklet.sty', because I 
+have used different ``private letters" in other nested package files 
+that \emph{require \LaTeX}, so such stacks should be accessible 
+\emph{without} 'plainpkg'.
+% 
+% Details, including why a mere document author should consider it, 
+% are following.
+
+\subsection{Installing: How and Why}
+The file `plainpkg.tex' is provided ready, like `stacklet.sty' 
+(\ctanpkgref{catcodes} bundle), installation only requires
+putting both somewhere where \TeX\ finds them
+(which may need updating the filename data
+ base).\urlfoot{ukfaqref}{inst-wlcf} 
+
+\subsection{Features}
+\label{sec:feat}
+Besides providing 'stacklet''s features---see the 'catcodes' bundle
+documentation in `catcodes.pdf'---and a fallback definition 
+|\ProvidesPackage| for running without \LaTeX, some |\withcsname|, 
+a conditional |\ifltx| as well as 
+fallback definitions for |\RequirePackage| and |\ProvidesFile| 
+are provided---see implementation sections for details.
+
+\subsection{Loading `plainpkg.tex'}
+\label{sec:load}
+`plainpkg.tex' may be loaded by |\input plainpkg| or---with \LaTeX---by 
+|\input{plainpkg}|. However, in a document source file this is useful only 
+when so-called ``weak \plpkgpkg s" according to Section~\ref{sec:plpkg} 
+are loaded additionally. With \LaTeX, the only effect will be that 
+`\withcsname' works and that the 'stacklet' package is loaded.
+So if you just want to have the 'stacklet' functionality of support for
+private letters in nested package files, you better use 
+|\RequirePackage{stacklet}| or |\usepackage{stacklet}| directly. 
+The latter still is a little strange---it may be helpful for private 
+letters other than `@' in a \LaTeX\ document, or with ``weak 'stacklet' 
+packages," a notion that I have not introduced yet.
+
+\subsection{Notion and Usage of ``\Plpkgpkg s"}
+\label{sec:plpkg}
+The main purpose of the present section is to have a central 
+reference for all ``generic" packages based on 'plainpkg', 
+to avoid repeating details in the documentation of each single 
+package of that kind.
+
+\subsubsection{The Notion: ``Strong" and ``Weak \Plpkgpkg s"}
+\label{sec:not}
+I introduce the notion of ``\strong{\plpkgpkg s}" for ``generic" packages 
+based on 'plainpkg.tex' and requiring it. 
+\begin{description}
+  \item[Strong \plpkgpkg s] (i)~have filename extension |.sty| 
+    \ and \ (ii)~contain |\input plainpkg|. 
+  \item[Weak   \plpkgpkg s] do not load `plainpkg.tex', 
+    but their \emph{documentation} says that they must be loaded 
+    \emph{after} `plainpkg.tex' has been loaded.
+    They have filename extension |.sty| as well.
+\end{description}
+\emph{My} \plpkgpkg s will also contain \ |\ProvidesPackage{<pkg>}[<ver>]| \
+(\mbox{after} `\input plpkgpkg').
+A package loading `plainpkg.tex' and \emph{not} containing `\ProvidesPackage'
+may work and be called a ``\plpkgpkg", but the usefulness of such a 
+practice, hmm, is in some sense discussed in Section~\ref{sec:load}.
+
+``Weak" \plpkgpkg s are just an idea that came to my mind when I thought 
+about the present documentation, at present I prefer \emph{strong} 
+\plpkgpkg s, I do not want to explain usage of weak \plpkgpkg s.
+
+I like to place the `\input plainpkg' ``right-adjusted" in the 
+plain text file hoping this way the file information of the next 
+\cs{Provides\dots} line is not overlooked.
+
+\subsubsection{How to Load a \Plpkgpkg}
+For loading a \plpkgpkg\ `<generic>.sty' from within some file <loading>, 
+we have the following cases:
+\begin{description}
+  \item[from within the \LaTeX\ document preamble] of <loading>:\\
+    |\usepackage{<generic>}|\footnote{$\dots$ or even 
+        &\RequirePackage{<generic>} \dots}
+  \item[not intended for \LaTeX:] |\input <generic>.sty|
+  \item[possibly with \LaTeX (``generic"):] |\Require{<generic>}|\\---and 
+    `plainpkg.tex' should have been loaded before,\\ 
+    \strong{recommendation:} <loading> a \plpkgpkg\ `<lodyng>.sty' itself.
+\end{description}
+\strong{Note:}\quad The optional argument as in 
+|\RequirePackage{<generic>}[<date>]| is \strong{not supported} (at present)!
+
+\subsubsection{How to Make a \Plpkgpkg}
+% \subsubsection{What a \Plpkgpkg\ Must Contain}
+% For what a \plpkgpkg\ \emph{must} contain, 
+% ---see Section~\ref{sec:not}.
+Section~\ref{sec:not} tells what rather is \emph{required} for a 
+\plpkgpkg, and Section~\ref{sec:may} summarizes what additionally 
+\emph{works} in a \plpkgpkg, due to 'plainpkg''s \emph{features.}
+
+\subsubsection{What a \Plpkgpkg\ May Contain}
+\label{sec:may}
+A \plpkgpkg\ may contain 
+\begin{itemize}
+  \item |\ProvidesPackage|, |\RequirePackage|
+    (without optional argument), 
+  \item |\ifltx|, and |\withcsname|; 
+  \item 'stacklet' commands properly paired: 
+    for each ``private letter" <char>, place 
+    \begin{itemize}
+      \item |\PushCatMakeLetter\<char>| above its first use 
+    and place 
+      \item |\PopLetterCat\<char>| after the last use, above `\endinput'. 
+      \item If <char> is `@', 
+    |\PushCatMakeLetterAt| and |\PopLetterCatAt| are recommended instead.
+    \end{itemize}
+\end{itemize}
+
+% \subsubsection{Implications}
+% See Section~\ref{sec:feat} for what is available besides the 
+% specific features advertised for some \plpkgpkg.
+% 
+\subsubsection{Other ``\pkg{plainpkg} Files"}
+As 'plainpkg' also provides a fallback definition for 
+|\ProvidesFile|, another notion could be that of a 
+``\pkg{plainpkg} file" <file> that \ 
+(i)~has an arbitrary filename extension, \
+(ii)~is loaded by |\input <file>| or, with \LaTeX, |\input{<file>}|
+\ and \
+(iii)~may contain what is allowed according to Section~\ref{sec:may}, 
+apart from `\ProvidesPackage'.
+As an obvious example, all the document source files such as `<part>.tex'
+may start with `\ProvidesFile', or certain `.def' files could be 
+considered ``\pkg{plainpkg} files."
+
+% \subsection{More PU\dots}
+% \begin{enumerate}                    %% 2012/08/24
+% \item 
+% `plainpkg.tex' should be loaded by
+% % \[|\input plainpkg|\]
+% \[\cs{input plainpkg}\]
+% starting a file <generic> for Plain~\TeX\ or that should be 
+% independent of a \TeX\ format (basically based on `plain.tex'). 
+% \item 
+% Below that line, such a file may contain 
+% \begin{enumerate}
+%   \item a \LaTeX\ |\ProvidesFile| or |\ProvidesPackage|
+%         command (purpose: accessible by '\ctanpkgref{readprov}.sty'),
+%   \item commands from the 'stacklet' package managing 
+%         private letters with nested packages, 
+%   \item |\RequirePackage<args>|,
+%   \item |\ifltx| indicating running under \LaTeX\ or with 
+%         \CtanPkgRef{miniltx}{miniltx.tex}. 
+%         However, something may fail when 'miniltx.tex'
+%         is loaded \emph{after} 'plainpkg.tex'. 
+%         In this case, `\ifltx' at least indicates 
+%         what \emph{format} is used. 
+% \end{enumerate}
+% \item 
+% When <generic> is some `<generig>.sty' also intended to 
+% work as a \LaTeX\ package, 'plainpkg' will at least ensure 
+% that the 'stacklet' commands in <generic> work.
+% \item 
+% (Such) <generic> `<generig>.sty' files should be loaded by 
+% \[|\RequirePackage{generig}|\]
+% ---\emph{not} \qtd{\cs{input <generig>.sty}}---to ensure that, 
+% under \LaTeX,                                    %% 2012/09/16
+% \[`\ProvidesPackage{generig}'\]
+% works properly and to avoid multiple loading.    %% 2012/09/16
+% \item 
+% \emph{Without} \LaTeX, |\ProvidesPackage| also stops reading 
+% the rest of the file when it has been loaded earlier. 
+% Thus it is a replacement for \ctanpkgref{maybeload}.
+% \end{enumerate}
+
+% \setcounter{section}{-1}
+\section{Comparison with 'miniltx' and 'maybeload'}
+% Packages based on 'plainpkg' can and should employ `\ProvidesPackage'
+% and `\RequirePackage' even without \LaTeX. In the latter situation, 
+% however, their definitions 
+Without \LaTeX, the definitions of `\ProvidesPackage' and `\RequirePackage'
+are by no means copies from \LaTeX, as they are in \ctanpkgref{miniltx}. 
+Rather, \cs{Provides}\-\code{Package} will work like \ctanpkgref{maybeload}'s 
+`\thisfileis'.---\pkg{maybeload} was made for ``\LaTeX," too, 
+according to its comment. But that rather was 
+pre\mbox{-}$2_{\varepsilon}$ \LaTeX. 'plainpkg' might also have been called 
+``\pkg{maybeload2e}", as we are essentially combining 'maybeload''s functionality 
+with fall-back support for \LaTeXe's basic package commands.
+But of course, that name would not reflect loading 'stacklet', 
+whose purpose also has been to have as little as possible 
+above `\ProvidesPackage'.
+
+\section{The Package File}
+\subsection{Header---Bootstrapping and Legalese}
+The first line is for Section~\ref{sec:once}. 
+Next I want to have \cs{Provides\textellipsis} info at the top 
+of the file, but such a command hasn't been defined yet. 
+`\def\filename' etc. could be bad as well, overriding `\filedate' 
+of a package that loads 'plainpkg.tex'. 
+\input{plainpkg.doc}
+
+\end{document}
+
+VERSION HISTORY
+
+2012/08/22  for v0.1    very first 
+2012/08/24  for v0.3    \thanks supplemented
+2012/08/25              "installing" sec. -> `plainpkg.tex', 
+                        adjusted \HeaderLines, abstract extended, 
+                        TOC on \newpage, explaining top lines, 
+                        mentioning \ifltx
+2012/08/26              LaTeX -> \LaTeX; doc. grammar fix
+2012/09/19              different title, moving documentation here 
+                        from package file and reworking it, 
+                        changing doc structure, abstract mod.

@@ -1,0 +1,245 @@
+%D \module
+%D   [     file=t-syntax-highlight,
+%D      version=2018.08.10,
+%D        title=\CONTEXT\ User Module,
+%D     subtitle=Code syntax highlighting,
+%D       author=Aditya Mahajan,
+%D         date=\currentdate,
+%D    copyright=Aditya Mahajan,
+%D        email=adityam <at> ieee <dot> org,
+%D      license=Simplified BSD License]
+
+\writestatus{loading}{Code syntax highlighting (ver: 2018.08.10)}
+
+\startmodule    [syntax-highlight]
+\usemodule      [syntax-groups]
+\usemodule      [filter] % loads module-catcodes
+
+\unprotect
+
+\startinterface all
+  \setinterfaceconstant {syntax}          {syntax}
+  \setinterfaceconstant {highlight}       {highlight}
+  \setinterfaceconstant {highlightcolor}  {highlightcolor}
+\stopinterface
+
+%D Name space
+
+\definenamespace
+    [syntaxhighlighting]
+    [\c!type=module,
+     \c!name=syntaxhighlighting,
+     \c!command=\v!yes,
+     setup=\v!list,
+     \c!style=\v!no,
+     \s!parent=syntaxhighlighting]
+
+\appendtoks
+    \defineexternalfilter[\currentsyntaxhighlighting]
+                         [\s!parent=\????syntaxhighlighting\currentexternalfilter,\c!taglabel=\vimtyping@id]%
+    \normalexpanded{\definelinenumbering [\currentsyntaxhighlighting]}%
+    \setevalue{type\currentsyntaxhighlighting file}{\getvalue{process\currentsyntaxhighlighting file}}%
+\to\everydefinesyntaxhighlighting
+
+\appendtoks
+    % \externalfitlterparameter does not work, so it is better to use
+    % \syntaxhighlighting parameter.
+    \normalexpanded{\setuplinenumbering[\currentsyntaxhighlighting]
+         [
+               \c!method=\syntaxhighlightingparameter{\c!number\c!method},
+           \c!conversion=\syntaxhighlightingparameter\c!numberconversion,
+             \c!location=\syntaxhighlightingparameter{\c!number\c!location},
+                \c!style=\syntaxhighlightingparameter\c!numberstyle,
+                \c!color=\syntaxhighlightingparameter\c!numbercolor,
+                \c!width=\syntaxhighlightingparameter{\c!number\c!width},
+                 \c!left=\syntaxhighlightingparameter{\c!number\c!left},
+                \c!right=\syntaxhighlightingparameter{\c!number\c!right},
+              \c!command=\syntaxhighlightingparameter\c!numbercommand,
+             \c!distance=\syntaxhighlightingparameter{\c!number\c!distance},
+                \c!align=\syntaxhighlightingparameter{\c!number\c!align},
+          ]}%
+\to\everysetupsyntaxhighlighting
+
+\def\syntaxhighlighting@id {syntaxhighlighting}
+\edef\t!syntaxhighlighting {\syntaxhighlighting@id}
+
+%D Helper macro
+
+\def\syntaxhighlighting@yes{\v!yes,\v!on}
+
+\startsetups syntaxhighlighting@setup
+
+  \edef\currentsyntaxhighlighting{\currentexternalfilter}
+  \edef\colorscheme@name{\externalfilterparameter\c!alternative}
+
+  \let\SYN\syntaxgroup
+  \edef\HGL{\externalfilterparameter{\c!highlight\c!command}}
+  \let\\\textbackslash
+  \let\{\textbraceleft
+  \let\}\textbraceright
+  \let\SYNBOL\donothing
+  \let\SYNEOL\donothing
+
+  \setupbar[syntaxhighlightline][color=\externalfilterparameter\c!highlightcolor]
+
+  \def\tab##1%
+      {\dorecurse{##1}{\obeyedspace}}%
+
+  \forgetall
+  \usealignparameter\externalfilterparameter
+  \doifinset{\externalfilterparameter\c!option}{\v!packed}
+      {\setupwhitespace[\v!none,\v!flexible]}%
+
+  \doadaptleftskip{\externalfilterparameter\c!margin}%
+
+  \setbreakpoints[compound]% Only works is `option=hyphenated` is set.
+  \doifnotinset{\externalfilterparameter\c!option}{\v!hyphenated}
+      {\language\minusone}%
+
+  \def\obeyedline{\strut\par}
+  \setcatcodetable\externalfilter@minimal_catcodes%
+  \letcharcode\endoflineasciicode\obeyedline
+  \letcharcode\spaceasciicode\obeyedspace
+  \activatespacehandler{\????syntaxhighlighting\externalfilterparameter\c!space}
+  \raggedright
+\stopsetups
+
+\starttexdefinition syntaxhighlighting@read_command #1
+    \syntaxhighlighting@linenumbering_start
+    \ReadFile{#1}
+    \syntaxhighlighting@linenumbering_stop
+\stoptexdefinition
+
+\starttexdefinition syntaxhighlighting@linenumbering_start
+   \doifinset{\externalfilterparameter\c!numbering}\syntaxhighlighting@yes
+       {\let\SYNBOL=\syntaxhighlighting_begin_number_lines
+        \let\SYNEOL=\syntaxhighlighting_end_number_lines
+        \startlinenumbering
+          [\currentsyntaxhighlighting]
+          [
+              \c!method=\v!type,
+               \c!start=\externalfilterparameter{\c!number\c!start},
+                \c!step=\externalfilterparameter{\c!number\c!step},
+             \c!continue=\externalfilterparameter{\c!number\c!continue},
+          ]}
+   \dostarttagged\t!syntaxhighlighting\colorscheme@name
+\stoptexdefinition
+
+\starttexdefinition syntaxhighlighting@linenumbering_stop
+  \dostoptagged
+   \doifinset{\externalfilterparameter\c!numbering}\syntaxhighlighting@yes
+      {\stoplinenumbering}
+\stoptexdefinition
+
+\newcount\nofsyntaxhighlightinglines
+
+\starttexdefinition syntaxhighlighting_begin_number_lines
+  \global\advance\nofsyntaxhighlightinglines\plusone
+  \attribute\verbatimlineattribute\nofsyntaxhighlightinglines
+\stoptexdefinition
+
+\starttexdefinition syntaxhighlighting_end_number_lines
+   \attribute\verbatimlineattribute\attributeunsetvalue
+\stoptexdefinition
+
+
+\setupsyntaxhighlighting
+  [\c!tab=4,
+   \c!space=\v!off,
+   \c!lines=\v!fixed,
+   \c!margin=\zeropoint,
+   \c!start=1,
+   \c!stop=0,
+   % \c!syntax=context,
+   \c!alternative=pscolor,
+   \c!before=,
+   \c!after=,
+   \c!spacebefore=\v!none,
+   \c!spaceafter=\v!none,
+   \c!location=\v!paragraph,
+   \c!style=\tttf,
+   \c!color=,
+   \c!align={\v!flushleft,\v!nothyphenated}, 
+   \c!filtercommand=echo, % placeholder
+   \c!continue=yes,
+   \c!read=\v!yes,
+   \c!readcommand=\syntaxhighlighting@read_command,
+   \c!output=\externalfilterinputfile, % placeholder
+   \c!setups=syntaxhighlighting@setup,
+   \c!option=\v!packed, % \v!hyphenated
+   \s!parent=\????externalfilter,
+   % Numbering options
+   \c!numbering=\v!no,
+   \c!number\c!start=1,
+   \c!number\c!step=1,
+   \c!number\c!continue=\v!no,
+   \c!numberconversion=\v!numbers,
+   \c!number\c!method=\v!type, 
+   \c!number\c!location=\v!left,
+   \c!numberstyle=\ttx,
+   \c!numbercolor=,
+   \c!number\c!width=2em,
+   \c!number\c!left=,
+   \c!number\c!right=,
+   \c!numbercommand=,
+   \c!number\c!distance=0.5em,
+   \c!number\c!align=\v!flushright,
+   %Highlight options
+   \c!highlight=,
+   \c!highlightcolor=lightgray,
+   \c!highlight\c!command=\syntaxhighlightline,
+  ]
+
+% Space handler
+%
+% The space handing code for MkII and MkIV is not consistent. So, we provide our
+% own versions.
+
+\setvalue{\????syntaxhighlighting::\c!lines::\v!split}{\hskip}
+\setvalue{\????syntaxhighlighting::\c!lines::\v!fixed}{\dontleavehmode\kern}
+
+% default
+\setvalue{\????syntaxhighlighting::\c!lines::}{\dontleavehmode\kern}
+
+\def\syntaxhighlighting@split%
+    {\getvalue{\????syntaxhighlighting::\c!lines::\externalfilterparameter\c!lines}}
+
+% Visible space
+\installspacemethod {\????syntaxhighlighting\v!on}
+  {\unexpanded\def\obeyedspace
+      {\mathortext\normalspace
+        {\syntaxhighlighting@split\zeropoint\relax
+         \hbox{\normalcontrolspace}%
+         \syntaxhighlighting@split\zeropoint\relax}}%
+  \letcharcode\spaceasciicode\obeyedspace}
+
+% Invisible space
+\installspacemethod {\????syntaxhighlighting\v!off}
+  {\unexpanded\def\obeyedspace
+      {\mathortext\normalspace
+          {\syntaxhighlighting@split\interwordspace\relax}}%
+   \letcharcode\spaceasciicode\obeyedspace}
+
+% Default
+\installspacemethod {\????syntaxhighlighting}
+  {\activatespacehandler {\????syntaxhighlighting\v!off}}
+
+% Line highlighting
+
+\definebar[syntaxhighlightline]
+          [\c!order=\v!background,
+   \c!rulethickness=2.5,
+           \c!method=0,
+          \c!offset=1.375,
+        \c!continue=\v!yes,
+           \c!color=\externalfilterparameter\c!highlightcolor,
+          ]
+
+% For backward compatibility
+\def\syntaxhighlighting@namespace {\????syntaxhighlighting}
+\def\syntaxhighlighting@name      {\currentsyntaxhighlighting}
+
+\protect
+
+\stopmodule
+

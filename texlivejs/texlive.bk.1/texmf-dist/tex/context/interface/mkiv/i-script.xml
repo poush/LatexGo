@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definescript" level="style" category="language" file="scrp-ini.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupscript"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupscript" level="style" category="language" file="scrp-ini.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="method">
+                    <cd:constant type="hangul"/>
+                    <cd:constant type="hanzi"/>
+                    <cd:constant type="nihongo"/>
+                    <cd:constant type="ethiopic"/>
+                    <cd:constant type="thai"/>
+                    <cd:constant type="test"/>
+                </cd:parameter>
+                <cd:parameter name="preset">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="features">
+                    <cd:constant type="auto"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupscripts" level="style" category="language" file="scrp-ini.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupscript"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setscript" level="style" category="language" file="scrp-ini.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-script"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setlocalscript" level="style" category="language" file="scrp-ini.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-script"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setglobalscript" level="style" category="language" file="scrp-ini.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-script"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resetscript" level="system" category="language" file="scrp-ini.mkvi"/>
+
+    <cd:command name="script" type="environment" category="language" file="scrp-ini.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="hangul"/>
+                <cd:constant type="hanzi"/>
+                <cd:constant type="nihongo"/>
+                <cd:constant type="ethiopic"/>
+                <cd:constant type="thai"/>
+                <cd:constant type="test"/>
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="script" generated="yes" variant="instance" level="document" category="language" file="scrp-ini.mkvi">
+        <cd:sequence>
+            <cd:instance value="script"/>
+        </cd:sequence>
+        <cd:instances>
+            <cd:resolve name="instance-script"/>
+        </cd:instances>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="hangul" level="document" category="language" file="scrp-ini.mkvi"/>
+
+        <cd:command name="hanzi" level="document" category="language" file="scrp-ini.mkvi"/>
+
+        <cd:command name="nihongo" level="document" category="language" file="scrp-ini.mkvi"/>
+
+        <cd:command name="ethiopic" level="document" category="language" file="scrp-ini.mkvi"/>
+
+        <cd:command name="thai" level="document" category="language" file="scrp-ini.mkvi"/>
+
+        <cd:command name="latin" level="document" category="language" file="scrp-ini.mkvi"/>
+
+        <cd:command name="test" level="document" category="language" file="scrp-ini.mkvi"/>
+
+    -->
+
+</cd:interface>

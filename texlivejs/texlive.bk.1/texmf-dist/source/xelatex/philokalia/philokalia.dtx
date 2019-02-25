@@ -1,0 +1,317 @@
+%% \CharacterTable
+%%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%%   Digits        \0\1\2\3\4\5\6\7\8\9
+%%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%%   Dollar        \$     Percent       \%     Ampersand     \&
+%%   Acute accent  \'     Left paren    \(     Right paren   \)
+%%   Asterisk      \*     Plus          \+     Comma         \,
+%%   Minus         \-     Point         \.     Solidus       \/
+%%   Colon         \:     Semicolon     \;     Less than     \<
+%%   Equals        \=     Greater than  \>     Question mark \?
+%%   Commercial at \@     Left bracket  \[     Backslash     \\
+%%   Right bracket \]     Circumflex    \^     Underscore    \_
+%%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%%   Right brace   \}     Tilde         \~}
+%\iffalse
+%
+% (c) Copyright 2007-2017 Apostolos Syropoulos 
+% This program can be redistributed and/or modified under the 
+% terms of the LaTeX Project Public License Distributed from 
+% http://www.latex-project.org/lppl.txt; either
+% version 1.3c of the License, or any later version.
+%  
+% This work has the LPPL maintenance status `maintained'.
+%
+% Please report errors or suggestions for improvement to
+%
+%    Apostolos Syropoulos  (asyropoulos@yahoo.com)
+%
+%\fi
+% \CheckSum{124}
+% \iffalse This is a Metacomment
+%
+%<philokalia>\ProvidesFile{philokalia.sty}
+%<TUplk>\ProvidesFile{eu1plk.fd}
+%
+%<philokalia>[2017/09/20 v1.2 Package `philokalia']
+%<TUplk>[2017/09/20 v1.0 Philokalia-Regular Support File]
+%
+%    \begin{macrocode}
+%<*driver>
+\documentclass{ltxdoc}
+\makeatletter
+\let\ancientgreek\l@ancientgreek
+\makeatother
+\usepackage{philokalia}
+\usepackage{fullpage}
+\GetFileInfo{philokalia.drv}
+\begin{document}
+   \DocInput{philokalia.dtx}
+\end{document}
+%</driver>
+%    \end{macrocode}
+% \fi
+%
+%\title{The \textsf{philokalia} package}
+%\author{Apostolos Syropoulos\\366, 28th October Str.\\
+%GR-671 33 Xanthi, HELLAS\\ 
+%Email:\texttt{asyropoulos@yahoo.com}}
+% \date{2007/01/25 updated on 2017/09/20}
+%\maketitle
+%\begin{abstract}
+% This document describes the functionality of the \textsf{philokalia} package, which
+% has been designed to ease the use of the Philokalia-Regular OpenType font with \XeLaTeX, as well as
+% the OpenType features of this font.
+%\end{abstract}
+%\StopEventually{}
+%\section{Introduction}
+% The \textsf{philokalia} package has been designed to ease the use of the Philokalia-Regular (henceforward
+% it will specified simply as the font)
+% OpenType font with \XeLaTeX. The package provides two options: \texttt{global} and \texttt{local}.
+% When the package is used with the \texttt{global} option the font is made the main font of the entire 
+% document. Also, this option provides support to typeset titling capitals. 
+% When the package is used with the \texttt{local} option, which is the default option,
+% it provides the commands \verb=\textphlk= and \verb=\phkl= to enable typesetting of short passages. 
+% The first command takes one argument which is typeset using the font. The second command makes the font 
+% the main font of the current (local) scope. The complete package provides the 
+% following \XeLaTeX\ files:
+%\begin{center}
+% \begin{tabular}{ll}
+%   driver     & produce the documentation \\
+%   philokalia & the package itself \\
+%   TUpkl     & The Philokalia font shapes\\
+% \end{tabular}
+% \end{center}
+% 
+% \section{About The Font}
+%  
+% The font started as a project to digitize the typeface that was
+% used to typeset the Philokalia books. For information regarding these books, the reader
+% should visit either the following URL:
+%\begin{center}
+% \verb=http://orthodoxwiki.org/Philokalia=
+%\end{center}
+% or enter the word {\em philokalia} in the Amazon.com search box, for information about various
+% editions of the books. The project was carried out by 
+% Apostolos Syropoulos and Ioannis Gamvets. Initially, the project was part
+% of Ioannis Gamvetas's diploma thesis, but the resulting OpenType font is not part of this
+% thesis work and it was developed by this author. The goal of the original thesis work was to develop Type~1 
+% fonts and tools to typeset portions of the Philokalia books with Omega. Since, the original thesis work 
+% has not been completed yet (!), the idea of releasing an OpenType font emerged quite naturally.
+% The font contains only Greek letters and it can be used to typeset any Greek text. However, since the 
+% shapes of the letters are not that obvious, here is a ``translation''-table:
+% \begin{center}
+% \begin{tabular}{cccccccccc}
+% \textphlk{α} & \texttt{α} & \textphlk{β} & \texttt{β} & \textphlk{γ} & \texttt{γ} & 
+% \textphlk{δ} & \texttt{δ} & \textphlk{ε} & \texttt{ε} \\
+% \textphlk{ζ} & \texttt{ζ} & \textphlk{η} & \texttt{η} & \textphlk{θ} & \texttt{θ} & 
+% \textphlk{ι} & \texttt{ι} & \textphlk{κ} & \texttt{κ} \\
+% \textphlk{λ} & \texttt{λ} & \textphlk{μ} & \texttt{μ} & \textphlk{ν} & \texttt{ν} & 
+% \textphlk{ξ} & \texttt{ξ} & \textphlk{ο} & \texttt{ο} \\
+% \textphlk{π} & \texttt{π} & \textphlk{ρ} & \texttt{ρ} & \textphlk{σ} & \texttt{σ} & 
+% \textphlk{ς} & \texttt{ς} & \textphlk{τ} & \texttt{τ} \\
+% \textphlk{υ} & \texttt{υ} & \textphlk{φ} & \texttt{φ} & \textphlk{χ} & \texttt{χ} & 
+% \textphlk{ψ} & \texttt{ψ} & \textphlk{ω} & \texttt{ω} 
+% \end{tabular}
+% \end{center}
+% One interesting feature of this font is that accents are placed {\em after} capital
+% letters (see the sample below). Another interesting feature of the font is the great number of 
+% ligatures it includes. In fact, it includes more than 40 {\em historical} ligatures plus two 
+% {\em contextual} ligatures. When typing \texttt{κι} and these letters are not part of a word, then
+% one gets the contextual ligature \textphlk{κι}, which is the Greek ampersand. The same ligature can be
+% obtained if we substitute {\em iota} with {\em iota with varia}. The table below shows all the historical
+% ligatures included in the font: 
+%  \begin{center}
+% \begin{tabular}{llllllllll}
+% \textphlk{λλ} & \texttt{λλ} & \textphlk{ἀν} & \texttt{ἀν} & \textphlk{εν} & \texttt{εν} & 
+% \textphlk{γάρ} & \texttt{γάρ} & \textphlk{κατὰ} & \texttt{κατὰ} \\
+% \textphlk{μετὰ} & \texttt{μετὰ} & \textphlk{στί} & \texttt{στί} & \textphlk{σθ} & \texttt{σθ} & 
+% \textphlk{σχ} & \texttt{σχ} & \textphlk{τῶν} & \texttt{τῶν} \\
+% \textphlk{χρ} & \texttt{χρ} & \textphlk{καὶ} & \texttt{καὶ} & \textphlk{σσ} & \texttt{σσ} & 
+% \textphlk{δια} & \texttt{δια} & \textphlk{ευ} & \texttt{ευ} \\
+% \textphlk{εὑ} & \texttt{εὑ} & \textphlk{εὐ} & \texttt{εὐ} & \textphlk{ου} & \texttt{ου} & 
+% \textphlk{ού} & \texttt{ού} & \textphlk{οὺ} & \texttt{οὺ} \\
+% \textphlk{οὖ} & \texttt{οὖ} & \textphlk{οὗ} & \texttt{οὗ} & \textphlk{εύ} & \texttt{εύ} & 
+% \textphlk{αι} & \texttt{αι} & \textphlk{αῖ} & \texttt{αῖ} \\
+% \textphlk{αί} & \texttt{αί} & \textphlk{αὶ} & \texttt{αὶ} & \textphlk{αἰ} & \texttt{αἰ} & 
+% \textphlk{αύ} & \texttt{αύ} & \textphlk{ει} & \texttt{ει} \\
+% \textphlk{εῖ} & \texttt{εῖ} & \textphlk{όξ} & \texttt{όξ} & \textphlk{ὄξ} & \texttt{ὄξ} & 
+% \textphlk{ρί} & \texttt{ρί} & \textphlk{ρὶ} & \texttt{ρὶ} \\
+% \textphlk{ρῖ} & \texttt{ρῖ} & \textphlk{ἡν} & \texttt{ἡν} & \textphlk{ην} & \texttt{ην} & 
+% \textphlk{ῆν} & \texttt{ῆν} & \textphlk{ήν} & \texttt{ήν} \\
+% \textphlk{υν} & \texttt{υν} & \textphlk{ύν} & \texttt{ύν} & \textphlk{στ} & \texttt{στ} &
+% \textphlk{΄-} & \texttt{΄-} & \textphlk{1Μο} & \texttt{1Μο} \\
+% \textphlk{1μο} & \texttt{1μο} & \textphlk{΄1} & \texttt{΄1}
+%  
+% \end{tabular}
+% \end{center}
+% Notice that in order to get the symbols \textphlk{΄-} and \textphlk{΄1}
+% one has to type a tonos and then a
+% hyphen or the digit one, respectively. The symbols \textphlk{΄-} and  \textphlk{΄1}
+% have been used by the ancient Greek mathematician Diophantus to denote the subtraction 
+% operator\footnote{Diophantus did not explicitly specified negative numbers in his writings, although
+% he was aware of them.}  and
+% an unknown quantity (similar to the $x$ we use today in simple equations like $x+x^2=3$). Also, the
+% symbols \textphlk{1Μο} and \textphlk{1μο} have been used by Diophantus to denote the unit (i.e., the
+% number one). These symbol were not in the original Philokalia font, but they have been
+% included here for reasons of completeness. The followin commands are provided for people who only
+% want to typeset these symbols: \verb=\dsubop=, \verb=\dUnit=, \verb=\dunit=, and \verb=\dunknown=.  
+%
+%  The font includes titling capitals that are accessible through the titling OpenType feature,
+% which, however, is implicitly available. In particular, the command \verb|\textinit|, which has two 
+% arguments, the first being the first letter of a word and the second being the rest of the word,
+% can be used to typeset a drop capital. The following short passage from Aristotle's treatise 
+% {\em The Poetics} was typeset with the font so as to demonstrate the various features of it. 
+% 
+%{\fontfamily{plk}\selectfont\language\ancientgreek
+% \font\PHtitl="[Philokalia-Regular]/ICU:script=grek,+titl"
+% \newsavebox{\mybox}\savebox{\mybox}{\PHtitl Π}
+% \lettrine[lines=3]{\usebox{\mybox}}{ερὶ} ποιητικῆς αὐτῆς τε καὶ τῶν εἰδῶν αὐτῆς, ἥν τινα δύναμιν ἕκαστον ἔχει, 
+%καὶ πῶς δεῖ συνίστασθαι τοὺς μύθους  εἰ μέλλει καλῶς ἕξειν ἡ ποίησις, ἔτι δὲ ἐκ πόσων καὶ ποίων 
+%ἐστὶ μορίων, ὁμοίως δὲ καὶ περὶ τῶν ἄλλων ὅσα τῆς αὐτῆς ἐστι μεθόδου, λέγωμεν ἀρξάμενοι κατὰ φύσιν 
+%πρῶτον ἀπὸ τῶν πρώτων.
+% 
+%Ἐποποιία δὴ καὶ ἡ τῆς τραγῳδίας ποίησις ἔτι δὲ κωμῳδία καὶ ἡ διθυραμβοποιητικὴ καὶ τῆς αὐλητικῆς 
+%ἡ πλείστη καὶ κιθαριστικῆς πᾶσαι τυγχάνουσιν οὖσαι μιμήσεις τὸ σύνολον· διαφέρουσι δὲ ἀλλήλων τρισίν, 
+%ἢ γὰρ τῷ ἐν ἑτέροις μιμεῖσθαι ἢ τῷ ἕτερα ἢ τῷ ἑτέρως καὶ μὴ τὸν αὐτὸν τρόπον. 
+%
+%Ὥσπερ γὰρ καὶ χρώμασι καὶ σχήμασι πολλὰ μιμοῦνταί τινες ἀπεικάζοντες (οἱ μὲν [20] διὰ τέχνης οἱ δὲ διὰ συνηθείας),
+%ἕτεροι δὲ διὰ τῆς φωνῆς, οὕτω κἀν ταῖς εἰρημέναις τέχναις ἅπασαι μὲν ποιοῦνται τὴν μίμησιν ἐν ῥυθμῷ καὶ λόγῳ καὶ
+%ἁρμονίᾳ, τούτοις δ᾽ ἢ χωρὶς ἢ μεμιγμένοις· οἷον ἁρμονίᾳ μὲν καὶ ῥυθμῷ χρώμεναι μόνον ἥ τε αὐλητικὴ καὶ ἡ κιθαριστικὴ
+%κἂν εἴ τινες [25] ἕτεραι τυγχάνωσιν οὖσαι τοιαῦται τὴν δύναμιν, οἷον ἡ τῶν συρίγγων, αὐτῷ δὲ τῷ ῥυθμῷ [μιμοῦνται]
+%χωρὶς ἁρμονίας ἡ τῶν ὀρχηστῶν (καὶ γὰρ οὗτοι διὰ τῶν σχηματιζομένων ῥυθμῶν μιμοῦνται καὶ ἤθη καὶ πάθη καὶ πράξεις)· 
+% }
+%
+% \bigskip
+% The first line of the code that was used to typeset the previous passage follows:
+% \begin{center}
+% \texttt{\char`\\setlanguage\char`\{ancientgreek\char`\}\char`\\textinit\char`\{Π\char`\}\char`\{ερὶ\char`\} ποιητικῆς 
+%  αὐτῆς\ldots}
+% \end{center} 
+% Notice that here we enable the \texttt{ancientgreek} hyphenation patterns to allows \XeTeX\ to correctly
+% hyphenate the text.
+%
+% \section{The package \textsf{philokalia}}
+%
+% First of all, we have to load a number of packages that are necessary for the correct use of the font.
+% In addition, we use the \textsf{lettrine} package to typeset the titling capitals. 
+%    \begin{macrocode}
+%<*philokalia>
+\RequirePackage{xltxtra}
+\RequirePackage{lettrine}
+\newsavebox{\Pb@x}
+%    \end{macrocode}
+% Unfortunately, we cannot use the \textsf{lettrine} package as it stands. We need to sligthly modify
+% two macros. In particular, the macro \verb=\Lettrine@height=, which computes the height of the 
+% titling capital, has to compute the height of the letter \texttt{x} of a font in order to 
+% carry out its computation. Since the font does not include this character, we had to modify the
+% code so as to compνute the height of the letter \texttt{α} instead. Similarly, we had to modify the macro 
+% \verb=\LettrineFont= because it was designed with the assumption that the main font of the document has 
+% the \texttt{X} character, which, again, is not valid for our case.    
+%    \begin{macrocode}
+\def\Lettrine@height{%
+   \@tempdima=\baselineskip
+   \setlength{\L@height}{\theL@lines\@tempdima}%
+   \ifnum\theL@lines>1
+     \addtolength{\L@height}{-\@tempdima}%
+   \fi
+   \sbox{\L@tbox}{\LettrineTextFont "03B1}%%%% Modified here
+   \addtolength{\L@height}{\ht\L@tbox}%
+   \addtolength{\L@height}{\L@oversize\L@height}}
+\renewcommand*{\LettrineFont}{%
+   \Lettrine@height
+   \sbox{\L@tbox}{\LettrineFontHook\fontsize{\L@height}{\L@height}%
+                  \selectfont "0391}%%%% Modified here
+   \@tempcntb=\ht\L@tbox
+   \@tempcnta=\L@height
+   \multiply\@tempcnta by 100
+   \divide\@tempcntb by 100
+   \divide\@tempcnta by \@tempcntb
+   \advance\@tempcnta by -9999
+   \ifnum\@tempcnta>0
+     \def\@tempa{1.\the\@tempcnta}%
+   \else
+     \def\@tempa{1}%
+   \fi
+   \LettrineFontHook
+   \fontsize{\@tempa\L@height}{\@tempa\L@height}%
+   \selectfont
+}
+%    \end{macrocode}  
+% Now, we have to define the two options: global and local (the default one). In the first case, we 
+% define the command \verb|\textinit| that is used to typeset drop capitals from the titling
+% capitals included in the font. By default, the \texttt{titl} feature of the font is not enabled
+% as this would mean that all paragraphs would start with these really huge titling capitals.
+% Also, the font is made the default font for the entire document. Notice that we use a box variable
+% to store the letter that will appear as a drop capital. This is necessary in order to have in 
+% the box the titling capital and not the ordinary capital letter, or else the \verb|\lettrine|
+% command will fail to correctly compute the height and width of the letter.
+%    \begin{macrocode}
+\DeclareOption{global}{%
+   \renewcommand{\rmdefault}{plk}%
+   \DeclareFontFamily{TU}{plktitl}{}%
+   \DeclareFontShape{TU}{plktitl}{m}{n}%
+    {<-> "[Philokalia-Regular]/ICU:script=grek,+titl"}{}%
+   \newcommand{\textinit}[2]{%
+       \savebox{\Pb@x}{\usefont{TU}{plktitl}{m}{n} #1}%
+       \lettrine[lines=3]{\usebox{\Pb@x}}{#2}}%
+}
+%    \end{macrocode}
+% When the package is used with the default option, it provides two commands to typeset short
+% passages of text. As is evident from the code that follows, the first macro is actually a
+% definition and the second a command that can be used to typeset its argument with the font. Users
+% should use the definition with care.
+%    \begin{macrocode}
+\DeclareOption{local}{%
+   \def\phkl{\fontfamily{plk}\selectfont}%
+   \newcommand{\textphlk}[1]{{\phkl #1}}%
+}
+\ExecuteOptions{local}
+\ProcessOptions
+%    \end{macrocode}
+% The following commands are glyph access commands for the archaic mathematical symbols included in
+% the font. They produce the symbols \dsubop, \dUnit, \dunit, and \dunknown, respectively.
+%    \begin{macrocode}
+\def\dsubop{{\fontfamily{plk}\selectfont\char"018B}}
+\def\dUnit{{\fontfamily{plk}\selectfont\char"018C}}
+\def\dunit{{\fontfamily{plk}\selectfont\char"018D}}
+\def\dunknown{{\fontfamily{plk}\selectfont\char"018E}}
+%</philokalia>
+%    \end{macrocode}
+%
+% \section{The Font Definition File}
+% Since there is only one font shape, there is not much work to do: we just need to specify 
+% the available font properties. We use the standard font encoding defined by package
+% \textsf{fontspec}. In this version we use \texttt{TU} font encoding instead of \texttt{EU1}, which was
+% predefined by the same package. 
+%    \begin{macrocode}
+%<*TUplk>
+\DeclareFontFamily{TU}{plk}{}
+\DeclareFontShape{TU}{plk}{m}{n}%
+     {<-> "[Philokalia-Regular]/ICU:script=grek,+hlig,+clig:mapping=tex-text"}{
+}
+%    \end{macrocode}
+% And then we define the various substitutions:
+%    \begin{macrocode}
+\DeclareFontShape{TU}{plk}{m}{sl}{<-> ssub * plk/m/n}{}
+\DeclareFontShape{TU}{plk}{m}{it}{<-> ssub * plk/m/sl}{}
+\DeclareFontShape{TU}{plk}{m}{sc}{<-> ssub * plk/m/n}{}
+\DeclareFontShape{TU}{plk}{b}{n}{<-> ssub * plk/m/n}{}
+\DeclareFontShape{TU}{plk}{b}{sl}{<-> ssub * plk/m/n}{}
+\DeclareFontShape{TU}{plk}{b}{it}{<-> ssub * plk/m/n}{}
+\DeclareFontShape{TU}{plk}{bx}{n}{<-> ssub * plk/b/n}{}
+\DeclareFontShape{TU}{plk}{bx}{it}{<-> ssub * plk/b/sl}{}
+\DeclareFontShape{TU}{plk}{bx}{sl}{<-> ssub * plk/b/sl}{}
+%</TUplk>
+%    \end{macrocode} 
+%
+% \section*{Acknowledgements}
+% First of all, I thank Ioannis Gamvetas for his collaboration back in the years 2002-2003.
+% Also, I would like to thank George Williams, the designer of FontForge, the free font-editor, for all his
+% valuable help, Adam Twardoch for explaining to me how to implement the contextual ligature, and Dimitrios
+% Philippou for his comments and suggestions. Also, I thank Ioannis Vamvakas  for letting me know that the
+% previous version does not work with the latest version of package \textsf{fontspec}.
+% Last, but certainly not least, I thank my son for his help!
+%
+% \Finale

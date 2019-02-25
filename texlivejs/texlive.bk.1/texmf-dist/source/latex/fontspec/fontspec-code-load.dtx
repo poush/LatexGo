@@ -1,0 +1,72 @@
+%%^^A%%  fontspec-code-load.dtx -- part of FONTSPEC <wspr.io/fontspec>
+%
+% \section{The \texttt{fontspec.sty} loading file}
+%
+% Before we begin, for the rest of the package we use the \texttt{@@} \textsf{expl3}
+% module syntax with module name `\texttt{fontspec}'.
+%    \begin{macrocode}
+%<@@=fontspec>
+%    \end{macrocode}
+% The \texttt{fontspec.sty} file is simply set up to load the appropriate
+% \texttt{fontspec-xetex.sty} or \texttt{fontspec-luatex.sty} file.
+% This is performed by the following code.
+%
+%    \begin{macrocode}
+%<*load>
+%    \end{macrocode}
+%
+% \paragraph{\LuaLaTeX}
+%    \begin{macrocode}
+\sys_if_engine_luatex:T
+  {
+    \RequirePackage{luaotfload}
+    \lua_now:e{require("fontspec")}
+    \RequirePackageWithOptions{fontspec-luatex}
+    \endinput
+  }
+%    \end{macrocode}
+%
+% \paragraph{\XeLaTeX}
+%    \begin{macrocode}
+\sys_if_engine_xetex:T
+  {
+    \RequirePackageWithOptions{fontspec-xetex}
+    \endinput
+  }
+%    \end{macrocode}
+%
+% \paragraph{Other}
+% If not one of the above, error and exit.
+%    \begin{macrocode}
+\msg_new:nnn {fontspec} {cannot-use-pdftex}
+  {
+    The~ fontspec~ package~ requires~ either~ XeTeX~ or~ LuaTeX.\\\\
+    You~ must~ change~ your~ typesetting~ engine~ to,~ e.g.,~
+    "xelatex"~ or~ "lualatex" instead~ of~ "latex"~ or~ "pdflatex".
+  }
+\msg_fatal:nn {fontspec} {cannot-use-pdftex}
+%    \end{macrocode}
+%
+% \paragraph{Closing}
+% That's the end of the \texttt{fontspec.sty} file.
+%    \begin{macrocode}
+\endinput
+%</load>
+%    \end{macrocode}
+
+\endinput
+
+% /©
+% ------------------------------------------------
+% The FONTSPEC package  <wspr.io/fontspec>
+% ------------------------------------------------
+% Copyright  2004-2019  Will Robertson, LPPL "maintainer"
+% Copyright  2009-2015  Khaled Hosny
+% Copyright  2013       Philipp Gesang
+% Copyright  2013-2016  Joseph Wright
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% ©/

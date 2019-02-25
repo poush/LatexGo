@@ -1,0 +1,1612 @@
+% \iffalse
+% +AMDG  This document was begun on 1 May 1202, the
+% feast of St. Joseph the Worker, and it
+% is humbly dedicated to him and to the Immaculate Heart of
+% Mary for their prayers, and to the Sacred Heart of Jesus 
+% for His mercy.
+%
+% This document is copyright 2018 by Donald P. Goodman, and is
+% released publicly under the LaTeX Project Public License.  The
+% distribution and modification of this work is constrained by the
+% conditions of that license.  See
+% 	http://www.latex-project.org/lppl.txt
+% for the text of the license.  This document is released
+% under version 1.3(c) of that license, and this work may be distributed
+% or modified under the terms of that license or, at your option, any
+% later version.
+% 
+% This work has the LPPL maintenance status 'maintained'.
+% 
+% The Current Maintainer of this work is Donald P. Goodman
+% (dgoodmaniii@gmail.com).
+% 
+% This work consists of texdate.dtx, texdate.ins, and
+% derived files texdate.sty and texdate.pdf.
+% \fi
+
+% \iffalse
+%<package>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+%<package>\ProvidesPackage{texdate}[2018/12/08 v2.0 Print and manipulate dates in plain TeX]
+%<*driver>
+\documentclass{ltxdoc}
+
+\usepackage{doc}
+\usepackage{modulus}
+\usepackage{multicol}
+\usepackage{texdate}
+\usepackage{fancyvrb}
+\usepackage{fvrb-ex}
+\usepackage{booktabs}
+\usepackage[typeone]{dozenal}
+\def\x{\noexpand{\TextOrMath{\protect\doz{{X}}}{\doz@X}}}%
+\def\e{\noexpand{\TextOrMath{\protect\doz{{E}}}{\doz@E}}}%
+\usepackage{longtable}
+\usepackage{xellipsis}
+
+\begin{document}
+\DocInput{texdate.dtx}
+\end{document}
+%</driver> \fi
+%
+% \title{The |texdate| Package, v2.0}
+% \author{Donald P.\ Goodman III}
+% \date{\today}
+%
+% \maketitle
+%
+% \begin{abstract}
+% \noindent
+% \TeX\ and \LaTeX\ provide few facilities for dates by
+% default, though many packages have filled this gap.
+% |texdate| fills it, as well, with a pure \TeX-primitive
+% implementation.  It can print dates, advance them by
+% numbers of days, weeks, or months, determine the weekday
+% automatically, and print them in (mostly) arbitrary
+% format.  It can also print calendars (monthly and yearly)
+% automatically, and can be easily localized for non-English
+% languages.
+% \end{abstract}
+%
+% \tableofcontents
+%
+% \section{Introduction:  The State of the \TeX}
+% \label{sect:intro}
+%
+% \TeX\ by default contains very little facilities for
+% dealing with dates, and \LaTeX\ follows suit.  As far as
+% primitives go, \TeX\ just offers the counters |\day|,
+% |\month|, and |\year|, which give the current values of
+% those units of time; e.g., |\the\year-\the\month-\the\day|
+% will yield ``\the\year-\the\month-\the\day'' (which is the
+% date on which this document was compiled).  \LaTeX\ also
+% has |\today|, which will produce the current date in the
+% default American style:  ``\today''.  But that's
+% really about all there is.
+%
+% Many packages have attempted to fill up this gap, some
+% with excellent success; |datetime2| certain deserves
+% special mention here, particularly as it goes beyond what
+% |texdate| offers, given that |texdate| contains no
+% facilities for \emph{times} at all.  |texdate| tries to fill the gap,
+% as well; but it does it using only \TeX-primitives, in the
+% hope that the solution will be (a) pretty fast, (b)
+% pretty portable, and (c) not requiring the loading of
+% massive packages, only a fraction of the capabilities of
+% which will actually be used.
+%
+% For comparison, |datetime2| uses |pgfcalendar|, which of
+% course requires |pgf|, which is a huge package.  Our
+% modern computers make loading such packages often a
+% negligible overhead; but with large and complex documents,
+% it's not always trivial.  Also, it's an enjoyable
+% challenge to write a usable package in \TeX\ for something
+% for which \TeX\ was not designed; and some of us enjoy
+% \emph{just knowing} that we're using a lean package, even
+% it makes little practical difference.
+%
+% This document is numbered in \emph{dozenal}, or base
+% twelve; numbering proceeds 1, 2, 3, 4, 5, 6, 7, 8, 9, \x,
+% \e, 10, 11, 12\xelip  It uses the |dozenal| \LaTeX\
+% package to do this.  For more information, see
+% \url{http://www.dozenal.org}.
+%
+% \section{Dependencies}
+% \label{sect:deps}
+%
+% |texdate| requires the |padcount|, |modulus|, and |iflang|
+% packages internally, so be sure that they are installed.
+% They are all available on CTAN and in the \TeX{}Live
+% distribution.
+%
+% \section{Printing and Setting the Date}
+% \label{sect:basic}
+%
+% |texdate| works with an \emph{internal date}, which is the
+% current setting of all the date variables.  When
+% initiated, the internal date is 1 January of the current
+% year.  We can print that date with
+% \DescribeMacro{\printdate}|\printdate|:
+%
+% \bigskip
+% \hrule
+% \begin{Example}
+% \printdate
+% \end{Example}
+% \hrule
+% \bigskip
+%
+% We can easily set the internal date to the current date by
+% running the macro \DescribeMacro{\initcurrdate}|\initcurrdate|:
+%
+% \bigskip
+% \hrule
+% \begin{Example}
+% \initcurrdate
+% \printdate
+% \end{Example}
+% \hrule
+% \bigskip
+%
+% (This is the current date at the time this document was
+% compiled.)
+%
+% You can also easily \emph{set} the internal date, by
+% running the \DescribeMacro{\initdate}|\initdate| macro:
+%
+% \begin{quote}
+% \cmd{\initdate} \marg{year} \marg{month} \marg{day-of-month}
+% \end{quote}
+%
+% The elements of the date must be supplied to |\initdate|
+% in that order, or |texdate| will become confused.  It's
+% obvious why; what should |texdate| do if the month is
+% entered as |2019|?
+%
+% \bigskip
+% \hrule
+% \begin{Example}
+% \initdate{2019}{6}{24}
+% \printdate
+% \end{Example}
+% \hrule
+% \bigskip
+%
+% While internally dates are kept as zero-indexed, these
+% dates are received by |\initdate| as one-indexed; that is,
+% |24| will mean the twenty-fourth, not the twenty-fifth,
+% because we count starting at 1 rather than 0.
+%
+%
+% \section{Date Formats}
+% \label{sect:dateforms}
+%
+% The date format we've seen so far is the default, which is
+% designed primarily to demonstrate several of the possible
+% variables that can be in a date format.  Naturally, you'll
+% want to change it; and it can be changed, almost
+% arbitrarily, simply by redefining a command, or by using
+% one of several presets.
+%
+% \subsection{Preset Formats}
+% \label{sub:presetforms}
+%
+% |texdate| provides a number of preset formats that can be
+% easily selected without having to design a format string
+% (for which see Section \ref{sub:customforms}, on page
+% \pageref{sub:customforms}).
+%
+% \DescribeMacro{\printfdate\{ISO\}}|\printfdate{ISO}|
+% will print the current date in the default
+% ISO 8601 format, which is \emph{|yyyymmdd|}.  In
+% |texdate|'s formatting strings, this is |Ymd|; you'll
+% learn more about these in Section \ref{sub:customforms}.
+% There is also the ``ISO extended'' form, |Y-m-d|.
+%
+% \bigskip
+% \hrule
+% \begin{Example}
+% \initdate{2019}{6}{24}
+% \printfdate{ISO}
+%
+% \printfdate{ISOext}
+% \end{Example}
+% \medskip
+% \hrule
+% \bigskip
+%
+% For Americans fond of our curious customary format, you
+% can use
+% \DescribeMacro{\printfdate\{american\}}|\printfdate{american}|;
+% in |texdate| format strings, this is |B\ d, Y|.  There is
+% also
+% \DescribeMacro{\printfdate\{shamerican\}}|\printfdate{shamerican}|,
+% which is the abbreviated form, using slashes rather than
+% hyphens.
+%
+% \bigskip
+% \hrule
+% \begin{Example}
+% \initdate{2019}{6}{24}
+% \printfdate{american}
+%
+% \printfdate{shamerican}
+% \end{Example}
+% \medskip
+% \hrule
+% \bigskip
+%
+% The British also have their own ways of writing dates,
+% which correspond largely to the way the American military
+% writes them (which are consequently sometimes called
+% ``military dates,'' in the same way that twenty-four-hour
+% time readings are sometimes called ``military time'').
+% These are
+% \DescribeMacro{\printfdate\{british\}}|\printfdate{british}|
+% and 
+% \DescribeMacro{\printfdate\{shbritish\}}|\printfdate{shbritish}|,
+% along with alternate form 
+% \DescribeMacro{\printfdate\{shbritishdots\}}|\printfdate{shbritishdots}|,
+%
+% \bigskip
+% \hrule
+% \begin{Example}
+% \initdate{2019}{6}{24}
+% \printfdate{british}
+%
+% \printfdate{shbritish}
+%
+% \printfdate{shbritishdots}
+% \end{Example}
+% \medskip
+% \hrule
+% \bigskip
+%
+% This is enough to cover the standards of most places in
+% the world.  However, if you want something different, you
+% can easily create it with format strings.
+%
+% \subsection{Custom Date Formats}
+% \label{sub:customforms}
+%
+% All the custom formats described in Section
+% \ref{sub:presetforms} and printed with |\printfdate| are
+% created using the same general mechanism described in this
+% section.  We will begin by discussing a way to generically
+% change the presentation of all dates called with the basic
+% |\printdate|, then move on to creating custom date formats
+% that can be printed by name with |\printfdate|.
+%
+% The macro \DescribeMacro{\setdateformat}|\setdateformat|
+% holds the formatting string for the date.  It's not
+% \emph{completely} arbitrary, because none of the
+% characters used to produce specific parts of the date can
+% be used in the string itself; however, it's pretty
+% flexible despite that limitation.
+%
+% The default date format string, quite unsuitable for real
+% work, includes most of the possible control characters,
+% and is |A{ }(a),\ B\ (b){ }d,\ Y|.  Note that spaces
+% have to be preserved by either \emph{bracing} them or
+% \emph{escaping} them; that is, to put a space in your
+% format string, use either ``|\ |'' or ``|{ }|''.
+%
+% Table \ref{tab:lets} on page \pageref{tab:lets} shows
+% the control characters, an
+% explanation of their meaning, and an example of each.
+% They assume the date 4 June 2019, selected by
+% |\initdate{2019}{6}{4}|.
+% \initdate{2019}{6}{4}
+%
+% \begin{table}[htp]
+% \centering
+% \begin{tabular}{lp{3in}l}
+% \toprule
+% \itshape Let. & \itshape Result & \itshape Ex. \\
+% \midrule
+% d & Numeric day of the month; 0-padded to two digits if
+%		necessary & \printfdate{d} \\
+% e & Numeric day of the month; space-padded to two spaces
+%		if necessary & \printfdate{e} \\
+% B & Full name of the month & \printfdate{B} \\
+% b & Abbreviated name of the month & \printfdate{b} \\
+% h & Abbreviated name of the month; same as |b| & \printfdate{h} \\
+% m & Number of month, with January as 1; 0-padded to two
+%		digits if necessary & \printfdate{m} \\
+% A & Full name of the weekday & \printfdate{A} \\
+% a & Abbreviated name of the weekday & \printfdate{a} \\
+% w & Numeric value of weekday, with Sunday as 0 & \printfdate{w} \\
+% u & ISO numeric value of weekday, with Monday as 1 and
+%		Sunday as 7 & \printfdate{u} \\
+% Y & Number of the current year & \printfdate{Y} \\
+% j & Numeric day of the year, starting on a constant count
+%		from 1 Jan; 0-padded to three digits if necessary & \printfdate{j} \\
+% C & Century; essentially, the first two digits of the year &
+%		\printfdate{C} \\
+% y & The year, in only two digits & \printfdate{y} \\
+% U & Week number of the year, starting at 0, with the week
+%		starting on Sunday; 0-padded to two digits if
+%		necessary & \printfdate{U} \\
+% V & ISO week number of the year, starting at 1, with the week
+%		starting on Monday; 0-padded to two digits if
+%		necessary & \printfdate{V} \\
+% W & Week number of the year, starting at 0, with the week
+%		starting on Monday; 0-padded to two digits if necesary &
+%		\printfdate{W} \\
+% \bottomrule
+% \end{tabular}
+% \caption{Control codes for date formats}
+% \label{tab:lets}
+% \end{table}
+%
+% For folks not familiar with the \emph{control characters}
+% concept, the essential idea is that you format some
+% information with a certain ``string,'' called the ``format
+% string.''  The format string contains some characters
+% which are meaningless as far as formatting goes, and are
+% passed through unchanged; and some characters which will
+% be replaced with certain information.  In other words,
+% assume that we have a format string consisting of the
+% following characters:  |a b c d e|.  |c| is a control
+% character, and represents the information ``zzz''; the other
+% characters are not control characters.
+%
+% \begin{quote}
+% |a b c d e| $\rightarrow$ a b zzz d e
+% \end{quote}
+%
+% Anyone who has used GNU
+% |date| or BSD |date| will recognize these control
+% characters, though of course in those programs a |%|
+% character would be necessary, as well.  |texdate|
+% duplicates the behavior of these programs as closely as
+% my \TeX-pertise allows.
+%
+% \bigskip
+% \hrule
+% \begin{Example}
+% \initcurrdate
+% \advancebyweeks{6}
+% \def\setdateformat{d\ B\ Y}
+% |d\ B\ Y|:  \printdate\par
+% \def\setdateformat{Y-m-d}
+% |Y-m-d|:  \printdate\par
+% \def\setdateformat{a,\ d\ b\ Y}
+% |a,\ d\ b\ Y|:  \printdate\par
+% \end{Example}
+% \medskip
+% \hrule
+% \bigskip
+%
+% We can meddle with this however we like, except that these
+% control characters (the ones that turn into elements of
+% the date) cannot be included literally.
+%
+% You can also define \emph{named date formats}:
+% \DescribeMacro{\nameddateformat}
+%
+% \begin{quote}
+% \cmd{\nameddateformat} \marg{name} \marg{format-string}
+% \end{quote}
+%
+% Perhaps I want a peculiar date format, with the month,
+% followed by the year, followed by the day of the month,
+% followed by the day of the year in parentheses.  My format
+% string should be |m-Y-d\ (j)|.  I'll then want to use the
+% \DescribeMacro{\printfdate}|\printfdate| command with its single
+% argument, which is the name of the date format I want to
+% use.
+%
+% \bigskip
+% \hrule
+% \begin{Example}
+% \initcurrdate
+% \nameddateformat{weird}{m-Y-d\ (j)}
+% \printfdate{weird}\par
+% \printdate
+% \end{Example}
+% \medskip
+% \hrule
+% \bigskip
+%
+% It's worth nothing that all of the control characters also
+% have a formatted print string that can be called by name.
+% So one could duplicate the above |weird| date format the
+% hard way, by using these each individually:
+%
+% \bigskip
+% \hrule
+% \begin{Example}
+% \initcurrdate
+% \printfdate{m}-\printfdate{Y}-\printfdate{d} (\printfdate{j})
+% \end{Example}
+% \medskip
+% \hrule
+% \bigskip
+%
+% These seems a bit convoluted, but perhaps you want to wrap
+% it in a macro?
+%
+% \subsection{Number Format}
+% \label{sub:numforms}
+%
+% Any command which will work on a \TeX\ count register can
+% be inserted into the
+% \DescribeMacro{\texdatenumformat}|\texdatenumformat|
+% command, which will be applied to all the numbers which
+% |texdate| outputs.  For example, if you are using the
+% |dozenal| package:
+%
+% \bigskip
+% \hrule
+% \begin{Example}
+% \def\texdatenumformat#1{\dozens{#1}}
+% \initdate{2018}{12}{25}
+% \printfdate{ISOext}
+% \end{Example}
+% \medskip
+% \hrule
+% \bigskip
+%
+%
+% \section{Manipulating Dates}
+% \label{sect:manipdate}
+%
+% |texdate| goes well beyond merely printing and setting
+% dates; you can manipulate them in many ways.  The original
+% purpose of the package was to allow \LaTeX\ to print
+% calendar sheets and things of that nature without
+% resorting to an external program, or loading some enormous
+% package, so it needed the ability to move forward and
+% backward by given increments.  So we have that.
+%
+% \subsection{Moving Dates Forward and Backward}
+% \label{sub:movedate}
+%
+% You can advance the date by a certain number of days,
+% weeks, or months.  The macros are named, unsurprisingly,
+% \DescribeMacro{\advancebydays}|\advancebydays|,
+% \DescribeMacro{\advancebyweeks}|\advancebyweeks|, and
+% \DescribeMacro{\advancebymonths}|\advancebymonths|, each
+% of which takes one argument, which is the number of that
+% unit you wish to advance the date by.  The corresponding
+% commands \DescribeMacro{\regressbydays}|\regressbydays|,
+% \DescribeMacro{\regressbyweeks}|\regressbyweeks|, and
+% \DescribeMacro{\regressbymonths}|\regressbymonths| also
+% exist.
+%
+% \bigskip
+% \hrule
+% \begin{Example}
+% \initcurrdate
+% Current date:  \printdate\par
+% \advancebydays{8}
+% 8 days later:  \printdate\par
+% \advancebyweeks{4}
+% 4 weeks later:  \printdate\par
+% \advancebymonths{4}
+% 4 months later:  \printdate\par
+% \regressbydays{14}
+% 14 days earlier:  \printdate\par
+% \regressbyweeks{8}
+% 8 weeks earlier:  \printdate\par
+% \regressbymonths{2}
+% 2 months earlier:  \printdate\par
+% \end{Example}
+% \nobreak\medskip\nobreak
+% \hrule
+% \bigskip
+%
+% Note that |\advancebymonths| does not validate the date,
+% so it's possible that you'll end up with something
+% impossible, such as 31 September.  It's best to watch the
+% results of this one carefully.
+%
+% Both the |\advanceby|s and the |\regressby|s should be
+% given positive numbers; negative numbers will just confuse
+% them.
+%
+% \subsection{Saving and Restoring Dates}
+% \label{sub:savedate}
+%
+% Sometimes you may wish to save a date, change the internal
+% date, use that internal date for a while, then restore the
+% old date.  |texdate| makes it possible to save and use as
+% many dates as you want (or, at any rate, as many as \TeX\
+% will tolerate).
+%
+% \DescribeMacro{\savedate}|\savedate| takes a single
+% argument, the \emph{name} you'd like to give your saved
+% date.  This can be anything that \TeX\ allows in a control
+% sequence; best to stick with normal, seven-bit ASCII
+% letters.  You then access the saved date with
+% \DescribeMacro{\restoredate}|\restoredate|, which takes
+% that same name as its argument.
+%
+% \bigskip
+% \hrule
+% \begin{Example}
+% \initcurrdate
+% \printdate\par
+% \savedate{current}
+% \advancebyweeks{12}
+% \printdate\par
+% \savedate{advanced}
+% \restoredate{current}
+% \printdate\par
+% \advancebydays{3}
+% \printdate\par
+% \restoredate{advanced}
+% \printdate\par
+% \restoredate{current}
+% \printdate\par
+% \end{Example}
+% \medskip
+% \hrule
+% \bigskip
+%
+% You can also retrieve your saved date directly; rather
+% than calling |\restoredate|, you can call
+% |\savedate<name>|, without the angle brackets.  That's the
+% name that |texdate| uses internally, and calls with
+% |\restoredate| to get your information back.
+%
+%
+% \section{Convenience Macros}
+% \label{sect:convmacs}
+%
+% |texdate| offers a few macros for tasks which its author
+% anticipates will likely be common.  For example, to
+% produce a small monthly calendar, consider using the
+% |\texdcal| macro, which takes two arguments:  the year and
+% the month of the calendar you're seeking to create:
+%
+% \bigskip
+% \hrule
+% \begin{Example}
+% \begin{center}
+% \begin{tabular}{cc}
+% \texdcal{2018}{5} &
+% \texdcal{2018}{6} \\
+% \texdcal{2018}{8} &
+% \texdcal{2018}{9} \\
+% \end{tabular}
+% \end{center}
+% \end{Example}
+% \medskip
+% \hrule
+% \bigskip
+%
+% Notice that |\texdcal| does the right thing when there a
+% month goes into an extra week:  it simply prints another
+% week.  It also correctly refuses to print the days of a
+% week which do not belong to the requested month.
+%
+% \DescribeMacro{\texdcalyear}|\texdcalyear| will produce
+% one of these calendars for an entire year, in three
+% columns; the year chosen is the argument given to the
+% macro.  Because the margins of the \LaTeX\ standard
+% classes are much too large (or rather, the paper sizes are
+% much too large; the text blocks are rather nicely
+% proportioned), |\texdcalyear| prints this calendar in a
+% small size, with very small space between columns.
+%
+% \bigskip
+% \hrule
+% \begin{Example}
+% \footnotesize%
+% \begin{center}
+% \texdcalyear{2018}
+% \end{center}
+% \end{Example}
+% \medskip
+% \hrule
+% \bigskip
+%
+% Obviously, it uses |\texdcal| internally to do this, so
+% the definition of |\texdcalyear| is much simpler than that
+% of |\texdcal|.
+%
+% Just as obviously, these yearly calendars
+% could easily be formatted in many different ways; so many,
+% in fact, that attempting to make the macros flexible
+% enough for meaningful customization would be prohibitively
+% difficult.  More fruitful results can be obtained by
+% reading the macros themselves (they are truly not very
+% difficult) and customizing them oneself.
+%
+% \section{Language Specification}
+% \label{sect:lang}
+%
+% |texdate| does understand \LaTeX\ language specifications,
+% using Heiko Oberdiek's |iflang| package, which should work
+% for both |babel| and |polyglossia|.  Built-in are
+% only English (the default), Spanish, French, and German.
+% However, it's pretty simple to customize the
+% month name and weekday name strings by defining a few
+% commands, so if you need a different language, you just
+% need to redefine a few strings.
+%
+% Each string begins with the prefix |\texd@|, then the
+% English ordinal string for the order in which it comes,
+% with January being the first month and Sunday being the
+% first weekday; e.g., |\texd@first|.  Then comes |sh| if
+% it's an abbreviation; e.g., |\texd@firstsh|.  Finally
+% comes the string |mon| if it's a month, or |name| if
+% it's a weekday name.  Below is the complete list, for
+% German.
+%
+% \begin{quote}
+% |\makeatletter|\\
+% |\def\texd@firstmon{Januar}|\\
+% |\def\texd@firstshmon{Jan}|\\
+% |\def\texd@secondmon{Februar}|\\
+% |\def\texd@secondshmon{Feb}|\\
+% |\def\texd@thirdmon{März}|\\
+% |\def\texd@thirdshmon{März}|\\
+% |\def\texd@fourthmon{April}|\\
+% |\def\texd@fourthshmon{Apr}|\\
+% |\def\texd@fifthmon{Mai}|\\
+% |\def\texd@fifthshmon{Mai}|\\
+% |\def\texd@sixthmon{Juni}|\\
+% |\def\texd@sixthshmon{Juni}|\\
+% |\def\texd@seventhmon{Juli}|\\
+% |\def\texd@seventhshmon{Juli}|\\
+% |\def\texd@eighthmon{August}|\\
+% |\def\texd@eighthshmon{Aug}|\\
+% |\def\texd@ninthmon{September}|\\
+% |\def\texd@ninthshmon{Sept}|\\
+% |\def\texd@tenthmon{Oktober}|\\
+% |\def\texd@tenthshmon{Okt}|\\
+% |\def\texd@eleventhmon{November}|\\
+% |\def\texd@eleventhshmon{Nov}|\\
+% |\def\texd@twelfthmon{Dezember}|\\
+% |\def\texd@twelfthshmon{Dez}|\\
+% |\def\texd@firstdayname{Sonntag}|\\
+% |\def\texd@firstdayshname{So}|\\
+% |\def\texd@seconddayname{Montag}|\\
+% |\def\texd@seconddayshname{Mo}|\\
+% |\def\texd@thirddayname{Dienstag}|\\
+% |\def\texd@thirddayshname{Di}|\\
+% |\def\texd@fourthdayname{Mittwoch}|\\
+% |\def\texd@fourthdayshname{Mi}|\\
+% |\def\texd@fifthdayname{Donnerstag}|\\
+% |\def\texd@fifthdayshname{Do}|\\
+% |\def\texd@sixthdayname{Freitag}|\\
+% |\def\texd@sixthdayshname{Fr}|\\
+% |\def\texd@seventhdayname{Samstag}|\\
+% |\def\texd@seventhdayshname{Sa}|\\
+% |\makeatother|
+% \end{quote}
+%
+% Doing something like this for your desired language,
+% \emph{after} you've loaded |texdate|, will localize all
+% the strings involved.
+%
+% \section{Plain \TeX\ Usage}
+%
+% I was asked recently, quite unexpectedly, whether
+% |texdate| could be used with plain \TeX.  My initial
+% thought was an obvious ``yes,'' since it's implemented
+% entirely with \TeX\ primitives; however, the matter wasn't
+% quite that simple.  The package file does use some
+% \LaTeX-specific macros, all related to the packaging
+% itself; and it uses a |padcount| macro which doesn't work
+% with plain \TeX.  Also, according to \LaTeX\ convention,
+% it uses |@| as a letter in control sequences willy-nilly,
+% and \TeX\ balks at such craziness.  Finally, a small
+% change in the code (due to deep \TeX\ magic involving
+% |\outer| that is best left unspoken) needed to be made.
+% This done, however, the package \emph{can} (mostly) be
+% used in plain \TeX.  Here's how.
+%
+% The following must be included in your document in order
+% to prevent \TeX\ from choking on our \LaTeX\ packaging
+% macros:
+%
+% \begin{quote}
+% |\def\NeedsTeXFormat#1[#2]{}|\\
+% |\def\ProvidesPackage#1[#2]{}|\\
+% |\def\RequirePackage#1{}|\\
+% |\def\AtBeginDocument#1{}|\\
+% \end{quote}
+%
+% This simply defines these macros to do nothing, which is
+% how \TeX\ prefers packaging macros to work.  Then, you
+% need to tell \TeX\ that |@| can, in fact, be part of the
+% name of a control sequence:
+%
+% \begin{quote}
+% |\catcode`@=11|
+% \end{quote}
+%
+% This, again, is some deep \TeX\ magic best left
+% undiscussed for the benefit of those not interested.
+% There's plenty of information around if you really want
+% it.  Finally, we need to input the packages that |texdate|
+% needs, and tell \TeX\ not to use the
+% |padcount| macro that it doesn't like, by redefining it to
+% simply spit out its own parameter:
+%
+% \begin{quote}
+% |\input modulus.sty|\\
+% |\input padcount.sty|\\
+% |\input texdate.sty|\\
+% |\def\padnum#1{#1}|\\
+% \end{quote}
+%
+% These things done, |texdate| will work almost entirely
+% with plain \TeX, except that (obviously) the padding
+% options won't have any effect.  So, if plain \TeX\ is your
+% preference, go for it.
+% 
+%
+% \section{Implementation}
+%
+%    \begin{macrocode}
+\RequirePackage{modulus}%
+\RequirePackage{padcount}%
+\RequirePackage{iflang}%
+\newcount\texd@loopi\texd@loopi=0%
+\newcount\texd@mon\texd@mon=0%
+\newcount\texd@dow\texd@dow=0%
+\newcount\texd@dom\texd@dom=0%
+\newcount\texd@yr\texd@yr=\year%
+\newcount\texd@rdom\texd@rdom=\texd@dom\advance\texd@rdom by1%
+\newcount\texd@rmon%
+%% taken from dayofweek.tex, by Martin Minow of DEC;
+%% included in TeXLive
+\newcount\texd@dow% Gets day of the week
+\newcount\texd@leap% Leap year fingaler
+\newcount\texd@x% Temp register
+\newcount\texd@y% Another temp register
+\def\texd@nextdow#1#2#3{%
+	\global\texd@leap=#2%
+	\global\advance\texd@leap by-14%
+	\global\divide\texd@leap by12%
+	\global\advance\texd@leap by#3%
+	\global\texd@dow=#2%
+	\global\advance\texd@dow by10%
+	\global\texd@y=\texd@dow%
+	\global\divide\texd@y by13%
+	\global\multiply\texd@y by12%
+	\global\advance\texd@dow by-\texd@y%
+	\global\multiply\texd@dow by13%
+	\global\advance\texd@dow by-1%
+	\global\divide\texd@dow by5%
+	\global\advance\texd@dow by#1%
+	\global\advance\texd@dow by77%
+	\global\texd@x=\texd@leap%
+	\global\texd@y=\texd@x%
+	\global\divide\texd@y by100%
+	\global\multiply\texd@y by100%
+	\global\advance\texd@x by-\texd@y%
+	\global\multiply\texd@x by5%
+	\global\divide\texd@x by4%
+	\global\advance\texd@dow by\texd@x%
+	\global\texd@x=\texd@leap%
+	\global\divide\texd@x by400%
+	\global\advance\texd@dow by\texd@x%
+	\global\texd@x=\texd@leap%
+	\global\divide\texd@x by100%
+	\global\multiply\texd@x by2%
+	\global\advance\texd@dow by-\texd@x%
+	\global\texd@x=\texd@dow%
+	\global\divide\texd@x by7%
+	\global\multiply\texd@x by7%
+	\global\advance\texd@dow by-\texd@x%
+}
+%% end taken from dayofweek.tex, by Martin Minow of DEC;
+%% included in TeXLive
+\def\texd@leapyear{%
+}%
+\def\texd@downame{%
+  \ifcase\texd@dow
+		\texd@firstdayname%
+	\or%
+		\texd@seconddayname%
+	\or%
+		\texd@thirddayname%
+	\or%
+		\texd@fourthdayname%
+	\or%
+		\texd@fifthdayname%
+	\or%
+		\texd@sixthdayname%
+	\or%
+		\texd@seventhdayname%
+	\fi%
+}%
+\def\texd@shdowname{%
+  \ifcase\texd@dow
+		\texd@firstdayshname%
+	\or%
+		\texd@seconddayshname%
+	\or%
+		\texd@thirddayshname%
+	\or%
+		\texd@fourthdayshname%
+	\or%
+		\texd@fifthdayshname%
+	\or%
+		\texd@sixthdayshname%
+	\or%
+		\texd@seventhdayshname%
+	\fi%
+}%
+\def\texd@nextmonth{%
+	\ifnum\texd@mon<11\global\advance\texd@mon by1\fi%
+	\ifnum\texd@mon=11\global\texd@mon=0\fi%
+}%
+\def\texd@lastmonth{%
+	\ifnum\texd@mon=0%
+		\global\texd@mon=11%
+		\global\advance\texd@yr by-1%
+	\fi%
+	\ifnum\texd@mon>0\global\advance\texd@mon by-1\fi%
+}%
+\def\texd@nextdate{%
+	\ifnum\texd@mon=11%
+		\ifnum\texd@dom=30%
+			\global\advance\texd@yr by1%
+			\global\texd@mon=0%
+			\global\texd@dom=0%
+		\fi%
+		\ifnum\texd@dom<30%
+			\global\advance\texd@dom by1%
+		\fi%
+	\else\ifnum\texd@mon=10%
+		\ifnum\texd@dom=29%
+			\global\advance\texd@mon by1%%
+			\global\texd@dom=0%
+		\fi%
+		\ifnum\texd@dom<29%
+			\global\advance\texd@dom by1%
+		\fi%
+	\else\ifnum\texd@mon=9%
+		\ifnum\texd@dom=30%
+			\global\advance\texd@mon by1%%
+			\global\texd@dom=0%
+		\fi%
+		\ifnum\texd@dom<30%
+			\global\advance\texd@dom by1%
+		\fi%
+	\else\ifnum\texd@mon=8%
+		\ifnum\texd@dom=29%
+			\global\advance\texd@mon by1%%
+			\global\texd@dom=0%
+		\fi%
+		\ifnum\texd@dom<29%
+			\global\advance\texd@dom by1%
+		\fi%
+	\else\ifnum\texd@mon=7%
+		\ifnum\texd@dom=30%
+			\global\advance\texd@mon by1%%
+			\global\texd@dom=0%
+		\fi%
+		\ifnum\texd@dom<30%
+			\global\advance\texd@dom by1%
+		\fi%
+	\else\ifnum\texd@mon=6%
+		\ifnum\texd@dom=30%
+			\global\advance\texd@mon by1%%
+			\global\texd@dom=0%
+		\fi%
+		\ifnum\texd@dom<30%
+			\global\advance\texd@dom by1%
+		\fi%
+	\else\ifnum\texd@mon=5%
+		\ifnum\texd@dom=29%
+			\global\advance\texd@mon by1%%
+			\global\texd@dom=0%
+		\fi%
+		\ifnum\texd@dom<29%
+			\global\advance\texd@dom by1%
+		\fi%
+	\else\ifnum\texd@mon=4%
+		\ifnum\texd@dom=30%
+			\global\advance\texd@mon by1%%
+			\global\texd@dom=0%
+		\fi%
+		\ifnum\texd@dom<30%
+			\global\advance\texd@dom by1%
+		\fi%
+	\else\ifnum\texd@mon=3%
+		\ifnum\texd@dom=29%
+			\global\advance\texd@mon by1%%
+			\global\texd@dom=0%
+		\fi%
+		\ifnum\texd@dom<29%
+			\global\advance\texd@dom by1%
+		\fi%
+	\else\ifnum\texd@mon=2%
+		\ifnum\texd@dom=30%
+			\global\advance\texd@mon by1%%
+			\global\texd@dom=0%
+		\fi
+		\ifnum\texd@dom<30%
+			\global\advance\texd@dom by1%
+		\fi%
+	\else\ifnum\texd@mon=1%
+		\ifnum\texd@leapyear=0%
+			\ifnum\texd@dom=27%
+				\global\advance\texd@mon by1%
+				\global\texd@dom=0%
+			\fi
+			\ifnum\texd@dom<27%
+				\global\advance\texd@dom by1%
+			\fi%
+		\else\ifnum\texd@leapyear=1%
+			\ifnum\texd@dom=28%
+				\global\advance\texd@mon by1%
+				\global\texd@dom=0%
+			\fi%
+			\ifnum\texd@dom<28%
+				\global\advance\texd@dom by1%
+			\fi%
+		\fi\fi%
+	\else\ifnum\texd@mon=0%
+		\ifnum\texd@dom=30%
+			\global\advance\texd@mon by1%%
+			\global\texd@dom=0%
+		\fi%
+		\ifnum\texd@dom<30%
+			\global\advance\texd@dom by1%
+		\fi%
+	\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi%
+	\global\texd@rdom=\texd@dom\global\advance\texd@rdom by1%
+	\global\texd@rmon=\texd@mon\global\advance\texd@rmon by1%
+	\texd@setjnum%
+	\texd@nextdow{\the\texd@rdom}{\the\texd@rmon}{\the\texd@yr}%
+}%
+\def\texd@lastdate{%
+	\global\advance\texd@dom by-1%
+	\ifnum\texd@dom=0%
+		\global\advance\texd@mon by-1%
+		\ifnum\texd@mon=11%
+			\global\texd@dom=30%
+		\fi%
+		\ifnum\texd@mon=0%
+			\global\texd@mon=11%
+			\global\advance\texd@yr by-1%
+			\global\texd@dom=30%
+		\fi%
+		\ifnum\texd@mon=10%
+			\global\texd@dom=29%
+		\fi%
+		\ifnum\texd@mon=9%
+			\global\texd@dom=30%
+		\fi%
+		\ifnum\texd@mon=8%
+			\global\texd@dom=29%
+		\fi%
+		\ifnum\texd@mon=7%
+			\global\texd@dom=30%
+		\fi%
+		\ifnum\texd@mon=6%
+			\global\texd@dom=30%
+		\fi%
+		\ifnum\texd@mon=5%
+			\global\texd@dom=29%
+		\fi%
+		\ifnum\texd@mon=4%
+			\global\texd@dom=30%
+		\fi%
+		\ifnum\texd@mon=3%
+			\global\texd@dom=29%
+		\fi%
+		\ifnum\texd@mon=2%
+			\global\texd@dom=30%
+		\fi%
+		\ifnum\texd@mon=1%
+			\ifnum\texd@leapyear=0%
+				\global\texd@dom=27%
+			\else\ifnum\texd@leapyear=1%
+				\global\texd@dom=28%
+			\fi\fi%
+		\fi%
+		\ifnum\texd@mon=0%
+			\global\texd@dom=30%
+		\fi%
+	\fi%
+	\global\texd@rdom=\texd@dom\global\advance\texd@rdom by1%
+	\global\texd@rmon=\texd@mon\global\advance\texd@rmon by1%
+	\texd@setjnum%
+	\texd@nextdow{\the\texd@rdom}{\the\texd@rmon}{\the\texd@yr}%
+}%
+\def\texd@setrdom{\global\texd@rdom=\texd@dom\global\advance\texd@rdom by1}%
+\def\texd@setrmon{\global\texd@rmon=\texd@mon\global\advance\texd@rmon by1}%
+%    \end{macrocode}
+% We have to deal with leap years somehow.  We have the
+% counter |\texd@leapyear|, which is 0 if it's not a leap
+% year and 1 if it is.  Then we have |\texd@isleapyear|,
+% which sets the counter appropriately.
+%    \begin{macrocode}
+\newcount\texd@leapyear\texd@leapyear=0%
+\def\texd@isleapyear{%
+	\global\texd@leapyear=0%
+	\modulo{\texd@yr}{4}%
+	\ifnum\remainder=0%
+		\modulo{\texd@yr}{100}%
+		\ifnum\remainder=0%
+			\global\texd@leapyear=0%
+		\fi\ifnum\remainder>0%
+			\global\texd@leapyear=1%
+		\fi%
+	\fi%
+}%
+%    \end{macrocode}
+% Print the month names.
+%    \begin{macrocode}
+\def\texd@monthname{%
+	\ifnum\texd@mon=0%
+		\texd@firstmon%
+	\fi%
+	\ifnum\texd@mon=1%
+		\texd@secondmon%
+	\fi%
+	\ifnum\texd@mon=2%
+		\texd@thirdmon%
+	\fi%
+	\ifnum\texd@mon=3%
+		\texd@fourthmon%
+	\fi%
+	\ifnum\texd@mon=4%
+		\texd@fifthmon%
+	\fi%
+	\ifnum\texd@mon=5%
+		\texd@sixthmon%
+	\fi%
+	\ifnum\texd@mon=6%
+		\texd@seventhmon%
+	\fi%
+	\ifnum\texd@mon=7%
+		\texd@eighthmon%
+	\fi%
+	\ifnum\texd@mon=8%
+		\texd@ninthmon%
+	\fi%
+	\ifnum\texd@mon=9%
+		\texd@tenthmon%
+	\fi%
+	\ifnum\texd@mon=10%
+		\texd@eleventhmon%
+	\fi%
+	\ifnum\texd@mon=11%
+		\texd@twelfthmon%
+	\fi%
+}%
+\def\texd@shmonthname{%
+	\ifnum\texd@mon=0%
+		\texd@firstshmon%
+	\fi%
+	\ifnum\texd@mon=1%
+		\texd@secondshmon%
+	\fi%
+	\ifnum\texd@mon=2%
+		\texd@thirdshmon%
+	\fi%
+	\ifnum\texd@mon=3%
+		\texd@fourthshmon%
+	\fi%
+	\ifnum\texd@mon=4%
+		\texd@fifthshmon%
+	\fi%
+	\ifnum\texd@mon=5%
+		\texd@sixthshmon%
+	\fi%
+	\ifnum\texd@mon=6%
+		\texd@seventhshmon%
+	\fi%
+	\ifnum\texd@mon=7%
+		\texd@eighthshmon%
+	\fi%
+	\ifnum\texd@mon=8%
+		\texd@ninthshmon%
+	\fi%
+	\ifnum\texd@mon=9%
+		\texd@tenthshmon%
+	\fi%
+	\ifnum\texd@mon=10%
+		\texd@eleventhshmon%
+	\fi%
+	\ifnum\texd@mon=11%
+		\texd@twelfthshmon%
+	\fi%
+}%
+%    \end{macrocode}
+% Here we define the |\advanceby|s, so that you can add move
+% the internal date forward by a given number of units.  Does
+% \emph{not} print the date.
+%    \begin{macrocode}
+\def\advancebydays#1{%
+	\texd@loopi=0%
+	\loop%
+		\ifnum\texd@loopi<#1%
+			\texd@nextdate%
+			\advance\texd@loopi by1%
+	\repeat%
+}%
+\def\regressbydays#1{%
+	\texd@loopi=0%
+	\loop%
+		\ifnum\texd@loopi<#1%
+			\texd@lastdate%
+			\advance\texd@loopi by1%
+	\repeat%
+}%
+\newcount\texd@loopj%
+\def\advancebyweeks#1{%
+	\texd@loopi=0%
+	\texd@loopj=#1%
+	\multiply\texd@loopj by7%
+	\loop%
+		\ifnum\texd@loopi<\texd@loopj%
+			\texd@nextdate%
+			\advance\texd@loopi by1%
+	\repeat%
+}%
+\def\regressbyweeks#1{%
+	\texd@loopi=0%
+	\texd@loopj=#1%
+	\multiply\texd@loopj by7%
+	\loop%
+		\ifnum\texd@loopi<\texd@loopj%
+			\texd@lastdate%
+			\advance\texd@loopi by1%
+	\repeat%
+}%
+\def\advancebymonths#1{%
+	\texd@loopi=0%
+	\loop%
+		\ifnum\texd@loopi<#1%
+			\texd@nextmonth%
+			\advance\texd@loopi by1%
+	\repeat%
+	\texd@setrmon%
+	\initdate{\the\texd@yr}{\the\texd@rmon}{\the\texd@rdom}%
+}%
+\def\regressbymonths#1{%
+	\texd@loopi=0%
+	\loop%
+		\ifnum\texd@loopi<#1%
+			\texd@lastmonth%
+			\advance\texd@loopi by1%
+	\repeat%
+	\texd@setrmon%
+	\initdate{\the\texd@yr}{\the\texd@rmon}{\the\texd@rdom}%
+}%
+%    \end{macrocode}
+% Print the date, either with the default format or a named
+% format.
+%    \begin{macrocode}
+\def\printdate{%
+	\texd@dateformat%
+}%
+\def\printfdate#1{%
+	\texd@formatdateformat{#1}%
+}%
+%    \end{macrocode}
+% This defines the date format.  We need some helper macros
+% to flip through each character one at a time.
+%    \begin{macrocode}
+\def\texd@expandloop#1{%
+	\texd@xloop#1\relax
+}
+\def\texdatenumformat#1{#1}
+\def\texd@xloop#1{%
+	\ifx\relax#1%
+	\else%
+		\ifx#1d%
+			\setpadnum{2}\setpadchar{0}%
+			\padnum{\texdatenumformat{\the\texd@rdom}}%
+		\else\ifx#1e%
+			\setpadnum{2}\setpadchar{\hskip1ex}%
+			\padnum{\texdatenumformat{\the\texd@rdom}}%
+		\else\ifx#1a%
+			\texd@shdowname%
+		\else\ifx#1A%
+			\texd@downame%
+		\else\ifx#1b%
+			\texd@shmonthname%
+		\else\ifx#1h%
+			\texd@shmonthname%
+		\else\ifx#1B%
+			\texd@monthname%
+		\else\ifx#1w%
+			\the\texd@dow%
+		\else\ifx#1u%
+			\ifnum\texd@dow>0\leavevmode\texdatenumformat{\the\texd@dow}\fi%
+			\ifnum\texd@dow=0 7\fi%
+		\else\ifx#1Y%
+			\setpadnum{2}\setpadchar{0}%
+			\padnum{\texdatenumformat{\the\texd@yr}}%
+		\else\ifx#1m%
+			\texd@setrmon%
+			\setpadnum{2}\setpadchar{0}%
+			\leavevmode\padnum{\texdatenumformat{\the\texd@rmon}}%
+		\else\ifx#1j%
+			\texd@setjnum%
+			\setpadnum{3}\setpadchar{0}%
+			\leavevmode\padnum{\texdatenumformat{\the\texd@jnum}}%
+		\else\ifx#1C%
+			\quotient{\texd@yr}{100}%
+			\leavevmode\texdatenumformat{\the\intquotient}%
+		\else\ifx#1y%
+			\modulo{\texd@yr}{100}%
+			\leavevmode\texdatenumformat{\the\remainder}%
+		\else\ifx#1U%
+			\quotient{\texd@jnum}{7}
+			\setpadnum{2}\setpadchar{0}%
+			\leavevmode\padnum{\texdatenumformat{\the\intquotient}}%
+		\else\ifx#1V%
+			\quotient{\texd@jnum}{7}
+			\ifnum\texd@dow>0\advance\intquotient by1\fi%
+			\setpadnum{2}\setpadchar{0}%
+			\leavevmode\padnum{\texdatenumformat{\the\intquotient}}%
+		\else\ifx#1W%
+			\quotient{\texd@jnum}{7}
+			\ifnum\texd@dow=0\advance\intquotient by-1\fi%
+			\setpadnum{2}\setpadchar{0}%
+			\leavevmode\padnum{\texdatenumformat{\the\intquotient}}%
+		\else%
+			#1%
+		\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi%
+		\expandafter\texd@xloop%
+	\fi%
+}%
+\def\texd@dateformat{%
+	\expandafter\expandafter\texd@expandloop{\setdateformat}%
+}%
+\def\texd@formatdateformat#1{%
+	\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\texd@expandloop{\csname texd@df#1\endcsname}%
+}%
+\def\setdateformat{A{ }(a),\ B\ (b){ }d,\ Y}
+\def\nameddateformat#1#2{%
+	\expandafter\def\csname texd@df#1\endcsname{#2}%
+}%
+\nameddateformat{american}{B\ d,\ Y}
+\nameddateformat{shamerican}{m/d/Y}
+\nameddateformat{ISO}{Ymd}
+\nameddateformat{ISOext}{Y-m-d}
+\nameddateformat{shbritish}{d/m/Y}
+\nameddateformat{shbritishdots}{d.m.Y}
+\nameddateformat{british}{d\ B\ Y}
+\nameddateformat{d}{d}
+\nameddateformat{e}{e}
+\nameddateformat{B}{B}
+\nameddateformat{b}{b}
+\nameddateformat{h}{h}
+\nameddateformat{m}{m}
+\nameddateformat{A}{A}
+\nameddateformat{a}{a}
+\nameddateformat{w}{w}
+\nameddateformat{u}{u}
+\nameddateformat{Y}{Y}
+\nameddateformat{j}{j}
+\nameddateformat{C}{C}
+\nameddateformat{y}{y}
+\nameddateformat{U}{U}
+\nameddateformat{V}{V}
+\nameddateformat{W}{W}
+%    \end{macrocode}
+% Initialize the date to the current date, or to an
+% arbitrary date, entered in the order year, month, and day
+% of month.
+%    \begin{macrocode}
+\def\initcurrdate{%
+	\global\texd@mon=\month%
+	\global\advance\texd@mon by-1%
+	\global\texd@dom=\day%
+	\global\advance\texd@dom by-1%
+	\global\texd@yr=\year%
+	\texd@isleapyear%
+	\texd@setrdom%
+	\texd@setrmon%
+	\texd@setjnum%
+	\texd@nextdow{\the\texd@rdom}{\the\texd@rmon}{\the\texd@yr}%
+}%
+\def\initdate#1#2#3{%
+	\global\texd@yr=#1%
+	\global\texd@mon=#2%
+	\global\advance\texd@mon by-1%
+	\global\texd@dom=#3%
+	\global\advance\texd@dom by-1%
+	\global\texd@setrdom%
+	\global\texd@setrmon%
+	\texd@setjnum%
+	\texd@isleapyear%
+	\texd@nextdow{\the\texd@rdom}{\the\texd@rmon}{\the\texd@yr}%
+}%
+%    \end{macrocode}
+% Now we define the macros for saving and restoring dates.
+%    \begin{macrocode}
+\def\savedate#1{%
+	\expandafter\edef\csname savedate#1\endcsname{\initdate{\the\texd@yr}{\the\texd@rmon}{\the\texd@rdom}}%
+}%
+\def\restoredate#1{%
+	\csname savedate#1\endcsname%
+}%
+%    \end{macrocode}
+% Convenience macros.  First, |\texdcal|.
+%    \begin{macrocode}
+\newcount\texd@looptmp\texd@looptmp=0%
+\def\texdcal#1#2{%
+	\global\texd@mon=#2%
+	\global\advance\texd@mon by-1%
+	\global\texd@yr=#1%
+	\global\texd@dom=0%
+	\texd@setrmon\texd@setrdom%
+	\initdate{\the\texd@yr}{\the\texd@rmon}{\the\texd@rdom}%
+	\def\setdateformat{B\ Y}%
+	\begin{tabular}{rrrrrrr}
+		\multicolumn{7}{c}{\printdate} \\
+		\loop\ifnum\texd@dow>0\texd@lastdate\repeat%
+		\def\setdateformat{d}%
+			\ifnum\texd@dom>8 {} \fi\ifnum\texd@dom<8\leavevmode\printdate\fi&
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom>8 {} \fi\ifnum\texd@dom<8\leavevmode\printdate\fi&
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom>8 {} \fi\ifnum\texd@dom<8\leavevmode\printdate\fi&
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom>8 {} \fi\ifnum\texd@dom<8\leavevmode\printdate\fi&
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom>8 {} \fi\ifnum\texd@dom<8\leavevmode\printdate\fi&
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom>8 {} \fi\ifnum\texd@dom<8\leavevmode\printdate\fi&
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom>8 {} \fi\ifnum\texd@dom<8\leavevmode\printdate\fi\\
+		\def\setdateformat{d}\advancebydays{1}\printdate &
+		\def\setdateformat{d}\advancebydays{1}\printdate &
+		\def\setdateformat{d}\advancebydays{1}\printdate &
+		\def\setdateformat{d}\advancebydays{1}\printdate &
+		\def\setdateformat{d}\advancebydays{1}\printdate &
+		\def\setdateformat{d}\advancebydays{1}\printdate &
+		\def\setdateformat{d}\advancebydays{1}\printdate \\
+		\def\setdateformat{d}\advancebydays{1}\printdate &
+		\def\setdateformat{d}\advancebydays{1}\printdate &
+		\def\setdateformat{d}\advancebydays{1}\printdate &
+		\def\setdateformat{d}\advancebydays{1}\printdate &
+		\def\setdateformat{d}\advancebydays{1}\printdate &
+		\def\setdateformat{d}\advancebydays{1}\printdate &
+		\def\setdateformat{d}\advancebydays{1}\printdate \\
+		\def\setdateformat{d}\advancebydays{1}\printdate &
+		\def\setdateformat{d}\advancebydays{1}\printdate &
+		\def\setdateformat{d}\advancebydays{1}\printdate &
+		\def\setdateformat{d}\advancebydays{1}\printdate &
+		\def\setdateformat{d}\advancebydays{1}\printdate &
+		\def\setdateformat{d}\advancebydays{1}\printdate &
+		\def\setdateformat{d}\advancebydays{1}\printdate \\
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom<14 {} \fi\ifnum\texd@dom>14\leavevmode\printdate\fi&
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom<14 {} \fi\ifnum\texd@dom>14\leavevmode\printdate\fi&
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom<14 {} \fi\ifnum\texd@dom>14\leavevmode\printdate\fi&
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom<14 {} \fi\ifnum\texd@dom>14\leavevmode\printdate\fi&
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom<14 {} \fi\ifnum\texd@dom>14\leavevmode\printdate\fi&
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom<14 {} \fi\ifnum\texd@dom>14\leavevmode\printdate\fi&
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom<14 {} \fi\ifnum\texd@dom>14\leavevmode\printdate\fi\\
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom<14 {} \fi\ifnum\texd@dom>14\leavevmode\printdate\fi&
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom<14 {} \fi\ifnum\texd@dom>14\leavevmode\printdate\fi&
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom<14 {} \fi\ifnum\texd@dom>14\leavevmode\printdate\fi&
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom<14 {} \fi\ifnum\texd@dom>14\leavevmode\printdate\fi&
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom<14 {} \fi\ifnum\texd@dom>14\leavevmode\printdate\fi&
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom<14 {} \fi\ifnum\texd@dom>14\leavevmode\printdate\fi&
+		\def\setdateformat{d}\advancebydays{1}%
+			\ifnum\texd@dom<14 {} \fi\ifnum\texd@dom>14\leavevmode\printdate\fi\\
+	\end{tabular}
+}%
+\def\texdcalyear#1{%
+	\texd@yr=#1%
+	\texd@mon=0%
+	\texd@dom=0%
+	\texd@setrmon%
+	\texd@setrdom%
+	{\tabcolsep=3pt%
+	\begin{tabular}{ccc}
+		\texdcal{#1}{1} & \texdcal{#1}{2} & \texdcal{#1}{3} \\
+		\texdcal{#1}{4} & \texdcal{#1}{5} & \texdcal{#1}{6} \\
+		\texdcal{#1}{7} & \texdcal{#1}{8} & \texdcal{#1}{9} \\
+		\texdcal{#1}{10} & \texdcal{#1}{11} & \texdcal{#1}{12} \\
+	\end{tabular}
+	}%
+}%
+%    \end{macrocode}
+% Calculate the day of the year (|%j|).
+%    \begin{macrocode}
+\newcount\texd@jnum\texd@jnum=0%
+\def\texd@setjnum{%
+	\texd@jnum=0%
+	\ifnum\texd@mon>0\global\advance\texd@jnum by31\fi%
+	\ifnum\texd@mon>1%
+		\global\advance\texd@jnum by28%
+	\fi%
+	\ifnum\texd@mon>2\global\advance\texd@jnum by31\fi%
+	\ifnum\texd@mon>3\global\advance\texd@jnum by30\fi%
+	\ifnum\texd@mon>4\global\advance\texd@jnum by31\fi%
+	\ifnum\texd@mon>5\global\advance\texd@jnum by30\fi%
+	\ifnum\texd@mon>6\global\advance\texd@jnum by31\fi%
+	\ifnum\texd@mon>7\global\advance\texd@jnum by31\fi%
+	\ifnum\texd@mon>8\global\advance\texd@jnum by30\fi%
+	\ifnum\texd@mon>9\global\advance\texd@jnum by31\fi%
+	\ifnum\texd@mon>10\global\advance\texd@jnum by30\fi%
+	\global\advance\texd@jnum by\the\texd@dom%
+	\global\advance\texd@jnum by1%
+}%
+%    \end{macrocode}
+% Language strings.  I've only got English here right now, but
+% additiona languages would be trivial to add, either in a
+% particular document, or in a separate package.
+%    \begin{macrocode}
+\def\texd@firstmon{January}%
+\def\texd@firstshmon{Jan}%
+\def\texd@secondmon{February}%
+\def\texd@secondshmon{Feb}%
+\def\texd@thirdmon{March}%
+\def\texd@thirdshmon{Mar}%
+\def\texd@fourthmon{April}%
+\def\texd@fourthshmon{Apr}%
+\def\texd@fifthmon{May}%
+\def\texd@fifthshmon{May}%
+\def\texd@sixthmon{June}%
+\def\texd@sixthshmon{Jun}%
+\def\texd@seventhmon{July}%
+\def\texd@seventhshmon{Jul}%
+\def\texd@eighthmon{August}%
+\def\texd@eighthshmon{Aug}%
+\def\texd@ninthmon{September}%
+\def\texd@ninthshmon{Sep}%
+\def\texd@tenthmon{October}%
+\def\texd@tenthshmon{Oct}%
+\def\texd@eleventhmon{November}%
+\def\texd@eleventhshmon{Nov}%
+\def\texd@twelfthmon{December}%
+\def\texd@twelfthshmon{Dec}%
+\def\texd@firstdayname{Sunday}%
+\def\texd@firstdayshname{Sun}%
+\def\texd@seconddayname{Monday}%
+\def\texd@seconddayshname{Mon}%
+\def\texd@thirddayname{Tuesday}%
+\def\texd@thirddayshname{Tue}%
+\def\texd@fourthdayname{Wednesday}%
+\def\texd@fourthdayshname{Wed}%
+\def\texd@fifthdayname{Thursday}%
+\def\texd@fifthdayshname{Thu}%
+\def\texd@sixthdayname{Friday}%
+\def\texd@sixthdayshname{Fri}%
+\def\texd@seventhdayname{Saturday}%
+\def\texd@seventhdayshname{Sat}%
+\AtBeginDocument{%
+	\IfLanguageName{spanish}{%
+		\def\texd@firstmon{enero}%
+		\def\texd@firstshmon{ene}%
+		\def\texd@secondmon{febrero}%
+		\def\texd@secondshmon{feb}%
+		\def\texd@thirdmon{marzo}%
+		\def\texd@thirdshmon{mar}%
+		\def\texd@fourthmon{abril}%
+		\def\texd@fourthshmon{abr}%
+		\def\texd@fifthmon{mayo}%
+		\def\texd@fifthshmon{may}%
+		\def\texd@sixthmon{junio}%
+		\def\texd@sixthshmon{jun}%
+		\def\texd@seventhmon{julio}%
+		\def\texd@seventhshmon{jul}%
+		\def\texd@eighthmon{agosto}%
+		\def\texd@eighthshmon{ago}%
+		\def\texd@ninthmon{septiembre}%
+		\def\texd@ninthshmon{sep}%
+		\def\texd@tenthmon{octubre}%
+		\def\texd@tenthshmon{oct}%
+		\def\texd@eleventhmon{noviembre}%
+		\def\texd@eleventhshmon{nov}%
+		\def\texd@twelfthmon{diciembre}%
+		\def\texd@twelfthshmon{dic}%
+		\def\texd@firstdayname{domingo}%
+		\def\texd@firstdayshname{dom}%
+		\def\texd@seconddayname{lunes}%
+		\def\texd@seconddayshname{lun}%
+		\def\texd@thirddayname{martes}%
+		\def\texd@thirddayshname{mar}%
+		\def\texd@fourthdayname{miercoles}%
+		\def\texd@fourthdayshname{mie}%
+		\def\texd@fifthdayname{jueves}%
+		\def\texd@fifthdayshname{jue}%
+		\def\texd@sixthdayname{viernes}%
+		\def\texd@sixthdayshname{vie}%
+		\def\texd@seventhdayname{sabado}%
+		\def\texd@seventhdayshname{sab}%
+	}{}%
+	\IfLanguageName{french}{%
+		\def\texd@firstmon{janvier}%
+		\def\texd@firstshmon{janv}%
+		\def\texd@secondmon{février}%
+		\def\texd@secondshmon{févr}%
+		\def\texd@thirdmon{mars}%
+		\def\texd@thirdshmon{mars}%
+		\def\texd@fourthmon{avril}%
+		\def\texd@fourthshmon{avr}%
+		\def\texd@fifthmon{mai}%
+		\def\texd@fifthshmon{mai}%
+		\def\texd@sixthmon{juin}%
+		\def\texd@sixthshmon{juin}%
+		\def\texd@seventhmon{juil}%
+		\def\texd@seventhshmon{juil}%
+		\def\texd@eighthmon{août}%
+		\def\texd@eighthshmon{août}%
+		\def\texd@ninthmon{septembre}%
+		\def\texd@ninthshmon{sept}%
+		\def\texd@tenthmon{octobre}%
+		\def\texd@tenthshmon{oct}%
+		\def\texd@eleventhmon{novembre}%
+		\def\texd@eleventhshmon{nov}%
+		\def\texd@twelfthmon{décembre}%
+		\def\texd@twelfthshmon{déc}%
+		\def\texd@firstdayname{dimanche}%
+		\def\texd@firstdayshname{dim}%
+		\def\texd@seconddayname{lundi}%
+		\def\texd@seconddayshname{lun}%
+		\def\texd@thirddayname{mardi}%
+		\def\texd@thirddayshname{mar}%
+		\def\texd@fourthdayname{mercredi}%
+		\def\texd@fourthdayshname{mer}%
+		\def\texd@fifthdayname{jeudi}%
+		\def\texd@fifthdayshname{jeu}%
+		\def\texd@sixthdayname{vendredi}%
+		\def\texd@sixthdayshname{ven}%
+		\def\texd@seventhdayname{samedi}%
+		\def\texd@seventhdayshname{sam}%
+	}{}%
+	\IfLanguageName{german}{%
+		\def\texd@firstmon{Januar}%
+		\def\texd@firstshmon{Jan}%
+		\def\texd@secondmon{Februar}%
+		\def\texd@secondshmon{Feb}%
+		\def\texd@thirdmon{März}%
+		\def\texd@thirdshmon{März}%
+		\def\texd@fourthmon{April}%
+		\def\texd@fourthshmon{Apr}%
+		\def\texd@fifthmon{Mai}%
+		\def\texd@fifthshmon{Mai}%
+		\def\texd@sixthmon{Juni}%
+		\def\texd@sixthshmon{Juni}%
+		\def\texd@seventhmon{Juli}%
+		\def\texd@seventhshmon{Juli}%
+		\def\texd@eighthmon{August}%
+		\def\texd@eighthshmon{Aug}%
+		\def\texd@ninthmon{September}%
+		\def\texd@ninthshmon{Sept}%
+		\def\texd@tenthmon{Oktober}%
+		\def\texd@tenthshmon{Okt}%
+		\def\texd@eleventhmon{November}%
+		\def\texd@eleventhshmon{Nov}%
+		\def\texd@twelfthmon{Dezember}%
+		\def\texd@twelfthshmon{Dez}%
+		\def\texd@firstdayname{Sonntag}%
+		\def\texd@firstdayshname{So}%
+		\def\texd@seconddayname{Montag}%
+		\def\texd@seconddayshname{Mo}%
+		\def\texd@thirddayname{Dienstag}%
+		\def\texd@thirddayshname{Di}%
+		\def\texd@fourthdayname{Mittwoch}%
+		\def\texd@fourthdayshname{Mi}%
+		\def\texd@fifthdayname{Donnerstag}%
+		\def\texd@fifthdayshname{Do}%
+		\def\texd@sixthdayname{Freitag}%
+		\def\texd@sixthdayshname{Fr}%
+		\def\texd@seventhdayname{Samstag}%
+		\def\texd@seventhdayshname{Sa}%
+	}{}%
+}%
+%    \end{macrocode}
+% Happy \TeX{}ing!

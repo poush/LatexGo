@@ -1,0 +1,2468 @@
+% \iffalse
+%
+%% randomlist.dtx
+%% Copyleft 2013-2017 J.-C. Charpentier & C. Tellechea
+%
+%% Packages `randomlist' to use with (La)eTeX
+%% Copyleft (L) 2013-2017 Jean-C\^ome Charpentier & Christian Tellechea.
+% \fi
+%
+%% \CharacterTable
+%%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%%   Digits        \0\1\2\3\4\5\6\7\8\9
+%%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%%   Dollar        \$     Percent       \%     Ampersand     \&
+%%   Acute accent  \'     Left paren    \(     Right paren   \)
+%%   Asterisk      \*     Plus          \+     Comma         \,
+%%   Minus         \-     Point         \.     Solidus       \/
+%%   Colon         \:     Semicolon     \;     Less than     \<
+%%   Equals        \=     Greater than  \>     Question mark \?
+%%   Commercial at \@     Left bracket  \[     Backslash     \\
+%%   Right bracket \]     Circumflex    \^     Underscore    \_
+%%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%%   Right brace   \}     Tilde         \~}
+%%
+% \iffalse
+%<*driver>
+\documentclass[a4paper, 12pt]{ltxdoc}
+\errorcontextlines=10
+
+\makeatletter
+\renewenvironment{theglossary}{%
+  \glossary@prologue
+  \GlossaryParms \let\item\@idxitem \ignorespaces}%
+{}
+\makeatother
+\GlossaryPrologue{%
+  \newpage
+  \section*{Change history}
+  \markboth{{Change history}}{{Change history}}%
+}
+\DisableCrossrefs
+%\EnableCrossrefs
+\CodelineIndex
+\RecordChanges
+%\OnlyDescription
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{kpfonts}
+\usepackage[a4paper, left=2cm, right=2cm, top=2cm, bottom=2cm]{geometry}
+\usepackage{array}
+\usepackage{fvrb-ex}
+\fvset{frame=lines,xrightmargin=0.5\linewidth}
+\usepackage{makeidx}
+\usepackage{randomlist}
+\usepackage[USenglish]{babel}
+\usepackage{hyperref}
+
+\pagestyle{plain}
+\makeindex
+\title{%
+  Package \package{randomlist}\\Tools for data base, table and random
+  writting-reading}
+\author{%
+  Jean-Côme Charpentier\thanks{\ttfamily
+    jean-come.charpentier@wanadoo.fr}
+  \and
+  Christian Tellechea\thanks{\ttfamily unbonpetit@openmailbox.org}
+}
+\newcommand*\pgm[1]{\texttt{#1}}
+\newcommand*\file[1]{\texttt{#1}}
+\newcommand*\package[1]{\texttt{#1}}
+\newcommand*\class[1]{\texttt{#1}}
+\newcommand*\option[1]{\texttt{#1}}
+\newcommand*\key[1]{\texttt{#1}}
+\newcommand*\Key[1]{\texttt{#1}\index{#1=\texttt{#1}}}
+\newcommand*\environ[1]{\texttt{#1}}
+\newcommand*\Environ[1]{\texttt{#1}\index{#1=\texttt{#1}}}
+\makeatletter
+\edef\quotechar{\string!}
+\edef\actualchar{\string=}
+\edef\verbatimchar{\string+}
+\def\SpecialPageIndex#1{%
+  \immediate\write\@indexfile{%
+    \string\indexentry{\expandafter\@gobble\string#1\actualchar
+    \string\verb\quotechar*\verbatimchar\string#1\verbatimchar|hyperpage}%
+    {\number\c@page}%
+  }%
+}
+\makeatother
+\newcommand*\Cmd[1]{\texttt{\string#1}\SpecialPageIndex{#1}}
+
+\begin{document}
+\maketitle
+\newpage
+\setcounter{tocdepth}{3}
+\tableofcontents
+\newpage
+\section{Overview}
+The main aim of package \package{randomlist} is to work on list,
+especially with random operation. The hidden aim is to build
+personnal collection of exercices with different data for each
+pupils. In order to build such exercices, some features about
+databases are necessary.
+
+In ``randomlist'', the word ``List'' must be understound with two
+meanings:
+\begin{itemize}
+\item itemize and enumerate \LaTeX{} environments;
+\item list as in computer science.
+\end{itemize}
+In fact, lists as in computer are not really lists: they are
+arrays. Some commands allow to deal with these data structures as
+queues, other commands as stacks and another commands as arrays.
+
+\section{Array, queue, stack, or list?}
+The package give the name ``list'' to the main data structure. First,
+we have to declare a new list with command \Cmd{\NewList}. There is
+nothing special about this command. It has a mandatory argument: the
+name of the list.
+
+Nearly any name is possible. However, don't use hyphen and number at
+the end of the name. For instance \texttt{mylist-1} isn't a good idea
+(\texttt{mylist*1} is a good one). Don't use fragile commands and
+special characters. However you can use commands inside list names.
+
+\subsection{Create, erase and show list}
+You can't create an already existing list. For instance, the code:
+\begin{Verbatim}[xrightmargin=0pt,xleftmargin=0.5\linewidth]
+  \NewList{MyList}
+  \NewList{MyList}
+\end{Verbatim}
+give the error message:
+\begin{Verbatim}[frame=none]
+  ! Package randomlist Error: List MyList already exists.
+\end{Verbatim}
+If you want erase a list, use the command \Cmd{\ClearList}.
+
+You can't create a list \key{namelist} if the macro \cmd{\namelist}
+exists. For instance the code:
+\begin{Verbatim}[xrightmargin=0pt,xleftmargin=0.5\linewidth]
+  \NewList{def}
+\end{Verbatim}
+give the error message:
+\begin{Verbatim}[frame=none]
+  ! Package randomlist Error: Command \def already exists.
+\end{Verbatim}
+
+\medskip
+As you can see, the source is between horizontal rules and flush
+right. The result is flush left. When the result isn't an error
+message, source and result are side by side.
+
+For the next commands we must be able to see the state of list. The
+package \package{randomlist} offers the \Cmd{\ShowList} command which
+allows to see the whole list. When a list is just created, it is empty,
+so the \cmd{\ShowList} command shows it like that (source is typeseted
+at the right side and result is showed at the left side):\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+\subsection{Writing and reading in a list}
+Once a list is created, you can write values and, after that, read
+values.
+
+In fact, these lists can behaves like queues, stacks, or arrays
+according to the used command. There are four kinds of command:
+\begin{itemize}
+\item Insert;
+\item Extract;
+\item Set;
+\item Get.
+\end{itemize}
+\goodbreak
+Each one has four variants to reach some position in the list:
+\begin{itemize}
+\item First;
+\item Last;
+\item Index (without prefix);
+\item Random.
+\end{itemize}
+Thus we have the commands:
+\begin{center}
+  \begin{tabular}{*{4}{>{\ttfamily\textbackslash}l}}
+    InsertFirstItem & ExtractFirstItem & SetFirstItem & GetFirstItem
+    \\
+    InsertLastItem & ExtractLastItem & SetLastItem & GetLastItem
+    \\
+    InsertItem & ExtractItem & SetItem & GetItem
+    \\
+    InsertRandomItem & ExtractRandomItem & SetRandomItem & GetRandomItem
+  \end{tabular}
+\end{center}
+
+Each one has also a ``List'' variant which acts on several items. That
+is, we have these commands: \cmd{\InsertList}, \cmd{\ExtractList},
+\cmd{\SetList}, and \cmd{\GetList}. There is also a command
+\Cmd{\CopyList} which is a shortcut for a special \cmd{\SetList}.
+
+Finally, we have \cmd{\ShiftList} which is somewhere quiet special: it
+creates empty items or destroy items by shifting inside a list. This
+macro is rather for internal operation but you can use it. The syntax is:
+\begin{Verbatim}[xrightmargin=0pt,xleftmargin=0.5\linewidth]
+  \ShiftList{<list>}{<start>}{<nb>}
+\end{Verbatim}
+
+When \texttt{<nb>} is positive, then items from index \texttt{<start>}
+are right shifted. That is, index $n$ becomes index $n+\mathtt{nb}$
+and index from \texttt{<start>} to
+$\text{\texttt{<start>}}+\text{\texttt{<nb>}}-1$ are empty.
+
+When \texttt{<nb>} is negative, then items starting from the end of
+the list are left shifted and \texttt{<nb>} items (from index
+\texttt{start}) disappear.
+
+Usually, you don't need \Cmd{\ShiftList}: the other commands,
+especially \cmd{\ExtractList} and \Cmd{\InsertList} are enough.
+
+\subsubsection{Insert commands}
+\paragraph[\string\InsertFirstItem]{\cmd{\InsertFirstItem}}
+\Cmd{\InsertFirstItem} writes a value at the beginning of a list and
+shift other values to the end of the list. This command has two
+arguments: the list name and the value to insert. For
+example:\par\medskip 
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \InsertFirstItem{MyList}{First value}
+  \ShowList{MyList}
+  \InsertFirstItem{MyList}{Second value}
+  \ShowList{MyList}
+  \InsertFirstItem{MyList}{Third value}
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+As you can see, the list is in the reverse order than the user
+one. With \cmd{\InsertFirstItem}, list behaves like stack.
+
+The value written in the list can be nearly anything. For
+instance:\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \InsertFirstItem{MyList}{{two}{groups}}
+  \InsertFirstItem{MyList}{\textbf{text}}
+  \InsertFirstItem{MyList}{special^}
+  \InsertFirstItem{MyList}{end}
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+\paragraph[\string\InsertLastItem]{\cmd{\InsertLastItem}}
+\Cmd{\InsertLastItem} is like \cmd{\InsertFirstItem} but the insertion
+is made at the end of the list. As for the previous command, it takes
+two arguments: the list name and the value to insert. The previous
+example give:\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \InsertLastItem{MyList}{{two}{groups}}
+  \InsertLastItem{MyList}{\textbf{text}}
+  \InsertLastItem{MyList}{special^}
+  \InsertLastItem{MyList}{end}
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+With this command, the list behaves as queue.
+
+\paragraph[\string\InsertItem]{\cmd{\InsertItem}}
+\Cmd{\InsertItem} is like \cmd{\InsertFirstItem} but the insertion
+is made to a specified position of the list. With this command, the list
+behaves as an array.
+
+The index starts from zero and if the list has $n$ elements then the
+index can't be greater than $n$. When a value is inserted in position
+$k$, then the previous values from $k$ to $n-1$ are shifted one
+position to the right.
+
+\cmd{\InsertItem} takes three arguments: the list name, the position
+and the value. Here is an example:\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \InsertLastItem{MyList}{first}
+  \InsertLastItem{MyList}{\textbf{second}}
+  \InsertLastItem{MyList}{special^}
+  \InsertLastItem{MyList}{end}
+  \ShowList{MyList}
+  \InsertItem{MyList}{2}{\textbf{insert!}}
+  \InsertItem{MyList}{2}{\textbf{other!}}
+  \InsertItem{MyList}{6}{real end}
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+As you can see, when the two values is inserted at position~2, the
+value \texttt{special\textasciicircum} is shifted from position~2 to
+position~4. Moreover, it's possible to insert a value to the
+nonexistent position $n$ when the length of the list is $n$: it's the
+only one possibility to specify a nonexistent index.
+
+\paragraph[\string\InsertRandfomItem]{\cmd{\InsertRandomItem}}
+This is the first command which use random numbers. We will see later
+how to manage random numbers themselves.
+
+\Cmd{\InsertRandomItem} command works as the \cmd{\InsertItem} one
+but the position is selected randomly by \TeX{}. Then there is only two
+arguments: the list name and the value to insert. Here is an example:
+\RLsetrandomseed 1\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \InsertRandomItem{MyList}{first}
+  \InsertRandomItem{MyList}{second}
+  \InsertRandomItem{MyList}{third}
+  \InsertRandomItem{MyList}{fourth}
+  \InsertRandomItem{MyList}{fifth}
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+\paragraph[\string\InsertList]{\cmd{\InsertList}}
+\Cmd{\InsertList} allows to do in one shot what the \cmd{\InsertItem}
+can do in several ones. The principle of this command is to insert all
+the items of a list inside a second one. You have to give three
+arguments: the list which receive, the index to start insertion, and
+the list to insert. For instance:\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \NewList{OtherList}
+  \InsertLastItem{MyList}{first in M}
+  \InsertLastItem{MyList}{fourth in M}
+  \InsertLastItem{MyList}{fifth in M}
+  \InsertLastItem{OtherList}{second in O}
+  \InsertLastItem{OtherList}{third in O}
+  \InsertList{MyList}{1}{OtherList}
+  \ShowList{MyList}
+  \ShowList{OtherList}
+\end{SideBySideExample}
+\par\medskip
+
+As you can see, the second list is unchanged after operation.
+
+Package \package{randomlist} checks that both lists exists and that
+index is compatible with list. Otherwise an error message will be
+raised.
+
+It's possible to insert an empty list:\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \NewList{OtherList}
+  \InsertLastItem{MyList}{first}
+  \InsertLastItem{MyList}{second}
+  \InsertLastItem{MyList}{third}
+  \InsertList{MyList}{1}{OtherList}
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+\subsubsection{Extract commands}
+\paragraph[\string\ExtractFirstItem]{\cmd{\ExtractFirstItem}}
+The four commands \cmd{\Extract...Item} are the inverse one of the
+four commands \cmd{\Insert...Item}.
+
+\Cmd{\ExtractFirstItem} extract the first value of a list and store it
+in a macro. The other elements of the list are shifted left (the list
+length decreases by one). This command takes two argument: the list
+name and the macro name where the value is stored. The last argument
+is just the name of the macro, \emph{i.e.} the macro name without the
+backslash. For example:\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \InsertLastItem{MyList}{\TeX}
+  \InsertLastItem{MyList}{is}
+  \InsertLastItem{MyList}{very}
+  \InsertLastItem{MyList}{powerful}
+  \ExtractFirstItem{MyList}{MyMacro}
+  The first element was ``\MyMacro''.
+
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+When you extract an element from a list, the list length decreases by
+one. It explains why it's forbidden to extract an element from an
+empty list. If you try  it,
+\begin{Verbatim}[xrightmargin=0pt,xleftmargin=0.5\linewidth]
+  \NewList{MyList}
+  \ExtractFirstItem{MyList}{MyMacro}
+\end{Verbatim}
+you have the error message:
+\begin{Verbatim}[frame=none]
+  ! Package randomlist Error: List MyList is empty.
+\end{Verbatim}
+
+\paragraph[\string\ExtractLastItem]{\cmd{\ExtractLastItem}}
+\Cmd{\ExtractLastItem} behaves like \cmd{\ExtractFirstItem} but the
+element extracted is the last one. Thus there is no shifting, there is
+just a decrementation of the list length.
+
+Here is an example:\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \InsertLastItem{MyList}{\TeX}
+  \InsertLastItem{MyList}{is}
+  \InsertLastItem{MyList}{very}
+  \InsertLastItem{MyList}{powerful}
+  \ExtractLastItem{MyList}{MyMacro}
+  The last element was ``\MyMacro''.
+
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+\paragraph[\string\ExtractItem]{\cmd{\ExtractItem}}
+\Cmd{\ExtractItem} behaves like \cmd{\ExtractFirstItem} but the
+element extracted is the one indicated by its index. The command takes
+three argument: the list name, the index of element to extract, the
+macro used to store the element extracted. Don't forget that indexes
+start from zero. Here is an example:\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \InsertLastItem{MyList}{\TeX}
+  \InsertLastItem{MyList}{is}
+  \InsertLastItem{MyList}{very}
+  \InsertLastItem{MyList}{powerful}
+  \ExtractItem{MyList}{2}{MyMacro}
+  The third element was ``\MyMacro''.
+
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+There isn't anything special. The length of the list decreases by one
+and elements are shifted accordingly to the extracted one.
+
+\paragraph[\string\ExtractRandomItem]{\cmd{\ExtractRandomItem}}
+\Cmd{\ExtractRandomItem} works like the previous
+\cmd{\ExtractItem}. Here, the index is selected randomly by the
+computer. Then there are only two arguments: the list name and the
+macro to store the extracted element:\par\medskip
+
+\RLsetrandomseed 3
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \InsertLastItem{MyList}{\TeX}
+  \InsertLastItem{MyList}{is}
+  \InsertLastItem{MyList}{very}
+  \InsertLastItem{MyList}{powerful}
+  \ExtractRandomItem{MyList}{MyMacro}
+  ``\MyMacro'' was extracted.
+
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+Even the extraction is made on a random index, it's forbidden to
+extract something from an empty list. Then, the code:
+\begin{Verbatim}[xrightmargin=0pt,xleftmargin=0.5\linewidth]
+  \NewList{MyList}
+  \ExtractRandomItem{MyList}{MyMacro}
+\end{Verbatim}
+gives the usual error message:
+\begin{Verbatim}[frame=none]
+  ! Package randomlist Error: List MyList is empty.
+\end{Verbatim}
+
+\paragraph[\string\ExtractList]{\cmd{\ExtractList}}
+The commands \cmd{\Extract...Item} extract one item and store it in a
+macro. With the command \Cmd{\ExtractList} we can extract several
+items and put them in a list. \cmd{\ExtractList} asks for four
+arguments:
+\begin{enumerate}
+\item the main list;
+\item the starting index;
+\item the ending index;
+\item the list which receive extracted values.
+\end{enumerate}
+Here is an example:\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \NewList{OtherList}
+  \InsertLastItem{MyList}{first}
+  \InsertLastItem{MyList}{second}
+  \InsertLastItem{MyList}{third}
+  \InsertLastItem{MyList}{fourth}
+  \InsertLastItem{MyList}{fifth}
+  \InsertLastItem{MyList}{sixth}
+  \ExtractList{MyList}{2}{4}{OtherList}
+
+  \ShowList{MyList}
+  \ShowList{OtherList}
+\end{SideBySideExample}
+\par\medskip
+
+Obviously, \package{randomlist} checks list and indexes. You can have
+the start index and the last index equals. In this case,
+\cmd{\ExtractList} behaves like \cmd{\ExtractItem} but the extracted
+value is put in a list rather than in a macro:\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \NewList{OtherList}
+  \InsertLastItem{MyList}{first}
+  \InsertLastItem{MyList}{second}
+  \InsertLastItem{MyList}{third}
+  \InsertLastItem{MyList}{fourth}
+  \InsertLastItem{MyList}{fifth}
+  \InsertLastItem{MyList}{sixth}
+  \ExtractList{MyList}{2}{2}{OtherList}
+
+  \ShowList{MyList}
+  \ShowList{OtherList}
+\end{SideBySideExample}
+\par\medskip
+
+\subsubsection{Set commands}
+\paragraph[\string\SetFirstItem]{\cmd{\SetFirstItem}}
+The commands \cmd{\Set...Item} modify the existing values of
+list. \Cmd{\SetFirstItem} modify the first value.\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \InsertLastItem{MyList}{\TeX}
+  \InsertLastItem{MyList}{is}
+  \InsertLastItem{MyList}{very}
+  \InsertLastItem{MyList}{powerful}
+  \SetFirstItem{MyList}{\LaTeX}
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+If a list is empty, there is the classic error message about empty
+list.
+
+\paragraph[\string\SetLastItem]{\cmd{\SetLastItem}}
+\Cmd{\SetLastItem} acts like \cmd{\SetFirstItem} but at the end of the
+list.
+
+\paragraph[\string\SetItem]{\cmd{\SetItem}}
+\Cmd{\SetItem} acts like the previous commands. It takes three
+arguments: the list name, the index, the new value:\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \InsertLastItem{MyList}{\TeX}
+  \InsertLastItem{MyList}{is}
+  \InsertLastItem{MyList}{very}
+  \InsertLastItem{MyList}{powerful}
+  \SetItem{MyList}{2}{quiet}
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+If the index doesn't exist, an error message is showed. Code:
+\begin{Verbatim}[xrightmargin=0pt,xleftmargin=0.5\linewidth]
+  \NewList{MyList}
+  \InsertLastItem{MyList}{\TeX}
+  \InsertLastItem{MyList}{is}
+  \InsertLastItem{MyList}{very}
+  \InsertLastItem{MyList}{powerful}
+  \SetItem{MyList}{4}{isn't it?}
+\end{Verbatim}
+gives the error message:
+\begin{Verbatim}[frame=none]
+  ! Package randomlist Error: Index 4 is greater than last index of list MyList.
+\end{Verbatim}
+
+\paragraph[\string\SetRandomItem]{\cmd{\SetRandomItem}}
+\Cmd{\SetRandomItem} acts like the previous one but the index is
+selected randomly. The list must be non empty. Here is an
+example:\par\medskip 
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \InsertLastItem{MyList}{\TeX}
+  \InsertLastItem{MyList}{is}
+  \InsertLastItem{MyList}{really}
+  \InsertLastItem{MyList}{very}
+  \InsertLastItem{MyList}{powerful}
+  \SetRandomItem{MyList}{snap!}
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+\paragraph[\string\SetList]{\cmd{\SetList}}
+Insert value one by one inside a list could be tiresome especially if
+you have many values. Package \package{randomlist} allows to insert
+many items in a row using the macro \Cmd{\SetList}. Items are
+separated with comma. For instance:\par\medskip 
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \SetList{MyList}{\TeX, is, very,
+    powerful}
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+As you can see, spaces aren't discarded. A more satisfactory
+presentation would be:\par\medskip 
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \SetList{MyList}{\TeX,is,very,%
+    powerful}
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+\paragraph[\string\CopyList]{\cmd{\CopyList}}
+Copy a list in another one. Both lists must exists: this command don't
+create list since only \cmd{\NewList} can do that. Here is an
+example:\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \NewList{OtherList}
+  \SetList{MyList}{\TeX,is,very,%
+                   powerful}
+  \CopyList{MyList}{OtherList}
+  \ShowList{OtherList}
+\end{SideBySideExample}
+\par\medskip
+
+\subsubsection{Get commands}
+\paragraph[\string\GetFirstItem]{\cmd{\GetFirstItem}}
+The \cmd{\get...list} look for a value in a list. They don't change
+the list. The index must exist elsewhere an error message will be
+show. That is, for first, last, and random variant, list must be non
+empty.
+
+\Cmd{\GetFirstItem} put the first value of a list into a macro. The
+arguments of the command are: the list name, the macro:\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \SetList{MyList}{\TeX,is,so,cute}
+  \GetFirstItem{MyList}{MyMacro}
+  The first element is ``\MyMacro''
+
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+\paragraph[\string\GetLastItem]{\cmd{\GetLastItem}}
+\Cmd{\GetLastItem} acts like \cmd{\GetFirstItem} but give the last value.
+
+\paragraph[\string\GetItem]{\cmd{\GetItem}}
+\Cmd{\GetItem} acts like the previous one but give the value of the
+element $k$ where $k$ is the second argument. Pay attention that
+indexes start from zero. Then the index $k$ maps to the $k+1$st
+element of the list.\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \SetList{MyList}{\TeX,is,so,cute}
+  \GetItem{MyList}{2}{MyMacro}
+  The third element is ``\MyMacro''
+
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+Package \package{randomlist} offers an other syntax to access to an
+item: \cmd{\<namelist>[<index>]}. Thus, we can write the previous
+example like that:\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \SetList{MyList}{\TeX,is,so,cute}
+  The third element is ``\MyList[2]''
+\end{SideBySideExample}
+\par\medskip
+
+\paragraph[\string\GetRandomItem]{\cmd{\GetRandomItem}}
+\Cmd{\GetRandomItem} give the value of a randomly selected element of a
+list.\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \SetList{MyList}{\TeX,is,so,cute}
+  \GetRandomItem{MyList}{MyMacro}
+  The random element is ``\MyMacro''
+
+  \ShowList{MyList}
+\end{SideBySideExample}
+\par\medskip
+
+\paragraph[\string\GetList]{\cmd{\GetList}}
+\Cmd{\GetList} builds a sub-list. Arguments are those of
+\cmd{\ExtractList}, that is, the read list, the first index, the last
+index, and the written list.\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{MyList}
+  \NewList{OtherList}
+  \SetList{MyList}{X1,X2,X3,X4,X5,X6}
+  \GetList{MyList}{2}{4}{OtherList}
+  \ShowList{MyList}
+  \ShowList{OtherList}
+\end{SideBySideExample}
+\par\medskip
+
+Contrary to what \cmd{\ExtractItem} do, \cmd{\GetList} don't modify
+the source list.
+
+\section{Database}
+\subsection{Simple database}
+Package \package{randomlist} offers some features about databases. In
+fact that was the first aim of this package: to be able to product one
+assignment for one pupil (with all assignments different).
+
+For \package{randomlist} a database is a list. For instance the next
+example shows an usual list which is used as a database. We'll see
+later real databases with records and fields. For now, our
+database has records and each record has one single field: the name
+and first name of our pupils. In order to parse all entries of
+database \package{randomlist} offers the commands
+\cmd{\ForEach...Item}. These command extract one by one all the
+elements of a list and typeset, for each element, its third
+argument. Second argument give the macro name where element is stored.
+For these commands, the macro name is given without the
+backslash. Depending how the extraction is made, we have the three
+commands: \Cmd{\ForEachFirstItem}, \cmd{\ForEachLastItem}, and
+\cmd{\ForEachRandomItem}. In fact, the readind is made with an
+extraction but, as the work is made in a group, after the
+\cmd{\ForEach...} command, the list is restored.
+
+\subsubsection[\protect\texttt{\protect\textbackslash ForEachFirstItem}]{\cmd{\ForEachFirstItem}}
+
+\begin{SideBySideExample}
+  \NewList{Pupils}
+  \SetList{Pupils}{Alfred Aho,%
+    Charles Babbage,Gregory Chaintin,%
+    Edsger Dijkstra}
+  \ForEachFirstItem{Pupils}{Name}{%
+    Test for \Name\par
+    blah blah blah\dots\par\smallskip
+  }
+\end{SideBySideExample}
+\par\medskip
+
+\subsubsection[\protect\texttt{\protect\textbackslash ForEachLastItem}]{\cmd{\ForEachLastItem}}
+\Cmd{\ForEachLastItem} acts like \cmd{\ForEachFirstItem} but the
+reading is made in reverse order:\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{Pupils}
+  \SetList{Pupils}{Alfred Aho,%
+    Charles Babbage,Gregory Chaintin,%
+    Edsger Dijkstra}
+  \ForEachLastItem{Pupils}{Name}{%
+    Test for \Name\par
+    blah blah blah\dots\par\smallskip
+  }
+\end{SideBySideExample}
+\par\medskip
+
+\subsubsection[\protect\texttt{\protect\textbackslash ForEachRandomItem}]{\cmd{\ForEachRandomItem}}
+\Cmd{\ForEachRandomItem} acts like the previous commands but the
+reading is made randomly. In the next example, we can see that the
+list is restored after the command
+\cmd{\ForEachRandomItem}:\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{Pupils}
+  \SetList{Pupils}{Alfred Aho,%
+    Charles Babbage,Gregory Chaintin,%
+    Edsger Dijkstra}
+  \ForEachRandomItem{Pupils}{Name}{%
+    Test for \Name\par
+    blah blah blah\dots\par\smallskip
+  }
+  \ShowList{Pupils}
+\end{SideBySideExample}
+\par\medskip
+
+You can put a command \cmd{\ForEach} inside another one. There is no
+limits (but the stacks of \TeX{}):\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{L-Man}
+  \NewList{L-Woman}
+  \SetList{L-Man}{Alfred,Charles,Gregory}
+  \SetList{L-Woman}{Ada,Grace,Adele}
+  \ForEachRandomItem{L-Man}{Man}{%
+    \ForEachRandomItem{L-Woman}{Woman}{%
+      \Man{} and \Woman{} are computer
+      scientists\par
+    }
+  }
+\end{SideBySideExample}
+\par\medskip
+
+Actually, there is a bug that don't allow fragile commands inside
+lists when they are read with \cmd{\ForEach...Item} commands. I hope
+that the next version of \package{randomlist} will fix this!
+
+\subsection{Database with fields}
+Each record of a database is read as a set of fields. In fact it's a
+sequence of groups. \package{randomlist} allow to read each field with
+the macro \Cmd{\ReadFieldItem}. In order to make life easy,
+\package{randomlist} allow to read whole database from files with the
+command \Cmd{\ReadFileList}.
+
+This command read a field in a record and store it in a macro. It
+takes three arguments: a whole record or a macro containing the whole
+record, the rank of the field (starting zero), and a macro to store
+the value of this field. For instance:\par\medskip
+
+\begin{SideBySideExample}
+  \def\record{{ein}{un}{one}}
+  \ReadFieldItem{\record}{0}{Zahl}
+  \ReadFieldItem{\record}{1}{Nombre}
+  \ReadFieldItem{\record}{2}{Number}
+  \Nombre\ French, \Zahl\ German,
+  and \Number\ English.
+\end{SideBySideExample}
+\par\medskip
+
+If there are less fields than the indicating rank then an
+error message is raised:
+\begin{Verbatim}[xrightmargin=0pt,xleftmargin=0.5\linewidth]
+  \def\record{{ein}{un}{one}}
+  \ReadFieldItem{\record}{3}{Stuff}
+\end{Verbatim}
+give the error message:
+\begin{Verbatim}[frame=none]
+  ! Package randomlist Error: There aren't enough fields in the record.
+\end{Verbatim}
+Remember that fields are numbered starting from zero!
+
+Obviously, the power of \Cmd{\ReadFieldItem} comes with list and real
+database. For instance:\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{Languages}
+  \SetList{Languages}{{France}{un},%
+    {Germany}{ein},{England}{one}}
+  \ForEachFirstItem{Languages}{Unit}{%
+    \ReadFieldItem{\Unit}{0}{Country}%
+    \ReadFieldItem{\Unit}{1}{Number}%
+    You say ``\Number'' in \Country.\par
+  }
+\end{SideBySideExample}
+\par\medskip
+
+It's not very handy to write a whole database inside a \LaTeX{}
+source. \package{randomlist} allows to load a data base reading a
+extern file. For that, there is the command \Cmd{\ReadFileList}. This
+command takes two mandatory arguments: the name of the database and
+the name of the file.
+
+The file \texttt{pythagoras.dat} (page~\pageref{file-pythagoras})
+shows 100~lines of three numbers separated by comma. When this file is
+read, the data base contains 100~records with three fields. That is,
+by default, \package{randomlist} read CSV files (Comma Separated
+Values).\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{Pyth}
+  \ReadFileList{Pyth}{pythagoras.dat}
+  \GetItem{Pyth}{10}{triple}
+  \ReadFieldItem{\triple}{0}{triplea}
+  \ReadFieldItem{\triple}{1}{tripleb}
+  Do you know that
+  $\sqrt{\triplea^2+\tripleb^2}$ is an
+  integer?
+\end{SideBySideExample}
+\par\medskip
+
+\NewList{Pyth}
+\ReadFileList{Pyth}{pythagoras.dat}
+\GetItem{Pyth}{10}{triple}
+\ReadFieldItem{\triple}{0}{triplea}
+\ReadFieldItem{\triple}{1}{tripleb}
+\ReadFieldItem{\triple}{2}{triplec}
+To those who check the triple page~\pageref{file-pythagoras}, don't
+forget that the 10th rank maps with line number~11, that is,
+``\texttt{\triplea,\tripleb,\triplec}''. Moreover, you have the result
+to the operation : $\sqrt{\triplea^2+\tripleb^2}=\triplec$.
+
+A file could have any structure. In particular, it could have one or
+several title lines. It's the case for the file \texttt{pupils.dat}
+(page~\pageref{file-pupils}) where the first line is obviously a title
+line. You have just to extract this or these lines to obtain a
+``classical'' database.\par\medskip
+
+\begin{SideBySideExample}
+  \NewList{Class}
+  \ReadFileList{Class}{pupils.dat}
+  \ExtractFirstItem{Class}{NULL}
+  \GetRandomItem{Class}{pupil}
+  \ReadFieldItem{\pupil}{0}{Name}
+  \ReadFieldItem{\pupil}{1}{FName}
+  \ReadFieldItem{\pupil}{2}{Note}
+  Your child \Name{} \FName{} has
+  \Note{} this term. This is
+  \if A\Note very \fi
+  \if C\Note not \fi
+  good.
+\end{SideBySideExample}
+\par\medskip\noindent
+Processing this way, you have got a database with real datas (no title
+data).
+
+The file could be in another format than CSV. In fact, you can define
+a field separator (comma by default) and a string delimiter (double
+quote by default) which allow to put a field separator inside a
+field.
+%The syntax isn't very rich. Unlike real CSV file, there isn't
+%the syntax \texttt{""} to obtain a single \texttt{"} (or with an other
+%field separator).
+To indicate other symbols than comma and double
+quote, the command \cmd{\ReadFileList} accept an optional argument
+which declare the field separator and the string encloser by two
+characters.
+
+For instance, the file \texttt{comets.dat} (see page~
+\pageref{file-comets}) has ``\texttt{\string|}'' as field
+separator. Therefore, the calling syntax becomes:\par\medskip
+
+\begingroup
+\catcode`\|=12
+\begin{SideBySideExample}
+  \NewList{Comets}
+  \ReadFileList[|"]{Comets}{comets.dat}
+  \ExtractFirstItem{Comets}{NULL}
+  \ExtractFirstItem{Comets}{NULL}
+  \GetRandomItem{Comets}{comet}
+  \ReadFieldItem{\comet}{1}{Name}
+  \ReadFieldItem{\comet}{2}{Discover}
+  \ReadFieldItem{\comet}{3}{Year}
+  \ReadFieldItem{\comet}{4}{Period}
+  The comet \Name{} was discovered by
+  \Discover{} in \Year{}.
+  \unless\ifx\Period\empty
+    Its period is \Period{} years.
+  \fi
+\end{SideBySideExample}
+\endgroup
+\par\medskip
+
+Observe that we have two ``title lines'' to discard. As each line
+begins by a field separator, the first field of each record is
+empty. Thus we extract field starting one (not zero). We test if a
+period is empty because of 18D/Perrine-Mrkos comet.
+
+\subsection{Tricks, things, and other matters}
+\subsubsection{Random number}
+In the package \package{randomlist}, the (pseudo) random numbers are
+processed by the macro \Cmd{\RLuniformdeviate}\texttt{\{<n>\}\{<macro>\}}
+(choose a random integer number between 0 and $\text{\key{n}}-1$ and
+store it in |\<macro>|) and \Cmd{\RLsetrandomseed} (set the seed).
+
+When you say nothing, the seed is calculated with the current date
+(year, month, day, hour and minute). That is, if you run
+\texttt{latex} twice with a delay greater than one minute, you will
+have two different results. Sometime, it's what you want, sometime
+it's annoying.
+
+Under \LaTeX{}, you can set the seed with the package option
+\texttt{seed} with the syntax:
+\begin{Verbatim}[xrightmargin=0pt,xleftmargin=0.5\linewidth]
+  \usepackage[seed=<value>]{randomlist}
+\end{Verbatim}
+where \texttt{<value>} is an integer value. If \texttt{<value>} is
+zero then the seed is calculated using actual time, year, month and
+day.
+
+Under \TeX{} you have to use the command \Cmd{\RLsetrandomseed} to
+give the seed value. As for the option, with a zero value, the seed is
+calculated using actual time, year, month and day. The syntax is
+simple:
+\begin{Verbatim}[xrightmargin=0pt,xleftmargin=0.5\linewidth]
+  \RLsetrandomseed{<value>}
+\end{Verbatim}
+Of course, this command is available under \LaTeX{}.
+
+\subsubsection{Loop}
+For complex material with several databases, it could be useful to use
+external loop such \cmd{\foreach} from \package{pgffor} package or
+\cmd{\multido} from \package{multido} package. In fact, this is a good
+idea but not the best! These commands (\cmd{\foreach} and
+\cmd{\multido}) work inside a group at each loop. With
+\package{randomlist} that doesn't work everytime since lists are
+restored at each loop. For example, you can't extract element of a
+list.
+
+It is possible to read the list with \cmd{\Get...Item}. In this case,
+you should probably use the command \Cmd{\CountList} to know the size
+of a list. This command takes two arguments: the list name and a macro
+to store the number of elements. As usual you give only the name of
+the macro (without the backslash). The big difference between extract
+and get is that with random reading, you can avoid to have twice (or
+more) the same element.
+
+A real example is too long to be inserted here. We give only the code
+source. The file \texttt{.tex} and the result \texttt{.pdf} are part
+of the package distribution. In this example, we use two databases:
+one for the pupils and the other one for the pythagorean triples. As
+we read randomly the pythagorean triples and as we won't the same test
+for two pupils, then we don't use the external loop described in the
+latter paragraph.
+
+\VerbatimInput[gobble=0, frame=none, numbers=left, xleftmargin=0pt,
+               xrightmargin=0pt]{test.tex}
+
+Be careful! When we extract triples inside the loop, we must be sure
+that there is more triples than pupils elsewhere an error about an
+empty list is raised.
+
+Lines 15, 16, 17 read the data bases and extract the title line from
+\texttt{pupils.dat}. After that, we enter in the main loop (lines~18
+to~60).
+
+At the beginning of the loop, we read the fields for the pupil (name,
+first name and note) and the three fields of the pythagorean triple
+(lines~20 to~26). It's here that we extract randomly a triple. Since
+it's an extraction, another pupil will have another triple.
+
+Lines 27 to 39 typeset the test and lines 40 to 59 typeset the answer
+to the test. We test the note of the pupil to decide the type of
+exercise: Pythagorean theorem to find the hypotenuse (easy) or
+Pythagorean theorem to find a side (less easy).
+
+\subsubsection{Internal}
+You can access directly to a list. It's not recommended but\dots
+
+If the list name is \texttt{LName} (pay attention to the letter case),
+then the length of the list is \cmd{\LName-len} and the $n$th element
+of the list (starting from zero) is \cmd{\LName-$n$}. When an element
+is a record with several fields, those fields are inside braces. For
+example the first element of list \texttt{Triples} (see last example)
+is: \cmd{\Triples-0}~$=$~\texttt{\{119\}\{120\}\{169\}}. As you can
+see, inside a list, the characters for separator field and for string
+delimiter don't exist.
+
+The authors don't see any situation where knowing internal is
+important. If some users have good idea about it then writing to the
+authors will be an appreciate initiative!
+
+\section{\LaTeX{} Lists}
+Package \package{randomlist} offers two other special commands which
+allow to build random lists.
+
+The first one is \Cmd{\RandomItemizeList} which build an itemize list
+with random placement of items. Each item is a group.\par\medskip
+
+\RLsetrandomseed{1}
+\begin{SideBySideExample}
+  \LaTeX{} is:
+  \RandomItemizeList
+    {magical}
+    {logical}
+    {practical}
+    {clinical}
+    {cynical}
+\end{SideBySideExample}
+\par\medskip
+
+The second command is for enumerate list. It is
+\Cmd{\RandomEnumerateList} and it acts like the previous
+one:\par\medskip
+
+\RLsetrandomseed{2}
+\begin{SideBySideExample}
+  \LaTeX{} is:
+  \RandomEnumerateList
+    {magical}
+    {logical}
+    {practical}
+    {clinical}
+    {cynical}
+\end{SideBySideExample}
+\par\medskip
+
+
+\newpage
+\newgeometry{left=4cm, right=2cm, top=2cm, bottom=2cm}
+\section{Package \package{randomlist} code}
+\DocInput{randomlist.dtx}
+\newpage
+\newgeometry{left=2cm, right=2cm, top=2cm, bottom=2cm}
+\PrintChanges
+\PrintIndex
+\newpage
+\appendix
+\fvset{gobble=0,frame=none,numbers=left,xleftmargin=0pt,xrightmargin=0pt}
+\section{File \texttt{pythagoras.dat}}
+\label{file-pythagoras}
+This file contains Pythagorean triples which have three digits. There
+isn't all these triple. In fact the triple are built with the famous
+formula $(u^2-v^2,2uv,u^2+v^2)$ with $u$ and $v$ positive integers
+such $u>v$. Here are only the hundred first triples with three
+digits.
+
+\VerbatimInput{pythagoras.dat}
+\newpage
+\section{File \texttt{pupils.dat}}
+\label{file-pupils}
+This file shows a first line which isn't a data line.
+
+\VerbatimInput{pupils.dat}
+\newpage
+\section{File \texttt{comets.dat}}
+\label{file-comets}
+This file use lines which aren't data lines and weird separator.
+
+\VerbatimInput{comets.dat}
+\end{document}
+%</driver>
+% \fi
+%
+% \changes{v0.1}{2013/05/03}{%
+%   First release
+% }
+% \changes{v0.1a}{2013/05/06}{%
+%   Fix bug about braces.
+% }
+% \changes{v0.1b}{2013/05/10}{%
+%   Add \cmd{\initrandomlist}.
+% }
+% \changes{v1.0}{2015/12/27}{%
+%   randomlist completly rewritten.
+% }
+% \changes{v1.1}{2016/01/16}{%
+%   Tons of improvements due to Christian Tellechea.
+% }
+% \changes{v1.2}{2016/07/13}{%
+%   First public release.
+% }
+% \changes{v1.3}{2017/09/11}{%
+%   Random operations are \global.
+% }
+% \CheckSum{0}
+% \iffalse
+%<*latex>
+% \fi
+% \subsection{\LaTeX's wrapper}
+% \subsubsection{Introduction}
+% We start with release number and date.
+%    \begin{macrocode}
+\NeedsTeXFormat{LaTeX2e}[1995/06/01]
+\ProvidesPackage{randomlist}
+         [2017/09/11 v1.3 Package for random list (JCC, CT)]
+%    \end{macrocode}
+% \LaTeX's wrapper has the possibility to use option. There is only
+% one option: the seed one. It requires the \package{(x)keyval} package.
+%    \begin{macrocode}
+\RequirePackage{xkeyval}
+\DeclareOptionX{seed}{\gdef\RL@seed{#1}}
+\ExecuteOptions{seed=0}
+\ProcessOptionsX
+%    \end{macrocode}
+% We can now call the real randomlist code!
+%    \begin{macrocode}
+\input{randomlist}
+%    \end{macrocode}
+% \subsubsection{\LaTeX{} lists}
+% Obviously, \LaTeX{} lists are useful only with \LaTeX{}!
+% \begin{macro}{\RandomItemizeList}
+% Build an itemize list with random placement of items.
+%    \begin{macrocode}
+\NewList{*RandomList*}
+\def\RandomItemizeList{%
+  \def\RL@Type{itemize}%
+  \ClearList{*RandomList*}%
+  \@ifnextchar\bgroup{\@randomlist}{\@@randomlist}%
+}
+\long\def\@randomlist#1{%
+  \InsertRandomItem{*RandomList*}{#1}%
+  \@ifnextchar\bgroup{\@randomlist}{\@@randomlist}%
+}
+\def\@@randomlist{%
+  \long\edef\RL@body{\noexpand\begin{\RL@Type}}%
+  \RLfor \RL@var = 0 to \RL@lenof{*RandomList*}-1 \do{%
+    \long\edef\RL@body{%
+      \unexpanded\expandafter{\RL@body}%
+      \unexpanded\expandafter{%
+        \expandafter\item \csname *RandomList*-\RL@var\endcsname
+      }%
+    }%
+  }%
+  \long\edef\RL@body{\unexpanded\expandafter{\RL@body}\noexpand\end{\RL@Type}}%
+  \RL@body
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\RandomEnumerateList}
+% Like |randomitemize| but for enumerate list.
+%    \begin{macrocode}
+\newcommand*\RandomEnumerateList{%
+  \def\RL@Type{enumerate}
+  \ClearList{*RandomList*}%
+  \@ifnextchar\bgroup{\@randomlist}{\@@randomlist}
+}
+%    \end{macrocode}
+% \end{macro}
+% That's all for the \LaTeX's wrapper!
+% \iffalse
+%</latex>
+%<*tex>
+% \fi
+% \subsection{\TeX{} code}
+% At the beginning, we have to deal with multiple call and |@|'s
+% catcode.
+%    \begin{macrocode}
+\csname RandomListLoaded\endcsname
+\let\RandomListLoaded\endinput
+\edef\RLAtCatcode{\the\catcode`\@}
+\catcode`\@=11
+%    \end{macrocode}
+% If we aren't under \LaTeX{} then we need some \LaTeX{}
+% commands. It's just a copy of \LaTeX{}$2\epsilon$ code.
+%    \begin{macrocode}
+\ifx\@ifnextchar\@undefined
+%    \end{macrocode}
+% Definition of |\@ifnextchar|.
+%    \begin{macrocode}
+  \long\def\@ifnextchar#1#2#3{%
+    \let\reserved@d=#1%
+    \def\reserved@a{#2}%
+    \def\reserved@b{#3}%
+    \futurelet\@let@token\@ifnch}
+  \def\@ifnch{%
+    \ifx\@let@token\@sptoken
+      \let\reserved@c\@xifnch
+    \else
+      \ifx\@let@token\reserved@d
+        \let\reserved@c\reserved@a
+      \else
+        \let\reserved@c\reserved@b
+      \fi
+    \fi
+    \reserved@c}
+  \def\:{\let\@sptoken= } \:  %
+  \def\:{\@xifnch} \expandafter\def\: {\futurelet\@let@token\@ifnch}
+\fi
+%    \end{macrocode}
+% Definition of |\PackageError| and some \LaTeX{} functions when
+% running under \TeX{}.
+%    \begin{macrocode}
+\ifx\PackageError\@undefined
+  \long\def\@firstoftwo#1#2{#1}
+  \long\def\@secondoftwo#1#2{#2}
+  \def\@nnil{\@nil}%
+  \alloc@7\write\chardef\sixt@@n\@unused
+  \def\typeout#1{\immediate\write\@unused{#1}}%
+  \def\@spaces{\space\space\space\space}
+  \def\PackageError#1#2#3{%
+    \begingroup
+    \newlinechar`\^^J
+    \edef\RL@temp{#3}%
+    \expandafter\errhelp\expandafter{\RL@temp}%
+    \typeout{%
+      #1 error. \space See User's Manual for further information.^^J
+      \@spaces\@spaces\@spaces\@spaces
+      Type \space H <return> \space for immediate help.}%
+    \errmessage{#2}%
+    \endgroup
+  }
+\fi
+%    \end{macrocode}
+% We check if we work with an engine which contain at least
+% e\TeX{}.
+%    \begin{macrocode}
+\ifx\numexpr\@undefined
+    \begingroup
+    \newlinechar`\^^J
+    \errhelp{Run under etex, pdftex, xetex, luatex, ... but not under
+      tex}%
+    \typeout{%
+      randomlist error. \space See User's Manual for further information.^^J
+      \@spaces\@spaces\@spaces\@spaces
+      Type \space H <return> \space for immediate help.}%
+    \errmessage{You can't use randomlist under tex without etex extension.}%
+    \endgroup
+\fi
+%    \end{macrocode}
+% \begin{macro}{\@gobble}
+% Redefine |\@gobble| if needed.
+%    \begin{macrocode}
+\ifx\@gobble\@undefined
+  \long\def\@gobble#1{}
+\fi
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\RL@addtomacro}
+% We needs to add some code to some macros sometimes.
+%    \begin{macrocode}
+\def\RL@addtomacro#1#2{\expandafter\def\expandafter#1\expandafter{#1#2}}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\RL@ifempty}
+% Test if something is empty. Execute code according to the answer.
+%    \begin{macrocode}
+\def\RL@ifempty#1{%
+  \ifcat\relax\detokenize{#1}\relax
+    \expandafter\@firstoftwo
+  \else
+    \expandafter\@secondoftwo
+  \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% PDF\LaTeX, and X$_\mathrm{E}$\TeX know the primitives
+% |\pdfsetrandomseed| and |\pdfuniformedeviate| but lua\TeX{} didn't
+% know those primitives. Then we have to process ``by hand''!
+% \begin{macro}{\RLsetrandomseed}
+% We define the macro which give the initial seed. If the argument is
+% zero, the value is a mixture of actual time, day, month and year. If
+% the argument is nonzero, we process a new randomseed.
+%
+% The actual random number is stored in |\RL@random|.
+%    \begin{macrocode}
+\newcount\RL@random
+\newcount\RL@random@a
+\newcount\RL@random@b
+\def\RLsetrandomseed#1{%
+  \ifnum#1=0
+    \global\RL@random \numexpr \time + \year * \month * \day \relax
+  \else
+    \global\RL@random \numexpr \ifnum#1<0 -\fi#1 \relax
+  \fi
+}
+%    \end{macrocode}
+% If |\RL@seed| exists -- that is, if we run under \LaTeX{} -- we process
+% the seed (option of \LaTeX{} package). Otherwise, we use the zero
+% value.
+%    \begin{macrocode}
+\ifx\RL@seed\@undefined
+  \RLsetrandomseed{0}
+\else
+  \RLsetrandomseed{\RL@seed}
+\fi
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\RL@nextrand}
+% Process the next random number using Linear Congruentiel Generator
+% with Shrage's metthod.
+%    \begin{macrocode}
+\def\RL@nextrand{%
+%    \end{macrocode}
+% Use the LCG with :
+% \[x_{n+1} = 7^5 \times x_n \pmod{2^{31}-1}.\]
+% For that we take:
+% \begin{itemize}
+% \item $7^5=16807$;
+% \item $2^{31}-1 = 2147483647$;
+% \item $q = \mathrm{E}\left(\frac{2^{31}-1}{7^5}\right)=127773$;
+% \item $r = 2^{31}-1 \pmod{7^5} = 2836$.
+% \end{itemize}
+% Then:
+% \[x_{n+1} = 7^5(x_n \pmod{q}) - r\times\mathrm{E}\left(\frac{x_n}{q}\right).\]
+% If $x_{n+1} < 0$ then $x_{n+1} = x_{n+1} + 2^{31}-1$
+%    \begin{macrocode}
+  \global\RL@random@a=\RL@random
+  \global\divide\RL@random@a 127773
+  \global\RL@random@b=\RL@random@a
+  \global\multiply\RL@random@a -2836
+  \global\multiply\RL@random@b -127773
+  \global\advance\RL@random\RL@random@b
+  \global\multiply\RL@random 16807
+  \global\advance\RL@random\RL@random@a
+%    \end{macrocode}
+% If random number is negative add $2^{31}-1$.
+%    \begin{macrocode}
+  \ifnum\RL@random<0
+    \global\advance\RL@random 2147483647
+  \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\RLuniformdeviate}
+% Use |\RL@nextrand| to calculate a random integer between 0
+% (inclusive) and |#1| (exclusive). Store the result in macro |#2|.
+%    \begin{macrocode}
+\def\RLuniformdeviate#1#2{%
+%    \end{macrocode}
+% Compute the next random number |\RL@random|.
+%    \begin{macrocode}
+  \RL@nextrand
+%    \end{macrocode}
+% Compute $|\RL@random| \pmod{\mathtt{\string#1}}$.
+%    \begin{macrocode}
+  \global\RL@random@a=\RL@random
+  \global\RL@random@b=\RL@random
+  \global\divide\RL@random@a \numexpr#1\relax
+  \global\RL@random@b \numexpr\RL@random@b - \RL@random@a * (#1)\relax
+  \expandafter\edef\csname #2\endcsname{\number\RL@random@b}%
+}%
+%    \end{macrocode}
+% \end{macro}
+% \subsubsection{Introduction and first commands}
+% \begin{macro}{\@ifIsList}
+% Test if a list exists and then executes true code or false code. For
+% that the list of list names is stored inside the token register
+% |\@ListOfList|. Each name is separed to the next one by a ``|\sep|''
+% markup.
+%    \begin{macrocode}
+\newtoks\@ListOfList
+%    \end{macrocode}
+% |\@ifIsList| test if the list |#1| exists. If yes then it executes the
+% next argument else it executes the third argument. Test must be
+% executed on an expanded argument.
+%    \begin{macrocode}
+\def\@ifIsList#1{%
+  \expandafter\@ifIsList@\expandafter{#1}%
+}
+\def\@ifIsList@#1{%
+  \def\@@ifIsList##1#1\sep##2\@@ifIsList{%
+    \csname @\ifx\empty##2\empty second\else first\fi oftwo\endcsname
+  }%
+  \expandafter\@@ifIsList\the\@ListOfList#1\sep\@@ifIsList
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\RL@lenof}
+% Shortcut allowing to get the len of a list
+%    \begin{macrocode}
+\def\RL@lenof#1{\csname #1-len\endcsname}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\@ifIsListNotEmpty}
+% Test if a list exist and isn't empty. If double yes then it executes
+% the second argument else it executes the third one.
+%    \begin{macrocode}
+\newif\if@EmptyListFound
+\def\@ifIsListNotEmpty#1{%
+  \global\@EmptyListFoundfalse
+  \@ifIsList{#1}{%
+    \ifnum\RL@lenof{#1}=0
+      \global\@EmptyListFoundtrue
+      \expandafter\@secondoftwo
+    \else
+      \expandafter\@firstoftwo
+    \fi
+  }%
+  \@secondoftwo
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\@NoListError}
+% Error for an unexisting list or an empty list.
+%    \begin{macrocode}
+\def\@NoListError#1{%
+  \if@EmptyListFound
+    \@EmptyListError{#1}%
+    \global\@EmptyListFoundfalse
+  \else
+    \PackageError{randomlist}%
+                 {List #1 doesn't exist}%
+                 {Maybe you mistyped the list name?}%
+  \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\@EmptyListError}
+% Error for an empty list.
+%    \begin{macrocode}
+\def\@EmptyListError#1{%
+  \if@EmptyListFound
+  \PackageError{randomlist}%
+               {List #1 is empty}%
+               {Ask yourself why this list is empty.}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\@OutOfRangeError}
+% Error for index out of range.
+%    \begin{macrocode}
+\def\@OutOfRangeError#1#2{%
+  \PackageError{randomlist}%
+               {Index #2 is greater than last index of list #1}%
+               {There aren't enough elements in the list.}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\RL@nameldef}
+% |\long| version of |\@namedef|.
+%    \begin{macrocode}
+\long\def\RL@nameldef#1{%
+  \long\expandafter\def\csname #1\endcsname
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\RL@nameledef}
+% All the macros in \package{randomlist} are long ones. It's
+% useless for now since there isn't argument but it's a precaution
+% for the future.
+%
+% |\long| version of |\@nameedef|.
+%    \begin{macrocode}
+\long\def\RL@nameledef#1{%
+  \long\expandafter\edef\csname #1\endcsname
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\RL@namelgdef}
+% |\long| version of |\@namegdef|.
+%    \begin{macrocode}
+\long\def\RL@namelgdef#1{%
+  \long\expandafter\gdef\csname #1\endcsname
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\RL@namelxdef}
+% |\long| version of |\@namexdef|.
+%    \begin{macrocode}
+\long\def\RL@namelxdef#1{%
+  \long\expandafter\xdef\csname #1\endcsname
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\RL@let}
+% |\let| between two macros (with just the names)
+%    \begin{macrocode}
+\def\RL@let#1#2{%
+  \expandafter\let\csname#1\expandafter\endcsname\csname#2\endcsname
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\RLfor}
+% Loop without group. Syntax is |\RLfor<var>=<begin>to<end>\do|
+%    \begin{macrocode}
+\long\def\RL@doafterfi#1\fi{\fi#1}
+\def\RLfor#1=#2to#3\do{%
+%    \end{macrocode}
+% Set the variable.
+%    \begin{macrocode}
+  \edef#1{\number\numexpr#2}%
+%    \end{macrocode}
+% Set |\RL@sgncomp| to |<+| or |>-| if variable is greater or less
+% than end
+%    \begin{macrocode}
+  \edef\RL@sgncomp{\ifnum#1<\numexpr#3\relax>+\else<-\fi}%
+%    \end{macrocode}
+% Call auxiliary macro with five parameters:
+%    \begin{macrocode}
+  \expandafter\RLfor@i
+%    \end{macrocode}
+% First argument (sub-recursive macro name build with the <variable>
+% name).
+%    \begin{macrocode}
+  \csname RLfor@ii@\string#1\expandafter\endcsname\expandafter
+%    \end{macrocode}
+% Second argument (max).
+%    \begin{macrocode}
+  {\number\numexpr#3\expandafter}%
+%    \end{macrocode}
+% Third and fourth arguments since |\RL@sgncomp| is ``|<+|'' or ``|>-|''.
+%    \begin{macrocode}
+  \RL@sgncomp
+%    \end{macrocode}
+% fifth argument (variable name).
+%    \begin{macrocode}
+  #1%
+}
+%    \end{macrocode}
+% Auxiliary macro:
+% \begin{itemize}
+% \item |#1| recursive macro name (like |\RLfor@ii@<var>|;
+% \item |#2| max integer;
+% \item |#3| ``|<|'' or ``|>|'';
+% \item |#4| ``|+|'' or ``|-|'' (incrementation or decrementation);
+% \item |#5| variable name;
+% \item |#6| code to execute.
+% \end{itemize}
+%    \begin{macrocode}
+\long\def\RLfor@i#1#2#3#4#5#6{%
+%    \end{macrocode}
+% Define the recursive submacro.
+%    \begin{macrocode}
+  \def#1{%
+%    \end{macrocode}
+% While <var> isn't greater than max
+%    \begin{macrocode}
+    \unless\ifnum#5#3#2\relax
+%    \end{macrocode}
+% In order to have a tail recursion.
+%    \begin{macrocode}
+    \RL@doafterfi{%
+%    \end{macrocode}
+% Execute the loop code.
+%    \begin{macrocode}
+      #6%
+%    \end{macrocode}
+% Increment <variable> by one.
+%    \begin{macrocode}
+      \edef#5{\number\numexpr#5#41\relax}%
+%    \end{macrocode}
+% And repeat.
+%    \begin{macrocode}
+      #1%
+    }%
+    \fi
+  }%
+%    \end{macrocode}
+% submacro recursive call.
+%    \begin{macrocode}
+  #1%
+}
+%    \end{macrocode}
+% \end{macro}
+% \subsubsection{General list commands}
+% \begin{macro}{\NewList}
+% The main structure is the list. A list |L| is a collection of macros
+% |L-<n>| where |<n>| is an index (starting from zero) and a macro
+% |L-len| which store the len of the list, i.e. the last index plus
+% one.
+%
+% When a new list is created, its name is stored in |@ListOfList|. A
+% macro is also created for accessing data.
+%    \begin{macrocode}
+\def\NewList#1{%
+  \@ifIsList{#1}{%
+%    \end{macrocode}
+% If a list with the same name exists then raise an error.
+%    \begin{macrocode}
+    \PackageError{randomlist}%
+                 {List #1 already exists}%
+                 {Use \string\ClearList.}%
+  }%
+  {%
+%    \end{macrocode}
+% When a list |MyName| is created, the macros |\MyName| and
+% |\MyName-len| are created and there will be macros |\MyName-<n>| to
+% store data. Then \package{randomlist} prohibit the name |MyName| for
+% a list if the macro |\MyName| already exists.
+%    \begin{macrocode}
+    \ifcsname #1\endcsname
+      \PackageError{randomlist}%
+                   {Command \csname#1\endcsname already exists}%
+                   {Creating list #1 defines a \csname#1\endcsname command.}%
+    \else
+%    \end{macrocode}
+% If everything is fine, create the len macro which store the len of
+% the list (starting with 0);
+%    \begin{macrocode}
+      \RL@nameldef{#1-len}{0}%
+%    \end{macrocode}
+% append the list name to the list of names |\@ListOfList|;
+%    \begin{macrocode}
+      \@ListOfList\expandafter{\the\@ListOfList#1\sep}%
+%    \end{macrocode}
+% and create the |\Mylist[<index>]| macro.
+%    \begin{macrocode}
+      \expandafter\def\csname #1\endcsname[##1]{%
+%    \end{macrocode}
+% If index is to big, the macro is |\relax| (a sort of undefined
+% without error).
+%    \begin{macrocode}
+        \ifnum##1>\csname#1-len\endcsname
+          \relax
+        \else
+          \csname #1-##1\endcsname
+        \fi
+      }%
+    \fi
+  }%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\ClearList}
+% |\ClearList| erases a list. It sets the length to zero. There is no
+% need to erase all the |\Mylist-<index>| macros.
+%    \begin{macrocode}
+\def\ClearList#1{%
+  \@ifIsList{#1}{%
+%    \end{macrocode}
+% Clear the list if it exists.
+%    \begin{macrocode}
+     \RL@nameldef{#1-len}{0}%
+  }%
+  {\@NoListError{#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\CopyList}
+% Copy list |#1| in list |#2|.
+%    \begin{macrocode}
+\def\CopyList#1#2{%
+  \@ifIsList{#1}{%
+    \@ifIsList{#2}{%
+      \RL@let{#2-len}{#1-len}%
+      \ifnum\RL@lenof{#1}>0
+        \RLfor\RL@iter=0 to \RL@lenof{#1}-1 \do{%
+          \RL@let{#2-\RL@iter}{#1-\RL@iter}%
+        }%
+      \fi
+    }%
+    {\@NoListError{#2}}%
+  }%
+  {\@NoListError{#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\InsertList}
+% Insert List |#3| to the list |#1| starting at index |#2|. 
+%    \begin{macrocode}
+\def\InsertList#1#2#3{%
+  \@ifIsList{#1}{%
+    \@ifIsList{#3}{%
+      \ifnum #2>\RL@lenof{#1}
+        \@OutOfRangeError{#1}{#2}%
+      \else
+        \ShiftList{#1}{#2}{\RL@lenof{#3}}%
+        \ifnum\RL@lenof{#3}>0
+          \RLfor\RL@iter=0 to \RL@lenof{#3}-1 \do{%
+            \RL@let{#1-\number\numexpr\RL@iter+#2}{#3-\RL@iter}%
+          }%
+        \fi
+      \fi
+    }%
+    {\@NoListError{#3}}%
+  }%
+  {\@NoListError{#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\ShowList}
+% Macro for debugging purpose. First we declare some scratch count
+% registers.
+%    \begin{macrocode}
+\newcount\RL@counti
+\newcount\RL@countii
+\newcount\RL@countiii
+\def\ShowList#1{%
+%    \end{macrocode}
+% We show a list only if this list exists!
+%    \begin{macrocode}
+  \@ifIsList{#1}{%
+    \ifhmode\par\noindent\fi
+%    \end{macrocode}
+% Typeset |BEGIN{MyList}|. As we typeset braces, we have to use
+% ttfamily, then put the material inside a group.
+%    \begin{macrocode}
+    \begingroup
+      \ifdefined\ttfamily\ttfamily\else\tt\fi
+      BEGIN\detokenize{{#1}}
+%    \end{macrocode}
+% Typeset the number of elements.
+%    \begin{macrocode}
+      (\ifcase\RL@lenof{#1}
+        empty list%
+      \or
+        1 element%
+      \else
+        \RL@lenof{#1} elements%
+      \fi)\par
+%    \end{macrocode}
+% Loop to typeset element one after one.
+%    \begin{macrocode}
+      \ifnum\RL@lenof{#1}>0
+        \parindent=1em
+        \RLfor\RL@iter=0 to \RL@lenof{#1}-1 \do {%
+          #1[\RL@iter] = \expandafter\RL@meaning\csname
+          #1-\RL@iter\endcsname
+          \par
+        }%
+      \fi
+%    \end{macrocode}
+% Typeset |END{MyList}|.
+%    \begin{macrocode}
+      \noindent
+      END\detokenize{{#1}}\par
+    \endgroup
+  }%
+  {\@NoListError{#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\RL@meaning}
+% Like \TeX{} primitive |\meaning| without prefix |(\long) macro:->|:
+%    \begin{macrocode}
+\def\RL@meaning#1{\expandafter\RL@meaningi\meaning#1}
+\expandafter\def\expandafter\RL@meaningi\expandafter#\expandafter1\string>{}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\CountList}
+% Count the number of elements in the list |#1|. Store it in |#2|.
+%    \begin{macrocode}
+\def\CountList#1#2{%
+  \@ifIsList{#1}%
+  {\RL@nameledef{#2}{\RL@lenof{#1}}}%
+  {\@NoListError{#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \subsubsection{Writing and reading list commands}
+% \begin{macro}{\ShiftList}
+% Shift the elements of a list left or right. The syntax is:
+%
+% |\ShiftList{list name}{start}{shift}|
+%
+% where |start| is the first index to shift and |shift| the number of
+% shifting. If |shift| is positive, it is a right shift. If |shitf| is
+% negative, it is a left shift.
+%    \begin{macrocode}
+\def\ShiftList#1#2#3{%
+  \@ifIsList{#1}%
+  {%
+%    \end{macrocode}
+% No action if |shift| is zero!
+%    \begin{macrocode}
+    \unless\ifnum#3=0
+%    \end{macrocode}
+% If |<start>| is negative, raise an error.
+%    \begin{macrocode}
+      \ifnum\numexpr#2<0
+        \PackageError{randomlist}%
+                     {Negative index number}%
+                     {Index must be equal or greater than 0}%
+      \else
+%    \end{macrocode}
+% If |<start>| is greater than the lists length, raise an error.
+%    \begin{macrocode}
+      \ifnum\numexpr#2>\RL@lenof{#1}\relax
+        \PackageError{randomlist}%
+                     {Index \number\numexpr #2\relax\space too big
+                       (<=\RL@lenof{#1})}%
+                     {Index must be equal or smaller than length of
+                       the list}%
+      \else
+%    \end{macrocode}
+% Here we have $0 \leq |<start>| \leq |len|(|<list>|)$.
+%
+% If |<shift>| is positive, we process a right shifting: it's alway
+% possible.
+%    \begin{macrocode}
+      \ifnum\numexpr#3>0
+        \RLfor\RL@iter = \RL@lenof{#1} to #2 \do{%
+          \RL@let{#1-\number\numexpr\RL@iter+#3}{#1-\RL@iter}%
+        }%
+%    \end{macrocode}
+% Empty the items out of shift part.
+%    \begin{macrocode}
+        \RLfor\RL@iter = #2 to #2 + #3 - 1 \do{%
+          \RL@nameldef{#1-\RL@iter}{}%
+        }%
+      \else
+        \ifnum-#3>\numexpr#2\relax
+%    \end{macrocode}
+% If the negative shifting is to big for index |#2| then raise an error.
+%    \begin{macrocode}
+          \PackageError{randomlist}%
+                       {Negative shift to big}%
+                       {When negative, shift must not be greater than index}%
+        \else
+%    \end{macrocode}
+% Elsewhere, process the left shifting.
+%    \begin{macrocode}
+          \RLfor\RL@iter=#2 to \RL@lenof{#1} \do{%
+            \RL@let{#1-\number\numexpr\RL@iter+#3}{#1-\RL@iter}%
+          }%
+        \fi
+      \fi
+%    \end{macrocode}
+% Set the list length for both positive and negative shifting.
+%    \begin{macrocode}
+      \RL@nameledef{#1-len}{\number\numexpr\RL@lenof{#1} + #3}%
+    \fi\fi\fi
+  }%
+  {\@NoListError{#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\InsertLastItem}
+% Add an element |#2| at the end of the list |#1|.
+%    \begin{macrocode}
+\long\def\InsertLastItem#1#2{%
+  \@ifIsList{#1}
+  {%
+    \RL@nameldef{#1-\RL@lenof{#1}}{#2}%
+    \RL@nameledef{#1-len}{\number\numexpr\RL@lenof{#1}+1}%
+  }
+  {\@NoListError{#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\InsertFirstItem}
+% Add an element |#2| at the beginning of the list |#1|. For that,
+% shift right all the element and then put |#3| at |L[0]|.
+%    \begin{macrocode}
+\long\def\InsertFirstItem#1#2{%
+  \InsertItem{#1}{0}{#2}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\InsertItem}
+% Add an element |#3| at the position |#2| of the list |#1|. For that,
+% pass from |L[0]| to |L[#2-1]| then shift right from |L[#2]| to
+% |L[len]| and finally put |#3| at |L[#2]|. To do this, we must have
+% |#2| $\geq$ |L-len|.
+%    \begin{macrocode}
+\long\def\InsertItem#1#2#3{%
+  \@ifIsList{#1}%
+  {%
+    \ShiftList{#1}{#2}{1}%
+    \RL@nameldef{#1-#2}{#3}%
+  }%
+  {\@NoListError{#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\InsertRandomItem}
+% Insert element |#2| in a random position of list |#1|.
+%    \begin{macrocode}
+\long\def\InsertRandomItem#1#2{%
+  \@ifIsList{#1}%
+  {%
+    \RLuniformdeviate{\RL@lenof{#1}+1}{RL@temp}%
+    \InsertItem{#1}{\RL@temp}{#2}%
+  }%
+  {\@NoListError{#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\ExtractFirstItem}
+% Extract the first element of list |#1| and store it in |#2|.
+%    \begin{macrocode}
+\def\ExtractFirstItem#1#2{%
+  \@ifIsList{#1}%
+  {%
+    \ExtractItem{#1}{0}{#2}%
+  }%
+  {\@NoListError{#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\ExtractLastItem}
+% Extract the last element of list |#1| and store it in |#2|.
+%    \begin{macrocode}
+\def\ExtractLastItem#1#2{%
+  \@ifIsListNotEmpty{#1}%
+  {%
+    \RL@let{#2}{#1-\number\numexpr\RL@lenof{#1}-1}%
+    \RL@nameledef{#1-len}{\number\numexpr\RL@lenof{#1}-1}%
+  }%
+  {\@NoListError{#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\ExtractItem}
+% Extract the element at the position |#2| of the list |#1| and store
+% it in |#3|.
+%    \begin{macrocode}
+\def\ExtractItem#1#2#3{%
+  \@ifIsListNotEmpty{#1}%
+  {%
+    \RL@let{#3}{#1-#2}%
+    \ShiftList{#1}{#2+1}{-1}%
+  }%
+  {\@NoListError{#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\ExtractRandomItem}
+% Extract element in a random position of list |#1| and store it in |#2|.
+%    \begin{macrocode}
+\def\ExtractRandomItem#1#2{%
+  \@ifIsListNotEmpty{#1}%
+  {%
+    \RLuniformdeviate{\RL@lenof{#1}}{RL@temp}%
+    \ExtractItem{#1}{\RL@temp}{#2}%
+  }%
+  {\@NoListError{#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\ExtractList}
+% |ExtractList| extract a list from a list. There are four arguments:
+% \begin{itemize}
+% \item |#1| is the list from which the extraction is made;
+% \item |#2| is the starting index of extraction;
+% \item |#3| is the ending index of extraction;
+% \item |#4| is the list which receive the extracted list.
+% \end{itemize}
+%    \begin{macrocode}
+\def\ExtractList#1#2#3#4{%
+%    \end{macrocode}
+% In order to do something, |#1| and |#2| must be lists, and indexes
+% |#2| and |#3| must be inside list |#1|.
+%    \begin{macrocode}
+  \@ifIsList{#1}{%
+    \@ifIsList{#4}{%
+      \ifnum#2<\RL@lenof{#1}%
+        \ifnum#3<\RL@lenof{#1}%
+          \ifnum#2>#3\relax
+%    \end{macrocode}
+% If $\text{start} > \text{end}$ we build an empty list.
+%    \begin{macrocode}
+            \RL@nameldef{#4-len}{0}%
+          \else
+%    \end{macrocode}
+% If $\text{start} \leq \text{end}$ we build a real extracted list. We
+% have to be careful because |\ExtractItem| uses the loop variable
+% |\RL@iter|. Then we use another loop variable. 
+%    \begin{macrocode}
+            \RLfor\RL@iterextract=0 to #3 - #2 \do{%
+              \RL@let{#4-\RL@iterextract}{#1-#2}%
+              \ExtractItem{#1}{#2}{RL@temp}%
+            }%
+            \RL@nameledef{#4-len}{\number\numexpr #3 - #2 + 1}%
+          \fi
+        \else
+          \@OutOfRangeError{#1}{#3}%
+        \fi
+      \else
+        \@OutOfRangeError{#1}{#2}%
+      \fi
+    }%
+    {\@NoListError{#4}}%
+  }%
+  {\@NoListError{#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\GetFirstItem}
+% Get the first element of list |#1| and store it in |#2|.
+%    \begin{macrocode}
+\def\GetFirstItem#1#2{%
+  \GetItem{#1}{0}{#2}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\GetLastItem}
+% Get the last element of list |#1| and store it in |#2|.
+%    \begin{macrocode}
+\def\GetLastItem#1#2{%
+  \GetItem{#1}{\number\numexpr\RL@lenof{#1}-1}{#2}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\GetItem}
+% Get the element of rank |#2| of list |#1| and store it in |#3|.
+%    \begin{macrocode}
+\def\GetItem#1#2#3{%
+  \@ifIsListNotEmpty{#1}
+  {%
+    \ifnum\numexpr\RL@lenof{#1}-1-#2<0
+      \@OutOfRangeError{#1}{#2}%
+    \else
+      \RL@let{#3}{#1-#2}%
+    \fi
+  }
+  {\@NoListError{#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\GetRandomItem}
+% Get element in a random position of list |#1| and store it in |#2|.
+%    \begin{macrocode}
+\def\GetRandomItem#1#2{%
+  \@ifIsListNotEmpty{#1}%
+  {%
+    \RLuniformdeviate{\RL@lenof{#1}}{RL@temp}%
+    \GetItem{#1}{\RL@temp}{#2}%
+  }%
+  {\@NoListError{#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\GetList}
+% |\GetList| copy a sub-list from a list. There are four arguments:
+% \begin{itemize}
+% \item |#1| is the list from which the reading is made;
+% \item |#2| is the starting index of extraction;
+% \item |#3| is the ending index of extraction;
+% \item |#4| is the list which receive the readen items.
+% \end{itemize}
+%    \begin{macrocode}
+\def\GetList#1#2#3#4{%
+%    \end{macrocode}
+% In order to do something, |#1| and |#2| must be lists, and indexes
+% |#2| and |#3| must be inside list |#1|.
+%    \begin{macrocode}
+  \@ifIsList{#1}{%
+    \@ifIsList{#4}{%
+      \ifnum#2<\RL@lenof{#1}%
+        \ifnum#3<\RL@lenof{#1}%
+          \ifnum#2>#3\relax
+%    \end{macrocode}
+% If $\text{start} > \text{end}$ we build an empty list.
+%    \begin{macrocode}
+            \RL@nameldef{#4-len}{0}%
+          \else
+%    \end{macrocode}
+% If $\text{start} \leq \text{end}$ we build a real extracted list.
+%    \begin{macrocode}
+            \RLfor\RL@iter=#2 to #3 \do{%
+              \RL@let{#4-\number\numexpr \RL@iter - #2}{#1-\RL@iter}%
+            }%
+            \RL@nameledef{#4-len}{\number\numexpr #3 - #2 + 1}%
+          \fi
+        \else
+          \@OutOfRangeError{#1}{#3}%
+        \fi
+      \else
+        \@OutOfRangeError{#1}{#2}%
+      \fi
+    }%
+    {\@NoListError{#4}}%
+  }%
+  {\@NoListError{#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\SetFirstItem}
+% Set the first element of list |#1| with value |#2|.
+%    \begin{macrocode}
+\long\def\SetFirstItem#1#2{%
+  \SetItem{#1}{0}{#2}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\SetLastItem}
+% Set the last element of list |#1| with value |#2|.
+%    \begin{macrocode}
+\long\def\SetLastItem#1#2{%
+  \SetItem{#1}{\number\numexpr\RL@lenof{#1}-1}{#2}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\SetItem}
+% Set the |#2| element of list |#1| with value |#3|.
+%    \begin{macrocode}
+\long\def\SetItem#1#2#3{%
+  \@ifIsListNotEmpty{#1}%
+  {%
+    \ifnum\numexpr\RL@lenof{#1}-1-#2<0
+      \@OutOfRangeError{#1}{#2}%
+    \else
+      \RL@nameldef{#1-#2}{#3}%
+    \fi
+  }%
+  {\@NoListError{#1}}%%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\SetRandomItem}
+% Set element in a random position of list |#1| with value |#2|.
+%    \begin{macrocode}
+\long\def\SetRandomItem#1#2{%
+  \@ifIsListNotEmpty{#1}%
+  {%
+    \RLuniformdeviate{\RL@lenof{#1}}{RL@temp}%
+    \SetItem{#1}{\RL@temp}{#2}%
+  }%
+  {\@NoListError{#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\SetList}
+% |\SetList| allow to give multiple values to a list. This function
+% acts like a repetition of |\InsertLastItem|.
+%    \begin{macrocode}
+\def\SetList#1#2{%
+  \@ifIsList{#1}%
+  {%
+    \ClearList{#1}%
+    \def\RL@name{#1}%
+    \RL@setlist#2,\@nil,%
+  }%
+  {\@NoListError{#1}}%
+}
+\long\def\RL@setlist#1,{%
+  \def\RL@arg{#1}%
+  \unless\ifx\RL@arg\@nnil
+    \InsertLastItem{\RL@name}{#1}%
+    \expandafter\RL@setlist
+  \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% \subsubsection{Loop on list}
+% \begin{macro}{\ForEachFirstItem}
+% |\ForEachFirstItem| typesets |#3| for each element of the list |#1|
+% extracting the actual first element (stored in |#2|).
+%    \begin{macrocode}
+\long\def\ForEachFirstItem#1#2#3{%
+  \begingroup
+    \RLfor \RL@var = 0 to \RL@lenof{#1}-1 \do{%
+      \ExtractFirstItem{#1}{#2}%
+      #3%
+    }%
+  \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\ForEachLastItem}
+% |\ForEachLastItem| typesets |#3| for each element of the list |#1|
+% extracting the actual last element  (stored in |#2|).
+%    \begin{macrocode}
+\long\def\ForEachLastItem#1#2#3{%
+  \begingroup
+    \RLfor \RL@var = 0 to \RL@lenof{#1}-1 \do{%
+      \ExtractLastItem{#1}{#2}%
+      #3%
+    }%
+  \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\ForEachRandomItem}
+% |\ForEachRandomItem| typesets |#3| for each element of the list |#1|
+% extracting randomly an element (stored in |#2|).
+%    \begin{macrocode}
+\long\def\ForEachRandomItem#1#2#3{%
+  \begingroup
+    \RLfor \RL@var = 0 to \RL@lenof{#1}-1 \do{%
+      \ExtractRandomItem{#1}{#2}%
+      #3%
+    }%
+  \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+% \subsubsection{Database}
+% \begin{macro}{\ReadFieldItem}
+% Macro |\ReadFieldItem| read a field in a record.
+%
+% A record is a sequence of groups, each group is a field.
+% \begin{itemize}
+% \item |#1| is the record (sequence of groups;
+% \item |#2| is the index of item (starting at zero);
+% \item |#3| is the macro name which store the field.
+% \end{itemize}
+%    \begin{macrocode}
+\long\def\ReadFieldItem#1#2#3{%
+%    \end{macrocode}
+% Store the field's index.
+%    \begin{macrocode}
+  \RL@counti #2\relax
+%    \end{macrocode}
+% Call the recursive macro
+%    \begin{macrocode}
+  \expandafter\RL@ReadFieldItem#1\@nil
+%    \end{macrocode}
+% Store the result in macro |\#3|.
+%    \begin{macrocode}
+  \expandafter\let\csname#3\endcsname\RL@temp
+}
+%    \end{macrocode}
+% In fact the first recusive call check for a left brace. A record
+% must contain at least one field otherwise an error message is
+% raised.
+%    \begin{macrocode}
+\long\def\RL@ReadFieldItem{%
+  \@ifnextchar\bgroup{\RL@@ReadFieldItem}{\RL@@ReadFieldItemError}%
+}
+%    \end{macrocode}
+% 
+%    \begin{macrocode}
+\long\def\RL@@ReadFieldItem#1{%
+  \ifnum\RL@counti=\z@
+    \def\RL@temp{#1}%
+    \expandafter\RL@@ReadFieldItemEnd
+  \else
+    \advance\RL@counti \m@ne
+    \expandafter\RL@ReadFieldItem
+  \fi
+}
+\long\def\RL@@ReadFieldItemEnd#1\@nil{}
+\long\def\RL@@ReadFieldItemError#1\@nil{%
+  \PackageError{randomlist}%
+               {There aren't enough fields in the record}%
+               {Pay attention that field number starts from zero.}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\ReadFileList}
+% First, we look for special delimiters for fields and strings. By
+% default, the delimiter for fields is the comma and the delimiter for
+% string is the double quote.
+%    \begin{macrocode}
+\def\RL@SetDelimiters#1#2#3\@nil{%
+%    \end{macrocode}
+% \begin{itemize}
+% \item argument |#1| is the field separator;
+% \item argument |#2| is the string delimiter;
+% \item argument |#3| is the remainder to ignore.
+% \end{itemize}
+%    \begin{macrocode}
+  \def\RL@markstrings##1{%
+    \let\RL@accu\empty
+    \expandafter\RL@markstrings@i##1#2\@nil#2%
+    \let##1=\RL@accu
+  }%
+  \def\RL@markstrings@i##1#2##2#2{%
+    \RL@addtomacro\RL@accu{##1}%
+    \def\RL@current{##2}%
+    \unless\ifx\@nnil\RL@current
+      \RL@addtomacro\RL@accu{\RL@string{##2}}%
+      \expandafter\RL@markstrings@i
+    \fi
+  }%
+  \def\RL@unmarkstrings##1{%
+    \let\RL@accuA\empty
+    \expandafter\RL@unmarkstrings@i##1\RL@string\@nil
+    \let##1=\RL@accuA
+  }%
+  \def\RL@unmarkstrings@i##1\RL@string##2{%
+    \RL@addtomacro\RL@accuA{##1}%
+    \def\RL@current{##2}%
+    \unless\ifx\@nnil\RL@current
+      \RL@ifempty{##2}%
+        {\RL@addtomacro\RL@accuA{#2}}%
+        {\RL@addtomacro\RL@accuA{##2}}%
+      \expandafter\RL@unmarkstrings@i
+    \fi
+  }%
+  \def\RL@parsefields##1{%
+    \let\RL@accu\empty
+    \expandafter\RL@parsefields@i##1#1\@nil#1%
+    \let##1=\RL@accu
+  }%
+  \def\RL@parsefields@i##1#1{%
+    \def\RL@current{##1}%
+    \unless\ifx\@nnil\RL@current
+      \RL@unmarkstrings\RL@current
+      \RL@removefirstspaces\RL@current
+      \RL@removelastspaces \RL@current
+      \expandafter\RL@addtomacro\expandafter\RL@accu\expandafter
+        {\expandafter{\RL@current}}%
+      \expandafter\RL@parsefields@i
+    \fi
+  }%
+}
+%    \end{macrocode}
+% The macro |\ReadFileList| uses a handle for the reading file. it
+% needs also a macro to detect |\par|
+%    \begin{macrocode}
+\newread\RL@hdle
+\def\@ppar{\par}
+%    \end{macrocode}
+% At first, |\ReadFileList| check for an optionnal argument giving
+% delimiters. By default, delimiters are comma for field separator and
+% double quote for string delimiter.
+%    \begin{macrocode}
+\def\ReadFileList{\@ifnextchar[{\@ReadFileList}{\@ReadFileList[,"]}}
+%    \end{macrocode}
+% \begin{itemize}
+% \item |#1| contains the delimiters;
+% \item |#2| is the data base name;
+% \item |#3| is the file name.
+% \end{itemize}
+%    \begin{macrocode}
+\def\@ReadFileList[#1]#2#3{%
+  \openin \RL@hdle = #3
+  \ifeof\RL@hdle
+    \PackageError{randomlist}%
+      {File #3 doesn't exist}%
+      {Verify its name, its extension, its location, its permissions.}%
+  \else
+%    \end{macrocode}
+% If the optionnal argument is empty then raise an error and take the
+% comma and the double quote instead.
+%    \begin{macrocode}
+    \RL@ifempty{#1}%
+      {%
+        \PackageError{randomlist}
+          {Optional argument empty: [,"] inserted}
+          {Do not leave an optional argument empty}%
+          \RL@SetDelimiters,"\@nil
+      }
+%    \end{macrocode}
+% Else add double quote to for security.
+%    \begin{macrocode}
+      {\RL@SetDelimiters#1"\@nil}%
+%    \end{macrocode}
+% The main loop read each line of the file. Don't process anything if
+% the line is empty (it could be the very end of the file).
+%    \begin{macrocode}
+    \loop
+      \read\RL@hdle to \RL@buffer
+      \unless\ifx\RL@buffer\@ppar
+%    \end{macrocode}
+% Mark the string
+%    \begin{macrocode}
+        \RL@markstrings\RL@buffer
+%    \end{macrocode}
+% and process the fields.
+%    \begin{macrocode}
+        \RL@parsefields\RL@buffer
+%    \end{macrocode}
+% Save current record with fields, that is, with sequence of groups.
+%    \begin{macrocode}
+        \def\RL@accuA{\InsertLastItem{#2}}%
+        \expandafter\RL@accuA\expandafter{\RL@buffer}%
+      \fi
+      \ifeof\RL@hdle\else
+    \repeat
+  \fi
+}
+%    \end{macrocode}
+% Check for a heading space.
+%    \begin{macrocode}
+\def\RL@ifspacefirst#1{%
+  \RL@ifspacefirst@i#1A \@nil
+}
+\expandafter\def\expandafter\RL@ifspacefirst@i
+  \expandafter#\expandafter1\space#2\@nil{%
+    \RL@ifempty{#1}%
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+% Remove all spaces at the start of argument (macro).
+\def\RL@removefirstspaces#1{%
+  \expandafter\RL@ifspacefirst\expandafter{#1}
+    {\expandafter\removefistspace@i#1\@nil#1}
+    {}%
+}
+\expandafter\def\expandafter\removefistspace@i\space#1\@nil#2{%
+  \def#2{#1}%
+  \RL@removefirstspaces#2%
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+% Store |^^00|'s catcode
+\edef\RL@restorecatcodezero{\catcode0=\number\catcode0\relax}
+%    \end{macrocode}
+% then set this catcode to other catcode.
+%    \begin{macrocode}
+% puis le modifie à 12.
+\catcode0=12
+%    \end{macrocode}
+% Remove all heading and trailing spaces of argument (macro).
+%    \begin{macrocode}
+\def\RL@removelastspaces#1{%
+  \expandafter\def\expandafter#1\expandafter{%
+    \romannumeral\expandafter
+    \RL@removelastspaces@i\expandafter\relax#1^^00 ^^00\@nil
+  }%
+}
+\def\RL@removelastspaces@i#1 ^^00{\RL@removelastspaces@ii#1^^00}
+\def\RL@removelastspaces@ii#1^^00#2\@nil{%
+  \RL@ifspacefirst{#2}
+    {\RL@removelastspaces@i#1^^00 ^^00\@nil}
+    {\expandafter\z@\@gobble#1}%
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+% Restore |^^00|'s catcode.
+\RL@restorecatcodezero
+%    \end{macrocode}
+% \end{macro}
+% At the very end of the package, we restore the |@|'s catcode.
+%    \begin{macrocode}
+\catcode`\@=\RLAtCatcode\relax
+%    \end{macrocode}
+% \iffalse
+%</tex>
+% \fi

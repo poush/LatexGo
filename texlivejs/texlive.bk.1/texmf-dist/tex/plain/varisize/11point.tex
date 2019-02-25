@@ -1,0 +1,52 @@
+%%% This file is public domain.
+%%% Originally written 1992, Don Hosek.
+%%% This declaration added by Clea F. Rees 2008/11/16 with the permission of Dan Hosek.
+%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This file sets up an eleven point environment for TeX. It can be initialized
+% with the '\elevenpoint' macro.
+% It also sets up a '\tenpoint' macro in case you want to go back down.
+% By Don Hosek
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+\ifx\tenpoint\undefined\let\loadedfrommacro=Y
+         \input 10point
+         \let\loadedfrommacro=N\fi
+ 
+%%%
+%%% Load in the fonts
+%%%
+\font\elevenrm=cmr10    scaled \magstephalf
+\font\eleveni=cmmi10    scaled \magstephalf
+\font\elevensy=cmsy10   scaled \magstephalf
+\font\elevenex=cmex10   scaled \magstephalf
+\font\elevenbf=cmbx10   scaled \magstephalf
+\font\elevensl=cmsl10   scaled \magstephalf
+\font\eleventt=cmtt10   scaled \magstephalf
+\font\elevenit=cmti10   scaled \magstephalf
+\font\elevencsc=cmcsc10 scaled \magstephalf
+ 
+\font\eightrm=cmr8           \font\sixrm=cmr6
+\font\eighti=cmmi8           \font\sixi=cmmi6
+\font\eightsy=cmsy8          \font\sixsy=cmsy6
+\font\eightbf=cmbx8          \font\sixbf=cmbx6
+ 
+%%%
+%%% Set up the elevenpoint macros
+%%%
+\ifx\elevenpoint\undefined
+   \def\elevenpoint{\def\rm{\fam0\elevenrm}% switch to 11-point type
+       \textfont0=\elevenrm \scriptfont0=\eightrm \scriptscriptfont0=\sixrm
+       \textfont1=\eleveni  \scriptfont1=\eighti  \scriptscriptfont1=\sixi
+       \textfont2=\elevensy \scriptfont2=\eightsy \scriptscriptfont2=\sixsy
+       \textfont3=\elevenex \scriptfont3=\elevenex\scriptscriptfont3=\elevenex
+       \textfont\itfam=\elevenit  \def\it{\fam\itfam\elevenit}%
+       \textfont\slfam=\elevensl  \def\sl{\fam\slfam\elevensl}%
+       \textfont\ttfam=\eleventt  \def\tt{\fam\ttfam\eleventt}%
+       \textfont\bffam=\elevenbf  \scriptfont\bffam=\eightbf
+        \scriptscriptfont\bffam=\sixbf  \def\bf{\fam\bffam\elevenbf}%
+       \textfont\scfam=\elevencsc \def\sc{\fam\scfam\elevencsc}%
+       \normalbaselineskip=14pt
+       \setbox\strutbox=\hbox{\vrule height9pt depth4pt width0pt}%
+       \normalbaselines\rm}
+   \fi

@@ -1,0 +1,285 @@
+\catcode`\@=11
+\def\gobble#1{}
+\def\elet#1{%
+  \expandafter\let\expandafter#1%
+}
+
+\def\csdef#1{%
+  \expandafter\def\csname #1\endcsname
+}
+
+\def\cslet#1{%
+  \expandafter\let\csname #1\endcsname
+}
+
+\def\gobble#1{}
+
+\def\getoptk@@#1#2{%
+  \beginnext
+  \toks2={{#1}{#2}}%
+  \edef\next{%
+    \noexpand\getoptk@@A\the\toks2
+    {\expandafter\noexpand\csname
+      getoptk@behaviour@\getoptkactivedictionary @#1\endcsname}%
+  }%
+  \endnext
+}
+
+\def\getoptk@@A#1#2#3{%
+  \beginnext
+  \toksloadcsexpansion\getoptkdictionary\to{\toks2}%
+  \toks4={\\{{#1}{#2}{#3}}}%
+  \edef\next{\noexpand\def\noexpand\getoptkdictionary{%
+      \the\toks2
+      \the\toks4
+    }%
+  }%
+  \endnext
+  \cslet{getoptk@dictionary@\getoptkactivedictionary}\getoptkdictionary
+  \beginnext
+  \def\getoptk@a{#2}%
+  \ifx\getoptk@a\empty
+    \toks4={}%
+  \else
+    \toks4={####1}%
+  \fi
+  \toks2={\def#3}%
+  \edef\next{\the\toks2\the\toks4}%
+  \endnext
+}
+
+\def\toksloadcsexpansion#1\to#2{%
+  #2=\expandafter{#1}} 
+\def\tokscat#1&#2\to#3{%
+  \beginnext
+  \edef\tokscat@a{\the#1\the#2}%
+  \toks2={#3}%
+  \toksloadcsexpansion\tokscat@a
+    \to{\toks4}%
+  \edef\next{\the\toks2={\the\toks4}}%
+  \endnext}
+\def\beginnext{%
+  \begingroup
+  \let\next\undefined}
+\def\endnext{%
+  \expandafter\endgroup\next}
+\begingroup
+\catcode`\*=13
+\def *#1{}
+\global\futurelet\spacetoken*^^20\relax
+\global\futurelet\newlinetoken*^^0a\relax
+\endgroup
+\def\readblanks\then#1\done{%
+  \beginnext
+  \def\next{#1}%
+  \readblanks@L}
+\def\readblanks@L{%
+  \futurelet\readblanks@t\readblanks@A}
+\def\readblanks@A{%
+  \let\readblanks@N\readblanks@E
+  \ifx\readblanks@t\spacetoken
+    \let\readblanks@N\readblanks@S
+  \fi
+  \ifx\readblanks@t\newlinetoken
+    \let\readblanks@N\readblanks@S
+  \fi
+  \ifx\readblanks@t\par
+    \let\readblanks@N\readblanks@I
+  \fi
+  \ifx\readblanks@t\input
+    \let\readblanks@N\readblanks@X
+  \fi
+  \readblanks@N}
+\def\readblanks@E{\endnext}
+\long\def\readblanks@S{%
+  \afterassignment\readblanks@L
+  \count0=0}
+\def\readblanks@I#1{%
+  \readblanks@L}
+\def\readblanks@X{%
+  \expandafter\readblanks@L}
+\def\readletters\to#1\then#2\done{%
+  \beginnext
+  \toks2={#2}%
+  \toks4={#1}%
+  \toks6={}%
+  \readletters@L
+}
+
+\def\readletters@L{%
+  \futurelet\readletters@t\readletters@A
+}
+
+\def\readletters@A{%
+  \ifcat A\noexpand\readletters@t
+    \let\readletters@N\readletters@X
+  \else
+    \let\readletters@N\readletters@E
+  \fi
+  \readletters@N
+}
+
+\def\readletters@X#1{%
+  \toks8={#1}%
+  \tokscat\toks6 &\toks8\to{\toks6}%
+  \readletters@L
+}
+
+\def\readletters@E{%
+  \edef\next{\the\toks4={\the\toks6}\the\toks2}%
+  \endnext
+}
+
+\newtoks\getoptkargument
+\def\getoptk#1{%
+  \beginnext
+  \toks0={#1}%
+  \toks2={}%
+  \toks4={}%
+  \toks6={}%
+  \getoptkargument={}%
+  \getoptk@L}
+\def\getoptk@E{%
+  \edef\next{%
+    \the\toks0{\the\toks2}%
+    \the\toks4}%
+  \endnext}
+\def\getoptk@L{%
+  \readblanks\then\getoptk@A\done}
+\def\getoptk@A{%
+  \readletters\to\toks4\then
+    \getoptk@B
+  \done}
+\def\getoptk@B{%
+  \let\getoptk@N\getoptk@E
+  \let\\\getoptk@S
+  \getoptkdictionary
+  \getoptk@N}
+\def\getoptk@S#1{\getoptk@T#1}
+\def\getoptk@T#1#2#3{%
+  \edef\getoptk@a{\the\toks4}%
+  \def\getoptk@b{#1}%
+  \def\getoptk@p{#2}%
+  \ifx\getoptk@a\getoptk@b
+    \let\\\gobble
+    \toks6={}%
+    \toks8={#3}%
+    \def\getoptk@N{#2}%
+    \def\getoptk@a{}%
+    \ifx\getoptk@p\getoptk@a
+      \let\getoptk@N\getoptkcallback
+    \fi
+    \def\getoptk@a{[]}%
+    \ifx\getoptk@p\getoptk@a
+      \let\getoptk@N\getoptk@O
+    \fi
+  \fi}
+\def\getoptkcallback{%
+  \tokscat\toks2 &\toks6\to{\toks2}%
+  \tokscat\toks2 &\toks8\to{\toks2}%
+  \def\getoptk@a{}%
+  \ifx\getoptk@p\getoptk@a
+    \toks6={}%
+  \else
+    \edef\getoptk@N{%
+      \toks6={%
+        {\the\getoptkargument}%
+      }%
+    }%
+    \getoptk@N
+  \fi
+  \tokscat\toks2 &\toks6\to{\toks2}%
+  \getoptk@L}
+\newif\ifgetoptkbracket
+\def\getoptk@O{%
+  \readblanks\then
+    \futurelet\getoptk@t\getoptk@P
+  \done}
+\def\getoptk@P{%
+  \ifx\getoptk@t[%]
+    \toks6={\getoptkbrackettrue}%
+    \let\getoptk@N\getoptk@Q
+  \else
+    \toks6={\getoptkbracketfalse}%
+    \let\getoptk@N\getoptkcallback
+ \fi
+ \getoptk@N}
+\def\getoptk@Q[#1]{%
+  \getoptkargument={#1}%
+  \getoptkcallback}
+\def\getoptkmetaparser#1{%
+  \def\getoptkmetaparser@r{#1}%
+  \afterassignment\getoptkmetaparser@A
+  #1}
+\def\getoptkmetaparser@A{%
+  \beginnext
+  \toks2=\expandafter{%
+    \getoptkmetaparser@r
+  }%
+  \edef\next{%
+    \noexpand
+    \getoptkmetaparser@B{\the\toks2}%
+  }%
+  \endnext}
+\def\getoptkmetaparser@B#1{%
+  \edef\getoptk@N{%
+    \getoptkargument={\the#1}%
+  }%
+  \getoptk@N
+  \getoptkcallback}
+\def\getoptkcountparser{%
+  \getoptkmetaparser{\count0 }}
+\def\getoptkdimenparser{%
+  \getoptkmetaparser{\dimen0 }%
+}
+
+\def\getoptkskipparser{%
+  \getoptkmetaparser{\skip0 }%
+}
+
+\def\getoptkskipparser{%
+  \getoptkmetaparser{\skip0 }%
+}
+
+\def\getoptktoksparser{%
+  \getoptkmetaparser{\toks0 }%
+}
+\def\newgetoptkdictionary#1{%
+  \cslet{getoptk@dictionary@#1}\empty
+  \setgetoptkdictionary{#1}%
+}
+
+\def\setgetoptkdictionary#1{%
+  \def\getoptkactivedictionary{#1}%
+  \beginnext
+  \toks2={\let\getoptkdictionary}%
+  \toks4=\expandafter{\csname getoptk@dictionary@#1\endcsname}%
+  \edef\next{\the\toks2 \the\toks4}%
+  \endnext
+}
+
+\def\defgetoptkflag#1{%
+  \getoptk@@{#1}{}%
+}
+
+\def\defgetoptkbracket#1{%
+  \getoptk@@{#1}{[]}%
+}
+
+\def\defgetoptkcount#1{%
+  \getoptk@@{#1}{\getoptkcountparser}%
+}
+
+\def\defgetoptkdimen#1{%
+  \getoptk@@{#1}{\getoptkdimenparser}%
+}
+
+\def\defgetoptkskip#1{%
+  \getopk@@{#1}{\getoptkskipparser}%
+}
+
+\def\defgetoptktoks#1{%
+  \getopk@@{#1}{\getoptktoksparser}%
+}
+\catcode`\@=12
+

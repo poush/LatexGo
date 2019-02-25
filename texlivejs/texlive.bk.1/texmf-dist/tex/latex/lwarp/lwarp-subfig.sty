@@ -1,0 +1,169 @@
+%%
+%% This is file `lwarp-subfig.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `subfig')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+\LWR@ProvidesPackagePass{subfig}[2005/06/28]
+
+\long\def\sf@@@subfloat#1[#2][#3]#4{%
+\begin{minipage}{\linewidth}% lwarp
+\IfValueTF{#2}{%
+    \LWR@setlatestname{#2}%
+}{%
+    \IfValueTF{#3}{%
+        \LWR@setlatestname{#3}%
+    }{}%
+}%
+\LWR@stoppars% lwarp
+    \@ifundefined{FBsc@max}{}%
+        {\FB@readaux{\let\FBsuboheight\relax}}%
+    \@tempcnta=\@ne
+    \if@minipage
+      \@tempcnta=\z@
+    \else\ifdim \lastskip=\z@ \else
+      \@tempcnta=\tw@
+    \fi\fi
+    \ifmaincaptiontop
+      \sf@top=\sf@nearskip
+      \sf@bottom=\sf@farskip
+    \else
+      \sf@top=\sf@farskip
+      \sf@bottom=\sf@nearskip
+    \fi
+    \leavevmode
+    \bgroup
+      \bgroup
+        \ifcase\@tempcnta
+          \@minipagefalse
+        \or
+        \or
+          \ifdim \lastskip=\z@ \else
+          \fi
+        \fi
+        \sf@ifpositiontop{%
+          \ifx \@empty#3\relax \else
+            \sf@subcaption{#1}{#2}{#3}%
+          \fi\egroup
+            \LWR@startpars% lwarp
+            #4
+            \LWR@stoppars% lwarp
+        }{%
+        \LWR@startpars% lwarp
+        \@ifundefined{FBsc@max}%
+            {
+                #4
+            }%
+            {\ifx\FBsuboheight\relax
+                #4
+             \else
+                #4
+             \fi}%
+        \LWR@stoppars% lwarp
+          \egroup
+          \ifx \@empty#3\relax \else
+            \sf@subcaption{#1}{#2}{#3}%
+         \fi
+        }%
+    \egroup
+    \@ifundefined{FBsc@max}{}%
+        {\addtocounter{FRobj}{-1}%
+         \ifnum\c@FRobj=0\else
+           \subfloatrowsep
+         \fi}%
+    \ifmaincaptiontop\else
+      \global\advance\@nameuse{c@\@captype}\m@ne
+    \fi
+\end{minipage}% lwarp
+\LWR@startpars% lwarp
+  \endgroup\ignorespaces%
+}%
+
+\long\def\sf@subcaption#1#2#3{%
+\LWR@stoppars% lwarp
+  \ifx \relax#2\relax \else
+    \bgroup
+      \let\label=\@gobble
+      \let\protect=\string
+      \def\@subcaplabel{%
+        \caption@lstfmt{\@nameuse{p@#1}}{\@nameuse{the#1}}}%
+      \sf@updatecaptionlist{#1}{#2}{\the\value{\@captype}}{\the\value{#1}}%
+    \egroup
+  \fi
+  \bgroup
+    \ifx \relax#3\relax
+      \let\captionlabelsep=\relax
+    \fi
+    \@ifundefined{FBsc@max}%
+        {
+\LWR@traceinfo{sfsubcap B1}% lwarp
+            \LWR@figcaption% lwarp
+            \caption@make
+                {\@nameuse{sub\@captype name}}%
+                {\@nameuse{thesub\@captype}}%
+                {\LWR@isolate{#3}}%
+            \endLWR@figcaption% lwarp
+\LWR@traceinfo{sfsubcap B2}% lwarp
+        }%
+        {\dimen@\ht0%
+         \advance\dimen@\dp0%
+         \ifdim\dimen@>\FBsc@max
+           \global\FBsc@max\dimen@
+         \fi
+         \FB@readaux{\let\FBsubcheight\relax}%
+         \ifx\FBsubcheight\relax
+           \def\next{
+            }%
+         \else
+           \def\next{
+            }%
+         \fi
+
+\LWR@traceinfo{sfsubcap C1}% lwarp
+               \caption@make
+                   {\@nameuse{sub\@captype name}}%
+                   {\@nameuse{thesub\@captype}}%
+                   {#3}
+\LWR@traceinfo{sfsubcap C1}% lwarp
+
+        }%
+  \egroup
+\LWR@startpars% lwarp
+}
+
+\def\subfloat@label{%
+\LWR@ensuredoingapar% lwarp
+  \@ifnextchar(%   %) match left parenthesis
+    {\sf@sub@label}
+    {\sf@sub@label(Sub\@captype\space
+                   \@ifundefined{thechapter}{}{\@nameuse{thechapter}\space}%
+                   \@nameuse{p@sub\@captype}%
+                   \@nameuse{thesub\@captype}.)}}
+
+\renewcommand{\sf@subref}[1]{%
+\LWR@subnewref{#1}{sub@#1}%
+}
+\renewcommand{\sf@@subref}[1]{\LWR@orig@pageref{sub@#1}}
+\LetLtxMacro\LWR@orig@newsubfloat\@newsubfloat
+
+\def\@newsubfloat[#1]#2{%
+\LWR@orig@newsubfloat[#1]{#2}%
+\renewcommand{\l@sub#2}[2]{\hypertocfloat{2}{sub#2}{\ext@sub#2}{##1}{##2}}%
+}
+\renewcommand{\l@subfigure}[2]{\hypertocfloat{2}{subfigure}{lof}{#1}{#2}}
+\renewcommand{\l@subtable}[2]{\hypertocfloat{2}{subtable}{lot}{#1}{#2}}
+\endinput
+%%
+%% End of file `lwarp-subfig.sty'.

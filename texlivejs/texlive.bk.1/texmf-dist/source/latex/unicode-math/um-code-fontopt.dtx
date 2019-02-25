@@ -1,0 +1,326 @@
+%%^^A%% um-code-fontopt.dtx -- part of UNICODE-MATH <wspr.io/unicode-math>
+%%^^A%% Keyval for `\setmathfont`
+
+% \section{Font loading options}
+%
+%    \begin{macrocode}
+%<*package>
+%    \end{macrocode}
+%
+% \subsection{Math version}
+%    \begin{macrocode}
+\keys_define:nn {unicode-math}
+  {
+    version .code:n =
+      {
+        \tl_set:Nn \l_@@_mversion_tl {#1}
+        \DeclareMathVersion {\l_@@_mversion_tl}
+      }
+  }
+%    \end{macrocode}
+%
+% \subsection{Script and scriptscript font options}
+%    \begin{macrocode}
+\keys_define:nn {unicode-math}
+  {
+    script-features  .tl_set:N =  \l_@@_script_features_tl ,
+    sscript-features .tl_set:N = \l_@@_sscript_features_tl ,
+         script-font .tl_set:N =      \l_@@_script_font_tl ,
+        sscript-font .tl_set:N =     \l_@@_sscript_font_tl ,
+  }
+%    \end{macrocode}
+%
+% \subsection{Range processing}
+% \seclabel{rangeproc}
+%
+% Locally redefined all math symbol commands to their slot number prefixed by a quark.
+% Similary for the math classes.
+%    \begin{macrocode}
+\keys_define:nn {unicode-math}
+  {
+    range .code:n =
+      {
+        \bool_if:NF \g_@@_main_font_defined_bool { \@@_error:n {no-main-font} }
+        \bool_gset_false:N \g_@@_init_bool
+        \@@_range_init:
+        \group_begin:
+          \seq_map_inline:Nn \g_@@_mathclasses_seq
+            {
+              \cs_set:Npn ##1 { \use_none:n \q_unicode_math \exp_not:N ##1 }
+            }
+          \cs_set:Npn \_@@_sym:nnn ##1 ##2 ##3
+            {
+              \cs_set:Npn ##2 { \use_none:n \q_unicode_math ##1 }
+            }
+          \@@_input_math_symbol_table:
+          \@@_range_process:n {#1}
+        \group_end:
+      }
+  }
+%    \end{macrocode}
+%
+% \begin{macro}{\@@_range_init:}
+% Set processing functions if we're not defining the full Unicode math repetoire.
+% Math symbols are defined with \cmd\_@@_sym:nnn; see \secref{mathsymbol}
+% for the individual definitions
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_range_init:
+  {
+    \int_gincr:N \g_@@_fam_int
+    \tl_set:Nx \l_@@_symfont_label_tl {@@_fam\int_use:N\g_@@_fam_int}
+    \cs_set_eq:NN \_@@_sym:nnn \@@_process_symbol_parse:nnn
+    \cs_set_eq:NN \@@_remap_symbol:nnn \@@_remap_symbol_parse:nnn
+    \cs_set_eq:NN \@@_maybe_init_alphabet:n \use_none:n
+    \cs_set_eq:NN \@@_assign_delcode:nn \@@_assign_delcode_parse:nn
+    \cs_set_eq:NN \@@_make_mathactive:nNN \@@_make_mathactive_parse:nNN
+%    \end{macrocode}
+% Proceed by filling up the various `range' seqs according to the user options.
+%    \begin{macrocode}
+    \seq_gclear:N \g_@@_char_range_seq
+    \seq_gclear:N \g_@@_mclass_range_seq
+    \seq_gclear:N \g_@@_mathalph_seq
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_range_process:}
+%    \begin{macrocode}
+\cs_new:Nn \@@_range_process:n
+  {
+    \clist_map_inline:nn {#1}
+      {
+        \@@_mathalph_decl:nF {##1} { \@@_range_decl:n {##1} }
+      }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_mathalph_decl:nF}
+% Possible forms of input:\\
+% |\mathscr|\\
+% |\mathscr->\mathup|\\
+% |\mathscr/{Latin}|\\
+% |\mathscr/{Latin}->\mathup|\\
+% Outputs:\\
+% |tmpa|: math style (\eg, |\mathscr|)\\
+% |tmpb|: alphabets (\eg, |Latin|)\\
+% |tmpc|: remap style (\eg, |\mathup|). Defaults to |tmpa|.
+%
+% The remap style can also be |\mathcal->stixcal|, which I marginally prefer
+% in the general case.
+%    \begin{macrocode}
+\cs_new:Nn \@@_mathalph_decl:nF
+  {
+    \tl_set:Nn  \l_@@_tmpa_tl {#1}
+    \tl_clear:N \l_@@_tmpb_tl
+    \tl_clear:N \l_@@_tmpc_tl
+
+    \tl_if_in:NnT \l_@@_tmpa_tl {->}
+      { \exp_after:wN \@@_split_arrow:w \l_@@_tmpa_tl \q_nil }
+
+    \tl_if_in:NnT \l_@@_tmpa_tl {/}
+      { \exp_after:wN \@@_split_slash:w \l_@@_tmpa_tl \q_nil }
+
+    \tl_set:Nx \l_@@_tmpa_tl { \tl_to_str:N \l_@@_tmpa_tl }
+    \exp_args:NNx \tl_remove_all:Nn \l_@@_tmpa_tl { \token_to_str:N \math }
+    \exp_args:NNx \tl_remove_all:Nn \l_@@_tmpa_tl { \token_to_str:N \sym }
+    \tl_trim_spaces:N \l_@@_tmpa_tl
+
+    \tl_if_empty:NT \l_@@_tmpc_tl
+      { \tl_set_eq:NN \l_@@_tmpc_tl \l_@@_tmpa_tl }
+
+    \clist_if_in:NVT \g_@@_bad_alpha_clist \l_@@_tmpa_tl { \@@_error:n {range-not-bf-sf} }
+
+    \prop_if_exist:cTF {g_@@_named_range_ \l_@@_tmpa_tl _prop}
+      {
+        \seq_gput_right:Nx \g_@@_mathalph_seq
+          {
+            { \exp_not:V \l_@@_tmpa_tl }
+            { \exp_not:V \l_@@_tmpb_tl }
+            { \exp_not:V \l_@@_tmpc_tl }
+          }
+      }
+      {#2}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_set:Npn \@@_split_arrow:w #1->#2 \q_nil
+  {
+    \tl_set:Nx \l_@@_tmpa_tl { \tl_trim_spaces:n {#1} }
+    \tl_set:Nx \l_@@_tmpc_tl { \tl_trim_spaces:n {#2} }
+  }
+%    \end{macrocode}
+%    \begin{macrocode}
+\cs_set:Npn \@@_split_slash:w #1/#2 \q_nil
+  {
+    \tl_set:Nx \l_@@_tmpa_tl { \tl_trim_spaces:n {#1} }
+    \tl_set:Nx \l_@@_tmpb_tl { \tl_trim_spaces:n {#2} }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_range_decl:n}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_range_decl:n
+  {
+    \bool_lazy_and:nnTF { \tl_if_single_p:n {#1} } { \token_if_cs_p:N #1 }
+      % IF A CSNAME:
+      {
+        \tl_if_in:VnTF #1 { \q_unicode_math }
+          {
+            \seq_if_in:NnTF \g__um_mathclasses_seq {#1}
+              { \seq_gput_right:Nn \g_@@_mclass_range_seq {#1} }
+              { \seq_gput_right:Nx \g_@@_char_range_seq   { #1 } }
+          }
+          { \@@_error:nx {bad-cs-in-range} { \tl_to_str:n {#1} } }
+      }
+      % ELSE ASSUME NUMERIC INPUT:
+      {
+        \seq_gput_right:Nx \g_@@_char_range_seq { #1 }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\@@_if_char_spec:nNT}
+% \darg{Unicode character slot}
+% \darg{control sequence (math class)}
+% \darg{code to execute}
+% This macro expands to |#3|
+% if any of its arguments are contained in \cmd\g_@@_char_range_seq.
+% This list can contain either character ranges (for checking with |#1|) or control sequences.
+% These latter can either be the command name of a specific character, \emph{or} the math
+% type of one (\eg, \cmd\mathbin).
+%
+% Character ranges are passed to \cs{@@_if_char_spec:nNT}, which accepts input in the form shown in \tabref{ranges}.
+%
+% \begin{table}[htbp]
+% \centering
+% \topcaption{Ranges accepted by \cs{@@_if_char_spec:nNT}.}
+% \label{tab:ranges}
+% \begin{tabular}{>{\ttfamily}cc}
+% \textrm{Input} & Range \\
+% \hline
+% x & $r=x$ \\
+% x- & $r\geq x$ \\
+% -y & $r\leq y$ \\
+% x-y & $x \leq r \leq y$ \\
+% \end{tabular}
+% \end{table}
+%
+% We have three tests, performed sequentially in order of execution time.
+% Any test finding a match jumps directly to the end.
+%    \begin{macrocode}
+\cs_new:Nn \@@_if_char_spec:nNT
+  {
+    % math class:
+    \seq_if_in:NnT \g_@@_mclass_range_seq {#2}
+      { \use_none_delimit_by_q_nil:w }
+
+    % character slot:
+    \seq_map_inline:Nn \g_@@_char_range_seq
+      {
+        \@@_int_if_slot_is_last_in_range:nnT {#1} {##1}
+          { \seq_gremove_all:Nn \g_@@_char_range_seq {##1} }
+
+        \@@_int_if_slot_in_range:nnT {#1} {##1}
+          { \seq_map_break:n { \use_none_delimit_by_q_nil:w } }
+      }
+
+    % the following expands to nil if no match was found:
+    \use_none:nnn
+    \q_nil
+    \use:n
+      {
+        \cs_if_eq:NNT #2 \mathalpha
+          {
+            \clist_put_right:Nx \l_@@_mathmap_charints_clist { \int_eval:n {#1} }
+          }
+        #3
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_int_if_slot_in_range:nnT}
+% Pretty basic comma separated range processing.
+% Donald Arseneau's \pkg{selectp} package has a cleverer technique.
+%
+% A `numrange' is like |-2,5-8,12,17-| (can be unsorted).
+%
+% Four cases, four argument types:
+% \begin{Verbatim}
+% input    #2     #3      #4
+% "1  "   [ 1] - [qn] - [   ] qs
+% "1- "   [ 1] - [  ] - [qn-] qs
+% " -3"   [  ] - [ 3] - [qn-] qs
+% "1-3"   [ 1] - [ 3] - [qn-] qs
+% \end{Verbatim}
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_int_if_slot_in_range:nnT
+  {
+    \@@_numrange_parse:nwT {#1} #2 - \q_nil - \q_stop {#3}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_set:Npn \@@_numrange_parse:nwT #1 #2 - #3 - #4 \q_stop #5
+  {
+    \tl_if_empty:nTF {#4} { \int_compare:nT {#1=#2} {#5} }
+      {
+    \tl_if_empty:nTF {#3} { \int_compare:nT {#1>=#2} {#5} }
+      {
+    \tl_if_empty:nTF {#2} { \int_compare:nT {#1<=#3} {#5} }
+      {
+    \int_compare:nT {#1>=#2} { \int_compare:nT {#1<=#3} {#5} }
+      } } }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_int_if_slot_is_last_in_range:nnT
+  {
+    \@@_numrange_last_parse:nwT {#1} #2 - \q_nil - \q_stop {#3}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_set:Npn \@@_numrange_last_parse:nwT #1 #2 - #3 - #4 \q_stop #5
+  {
+    \tl_if_empty:nTF {#4} { \int_compare:nT {#1==#2} {#5} }
+      {
+    \tl_if_empty:nTF {#2} { \int_compare:nT {#1==#3} {#5} }
+      {
+                            \int_compare:nT {#1==#3} {#5}
+      } }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+%</package>
+%    \end{macrocode}
+
+\endinput
+
+% /©
+%
+% ------------------------------------------------
+% The UNICODE-MATH package  <wspr.io/unicode-math>
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% Copyright 2006-2019  Will Robertson, LPPL "maintainer"
+% Copyright 2010-2017  Philipp Stephani
+% Copyright 2011-2017  Joseph Wright
+% Copyright 2012-2015  Khaled Hosny
+% ------------------------------------------------
+%
+% ©/

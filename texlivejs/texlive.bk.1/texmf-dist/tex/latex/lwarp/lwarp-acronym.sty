@@ -1,0 +1,50 @@
+%%
+%% This is file `lwarp-acronym.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `acronym')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+\LWR@ProvidesPackagePass{acronym}[2015/03/21]
+
+\renewcommand{\acfia}[1]{%
+  {\textit{\AC@acl{#1}}} (\ifAC@starred\acs*{#1}\else\acs{#1}\fi)}
+
+\renewcommand*\AC@acs[1]{%
+ \expandafter\AC@get\csname fn@#1\endcsname\@firstoftwo{#1}}
+
+\renewcommand{\@starttoc}[1]{
+\LWR@htmlelementclass{nav}{#1}
+\LetLtxMacro\@verridelabel\@gobble
+\LWR@orig@starttoc{#1}
+\LWR@htmlelementclassend{nav}{#1}
+}
+
+\renewcommand*\AC@und@newl@bel[3]{%
+    \@ifundefined{#1@#3}%
+    {%
+        \global\expandafter\let\csname#2@#3\endcsname\@nnil
+        \global\expandafter\let\csname#2@#3@lwarp\endcsname\@nnil% lwarp
+        \global\expandafter\let\csname#2@#3@cref\endcsname\@nnil% lwarp
+    }%
+    {%
+        \global\expandafter\let\csname#1@#3\endcsname\relax
+        \global\expandafter\let\csname#1@#3@lwarp\endcsname\relax% lwarp
+        \global\expandafter\let\csname#1@#3@cref\endcsname\relax% lwarp
+    }%
+}%
+
+\endinput
+%%
+%% End of file `lwarp-acronym.sty'.

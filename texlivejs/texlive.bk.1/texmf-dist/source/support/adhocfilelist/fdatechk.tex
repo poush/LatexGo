@@ -1,0 +1,14 @@
+\ProvidesFile{fdatechk.tex}[2012/12/30 `filedate' checks]
+{\catcode`\#=9 \catcode`\!=14               %% { for plainpkg
+ \ReadFileInfos{adhocfilelist.sh,herelist.sh}}
+\RequirePackage{filedate}
+\ModDates 
+\UseReferenceDate{\thepdfmoddate}
+\DoWithAllOf{\CheckDateOfGiven}{%
+    {adhocfilelist.RLS}
+    {adhocfilelist.sh}{herelist.sh}
+    {adhocfilelist.tex}
+    {makehtml.tex}{fdatechk.tex}{srcfiles.tex}} 
+\DatesDiffWarnings                   %% 2012/12/30
+\CheckDateOfToday{adhocfilelist.RLS}
+

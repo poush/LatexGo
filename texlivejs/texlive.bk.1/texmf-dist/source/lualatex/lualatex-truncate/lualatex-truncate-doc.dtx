@@ -1,0 +1,262 @@
+%\iffalse
+%%  Doc-Source file to use with LaTeX2e
+%%  Copyright (C) 2018 Sebastian Friedl
+%%
+%%  This work is subject to the LaTeX Project Public License, Version 1.3c or -- at
+%%  your option -- any later version of this license.
+%%  The work consists of the files lualatex-truncate.dtx, lualatex-truncate.ins,
+%%  lualatex-truncate-doc.dtx and the derived file lualatex-truncate.sty
+%%
+%%  This work has the LPPL maintenance status ‘maintained’.
+%%  Current maintainer of the work is Sebastian Friedl.
+%%
+%%  -------------------------------------------------------------------------------------------
+%%
+%%  A LuaLaTeX wrapper for the truncate package
+%%
+%%  -------------------------------------------------------------------------------------------
+%%
+%%  Please report bugs and other problems as well as suggestions for improvements
+%%  to my email address (sfr682k@t-online.de).
+%%
+%%  -------------------------------------------------------------------------------------------
+%\fi
+
+% !TeX spellcheck=en_US
+
+\documentclass[11pt]{ltxdoc}
+
+\usepackage{iftex}
+\RequireLuaTeX
+
+\usepackage[no-math]{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{english}
+\usepackage[english]{selnolig}
+
+\usepackage{array}
+\usepackage{csquotes}
+\usepackage{hologo}
+\usepackage{multicol}
+\usepackage{xcolor}
+
+
+\parindent0pt
+
+\usepackage[erewhon]{newtxmath}
+\setmainfont{erewhon}
+\setsansfont[Scale=MatchLowercase]{Source Sans Pro}
+\setmonofont[Scale=MatchLowercase]{Hack}
+
+\usepackage[a4paper,left=4.50cm,right=2.75cm,top=3.25cm,bottom=2.75cm,nohead]{geometry}
+
+
+\hyphenation{mo-dify-ing}
+
+\def\Lua{\textsf{Lua}\ignorespaces}
+
+\usepackage[unicode, pdfborder={0 0 0}, linktoc=all, hyperindex=false]{hyperref}
+\usepackage{bookmark}% fix PDF bookmark issues caused by hyperref
+
+
+
+\MakeShortVerb{"}
+\CheckSum{55}
+
+\renewcommand*{\usage}[1]{\hyperpage{#1}}
+\renewcommand*{\main}[1]{\hyperpage{#1}}
+
+\newcommand*{\sty}[1]{\textsf{#1}}
+\newcommand*{\opt}[1]{\texttt{#1}\index{#1=\texttt{#1}~~option|main}}
+
+\def\param#1{\textit{\rmfamily\ensuremath{\langle}#1\ensuremath{\rangle}}}
+\def\DescribeOption#1{\marginpar{\raggedleft\PrintDescribeMacro{#1}}}
+
+
+\PageIndex
+\RecordChanges
+
+
+
+
+\title{The \sty{lualatex-truncate} package \\ {\large\url{https://gitlab.com/SFr682k/lualatex-truncate}}}
+\author{Sebastian Friedl \\ \href{mailto:sfr682k@t-online.de}{\ttfamily sfr682k@t-online.de}}
+\date{2018/08/22 (v1.1)}
+
+\hypersetup{pdftitle={The lualatex-truncate package},pdfauthor={Sebastian Friedl}}
+
+\begin{document}
+    \maketitle
+    \thispagestyle{empty}
+    
+    
+    
+    
+    \medskip
+    \begin{abstract}\centering
+        \hspace{-1.5em}%
+        This package provides a wrapper for using the \sty{truncate} package\footnote{available at \url{https://ctan.org/pkg/truncate}},
+        thus fixing issues related to \hologo{LuaTeX}'s hyphenation mechanism.
+    \end{abstract}
+    
+    
+    
+    \tableofcontents
+    
+    
+    
+    
+    \clearpage
+    
+    
+    \subsection*{Dependencies and other requirements}
+    \addcontentsline{toc}{subsection}{Dependencies and other requirements}
+    \sty{lualatex-truncate} requires \LaTeXe\ and depends on the following packages:
+    \begin{multicols}{3}\sffamily\centering
+        if\kern0pt tex \\ letltxmacro \\ truncate
+    \end{multicols}
+    
+    
+    \subsection*{Installation}
+    \addcontentsline{toc}{subsection}{Installation}
+    Extract the \textit{package} file first:
+    \begin{enumerate}
+        \item Run \LaTeX\ over the file "lualatex-truncate.ins"
+        \item Move the resulting ".sty" file to "TEXMF/tex/lualatex/lualatex-truncate/"
+    \end{enumerate}
+    
+    Then, you can compile the \textit{documentation} yourself by executing \\[\smallskipamount]
+    "lualatex lualatex-truncate-doc.dtx" \\
+    "makeindex -s gind.ist lualatex-truncate-doc.idx" \\
+    "makeindex -s gglo.ist -o lualatex-truncate-doc.gls lualatex-truncate-doc.glo" \\
+    "lualatex lualatex-truncate-doc.dtx" \\
+    "lualatex lualatex-truncate-doc.dtx"
+    
+    \smallskip
+    or just use the precompiled documentation shipped with the source files. \\
+    In both cases, copy the files "lualatex-truncate-doc.pdf" and "README.md" to \\
+    "TEXMF/doc/lualatex/lualatex-truncate/"
+    
+    
+    \subsection*{License}
+    \addcontentsline{toc}{subsection}{License}
+    \textcopyright\ 2018 Sebastian Friedl
+    
+    \smallskip
+    This work may be distributed and/or modified under the conditions of the \LaTeX\ Project Public License, either version 1.3c of this license or (at your option) any later version.
+    
+    \smallskip
+    The latest version of this license is available at \url{http://www.latex-project.org/lppl.txt} and version 1.3c or later is part of all distributions of \LaTeX\ version 2008-05-04 or later.
+    
+    \smallskip
+    This work has the LPPL maintenace status \enquote*{maintained}. \\
+    Current maintainer of this work is Sebastian Friedl.
+    
+    \medskip
+    This work consists of the following files:
+    \begin{itemize} \itemsep 0pt
+        \item "lualatex-truncate.sty",
+        \item "lualatex-truncate.ins",
+        \item "lualatex-truncate-doc.dtx" and
+        \item the derived file "lualatex-truncate.sty"
+    \end{itemize}
+
+
+
+
+
+    % DOCUMENTATION PART ----------------------------------------------------------------------
+    \clearpage
+    \part{The documentation}
+    \begin{center}
+        \colorbox{red!75!black}{\colorbox{white}{\begin{minipage}{.95\textwidth}
+            \textbf{\color{red!75!black}\large  Don't load the \sty{truncate} package in your preamble!!}
+            
+            \medskip
+            This task is already done for you by \sty{lualatex-truncate}!
+        
+            \smallskip
+            Also, all package options stated in this documentation are meant to be passed to \sty{lualatex-truncate}; otherwise they can't be processed by the wrapper mechanism.
+        \end{minipage}}}
+    \end{center}
+    
+    
+    \subsection*{Truncating text to a given width%
+                 \footnote{This section has been adapted from \sty{truncate}'s documentation: \\
+                           \indent\indent\url{http://mirrors.ctan.org/macros/latex/contrib/truncate/truncate.pdf}}}
+    \addcontentsline{toc}{subsection}{Truncating text to a given width}
+    
+    \leavevmode%
+    \DescribeOption{\truncate}%
+    The package defines a command "\truncate["\param{marker}"]{"\param{width}"}{"\param{text}"}".
+
+    If the text is too wide to fit in the specified width, then it is truncated, and a continuation marker is shown at the end.
+    The default marker, used when the optional \texttt{[\param{marker}]} parameter is omitted, is "\,\dots". You can change this default by redefining \DescribeMacro{\TruncateMarker}"\TruncateMarker" (e.g.~"\renewcommand\TruncateMarker{\dots}").
+
+    \medskip
+    Normally, the text (no matter whether truncated or not) is printed flushed-left in a box with exactly the width specified. The package option \DescribeOption{fit}\opt{fit} causes the output text to have its natural width, up to a maximum of the specified width.
+
+    \medskip
+    Normally, the text won't be truncated in the middle of a word, nor at a space specified with a tie ("~"). For example:
+    \begin{quote}
+        "\truncate{122pt}{This text has been~truncated}"
+    \end{quote}
+    gives
+    \begin{quote}
+        \enquote{\hbox to 122pt {This text has\,\dots\hfill}}
+    \end{quote}
+
+    \medskip
+    You can use one of the package options \DescribeOption{hyphenate}\opt{hyphenate}, \DescribeOption{breakwords}\opt{breakwords} or \DescribeOption{breakall}\opt{breakall} to allow truncating in the middle of words. The first two only truncate at hyphenation points; with the only difference that \opt{breakwords} suppresses the hyphen character.
+    On the other hand, \opt{breakall} allows truncation at any character. For example:
+    \begin{quote}
+        "\truncate{122pt}{This text has been~truncated}"
+    \end{quote}
+    gives
+    \begin{quote}
+        \begin{tabular}{l@{\quad}l}
+            \enquote{\hbox to 122pt {This text has been trun-\,\dots\hfill}}  & (package option \texttt{hyphenate}) \\
+            \enquote{\hbox to 122pt {This text has been trun\,\dots~\hfill}}  & (package option \texttt{breakwords}) \\
+            \enquote{\hbox to 122pt {This text has been trunc\,\dots\hfill}}  & (package option \texttt{breakall})
+        \end{tabular}
+    \end{quote}
+    
+    [All of these options work through (Lua)\TeX's hyphenation mechanism.]
+
+
+    \subsection*{Known limitations}
+    \addcontentsline{toc}{subsection}{Known limitations}
+    \begin{itemize}
+        \item
+            \sty{lualatex-truncate} provides a \textit{wrapper} fixing \hologo{LuaTeX}-related \enquote{glitches} in the \sty{truncate} package.
+            It doesn't (and won't) fix any bugs or \enquote{undocumented features} introduced by the \sty{truncate} package itself.
+    \end{itemize}
+
+    
+    
+    
+    
+    
+    
+    
+    % Start determining the checksum from here
+    \StopEventually{%
+        \clearpage
+        \phantomsection
+        \addcontentsline{toc}{part}{Index}%
+        \PrintChanges
+        \setcounter{IndexColumns}{2}
+        \IndexPrologue{\section*{Index}}
+        \PrintIndex}
+    
+    
+    
+    \vspace{3\bigskipamount}
+    \part{The package code}
+    \CodelineNumbered
+    \DocInput{lualatex-truncate.dtx}
+    
+    
+    \Finale
+\end{document}
+

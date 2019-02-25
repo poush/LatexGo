@@ -1,0 +1,408 @@
+% na-position.sty    encodage : UTF8  
+% Created By : Naam Mohamed & Salim Bou and distributed under the LPPL license.
+% من إنشاء الأستاذين ناعم محمد و سليم بو
+%edited by : Walid LAOUIDJI
+%gmail: walidlaouidji28@gmail.com
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{na-position}[2018/06/14 version1.1]
+\RequirePackage{tkz-tab}
+\RequirePackage{listofitems}
+\usepackage{makecell}
+\RequirePackage{amsmath,amsfonts,mathrsfs,amssymb}
+
+
+\def\Nplot{C_f}
+\def\Nline{\Delta}
+\def\plot{f}
+\def\line{y}
+%//////////////////////////////////
+\def\posab[#1,#2,#3](#4)#5{
+	\begin{tikzpicture}
+	\tkzTabInit[espcl=4.5,lw=1.1pt]
+	{$x$ / 1 ,$\plot(x)-\line$ /1 ,\textarabic{الوضعية}
+	/2.5}%
+	{$#1$ , $#2$ , $#3$ }
+	%
+\readlist*\myarg{#4}	
+	\tkzTabLine{\myarg[1], \myarg[2] , \myarg[3] , \myarg[4],\myarg[5] }
+	\tkzTabLine{\if d\myarg[1]d\else \if z \myarg[1]z
+	\fi \fi,
+	%
+	\hskip -1.3cm
+%
+ \if d\myarg[2]d\else \if z \myarg[2]
+	\else
+	 (\Nline)\ \if +\myarg[2]\text{فوق}\else \if -\myarg[2]\text{تحت} \fi\fi \ (\Nplot)
+	 \fi \fi
+   ,    
+	 %
+	\if d\myarg[3]d\else \if z \myarg[3]z
+	\fi \fi
+	  ,
+	  \hskip 1.3cm
+	 \if d\myarg[4]d\else \if z \myarg[4]z
+	\else
+	 (\Nline)\ \if +\myarg[4]\text{فوق}\else \if -\myarg[4]\text{تحت} \fi\fi \ (\Nplot)
+	 \fi \fi  ,
+	 \if d\myarg[5]d\else \if z \myarg[5]z
+	\fi \fi}
+	%
+	
+	
+	%%%%%
+	\if d\myarg[3] 
+	d 
+\else \if z\myarg[3] 
+	%%%%%
+	\draw[thick] (N22)to[out=200,in=90] ([xshift=.5cm]M13) (N22)to[out=-20,in=90] ([xshift=-.5cm]M23);
+	\node[text width=2.5cm,xshift=-0.1cm,align=center,anchor=base] at (Z22){\vskip -1.07cm \small \textarabic{$(\Nplot)$\ يقطع  
+			 } };
+\node[text width=2.5cm,align=center,anchor=base] at (Z22){\vskip -0.4cm \small \textarabic{ $(\Nline)$ في النقطة
+			} };
+\node[text width=2.5cm,align=center,anchor=base] at (Z22){\vskip 0.2cm \small 
+\textarabic{ $#5$} };				 
+\fi\fi	
+	\end{tikzpicture}
+}
+%-------------------------------------
+\def\posad[#1,#2,#3,#4](#5)#6{
+	\readlist*\myarg{#5}
+	\begin{tikzpicture}
+	\tkzTabInit[espcl=3.8,lw=1.1pt]
+	{$x$ / 1 ,$\plot(x)-\line$ /1 ,\textarabic{الوضعية}
+	/2.5}%
+	{$#1$ , $#2$ , $#3$ ,$#4$ }%
+	%\tkzTabLine{ , \myarg[1] , z , \myarg[2] , d,\myarg[3] }
+	\tkzTabLine{ \myarg[1], \myarg[2] , \myarg[3] , \myarg[4] , \myarg[5],\myarg[6],\myarg[7] }
+	
+	\tkzTabLine{ 
+\if d\myarg[1]d\else \if z \myarg[1]z
+	\fi \fi,
+	%	
+		\hskip -1.3cm
+%
+ \if d\myarg[2]d\else \if z \myarg[2]
+	\else
+\genfrac{}{}{0pt}{0}{ \ (\Nplot)}{(\Nline)\ \if +\myarg[2]\text{فوق}\else \if -\myarg[2]\text{تحت} \fi\fi}
+	 \fi \fi
+   ,    
+%%%   
+   %%%%%%
+	 %
+	\if d\myarg[3]d\else \if z \myarg[3]z
+	\fi \fi
+	  ,
+	%*****
+  %\vskip -0.6cm
+\if h\myarg[4]h\else
+	%-----
+	\genfrac{}{}{0pt}{0}{ \ (\Nplot)}{(\Nline)\ \if +\myarg[4]\text{فوق}\else \if -\myarg[4]\text{تحت} \fi\fi}
+	 %-----
+	 \fi ,
+	 %*****
+	\if d\myarg[5]d\else \if h \myarg[5]h
+	\fi \fi	 
+	,
+	%**
+ \hskip 0.5cm
+	 \if d\myarg[6]d\else \if z \myarg[6]z
+	\else
+	\genfrac{}{}{0pt}{0}{ \ (\Nplot)}{(\Nline)\ \if +\myarg[6]\text{فوق}\else \if -\myarg[6]\text{تحت} \fi\fi}
+	 \fi \fi	  
+	 ,
+	 \if d\myarg[7]d\else \if z \myarg[3]z
+	\fi \fi }
+	 \if 
+h\myarg[4]h	 
+%******************************************
+\else \if 
+ d\myarg[3]  
+	\draw[thick,blue] (N32)to[out=200,in=90] ([xshift=.8cm]M23) (N32)to[out=-20,in=90] ([xshift=-.8cm]M33);
+	\node[text width=2.5cm,align=center,anchor=base,yshift=0.3cm] at (Z32){ \footnotesize \textarabic{$(\Nplot)$\ يقطع  
+			 } };
+\node[text width=2.5cm,align=center,anchor=base] at (Z32){\vskip -0.3cm \footnotesize \textarabic{ $(\Nline)$ في النقطة
+			} };
+\node[text width=2.5cm,align=center,anchor=base] at (Z32){\vskip 0.2cm \footnotesize 
+\textarabic{ $#6$} }; 
+%ù%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %%%%%%%%%%%else
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \else \if z\myarg[5]
+ 	\draw[thick,red] (N22)to[out=200,in=90] ([xshift=.8cm]M13) (N22)to[out=-20,in=90] ([xshift=-.8cm]M23);
+	\node[text width=2.5cm,align=center,anchor=base,yshift=0.3cm] at (Z22){ \footnotesize \textarabic{$(\Nplot)$\ يقطع  
+			 } };
+\node[text width=2.5cm,align=center,anchor=base] at (Z22){\vskip -0.3cm \footnotesize \textarabic{ $(\Nline)$ في النقطة
+			} };
+\node[text width=2.5cm,align=center,anchor=base] at (Z22){\vskip 0.2cm \small 
+\textarabic{ $#6$} };
+\draw[thick,blue] (N32)to[out=200,in=90] ([xshift=.8cm]M23) (N32)to[out=-20,in=90] ([xshift=-.8cm]M33);
+	\node[text width=2.5cm,align=center,anchor=base,yshift=0.3cm] at (Z32){ \footnotesize \textarabic{$(\Nplot)$\ يقطع  
+			 } };
+\node[text width=2.5cm,align=center,anchor=base] at (Z32){\vskip -0.3cm \footnotesize \textarabic{ $(\Nline)$ في النقطة
+			} };
+\node[text width=2.5cm,align=center,anchor=base] at (Z32){\vskip 0.2cm \footnotesize 
+\textarabic{ $#6$} };
+%
+\else \if d\myarg[5]  
+				 \draw[thick,blue] (N22)to[out=200,in=90] ([xshift=.8cm]M13) (N22)to[out=-20,in=90] ([xshift=-.8cm]M23);
+	\node[text width=2.5cm,align=center,anchor=base,yshift=0.3cm] at (Z22){ \footnotesize \textarabic{$(\Nplot)$\ يقطع  
+			 } };
+\node[text width=2.5cm,align=center,anchor=base] at (Z22){\vskip -0.3cm \footnotesize \textarabic{ $(\Nline)$ في النقطة
+			} };
+\node[text width=2.5cm,align=center,anchor=base] at (Z22){\vskip 0.2cm \small 
+\textarabic{ $#6$} };
+%*****
+\fi \fi
+\fi \fi
+	\end{tikzpicture}
+}
+%////////////////////////////
+\def\posba[#1,#2](#3) {
+\readlist*\myarg{#3}
+	\begin{tikzpicture}
+	\tkzTabInit[espcl=4.5,lw=1.1pt]
+	{$x$ / 1 ,$\plot(x)-\line$ /1 , الوضعية/1.6}%
+	{$#1$ , $#2$}%
+	\tkzTabLine{ \myarg[1], \myarg[2],\myarg[3] }
+	\tkzTabLine{
+	 \if d\myarg[1]d\else \if z \myarg[1]z
+	\fi \fi,
+	%	
+		%\hskip -1.3cm
+% 
+ \if d\myarg[2]d\else \if z \myarg[2]z
+	\else
+	\genfrac{}{}{0pt}{0}{ \ (\Nplot)}{(\Nline)\ \if +\myarg[2]\text{فوق}\else \if -\myarg[2]\text{تحت} \fi\fi}
+	 \fi \fi
+,
+\if d\myarg[3]d\else \if z \myarg[3] 
+	 \fi \fi	 
+	  }
+	\end{tikzpicture}
+}
+%----------//////////////////////***********************
+\def\posat[#1,#2,#3,#4](#5)[#6,#7]{
+	\readlist*\myarg{#5}
+	\begin{tikzpicture}
+	\tkzTabInit[espcl=3.8,lw=1.1pt]
+	{$x$ / 1 ,$\plot(x)-\line$ /1 ,\textarabic{الوضعية}
+	/2.5}%
+	{$#1$ , $#2$ , $#3$ ,$#4$ }%
+	%\tkzTabLine{ , \myarg[1] , z , \myarg[2] , d,\myarg[3] }
+	\tkzTabLine{ \myarg[1], \myarg[2] , \myarg[3] , \myarg[4] , \myarg[5],\myarg[6],\myarg[7] }
+	
+	\tkzTabLine{ 
+\if d\myarg[1]d\else \if z \myarg[1]z
+	\fi \fi,
+	%	
+		\hskip -1.3cm
+%
+ \if d\myarg[2]d\else \if z \myarg[2]
+	\else
+\genfrac{}{}{0pt}{0}{ \ (\Nplot)}{(\Nline)\ \if +\myarg[2]\text{فوق}\else \if -\myarg[2]\text{تحت} \fi\fi}
+	 \fi \fi
+   ,    
+%%%   
+   %%%%%%
+	 %
+	\if d\myarg[3]d\else \if z \myarg[3]z
+	\fi \fi
+	  ,
+	%*****
+  %\vskip -0.6cm
+\if h\myarg[4]h\else
+	%-----
+	\genfrac{}{}{0pt}{0}{ \ (\Nplot)}{(\Nline)\ \if +\myarg[4]\text{فوق}\else \if -\myarg[4]\text{تحت} \fi\fi}
+	 %-----
+	 \fi ,
+	 %*****
+	\if d\myarg[5]d\else \if h \myarg[5]h
+	\fi \fi	 
+	,
+	%**
+ \hskip 0.5cm
+	 \if d\myarg[6]d\else \if z \myarg[6]z
+	\else
+	\genfrac{}{}{0pt}{0}{ \ (\Nplot)}{(\Nline)\ \if +\myarg[6]\text{فوق}\else \if -\myarg[6]\text{تحت} \fi\fi}
+	 \fi \fi	  
+	 ,
+	 \if d\myarg[7]d\else \if z \myarg[3]z
+	\fi \fi }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	 
+	%			 	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%	 \fi \fi %%%%%%%%%%%%%%%%%%%%%%%% end posaa
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	 \if 
+h\myarg[4]h	 
+%******************************************
+\else \if 
+ d\myarg[3]  
+	\draw[thick,blue] (N32)to[out=200,in=90] ([xshift=.8cm]M23) (N32)to[out=-20,in=90] ([xshift=-.8cm]M33);
+	\node[text width=2.5cm,align=center,anchor=base,yshift=0.3cm] at (Z32){ \footnotesize \textarabic{$(\Nplot)$\ يقطع  
+			 } };
+\node[text width=2.5cm,align=center,anchor=base] at (Z32){\vskip -0.3cm \footnotesize \textarabic{ $(\Nline)$ في النقطة
+			} };
+\node[text width=2.5cm,align=center,anchor=base] at (Z32){\vskip 0.2cm \footnotesize 
+\textarabic{ $#7$} }; 
+%ù%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %%%%%%%%%%%else
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \else \if z\myarg[5]
+ 	\draw[thick,red] (N22)to[out=200,in=90] ([xshift=.8cm]M13) (N22)to[out=-20,in=90] ([xshift=-.8cm]M23);
+	\node[text width=2.5cm,align=center,anchor=base,yshift=0.3cm] at (Z22){ \footnotesize \textarabic{$(\Nplot)$\ يقطع  
+			 } };
+\node[text width=2.5cm,align=center,anchor=base] at (Z22){\vskip -0.3cm \footnotesize \textarabic{ $(\Nline)$ في النقطة
+			} };
+\node[text width=2.5cm,align=center,anchor=base] at (Z22){\vskip 0.2cm \small 
+\textarabic{ $#6$} };
+\draw[thick,blue] (N32)to[out=200,in=90] ([xshift=.8cm]M23) (N32)to[out=-20,in=90] ([xshift=-.8cm]M33);
+	\node[text width=2.5cm,align=center,anchor=base,yshift=0.3cm] at (Z32){ \footnotesize \textarabic{$(\Nplot)$\ يقطع  
+			 } };
+\node[text width=2.5cm,align=center,anchor=base] at (Z32){\vskip -0.3cm \footnotesize \textarabic{ $(\Nline)$ في النقطة
+			} };
+\node[text width=2.5cm,align=center,anchor=base] at (Z32){\vskip 0.2cm \footnotesize 
+\textarabic{ $#7$} };
+%
+\else \if d\myarg[5]  
+				 \draw[thick,blue] (N22)to[out=200,in=90] ([xshift=.8cm]M13) (N22)to[out=-20,in=90] ([xshift=-.8cm]M23);
+	\node[text width=2.5cm,align=center,anchor=base,yshift=0.3cm] at (Z22){ \footnotesize \textarabic{$(\Nplot)$\ يقطع  
+			 } };
+\node[text width=2.5cm,align=center,anchor=base] at (Z22){\vskip -0.3cm \footnotesize \textarabic{ $(\Nline)$ في النقطة
+			} };
+\node[text width=2.5cm,align=center,anchor=base] at (Z22){\vskip 0.2cm \small 
+\textarabic{ $#6$} };
+%*****
+\fi \fi
+\fi \fi
+	\end{tikzpicture}
+}
+
+%****************************************
+%-----------------------------------
+\def\posaw[#1,#2,#3,#4,#5](#6)[#7,#8,#9]{
+	\readlist*\myarg{#6}
+	\begin{tikzpicture}
+	\tkzTabInit[espcl=3.5,lw=1.1pt]
+	{$x$ / 1 ,$\plot(x)-\line$ /1 ,\textarabic{الوضعية}
+	/2.5}%
+	{$#1$ , $#2$ , $#3$ ,$#4$ ,$#5$}%
+%	\tkzTabLine{,\myarg[1] ,z  , \myarg[2] , d, \myarg[3] ,z, \myarg[4] , }
+\tkzTabLine{\myarg[1],\myarg[2] ,\myarg[3]  , \myarg[4] , \myarg[5], \myarg[6] ,\myarg[7], \myarg[8] , \myarg[9]}
+\tkzTabLine{\if d\myarg[1]d\else \if z \myarg[1]z
+	\fi \fi,
+	\if d\myarg[2]d\else \if z \myarg[2]z
+	\else
+	\hskip-.3cm
+\genfrac{}{}{0pt}{1}{ \ (\Nplot)}{(\Nline)\ \if +\myarg[2]\text{فوق}\else \if -\myarg[2]\text{تحت} \fi\fi}
+	 \fi \fi
+	,
+\if d\myarg[3]d\else \if z \myarg[3]z
+	\fi \fi	
+	,	
+\if d\myarg[4]d\else \if z \myarg[4]z
+	\else
+	\genfrac{}{}{0pt}{1}{ \ (\Nplot)}{(\Nline)\ \if +\myarg[4]\text{فوق}\else \if -\myarg[4]\text{تحت} \fi\fi}
+	 \fi \fi
+	,
+\if d\myarg[5]d\else \if z \myarg[5]z
+	\fi \fi		
+	,
+\if d\myarg[6]d\else \if z \myarg[6]z
+	\else
+	\genfrac{}{}{0pt}{1}{ \ (\Nplot)}{(\Nline)\ \if +\myarg[6]\text{فوق}\else \if -\myarg[6]\text{تحت} \fi\fi}
+	 \fi \fi	
+	,
+\if d\myarg[7]d\else \if z \myarg[7]z
+	\fi \fi		
+	,
+\if d\myarg[8]d\else \if z \myarg[8]z
+	\else
+	\genfrac{}{}{0pt}{1}{ \ (\Nplot)}{(\Nline)\ \if +\myarg[8]\text{فوق}\else \if -\myarg[8]\text{تحت} \fi\fi}
+	 \fi \fi	
+	,
+	\if d\myarg[9]d\else \if z \myarg[9]z
+	\fi \fi	
+	}
+\if d\myarg[3]
+	\draw[thick,blue] (N32)to[out=200,in=90] ([xshift=.5cm]M23) (N32)to[out=-20,in=90] ([xshift=-.5cm]M33);
+	\node[text width=2.5cm,align=center,anchor=base,yshift=0.3cm] at (Z32){ \footnotesize \textarabic{$(\Nplot)$\ يقطع  
+			 } };
+\node[text width=2.5cm,align=center,anchor=base] at (Z32){\vskip -0.3cm \footnotesize \textarabic{ $(\Nline)$ في النقطة
+			} };
+\node[text width=2.5cm,align=center,anchor=base] at (Z32){\vskip 0.2cm \small 
+\textarabic{ $#8$} };
+	 \draw[thick] (N42)to[out=200,in=90] ([xshift=.5cm]M33) (N42)to[out=-20,in=90] ([xshift=-.5cm]M43);
+%
+	 \node[text width=2.5cm,align=center,anchor=base,yshift=0.3cm] at (Z42){ \footnotesize \textarabic{$(\Nplot)$\ يقطع  
+			 } };
+\node[text width=2.5cm,align=center,anchor=base] at (Z42){\vskip -0.3cm \footnotesize \textarabic{ $(\Nline)$ في النقطة
+			} };
+\node[text width=2.5cm,align=center,anchor=base] at (Z42){\vskip 0.2cm \small 
+\textarabic{ $#9$} };
+	 %
+	 \else \if d\myarg[5]
+	\draw[thick,red] (N22)to[out=200,in=90] ([xshift=.5cm]M13) (N22)to[out=-20,in=90] ([xshift=-.5cm]M23);
+\node[text width=2.5cm,align=center,anchor=base,yshift=0.3cm] at (Z22){ \footnotesize \textarabic{$(\Nplot)$\ يقطع  
+			 } };
+\node[text width=2.5cm,align=center,anchor=base] at (Z22){\vskip -0.3cm \footnotesize \textarabic{ $(\Nline)$ في النقطة
+			} };
+\node[text width=2.5cm,align=center,anchor=base] at (Z22){\vskip 0.2cm \small 
+\textarabic{ $#7$} };	
+%
+	\draw[thick] (N42)to[out=200,in=90] ([xshift=.5cm]M33) (N42)to[out=-20,in=90] ([xshift=-.5cm]M43);	 
+	 %
+	 \node[text width=2.5cm,align=center,anchor=base,yshift=0.3cm] at (Z42){ \footnotesize \textarabic{$(\Nplot)$\ يقطع  
+			 } };
+\node[text width=2.5cm,align=center,anchor=base] at (Z42){\vskip -0.3cm \footnotesize \textarabic{ $(\Nline)$ في النقطة
+			} };
+\node[text width=2.5cm,align=center,anchor=base] at (Z42){\vskip 0.2cm \small 
+\textarabic{ $#9$} };
+\else \if d\myarg[7]
+	\draw[thick,red] (N22)to[out=200,in=90] ([xshift=.5cm]M13) (N22)to[out=-20,in=90] ([xshift=-.5cm]M23);
+	\node[text width=2.5cm,align=center,anchor=base,yshift=0.3cm] at (Z22){ \footnotesize \textarabic{$(\Nplot)$\ يقطع  
+			 } };
+\node[text width=2.5cm,align=center,anchor=base] at (Z22){\vskip -0.3cm \footnotesize \textarabic{ $(\Nline)$ في النقطة
+			} };
+\node[text width=2.5cm,align=center,anchor=base] at (Z22){\vskip 0.2cm \small 
+\textarabic{ $#7$} };
+%
+	\draw[thick,blue] (N32)to[out=200,in=90] ([xshift=.5cm]M23) (N32)to[out=-20,in=90] ([xshift=-.5cm]M33);
+	%
+	\node[text width=2.5cm,align=center,anchor=base,yshift=0.3cm] at (Z32){ \footnotesize \textarabic{$(\Nplot)$\ يقطع  
+			 } };
+\node[text width=2.5cm,align=center,anchor=base] at (Z32){\vskip -0.3cm \footnotesize \textarabic{ $(\Nline)$ في النقطة
+			} };
+\node[text width=2.5cm,align=center,anchor=base] at (Z32){\vskip 0.2cm \small 
+\textarabic{ $#8$} };
+\else\if z\myarg[5]
+	\draw[thick,blue] (N32)to[out=200,in=90] ([xshift=.5cm]M23) (N32)to[out=-20,in=90] ([xshift=-.5cm]M33);
+\node[text width=2.5cm,align=center,anchor=base,yshift=0.3cm] at (Z32){ \footnotesize \textarabic{$(\Nplot)$\ يقطع  
+			 } };
+\node[text width=2.5cm,align=center,anchor=base] at (Z32){\vskip -0.3cm \footnotesize \textarabic{ $(\Nline)$ في النقطة
+			} };
+\node[text width=2.5cm,align=center,anchor=base] at (Z32){\vskip 0.2cm \small 
+\textarabic{ $#8$} };
+	%
+	 \draw[thick] (N42)to[out=200,in=90] ([xshift=.5cm]M33) (N42)to[out=-20,in=90] ([xshift=-.5cm]M43);
+	 \node[text width=2.5cm,align=center,anchor=base,yshift=0.3cm] at (Z42){ \footnotesize \textarabic{$(\Nplot)$\ يقطع  
+			 } };
+\node[text width=2.5cm,align=center,anchor=base] at (Z42){\vskip -0.3cm \footnotesize \textarabic{ $(\Nline)$ في النقطة
+			} };
+\node[text width=2.5cm,align=center,anchor=base] at (Z42){\vskip 0.2cm \small 
+\textarabic{ $#9$} };
+%	 
+	 \draw[thick,red] (N22)to[out=200,in=90] ([xshift=.5cm]M13) (N22)to[out=-20,in=90] ([xshift=-.5cm]M23);
+\node[text width=2.5cm,align=center,anchor=base,yshift=0.3cm] at (Z22){ \footnotesize \textarabic{$(\Nplot)$\ يقطع  
+			 } };
+\node[text width=2.5cm,align=center,anchor=base] at (Z22){\vskip -0.3cm \footnotesize \textarabic{ $(\Nline)$ في النقطة
+			} };
+\node[text width=2.5cm,align=center,anchor=base] at (Z22){\vskip 0.2cm \small 
+\textarabic{ $#7$} };
+	 %
+	%		
+	\fi\fi\fi\fi
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\end{tikzpicture}
+}
+\endinput

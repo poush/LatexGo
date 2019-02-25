@@ -1,0 +1,51 @@
+!config
+# Arara, the cool TeX automation tool
+# Copyright (c) 2018, Paulo Roberto Massa Cereda 
+# All rights reserved.
+#
+# This rule is part of arara.
+identifier: clean
+name: Clean
+authors:
+- Marco Daniel
+- Paulo Cereda
+commands:
+- name: Cleaning feature
+  command: >
+    @{
+        prefix = [];
+        if (isUnix()) {
+            prefix = [ 'rm', '-f' ];
+        }
+        else {
+            prefix = [ 'cmd', '/c', 'del' ];
+        }
+        if (extensions == '') {
+            if (getOriginalFile() == file) {
+                throwError('I cannot remove the main file reference.');
+            }
+            return getCommand(prefix, file);
+        }
+        else {
+            base = getBasename(file);
+            removals = [];
+            foreach(extension : extensions) {
+                if (base.concat('.').concat(extension) == getOriginalFile()) {
+                    throwError('I cannot remove the main file reference.');
+                }
+                removals.add(getCommand(prefix, base.concat('.').concat(extension)));
+            }
+            return removals;
+        }
+    }
+arguments:
+- identifier: extensions
+  flag: >
+    @{
+        if (isList(parameters.extensions)) {
+            return parameters.extensions;
+        }
+        else {
+            throwError('I was expecting a list of extensions.');
+        }
+    }

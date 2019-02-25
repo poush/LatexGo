@@ -1,0 +1,1910 @@
+% \iffalse
+%% File: gtl.dtx Copyright (C) 2013,2015,2017,2018 Bruno Le Floch
+%%
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3c
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%%
+%% This work has the LPPL maintenance status 'maintained'
+%% and the current maintainer is Bruno Le Floch.
+%%
+%% This work consists of the files gtl.dtx and gtl.ins and
+%% derived file gtl.sty.
+%% -----------------------------------------------------------------------
+%
+%<*driver>
+%\fi
+%\iffalse
+\documentclass[full]{l3doc}
+\usepackage{gtl}
+\begin{document}
+  \DocInput{gtl.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \title{The \textsf{gtl} package: \\
+%   manipulate unbalanced lists of tokens\thanks{This
+%     file has version number 0.5, last revised 2018/12/28.}}
+% \author{Bruno Le Floch}
+% \date{2018/12/28}
+%
+% \maketitle
+% \tableofcontents
+%
+% \begin{documentation}
+%
+% \section{\pkg{gtl} documentation}
+%
+% The \texttt{expl3} programming language provides various tools to
+% manipulate lists of tokens (package \pkg{l3tl}).  However, those token
+% lists must have balanced braces, or more precisely balanced
+% begin-group and end-group characters.  The \pkg{gtl} package
+% manipulates instead lists of tokens which may be unbalanced, with more
+% begin-group or more end-group characters.
+%
+% A technical comment: currently, all begin-group characters are
+% assumed to have the character code of ``|{|'' and all end-group
+% characters that of~``|}|''.
+%
+% Please report bugs (or suggestions) on the issue tracker
+% (\url{https://github.com/blefloch/latex-gtl/issues}).
+%
+% ^^A The following code checks the test coverage
+% \begingroup\ExplSyntaxOn
+% \msg_new:nnn { gtldoc } { discarded } { Discarded~some~material~after~closing~brace~of~{function}~or~TEST~or~TESTEXP~argument:~``#1'' }
+% \msg_new:nnn { gtldoc } { bad-test } { TEST~or~TESTEXP~followed~by~unexpected~character~``#1'' }
+% \msg_new:nnn { gtldoc } { multi-function } { Some~functions~are~defined~twice }
+% \msg_new:nnn { gtldoc } { doc-no-test } { ``#1''~is~documented~but~has~no~test }
+% \msg_new:nnn { gtldoc } { test-no-doc } { ``#1''~is~tested~but~not~documented }
+% \msg_new:nnn { gtldoc } { junk } { There~is~some~unexpected~junk.~Giving~up~on~this~line. }
+% \tl_new:N \l__gtldoc_arg_tl
+% \seq_new:N \l__gtldoc_internal_seq
+% \cs_generate_variant:Nn \use:nn { no }
+% \cs_generate_variant:Nn \tl_if_in:nnTF { no }
+% \cs_generate_variant:Nn \tl_if_in:nnT { no }
+% \cs_generate_variant:Nn \tl_remove_all:Nn { Nx }
+% \cs_generate_variant:Nn \seq_set_filter:NNn { NNx }
+% \group_begin:
+%   \seq_new:N \l__gtldoc_fn_seq
+%   \iow_new:N \g__gtldoc_ior
+%   \tl_new:N \l__gtldoc_internal_tl
+%   \str_new:N \l__gtldoc_TF_str
+%   \seq_new:N \l__gtldoc_arg_seq
+%   \seq_new:N \l__gtldoc_arg_TF_seq
+%   \cs_new:Npn \__gtldoc_remove_backslash:N #1
+%     { \exp_after:wN \token_if_eq_charcode:NNF \c_backslash_str #1 {#1} }
+%   \cs_new_protected:Npn \gtldoc_get_fn:n #1
+%     {
+%       \seq_clear:N \l__gtldoc_fn_seq
+%       \clist_map_inline:nn {#1}
+%         {
+%           \__gtldoc_get_fn:nn { function } {#1} ^^A todo: this is wasteful, going through the file twice!
+%           \__gtldoc_get_fn:nn { variable } {#1}
+%         }
+%     }
+%   \cs_new_protected:Npn \__gtldoc_get_fn:nn #1
+%     {
+%       \exp_args:Noo \__gtldoc_get_fn_aux:nnn
+%         { \tl_to_str:n { begin } } { \tl_to_str:n { {#1} } }
+%     }
+%   \cs_new_eq:NN \__gtldoc_test:w ?
+%   \cs_new_eq:NN \__gtldoc_skip:w ?
+%   \cs_new_protected:Npn \__gtldoc_get_fn_aux:nnn #1#2#3
+%     {
+%       \cs_gset_protected:Npn \__gtldoc_test:w ##1 #1 ##2 #2 { }
+%       \cs_gset_protected:Npn \__gtldoc_skip:w ##1 #1 ##2 #2
+%         {
+%           \tl_clear:N \l__gtldoc_arg_tl
+%           \str_clear:N \l__gtldoc_TF_str
+%           \tl_if_blank:nF {##2}
+%             {
+%               \msg_error:nn { gtldoc } { junk }
+%               \use_none_delimit_by_q_recursion_stop:w
+%             }
+%           \__gtldoc_aux:N
+%         }
+%       \ior_open:Nn \g__gtldoc_ior {#3}
+%       \ior_str_map_inline:Nn \g__gtldoc_ior
+%         {
+%           \tl_if_in:noT {##1} { \tl_to_str:n { end { documentation } } } ^^A careful if you remove spaces!
+%             { \ior_map_break: }
+%           \tl_if_empty:oF { \__gtldoc_test:w ##1 #1 #2 }
+%             { \__gtldoc_skip:w ##1 \q_recursion_tail \q_recursion_stop }
+%         }
+%       \ior_close:N \g__gtldoc_ior
+%     }
+%   \cs_new_protected:Npn \__gtldoc_aux:N #1
+%     {
+%       \token_if_eq_meaning:NNT #1 \q_recursion_tail
+%         { \__gtldoc_more:Nw \__gtldoc_aux:N }
+%       \str_case_x:nnF {#1}
+%         {
+%           \c_percent_str { \__gtldoc_aux:N } ^^A ignore percent
+%           ^ { \__gtldoc_hat:N } ^^A check for "^^A"
+%           [ { \__gtldoc_opt:w }
+%           \c_left_brace_str { \__gtldoc_arg:w }
+%         }
+%         { \__gtldoc_varg:N #1 }
+%     }
+%   \cs_new_protected:Npn \__gtldoc_more:Nw #1 #2 \q_recursion_stop
+%     { ^^A grab one more line and restart the loop
+%       \ior_str_get:NN \g__gtldoc_ior \l__gtldoc_internal_tl
+%       \exp_after:wN #1 \l__gtldoc_internal_tl
+%         \q_recursion_tail \q_recursion_stop
+%     }
+%   \cs_new_protected:Npn \__gtldoc_hat:N #1
+%     {
+%       \token_if_eq_charcode:NNTF #1 ^
+%         { \__gtldoc_hat_hat:N }
+%         { \__gtldoc_varg:N ^ #1 }
+%     }
+%   \cs_new_protected:Npn \__gtldoc_hat_hat:N #1 ^^A in principle we should worry about crazy people doing ^^01 or ^^5b etc
+%     {
+%       \token_if_eq_charcode:NNTF #1 A
+%         { \__gtldoc_more:Nw \__gtldoc_aux:N } ^^A we found a comment
+%         { \__gtldoc_varg:N ^ ^ #1 }
+%     }
+%   \cs_new_protected:Npn \__gtldoc_opt:w #1 \q_recursion_tail
+%     {
+%       \tl_if_in:nnTF {#1} { ] }
+%         { \__gtldoc_opt_aux:w #1 \q_recursion_tail }
+%         { \__gtldoc_more:Nw \__gtldoc_opt:w }
+%     }
+%   \cs_new_protected:Npn \__gtldoc_opt_aux:w #1 ]
+%     {
+%       \tl_if_in:noTF {#1} { \tl_to_str:n { pTF } }
+%         { \str_set:Nn \l__gtldoc_TF_str { pTF } }
+%         {
+%           \tl_if_in:noT {#1} { \tl_to_str:n { TF } }
+%             { \str_set:Nn \l__gtldoc_TF_str { TF } }
+%         }
+%       \__gtldoc_aux:N
+%     }
+%   \cs_new_protected:Npn \__gtldoc_arg:w
+%     { \exp_after:wN \__gtldoc_varg:N \c_right_brace_str }
+%   \cs_new_protected:Npn \__gtldoc_varg:N #1
+%     { \exp_args:No \__gtldoc_varg_aux:n { \token_to_str:N #1 } }
+%   \cs_new_protected:Npn \__gtldoc_varg_aux:n #1
+%     {
+%       \cs_gset_protected:Npn \__gtldoc_varg_aux:w ##1 #1 { {##1} }
+%       \cs_gset_protected:Npn \__gtldoc_varg_loop:w ##1 \q_recursion_tail
+%         {
+%           \tl_if_in:noTF {##1} {#1}
+%             {
+%               \exp_after:wN \__gtldoc_varg_last:nw
+%               \__gtldoc_varg_aux:w ##1 \q_recursion_tail
+%             }
+%             {
+%               \tl_put_right:Nx \l__gtldoc_arg_tl { ##1 \iow_char:N \^^M }
+%               \__gtldoc_more:Nw \__gtldoc_varg_loop:w
+%             }
+%         }
+%       \__gtldoc_varg_loop:w
+%     }
+%   \cs_new_eq:NN \__gtldoc_varg_aux:w ?
+%   \cs_new_eq:NN \__gtldoc_varg_loop:w ?
+%   \cs_new_protected:Npn \__gtldoc_varg_last:nw
+%       #1#2 \q_recursion_tail \q_recursion_stop
+%     {
+%       \tl_if_blank:nF {#2}
+%         { \msg_warning:nnn { gtldoc } { discarded } {#2} }
+%       \tl_put_right:Nn \l__gtldoc_arg_tl {#1}
+%       \tl_remove_all:Nx \l__gtldoc_arg_tl { \iow_char:N \^^M \iow_char:N \% } ^^A from l3doc
+%       \tl_remove_all:Nx \l__gtldoc_arg_tl { \tl_to_str:n { ^ ^ A } } ^^A from l3doc
+%       \tl_remove_all:Nx \l__gtldoc_arg_tl { \iow_char:N \^^I } ^^A from l3doc
+%       \tl_remove_all:Nx \l__gtldoc_arg_tl { \iow_char:N \^^M } ^^A from l3doc
+%       ^^A \@@_replace_at_at:N \l_@@_tmpa_tl ^^A from l3doc but not done here
+%       \exp_args:NNx \seq_set_from_clist:Nn \l__gtldoc_arg_seq
+%         { \tl_to_str:N \l__gtldoc_arg_tl }
+%       \str_if_empty:NF \l__gtldoc_TF_str
+%         {
+%           \seq_clear:N \l__gtldoc_arg_TF_seq
+%           \seq_map_inline:Nn \l__gtldoc_arg_seq
+%             {
+%               \seq_put_right:Nx \l__gtldoc_arg_TF_seq { ##1 TF }
+%               \seq_put_right:Nx \l__gtldoc_arg_TF_seq { ##1 T }
+%               \seq_put_right:Nx \l__gtldoc_arg_TF_seq { ##1 F }
+%               \str_if_eq_x:nnT { \l__gtldoc_TF_str } { pTF }
+%                 { \seq_put_right:Nx \l__gtldoc_arg_TF_seq { \__gtldoc_pred:w ##1 } }
+%             }
+%           \seq_set_map:NNn \l__gtldoc_arg_seq
+%             \l__gtldoc_arg_TF_seq { \tl_to_str:n {##1} }
+%         }
+%       \seq_concat:NNN \l__gtldoc_fn_seq \l__gtldoc_fn_seq \l__gtldoc_arg_seq
+%     }
+%   \use:no { \cs_new:Npn \__gtldoc_pred:w #1 } { \token_to_str:N : } { #1 _p: }
+% \group_end:
+% \group_begin:
+%   \seq_new:N \l__gtldoc_tested_fn_seq
+%   \cs_new_protected:Npn \gtldoc_get_tests:n #1
+%     {
+%       \seq_clear:N \l__gtldoc_tested_fn_seq
+%       \clist_map_function:nN {#1} \__gtldoc_get_test:n
+%     }
+%   \cs_new_protected:Npn \__gtldoc_get_test:n #1
+%     {
+%       \ior_open:Nn \g__gtldoc_ior {#1}
+%       \ior_str_map_inline:Nn \g__gtldoc_ior
+%         { \__gtldoc_test_aux:n {##1} }
+%       \ior_close:N \g__gtldoc_ior
+%     }
+%   \cs_gset_protected:Npn \__gtldoc_tmp:nn #1#2
+%     {
+%       \cs_new_protected:Npn \__gtldoc_test_skipi:w ##1 #1 { }
+%       \cs_new_protected:Npn \__gtldoc_test_skipii:w ##1 #2 { }
+%       \cs_new_protected:Npn \__gtldoc_test_aux:n ##1
+%         {
+%           \tl_if_empty:oF { \__gtldoc_test_skipi:w ##1 #1 }
+%             {
+%               \tl_if_empty:oTF { \__gtldoc_test_skipii:w ##1 #2 }
+%                 { \__gtldoc_test_auxi:w } { \__gtldoc_test_auxii:w }
+%                 ##1 \q_recursion_tail \q_recursion_stop 
+%             }
+%         }
+%       \cs_new_protected:Npn \__gtldoc_test_auxi:w ##1 #1
+%         { \__gtldoc_test_auxiii:N }
+%       \cs_new_protected:Npn \__gtldoc_test_auxii:w ##1 #2
+%         { \__gtldoc_test_auxiii:N }
+%     }
+%   \exp_args:Noo \__gtldoc_tmp:nn
+%     { \token_to_str:N \TEST }
+%     { \token_to_str:N \TESTEXP }
+%   \cs_new_protected:Npn \__gtldoc_test_auxiii:N #1
+%     {
+%       \token_if_eq_meaning:NNT \q_recursion_tail #1
+%         { \__gtldoc_more:Nw \__gtldoc_test_auxiii:N }
+%       \exp_after:wN \token_if_eq_charcode:NNTF \c_left_brace_str #1
+%         { \__gtldoc_test_arg:w }
+%         {
+%           \msg_error:nnn { gtldoc } { bad-test } {#1}
+%           \use_none_delimit_by_q_recursion_stop:w
+%         }
+%     }
+%   \cs_new_protected:Npn \__gtldoc_test_arg:w
+%     {
+%       \tl_clear:N \l__gtldoc_arg_tl
+%       \exp_args:No \__gtldoc_test_arg_aux:N \c_right_brace_str
+%     }
+%   \cs_new_protected:Npn \__gtldoc_test_arg_aux:N #1
+%     {
+%       \cs_gset_protected:Npn \__gtldoc_test_arg_aux:w ##1 #1 { {##1} }
+%       \cs_gset_protected:Npn \__gtldoc_test_arg_loop:w ##1 \q_recursion_tail
+%         {
+%           \tl_if_in:noTF {##1} {#1}
+%             {
+%               \exp_after:wN \__gtldoc_test_arg_last:nw
+%               \__gtldoc_test_arg_aux:w ##1 \q_recursion_tail
+%             }
+%             {
+%               \tl_put_right:Nn \l__gtldoc_arg_tl {##1}
+%               \__gtldoc_more:Nw \__gtldoc_test_arg_loop:w
+%             }
+%         }
+%       \__gtldoc_test_arg_loop:w
+%     }
+%   \cs_new_eq:NN \__gtldoc_test_arg_aux:w ?
+%   \cs_new_eq:NN \__gtldoc_test_arg_loop:w ?
+%   \cs_new_protected:Npn \__gtldoc_test_arg_last:nw
+%       #1#2 \q_recursion_tail \q_recursion_stop
+%     {
+%       \tl_if_blank:nF {#2}
+%         { \msg_warning:nnn { gtldoc } { discarded } {#2} }
+%       \tl_put_right:Nn \l__gtldoc_arg_tl {#1}
+%       \exp_args:NNx \seq_set_from_clist:Nn \l__gtldoc_arg_seq
+%         { \tl_to_str:N \l__gtldoc_arg_tl }
+%       \seq_set_filter:NNx \l__gtldoc_arg_seq \l__gtldoc_arg_seq
+%         { \exp_not:N \tl_if_head_eq_charcode_p:nN {####1} \c_backslash_str }
+%       \seq_concat:NNN \l__gtldoc_tested_fn_seq \l__gtldoc_tested_fn_seq \l__gtldoc_arg_seq
+%     }
+% \group_end:
+% \gtldoc_get_fn:n { gtl.dtx }
+% \gtldoc_get_tests:n
+%   {
+%     ../../testfiles/gtl000.lvt ,
+%     ../../testfiles/gtl001.lvt ,
+%     ../../testfiles/gtl002.lvt ,
+%     ../../testfiles/gtl003.lvt ,
+%     ../../testfiles/gtl004.lvt ,
+%     ../../testfiles/gtl005.lvt ,
+%     ../../testfiles/gtl006.lvt ,
+%     ../../testfiles-plain/gtl007.lvt
+%   }
+% \group_begin:
+%   \seq_set_eq:NN \l__gtldoc_internal_seq \l__gtldoc_fn_seq
+%   \seq_remove_duplicates:N \l__gtldoc_internal_seq
+%   \int_compare:nF
+%     { \seq_count:N \l__gtldoc_internal_seq = \seq_count:N \l__gtldoc_fn_seq }
+%     {
+%       \msg_error:nn { gtldoc } { multi-function }
+%       \seq_set_eq:NN \l__gtldoc_fn_seq \l__gtldoc_internal_seq
+%     }
+%   \seq_remove_duplicates:N \l__gtldoc_tested_fn_seq
+%   \seq_map_inline:Nn \l__gtldoc_fn_seq
+%     {
+%       \seq_if_in:NnTF \l__gtldoc_tested_fn_seq {#1}
+%         { \seq_remove_all:Nn \l__gtldoc_tested_fn_seq {#1} }
+%         { \msg_error:nnn { gtldoc } { doc-no-test } {#1} }
+%     }
+%   \seq_map_inline:Nn \l__gtldoc_tested_fn_seq
+%     { \msg_error:nnn { gtldoc } { test-no-doc } {#1} }
+% \group_end:
+% \endgroup
+%
+% \subsection{Creating and initialising extended token lists}
+%
+% \begin{function}{\gtl_new:N}
+%   \begin{syntax}
+%     \cs{gtl_new:N} \meta{gtl~var}
+%   \end{syntax}
+%   Creates a new \meta{gtl~var} or raises an error if the name is
+%   already taken.  The declaration is global.  The \meta{gtl~var} will
+%   initially be empty.
+% \end{function}
+%
+% \begin{function}{\gtl_const:Nn, \gtl_const:Nx}
+%   \begin{syntax}
+%     \cs{gtl_const:Nn} \meta{gtl~var} \Arg{token list}
+%   \end{syntax}
+%   Creates a new constant \meta{gtl~var} or raises an error if the name
+%   is already taken.  The value of the \meta{gtl~var} will be set
+%   globally to the balanced \meta{token list}.
+% \end{function}
+%
+% \begin{function}{\gtl_clear:N, \gtl_gclear:N}
+%   \begin{syntax}
+%     \cs{gtl_clear:N} \meta{gtl~var}
+%   \end{syntax}
+%   Empties the \meta{gtl~var}, locally or globally.
+% \end{function}
+%
+% \begin{function}{\gtl_clear_new:N, \gtl_gclear_new:N}
+%   \begin{syntax}
+%     \cs{gtl_clear_new:N} \meta{gtl~var}
+%   \end{syntax}
+%   Ensures that the \meta{gtl~var} exists globally by applying
+%   \cs{gtl_new:N} if necessary, then applies \cs{gtl_(g)clear:N} to
+%   leave the \meta{gtl~var} empty.
+% \end{function}
+%
+% \begin{function}{\gtl_set_eq:NN, \gtl_gset_eq:NN}
+%   \begin{syntax}
+%     \cs{gtl_set_eq:NN} \meta{gtl~var_1} \meta{gtl~var_2}
+%   \end{syntax}
+%   Sets the content of \meta{gtl~var_1} equal to that of
+%   \meta{gtl~var_2}.
+% \end{function}
+%
+% \begin{function}{\gtl_concat:NNN, \gtl_gconcat:NNN}
+%   \begin{syntax}
+%     \cs{gtl_concat:NNN} \meta{gtl~var_1} \meta{gtl~var_2} \meta{gtl~var_3}
+%   \end{syntax}
+%   Concatenates the content of \meta{gtl~var_2} and \meta{gtl~var_3}
+%   together and saves the result in \meta{gtl~var_1}. The
+%   \meta{gtl~var_2} will be placed at the left side of the new extended
+%   token list.
+% \end{function}
+%
+% \begin{function}[EXP, pTF]{\gtl_if_exist:N}
+%   \begin{syntax}
+%     \cs{gtl_if_exist_p:N} \meta{gtl~var}
+%     \cs{gtl_if_exist:NTF} \meta{gtl~var} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests whether the \meta{gtl~var} is currently defined.  This does
+%   not check that the \meta{gtl~var} really is an extended token list
+%   variable.
+% \end{function}
+%
+% \subsection{Adding data to token list variables}
+%
+% \begin{function}{\gtl_set:Nn, \gtl_set:Nx, \gtl_gset:Nn, \gtl_gset:Nx}
+%   \begin{syntax}
+%     \cs{gtl_set:Nn} \meta{gtl~var} \Arg{token list}
+%   \end{syntax}
+%   Sets \meta{gtl~var} to contain the balanced \meta{token list},
+%   removing any previous content from the variable.
+% \end{function}
+%
+% \begin{function}{\gtl_put_left:Nn, \gtl_gput_left:Nn}
+%   \begin{syntax}
+%     \cs{gtl_put_left:Nn} \meta{gtl~var} \Arg{token list}
+%   \end{syntax}
+%   Appends the balanced \meta{token list} to the left side of the
+%   current content of \meta{gtl~var}.
+% \end{function}
+%
+% \begin{function}{\gtl_put_right:Nn, \gtl_gput_right:Nn}
+%   \begin{syntax}
+%     \cs{gtl_put_right:Nn} \meta{gtl~var} \Arg{token list}
+%   \end{syntax}
+%   Appends the balanced \meta{token list} to the right side of the
+%   current content of \meta{gtl~var}.
+% \end{function}
+%
+% \subsection{Extended token list conditionals}
+%
+% \begin{function}[EXP, pTF]{\gtl_if_blank:N}
+%   \begin{syntax}
+%     \cs{gtl_if_blank_p:N} \Arg{gtl~var}
+%     \cs{gtl_if_blank:NTF} \Arg{gtl~var} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the \meta{gtl~var} consists only of blank spaces.  The test
+%   is \texttt{true} if \meta{gtl~var} consists of zero or more explicit
+%   space characters (explicit tokens with character code~$32$ and
+%   category code~$10$), and is \texttt{false} otherwise.
+% \end{function}
+%
+% \begin{function}[EXP,pTF]{\gtl_if_empty:N}
+%   \begin{syntax}
+%     \cs{gtl_if_empty_p:N} \meta{gtl~var}
+%     \cs{gtl_if_empty:NTF} \meta{gtl~var} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the \meta{gtl~var} is entirely empty (\emph{i.e.}~contains
+%   no tokens at all).
+% \end{function}
+%
+% \begin{function}[EXP,pTF]{\gtl_if_eq:NN}
+%   \begin{syntax}
+%     \cs{gtl_if_eq_p:NN} \Arg{gtl~var_1} \Arg{gtl~var_2}
+%     \cs{gtl_if_eq:NNTF} \Arg{gtl~var_1} \Arg{gtl~var_2} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if \meta{gtl~var_1} and \meta{gtl~var_2} have the same
+%   content.  The test is \texttt{true} if the two contain the same list
+%   of tokens (identical in both character code and category code).
+% \end{function}
+%
+% \begin{function}[EXP,pTF]{\gtl_if_single_token:N}
+%   \begin{syntax}
+%     \cs{gtl_if_single_token_p:N} \meta{gtl~var}
+%     \cs{gtl_if_single_token:NTF} \meta{gtl~var} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the content of the \meta{gtl~var} consists of a single
+%   token.  Such a token list has token count $1$ according to
+%   \cs{gtl_count_tokens:N}.
+% \end{function}
+%
+% \begin{function}[EXP,pTF]{\gtl_if_tl:N}
+%   \begin{syntax}
+%     \cs{gtl_if_tl_p:N} \meta{gtl~var}
+%     \cs{gtl_if_tl:NTF} \meta{gtl~var} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the \meta{gtl~var} is balanced.
+% \end{function}
+%
+% \subsection{The first token from an extended token list}
+%
+% \begin{function}[EXP]{\gtl_head:N}
+%   \begin{syntax}
+%     \cs{gtl_head:N} \meta{gtl~var}
+%   \end{syntax}
+%   Leaves in the input stream the first token in the \meta{gtl~var}.
+%   If the \meta{gtl~var} is empty, nothing is left in the input stream.
+% \end{function}
+%
+% \begin{function}[EXP]{\gtl_head_do:NN}
+%   \begin{syntax}
+%     \cs{gtl_head_do:NN} \meta{gtl~var} \meta{cs}
+%   \end{syntax}
+%   Leaves in the input stream the \meta{control sequence} followed by
+%   the first token in \meta{gtl~var}.  If the \meta{gtl~var} is empty,
+%   the \meta{cs} is followed by \cs{q_no_value}.
+% \end{function}
+%
+% \begin{function}[EXP, TF]{\gtl_head_do:NN}
+%   \begin{syntax}
+%     \cs{gtl_head_do:NNTF} \meta{gtl~var} \meta{cs} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   If the \meta{gtl~var} is empty, leaves the \meta{false code} in the
+%   input stream.  Otherwise leaves the \meta{control sequence}
+%   followed by the first token in \meta{gtl~var} and the \meta{true
+%   code}.
+% \end{function}
+%
+% \begin{function}{\gtl_get_left:NN}
+%   \begin{syntax}
+%     \cs{gtl_get_left:NN} \meta{gtl~var_1} \meta{gtl~var_2}
+%   \end{syntax}
+%   Stores the first token from \meta{gtl~var_1} in \meta{gtl~var_2} as
+%   an single-token extended token list, without removing it from
+%   \meta{gtl~var_1}.
+% \end{function}
+%
+% \begin{function}{\gtl_pop_left:N, \gtl_gpop_left:N}
+%   \begin{syntax}
+%     \cs{gtl_pop_left:N} \meta{gtl~var}
+%   \end{syntax}
+%   Remove the first token from \meta{gtl~var_1}.
+%   If the \meta{gtl~var_1} is empty nothing happens.
+% \end{function}
+%
+% \begin{function}{\gtl_pop_left:NN, \gtl_gpop_left:NN}
+%   \begin{syntax}
+%     \cs{gtl_pop_left:NN} \meta{gtl~var_1} \meta{gtl~var_2}
+%   \end{syntax}
+%   Stores the first token from \meta{gtl~var_1} in \meta{gtl~var_2} as
+%   an single-token extended token list, and remove it from
+%   \meta{gtl~var_1}.  If the \meta{gtl~var_1} is empty it remains so,
+%   and \meta{gtl~var_2} is set to contain \cs{q_no_value}.
+% \end{function}
+%
+% \begin{function}[EXP,pTF]{\gtl_if_head_eq_catcode:NN}
+%   \begin{syntax}
+%     \cs{gtl_if_head_eq_catcode_p:NN} \Arg{gtl~var} \meta{test token}
+%     \cs{gtl_if_head_eq_catcode:NNTF} \Arg{gtl~var} \meta{test token}
+%     ~~\Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the first token in \meta{gtl~var} has the same category
+%   code as the \meta{test token}.  In the case where \meta{gtl~var} is
+%   empty, the test will always be \texttt{false}.
+% \end{function}
+%
+% \begin{function}[EXP,pTF]{\gtl_if_head_eq_charcode:NN}
+%   \begin{syntax}
+%     \cs{gtl_if_head_eq_charcode_p:NN} \Arg{gtl~var} \meta{test token}
+%     \cs{gtl_if_head_eq_charcode:NNTF} \Arg{gtl~var} \meta{test token}
+%     ~~\Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the first token in \meta{gtl~var} has the same character
+%   code as the \meta{test token}.  In the case where \meta{gtl~var} is
+%   empty, the test will always be \texttt{false}.
+% \end{function}
+%
+% \begin{function}[EXP,pTF]{\gtl_if_head_eq_meaning:NN}
+%   \begin{syntax}
+%     \cs{gtl_if_head_eq_meaning_p:NN} \Arg{gtl~var} \meta{test token}
+%     \cs{gtl_if_head_eq_meaning:NNTF} \Arg{gtl~var} \meta{test token}
+%     ~~\Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the first token in \meta{gtl~var} has the same meaning as
+%   the \meta{test token}.  In the case where \meta{gtl~var} is empty,
+%   the test will always be \texttt{false}.
+% \end{function}
+%
+% \begin{function}[EXP,pTF]
+%   {
+%     \gtl_if_head_is_group_begin:N,
+%     \gtl_if_head_is_group_end:N,
+%     \gtl_if_head_is_N_type:N,
+%     \gtl_if_head_is_space:N,
+%   }
+%   \begin{syntax}
+%     \cs{gtl_if_head_is_group_begin_p:N} \Arg{gtl~var}
+%     \cs{gtl_if_head_is_group_begin:NTF} \Arg{gtl~var}
+%     ~~\Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests whether the first token in \meta{gtl~var} is an explicit
+%   begin-group character, an explicit end-group character, an |N|-type
+%   token, or a space.  In the case where \meta{gtl~var} is empty, the
+%   test will always be \texttt{false}.
+% \end{function}
+%
+% \subsection{The first few tokens from an extended token list}
+%
+% \begin{function}[EXP]{\gtl_left_tl:N}
+%   \begin{syntax}
+%     \cs{gtl_left_tl:N} \meta{gtl~var}
+%   \end{syntax}
+%   Leaves in the input stream all tokens in \meta{gtl~var} until the
+%   first extra begin-group or extra end-group character, within
+%   \cs{exp_not:n}.  This is the longest balanced token list starting
+%   from the left of \meta{gtl~var}.
+% \end{function}
+%
+% \begin{function}{\gtl_pop_left_tl:N, \gtl_gpop_left_tl:N}
+%   \begin{syntax}
+%     \cs{gtl_pop_left_tl:N} \meta{gtl~var}
+%   \end{syntax}
+%   Remove from the \meta{gtl~var} all tokens before the first extra
+%   begin-group or extra end-group character.  The tokens that are
+%   removed form the longest balanced token list starting from the left
+%   of \meta{gtl~var}.
+% \end{function}
+%
+% \begin{function}[EXP]{\gtl_left_item:NF}
+%   \begin{syntax}
+%     \cs{gtl_left_item:NF} \meta{gtl~var} \Arg{false code}
+%   \end{syntax}
+%   Leaves in the input stream the first \meta{item} of the
+%   \meta{gtl~var}: this is identical to \cs{tl_head:n} applied to the
+%   result of \cs{gtl_left_tl:N}.  If there is no such item, the
+%   \meta{false code} is left in the input stream.
+% \end{function}
+%
+% \begin{function}[TF]{\gtl_pop_left_item:NN, \gtl_gpop_left_item:NN}
+%   \begin{syntax}
+%     \cs{gtl_pop_left_item:NNTF} \meta{gtl~var} \meta{tl~var}
+%       \Arg{true~code} \Arg{false~code}
+%   \end{syntax}
+%   Stores the first item of \meta{gtl~var} in \meta{tl~var}, locally,
+%   and removes it from \meta{gtl~var}, together with any space before
+%   it.  If there is no such item, the \meta{gtl~var} is not affected,
+%   and the meta{tl~var} may or may not be affected.
+% \end{function}
+%
+% \begin{function}[EXP]{\gtl_left_text:NF}
+%   \begin{syntax}
+%     \cs{gtl_left_text:NF} \meta{gtl~var} \Arg{false code}
+%   \end{syntax}
+%   Starting from the first token in \meta{gtl~var}, this function finds
+%   a pattern of the form \meta{tokens_1} \Arg{tokens_2}, where the
+%   \meta{tokens_1} contain no begin-group nor end-group characters,
+%   then leaves \meta{tokens_1} \Arg{tokens_2} in the input stream,
+%   within \cs{exp_not:n}.  If no such pattern exists (this happens if
+%   the result of \cs{gtl_left_tl:N} contains no brace group), the
+%   \meta{false code} is run instead.
+% \end{function}
+%
+% \begin{function}{\gtl_pop_left_text:N, \gtl_gpop_left_text:N}
+%   \begin{syntax}
+%     \cs{gtl_pop_left_text:N} \meta{gtl~var}
+%   \end{syntax}
+%   Starting from the first token in \meta{gtl~var}, this function finds
+%   a pattern of the form \meta{tokens_1} \Arg{tokens_2}, where the
+%   \meta{tokens_1} contain no begin-group nor end-group characters,
+%   then removes \meta{tokens_1} \Arg{tokens_2} from \meta{gtl~var}.  If
+%   no such pattern exists (this happens if the result of
+%   \cs{gtl_left_tl:N} contains no brace group), the \meta{gtl~var} is
+%   not modified instead.
+% \end{function}
+%
+% \subsection{Working with the contents of extended token lists}
+%
+% \begin{function}[EXP]{\gtl_count_tokens:N}
+%   \begin{syntax}
+%     \cs{gtl_count_tokens:N} \meta{gtl~var}
+%   \end{syntax}
+%   Counts the number of tokens in the \meta{gtl~var} and leaves this
+%   information in the input stream.
+% \end{function}
+%
+% \begin{function}[EXP]{\gtl_extra_begin:N, \gtl_extra_end:N}
+%   \begin{syntax}
+%     \cs{gtl_extra_begin:N} \meta{gtl~var}
+%   \end{syntax}
+%   Counts the number of explicit extra begin-group (or end-group)
+%   characters in the \meta{gtl~var} and leaves this information in the
+%   input stream.
+% \end{function}
+%
+% \begin{function}{\gtl_show:N, \gtl_log:N}
+%   \begin{syntax}
+%     \cs{gtl_show:N} \meta{gtl~var}
+%   \end{syntax}
+%   Displays the content of the \meta{gtl~var} on the terminal or in
+%   the log file.
+% \end{function}
+%
+% \begin{function}[EXP, added = 2018-04-04]{\gtl_to_str:N, \gtl_to_str:n}
+%   \begin{syntax}
+%     \cs{gtl_to_str:N} \meta{gtl~var}
+%   \end{syntax}
+%   Converts the content of the \meta{gtl~var} into a series of
+%   characters with category code $12$ (other) with the exception of
+%   spaces, which retain category code $10$ (space).  This string is
+%   then left in the input stream.
+% \end{function}
+%
+% \subsection{Constant extended token lists}
+%
+% \begin{variable}{\c_empty_gtl}
+%   Constant that is always empty.
+% \end{variable}
+%
+% \begin{variable}{\c_group_begin_gtl}
+%   An explicit begin-group character contained in an extended token
+%   list.
+% \end{variable}
+%
+% \begin{variable}{\c_group_end_gtl}
+%   An explicit end-group character contained in an extended token list.
+% \end{variable}
+%
+% \subsection{Future perhaps}
+%
+% \begin{itemize}
+% \item Test if a token appears in an extended token list.
+% \item Test if an extended token list appears in another.
+% \item Remove an extended token list from another, once or every time
+%   it appears.
+% \item Replace an extended token list by another in a third: once, or
+%   every time it appears.
+% \item Case statement.
+% \item Mapping?
+% \item Inserting an extended token list into the input stream, with all
+%   its glorious unbalanced braces.
+% \item Convert in various ways to a token list.
+% \item Reverse the order of tokens.
+% \item Extract a token given its position.
+% \item Extract a range of tokens given their position.
+% \item Trim spaces.
+% \item Crazy idea below.
+% \end{itemize}
+%
+% We could add (with lots of work) the expandable function
+% \begin{quote}\ttfamily\obeylines\obeyspaces
+% \cs{gtl_concat:nF}
+%   \{
+%     \Arg{tl_1} \Arg{start_1} \Arg{stop_1}
+%     \Arg{tl_2} \Arg{start_2} \Arg{stop_2}
+%     \ldots{}
+%     \Arg{tl_n} \Arg{start_n} \Arg{stop_n}
+%   \}
+%   \Arg{false code}
+% \end{quote}
+% For each triplet, this function builds the sub-token list of \meta{tl_i}
+% corresponding to the tokens ranging from position \meta{start_i} to
+% position \meta{stop_i} of \meta{tl_i}.  The results obtained for each triplet
+% are then concatenated.  If nothing bad happens (see below), the
+% concatenation is left in the input stream, and the \meta{false code} is
+% removed.  Two cases can lead to running the \meta{false code} (and dropping
+% the first argument altogether).  The first case is when the number of
+% brace groups in \cs{gtl_concat:nF} is not a multiple of 3.  The second
+% case is when the concatenation gives rise to an unbalanced token list:
+% then the result is not a valid token list.  Note that each part is
+% allowed to be unbalanced: only the full result must be balanced.
+%
+% \end{documentation}
+%
+% \begin{implementation}
+%
+% \section{\pkg{gtl} implementation}
+%
+% Some support packages are loaded first, then we declare the package's
+% name, date, version, and purpose.
+%
+%    \begin{macrocode}
+%<*package>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%<@@=gtl>
+%    \end{macrocode}
+%
+% Load \pkg{expl3}, either through \cs{RequirePackage} or through
+% inputting the generic loader, depending on the format in use.
+%    \begin{macrocode}
+\begingroup\expandafter\expandafter\expandafter\endgroup
+\expandafter\ifx\csname RequirePackage\endcsname\relax
+  \input expl3-generic.tex
+\else
+  \RequirePackage{expl3}[2017/11/14]
+\fi
+\ExplSyntaxOn
+\cs_if_exist:NTF \ProvidesExplPackage
+  {
+    \cs_new_eq:NN \@@_end_package_hook: \prg_do_nothing:
+    \ExplSyntaxOff
+    \ProvidesExplPackage
+  }
+  {
+    \cs_new_eq:NN \@@_end_package_hook: \ExplSyntaxOff
+    \group_begin:
+    \ExplSyntaxOff
+    \cs_set_protected:Npn \@@_tmp:w #1#2#3#4
+      {
+        \group_end:
+        \tl_gset:cx { ver @ #1 . sty } { #2 ~ v#3 ~ #4 }
+        \cs_if_exist_use:NF \wlog { \iow_log:x }
+          { Package: ~ #1 ~ #2 ~ v#3 ~ #4 }
+      }
+    \@@_tmp:w
+  }
+      {gtl} {2018/12/28} {0.5} {Manipulate unbalanced lists of tokens}
+%    \end{macrocode}
+%
+% \subsection{Helpers}
+%
+%    \begin{macrocode}
+\cs_generate_variant:Nn \use:nn { no }
+%    \end{macrocode}
+%
+% \begin{macro}[EXP]{\@@_exp_not_n:N}
+%   Used in one case where we need to prevent expansion of a token
+%   within an |x|-expanding definition.  Using \cs{exp_not:N} there
+%   would fail when the argument is a macro parameter character.
+%    \begin{macrocode}
+\cs_new:Npn \@@_exp_not_n:N #1 { \exp_not:n {#1} }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\@@_brace:nn, \@@_brace_swap:nn}
+%   Those functions are used to add some tokens, |#1|, to an item |#2|
+%   in an extended token list: \cs{@@_brace:nn} adds tokens on the left,
+%   while \cs{@@_brace_swap:nn} adds them on the right.
+%    \begin{macrocode}
+\cs_new:Npn \@@_brace:nn #1#2 { { #1 #2 } }
+\cs_new:Npn \@@_brace_swap:nn #1#2 { { #2 #1 } }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\@@_strip_nil_mark:w,}
+% \begin{macro}[EXP]{\@@_strip_nil_mark_aux:w}
+%   Removes the following \cs{q_nil} \cs{q_mark} without losing any
+%   braces, and places the result into \cs{exp_not:n}.
+%    \begin{macrocode}
+\cs_new:Npn \@@_strip_nil_mark:w
+  { \@@_strip_nil_mark_aux:w \prg_do_nothing: }
+\cs_new:Npn \@@_strip_nil_mark_aux:w #1 \q_nil \q_mark
+  { \exp_not:o {#1} }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Structure of extended token lists}
+%
+% Token lists must have balanced braces (or rather, begin-group and
+% end-group characters).  Extended token lists lift this requirement,
+% and can represent arbitrary lists of tokens.  A list of tokens can
+% fail to be balanced in two ways: one may encounter too many end-group
+% characters near the beginning of the list, or too many begin-group
+% characters near the end of the list.  In fact, a list of tokens always
+% has the form
+% \begin{quote}\ttfamily
+%   \meta{b_1} \} \ldots{} \meta{b_n} \}
+%   \meta{c}
+%   \{ \meta{e_1} \ldots{} \{ \meta{e_p}
+% \end{quote}
+% where the \meta{b_i}, \meta{c}, and \meta{e_i} are all balanced token
+% lists.  This can be seen by listing the tokens, and keeping track of a
+% counter, which starts at~$0$, and is incremented at each begin-group
+% character, and decremented at each end-group character: then the
+% \meta{b_i} are delimited by positions where the counter reaches a new
+% minimum, whereas the \meta{e_i} are delimited by positions where the
+% counter last takes a given negative value.  Such a token list is
+% stored as
+% \begin{quote}\ttfamily
+%   \cs{s_@@}
+%   \{ \Arg{b_1} \ldots{} \Arg{b_n} \}
+%   \Arg{c}
+%   \{ \Arg{e_p} \ldots{} \Arg{e_1} \}
+% \end{quote}
+% Note that the \meta{e_i} are in a reversed order, as this makes the
+% ends of extended token lists more accessible.  Balanced token lists
+% have $n = p = 0$: the first and third parts are empty, while the
+% second contains the tokens.
+%
+% In the following code comments, the balanced token lists \meta{b_i}
+% are called ``leading chunks'', \meta{c} is called ``middle chunk'',
+% and \meta{e_i} are called ``trailing chunks''.  It is important to
+% note that a balanced sub-list of a gtl must be entirely contained in
+% one of the chunk.
+%
+% \begin{variable}{\s_@@}
+%   This marker appears at the start of extended token lists.
+%    \begin{macrocode}
+\cs_new_eq:NN \s_@@ \scan_stop:
+%    \end{macrocode}
+% \end{variable}
+%
+% \begin{macro}
+%   {
+%     \gtl_set:Nn, \gtl_gset:Nn, \gtl_const:Nn,
+%     \gtl_set:Nx, \gtl_gset:Nx, \gtl_const:Nx
+%   }
+%   Storing a balanced token list into an extended token list variable
+%   simply means adding \cs{s_@@} and two empty brace
+%   groups: there are no leading nor trailing chunks.
+%    \begin{macrocode}
+\cs_new_protected:Npn \gtl_set:Nn   { \@@_set:NNn \tl_set:Nn   }
+\cs_new_protected:Npn \gtl_gset:Nn  { \@@_set:NNn \tl_gset:Nn  }
+\cs_new_protected:Npn \gtl_const:Nn { \@@_set:NNn \tl_const:Nn }
+\cs_new_protected:Npn \gtl_set:Nx   { \@@_set:NNn \tl_set:Nx   }
+\cs_new_protected:Npn \gtl_gset:Nx  { \@@_set:NNn \tl_gset:Nx  }
+\cs_new_protected:Npn \gtl_const:Nx { \@@_set:NNn \tl_const:Nx }
+\cs_new_protected:Npn \@@_set:NNn   #1#2#3
+  { #1 #2 { \s_@@ { } {#3} { } } }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{variable}{\c_empty_gtl}
+%   An empty extended token list, obtained thanks to the
+%   \cs{gtl_const:Nn} function just defined.
+%    \begin{macrocode}
+\gtl_const:Nn \c_empty_gtl { }
+%    \end{macrocode}
+% \end{variable}
+%
+% \begin{variable}{\c_group_begin_gtl, \c_group_end_gtl}
+%   Extended token lists with exactly one begin-group/end-group
+%   character are built by including a single (empty) leading or
+%   trailing chunk.
+%    \begin{macrocode}
+\tl_const:Nn \c_group_end_gtl   { \s_@@ { { } } { } {     } }
+\tl_const:Nn \c_group_begin_gtl { \s_@@ {     } { } { { } } }
+%    \end{macrocode}
+% \end{variable}
+%
+% \subsection{Creating extended token list variables}
+%
+% \begin{macro}{\gtl_new:N}
+%   A new extended token list is created empty.
+%    \begin{macrocode}
+\cs_new_protected:Npn \gtl_new:N #1
+  { \cs_new_eq:NN #1 \c_empty_gtl }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\gtl_set_eq:NN, \gtl_gset_eq:NN}
+%   All the data about an extended token list is stored as a single
+%   token list, so copying is easy.
+%    \begin{macrocode}
+\cs_new_eq:NN \gtl_set_eq:NN  \tl_set_eq:NN
+\cs_new_eq:NN \gtl_gset_eq:NN \tl_gset_eq:NN
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\gtl_clear:N, \gtl_gclear:N}
+%   Clearing an extended token list by setting it to the empty one.
+%    \begin{macrocode}
+\cs_new_protected:Npn \gtl_clear:N  #1
+  { \gtl_set_eq:NN  #1 \c_empty_gtl }
+\cs_new_protected:Npn \gtl_gclear:N #1
+  { \gtl_gset_eq:NN #1 \c_empty_gtl }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\gtl_clear_new:N, \gtl_gclear_new:N}
+%   If the variable exists, clear it.  Otherwise declare it.
+%    \begin{macrocode}
+\cs_new_protected:Npn \gtl_clear_new:N #1
+  { \gtl_if_exist:NTF #1 { \gtl_clear:N #1 } { \gtl_new:N #1 } }
+\cs_new_protected:Npn \gtl_gclear_new:N #1
+  { \gtl_if_exist:NTF #1 { \gtl_gclear:N #1 } { \gtl_new:N #1 } }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP, pTF]{\gtl_if_exist:N}
+%   Again a copy of token list functions.
+%    \begin{macrocode}
+\prg_new_eq_conditional:NNn \gtl_if_exist:N \tl_if_exist:N
+  { p , T , F , TF }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Adding data to extended token list variables}
+%
+% \begin{macro}{\gtl_put_left:Nn, \gtl_gput_left:Nn}
+% \begin{macro}[rEXP]{\@@_put_left:wn}
+%   If there is no leading chunk in the gtl variable, then add the new
+%   material to the middle chunk.  Otherwise add it to the first
+%   leading chunk, namely the first brace group in the first argument
+%   of \cs{@@_put_left:wn}.
+%    \begin{macrocode}
+\cs_new_protected:Npn \gtl_put_left:Nn #1#2
+  { \tl_set:Nx #1 { \exp_after:wN \@@_put_left:wn #1 {#2} } }
+\cs_new_protected:Npn \gtl_gput_left:Nn #1#2
+  { \tl_gset:Nx #1 { \exp_after:wN \@@_put_left:wn #1 {#2} } }
+\cs_new:Npn \@@_put_left:wn \s_@@ #1#2#3 #4
+  {
+    \tl_if_empty:nTF {#1}
+      { \exp_not:n { \s_@@ { } { #4 #2 } {#3} } }
+      {
+        \s_@@
+        { \exp_not:o { \@@_brace:nn {#4} #1 } }
+        { \exp_not:n {#2} }
+        { \exp_not:n {#3} }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\gtl_put_right:Nn, \gtl_gput_right:Nn}
+% \begin{macro}[rEXP]{\@@_put_right:wn}
+%   Symmetric of \cs{gtl_put_left:Nn}.
+%    \begin{macrocode}
+\cs_new_protected:Npn \gtl_put_right:Nn #1#2
+  { \tl_set:Nx #1 { \exp_after:wN \@@_put_right:wn #1 {#2} } }
+\cs_new_protected:Npn \gtl_gput_right:Nn #1#2
+  { \tl_gset:Nx #1 { \exp_after:wN \@@_put_right:wn #1 {#2} } }
+\cs_new:Npn \@@_put_right:wn \s_@@ #1#2#3 #4
+  {
+    \tl_if_empty:nTF {#3}
+      { \exp_not:n { \s_@@ {#1} { #2 #4 } { } } }
+      {
+        \s_@@
+        { \exp_not:n {#1} }
+        { \exp_not:n {#2} }
+        { \exp_not:o { \@@_brace_swap:nn {#4} #3 } }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\gtl_concat:NNN, \gtl_gconcat:NNN}
+% \begin{macro}[rEXP]
+%   {
+%     \@@_concat:ww,
+%     \@@_concat_aux:nnnnnn,
+%     \@@_concat_auxi:nnnnnn,
+%     \@@_concat_auxii:nnnnnn,
+%     \@@_concat_auxiii:w,
+%     \@@_concat_auxiv:nnnn,
+%     \@@_concat_auxv:wnwnn,
+%     \@@_concat_auxvi:nnwnwnn
+%   }
+%   Concatenating two lists of tokens of the form
+%   \begin{quote}\ttfamily
+%     \cs{s_@@}
+%     \{ \Arg{b_1} \ldots{} \Arg{b_n} \}
+%     \Arg{c}
+%     \{ \Arg{e_p} \ldots{} \Arg{e_1} \}
+%   \end{quote}
+%   is not an easy task.  The \meta{e} parts of the first join with the
+%   \meta{b} parts of the second to make balanced pairs, and the
+%   follow-up depends on whether there were more \meta{e} parts or more
+%   \meta{b} parts.
+%    \begin{macrocode}
+\cs_new_protected:Npn \gtl_concat:NNN #1#2#3
+  { \tl_set:Nx  #1 { \exp_last_two_unbraced:Noo \@@_concat:ww #2 #3 } }
+\cs_new_protected:Npn \gtl_gconcat:NNN #1#2#3
+  { \tl_gset:Nx #1 { \exp_last_two_unbraced:Noo \@@_concat:ww #2 #3 } }
+\cs_new:Npn \@@_concat:ww \s_@@ #1#2#3 \s_@@ #4#5#6
+  {
+    \tl_if_blank:nTF {#3}
+      {
+        \tl_if_blank:nTF {#4}
+          { \@@_concat_aux:nnnnnn }
+          { \@@_concat_auxi:nnnnnn }
+      }
+      {
+        \tl_if_blank:nTF {#4}
+          { \@@_concat_auxii:nnnnnn }
+          { \@@_concat_auxiv:nnnn }
+      }
+      {#1} {#2} {#3} {#4} {#5} {#6}
+  }
+\cs_new:Npn \@@_concat_aux:nnnnnn #1#2#3#4#5#6
+  { \exp_not:n { \s_@@ {#1} { #2 #5 } {#6} } }
+\cs_new:Npn \@@_concat_auxi:nnnnnn #1#2#3#4#5#6
+  {
+    \s_@@
+    {
+      \exp_not:n {#1}
+      \exp_not:f
+        { \@@_concat_auxiii:w \@@_brace:nn {#2} #4 ~ \q_stop }
+    }
+    { \exp_not:n {#5} }
+    { \exp_not:n {#6} }
+  }
+\cs_new:Npn \@@_concat_auxii:nnnnnn #1#2#3#4#5#6
+  {
+    \s_@@
+    { \exp_not:n {#1} }
+    { \exp_not:n {#2} }
+    {
+      \exp_not:n {#6}
+      \exp_not:f
+        { \@@_concat_auxiii:w \@@_brace_swap:nn {#5} #3 ~ \q_stop }
+    }
+  }
+\cs_new:Npn \@@_concat_auxiii:w #1 ~ #2 \q_stop {#1}
+\cs_new:Npn \@@_concat_auxiv:nnnn #1#2#3#4
+  {
+    \tl_if_single:nTF {#3}
+      { \@@_concat_auxv:wnwnn }
+      { \@@_concat_auxvi:nnwnwnn }
+    #3 ~ \q_mark #4 ~ \q_mark {#1} {#2}
+  }
+\cs_new:Npn \@@_concat_auxv:wnwnn
+    #1#2 \q_mark #3#4 \q_mark #5#6
+  {
+    \@@_concat:ww
+      \s_@@ {#5} { #6 { #1 #3 } } { }
+      \s_@@ {#4}
+  }
+\cs_new:Npn \@@_concat_auxvi:nnwnwnn
+    #1#2#3 \q_mark #4#5 \q_mark #6#7
+  {
+    \@@_concat:ww
+      \s_@@ {#6} {#7} { { #2 { #1 #4 } } #3 }
+      \s_@@ {#5}
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Showing extended token lists}
+%
+% \begin{macro}[EXP]{\gtl_to_str:N, \gtl_to_str:n}
+% \begin{macro}[EXP]
+%   {
+%     \@@_to_str:w,
+%     \@@_to_str_loopi:nnw,
+%     \@@_to_str_testi:nnw,
+%     \@@_to_str_endi:nnn,
+%     \@@_to_str_loopii:nnw,
+%     \@@_to_str_endii:nnw
+%   }
+%    \begin{macrocode}
+\cs_new:Npn \gtl_to_str:N #1 { \exp_after:wN \@@_to_str:w #1 }
+\cs_new:Npn \gtl_to_str:n #1 { \@@_to_str:w #1 }
+\cs_new:Npn \@@_to_str:w \s_@@ #1#2#3
+  { \@@_to_str_loopi:nnw { } #1 \q_nil \q_mark {#2} {#3} }
+\cs_new:Npx \@@_to_str_loopi:nnw #1#2
+  {
+    \exp_not:N \quark_if_nil:nTF {#2}
+      { \exp_not:N \@@_to_str_testi:nnw {#1} {#2} }
+      { \exp_not:N \@@_to_str_loopi:nnw { #1 #2 \iow_char:N \} } }
+  }
+\cs_new:Npx \@@_to_str_testi:nnw #1#2#3 \q_mark
+  {
+    \exp_not:N \tl_if_empty:nTF {#3}
+      { \exp_not:N \@@_to_str_endi:nnn {#1} }
+      {
+        \exp_not:N \@@_to_str_loopi:nnw
+          { #1 #2 \iow_char:N \} } #3 \exp_not:N \q_mark
+      }
+  }
+\cs_new:Npn \@@_to_str_endi:nnn #1#2#3
+  { \@@_to_str_loopii:nnw #3 { #1 #2 } \q_nil \q_stop }
+\cs_new:Npx \@@_to_str_loopii:nnw #1#2
+  {
+    \exp_not:N \quark_if_nil:nTF {#2}
+      { \exp_not:N \@@_to_str_testii:nnw {#1} {#2} }
+      { \exp_not:N \@@_to_str_loopii:nnw { #2 \iow_char:N \{ #1 } }
+  }
+\cs_new:Npx \@@_to_str_testii:nnw #1#2#3 \q_stop
+  {
+    \exp_not:N \tl_if_empty:nTF {#3}
+      { \exp_not:N \tl_to_str:n {#1} }
+      {
+        \exp_not:N \@@_to_str_loopii:nnw
+          { #2 \iow_char:N \{ #1 } #3 \exp_not:N \q_stop
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\gtl_show:N, \gtl_log:N}
+% \begin{macro}{\@@_show:NNN}
+%   Display the variable name, then its string representation.  Before
+%   that, test that the variable indeed exists, and if appropriate
+%   throw an error message by sending the undefined variable to
+%   \cs{tl_show:N} or \cs{tl_log:N}.
+%    \begin{macrocode}
+\cs_new_protected:Npn \gtl_show:N
+  { \@@_show:NNN \tl_show:n \tl_show:N }
+\cs_new_protected:Npn \gtl_log:N
+  { \@@_show:NNN \tl_log:n \tl_log:N }
+\cs_new_protected:Npn \@@_show:NNN #1#2#3
+  {
+    \gtl_if_exist:NTF #3
+      { \exp_args:Nx #1 { \token_to_str:N #3 = \gtl_to_str:N #3 } }
+      { #2 #3 }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Extended token list conditionals}
+%
+% \begin{macro}[EXP, pTF]{\gtl_if_eq:NN}
+%   Two extended token lists are equal if the underlying token lists
+%   are the same.
+%    \begin{macrocode}
+\prg_new_eq_conditional:NNn \gtl_if_eq:NN \tl_if_eq:NN
+  { p , T , F , TF }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP, pTF]{\gtl_if_empty:N}
+%   An extended token list is empty if it is equal to the empty gtl.
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \gtl_if_empty:N #1 { p , T , F , TF }
+  {
+    \tl_if_eq:NNTF #1 \c_empty_gtl
+      { \prg_return_true: } { \prg_return_false: }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP, pTF]{\gtl_if_tl:N}
+% \begin{macro}[EXP]{\@@_if_tl_return:w}
+%   A gtl is balanced if it has neither leading nor trailing chunk.
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \gtl_if_tl:N #1 { p , T , F , TF }
+  { \exp_after:wN \@@_if_tl_return:w #1 }
+\cs_new:Npn \@@_if_tl_return:w \s_@@ #1#2#3
+  {
+    \tl_if_empty:nTF { #1 #3 }
+      { \prg_return_true: } { \prg_return_false: }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP, pTF]{\gtl_if_single_token:N}
+% \begin{macro}[EXP]{\@@_if_single_token_return:w}
+%   If there are neither leading nor trailing chunks then the gtl is a
+%   single token if and only if the middle chunk is a single token.
+%   Otherwise the gtl is a single token only if it is exactly a
+%   begin-group or an end-group token.
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \gtl_if_single_token:N #1 { p , T , F , TF }
+  { \exp_after:wN \@@_if_single_token_return:w #1 #1 }
+\cs_new:Npn \@@_if_single_token_return:w \s_@@ #1#2#3 #4
+  {
+    \tl_if_empty:nTF { #1 #3 }
+      {
+        \tl_if_single_token:nTF {#2}
+          { \prg_return_true: }
+          { \prg_return_false: }
+      }
+      {
+        \gtl_if_eq:NNTF #4 \c_group_begin_gtl
+          { \prg_return_true: }
+          {
+            \gtl_if_eq:NNTF #4 \c_group_end_gtl
+              { \prg_return_true: }
+              { \prg_return_false: }
+          }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP,pTF]{\gtl_if_blank:N}
+% \begin{macro}[EXP]{\@@_if_blank_return:w}
+%   A gtl is blank if its middle chunk is blank and it has no leading
+%   nor trailing chunk (those would lead to |#1| or |#3| containing
+%   brace groups).
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \gtl_if_blank:N #1 { p , T , F , TF }
+  { \exp_after:wN \@@_if_blank_return:w #1 }
+\cs_new:Npn \@@_if_blank_return:w \s_@@ #1#2#3
+  {
+    \tl_if_blank:nTF { #1 #2 #3 }
+      { \prg_return_true: }
+      { \prg_return_false: }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP,pTF]
+%   {
+%     \gtl_if_head_is_group_begin:N,
+%     \gtl_if_head_is_group_end:N,
+%     \gtl_if_head_is_space:N,
+%     \gtl_if_head_is_N_type:N,
+%   }
+%   Based on a five-way test \cs{@@_head:wnnnnn} defined later.  The
+%   five cases are: the gtl is empty, it starts with a begin-group,
+%   with an end-group, with a space, or with an N-type token.  In the
+%   last case, the token is left in the input stream after the brace
+%   group, hence the need for \cs{use_none:n} here.
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \gtl_if_head_is_group_begin:N #1
+  { p , T , F , TF }
+  {
+    \exp_after:wN \@@_head:wnnnnn #1
+      { \prg_return_false: }
+      { \prg_return_true: }
+      { \prg_return_false: }
+      { \prg_return_false: }
+      { \prg_return_false: \use_none:n }
+  }
+\prg_new_conditional:Npnn \gtl_if_head_is_group_end:N #1
+  { p , T , F , TF }
+  {
+    \exp_after:wN \@@_head:wnnnnn #1
+      { \prg_return_false: }
+      { \prg_return_false: }
+      { \prg_return_true: }
+      { \prg_return_false: }
+      { \prg_return_false: \use_none:n }
+  }
+\prg_new_conditional:Npnn \gtl_if_head_is_space:N #1
+  { p , T , F , TF }
+  {
+    \exp_after:wN \@@_head:wnnnnn #1
+      { \prg_return_false: }
+      { \prg_return_false: }
+      { \prg_return_false: }
+      { \prg_return_true: }
+      { \prg_return_false: \use_none:n }
+  }
+\prg_new_conditional:Npnn \gtl_if_head_is_N_type:N #1
+  { p , T , F , TF }
+  {
+    \exp_after:wN \@@_head:wnnnnn #1
+      { \prg_return_false: }
+      { \prg_return_false: }
+      { \prg_return_false: }
+      { \prg_return_false: }
+      { \prg_return_true: \use_none:n }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP, pTF]{\gtl_if_head_eq_catcode:NN}
+% \begin{macro}[EXP, pTF]{\gtl_if_head_eq_charcode:NN}
+% \begin{macro}[EXP]{\@@_if_head_eq_code_return:NNN}
+%   In the empty case, |?| can match with |#2|, but then
+%   \cs{use_none:nn} gets rid of \cs{prg_return_true:} and \cs{else:},
+%   to correctly leave \cs{prg_return_false:}.  We could not simplify
+%   this by placing the \cs{exp_not:N} |#2| after the construction
+%   involving~|#1|, because |#2|~must be taken into the \TeX{} primitive
+%   test, in case |#2|~itself is a primitive \TeX{} conditional, which
+%   would mess up conditional nesting.
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \gtl_if_head_eq_catcode:NN #1#2
+  { p , T , F , TF }
+  { \@@_if_head_eq_code_return:NNN \if_catcode:w #1#2 }
+\prg_new_conditional:Npnn \gtl_if_head_eq_charcode:NN #1#2
+  { p , T , F , TF }
+  { \@@_if_head_eq_code_return:NNN \if_charcode:w #1#2 }
+\cs_new:Npn \@@_if_head_eq_code_return:NNN #1#2#3
+  {
+    #1
+        \exp_not:N #3
+        \exp_after:wN \@@_head:wnnnnn #2
+          { ? \use_none:nn }
+          { \c_group_begin_token }
+          { \c_group_end_token }
+          { \c_space_token }
+          { \exp_not:N }
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP, pTF]{\gtl_if_head_eq_meaning:NN}
+% \begin{macro}[EXP]{\@@_if_head_eq_meaning_return:NN}
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \gtl_if_head_eq_meaning:NN #1#2
+  { p , T , F , TF }
+  { \@@_if_head_eq_meaning_return:NN #1#2 }
+\cs_new:Npn \@@_if_head_eq_meaning_return:NN #1#2
+  {
+    \exp_after:wN \@@_head:wnnnnn #1
+      { \if_false: }
+      { \if_meaning:w #2 \c_group_begin_token }
+      { \if_meaning:w #2 \c_group_end_token }
+      { \if_meaning:w #2 \c_space_token }
+      { \if_meaning:w #2 }
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{First token of an extended token list}
+%
+% \begin{macro}[EXP]{\@@_head:wnnnnn}
+% \begin{macro}[EXP]{\@@_head_aux:nwnnnn}
+% \begin{macro}[EXP]{\@@_head_auxii:N, \@@_head_auxiii:Nnn}
+%   This function performs |#4|~if the \texttt{gtl} is empty, |#5|~if it
+%   starts with a begin-group character, |#6|~if it starts with an
+%   end-group character, |#7|~if it starts with a space, and in other
+%   cases (when the first token is |N|-type), it performs |#8|~followed
+%   by the first token.
+%    \begin{macrocode}
+\cs_new:Npn \@@_head:wnnnnn \s_@@ #1#2#3 #4#5#6#7#8
+  {
+    \tl_if_empty:nTF {#1}
+      {
+        \tl_if_empty:nTF {#2}
+          { \tl_if_empty:nTF {#3} {#4} {#5} }
+          { \@@_head_aux:nwnnnn {#2} \q_stop {#5} {#6} {#7} {#8} }
+      }
+      { \@@_head_aux:nwnnnn #1 \q_stop {#5} {#6} {#7} {#8} }
+  }
+\cs_new:Npn \@@_head_aux:nwnnnn #1#2 \q_stop #3#4#5#6
+  {
+    \tl_if_head_is_group:nTF {#1} {#3}
+      {
+        \tl_if_empty:nTF {#1} {#4}
+          {
+            \tl_if_head_is_space:nTF {#1} {#5}
+              { \if_false: { \fi: \@@_head_auxii:N #1 } {#6} }
+          }
+      }
+  }
+\cs_new:Npn \@@_head_auxii:N #1
+  {
+    \exp_after:wN \@@_head_auxiii:Nnn
+    \exp_after:wN #1
+    \exp_after:wN { \if_false: } \fi:
+  }
+\cs_new:Npn \@@_head_auxiii:Nnn #1#2#3 { #3 #1 }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\gtl_head:N}
+%   If |#1| is empty, do nothing.  If it starts with a begin-group
+%   character or an end-group character leave the appropriate brace
+%   (thanks to \cs{if_false:} tricks).  If it starts with a space, leave
+%   that, and finally if it starts with a normal token, leave it, within
+%   \cs{exp_not:n}.
+%    \begin{macrocode}
+\cs_new:Npn \gtl_head:N #1
+  {
+    \exp_after:wN \@@_head:wnnnnn #1
+      { }
+      { \exp_after:wN { \if_false: } \fi: }
+      { \if_false: { \fi: } }
+      { ~ }
+      { \@@_exp_not_n:N }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\gtl_head_do:NN}
+%   Similar to \cs{gtl_head:N}, but inserting |#2| before the resulting token.
+%    \begin{macrocode}
+\cs_new:Npn \gtl_head_do:NN #1#2
+  {
+    \exp_after:wN \@@_head:wnnnnn #1
+      { #2 \q_no_value }
+      { \exp_after:wN #2 \exp_after:wN { \if_false: } \fi: }
+      { \if_false: { \fi: #2 } }
+      { #2 ~ }
+      { #2 }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP, TF]{\gtl_head_do:NN}
+%   Test for emptyness then use \cs{gtl_head_do:NN}, placing the
+%   \meta{true code} or \meta{false code} as appropriate.
+%    \begin{macrocode}
+\cs_new:Npn \gtl_head_do:NNT #1#2#3
+  {
+    \gtl_if_empty:NTF #1
+      { }
+      { \gtl_head_do:NN #1 #2 #3 }
+  }
+\cs_new:Npn \gtl_head_do:NNF #1#2#3
+  {
+    \gtl_if_empty:NTF #1
+      {#3}
+      { \gtl_head_do:NN #1 #2 }
+  }
+\cs_new:Npn \gtl_head_do:NNTF #1#2#3#4
+  {
+    \gtl_if_empty:NTF #1
+      {#4}
+      { \gtl_head_do:NN #1 #2 #3 }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\gtl_get_left:NN}
+%    \begin{macrocode}
+\cs_new_protected:Npn \gtl_get_left:NN #1#2
+  {
+    \exp_after:wN \@@_head:wnnnnn #1
+      { \gtl_set:Nn #2 { \q_no_value } }
+      { \gtl_set_eq:NN #2 \c_group_begin_gtl }
+      { \gtl_set_eq:NN #2 \c_group_end_gtl }
+      { \gtl_set:Nn #2 { ~ } }
+      { \gtl_set:Nn #2 }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\gtl_pop_left:N, \gtl_gpop_left:N}
+% \begin{macro}[rEXP]
+%   {
+%     \@@_pop_left:w,
+%     \@@_pop_left_auxi:n,
+%     \@@_pop_left_auxii:nnnw,
+%     \@@_pop_left_auxiii:nnnw,
+%     \@@_pop_left_auxiv:nn,
+%     \@@_pop_left_auxv:nnn,
+%     \@@_pop_left_auxvi:n
+%   }
+%    \begin{macrocode}
+\cs_new_protected:Npn \gtl_pop_left:N #1
+  {
+    \gtl_if_empty:NF #1
+      { \tl_set:Nx #1 { \exp_after:wN \@@_pop_left:w #1 } }
+  }
+\cs_new_protected:Npn \gtl_gpop_left:N #1
+  {
+    \gtl_if_empty:NF #1
+      { \tl_gset:Nx #1 { \exp_after:wN \@@_pop_left:w #1 } }
+  }
+\cs_new:Npn \@@_pop_left:w \s_@@ #1#2#3
+  {
+    \tl_if_empty:nTF {#1}
+      {
+        \tl_if_empty:nTF {#2}
+          { \@@_pop_left_auxi:n {#3} }
+          { \@@_pop_left_auxiv:nn {#2} {#3} }
+      }
+      { \@@_pop_left_auxv:nnn {#1} {#2} {#3} }
+  }
+\cs_new:Npn \@@_pop_left_auxi:n #1
+  {
+    \s_@@
+    { }
+    \@@_pop_left_auxii:nnnw { } { } #1 \q_nil \q_stop
+  }
+\cs_new:Npn \@@_pop_left_auxii:nnnw #1#2#3
+  {
+    \quark_if_nil:nTF {#3}
+      { \@@_pop_left_auxiii:nnnw {#1} {#2} {#3} }
+      { \@@_pop_left_auxii:nnnw { #1 #2 } { {#3} } }
+  }
+\cs_new:Npn \@@_pop_left_auxiii:nnnw #1#2#3#4 \q_stop
+  {
+    \tl_if_empty:nTF {#4}
+      { \exp_not:n { #2 {#1} } }
+      { \@@_pop_left_auxii:nnnw { #1 #2 } { {#3} } }
+  }
+\cs_new:Npn \@@_pop_left_auxiv:nn #1#2
+  {
+    \s_@@
+    { \tl_if_head_is_group:nT {#1} { { \tl_head:n {#1} } } }
+    { \tl_if_head_is_space:nTF {#1} { \exp_not:f } { \tl_tail:n } {#1} }
+    { \exp_not:n {#2} }
+  }
+\cs_new:Npn \@@_pop_left_auxv:nnn #1#2#3
+  {
+    \s_@@
+    { \if_false: { \fi: \@@_pop_left_auxvi:n #1 } }
+    { \exp_not:n {#2} }
+    { \exp_not:n {#3} }
+  }
+\cs_new:Npn \@@_pop_left_auxvi:n #1
+  {
+    \tl_if_empty:nF {#1}
+      {
+        \tl_if_head_is_group:nT {#1} { { \tl_head:n {#1} } }
+        {
+          \tl_if_head_is_space:nTF {#1}
+            { \exp_not:f } { \tl_tail:n } {#1}
+        }
+      }
+    \exp_after:wN \exp_not:n \exp_after:wN { \if_false: } \fi:
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\gtl_pop_left:NN, \gtl_gpop_left:NN}
+%   Getting the first token and removing it from the extended token list
+%   is done in two steps.
+%    \begin{macrocode}
+\cs_new_protected:Npn \gtl_pop_left:NN #1#2
+  {
+    \gtl_get_left:NN #1 #2
+    \gtl_pop_left:N #1
+  }
+\cs_new_protected:Npn \gtl_gpop_left:NN #1#2
+  {
+    \gtl_get_left:NN #1 #2
+    \gtl_gpop_left:N #1
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Longest token list starting an extended token list}
+%
+% \begin{macro}[EXP]{\gtl_left_tl:N}
+% \begin{macro}[EXP]{\@@_left_tl:w}
+%   If there is no leading chunk, return the middle chunk, otherwise
+%   the first leading chunk.
+%    \begin{macrocode}
+\cs_new:Npn \gtl_left_tl:N #1
+  { \exp_after:wN \@@_left_tl:w #1 }
+\cs_new:Npn \@@_left_tl:w \s_@@ #1#2#3
+  { \tl_if_empty:nTF {#1} { \exp_not:n {#2} } { \tl_head:n {#1} } }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\gtl_pop_left_tl:N, \gtl_gpop_left_tl:N}
+%   If there is no left chunk, remove the middle chunk, hence the
+%   resulting gtl will start with two empty brace groups (one for the
+%   absence of leading chunk, and one for the emptyness of the middle
+%   chunk).  If there are left chunks replace the first one by an empty
+%   chunk.
+%    \begin{macrocode}
+\cs_new_protected:Npn \gtl_pop_left_tl:N #1
+  { \tl_set:Nx #1 { \exp_after:wN \@@_pop_left_tl:w #1 } }
+\cs_new_protected:Npn \gtl_gpop_left_tl:N #1
+  { \tl_gset:Nx #1 { \exp_after:wN \@@_pop_left_tl:w #1 } }
+\cs_new:Npn \@@_pop_left_tl:w \s_@@ #1#2#3
+  {
+    \s_@@
+    \tl_if_empty:nTF {#1}
+      { { } { } }
+      {
+        { { } \tl_tail:n {#1} }
+        { \exp_not:n {#2} }
+      }
+    { \exp_not:n {#3} }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{First item of an extended token list}
+%
+% \begin{macro}[EXP]{\gtl_left_item:NF}
+% \begin{macro}[EXP]{\@@_left_item:wF, \@@_left_item_auxi:nwF}
+%   The left-most item of an extended token list is the head of its left
+%   token list.  The code thus starts like \cs{gtl_left_tl:N}.  It ends
+%   with a check to test if we should use the head, or issue the false
+%   code.
+%    \begin{macrocode}
+\cs_new:Npn \gtl_left_item:NF #1
+  { \exp_after:wN \@@_left_item:wF #1 }
+\cs_new:Npn \@@_left_item:wF \s_@@ #1#2#3
+  { \@@_left_item_auxi:nwF #1 {#2} \q_stop }
+\cs_new:Npn \@@_left_item_auxi:nwF #1#2 \q_stop #3
+  { \tl_if_blank:nTF {#1} {#3} { \tl_head:n {#1} } }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[TF]{\gtl_pop_left_item:NN, \gtl_gpop_left_item:NN}
+% \begin{macro}
+%   {\@@_pop_left_item:wNNN, \@@_pop_left_item_aux:nwnnNNN}
+%   If there is no extra end-group characters, and if the balanced part
+%   is blank, we cannot extract an item: return \texttt{false}.  If the
+%   balanced part is not blank, store its first item into |#4|, and
+%   store the altered generalized token list into~|#6|, locally or
+%   globally.  Otherwise, pick out the part before the first extra
+%   end-group character as |#1| of the second auxiliary, and do
+%   essentially the same: if it is blank, there is no item, and if it is
+%   not blank, pop its first item.
+%    \begin{macrocode}
+\prg_new_protected_conditional:Npnn \gtl_pop_left_item:NN #1#2 { TF , T , F }
+  { \exp_after:wN \@@_pop_left_item:wNNN #1#2 \tl_set:Nx #1 }
+\prg_new_protected_conditional:Npnn \gtl_gpop_left_item:NN #1#2 { TF , T , F }
+  { \exp_after:wN \@@_pop_left_item:wNNN #1#2 \tl_gset:Nx #1 }
+\cs_new_protected:Npn \@@_pop_left_item:wNNN
+    \s_@@ #1#2#3 #4#5#6
+  {
+    \tl_if_empty:nTF {#1}
+      {
+        \tl_if_blank:nTF {#2} { \prg_return_false: }
+          {
+            \tl_set:Nx #4 { \tl_head:n {#2} }
+            #5 #6
+              {
+                \s_@@ { } { \tl_tail:n {#2} }
+                { \exp_not:n {#3} }
+              }
+            \prg_return_true:
+          }
+      }
+      {
+        \@@_pop_left_item_aux:nwnnNNN #1 \q_nil \q_stop
+          {#2} {#3} #4 #5 #6
+      }
+  }
+\cs_new_protected:Npn \@@_pop_left_item_aux:nwnnNNN
+    #1#2 \q_stop #3#4#5#6#7
+  {
+    \tl_if_blank:nTF {#1} { \prg_return_false: }
+      {
+        \tl_set:Nx #5 { \tl_head:n {#1} }
+        #6 #7
+          {
+            \s_@@
+            { { \tl_tail:n {#1} } \@@_strip_nil_mark:w #2 \q_mark }
+            { \exp_not:n {#3} }
+            { \exp_not:n {#4} }
+          }
+        \prg_return_true:
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{First group in an extended token list}
+%
+% The functions of this section extract from an extended token list the
+% tokens that would be absorbed after |\def\foo|, namely tokens with no
+% begin-group nor end-group characters, followed by one group.  Those
+% tokens are either left in the input stream or stored in a token list
+% variable, and the |pop| functions also remove those tokens from the
+% extended token list variable.
+%
+% \begin{macro}[EXP]{\gtl_left_text:NF}
+% \begin{macro}[EXP]
+%   {
+%     \@@_left_text:wF,
+%     \@@_left_text_auxi:nwF,
+%     \@@_left_text_auxii:wnwF,
+%     \@@_left_text_auxiii:nnwF,
+%   }
+%    \begin{macrocode}
+\cs_new:Npn \gtl_left_text:NF #1
+  { \exp_after:wN \@@_left_text:wF #1 }
+\cs_new:Npn \@@_left_text:wF \s_@@ #1#2#3
+  {
+    \tl_if_empty:nTF {#1}
+      { \@@_left_text_auxi:nwF {#2} \q_stop }
+      { \@@_left_text_auxi:nwF #1 \q_stop }
+  }
+\cs_new:Npn \@@_left_text_auxi:nwF #1#2 \q_stop
+  { \@@_left_text_auxii:wnwF #1 \q_mark { } \q_mark \q_stop }
+\cs_new:Npn \@@_left_text_auxii:wnwF #1 #
+  { \@@_left_text_auxiii:nnwF {#1} }
+\cs_new:Npn \@@_left_text_auxiii:nnwF #1#2 #3 \q_mark #4 \q_stop #5
+  { \tl_if_empty:nTF {#4} {#5} { \exp_not:n { #1 {#2} } } }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\gtl_pop_left_text:N, \gtl_gpop_left_text:N}
+% \begin{macro}[rEXP]
+%   {
+%     \@@_pop_left_text:w,
+%     \@@_pop_left_text_auxi:n,
+%     \@@_pop_left_text_auxii:wnw,
+%     \@@_pop_left_text_auxiii:nnw,
+%     \@@_pop_left_text_auxiv:nw,
+%   }
+%    \begin{macrocode}
+\cs_new_protected:Npn \gtl_pop_left_text:N #1
+  { \tl_set:Nx #1 { \exp_after:wN \@@_pop_left_text:w #1 } }
+\cs_new_protected:Npn \gtl_gpop_left_text:N #1
+  { \tl_gset:Nx #1 { \exp_after:wN \@@_pop_left_text:w #1 } }
+\cs_new:Npn \@@_pop_left_text:w \s_@@ #1#2#3
+  {
+    \s_@@
+    \tl_if_empty:nTF {#1}
+      {
+        { }
+        { \@@_pop_left_text_auxi:n {#2} }
+      }
+      {
+        { \@@_pop_left_text_auxiv:nw #1 \q_nil \q_mark }
+        { \exp_not:n {#2} }
+      }
+    { \exp_not:n {#3} }
+  }
+\cs_new:Npn \@@_pop_left_text_auxi:n #1
+  {
+    \@@_pop_left_text_auxii:wnw #1
+      \q_nil \q_mark { } \q_mark \q_stop
+  }
+\cs_new:Npn \@@_pop_left_text_auxii:wnw #1 #
+  { \@@_pop_left_text_auxiii:nnw {#1} }
+\cs_new:Npn \@@_pop_left_text_auxiii:nnw #1#2#3 \q_mark #4 \q_stop
+  {
+    \tl_if_empty:nTF {#4}
+      { \@@_strip_nil_mark:w #1 }
+      { \@@_strip_nil_mark:w #3 \q_mark }
+  }
+\cs_new:Npn \@@_pop_left_text_auxiv:nw #1
+  {
+    { \@@_pop_left_text_auxi:n {#1} }
+    \@@_strip_nil_mark:w
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Counting tokens}
+%
+% \begin{macro}[EXP]{\@@_tl_count:n}
+% \begin{macro}[EXP]{\@@_tl_count_loop:n, \@@_tl_count_test:w}
+%   A more robust version of \cs{tl_count:n}, which will however break
+%   if the token list contains \cs{q_stop} at the outer brace level.
+%   This cannot happen when \cs{@@_tl_count:n} is called with lists of
+%   braced items.  The technique is to loop, and when seeing
+%   \cs{q_mark}, make sure that this is really the end of the list.
+%    \begin{macrocode}
+\cs_new:Npn \@@_tl_count:n #1
+  { \int_eval:n { 0 \@@_tl_count_loop:n #1 \q_nil \q_stop } }
+\cs_new:Npn \@@_tl_count_loop:n #1
+  {
+    \quark_if_nil:nTF {#1}
+      { \@@_tl_count_test:w }
+      { + 1 \@@_tl_count_loop:n }
+  }
+\cs_new:Npn \@@_tl_count_test:w #1 \q_stop
+  { \tl_if_empty:nF {#1} { + 1 \@@_tl_count_loop:n #1 \q_stop } }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\gtl_extra_begin:N, \gtl_extra_end:N}
+% \begin{macro}[EXP]{\@@_extra_begin:w, \@@_extra_end:w}
+%   Count the number of extra end-group or of extra begin-group
+%   characters in an extended token list.  This is the number of items
+%   in the first or third brace groups.  We cannot use \cs{tl_count:n},
+%   as \pkg{gtl} is meant to be robust against inclusion of quarks.
+%    \begin{macrocode}
+\cs_new:Npn \gtl_extra_end:N #1
+  { \exp_after:wN \@@_extra_end:w #1 }
+\cs_new:Npn \@@_extra_end:w \s_@@ #1#2#3
+  { \@@_tl_count:n {#1} }
+\cs_new:Npn \gtl_extra_begin:N #1
+  { \exp_after:wN \@@_extra_begin:w #1 }
+\cs_new:Npn \@@_extra_begin:w \s_@@ #1#2#3
+  { \@@_tl_count:n {#3} }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\gtl_count_tokens:N}
+% \begin{macro}[rEXP]
+%   {
+%     \@@_count_tokens:w,
+%     \@@_count_auxi:nw,
+%     \@@_count_auxii:w,
+%     \@@_count_auxiii:n
+%   }
+%    \begin{macrocode}
+\cs_new:Npn \gtl_count_tokens:N #1
+  { \exp_after:wN \@@_count_tokens:w #1 }
+\cs_new:Npn \@@_count_tokens:w \s_@@ #1#2#3
+  {
+    \int_eval:n
+      { -1 \@@_count_auxi:nw #1 {#2} #3 \q_nil \q_stop }
+  }
+\cs_new:Npn \@@_count_auxi:nw #1
+  {
+    \quark_if_nil:nTF {#1}
+      { \@@_count_auxii:w }
+      {
+        + 1
+        \@@_count_auxiii:n {#1}
+        \@@_count_auxi:nw
+      }
+  }
+\cs_new:Npn \@@_count_auxii:w #1 \q_stop
+  {
+    \tl_if_empty:nF {#1}
+      {
+        + 2
+        \@@_count_auxi:nw #1 \q_stop
+      }
+  }
+\cs_new:Npn \@@_count_auxiii:n #1
+  {
+    \tl_if_empty:nF {#1}
+      {
+        \tl_if_head_is_group:nTF {#1}
+          {
+            + 2
+            \exp_args:No \@@_count_auxiii:n { \use:n #1 }
+          }
+          {
+            + 1
+            \tl_if_head_is_N_type:nTF {#1}
+              { \exp_args:No \@@_count_auxiii:n { \use_none:n #1 } }
+              { \exp_args:Nf \@@_count_auxiii:n {#1} }
+          }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+%    \begin{macrocode}
+\@@_end_package_hook:
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%</package>
+%    \end{macrocode}
+%
+% \end{implementation}
+%
+% \endinput

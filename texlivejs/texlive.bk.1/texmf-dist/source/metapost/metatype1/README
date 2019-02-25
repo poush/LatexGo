@@ -1,0 +1,266 @@
+=== === === === === === === === === === === === === === === === === === ===
+ ENGLISH:
+=== === === === === === === === === === === === === === === === === === ===
+This is METATYPE1 package -- a tool for creating Type 1 fonts using
+METAPOST. The package belongs to public domain (no copyrights, copylefts,
+copyups, copydowns, etc.).
+
+Version: 0.56 (27.04.2015; a tentative version, released along with
+         the sources of the Latin Modern fonts ver. 2.003)
+Author: JNS team <JNSteam@gust.org.pl>
+
+Warning: package is still under development, upwards incompatible
+changes are likely to occur.
+
+The METATYPE1 package consist of:
+   mt1set.bat    -- a batch file that sets the system variable METATYPE1
+                    (it should point to the directory where reside
+                    the working files of the METATYPE1 package);
+                    it is exploited by other batches of the package
+   mkfont.bat    -- a batch file for the generation of a font; it should be
+                    called with the font file name without an extension
+                    (there are two batches more related to mkfont.bat,
+                    namely: mkt1.bat generates a Type 1 font without
+                    generating a tfm metric file and mktfm.bat that
+                    generates only a tfm file)
+   fontbase.mp   -- a set of METAPOST macros for creating Type 1 fonts
+   plain_ex.mp   -- an extension of plain.mp, useful not only for
+                    creating fonts; it is input by fontbase.mp;
+   plain_e_.mp   -- the set of illustrations to plain_ex.mp documentation
+   mp2pf.awk     -- an AWK script that creates Type1 font (in a text form)
+                    out of METAPOST generated EPSes
+   pfcommon.dat  -- data for mp2pf.awk script (fixed elements of font)
+   e-*.mp       -- the set of encoding files (used for preparing
+                    the Latin Modern and TeX Gyre font packages):
+        e-ase.mp    -- Adobe Standard Encoding
+        e-cs.mp     -- TeX encoding for the Czech language
+        e-cscsc.mp  -- TeX encoding for the Czech language altered
+                       for the compatibility with Computer Modern cmcsc10
+        e-cssc.mp   -- TeX encoding for the Czech language containing small caps
+                       (*.sc glyps; TeX Gyre fonts)
+        e-cstt.mp   -- TeX encoding for the Czech language altered for
+                       the compatibility with Computer Modern cmtt10
+        e-csttsc.mp -- TeX encoding for the Czech language altered
+                       for the compatibility with Computer Modern cmtcsc10
+        e-ec.mp     -- TeX EC (Cork; T1 in LaTeX lingo) encoding
+        e-ecsc.mp   -- TeX EC (Cork; T1 in LaTeX lingo) encoding
+                       containing small caps (*.sc glyps; TeX Gyre fonts)
+        e-l7x.mp    -- TeX encoding for the Lithuanian language 
+        e-l7xsc.mp  -- TeX encoding for the Lithuanian language
+                       containing small caps (*.sc glyps; TeX Gyre fonts)
+        e-qx.mp     -- TeX encoding for the Polish language
+        e-qxcsc.mp  -- TeX encoding for the Polish language altered for
+                       the compatibility with Computer Modern cmcsc10
+        e-qxsc.mp   -- TeX encoding for the Polish language containing small caps
+                       (*.sc glyps; TeX Gyre fonts)
+        e-qxtt.mp   -- TeX encoding for the Polish language altered for
+                       the compatibility with Computer Modern cmtt10
+        e-qxttsc.mp -- TeX encoding for the Polish language altered
+                       for the compatibility with Computer Modern cmtcsc10
+        e-qxwin.mp  -- Windows encoding for the Polish language
+        e-rm.mp     -- TeX RM encoding (``roman math'')
+        e-rmcsc.mp  -- TeX RM encoding (``roman math'') altered for the
+                        compatibility with Computer Modern cmcsc10
+        e-rmsc.mp   -- TeX RM encoding (``roman math'') containing small caps
+                       (*.sc glyps; TeX Gyre fonts)
+        e-rmtt.mp   -- TeX RM encoding (``roman math'') altered
+                       for the compatibility with Computer Modern cmtt10
+        e-rmttsc.mp -- TeX RM encoding (``roman math'') altered
+                       for the compatibility with Computer Modern cmtcsc10
+        e-t2a.mp, e-t2b.mp, e-t2c.mp -- Cyrillic encodings
+        e-t5.mp     -- TeX Vietnamese encoding (T5 in LaTeX lingo)
+        e-t5sc.mp   -- TeX Vietnamese encoding containing small caps
+                       (*.sc glyps; TeX Gyre fonts)
+        e-ts1.mp    -- TeX text companion encoding (TS1 in LaTeX lingo)
+        e-yy.mp     -- TeX Y&Y encoding (aka LY1, aka TeX'n'ANSI)
+        e-yysc.mp   -- TeX Y&Y encoding (aka LY1, aka TeX'n'ANSI) for fonts
+                       containing small caps (*.sc glyps; TeX Gyre fonts)
+   packsubr.awk  -- AWK script for making subroutines out of the repeating 
+                    fragments of PostScript code in a font file
+   afm2pfm.bat   -- a batch file that converts an AFM file (Adobe font
+                    metric) into a PFM (printer font metric) one
+   afm2pfm.pl    -- a Perl script for the above conversion
+   mkproof.bat   -- a batch file for running mft (METAFONT nad METAPOST 
+                    formatting) program; the usage is described in the file
+   mt1form.mft   -- formatting data, necessary for mft program
+   mt1form.sty   -- TeX (plain) macros for formatting documentation
+   README        -- this file
+
+Additionally, the METATYPE1 distribution contains the pf2mt1 package for
+converting converting a Type 1 font into a METATYPE1 form. The conversion
+preserves as much as possible font parameters; the resulting font generated
+by METATYPE1 is, in normal circumstances, almost identical with the
+original one. The package pf2mt1 consists of three files:
+  pf2mt1.bat  -- batch file; its parameter is the name of the font
+                 (without an extension); the font must consist of
+                 PFB and AFM files
+  pf2mt1.awk  -- AWK script; the main engine
+  pf2mt1.exc  -- a sample file defining ``exception chars,'' i.e.,
+                 excluded from the conversion or renamed during it
+This package is useful for beginners who would like to see how METATYPE1
+works. The fonts generated by pf2mt1 are a good example of using
+the METATYPE1 package, although they do not make use of all possibilities
+it offers (in particular, the resulting fonts are not parameterized).
+
+The METATYPE1 package requires the following external programs (in
+parentheses are given the versions which we use):
+   Metapost (0.641/Web2c 7.5.2)
+   Gawk (3.1.3)
+   t1utils (t1asm and t1disasm, 1.28)
+The package also employs:
+   Perl (5.8.0)    -- for generating PFM files (afm2pfm.bat)
+   MFT (Web2C 7.5.2, 2.0) -- for formatting documentation (mkproof.bat)
+   EPSINCL (0.43)  -- for including stencil EPSes into documentation;
+                      this package is attached in the subdirectory ``extra'' 
+
+In order to install the package, you should copy batch files into an
+appropriate subdirectory searched by system (environment variable PATH),
+copy the other files into a user-chosen directory and change the setting
+of the METATYPE1 enviroment variable in the batch mt1set.bat -- the variable
+should contain the name of the chosen directory.
+
+The subdirectory ``samples'' contains examples of METATYPE1 sources
+of a few trivial fonts. They may be treated as a part of the documentation
+of the METATYPE1 package.
+
+We suggest familiarising with a METATYPE1 version of D. E. Knuth's
+logo font (the file logomp03.zip)---alike pf2mt1 package, it may
+prove useful useful during the first steps in METATYPE1.
+
+=== === === === === === === === === === === === === === === === === === ===
+ POLSKI:
+=== === === === === === === === === === === === === === === === === === ===
+To jest pakiet METATYPE1 -- narz/edzie do tworzenia font/ow Type 1
+za pomoc/a systemu METAPOST. Pakiet stanowi dobro wsp/olne
+(/zadnych copyright/ow, copyleft/ow, copyup/ow, copydown/ow, etc.).
+Wersja: 0.55 (16.09.2009 -- wersja opublikowana wraz z wersj/a /xr/od/low/a
+              2.003 pakietu font/ow Latin Modern)
+Autorstwo: JNS team <JNSteam@gust.org.pl>
+
+Uwaga: pakiet znajduje si/e w fazie rozwoju, mo/zliwe s/a jeszcze
+       zmiany niekompatybilne wstecz.
+
+W sk/lad pakietu METATYPE1 wchodz/a:
+   mt1set.bat    -- plik wsadowy ustawiaj/acy zmienn/a systemow/a METATYPE1
+                    tak by wskazywa/la kartotek/e, w kt/orej umieszczone
+                    zosta/ly pliki robocze pakiety METATYPE1; pozosta/le
+                    pliki wsadowe pakietu odwo/luj/a si/e do mt1set.bat
+   mkfont.bat    -- plik wsadowy uruchamiaj/acy proces tworzenia fontu;
+                    parametrem jest nazwa fontu bez rozszerzenia
+   fontbase.mp   -- zestaw makr METAPOST-owych, umo/zliwiaj/acych
+                    generowanie font/ow Type 1
+   plain_ex.mp   -- rozszerzenie formatu plain.mp, przydatne nie tylko
+                    przy generowaniu font/ow, wczytywane przez fontbase.mp
+   plain_e_.mp   -- ilustracje do dokumentacji plain_ex.mp
+   mp2pf.awk     -- podstawowy skrypt AWK-owy, tworz/acy font Type 1
+                    (w postaci tekstowej) na podstawie EPS-/ow generowanych
+                    przez METAPOST-a
+   pfcommon.dat  -- dane dla skryptu mp2pf.awk (sta/le elementy fontu)
+   e-*.mp        -- podstawowy zestaw plik/ow definiuj/acych przypisanie
+                    nazwom znak/ow odpowiednich kod/ow (encoding):
+        e-ase.mp    -- Adobe Standard Encoding
+        e-cs.mp     -- TeX-owe kodowanie dla j/ezyka czeskiego
+        e-cscsc.mp  -- TeX-owe kodowanie dla j/ezyka czeskiego,
+                       zgodne kodowaniem cmcsc10
+        e-cssc.mp   -- TeX-owe kodowanie dla j/ezyka czeskiego,
+                       zawieraj/ace kapitaliki (*.sc glyps; fonty TeX Gyre)
+        e-cstt.mp   -- TeX-owe kodowanie dla j/ezyka czeskiego,
+                       zgodne kodowaniem cmtt10
+        e-csttsc.mp -- TeX-owe kodowanie dla j/ezyka czeskiego,
+                       zgodne kodowaniem cmtcsc10
+        e-ec.mp     -- TeX-owe kodowanie EC (Cork; T1 w /zargonie LaTeX-owym)
+        e-ecsc.mp   -- TeX-owe kodowanie EC (Cork; T1 w /zargonie LaTeX-owym)
+                       zawieraj/ace kapitaliki (*.sc glyps; fonty TeX Gyre)
+        e-l7x.mp    -- TeX-owe kodowanie dla j/ezyka litewskiego
+        e-l7xsc.mp  -- TeX-owe kodowanie dla j/ezyka litewskiego,
+                       zawieraj/ace kapitaliki (*.sc glyps; fonty TeX Gyre)
+        e-qx.mp     -- TeX-owe kodowanie dla j/ezyka polskiego
+        e-qxcsc.mp  -- TeX-owe kodowanie dla j/ezyka polskiego
+                       zgodne kodowaniem cmcsc10
+        e-qxsc.mp   -- TeX-owe kodowanie dla j/ezyka polskiego
+                       zawieraj/ace kapitaliki (*.sc glyps; fonty TeX Gyre)
+        e-qxtt.mp   -- TeX-owe kodowanie dla j/ezyka polskiego
+                       zgodne kodowaniem cmtt10
+        e-qxttsc.mp -- TeX-owe kodowanie dla j/ezyka polskiego
+                       zgodne kodowaniem cmtcsc10
+        e-qxwin.mp  -- windowsowne kodowanie dla j/ezyka polskiego
+        e-rm.mp     -- TeX-owe kodowanie RM (,,roman math'')
+        e-rmcsc.mp  -- TeX-owe kodowanie RM (,,roman math'')
+                       zgodne kodowaniem cmcsc10
+        e-rmsc.mp   -- TeX-owe kodowanie RM (,,roman math'')
+                       zawieraj/ace kapitaliki (*.sc glyps; fonty TeX Gyre)
+        e-rmtt.mp   -- TeX-owe kodowanie RM (,,roman math'')
+                       zgodne kodowaniem cmtt10
+        e-rmttsc.mp -- TeX-owe kodowanie RM (,,roman math'')
+                       zgodne kodowaniem cmtcsc10
+        e-t2a.mp, e-t2b.mp, e-t2c.mp -- kodowania cyryliczne
+                       zawieraj/ace kapitaliki (*.sc glyps; fonty TeX Gyre)
+        e-t5.mp     -- TeX-owe kodowanie dla j/ezyka wietnamskiego
+                       (T5 w /zargonie LaTeX-owym) zawieraj/ace kapitaliki
+                       (*.sc glyps; fonty TeX Gyre)
+        e-t5sc.mp   -- TeX-owe kodowanie dla j/ezyka wietnamskiego
+                       (T5 w /zargonie LaTeX-owym)
+        e-ts1.mp    -- TeX-owe kodowanie ,,Text companion'' (TS1 w /zargonie
+                       LaTeX-owym)
+        e-yy.mp     -- TeX-owe kodowanie Y&Y (zwane te/z LY1 lub TeX'n'ANSI)
+        e-yysc.mp   -- TeX-owe kodowanie Y&Y (zwane te/z LY1 lub TeX'n'ANSI)
+                       zawieraj/ace kapitaliki (*.sc glyps; fonty TeX Gyre)
+   packsubr.awk  -- skrypt AWK-owy u/zywany do znajdowania w foncie
+                    powtarzaj/acych si/e fragment/ow kodu postscriptowego
+                    i zast/epowania ich odwo/laniami do procedur
+   afm2pfm.bat   -- plik wsadowy uruchamiaj/acy skrypt do generowania
+                    plik/ow PFM (Printer Font Metrics) na podstawie danych
+                    metrycznych zawartych w pliku AFM (Adobe font metric)
+   afm2pfm.pl    -- skrypt w Perlu, realizuj/acy proces opisany powy/zej
+   mkproof.bat   -- plik wsadowy uruchamiaj/acy program mft (formater plik/ow
+                    METAFONT-owych i METAPOST-owych); spos/ob wywo/lania tego
+                    pliku zosta/l opisany w komentarzach na jego pocz/atku
+   mt1form.mft   -- dane steruj/ace formatowaniem, wymagane przez program mft
+   mt1form.sty   -- makra TeX-owe (plain), u/zywane do formatowania
+                    dokumentacji
+   README        -- niniejszy plik
+
+Dodatkowo w zestawie znajduje si/e pakiet pf2mt1, umo/zliwiaj/acy
+przekszta/lcenie fontu PostScript-owego w formacie Type1 na posta/c
+METAPOST-ow/a zgodn/a z konwencjami METATYPE1. W trakcie konwersji
+praktycznie wszystkie parametry fontu /xr/od/lowego s/a zachowywane,
+co umo/zliwia (w normalnych warunkach) odtworzenie niemal/ze bez zmian
+fontu wynikowego). W sk/lad tego pakietu wchodz/a:
+   pf2mt1.bat  -- plik wsadowy uruchamiaj/acy proces konwersji fontu
+                  do postaci METATYPE1; jego parametrem jest nazwa
+                  fontu bez rozszerzenia (font musi sk/lada/c si/e 
+                  z pliku PFB oraz AFM)
+   pf2mt1.awk  -- podstawowy skrypt AWK-owy, dokonuj/acy konwersji
+   pf2mt1.exc  -- przyk/ladowy plik zawieraj/acy definincj/e ,,znak/ow 
+                  wyj/atkowych'', tzn. b/ad/x nie podlegaj/acych konwersji,
+                  b/ad/x przenazwowywanych w trakcie konwersji.
+Pakiet pf2mt1 mo/ze by/c przydatny dla pocz/atkuj/acych u/zytkownik/ow
+METATYPE1. Fonty wygenerowane przez pf2mt1 stanowi/a dobry przyk/lad
+u/zycia pakietu METATYPE1, cho/c oczywi/scie nie wykorzystuj/a jego
+wszystkich mo/zliwo/si (np. parametryzacji).
+
+Do dzia/lania pakietu METATYPE1 niezb/edne s/a nast/epuj/ace
+zewn/etrzne programy (w nawiasach numery wersji kt/orych u/zywamy):
+   Metapost (0.641/Web2c 7.5.2)
+   Gawk (3.1.3)
+   t1utils (t1asm and t1disasm, 1.28)
+U/zywane s/a r/ownie/z:
+   Perl (5.8.0)    -- do generowania PFM-/ow (afm2pfm.bat)
+   MFT  (Web2C 7.5.2, 2.0) -- do formatowania dokumentacji (mkproof.bat)
+   EPSINCL (0.43)  -- do ewentualnego do/l/aczania EPS-/ow podk/ladowych
+                      (stencils) do tworzonej dokumentacji; pakiet
+                      ten znajduje si/e w katalogu ,,extra''
+
+Instalacja sprowadza si/e do skopiowania plik/ow wsadowych do katalogu
+znajduj/acego si/e w /sciezce przeszukiwania (PATH), umieszczenia
+pozosta/lych plik/ow w ustalonej przez u/zytkownika kartotece
+oraz uaktalnienia w pliku mt1set.bat ustawienia zmiennej
+systemowej METATYPE1 -- zmienna powinna wskazywa/c t/e kartotek/e.
+
+W katalogu ,,samples'' znajduj/a si/e przyk/lady u/zycia pakietu METATYPE1;
+mo/zna je traktowa/c jako dodatkow/a dokumentacj/e.
+
+Polecamy zapoznanie si/e z wersj/a METATYPE1 fontu LOGO zawart/a w pliku
+logomp03.zip -- podobnie jak pakiet ,,pf2mt1'' mo/ze okaza/c si/e
+przydatny podczas pierwszych pr/ob tworzenia font/ow.
+

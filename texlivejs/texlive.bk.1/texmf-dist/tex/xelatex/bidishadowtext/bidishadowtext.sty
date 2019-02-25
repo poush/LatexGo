@@ -1,0 +1,67 @@
+%%
+%% This is file `bidishadowtext.sty'.
+%% 
+%%   __________________________________________________
+%%   Copyright © 2014  Vafa Khalighi <persian-tex@tug.org>
+%% 
+%%   It may be distributed and/or modified under the LaTeX Project Public License,
+%%   version 1.3c or higher (your choice). The latest version of
+%%   this license is at: http://www.latex-project.org/lppl.txt
+%% 
+%%   This work is “author-maintained” (as per LPPL maintenance status)
+%%   by Vafa Khalighi.
+%% 
+%%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{bidishadowtext}
+  [2014/07/16 v0.1 Bidi-aware shadow text]
+  
+\RequirePackage{color}
+
+\newlength\bidist@shadowoffsetx
+\newlength\bidist@shadowoffsety
+
+\bidist@shadowoffsetx=1pt
+\bidist@shadowoffsety=1pt
+
+\newcommand\bidishadowoffset[1]{\setlength\bidist@shadowoffsetx{#1}\setlength\bidist@shadowoffsety{#1}}
+\newcommand\bidishadowoffsetx[1]{\setlength\bidist@shadowoffsetx{#1}}
+\newcommand\bidishadowoffsety[1]{\setlength\bidist@shadowoffsety{#1}}
+\newcommand\bidishadowcolor[1]{\def\bidist@shadowcolor{#1}}
+\newcommand\bidishadowrgb[1]{\definecolor{bidist@shadowcolorrgb}{rgb}{#1}\bidishadowcolor{bidist@shadowcolorrgb}}
+
+\bidishadowrgb{0.66,0.66,0.66}
+
+\newlength\bidist@temp@width
+\newlength\bidist@temp@height 
+\newlength\bidist@pic@width
+\newlength\bidist@pic@height
+
+\newcommand\bidishadowtext[1]%
+{%
+   \begingroup%
+   \settowidth{\bidist@temp@width}{#1}%
+   \settoheight{\bidist@temp@height}{#1}%
+   \setlength{\bidist@pic@width}{\bidist@temp@width}%
+   \setlength{\bidist@pic@height}{\bidist@temp@height}%
+   \addtolength{\bidist@pic@width}{\bidist@shadowoffsetx}%
+   \addtolength{\bidist@pic@height}{\bidist@shadowoffsety}%
+   %
+   \edef\num@tw{\strip@pt\bidist@temp@width}%
+   \edef\num@th{\strip@pt\bidist@temp@height}%
+   \edef\num@pw{\strip@pt\bidist@pic@width}%
+   \edef\num@ph{\strip@pt\bidist@pic@height}%
+   \edef\num@offsetx{\strip@pt\bidist@shadowoffsetx}%
+   \edef\num@offsety{\strip@pt\bidist@shadowoffsety}%
+   \raisebox{-\bidist@shadowoffsety}{
+   \begin{picture}(\num@pw,\num@ph)(0,0)
+                 \if@RTL\put(0,\num@offsety){\makebox(\num@tw,\num@th)[tl]{\ignorespaces #1}}\fi
+	    \put(\num@offsetx,0){\makebox(\num@tw,\num@th)[tl]{{\color{\bidist@shadowcolor}\def\color##1{}\ignorespaces #1}}}
+		\if@RTL\else\put(0,\num@offsety){\makebox(\num@tw,\num@th)[tl]{\ignorespaces #1}}\fi
+	\end{picture}}%
+	\endgroup%
+	\ignorespaces%
+}
+\endinput
+%%
+%% End of file `bidishadowtext.sty'.

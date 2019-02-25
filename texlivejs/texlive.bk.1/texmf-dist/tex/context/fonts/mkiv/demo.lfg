@@ -1,0 +1,89 @@
+-- see test suite: goodies-002.tex
+
+local yes = "yes"
+
+local default = {
+    analyze  = yes,
+    mode     = "node",
+    language = "dflt",
+    script   = "dflt",
+}
+
+local smallcaps = {
+    smcp = yes,
+}
+
+local function statistics(tfmdata)
+    commands.showfontparameters(tfmdata)
+end
+
+local function squeeze(tfmdata)
+    for k, v in next, tfmdata.characters do
+        v.height = 0.75 * (v.height or 0)
+        v.depth  = 0.75 * (v.depth  or 0)
+    end
+end
+
+return {
+    name = "demo",
+    version = "1.01",
+    comment = "An example of goodies.",
+    author = "Hans Hagen",
+    featuresets = {
+        simple = {
+            mode   = "node",
+            script = "latn"
+        },
+        default = {
+            mode   = "node",
+            script = "latn",
+            kern   = "yes",
+        },
+        ligatures = {
+            mode   = "node",
+            script = "latn",
+            kern   = "yes",
+            liga   = "yes",
+        },
+        smallcaps = {
+            mode   = "node",
+            script = "latn",
+            kern   = "yes",
+            smcp   = "yes",
+        },
+    },
+    solutions = { -- here we have references to featuresets, so we use strings!
+        experimental = {
+            less = {
+                "ligatures", "simple",
+            },
+            more = {
+                "smallcaps",
+            },
+        },
+    },
+    colorschemes = {
+        default = {
+            [1] = {
+                "one", "three", "five", "seven", "nine",
+            },
+            [2] = {
+                "two", "four", "six", "eight", "ten",
+            },
+        },
+        all = {
+            [1] = {
+                "*",
+            },
+        },
+        some = {
+            [1] = {
+                "0x0030:0x0035",
+            },
+        },
+    },
+    postprocessors = {
+        statistics = statistics,
+        squeeze    = squeeze,
+    },
+}

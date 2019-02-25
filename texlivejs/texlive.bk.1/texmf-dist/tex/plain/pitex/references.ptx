@@ -1,0 +1,107 @@
+% This is a mess.
+\def\ptx@label{}%
+\def\label#1{%
+  \ifcs{ptx@label_user:#1}
+    {\ptx@error{Label `#1' already exists. Find another one}}
+    {\global\letcs{ptx@label_user:#1}\relax
+     \ptx@label_write{ptx@ref_user:#1}\ptx@label
+     \ptx@label_write{ptx@ref_chapter:#1}{\usevalue chapter : internalcount }%
+     \ptx@label_write{ptx@ref_section:#1}{\usevalue section : beforenumber \usevalue section : internalcount }%
+     \ptx@label_write{ptx@ref_subsection:#1}{\usevalue subsection : beforenumber \usevalue subsection : internalcount }%
+     \ptx@label_write{ptx@ref_paragraph:#1}{\usevalue paragraph : beforenumber \usevalue paragraph : internalcount }%
+     \iffootnote
+       \ptx@label_write{ptx@ref_footnote:#1}{\the\ptx@footnote_count}%
+     \fi
+     \ptx@write_toaux*{\defcs{ptx@ref_page:#1}{\the\pageno}}}%
+  }
+\def\ptx@label_with#1[#2]{%
+  \def\ptx@label{#1}%
+  \label{#2}%
+  \ignorespaces
+  }
+\def\ptx@label_and#1[#2]{%
+  \label{#2}%
+  #1%
+  }
+\def\ptx@label_withand#1#2[#3]{%
+  \ptx@label_with#1[#3]%
+  #2%
+  }
+\newif\ifptx@rerun
+\def\ptx@rerun{%
+  \unless\ifptx@rerun
+    \global\ptx@reruntrue
+    \ptx@warn{You need a rerun.}%
+  \fi
+  }
+\def\ptx@label_write#1#2{%
+  \unless\ifptx@rerun
+    \edef\ptx@temp{#2}%
+    \ifcs{#1}
+      {\passexpanded{\passexpandedcs{\reverse\iffstring}{#1}}\ptx@temp\ptx@rerun}
+      {\ptx@rerun}%
+  \fi
+  \ptx@write_toaux{\defcs{#1}{#2}}%
+  }
+
+
+
+\def\ref{%
+  \ifnextnospace[
+    {\ptx@ref_getpre}
+    {\ptx@ref_getpre[]}%
+  }
+\def\ptx@ref_getpre[#1]{%
+  \ifnextnospace[
+    {\ptx@ref_getpost{#1}}
+    {\ptx@ref_getpost{#1}[]}%
+  }
+\def\ptx@ref_getpost#1[#2]#3#{%
+  \passtrim{#3}{\ptx@ref_do{#1}{#2}}%
+  }
+\def\ptx@ref_do#1#2#3#4{%
+  \ifcs{ptx@ref_user:#4}
+    {\ifemptystring{#3}
+      {\ptx@ref_typeset{\usecs{ptx@ref_user:#4}}}
+      {\ifstring{#3}{page}\ptx@refpage_typeset\ptx@ref_typeset{\usecs{ptx@ref_#3:#4}}}
+      {#1}{#2}}
+    {??\ptx@rerun}%
+  }
+\protected\def\ptx@ref_typeset#1#2#3{#2#1#3}
+\newcount\ptx@ref_pagerefcount
+\protected\def\ptx@refpage_typeset#1#2#3{%
+  \global\advance\ptx@ref_pagerefcount1
+  \ifcs{ptx@pageref_number:\the\ptx@ref_pagerefcount}
+    {\unless\ifnum\usecs{ptx@pageref_number:\the\ptx@ref_pagerefcount}=#1\relax
+       #2#1#3%
+      \fi}
+    {??\ptx@rerun}%
+  \expandafter\ptx@pageref_write\expandafter{\the\ptx@ref_pagerefcount}%
+  }
+\def\ptx@pageref_write#1{%
+  \ptx@write_toaux*{\defcs{ptx@pageref_number:#1}{\the\pageno}}%
+  }
+
+\let\xref\ref
+\def\sref{\unskip\ref[ section~][] section}
+\def\Sref{\unskip\ref[ section~][] subsection}
+\def\cref{\unskip\ref[ chapitre~][] chapter}
+\def\pref{\unskip\ref[ (p.~][)] page}
+\def\Pref{\unskip\ref[ p.~][] page}
+\def\fref{\unskip\ref[ figure~][]}
+\def\Fref#1{\fref{#1}\pref{#1}}
+\def\tref{\unskip\ref[ tableau~][]}
+\def\Tref#1{\tref{#1}\pref{#1}}
+\def\fnref{\unskip\ref[ note~][] footnote}
+\def\FNref#1{\fnref{#1}\pref{#1}}
+\def\multiref#1"#2"{%
+  \passtrim{#1}{\ptx@multiref_loop{first}{#2}}%
+  }
+\def\ptx@multiref#1#2#3{%
+  \ptx@multiref_loop{#2}{#3}{#1}%
+  }
+\newfor\ptx@multiref_loop{2}#3{%
+  \reverse\iffstring{#1}{first}{, }%
+  \usecs{#3ref}{#2}%
+  \passarguments{}{#2}
+  }

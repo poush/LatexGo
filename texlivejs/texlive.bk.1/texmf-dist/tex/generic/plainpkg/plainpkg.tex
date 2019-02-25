@@ -1,0 +1,153 @@
+                                         \ifx\plainpkginfo\undefined
+  \gdef\plainpkginfo{\ProvidesFile{%
+                                                                   %
+                       plainpkg.tex}                              [%
+                       2012/09/19 v0.4a plain package management]}
+%%
+%% Copyright (C) 2012 Uwe Lueck,
+%% http://www.contact-ednotes.sty.de.vu
+%% -- author-maintained in the sense of LPPL below --
+%%
+%% This file can be redistributed and/or modified under
+%% the terms of the LaTeX Project Public License; either
+%% version 1.3c of the License, or any later version.
+%% The latest version of this license is in
+%%     http://www.latex-project.org/lppl.txt
+%% We did our best to help you, but there is NO WARRANTY.
+%%
+%% Please report bugs, problems, and suggestions via
+%%
+%%   http://www.contact-ednotes.sty.de.vu
+%%
+%% == Purpose and Usage                 ==
+%% ... of the file `plainpkg.tex' is described in Section~\ref{sec:pu}
+%% of the documentation file `plainpkg-doc.pdf' generated from 
+%% `plainpkg-doc.tex' (... in case somebody is reading the plain 
+%%  text of `plainpkg.tex'). 
+%%
+%% == Avoiding Being Loaded Twice       == 
+%% \label{sec:once}
+%% Continuing the first conditional: 
+                                                               \else
+%% Keeping the `\endinput' \emph{outside} the conditional:
+  \expandafter \endinput
+                                                                 \fi
+%% The earlier idea to close the conditional more below 
+%% conflicted with avoiding `\input stacklet' under 'readprov'.
+%% 
+%% == \cs{global}                       ==
+%% A funny idea of my earlier 'makedoc' in the 'nicetext' bundle 
+%% was that its macro definitions should be \emph{local}, 
+%% for \emph{preprocessing} documentation files---results 
+%% being written to files. Well, but when `makedoc.sty' loads 
+%% the present `plainpkg.tex', the latter's definitions should 
+%% \emph{last}. Therefore, v0.4 renders all definitions \emph{global}. 
+%% I.e., `\def' is replaced by `\gdef', `\edef' by `\xdef', 
+%% and `\let' assignments are prefixed with `\global'.
+%% 
+%% == A Tool for \cs{csname}            ==
+%% \label{sec:withcs}
+%% |\withcsname<cmd>| is a little helper with `\csname' 
+%% that will be used by 'stacklet' as well. Usage actually should be
+%% about as
+%% \[`\withcsname\<letters> <chars>\endcsname'\]
+%% or
+%% \[`\withcsname\<letters><non-letter-char><chars>\endcsname'\]
+%% (but better don't expect that `@' were a non-letter-char!\@)     %% 2012/08/27
+%% or
+%% \[`\withcsname\<non-letter><chars>\endcsname'\]
+%% (tokenization~...)
+%% and should result in a sequence of two tokens---in 
+%% %% <- fixed 2012/08/27 ->
+%% the \ctanpkgref{dowith} notation---
+%% \[?<letters>\,?<chars>\quad \mbox{or}\quad 
+%%   ?<letters>\,?<non-letter-char><chars>\] 
+%% or\quad ?<non-letter>\,?<chars> ...
+  \gdef\withcsname#1{\expandafter#1\csname}
+%% 2012/08/27 I realize that from the three files I made this weekend 
+%% ('plainpkg.tex', 'stacklet.sty', 'actcodes.sty'), 
+%% a single ?`withcsname' token appears in macro replacement 
+%% ``texts" ('actcodes' doesn't use it at all)---wondering 
+%% whether I should remove it TODO---however, 
+%% it improves readability of the files.
+%%
+%% == \cs{Provides\dots}, \cs{ifltx}    ==
+\ifx\ProvidesPackage\undefined
+%% ... or can it be `\relax', cf. concern in 'german.sty'?
+%%
+%% We expect that |\ProvidesFile| and |\ProvidesPackage|
+%% are used with the trailing ``optional" argument:
+  \gdef\ProvidesFile#1[#2]{\wlog{#1 #2}}
+%% |\ProvidesPackage| gets \ctanpkgref{maybeload} functionality. 
+%% v0.2 aims at saving a few tokens. And we form a token name 
+%% containing an `@' without changing its `\catcode'. 
+  \xdef\ProvidesPackage#1{%
+    \noexpand\withcsname
+             \withcsname\noexpand @providespkg\endcsname %%  ` ' v0.3
+                        ver@#1.sty\endcsname{#1}}        %% .sty v0.3
+%% ... so `\ProvidesPackage{<chars>}' should result in   %% P 2012/09/15
+%% \[\!\!\!\!?`withcsname'\,?`@providespkg'\,\textsf{in}\sb{k}\sp*(`ver@'<chars>)\,
+%%   ?`endcsname'\,.`{'\,\textsf{in}\sb{k}\sp*(<chars>)\,.`}'\!\]
+%% where $\textsf{in}\sb{k}\sp*(\chi)$ is the tokenization of $\chi$
+%% with current `\catcode' function $k$; and this should further result in
+%% \[?`@providespkg'\,?`ver@<chars>'\,.`{'\,\textsf{in}\sb{k}\sp*(<chars>)\,.`}'\]
+%   \show\ProvidesPackage
+%% The first tokens of the next code line result in
+%% ?`gdef'\,?`@providespkg':                                %% gdef 2012/09/19
+  \withcsname\gdef @providespkg\endcsname#1#2[#3]{%      %%  ` ' v0.3
+    \ifx#1\relax \ProvidesFile{#2.sty}[#3]%
+                 \xdef#1{#3}%
+%% ... like \LaTeX, while 'maybeload' consumes less memory.
+    \else        \expandafter \endinput
+    \fi }
+%% Moreover, if `\ProvidesPackage' has not been defined before, 
+%% neither \LaTeX\ is present nor \ctanpkgref{miniltx} has been 
+%% loaded, so |\ifltx| is rendered `\iffalse' 
+%% (the construction ensures proper skipping by the outer 
+%%  conditional, and `\ifltx' rather than `\iflatex' alludes to 
+%%  considering 'miniltx' and to our worries):
+  \global \expandafter \let \expandafter 
+    \ifltx \csname iffalse\endcsname
+%% If `\ProvidesPackage' has been defined, how come? 
+%% Not from 'plainpkg.tex' which is not loaded twice. 
+%% Rather from \LaTeX\ or 'miniltx': 
+\else
+  \global \withcsname \let ifltx\expandafter\endcsname  %% 2012/08/26
+                   \csname iftrue\endcsname
+\fi
+%% Now `\ProvidesFile' for 'plainpkg.tex' can be executed:
+\plainpkginfo 
+%% 
+%% == \cs{RequirePackage}               == 
+%% Without \LaTeX\, ... 
+\ifltx \else                                        %% 2012/08/25
+%% |\RequirePackage| simply is ...
+  \gdef\RequirePackage#1{\input #1.sty}
+\fi 
+%%
+%% == \cs{catcode} Stacks               ==
+%% ... (for private letters) are provided by 'stacklet.sty' ...
+\RequirePackage{stacklet}
+%%
+%% == Leaving and \acro{HISTORY}        ==
+\endinput
+%% VERSION HISTORY
+v0.1   2012/08/22   very first 
+v0.2   2012/08/23   refinements with \csname
+v0.3   2012/08/24   \oncsname -> \withcsname; 
+                    loading `stacklet.sty' with LaTeX; 
+                    doc. extended
+       2012/08/25   doc. "installing" mv. here; 
+                    aligning first conditional + label, \ifltx
+       2012/08/26   explaining \withcsname; 
+                    corrected second \ifltx;
+                    bug fix "ver@#1.sty"!!!
+       2012/08/27   account for `@' being letter; doc. fix
+                    remark on keeping \withcsname
+v0.4   2012/08/27   \global
+       2012/09/15   doc. was \Providespackage
+       2012/09/16   doc: endorsing \RequirePackage more clearly
+       2012/09/17   bug fix: \def\plain... -> \gdef\plain...
+                    (for local makedoc processing)
+       STORED SEPARATELY
+v0.4a  2012/09/19   moving documentation outside, \label..., ?gdef

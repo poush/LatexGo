@@ -1,0 +1,173 @@
+%%^^A%%  fontspec-code-enc.dtx -- part of FONTSPEC <wspr.io/fontspec>
+
+% \section{Extended font encodings}
+%
+% \iffalse
+%    \begin{macrocode}
+%<*fontspec>
+%    \end{macrocode}
+% \fi
+%
+% To be removed after the 2017 release of LaTeX2e:
+%    \begin{macrocode}
+\providecommand\UnicodeFontFile[2]{"[#1]:#2"}
+\providecommand\UnicodeFontName[2]{"#1:#2"}
+%<XE>\providecommand\UnicodeFontTeXLigatures{mapping=tex-text;}
+%<LU>\providecommand\UnicodeFontTeXLigatures{+tlig;}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\providecommand\add@unicode@accent[2]{#2\char#1\relax}
+\providecommand\DeclareUnicodeAccent[3]{%
+  \DeclareTextCommand{#1}{#2}{\add@unicode@accent{#3}}%
+}
+%    \end{macrocode}
+%
+% \begin{macro}{\EncodingCommand}
+%    \begin{macrocode}
+\DeclareDocumentCommand \EncodingCommand {mO{}m}
+  {
+    \bool_if:NF \l_@@_defining_encoding_bool
+      { \@@_error:nn {only-inside-encdef} \EncodingCommand }
+    \DeclareTextCommand{#1}{\UnicodeEncodingName}[#2]{#3}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\EncodingAccent}
+%    \begin{macrocode}
+\DeclareDocumentCommand \EncodingAccent {mm}
+  {
+    \bool_if:NF \l_@@_defining_encoding_bool
+      { \@@_error:nn {only-inside-encdef} \EncodingAccent }
+    \DeclareTextCommand{#1}{\UnicodeEncodingName}{\add@unicode@accent{#2}}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\EncodingSymbol}
+%    \begin{macrocode}
+\DeclareDocumentCommand \EncodingSymbol {mm}
+  {
+    \bool_if:NF \l_@@_defining_encoding_bool
+      { \@@_error:nn {only-inside-encdef} \EncodingSymbol }
+    \DeclareTextSymbol{#1}{\UnicodeEncodingName}{#2}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\EncodingComposite}
+%    \begin{macrocode}
+\DeclareDocumentCommand \EncodingComposite {mmm}
+  {
+    \bool_if:NF \l_@@_defining_encoding_bool
+      { \@@_error:nn {only-inside-encdef} \EncodingComposite }
+    \DeclareTextComposite{#1}{\UnicodeEncodingName}{#2}{#3}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\EncodingCompositeCommand}
+%    \begin{macrocode}
+\DeclareDocumentCommand \EncodingCompositeCommand {mmm}
+  {
+    \bool_if:NF \l_@@_defining_encoding_bool
+      { \@@_error:nn {only-inside-encdef} \EncodingCompositeCommand }
+    \DeclareTextCompositeCommand{#1}{\UnicodeEncodingName}{#2}{#3}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\DeclareUnicodeEncoding}
+%    \begin{macrocode}
+\DeclareDocumentCommand \DeclareUnicodeEncoding {mm}
+  {
+    \DeclareFontEncoding{#1}{}{}
+    \DeclareErrorFont{#1}{lmr}{m}{n}{10}
+    \DeclareFontSubstitution{#1}{lmr}{m}{n}
+    \DeclareFontFamily{#1}{lmr}{}
+
+    \DeclareFontShape{#1}{lmr}{m}{n}
+      {<->\UnicodeFontFile{lmroman10-regular}{\UnicodeFontTeXLigatures}}{}
+    \DeclareFontShape{#1}{lmr}{m}{it}
+      {<->\UnicodeFontFile{lmroman10-italic}{\UnicodeFontTeXLigatures}}{}
+    \DeclareFontShape{#1}{lmr}{m}{sc}
+      {<->\UnicodeFontFile{lmromancaps10-regular}{\UnicodeFontTeXLigatures}}{}
+    \DeclareFontShape{#1}{lmr}{bx}{n}
+      {<->\UnicodeFontFile{lmroman10-bold}{\UnicodeFontTeXLigatures}}{}
+    \DeclareFontShape{#1}{lmr}{bx}{it}
+      {<->\UnicodeFontFile{lmroman10-bolditalic}{\UnicodeFontTeXLigatures}}{}
+
+    \tl_set_eq:NN \l_@@_prev_unicode_name_tl \UnicodeEncodingName
+    \tl_set:Nn \UnicodeEncodingName {#1}
+    \bool_set_true:N \l_@@_defining_encoding_bool
+    #2
+    \bool_set_false:N \l_@@_defining_encoding_bool
+    \tl_set_eq:NN \UnicodeEncodingName \l_@@_prev_unicode_name_tl
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\UndeclareSymbol}
+% \begin{macro}{\UndeclareAccent}
+% \begin{macro}{\UndeclareCommand}
+% Synonyms for each other but all included for completeness.
+%    \begin{macrocode}
+\DeclareDocumentCommand \UndeclareSymbol {m}
+  {
+    \bool_if:NF \l_@@_defining_encoding_bool
+      { \@@_error:nn {only-inside-encdef} \UndeclareSymbol }
+    \UndeclareTextCommand {#1} {\UnicodeEncodingName}
+  }
+\DeclareDocumentCommand \UndeclareAccent {m}
+  {
+    \bool_if:NF \l_@@_defining_encoding_bool
+      { \@@_error:nn {only-inside-encdef} \UndeclareAccent }
+    \UndeclareTextCommand {#1} {\UnicodeEncodingName}
+  }
+\DeclareDocumentCommand \UndeclareCommand {m}
+  {
+    \bool_if:NF \l_@@_defining_encoding_bool
+      { \@@_error:nn {only-inside-encdef} \UndeclareCommand }
+    \UndeclareTextCommand {#1} {\UnicodeEncodingName}
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\UndeclareComposite}
+%    \begin{macrocode}
+\DeclareDocumentCommand \UndeclareComposite {mm}
+  {
+    \bool_if:NF \l_@@_defining_encoding_bool
+      { \@@_error:nn {only-inside-encdef} \UndeclareComposite }
+    \cs_undefine:c
+      { \c_backslash_str \UnicodeEncodingName \token_to_str:N #1 - \tl_to_str:n {#2} }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \iffalse
+%    \begin{macrocode}
+%</fontspec>
+%    \end{macrocode}
+% \fi
+
+
+\endinput
+
+% /©
+% ------------------------------------------------
+% The FONTSPEC package  <wspr.io/fontspec>
+% ------------------------------------------------
+% Copyright  2004-2019  Will Robertson, LPPL "maintainer"
+% Copyright  2009-2015  Khaled Hosny
+% Copyright  2013       Philipp Gesang
+% Copyright  2013-2016  Joseph Wright
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% ©/

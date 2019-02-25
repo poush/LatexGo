@@ -1,14 +1,3 @@
-
-@echo off
-
-echo
-echo *************************************
-echo * Using LaTeX, with pslatex package *
-echo *************************************
-echo
-
-rem emtex default setup calls this latex2e rather than latex
-
-rem latex2e \AtBeginDocument{\RequirePackage{pslatex}}\input %1 %2 %3 %4 %5 %6
-latex \AtBeginDocument{\RequirePackage{pslatex}}\input %1 %2 %3 %4 %5 %6
-
+version https://git-lfs.github.com/spec/v1
+oid sha256:0974d2407a116399c067eac9bf63793eecb38b1281bdcb19daf2d6e379999ed2
+size 381

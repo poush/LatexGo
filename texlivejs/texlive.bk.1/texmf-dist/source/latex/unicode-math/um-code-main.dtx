@@ -1,0 +1,698 @@
+%%^^A%% um-code-main.dtx -- part of UNICODE-MATH <wspr.io/unicode-math>
+%%^^A%% Definition of `\setmainfont`.
+
+% \section{The main \cs{setmathfont} macro}
+%
+%    \begin{macrocode}
+%<*package>
+%    \end{macrocode}
+%
+% \begin{macro}{\@@_setmathfont:nn}
+% \darg{keyval options}
+% \darg{font name/file}
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_setmathfont:nn
+  {
+%    \end{macrocode}
+% \begin{itemize}
+% \item Initialise all local variables.
+% \item
+% Erase any conception \LaTeX\ has of previously defined math symbol fonts;
+% this allows \cmd\DeclareSymbolFont\ at any point in the document.
+% \item
+% Grab the current size information:
+% (is this robust enough? Maybe it should be preceded by \cmd\normalsize).
+% The macro \cmd\S@\meta{size}
+% contains the definitions of the sizes used for maths letters, subscripts and subsubscripts in
+% \cmd\tf@size, \cmd\sf@size, and \cmd\ssf@size, respectively.
+% \end{itemize}
+%    \begin{macrocode}
+
+    \@@_init:n {#2}
+    \cs_set_eq:NN \glb@currsize \scan_stop:
+    \cs_if_exist:cF { S@ \f@size } { \calculate@math@sizes }
+    \use:c { S@ \f@size }
+
+    \keys_set_known:nnN {unicode-math} {#1} \l_@@_unknown_keys_clist
+
+    \bool_if:NT \g_@@_init_bool \@@_fontspec_trial_font:
+    \bool_if:NT \g_@@_init_bool \@@_declare_math_sizes:
+
+    \@@_fontspec_select_font:
+    \@@_setup_math_fam:
+    \bool_if:NT \g_@@_init_bool
+      {
+        \@@_setup_legacy_fam_two:
+        \@@_setup_legacy_fam_three:
+      }
+
+    \@@_input_math_symbol_table:
+
+%    \end{macrocode}
+% \begin{itemize}
+% \item the `once-off' setup that doesn't need to be per-font
+% \item remap symbols that don't take their natural mathcode;
+% \item activate any symbols that need to be math-active;
+% \item assign delimiter codes for symbols that need to grow;
+% \item setup the maths alphabets (\cs{symbf} etc.) ---
+%       this is an extensive part of the code; see Section~\ref{sec:mathmap};
+% \end{itemize}
+%    \begin{macrocode}
+    \bool_if:NT \g_@@_init_bool \@@_onceoff_setup:
+    \@@_remap_symbols:
+    \@@_setup_mathactives:
+    \@@_setup_delcodes:
+    \@@_setup_alphabets:
+
+    %% TODO: what of the above should only be run for the "default"/"main" font?
+
+    \bool_if:NTF \g_@@_init_bool
+      {
+        \bool_gset_true:N \g_@@_main_font_defined_bool
+%<LU>   \@@_mathparam_store:
+        \@@_log:n {default-math-font}
+      }
+      {
+%<LU>   \@@_mathparam_restore:
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \paragraph{Fall-back font}
+%
+% Want to load Latin Modern Math if nothing else.
+% This needs to happen early so that all of the font-loading machinery executes before
+% the other `AtBeginDocument' code.
+%    \begin{macrocode}
+\AtBeginDocument { \bool_if:NF \g_@@_main_font_defined_bool \@@_load_lm: }
+\@@_cs_new:Nn \@@_load_lm:
+  {
+    \setmathfont{latinmodern-math.otf}[BoldFont={latinmodern-math.otf}]
+  }
+%    \end{macrocode}
+%
+% \begin{macro}{\@@_init:n}
+% Reset local variables.
+% Default to defining the font for every math symbol character.
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_init:n
+  {
+    \tl_set:Nn \l_@@_fontname_tl {#1}
+    \bool_gset_true:N  \g_@@_ot_math_bool
+    \tl_set:Nn \l_@@_mversion_tl      {normal}
+    \tl_set:Nn \l_@@_symfont_label_tl {operators}
+
+    \tl_set:Nn    \l_@@_script_features_tl  {Style=MathScript}
+    \tl_set:Nn    \l_@@_sscript_features_tl {Style=MathScriptScript}
+    \tl_set_eq:NN \l_@@_script_font_tl      \l_@@_fontname_tl
+    \tl_set_eq:NN \l_@@_sscript_font_tl     \l_@@_fontname_tl
+
+    \bool_gset_true:N \g_@@_init_bool
+    \seq_gclear:N    \g_@@_char_range_seq
+    \clist_clear:N   \l_@@_mathmap_charints_clist
+    \seq_gclear:N    \g_@@_mathalph_seq
+    \seq_clear:N     \l_@@_missing_alph_seq
+
+    \cs_set_eq:NN \_@@_sym:nnn                  \@@_process_symbol_noparse:nnn
+    \cs_set_eq:NN \@@_remap_symbol:nnn          \@@_remap_symbol_noparse:nnn
+    \cs_set_eq:NN \@@_maybe_init_alphabet:n     \@@_init_alphabet:n
+    \cs_set_eq:NN \@@_assign_delcode:nn         \@@_assign_delcode_noparse:nn
+    \cs_set_eq:NN \@@_make_mathactive:nNN       \@@_make_mathactive_noparse:nNN
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_declare_math_sizes:}
+% Set the math sizes according to the recommended font parameters.
+%    \begin{macrocode}
+\tl_new:N \g_@@_main_font_cmd_tl
+\cs_new:Nn \@@_sf_size:  { \@@_fontdimen_to_scale:nN {10} \g_@@_trial_font }
+\cs_new:Nn \@@_ssf_size: { \@@_fontdimen_to_scale:nN {11} \g_@@_trial_font }
+\@@_cs_new:Nn \@@_declare_math_sizes:
+  {
+    \dim_compare:nF { \fontdimen 10 \g_@@_trial_font == 0pt }
+      {
+        \DeclareMathSizes { \f@size } { \f@size } { \@@_sf_size: } { \@@_ssf_size: }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%
+%
+% \begin{macro}{\@@_fontspec_trial_font:}
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_fontspec_trial_font:
+  {
+    \tl_set:Nx \l_@@_font_keyval_tl
+      {
+%<LU>   Renderer = Basic,
+        BoldItalicFont = {}, ItalicFont = {}, SmallCapsFont = {},
+        Script = Math,
+%<LU>   FontAdjustment = { \@@_luatex_copy_fontdimens: },
+        \l_@@_unknown_keys_clist
+      }
+
+    \fontspec_set_family:Nxn \l_@@_trial_family_tl {\l_@@_font_keyval_tl} {\l_@@_fontname_tl}
+
+    \group_begin:
+      \fontfamily { \l_@@_trial_family_tl } \selectfont
+      \exp_last_unbraced:NNo \@@_fontface_gset_eq:NN \g_@@_trial_font \font@name
+      \fontspec_if_script:nF {math}
+        {
+          \@@_warning:n {not-ot-math}
+          \bool_gset_false:N \g_@@_ot_math_bool
+          \bool_gset_false:N \g_@@_init_bool
+        }
+    \group_end:
+
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_fontspec_select_font:}
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_fontspec_select_font:
+  {
+    \fp_gset:Nn \g_@@_size_tfsf_fp   { (\f@size + \@@_sf_size: )/2 }
+    \fp_gset:Nn \g_@@_size_sfssf_fp  { (\@@_sf_size: + \@@_ssf_size:)/2 }
+
+    \tl_set:Nx \l_@@_font_keyval_tl
+      {
+%<LU>   Renderer = Basic,
+        BoldItalicFont = {}, ItalicFont = {}, SmallCapsFont = {},
+        Script = Math,
+        SizeFeatures =
+          {
+            {
+              Size = \fp_use:N \g_@@_size_tfsf_fp -
+            } ,
+            {
+              Size = \fp_use:N \g_@@_size_sfssf_fp - \fp_use:N \g_@@_size_tfsf_fp ,
+              Font = \l_@@_script_font_tl ,
+              \l_@@_script_features_tl
+            } ,
+            {
+              Size = - \fp_use:N \g_@@_size_sfssf_fp ,
+              Font = \l_@@_sscript_font_tl ,
+              \l_@@_sscript_features_tl
+            }
+          } ,
+%<LU>   FontAdjustment = { \@@_luatex_copy_fontdimens: },
+        \l_@@_unknown_keys_clist
+      }
+
+    \fontspec_set_family:Nxn \l_@@_family_tl {\l_@@_font_keyval_tl} {\l_@@_fontname_tl}
+
+    \int_gincr:N \g_@@_fonts_used_int
+    \group_begin:
+      \fontfamily { \l_@@_family_tl } \selectfont
+      \exp_last_unbraced:Nno \@@_fontface_gset_eq:cN {g_@@_mathfont_ \int_use:N \g_@@_fonts_used_int _font} \font@name
+      \tl_gset:Nx \g_@@_curr_font_cmd_tl { \exp_not:c {g_@@_mathfont_ \int_use:N \g_@@_fonts_used_int _font} }
+      \bool_if:NT \g_@@_init_bool
+				{
+					\exp_last_unbraced:NNo \@@_fontface_gset_eq:NN \l_@@_font \font@name
+				}
+    \group_end:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+\tl_gset:Nn \g_@@_main_font_cmd_tl  { \l_@@_font }
+\tl_gset:Nn \g_@@_sqrt_font_cmd_tl  { \l_@@_font }
+\tl_gset:Nn \g_@@_prime_font_cmd_tl { \l_@@_font }
+%    \end{macrocode}
+%
+% \begin{macro}{\@@_luatex_copy_fontdimens:}
+% This performs a once-off copy of the LuaTeX math params into XeTeX-like fontdimens.
+% While the list is somewhat comprehensive, these are really only for backwards compatibility
+% and to allow a little shared code. They shouldn't be relied upon, since LuaTeX users
+% might change the math params, which wouldn't be reflected in the fontdimens.
+%    \begin{macrocode}
+%<*LU>
+\@@_cs_new:Nn \@@_luatex_copy_fontdimens:
+  {
+    \@@_fontdimen_from_param:nn {10} {ScriptPercentScaleDown}
+    \@@_fontdimen_from_param:nn {11} {ScriptScriptPercentScaleDown}
+    \@@_fontdimen_from_param:nn {15} {AxisHeight}
+    \@@_fontdimen_from_param:nn {18} {SubscriptShiftDown}
+    \@@_fontdimen_from_param:nn {20} {SubscriptBaselineDropMin}
+    \@@_fontdimen_from_param:nn {21} {SuperscriptShiftUp}
+    \@@_fontdimen_from_param:nn {22} {SuperscriptShiftUpCramped}
+    \@@_fontdimen_from_param:nn {24} {SuperscriptBaselineDropMax}
+    \@@_fontdimen_from_param:nn {28} {UpperLimitGapMin}
+    \@@_fontdimen_from_param:nn {29} {UpperLimitBaselineRiseMin}
+    \@@_fontdimen_from_param:nn {30} {LowerLimitGapMin}
+    \@@_fontdimen_from_param:nn {31} {LowerLimitBaselineDropMin}
+    \@@_fontdimen_from_param:nn {32} {StackTopShiftUp}
+    \@@_fontdimen_from_param:nn {42} {FractionNumeratorShiftUp}
+    \@@_fontdimen_from_param:nn {43} {FractionNumeratorDisplayStyleShiftUp}
+    \@@_fontdimen_from_param:nn {44} {FractionDenominatorShiftDown}
+    \@@_fontdimen_from_param:nn {45} {FractionDenominatorDisplayStyleShiftDown}
+    \@@_fontdimen_from_param:nn {48} {FractionRuleThickness}
+  }
+%</LU>
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_setup_math_fam:}
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_setup_math_fam:
+  {
+    \cs_if_exist:cF { sym \l_@@_symfont_label_tl }
+      {
+        \DeclareSymbolFont{\l_@@_symfont_label_tl}
+          {\encodingdefault}{\l_@@_family_tl}{\mddefault}{\updefault}
+      }
+    \SetSymbolFont{\l_@@_symfont_label_tl}{\l_@@_mversion_tl}
+      {\encodingdefault}{\l_@@_family_tl}{\mddefault}{\updefault}
+%    \end{macrocode}
+% Set the bold math version.
+%    \begin{macrocode}
+    \str_if_eq:eeT {\l_@@_mversion_tl} {normal}
+      {
+        \SetSymbolFont{\l_@@_symfont_label_tl}{bold}
+          {\encodingdefault}{\l_@@_family_tl}{\bfdefault}{\updefault}
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_setup_legacy_fam_two:}
+% \TeX\ won't load the same font twice at the same scale, so we need to magnify this one by an imperceptable amount.
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_setup_legacy_fam_two:
+  {
+    \fontspec_set_family:Nxn \l_@@_fam_two_tl
+      {
+        \l_@@_font_keyval_tl,
+        ScaleAgain = 1.00001,
+        FontAdjustment =
+          {
+            \@@_copy_fontdimen:nnN { 8} {43} \g_@@_main_font_cmd_tl
+            \@@_copy_fontdimen:nnN { 9} {42} \g_@@_main_font_cmd_tl
+            \@@_copy_fontdimen:nnN {10} {32} \g_@@_main_font_cmd_tl
+            \@@_copy_fontdimen:nnN {11} {45} \g_@@_main_font_cmd_tl
+            \@@_copy_fontdimen:nnN {12} {44} \g_@@_main_font_cmd_tl
+            \@@_copy_fontdimen:nnN {13} {21} \g_@@_main_font_cmd_tl
+            \@@_copy_fontdimen:nnN {14} {21} \g_@@_main_font_cmd_tl
+            \@@_copy_fontdimen:nnN {15} {22} \g_@@_main_font_cmd_tl
+            \@@_copy_fontdimen:nnN {16} {18} \g_@@_main_font_cmd_tl
+            \@@_copy_fontdimen:nnN {17} {18} \g_@@_main_font_cmd_tl
+            \@@_copy_fontdimen:nnN {18} {24} \g_@@_main_font_cmd_tl
+            \@@_copy_fontdimen:nnN {19} {20} \g_@@_main_font_cmd_tl
+            \@@_copy_fontdimen:nnN {22} {15} \g_@@_main_font_cmd_tl
+            \@@_zero_fontdimen:n   {20} % delim1 = FractionDelimiterDisplaySize
+            \@@_zero_fontdimen:n   {21} % delim2 = FractionDelimiterSize
+         }
+      } {\l_@@_fontname_tl}
+
+    \SetSymbolFont{symbols}{\l_@@_mversion_tl}
+      {\encodingdefault}{\l_@@_fam_two_tl}{\mddefault}{\updefault}
+
+    \str_if_eq:eeT {\l_@@_mversion_tl} {normal}
+      {
+        \SetSymbolFont{symbols}{bold}
+          {\encodingdefault}{\l_@@_fam_two_tl}{\bfdefault}{\updefault}
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_setup_legacy_fam_three:}
+% Similarly, this font is shrunk by an imperceptable amount for \TeX\ to load it again.
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_setup_legacy_fam_three:
+  {
+    \fontspec_set_family:Nxn \l_@@_fam_three_tl
+      {
+        \l_@@_font_keyval_tl,
+        ScaleAgain = 0.99999,
+        FontAdjustment = {
+          \@@_copy_fontdimen:nnN { 8} {48} \g_@@_main_font_cmd_tl
+          \@@_copy_fontdimen:nnN { 9} {28} \g_@@_main_font_cmd_tl
+          \@@_copy_fontdimen:nnN {10} {30} \g_@@_main_font_cmd_tl
+          \@@_copy_fontdimen:nnN {11} {29} \g_@@_main_font_cmd_tl
+          \@@_copy_fontdimen:nnN {12} {31} \g_@@_main_font_cmd_tl
+          \@@_zero_fontdimen:n   {13}
+       }
+      } {\l_@@_fontname_tl}
+
+    \SetSymbolFont{largesymbols}{\l_@@_mversion_tl}
+      {\encodingdefault}{\l_@@_fam_three_tl}{\mddefault}{\updefault}
+
+    \str_if_eq:eeT {\l_@@_mversion_tl} {normal}
+      {
+        \SetSymbolFont{largesymbols}{bold}
+          {\encodingdefault}{\l_@@_fam_three_tl}{\bfdefault}{\updefault}
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_onceoff_setup:}
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_onceoff_setup:
+  {
+    \@@_set_delcode:nnn {operators} {`\.} {0}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Functions for setting up symbols with mathcodes}
+% \seclabel{mathsymbol}
+%
+% \begin{macro}{\@@_process_symbol_noparse:nnn}
+% \begin{macro}{\@@_process_symbol_parse:nnn}
+% If the \feat{range} font feature has been used, then only
+% a subset of the Unicode glyphs are to be defined.
+% See \secref{rangeproc} for the code that enables this.
+%    \begin{macrocode}
+\cs_set:Nn \@@_process_symbol_noparse:nnn
+  {
+    \@@_set_mathsymbol:nNNn {\l_@@_symfont_label_tl} #2 #3 {#1}
+  }
+%    \end{macrocode}
+%    \begin{macrocode}
+\cs_set:Nn \@@_process_symbol_parse:nnn
+  {
+    \@@_if_char_spec:nNT {#1} {#3}
+      {
+        \@@_process_symbol_noparse:nnn {#1} {#2} {#3}
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\@@_remap_symbols:}
+% This function is used to define the mathcodes for those chars which should
+% be mapped to a different glyph than themselves.
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_remap_symbols:
+  {
+    \@@_remap_symbol:nnn {`\-} {\mathbin} {"2212}
+    \@@_remap_symbol:nnn {`\*} {\mathbin} {"02217}% text asterisk to "centred asterisk"
+    \bool_if:NF \g_@@_literal_colon_bool
+      {
+        \@@_remap_symbol:nnn {`\:} {\mathrel} {"02236}% colon to ratio (i.e., punct to rel)
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_remap_symbol_noparse:nnn}
+% \begin{macro}{\@@_remap_symbol_parse:nnn}
+% Where |\@@_remap_symbol:nnn| is defined to be one of these two, depending
+% on the range setup:
+%    \begin{macrocode}
+\cs_new:Nn \@@_remap_symbol_parse:nnn
+  {
+    \@@_if_char_spec:nNT {#3} {#2}
+      { \@@_remap_symbol_noparse:nnn {#1} {#2} {#3} }
+  }
+\cs_new:Nn \@@_remap_symbol_noparse:nnn
+  {
+    \clist_map_inline:nn {#1}
+      { \@@_set_mathcode:nnnn {##1} {#2} {\l_@@_symfont_label_tl} {#3} }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Active math characters}
+%
+% There are more math active chars later in the subscript/superscript section.
+% But they don't need to be able to be typeset directly.
+%
+% \begin{macro}{\@@_setup_mathactives:}
+% TODO: if not an OpenType math font, we should ignore doing anything with primes.
+% This needs a revamped `range` feature, I think.
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_setup_mathactives:
+  {
+		\@@_make_mathactive:nNN {"2032} \@@_prime_single_mchar \mathord
+		\@@_make_mathactive:nNN {"2033} \@@_prime_double_mchar \mathord
+		\@@_make_mathactive:nNN {"2034} \@@_prime_triple_mchar \mathord
+		\@@_make_mathactive:nNN {"2057} \@@_prime_quad_mchar   \mathord
+		\@@_make_mathactive:nNN {"2035} \@@_backprime_single_mchar \mathord
+		\@@_make_mathactive:nNN {"2036} \@@_backprime_double_mchar \mathord
+		\@@_make_mathactive:nNN {"2037} \@@_backprime_triple_mchar \mathord
+    \@@_make_mathactive:nNN {`\'} \mathstraightquote \mathord
+    \@@_make_mathactive:nNN {`\`} \mathbacktick      \mathord
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_make_mathactive:nNN}
+% Makes |#1| a mathactive char, and gives cs |#2| the meaning of mathchar |#1|
+% with class |#3|.
+% You are responsible for giving active |#1| a particular meaning!
+%    \begin{macrocode}
+\cs_new:Nn \@@_make_mathactive_parse:nNN
+  {
+    \@@_if_char_spec:nNT {#1} #3
+      { \@@_make_mathactive_noparse:nNN {#1} #2 #3 }
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_make_mathactive_noparse:nNN
+  {
+    \@@_set_mathchar:NNnn #2 #3 {\l_@@_symfont_label_tl} {#1}
+    \@@_char_gmake_mathactive:n {#1}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \subsection{Delimiter codes}
+%
+% \begin{macro}{\@@_assign_delcode:nn}
+%    \begin{macrocode}
+\cs_new:Nn \@@_assign_delcode_noparse:nn
+  {
+    \@@_set_delcode:nnn \l_@@_symfont_label_tl {#1} {#2}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_assign_delcode_parse:nn
+  {
+    \@@_if_char_spec:nNT {#2} \@nil
+      {
+        \@@_assign_delcode_noparse:nn {#1} {#2}
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_assign_delcode:n}
+% Shorthand.
+%    \begin{macrocode}
+\cs_new:Nn \@@_assign_delcode:n { \@@_assign_delcode:nn {#1} {#1} }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_setup_delcodes:}
+% Some symbols that aren't mathopen/mathclose still need to have delimiter codes assigned.
+% The list of vertical arrows may be incomplete.
+% On the other hand, many fonts won't support them all being stretchy.
+% And some of them are probably not meant to stretch, either. But adding them here doesn't hurt.
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_setup_delcodes:
+  {
+    \@@_assign_delcode:nn {`\/}   {\g_@@_slash_delimiter_usv}
+    \@@_assign_delcode:nn {"2044} {\g_@@_slash_delimiter_usv} % fracslash
+    \@@_assign_delcode:nn {"2215} {\g_@@_slash_delimiter_usv} % divslash
+    \@@_assign_delcode:n {"005C} % backslash
+    \@@_assign_delcode:nn {`\<} {"27E8} % angle brackets with ascii notation
+    \@@_assign_delcode:nn {`\>} {"27E9} % angle brackets with ascii notation
+    \@@_assign_delcode:n {"2191} % up arrow
+    \@@_assign_delcode:n {"2193} % down arrow
+    \@@_assign_delcode:n {"2195} % updown arrow
+    \@@_assign_delcode:n {"219F} % up arrow twohead
+    \@@_assign_delcode:n {"21A1} % down arrow twohead
+    \@@_assign_delcode:n {"21A5} % up arrow from bar
+    \@@_assign_delcode:n {"21A7} % down arrow from bar
+    \@@_assign_delcode:n {"21A8} % updown arrow from bar
+    \@@_assign_delcode:n {"21BE} % up harpoon right
+    \@@_assign_delcode:n {"21BF} % up harpoon left
+    \@@_assign_delcode:n {"21C2} % down harpoon right
+    \@@_assign_delcode:n {"21C3} % down harpoon left
+    \@@_assign_delcode:n {"21C5} % arrows up down
+    \@@_assign_delcode:n {"21F5} % arrows down up
+    \@@_assign_delcode:n {"21C8} % arrows up up
+    \@@_assign_delcode:n {"21CA} % arrows down down
+    \@@_assign_delcode:n {"21D1} % double up arrow
+    \@@_assign_delcode:n {"21D3} % double down arrow
+    \@@_assign_delcode:n {"21D5} % double updown arrow
+    \@@_assign_delcode:n {"21DE} % up arrow double stroke
+    \@@_assign_delcode:n {"21DF} % down arrow double stroke
+    \@@_assign_delcode:n {"21E1} % up arrow dashed
+    \@@_assign_delcode:n {"21E3} % down arrow dashed
+    \@@_assign_delcode:n {"21E7} % up white arrow
+    \@@_assign_delcode:n {"21E9} % down white arrow
+    \@@_assign_delcode:n {"21EA} % up white arrow from bar
+    \@@_assign_delcode:n {"21F3} % updown white arrow
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{(Big) operators}
+%
+% The engine does what is necessary to deal with big operators for us
+% automatically with \cmd\Umathchardef.
+% However, the limits aren't set automatically; that is, we want to define,
+% a la Plain \TeX\ \etc, |\def\int{\intop\nolimits}|, so there needs to be a
+% transformation from \cmd\int\ to \cmd\intop\ during the expansion of
+% \cmd\_@@_sym:nnn\ in the appropriate contexts.
+%
+% \begin{macro}{\l_@@_nolimits_tl}
+% This macro is a sequence containing those maths operators that require a
+% \cmd\nolimits\ suffix.
+% This list is used when processing |unicode-math-table.tex| to define such
+% commands automatically (see the macro \cs{@@_set_mathsymbol:nNNn}).
+% I've chosen essentially just the operators that look like integrals;
+% hopefully a better mathematician can help me out here.
+% I've a feeling that it's more useful \emph{not} to include the multiple
+% integrals such as $\iiiint$, but that might be a matter of preference.
+%    \begin{macrocode}
+\tl_set:Nn \l_@@_nolimits_tl
+  {
+    \int\iint\iiint\iiiint\oint\oiint\oiiint
+    \intclockwise\varointclockwise\ointctrclockwise\sumint
+    \intbar\intBar\fint\cirfnint\awint\rppolint
+    \scpolint\npolint\pointint\sqint\intlarhk\intx
+    \intcap\intcup\upint\lowint
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Radicals}
+%
+% \begin{macro}{\l_@@_radicals_tl}
+% The radicals are organised in \cs{@@_set_mathsymbol:nNNn}.
+% We organise radicals in the same way as nolimits-operators.
+% (\cs{cuberoot} and \cs{fourthroot}, don't seem to behave as proper radicals.)
+%    \begin{macrocode}
+\tl_set:Nn \l_@@_radicals_tl {\sqrt \longdivision \cuberoot \fourthroot}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Fontdimens}
+%
+%    \begin{macrocode}
+%<*LU>
+%    \end{macrocode}
+%
+% \begin{macro}{\@@_mathparam_restore:}
+% \cs{glb@settings} might not be necessary but is included for symmetry.
+% If the maths font were to be loaded later it would clobber our mathparam settings, so
+% this seems like a sensible move.
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_mathparam_restore:
+  {
+    \glb@settings
+    \tl_use:N \g_@@_mathparam_settings_tl
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_mathparam_store:}
+% \cs{glb@settings} is called to force maths fonts loading \emph{now} so the mathparams
+% are up-to-date.
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_mathparam_store:
+  {
+    \glb@settings
+    \tl_gset:Nx \g_@@_mathparam_settings_tl
+      {
+        \@@_mathparam_store_aux:N \displaystyle
+        \@@_mathparam_store_aux:N \textstyle
+        \@@_mathparam_store_aux:N \scriptstyle
+        \@@_mathparam_store_aux:N \scriptscriptstyle
+      }
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_set:Nn \@@_mathparam_store_aux:N
+  {
+    \Umathquad                #1 = \the \Umathquad                #1 \scan_stop:
+    \Umathaxis                #1 = \the \Umathaxis                #1 \scan_stop:
+    \Umathoperatorsize        #1 = \the \Umathoperatorsize        #1 \scan_stop:
+    \Umathoverbarkern         #1 = \the \Umathoverbarkern         #1 \scan_stop:
+    \Umathoverbarrule         #1 = \the \Umathoverbarrule         #1 \scan_stop:
+    \Umathoverbarvgap         #1 = \the \Umathoverbarvgap         #1 \scan_stop:
+    \Umathunderbarkern        #1 = \the \Umathunderbarkern        #1 \scan_stop:
+    \Umathunderbarrule        #1 = \the \Umathunderbarrule        #1 \scan_stop:
+    \Umathunderbarvgap        #1 = \the \Umathunderbarvgap        #1 \scan_stop:
+    \Umathradicalkern         #1 = \the \Umathradicalkern         #1 \scan_stop:
+    \Umathradicalrule         #1 = \the \Umathradicalrule         #1 \scan_stop:
+    \Umathradicalvgap         #1 = \the \Umathradicalvgap         #1 \scan_stop:
+    \Umathradicaldegreebefore #1 = \the \Umathradicaldegreebefore #1 \scan_stop:
+    \Umathradicaldegreeafter  #1 = \the \Umathradicaldegreeafter  #1 \scan_stop:
+    \Umathradicaldegreeraise  #1 = \the \Umathradicaldegreeraise  #1 \scan_stop:
+    \Umathstackvgap           #1 = \the \Umathstackvgap           #1 \scan_stop:
+    \Umathstacknumup          #1 = \the \Umathstacknumup          #1 \scan_stop:
+    \Umathstackdenomdown      #1 = \the \Umathstackdenomdown      #1 \scan_stop:
+    \Umathfractionrule        #1 = \the \Umathfractionrule        #1 \scan_stop:
+    \Umathfractionnumvgap     #1 = \the \Umathfractionnumvgap     #1 \scan_stop:
+    \Umathfractionnumup       #1 = \the \Umathfractionnumup       #1 \scan_stop:
+    \Umathfractiondenomvgap   #1 = \the \Umathfractiondenomvgap   #1 \scan_stop:
+    \Umathfractiondenomdown   #1 = \the \Umathfractiondenomdown   #1 \scan_stop:
+    \Umathfractiondelsize     #1 = \the \Umathfractiondelsize     #1 \scan_stop:
+    \Umathlimitabovevgap      #1 = \the \Umathlimitabovevgap      #1 \scan_stop:
+    \Umathlimitabovebgap      #1 = \the \Umathlimitabovebgap      #1 \scan_stop:
+    \Umathlimitabovekern      #1 = \the \Umathlimitabovekern      #1 \scan_stop:
+    \Umathlimitbelowvgap      #1 = \the \Umathlimitbelowvgap      #1 \scan_stop:
+    \Umathlimitbelowbgap      #1 = \the \Umathlimitbelowbgap      #1 \scan_stop:
+    \Umathlimitbelowkern      #1 = \the \Umathlimitbelowkern      #1 \scan_stop:
+    \Umathoverdelimitervgap   #1 = \the \Umathoverdelimitervgap   #1 \scan_stop:
+    \Umathoverdelimiterbgap   #1 = \the \Umathoverdelimiterbgap   #1 \scan_stop:
+    \Umathunderdelimitervgap  #1 = \the \Umathunderdelimitervgap  #1 \scan_stop:
+    \Umathunderdelimiterbgap  #1 = \the \Umathunderdelimiterbgap  #1 \scan_stop:
+    \Umathsubshiftdrop        #1 = \the \Umathsubshiftdrop        #1 \scan_stop:
+    \Umathsubshiftdown        #1 = \the \Umathsubshiftdown        #1 \scan_stop:
+    \Umathsupshiftdrop        #1 = \the \Umathsupshiftdrop        #1 \scan_stop:
+    \Umathsupshiftup          #1 = \the \Umathsupshiftup          #1 \scan_stop:
+    \Umathsubsupshiftdown     #1 = \the \Umathsubsupshiftdown     #1 \scan_stop:
+    \Umathsubtopmax           #1 = \the \Umathsubtopmax           #1 \scan_stop:
+    \Umathsupbottommin        #1 = \the \Umathsupbottommin        #1 \scan_stop:
+    \Umathsupsubbottommax     #1 = \the \Umathsupsubbottommax     #1 \scan_stop:
+    \Umathsubsupvgap          #1 = \the \Umathsubsupvgap          #1 \scan_stop:
+    \Umathspaceafterscript    #1 = \the \Umathspaceafterscript    #1 \scan_stop:
+    \Umathconnectoroverlapmin #1 = \the \Umathconnectoroverlapmin #1 \scan_stop:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+%</LU>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%</package>
+%    \end{macrocode}
+
+\endinput
+
+% /©
+%
+% ------------------------------------------------
+% The UNICODE-MATH package  <wspr.io/unicode-math>
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% Copyright 2006-2019  Will Robertson, LPPL "maintainer"
+% Copyright 2010-2017  Philipp Stephani
+% Copyright 2011-2017  Joseph Wright
+% Copyright 2012-2015  Khaled Hosny
+% ------------------------------------------------
+%
+% ©/

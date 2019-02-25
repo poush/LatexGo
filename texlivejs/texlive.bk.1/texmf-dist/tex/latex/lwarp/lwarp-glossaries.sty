@@ -1,0 +1,67 @@
+%%
+%% This is file `lwarp-glossaries.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `glossaries')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+\PassOptionsToPackage{xindy}{glossaries}
+
+\LWR@ProvidesPackagePass{glossaries}[2018/07/23]
+
+\setupglossaries{nonumberlist}
+\setglossarystyle{index}
+\renewcommand*{\@p@glossarysection}[2]{%
+  \glsclearpage
+  \phantomsection
+  \ifdefempty\@@glossarysecstar
+  {%
+    \csname\@@glossarysec\endcsname{#2}%
+  }%
+  {%
+      \csname\@@glossarysec\endcsname*{#2}%
+    \@gls@toc{#1}{\@@glossarysec}% Moved after the previous line.
+  }%
+  \@@glossaryseclabel
+}
+\newcommand*{\LWR@comp@glossaryname}{\translate{Glossary}}
+
+\ifdefstrequal{\glossaryname}{\LWR@comp@glossaryname}{
+    \translatelet\LWR@translatetemp{Glossary}
+    \edef\glossaryname{\LWR@translatetemp}
+}{}
+
+\newcommand*{\LWR@comp@acronymname}{\translate{Acronym}}
+
+\ifdefstrequal{\acronymname}{\LWR@comp@acronymname}{
+    \translatelet\LWR@translatetemp{Acronym}
+    \edef\acronymname{\LWR@translatetemp}
+}{}
+
+\newcommand*{\LWR@comp@glssymbolsgroupname}{\translate{Symbols (glossaries)}}
+
+\ifdefstrequal{\glssymbolsgroupname}{\LWR@comp@glssymbolsgroupname}{
+    \translatelet\LWR@translatetemp{Symbols (glossaries)}
+    \edef\glssymbolsgroupname{\LWR@translatetemp}
+}{}
+
+\newcommand*{\LWR@comp@glsnumbersgroupname}{\translate{Numbers (glossaries)}}
+
+\ifdefstrequal{\glsnumbersgroupname}{\LWR@comp@glsnumbersgroupname}{
+    \translatelet\LWR@translatetemp{Numbers (glossaries)}
+    \edef\glsnumbersgroupname{\LWR@translatetemp}
+}{}
+\endinput
+%%
+%% End of file `lwarp-glossaries.sty'.

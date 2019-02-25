@@ -1,0 +1,29 @@
+%%%%
+%%%% This file belongs to the ROEX package.
+%%%%
+%%% draw write_preamble write_postamble find_BB set_BB fill_C draw_C
+%%% draw fix_fill_cmyk fix_draw_cmyk
+% ES-01.MF, ``SQUARE'':
+%   A trivial example, expanding stroke applied to a square.
+% ---
+input mftoeps; eps_mode_setup; input roex; tracingexpanding:=1;
+% ---
+beginchar("0",cm#,cm#,0);
+ expand_stroke (unitsquare xscaled w yscaled h) (1mm) R;
+% find_BB make_list(1,R.num) R;
+ find_BB R1,R2; % R.num=2
+ write_preamble jobname;
+ for i:=1 upto R.num:
+  fix_draw_cmyk if check_turn(R[i])>0: 0,1,1,0 else: 1,1,0,0 fi; 
+  draw_C R[i];
+  if proofing>0:
+   for j:=0 upto length(R[i])-1:
+    makelabel(decimal(j) & "/" & decimal(i),point j of R[i]);
+   endfor
+  fi
+ endfor 
+ write_postamble;
+endchar;
+end.
+%%\end
+

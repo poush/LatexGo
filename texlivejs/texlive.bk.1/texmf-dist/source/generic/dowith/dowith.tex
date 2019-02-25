@@ -1,0 +1,1168 @@
+\ProvidesFile{dowith.tex}[2015/11/14 documenting dowith.sty]
+\title{%%%\kern-\baselineskip
+       \textsf{\huge dowith.sty}\\---\\Apply Command to
+%        Elements of Lists without Separators\,---\,%%% 2012/05/14
+%        and without Iterator\thanks{This
+       %% 2012/05/15, "in" 2012/05/18:
+       Each Item \\ in a List of Arguments in ``\TeX's Gullet"\thanks{This
+       document describes version
+       \textcolor{blue}{\UseVersionOf{\jobname.sty}}
+       of \textsf{\jobname.sty} as of \UseDateOf{\jobname.sty}.}}
+{ \RequirePackage{makedoc} \ProcessLineMessage{}
+  \renewcommand*\mdSectionLevelOne{\string\subsection}
+  \renewcommand*\mdSectionLevelTwo{\string\subsubsection}
+  \MakeJobDoc{18}%% 2012/11/05 for v0.3
+  {\SectionLevelTwoParseInput}  }
+% \RequirePackage[ir]{inputtrc}
+\documentclass[fleqn]{article}%% TODO paper dimensions!?
+\input{makedoc.cfg}    %% shared formatting settings
+\ifpdf\else \errhelp{hyperref draft bad with {equation}}
+            \errmessage{run this with pdflatex only}\fi
+% \ReadPackageInfos{dowith}
+\usepackage{dowith}                                         %% 2012/05/17b
+\sloppy
+\MDkeywords{programming structures;                         %% 2012/05/14b
+            macro programming, loops, list macros}
+\hypersetup{%
+    pdftitle=dowith.sty handles lists without separators,
+    pdfsubject=documenting dowith.sty
+}%% 2011/08/22 
+\usepackage{fixltx2e}                       %% \textsubscript 2012/05/17b
+%% <- TODO with `lmodern'?
+% \newcommand*{\ctanpkgdref}[1]{%                             %% 2012/11/19
+%     \ctanpkgref{#1}\,\foothttpurlref{ctan.org/pkg/#1}}
+%% <- in `makedoc.cfg' 2015/11/14
+\makeatletter                                   %% etc. 2012/05/17b
+%% TODO `actcodes'!? 2012/11/02
+  \newcommand*{\GetOtherChar}[2]{% 
+    \@ifdefinable#1{%
+        \edef#1{\expandafter\@gobble\string#2}}}
+\makeatother
+\GetOtherChar\codeLB\{ 
+\GetOtherChar\codeRB\} 
+% \GetOtherChar\codeSP\ %       %% ???
+{\MakeOther\ \xdef\codeSP{ }}
+\newcommand*{\codelb}{\code\codeLB}
+\newcommand*{\coderb}{\code\codeRB}
+\newcommand*{\codesp}{\code\codeSP}
+\newcommand*{\codebd}[1]{\code{\codeLB#1\codeRB}}       %% 2012/05/19
+%% rm. 2012/05/17b:
+% \DeclareRobustCommand*{\code}[1]{%
+%   \texttt{%
+%     \let\{\codeLB \let\}\codeRB \let\ \codeSP
+%     #1}}
+% \newcommand*{\chtok}[2]{\ensuremath{\code{#1}\sb{#2}}}
+%% <- 2012/05/17b ->
+\newcommand*{\chtok}[2]{\code{#1}\textsubscript{#2}} 
+\newcommand*{\lbtok}{\chtok\codeLB{1}}
+\newcommand*{\rbtok}{\chtok\codeRB{2}}
+\newcommand*{\lttok}[1]{\chtok{#1}{11}}
+\newcommand*{\sptok}{\chtok\codeSP{10}}
+\providecommand*{\TTb}{\meta{The\nolinebreak[3] \TeX book}}
+\providecommand*{\TTbp}{\TTb\nolinebreak[3] p}
+\newenvironment*{smallpar}
+                {\medskip\par\begingroup\footnotesize}
+                {\par\endgroup\medskip}
+\newcommand*{\NTOK}[1]{\textsf{ntok}(\code{#1})}
+\newcommand*{\ntok}[1]{\textrm{?}\code{#1}}
+\newenvironment*{example}[1]
+                {\trivlist\item
+                 (\ulroman{#1})}
+                {\endtrivlist}
+\providecommand*{\ulroman}[1]{\meta{\romannumeral #1 }}
+\newcommand*{\inlineitem}[1]{\ (\ulroman{#1})\enspace
+             \ignorespaces}
+\newcommand*{\pdots}{~.\kern\fontdimen3\font
+                      .\kern\fontdimen3\font. }
+\providecommand*{\Chi}{\mathrm{X}}
+\renewcommand*{\httpprefix}{\theHTTPprefix}
+\begin{document}
+\maketitle
+\begin{MDabstract}
+This package provides macros for applying a 
+%% mod. 2012/05/15:
+% ``command" <cmd> to all items of a list $<arg-1><arg-2>\dots<arg-$n$>$
+``command" to all items in a ``list of possible macro arguments," %% v0.21a
+% in ``\TeX's mouth," 
+% such as `\DoWithAllIn{<cmd>}{<list-macro>}', 
+and also for extending and reducing macros storing such lists.
+``Brace groups" are single items of such lists, as opposed to 
+token lists. Iteration is implemented within \TeX's expansion 
+processor, so works within `\write' as with 'blog.sty'.
+ %%% ---pleading for mathematical rigour in \TeX ology!)    %% rm. 2012/05/17b
+% Applications in mind belonged to \LaTeX, but the package should work 
+% with other formats as well.
+Loop and list macros in other packages are discussed in the documentation.
+% %% 2012/05/09:
+% There is an emphasis on expandability 
+% %% mod./add. 2012/05/15:
+% (no \wikienref{Iterator}{iterator;} 
+%  essential within \cs{write} as with \CtanPkgRef{morehype}{blog.sty}),
+% without relying on \CtanPkgRef{e-tex}{$\varepsilon$-\TeX}.
+%% 2012/05/18:
+% Iteration is implemented within ``\TeX's mouth," so works within 
+% `\write' as with \CtanPkgRef{morehype}{blog.sty}. 
+There is no need for \CtanPkgRef{e-tex}{$\varepsilon$-\TeX} to which 
+some of them refer.
+
+The package is ``generic," i.e., should also work with Plain \TeX\ 
+or even other formats, relying on the \ctanpkgref{plainpkg} package 
+for some minimal \LaTeX-like behaviour.     %% \ 2012/11/27
+
+\MDaddtoabstract{Related packages}
+\let\pkg\ctanpkgref     \pkg{catoptions},
+\pkg{etextools}, \pkg{etoolbox}, \pkg{forarray}, \pkg{forloop}, 
+\pkg{loops}, \pkg{multido}, \pkg{moredefs}, \pkg{lmake}, 
+\pkg{texapi}, \pkg{xfor}, \pkg{xspace}
+\end{MDabstract}
+\tableofcontents
+
+%   \newpage
+\section{Usage and Features}                    %% restructured 2012/05/16
+
+\subsection{Installing and Calling}
+The file 'dowith.sty' is provided ready, installation only requires
+putting it somewhere where \TeX\ finds it
+(which may need updating the filename data
+ base).\urlfoot{ukfaqref}{inst-wlcf}           %% corr. 2011/02/08
+The packages \ctanpkgdref{plainpkg}
+and 'stacklet' (\ctanpkgref{catcodes})\urlfoot{ctanpkgref}{catcodes} 
+must be installed as well.
+
+As to calling (loading): 'dowith' is a ``\pkg{plainpkg} package" 
+in the sense of the \ctanpkgref{plainpkg}
+documentation that you may consult for details.
+So roughly, 
+\begin{itemize}
+  \item load it by \ |\usepackage{dowith}| \ if you can, 
+  \item otherwise by \ |\RequirePackage{dowith}| \\
+        (perhaps from within another ``\pkg{plainpkg} package"), 
+  \item or by \ |\input dowith.sty| 
+  \item or even by \ |\input{dowith.sty}|~\dots
+\end{itemize}
+
+% \section{Example}
+
+% \section{Discussion}                                      %% 2012/05/16
+% \subsection{What It Seems to Do \dots}
+% The 'dowith' package provides tools to simplify \TeX\ macro programming. 
+% Understanding it \emph{really} may require understanding certain passages of 
+% \TTb, such as pp.~38f. It may even require overcoming 
+% terrible confusions in \TTb.
+% Let this be a last try at understanding the package without understanding \TeX: 
+% It allows you to abbreviate 
+% \[<cmd><arg-1><cmd><arg-2>\dots<cmd><arg-$n$>\]
+% by 
+% \[`\DoWith<cmd><arg-1><arg-2>\dots<arg-$n$>\StopDoing'\]
+% or by 
+% \[`\DoWithAllOf<cmd>{<arg-1><arg-2>\dots<arg-$n$>}'\]
+%
+%   \pagebreak                                                %% 2012/05/19
+\subsection{What It Does With What Lists}
+% \subsection{What It Actually Does \dots}
+\label{sec:lists-intuit}
+
+The single commands that the package provides are described 
+in the \hyperref[sec:implement]{implementation section} below. 
+What follows here is some general background about how the 
+commands work.
+%% <- moved down from previous section, mod. 2012/05/19
+
+The term \qtd{list} may refer to various things and need clarification here. 
+
+First of all, we are not referring to \LaTeX\ `list' environments 
+such as `enumerate' or `itemize'; 
+neither to ``\acro{TODO}" lists of what needs to be done soon. 
+
+Rather, 'dowith' allows you to abbreviate 
+\[<cmd><arg-1><cmd><arg-2>\dots<cmd><arg-$n$>\]
+by 
+\[`\DoWith<cmd><arg-1><arg-2>'\dots<arg-$n$>`\StopDoing'\]
+or by 
+\[`\DoWithAllOf<cmd>{<arg-1><arg-2>'\dots<arg-$n$>`}'\]
+With small $n$, one may doubt whether this really is an abbreviation~\dots;
+anyway, 
+\[<arg-1><arg-2>\dots<arg-$n$>\]
+was an attempt to refer to the kind of lists we are dealing with. 
+\[<arg-1>, <art-2>, \dots, <arg-$n$>\]
+are the ``items" of the list. 
+The question is: what counts as an item?
+
+We might say that `aa' is a list of \emph{two} items, 
+<arg-1> being `a' and <arg-2> being `a', too.
+
+When we do \emph{three} keystrokes to get `a a' instead of `aa', 
+we still have \emph{two} items, 
+<arg-1> being `a' and <arg-2> being `a' too. 
+Strange, isn't it?
+
+Also, when in `aa' we replace the first `a' by a backslash, `\', 
+we get `\a', and this is a list of a \emph{single} item, 
+$<arg-1>=`\a'$~\dots
+
+You shouldn't believe these stories of mine entirely. 
+What I am alluding to is that the \emph{``items"} 'dowith' is about 
+are determined in terms of \emph{\TeX's tokens}, and the relation 
+between the ``characters you type" and \emph{\TeX's tokens} 
+is not entirely straightforward. 
+
+\subsection{The Notion of Arglists for \LaTeX\ Users}
+%% <- 2012/05/17b ->
+% \subsection{The Notion of Arglist}
+\label{sec:arglists-intuit}
+Still, it may suffice to clarify what counts as an <arg-$i$> 
+without speaking of \emph{tokens} explicitly: It is simply 
+what a \emph{one-parameter macro} 
+(where the parameter is \emph{not delimited} in terms of 
+ \TTbp p.~203f.)
+can take as an \emph{argument.}
+
+The lists 'dowith' is about then are lists \emph{of possible arguments}
+in the previous sense---let me call them \emph{``arglists."}\footnote{Not 
+    to be confused with German \httpref{de.wiktionary.org/wiki/Arglist}{Arglist.}}
+The single \emph{items} of such lists are those single possible arguments. 
+They become \emph{actual} arguments beginning from the leftmost \emph{possible} one 
+when 'dowith' presents them to that <cmd> mentioned earlier---where 
+<cmd> \emph{should} be a one-parameter macro (or some \TeX\ primitive 
+parsing arguments similarly).
+
+The reader perhaps has an \emph{intuitive} understanding of 
+what can be an argument of a one-parameter macro. 
+A \emph{strict \LaTeX} user may think that such an argument <arg-$i$>
+just has form `{'<ark-$i$>`}', i.e., $<arg-$i$>=`{'<ark-$i$>`}'$
+for some <ark-$i$>. Such arguments are also called \emph{``brace groups".}
+(\LaTeX's \emph{optional} arguments `[<extra>]' 
+ do not count as possible arguments here, they are not macro arguments 
+ in the sense of \TTb.)
+In this restricted \LaTeX\ sense, arglists consist of brace groups 
+\[`{<ark-1>}{<ark-2>}'\dots`{'<ark-$n$>`}',\]
+and each single brace group is an \emph{item} of it. 
+
+The \emph{\TeX\ macro writer}, by contrast, knows that a macro argument 
+doesn't need outer braces. In an intuitive sense, a single 
+``command" can be a macro argument, too. ``Command" may be understood 
+as ``control sequence" (starting with a backslash), 
+but some authors also have considered single \emph{characters} 
+(character \emph{tokens}?) ``commands." Blank spaces, by contrast, 
+are ignored when a macro looks for its argument.    %% 2012/05/17b
+
+%% useless, just name items 2012/05/17b:
+% We arrive at an ``intuitive recursive definition" of ``arglist:" \
+% (\meta{i})\enspace The empty list is an arglist; it doesn't have an item 
+% for 'dowith'. \ (\meta{ii})\enspace If <list> is an arglist, then 
+% (a)~`{<ark>}<list>' is an arglist whose first item for 'dowith' is `{<ark>}';
+% (b)~`<cs><list>' with a ``control sequence" <cs>
+%     is an arglist whose first item is `<cs>' 
+%     (for the command <cmd> to which 'dowith' presents <cs>); and
+% (c)~`<char><list>' with a non-blank character <char>
+%     is an arglist whose first item is `<char>'. \
+% (\meta{iii})\enspace Nothing else is an arglist.
+% 
+% But keep in mind that this ``intuitive" understanding essentially is wrong.
+
+\subsection{Anatomy of \TeX}
+The documentation of v0.22 as of 2012-06-04 said that the package 
+is about ``lists in \TeX's mouth." However, this was very wrong. 
+I believed it following Alan Jeffrey's paper ``Lists in \TeX's Mouth",\footnote{%
+    Alan Jeffrey: \tugbartref{tb11-2/tb28jeffrey}{``Lists in \TeX's Mouth,"} 
+    \acro{TUG}boat Vol.~11 (1990), No.~2, pp.~237--245), 
+    \urlhttpref{tug.org/TUGboat/tb11-2/tb28jeffrey.pdf}.}
+in whose Section~2 you read:
+\begin{quote}\it
+  \TeX's programming facilities come in two forms---there 
+  are \TeX's \emph{macros} which are expanded in its
+  mouth, and some additional \emph{assignment} operations
+  like \cs{def} which take place in the stomach.
+\end{quote}
+The macros that Jeffrey lists and describes in that article can be 
+obtained as a \acro{CTAN} package 
+\ctanpkgref{lambda-lists}.\footnote{\urlhttpref{ctan.org/pkg/lambda-lists}} 
+If you follow the link given here (in the footnote), 
+you currently (2012-11-03) read about this package:
+\begin{quote}\it
+    These list-processing macros avoid the reassignments 
+    employed in the macros shown in Appendix D of the TeXbook: 
+    all the manipulations take place in what Knuth is pleased to 
+    call ``TeX's mouth".
+\end{quote}
+But Knuth doesn't. On page 267 of \TTb, you read:
+\begin{quote}\it
+  Chapter 7 has described the process by which input files
+  are converted to lists of tokens in \TeX's ``mouth,"
+  and Chapter 20 explained how expandable tokens are converted
+  to unexpandable ones in \TeX's ``gullet" by a process 
+  similar to regurgitation.
+\end{quote}
+I.e., the ``mouth" is \TeX's ``tokenizer," the inner part of what 
+van Eijkhout calls \TeX's ``input processor" on, e.g., p.~15 of his 
+\meta{\TeX~by Topic}.\footnote{It is available as a \acro{CTAN} package 
+    \ctanpkgref{texbytopic} at \urlhttpref{ctan.org/pkg/texbytopic}.}
+The exact rules the tokenizer follows are described on pp.~46f.\ 
+(Chapter~8!) of \TTb.
+\emph{Macro expansion} takes place in \TeX's \emph{``gullet"}, 
+which van Eijkhout calls \TeX's ``expansion processor" (p.~16). 
+Abrahams, Hargreaves, and Berry follow Knuth's terminology on
+pp.~16 and 46f.\ of their \meta{\TeX~for the Impatient}.\footnote{It 
+    is available as \acro{CTAN} package \ctanpkgref{impatient}, 
+    \urlhttpref{ctan.org/pkg/impatient}.} 
+% Only Jeffreys and my wrong old documentation say this were 
+% ``\TeX's mouth"---and I made the same mistake with the 
+% \ctanpkgref{bitelist} package.
+%% <- 2012/11/19 ->
+
+\TeX's gullet has been called ``\TeX's mouth" also 
+in the documentation of my \ctanpkgdref{bitelist} package and 
+in the documentation of the package \ctanpkgdref{bibleref-mouth}.
+
+Moreover, I should have clarified that Jeffrey's paper deals with 
+``lists" in some general, rather abstract sense, different from 
+the kind of lists the present documentation tries to characterize 
+as the objects for 'dowith'.
+
+\subsection{\TeX's Tokens}
+\label{sec:toks}
+
+% The \emph{\TeX\ macro writer} understanding \TeX\ properly 
+% does not really think of arglists. \TeX perts instead think of 
+% What \TeX nically matters is
+% what happens in ``\TeX's mouth,"\footnote{Cf.~\TTbp.~46.} 
+% as some authors have suggested a metaphor,\footnote{%
+The 'dowith' package is a tool that affects the order of tokens in 
+\TeX's gullet.
+
+\begin{smallpar}
+The ``characters you type" enter ``\TeX's mouth" line by line, 
+in a slightly modified appearance. Each line forms a \emph{string}.
+\TeX\ takes initial substrings away from it and turns them 
+into \emph{tokens} that are appended to the right of \TeX's 
+\emph{expansion buffer} (``gullet").
+
+%% Removing 2012/11/04:
+% More formally, \TeX\ has a \emph{character buffer.}
+% It forms a single token from an initial segment of the buffer content---unless 
+% there is a special situation with blank spaces or something pathological.
+% When an \emph{escape character}, as the backslash usually is one, 
+% has been noticed recently (that isn't followed by another one immediately), 
+% the character buffer may need to be feeded from more outside, 
+%% <- especially wrong, 2012/11/04
+% until it contains enough material to form a token from. 
+
+There are \emph{two kinds of tokens} here: \emph{named} tokens 
+and \emph{character} tokens. ``Named" tokens usually are referred
+to as ``control sequence tokens" or just ``control sequences"---I~really 
+want to avoid those horrible confusions from \TTb.
+There never are any ``parameter tokens" in \TeX's gullet 
+(perhaps unless one considers a one-step macro expansion 
+ a two-or-more-step procedure).
+%  merged 2012/11/04
+%% Moving down 2012/11/04
+The character(s) \emph{after} the escape character until 
+some delimiting character form a \emph{string} that is the 
+\emph{name} of the token that is formed---a \emph{named} 
+token, as I am saying.
+% What has been used to form a token is removed from the character buffer.
+%% 2012/11/04:
+\emph{Character} tokens are formed by removing a character from the 
+beginning of the character buffer and appending it to the token buffer 
+paired with its \emph{category} code.
+
+For every \emph{string of characters}, there is exactly one 
+(possible) \emph{named token} whose name the string is.\footnote{``Possible" 
+    refers to the fact that \TeX\ does not store named tokens anywhere 
+    before they appear in its gullet, maybe apart from ``primitive" 
+    tokens that have a ``pre-assigned meaning" when a \TeX\ run     %% \ 2012/11/04
+    starts.---What is more bad with my claim is that 
+    the \TeX\ program by design cannot extend its memory arbitrarily---even 
+    not using the ``cloud''---, so it doesn't support tokens 
+    whose name lengths are above a certain limit.}
+It is so common (starting from \TTb) to denote the token whose name 
+is <string> by \lq\verb+\+<string>\rq. For instance, the token whose 
+name is `input' is denoted by \qtd{&\input}. On the other hand, 
+on page~7 of \TTb\ \qtd{&\input} is a ``string of characters."
+With this notation, it is already difficult to explain what 
+the \LaTeX\ command `\DeclareRobustCommand' does or what the difference 
+between a starred \LaTeX\ command and a starred \LaTeX\ environment is.\footnote{%
+    A reader knowing \LaTeX\ only thinks that \qtd{\code{&\\\codesp}} 
+    is the result of typing a double backslash and a space 
+    and that \qtd{\cs{equation*}} is the ``command" \cs{equation} 
+    followed by a `*'.} 
+\TTb\ makes it worse by saying on page~39: 
+\meta{``A control sequence is considered to be a single object 
+        that is no longer composed of a sequence of symbols."}
+So ``it depends" whether \qtd{&\input} is a string of characters or not---it \emph{is 
+before} tokenization, but \emph{no longer} afterwards. 
+So if you have two computers and start a \TeX\ run on each of them 
+with a little difference in time, there will be a moment where 
+\qtd{&\input} is a string on the one computer but not on the other? 
+This 
+appears to me %%% is %% 2012/11/04
+like saying \meta{``When we apply the square root function to 
+the number 4, the number 4 will no longer be the number 4, 
+it will be the number 2 instead."}
+\end{smallpar}
+
+\TTb\ does offer an alternative notation for named tokens: ``boxing;" 
+so the token whose name is `input' can be denoted by the rather 
+``graphical" notation \qtd{|input|} (used only exceptionally).\footnote{%
+    The box notation is introduced on page~38 without explanation, 
+    as if it explained something.} 
+\emph{I}~would suggest something like 
+\qtd{\NTOK{input}} for clarity and \qtd{\ntok{input}} 
+for brevity.\footnote{I am suggesting the question mark for named tokens 
+ since \TeX\ ``must look up the current definition" of a named token 
+ according to \TTbp.~39, while the meaning of character tokens rather 
+ is ``fixed," at least according to \TTbp.~39. However, 
+    \emph{active}-character such as .&~ are in the same situation 
+    as named tokens as to this respect. The dot notation may be fine for them, 
+    though.}
+
+\begin{smallpar}
+%% rm. 2012/11/04, cf. above
+% \emph{Character tokens} get into \TeX's mouth by tokenization 
+% when characters begin the buffer content while \emph{not} scanning 
+% a name for a named token. A single character then is removed from the 
+% character buffer, and a token storing its character code and current 
+% category code is pushed into \TeX's mouth.
+
+Named tokens may get into \TeX's gullet by ``tokenization" as described above, 
+i.e., they are drawn from the character buffer. But they also can 
+appear in \TeX's gullet ``from within," 
+by the manipulation inside \TeX's gullet. 
+
+More formally, those manipulations are called ``expansion,"
+and \TeX's gullet can be conceived of as a \emph{token buffer} 
+that is feeded to the right (or end) by tokenization from the character buffer. 
+Expansion means that certain tokens in the token buffer are substituted 
+by other ones. This way tokens may get into \TeX's gullet that 
+emerged from tokenization a ``long time ago", maybe in a previous 
+run that created the \emph{format} (\TeX's variant \code{INITEX}); 
+or tokens may appear by some hardwired expansion function. 
+
+However, \emph{named tokens} may get into \TeX's gullet 
+also by \emph{expansion}, never having been drawn by tokenization 
+and not being hardwired. This happens by the `\csname' 
+% name      %%  rm. 2012/07/25
+construct. 
+The input \emph{code} may contain 
+\[`\csname tupni\endcsname'\]
+This may be converted into 7 tokens entering \TeX's gullet, 
+the first one being \NTOK{csname}, the last one 
+\NTOK{endcsname}, and five character tokens in between. 
+Due to some \emph{function} (which I would denote as *\code{csname})
+originally associated with the token \NTOK{csname}, 
+those seven tokens then are replaced by \NTOK{tupni}, 
+the named token whose name is `tupni'. It is not required that 
+the \TeX\ program knows about a token \NTOK{tupni}, 
+neither anybody must type \qtd{&\tupni} in any file.\footnote{These 
+    considerations may not be essential here, 
+    rather a draft for a paper. Using 'dowith', 
+    one better just thinks of the arglist items one actually lists.}
+\end{smallpar}
+
+\subsection{Arglists vs.\ Lists of Tokens---Example}
+% \subsection{Arglists and 'dowith' \TeX nically}
+% In the \TeX nical sense, I think of arglists \emph{and their items}
+% as follows. Arglists are lists (or sequences) of tokens. 
+% What is somewhat difficult is that the \emph{items} of a token list 
+% usually are \emph{tokens.} Especially, the curly braces in the code 
+% you type usually are converted into certain \emph{character tokens}
+% that are single items of the resulting token list.\footnote{I discover 
+%     this conceptual puzzle 2012-05-16.} 
+% 
+% The conceptual trap here may have resulted from denoting lists 
+% in a \emph{\Wikienref{juxtaposition}} notation. 
+% In Section~\ref{sec:lists-intuit}, I have written `aa' for a 
+% ``list" of \emph{two} items. ``List" is rather a \emph{computer science} 
+% term, its mathematical counterpart rather is the notion of (finite) 
+% \emph{sequences.} The usual \emph{mathematical} notation for a finite sequence 
+% writes list items surrounded by \emph{\wikienref{bracket}{brackets}}
+% (round---\emph{\Wikienref{parentheses}}---seems to be more common than square, 
+%  also \wikienref{angle brackets}{chevrons} are used).
+% 
+% So the \emph{string} `aa' can be written more clearly---mathematically---as 
+% $(`a',`a')$. The trap with `\a' is that it could be \emph{either} the \emph{string} 
+% $(`\',`a')$ \emph{or} the one-item list $(`\a')$ of strings. 
+% But even in the latter case, I urge not to consider it a \emph{\TeX\ token}. 
+% Rather, I consider `\a' a mistaken way of referring to the 
+% named token \NTOK{a} whose name is the string `a' (or $(`a')$).
+% (Section~\ref{sec:toks}). 
+% 
+% However, the conceptual trap about arglists and token lists 
+% (there must have been some ``Arglist"!\@) lurks on another level, 
+% as follows. Recall \TTb's notation of \chtok{<char>}{<cat>}
+% for the \emph{character token} that \TeX's tokenizer forms 
+% from <char> in the character buffer when <char>'s category code is <cat>.
+% Usually, the \emph{character} `a' is converted into the 
+% \emph{character token} \lttok{a}, `{' is converted into \lbtok, 
+% and `}' is converted into \rbtok. 
+% 
+% We are turning to some \strong{examples} and \strong{counterexamples}. 
+% Let us see what confusions occurred in the ``intuitive" view on 
+% arglists in Section~\ref{sec:arglists-intuit}.
+% 
+% % \begin{example}{1} It 
+% First, it was bad in Section~\ref{sec:arglists-intuit}
+% to think that `aa' is a two-item arglist. It was confused with something 
+% like $\lttok{a}\lttok{a}$. The latter looks like a token list---or is it an arglist? 
+% Both? Anyway, it is juxtaposition notation applied to tokens, 
+% mathematically it is $(\lttok{a},\lttok{a})$, so~\dots
+% % \end{example}
+% 
+% Now let us reconsider the ``intuitive recursive definition" of arglist. 
+% Or let us look at a recursive definition of \emph{token} list.
+% \inlineitem{1} There is nothing wrong with saying the the empty list is 
+% a token list, the same holds for arglists. 
+% \inlineitem{2} a.~When we attach an arbitrary token to a \emph{token} list 
+% (at the left), the result is another token list---fine. 
+% There are only certain difficulties with ``handling" special token lists 
+% such as $\lbtok\lttok{a} = (\lbtok,\lttok{a})$. 
+% And the latter is \emph{not} an \emph{arglist!} \
+% b.~When we attach a \emph{named} token to an arglist (at the left), 
+% the result \emph{is} an \emph{arglist}.\footnote{This is 
+%     a \emph{conjecture} only right now---2012-05-16---in which I strongly believe. 
+%     Likewise later.} 
+% c.~When we attach a \emph{letter} token \lttok{<char>} to an arglist 
+% (at the left), the result \emph{is} an \emph{arglist}.
+% d.~When we talked about ``brace groups," they seemed to be \emph{strings} 
+% of characters. Instead, I would like to suggest that a brace group 
+% is an \emph{arglist}\pdots
+% When \lbtok\ is attached to the left of an arglist and \rbtok\ to the right, 
+% the result is an arglist---this is what I would call a ``brace group"!
+% e.~The \Wikienref{concatenation} of two arglists is an arglist. 
+% 
+% \begin{smallpar}
+% The above notion of ``attaching" a token to a token list or an arglist 
+% % should be clarified, but instead of a general definition in terms of 
+% % ``words" of formal languages, examples may suffice here and now.\footnote{2012-05-16.}
+% should be clarified. Attaching an item $j$ at the left of a list $\lambda$ 
+% is the same as concatenating the one-item list $(j)$ with $\lambda$\pdots 
+% but the English \wikienref{append}{Wikipedia} seems to explain concatenation by 
+% \emph{appending}. As we \emph{remove} items one-by-one from the \emph{left} 
+% (beginning) of a list, I prefer the inverse \emph{prepending} items as basic operation 
+% for building lists---cf.\ \Wikienref{CAR and CDR}.
+% \end{smallpar}
+% 
+% We won't complete a formal (recursive) definition of arglist here and 
+% now.\footnote{2012-05-16.} Just observe that ``brace groups" 
+% make the difference between token lists and arglists. 
+% Recall that an ``item" of an arglist ``operationally" is defined 
+% as something that a one-parameter macro removes. 
+% Such a macro removes certain single tokens 
+% (space tokens not among them)---and entire ``brace groups"! 
+% Especially, consider \[\lbtok\rbtok\]%%%.
+% Actually, this is another ambiguous notation. 
+% If it refers to $(\lbtok,\rbtok)$, it is a \emph{token} list, 
+% not an arglist. If it refers to $(\lbtok\rbtok)$---it should 
+% better refer to $((\lbtok,\rbtok))$, which is a 
+% \emph{one-item arglist} whose only item is the former two-item token list!
+% 
+%% <- 2012/05/17b ->
+Let us reconsider the examples from Sections~\ref{sec:lists-intuit}
+and~\ref{sec:arglists-intuit}, and pack them into a single example. 
+If you type a file line
+\begin{equation}
+  `a a\a{a}'
+\end{equation}
+(\emph{eight} keystrokes),
+it should usually be converted into this \emph{seven}-item list 
+of 
+%%% (five) %% rm. 2015/11/14 -- ???
+tokens:
+\begin{equation}
+  \label{eq:toks}
+  \lttok{a}\;\sptok\;\lttok{a}\;\NTOK{a}\;\lbtok\;\lttok{a}\;\rbtok
+\end{equation}
+---with notation from Section~\ref{sec:toks} and
+\TTb's notation \chtok{<char>}{<cat>} 
+for the \emph{character token} that \TeX's tokenizer forms 
+from <char> in the character buffer when <char>'s category code is <cat>.
+
+It turns out that the token list in \ref{eq:toks} 
+provides an arglist of \emph{four} items: The token \lttok{a}
+at the first and third place, the named token \NTOK{a}, and the entire 
+token list $\lbtok\lttok{a}\rbtok$ as a single item---a ``brace group."
+The space token is ignored.\footnote{\TTbp.~201: ``\TeX\ doesn't use 
+single spaces as undelimited arguments."}
+
+You can try this after `\renewcommand{\a}{A}'\footnote{Otherwise 
+    \cs{a} is a one-parameter macro that breaks 'dowith''s control.}
+with 'dowith':
+\begin{equation}
+  \label{eq:sample-code}
+  `\DoWith\typein a a\a{a}\StopDoing'
+\end{equation}
+Then \LaTeX\ shows `a', `a', `A' from `\a', and another `a' from within 
+the braces---`\typein' (as any macro with arguments) removes them.
+
+% \show\a
+% \a{a}
+\renewcommand*{\a}{A}
+% {\MakeNormalHere\# \newcommand*{\TypeOut}[1]{\typein{#1}}
+%  \global\let\TypeOut\TypeOut}
+% \let\TypeOut\typein
+% \let\TypeOut\typeout
+% \DoWith\TypeOut a a\a{a}\StopDoing
+% \DoWith\typein a a\a{a}\StopDoing
+% { %%% \tracingmacros=1 \tracingonline=1
+%  \MakeNormalHere\# \AssignCatCodeTo{2}\]
+%  \DoWith\typein #a\a{a]\StopDoing}
+
+I have avoided saying \ref{eq:toks} \emph{were} an arglist of 4 items. 
+The mathematical basic way of writing lists---understood as finite
+\emph{\wikienref{sequence}{sequences}}---as ``commma-separated lists" 
+within \wikienref{bracket}{brackets} may clarify the difference 
+(that the \Wikienref{juxtaposition} notation tends to conceal). 
+The \emph{token} list is 
+\begin{equation}
+  \label{eq:toks,}
+  (\lttok{a}, \sptok, \lttok{a}, \NTOK{a}, \lbtok, \lttok{a}, \rbtok)
+\end{equation}
+while the list of macro arguments is
+\begin{equation}
+  \label{eq:args}
+  (\lttok{a}, \lttok{a}, \NTOK{a}, (\lbtok, \lttok{a}, \rbtok)).
+\end{equation}
+\ref{eq:toks} or \ref{eq:toks,} simply is \emph{not} an arglist 
+(since neither \lbtok\ nor \rbtok\ can be a macro argument), 
+and the arglist \ref{eq:args} ``provided" by the list of tokens 
+is \emph{not} a list of \emph{tokens}---its final item is a 
+three-item list of tokens, and a token cannot be a list of 
+two or more tokens itself(\emph{!?}).
+
+\subsection{Another Notation and the Example's Steps}
+\label{sec:steps}                                           %% 2012/05/20
+\begin{smallpar}
+To write token lists easier and hopefully easier to read, 
+I would suggest writing \qtd{.<char>} for the character token 
+that the tokenizer ``usually" forms from character <char>, i.e., 
+adding the \emph{standard} category code as in \TTb\ (page~37).
+Then \ref{eq:toks} would read\footnote{See Section~\ref{sec:toks} for the question mark.}
+\begin{equation}
+  .&a\,.\codesp\,.&a\,\ntok{a}\,.\codelb\,.&a\,.\coderb
+\end{equation}
+and the corresponding arglist is
+\begin{equation}
+  (.&a,.&a,\ntok{a},(.\codelb\,.&a\,.\coderb))
+\end{equation}
+In ``retrospect," the result of tokenizing \ref{eq:toks} should be
+\begin{equation}
+  \label{eq:retro}
+  \ntok{DoWith}\,\ntok{typein}\,
+  .&a\,.\codesp\,.&a\,\ntok{a}\,.\codelb\,.&a\,.\coderb\,
+  \ntok{StopDoing}
+\end{equation}
+and the intention is that it works like 
+\begin{equation}
+  %% added \,s 2012/06/07:
+  \ntok{typein}\,.\codelb\,.&a\,.\coderb\,
+  \ntok{typein}\,.\codelb\,.&a\,.\coderb\,
+  \ntok{typein}\,.\codelb \ntok{a}\,.\coderb\,
+  \ntok{typein}\,.\codelb\,.&a\,.\coderb
+\end{equation}
+(The definition of `\DoWith' in Section~\ref{sec:core} indeed adds surrounding braces, 
+ if missing.)
+However, \TeX\ rather tries to work with as few tokens ahead as possible.
+When it finds \ntok{DoWith} and the latter's meaning is the one intended 
+by 'dowith', it first looks for nothing more than the two arguments 
+required by our definition of `\DoWith'. A few moments later, 
+the token buffer's content will just be\footnote{If you use 
+    `&\DoWithAllOf&\typein\codeLB a\codeSP a&\a\codeLB a\codeRB\codeRB'
+    %% <- \cs bad 2015/11/14
+    instead, the entire token sequence \ref{eq:retro} will appear in the 
+    token buffer ``at once."}
+\begin{equation}
+  \ntok{typein}.\codelb.&a.\coderb\,\ntok{expandafter}\,\ntok{DoWith}\,
+  \ntok{expandafter}\,\ntok{typein}\,\ntok{fi}
+\end{equation}
+Next $\ntok{typein}.\codelb.&a.\coderb$ is expanded according to the code for 
+`\typein' in \file{latex.ltx}. Some unexpandable tokens will emerge 
+and be moved into the ``instruction buffer,"                %% cmd -> instr 2012/11/04
+and you should get a screen
+message with `a' and a prompt. When you have entered something, 
+the remaining \ntok{expandafter} tokens and the \ntok{fi} will be 
+removed from the character buffer, and it contains only
+\begin{equation}
+  \ntok{DoWith}\,\ntok{typein}
+\end{equation}
+Another token is ordered from the tokenizer to provide a second 
+argument for expanding \ntok{DoWith}. The token .\codesp\ comes in, 
+but that doesn't serve as a macro argument. It is removed, and the 
+next token is .&a. The same story as before happens, until the 
+named token \ntok{a} is found\pdots
+\end{smallpar}
+
+\subsection{Summary of Possible Arglist Items}
+\begin{smallpar}
+For $0\leq i\leq 15$, let $\Chi_i$ be the set of character tokens 
+of category code $i$. $\Chi_1$ is the set of tokens working like 
+$\lbtok$, and $\Chi_2$ is the set of tokens working like $\rbtok$.
+
+Let $E$ be the set $\{3,4,6,7,8,11,12,13\}$. 
+These numbers are the category codes for 
+\meta{math},   \meta{align}, \meta{parameter}, \meta{super}, \meta{sub}, 
+\meta{letter}, \meta{other}, \meta{active} respectively. 
+Let $\Chi_E$ be the set of character tokens of category code in $E$
+(so $\Chi_E=\bigcup_{i\in E}\Chi_i$).
+
+Let $\circ$ be the \emph{concatenation} operation among token lists.\footnote{%
+    %% 2012/05/18
+    \TODO: Define for representations by maps, or:              %% \ 2012/11/05
+    ``Concatenation is about as basic as natural numbers and is 
+      understood in terms of axioms rather than by a definition.''---See 
+        notes from 2011 (even with attempts with \Wikienref{Category theory})
+%         the \wikienref{Sequence}{English} 
+        the English Wikipedia for 
+        \wikienref{Sequence}{sequences}---\wikideref{Folge (Mathematik)}{German} 
+        article too much restricted to maps.}
+
+The following kinds of token lists form a single arglist item, 
+i.e., can serve as an argument for an undelimited parameter:
+\begin{enumerate}
+  \item a \emph{named} token, or the single-token list consisting of it, 
+        if you prefer that;
+  \item a \emph{character} token from $\Chi_E$ or the list consisting of it; 
+  \item a \emph{brace group.} 
+        That is a token list meeting the following conditions:
+        \inlineitem{1} its \emph{first} token is in $\Chi_1$,
+        \inlineitem{2} its \emph{last} token is in $\Chi_2$,
+        \inlineitem{3} it has as many occurrences of tokens from $\Chi_1$ as from $\Chi_2$,
+        \inlineitem{4} if it is split as $\lambda\circ\rho$, there are not 
+            more $\Chi_2$ occurrences in $\lambda$ than $\Chi_1$ occurrences in $\rho$
+            (``don't close before opening").
+\end{enumerate}
+The second claim can be checked with
+\begin{equation}
+  `\DoWith\typein$#^_a1~\StopDoing'
+\end{equation}
+%  \begingroup
+%   \def\a{A}\MakeNormalHere\# 
+%   \DoWith\typein$# ^_a1~\StopDoing
+%   \DoWith\typein#1\StopDoing
+%  \endgroup
+as to what works. 
+(The claim is not affected by one or two surprises.)\footnote{Moreover, 
+    `&\DoWith&\typein&#1&\StopDoing'              %% \cs bad 2015/11/14
+    tells something about ``parameter tokens."} 
+Characters with different category codes 
+either are not converted into a character token\footnote{\TTbp.~47.} 
+or are not accepted as macro arguments. The latter applies to ``brace" tokens 
+in $\Chi_1$, $\Chi_2$ and to the single space token \sptok.
+
+As to \emph{``brace groups"}, the third and fourth condition above 
+are intended to say that what is between the two outer tokens 
+is $\langle$balanced text$\rangle$ in the sense of \TTbp p.~275f. and~385;
+i.e., for two tokens $a$, $b$ and a token list $\beta$, 
+$(a)\circ\beta\circ(b)$ is a brace group exactly if $a$ is from $\Chi_1$,
+$b$ is from $\Chi_2$, and $\beta$ is $\langle$balanced text$\rangle$. 
+The conditions are more formal than what I can find in \TTb, 
+but still they don't give me an idea of all possibities. 
+This should be improved by the following recursive definition:
+
+\begin{trivlist}\item 
+B1.~The empty list is balanced text. 
+B2.~For any token $t$ not in $\Chi_1$ or $\Chi_2$, 
+    the single-item token list $(t)$ is balanced text. 
+    (Such a token is either a \emph{named} token or a 
+     \emph{character} token from $\Chi_E$ or \emph{the space token}~\sptok.)
+B3.~If $\alpha$ and $\beta$ are balanced texts, 
+    then $\alpha\circ\beta$ is balanced text.
+B4.~If $\beta$ is balanced text, 
+    $a$ is from $\Chi_1$, and $b$ is from $\Chi_2$, 
+    then $(a)\circ\beta\circ(b)$ is balanced text.
+    (This is a brace group, and the only way of getting a brace group.)
+B5.~Nothing else is balanced text.
+\end{trivlist}
+
+In other words, a token list is a brace group if and only if 
+it is balanced text and starts with a token from $\Chi_1$
+and ends with a token from $\Chi_2$.\footnote{Again, this may be  more 
+    of a draft for a paper, or notes for it, than package documentation.}
+\end{smallpar}
+
+\subsection{Summary: ``Commands" Usable with 'dowith'}
+In the \hyperref[sec:apply]{implementation section,} 
+you learn about 
+\[`\DoWith<cmd>',\quad `\DoWithAllOf<cmd>',\quad 
+    \mbox{and}\quad  `\DoWithAllIn<cmd>'.\] 
+(\LaTeX\ users may type `{<cmd>}' instead.)
+What <cmd>s are allowed?
+
+\begin{enumerate}
+  \item All \strong{one-parameter macros} <cmd> work this way, 
+        unless there are programming mistakes outside 'dowith' 
+        (also thinking of arguments that take over control 
+         from 'dowith' commands before the argument list is finished). 
+  \item \strong{Other one-parameter} ``commands" <cmd> such as
+        \TeX\ \strong{primitives} may work---you must think of 
+        the fact that surrounding \emph{braces} are added.\footnote{\TODO: %% \ 2012/11/05
+            in the future, variants not adding braces could be added.}
+        So the \strong{primitives} `\hbox' and `\vbox' work, 
+        for instance. `\show' is an example that doesn't work at all, 
+        it takes the single starting brace token and then confuses 
+        `\DoWith'.
+  \item Some <cmd>s taking \strong{no argument} may make sense, e.g., 
+        for getting 
+          \begin{enumerate}
+            \DoWithAllOf{\item}{{apples,}{pears,}{peaches}}
+          \end{enumerate}
+        from 
+        \begin{quote}
+          &\begin{enumerate}\\
+          \null\code{~~}&\DoWithAllOf{&\item}{%
+            \codebd{apples,}\codebd{pears,}\codebd{peaches}}\\
+          &\end{enumerate}
+        \end{quote}
+        Recall that `\item' at most takes an \emph{optional} argument.
+  \item <cmd> must \strong{not take more than one} parameter. 
+        %% see def. \DoWith
+        A different package will support multi-parameter macros.
+\end{enumerate}
+
+% Rather, ``list" is a term from \Wikienref{computer science} here. 
+% It corresponds to the notion of ``sequence" in mathematics 
+% and to ``word" with formal languages.
+% 
+% Especially, we have (\meta{i})~lists of \emph{characters} that 
+% the \emph{\TeX} program recieves from files and 
+% (\meta{ii})~lists of so-called \emph{tokens} 
+% that the \TeX\ program forms from the incoming list of characters 
+% and that it works on.
+% 
+% There are \emph{more} kinds of lists that \TeX\ works on. 
+% Here we are dealing with ``\TeX's gullet."\footnote{Cf.\ documentation 
+%     of the \ctanpkgref{bitelist} package.}
+% \TeX's mouth processes tokens formed from character input. 
+% It may turn a list `<toks-a><toks_b><toks-c>' of tokens 
+% into a list `<toks-a><toks-B><toks-c>', i.e., 
+% replace <toks-b> by <toks-B>---by so-called ``expansion". 
+% The result may be subject to expansion as well. 
+% When nothing is left to be expanded, results are passed to another, 
+% more interior subprocessor of \TeX. This one is deeper than \TeX's mouth, 
+% we are not concerned with that here.
+% 
+% Not \emph{all} of those tokens in ``\TeX's mouth" are formed 
+% (``directly") from input characters. 
+% Rather, some \cs{csname} function may form \emph{new} tokens 
+% from other tokens in \TeX's mouth---and place them there again. 
+% This way characters `\csname a\endcsname' you type may just work like 
+% `\a'.
+% 
+% It is difficult to tell on the \emph{character level} what the 
+% present package does. The relation between incoming characters 
+% and resulting tokens can hardly be explained by a single sentence or so.
+% However, <cmd> here refers to a command <macro> with a single 
+% undelimited macro. More precisely, a certain character sequence 
+% (``string") in the code you type, will be converted into a TODO
+% 
+% \subsection{Separators}
+% TODO
+% 
+% \subsection{Iterators and \TeX's Mouth}
+% TODO
+% 
+\section{Similar Commands in other Packages}
+%% <- section again 2012/05/17b
+\subsection{``Heavy" Packages}                      %% add. heading 2012/05/17b
+The \CtanPkgRef{etex}{$\varepsilon$-TeX}-related    %% e->... 2012/05/09
+packages \ctanpkgref{etextools} 
+(Florent Chervet), \ctanpkgref{etoolbox} (Philipp Lehman), 
+and \ctanpkgref{texapi} (Paul Isambert) seem to include and 
+(very much) extend the functionality of 'dowith'. 
+Also the `\ForEach'\texttt{\dots\unkern\@} macros of            %% \@ 2012/06/03
+\ctanpkgref{forarray} (Christian Schr\"oppel) seem to extend 
+the present `\DoWith'\texttt{\dots\unkern\@} commands.          %% \@ 2012/06/03
+Moreover, Ahmed Musa describes such commands as                 %% 2012/06/03
+``Parsing \qtd{tsv} lists" in documenting his 
+\ctanpkgref{catoptions} package.
+\ctanpkgref{moredefs} (Matt Swift) provides list handling commands 
+like the few that are here.\footnote{\ctanpkgref{arrayjobx}%    %% % 2012/11/05
+    provides somewhat ``exotic" handling of ``lists".}          %% 2012/05/10
+%% 2012/11/05:
+---In October 2012, Ahmed Musa's \ctanpkgref{loops} appeared on 
+\acro{CTAN}, offering loops of several ``categories" about as those 
+that are listed below, very elaborate.% 
+%% /2012/11/05
+% (I~do not want to load that much.)
+%% <- 2012/11/04 ->
+---I do not want to load that much. I need and only need something 
+excessively simple, very few lines of code, as presented in 
+Section~\ref{sec:implement}. The next sections somewhat point 
+out single features of loop constructs that I do not want to have.
+
+\subsection{Separators}                             %% add. heading 2012/05/17b
+Regarding \LaTeX\ macros in `latex.ltx', the basic macro `\DoWith' of 
+the present package resembles |\@tfor| very much, which likewise deals 
+with lists without separators. By contrast, \LaTeX's |\@for| deals with 
+\emph{comma-separated} lists (such as lists of package options). 
+With comma-separated lists, a ``string" of characters counts as 
+an item when it is delimited by commas, or by a comma and the 
+list ``border," or spaces may be used as separators additionally. 
+However, when \LaTeX\ analyzes such lists (in ``\TeX's gullet"), 
+it uses representations by \emph{character tokens} of them.
+
+%% moved here 2012/05/17b:
+% %% 2011/11/10:
+% Also Heiko Oberdiek's \ctanpkgref{zref} deals with ``lists" of 
+% ``properties" of ``entities," 
+%% 2011/11/11: comma separated!
+
+%% 2012/05/09f.:
+The more recent \ctanpkgref{lmake} 
+(Shengjun Pan)                                      %% 2012/05/18
+provides a key-value syntax for printing lists of 
+complex mathematical expressions easily (using some assignments) 
+as well as defining commands according to a pattern from a list.
+Those lists are comma-separated.
+
+\subsection{``For" Loops vs.\ ``Foreach" Loops}     %% mv. up 2012/05/20
+What about \ctanpkgref{forloop} (Nick Setzer), 
+\ctanpkgref{multido} (Timothy Van Zandt, Rolf Nie\-praksch, Herbert 
+Vo\ss), and \ctanpkgref{xfor} (Nicola Talbot)? 
+
+'xfor' is just a reimplementation of `\@for'. 
+'forloop' and 'multido' are more close to ``real \qtd{for} loops"
+(cf.\ \wikienref{for loop}{\meta{Wikipedia}}).
+Loops of the latter kind go through a certain set as well, 
+but such sets rather consist of \emph{numbers} and are exhausted 
+by incrementing (or also decrementing) variables 
+\wikienref{Loop counter}{(counters).}
+This is essentially not needed 
+(neither helpful)                                       %% 2012/05/20
+when a list literally is 
+\emph{enumerated}---such loops are distinguished as 
+\wikienref{Foreach loop}{``foreach loops."}             %% 2012/05/19
+
+\subsection{Iterators}                              %% add. heading 2012/05/17b
+So `\DoWith' and |\@tfor| rather provide ``foreach" loops. 
+A major difference between them is that the latter uses a 
+\wikienref{For loop}{``loop variable"} or 
+%%% rather                                              %% rm. 2012/05/20
+\wikienref{Iterator}{``iterator"} to which the elements 
+of the list are assigned. 
+`\DoWith<cmd>' does not use such a loop variable 
+or such assignments and thus is ``expandable" at least when <cmd> 
+(and the elements, depending on <cmd>) are expandable.
+On the other hand, `\@tfor' applies some procedure to the list 
+elements without needing a \emph{name} for the procedure 
+(or a \emph{macro} storing the procedure). 
+%
+I wondered whether behind \LaTeX's 
+`\@tfor' (and `\@for') there was an ``ideological" consideration 
+such as ``A loop must have a loop variable!"\pdots
+% However, avoiding usage of a macro name 
+% (to store the ``loop body" code)                        %% 2012/05/18
+% and a macro parameter 
+% (to incorporate the list item into the body code)       %% 2012/05/18
+% may have been a good reason.
+%% <- 2012/05/19
+
+%% 2012/05/20:
+Hopefully more clearly on ``loop variable" vs.\ our approach: 
+In order to run
+\[<code-before><item><code-after>\]
+on each <item> of a <list>, \emph{we here}
+% \[
+\begin{equation}
+  \mbox{define} \quad `\do' \quad \mbox{as} \quad 
+  `#1'\;\to\;`<code-before>#1<code-after>'
+\end{equation}
+% \]
+and then run `\do{<item>}' for each <item> in <list>,\footnote{Cf.~description 
+    of procedure in terms of tokens in Section~\ref{sec:steps}.} 
+\begin{equation}
+  \mbox{always replacing}\quad  `\do{<item>}'\quad \mbox{by}\quad  `\do{<item>}\do'. 
+\end{equation}
+(`\do' is only an example command that 'dowith' supports especially.)
+% The ``received" approach from ``usual" programming languages, 
+% \file{latex.ltx}, and its followers is
+In \file{latex.ltx} instead, we find things like
+% \[
+\begin{equation}
+  \label{eq:tfor}
+  `\@tfor\@tmp:=<list>\do{<code-before>\@tmp<code-after>}'
+\end{equation}
+% \]
+where `\@tmp' is a \emph{macro} that is set to be <item> at each 
+iteration of the loop, by 
+\begin{equation}
+  `\def\@tmp{<item>}'
+\end{equation}
+within `\@tforloop'. After that,
+\begin{equation}
+  \label{eq:code-tmp-code}
+  `<code-before>\@tmp<code-after>'
+\end{equation}
+from \ref{eq:tfor} is run.---\ref{eq:code-tmp-code} like 
+\ref{eq:tfor} is stored in a larger macro. `\do' in \ref{eq:tfor}
+does not act as a macro, it just delimits a macro parameter 
+in order give a feeling of some familiar programming structure. 
+This organisation of macros is fine when the loop body code 
+is only used by the containing macro, while the 'dowith' approach 
+to store the ``loop body" in an own macro has been useful when 
+the loop body code also is used for different purposes 
+or when it has been introduced before I thought of using it 
+in a loop.
+% \[\mbox{defining}\;`\@tmp'\;\mbox{as}\;<item>\quad \mbox{and run} \quad 
+%   `<code-before>\@tmp<code-after>'\]
+% for each <item> in <list>.
+
+Note that this only was an example. In general, <item> may appear 
+more than once in the ``loop body."
+
+``Expandability" by \emph{avoiding} something iterating `\def\@tmp{<item>}'
+and doing iteration in \TeX's gullet (`\do' or so must have been defined earlier)
+is essential especially within \cs{write}. 
+Assignments do not work there. A major motivation for developing 
+'dowith' developed with the \ctanpkgref{blog} package 
+that \cs{write}s \acro{HTML} code.
+Assignments happen in ``\TeX's stomach."                    %% 2012/11/04
+That place might be called the 
+``instruction buffer" to which                              %% cmd -> instr 2012/11/04
+the ``expansion processor" moves items from the incoming token buffer 
+that cannot be expanded (any more).
+
+\subsection{Separator Macros}                       %% add. heading 2012/05/17b
+Commands like `\DoWith' also could save tokens thinking of list macros 
+(in \LaTeX/`latex.ltx') that use a \emph{separator macro} 
+which may be used as a \emph{command} to be applied to the list 
+elements. One example is 
+`\dospecials' that already is in Plain \TeX\ and expands to 
+\[`\do\ \do\\\do\{\do\}\do\$\do\&\do\#\do\^\do\_\do\%\do\~'\]
+% \begin{verbatim}
+% `\do\ \do\\\do\{\do\}\do\$\do\&\do\#\do\^\do\_\do\%\do\~'
+% \end{verbatim}
+An important application of `\dospecials' is temporarily 
+switching off the ``special" functionality of the ``elements" 
+in `\dospecials'. With \LaTeX, this may happen thus:
+\[`\let\do\@makeother\dospecials'\]
+% \begin{verbatim}
+% `\let\do\@makeother
+% \end{verbatim}
+With 'dowith', you can do the same with a shorter variant 
+`\specials' of `\dospecials', defined by 
+\[`\def\specials{\ \\\{\}\$\&\#\^\_\%\~}'\]
+and then 
+\[`\DoWithAllIn\@makeother\specials'\]
+`latex.ltx' uses `\@elt' instead of `\do' for its own list macros.
+
+\subsection{Ye Olde \cs{loop}}                      %% add. heading 2012/05/17b
+%% added 2011/11/03:
+There also is |\loop<loop-body>\repeat| in Plain \TeX\ and a 
+refined\footnote{Using Kabelschacht's suggestion, cf.\ Section~\ref{sec:kabel}} 
+version of it in `latex.ltx'. It is \emph{not} expandable 
+since it starts with an assignment for `\body' (Plain \TeX) or 
+`\iterate' (`latex.ltx'), 
+%% add. 2012/05/20:
+and then some assignments are needed to stop the loop, 
+such as incrementing or decrementing a \emph{counter.} 
+As to the programming structure, it is very simple and general, 
+I think any kind of loop can be implemented by this
+(apart from nested loops). E.g., I realize\footnote{2012-05-20}
+that even a ``foreach" loop could be implemented by managing 
+a list macro, e.g., using \LaTeX's internal `\@next'.
+%% rm. 2012/05/20:
+% that you cannot probably
+% what kind of loops it addresses. However, the applications 
+% I have seen have been ``for" or (rather) ``while" loops. 
+% ``While" loops can ``emulate" ``for" and ``foreach" loops 
+% by having the ``incrementation" method or the ``enumeration" method in 
+% their body. This is quite obvious for ``for" loops, not quite so for 
+% ``foreach" loops; which for practical application (in my view) means 
+% that neither \LaTeX/\TeX's `\loop' macro nor in general ``while" loops 
+% is/are very helpful for implementing ``foreach" loops, 
+% as rather `\DoWith' and similar constructions are.
+% The reason for this is (as it seems to me) is that you 
+% (a human being) can much more easily enumerate (``list") 
+% the items of a list (you have in mind) than define the \emph{method} 
+% that (allegedly) is behind your enumeration. \ \meta{Example:} 
+% \[`\DoWithAllOf{\printsamplearea}{\red\green\blue}'\]
+% ---\emph{how} (according to what ``method"?) did you ``proceed" from 
+% `\red' to `\green' and from `\green' to `\blue'?
+
+\subsection{Without Iterator and Separators}        %% add. heading 2012/05/17b
+%% 2011/11/07:
+In \LaTeX's \ctanpkgref{tools} bundle, \ctanpkgref{xspace}
+%% add. 2012/05/18:
+was developed in the nineties by David Carlisle. 
+It had a rather fixed exception list implemented by a deeply
+nested conditional. In 2004 Morton H\o gholm joined, 
+and now 'xspace' has a list macro 
+`\@xspace@exceptions@tlp'                           %% was xpspace 2012/05/17b
+without separators. 
+It is handled like here, except that it ``breaks" the loop 
+when an item is found that applies.
+%% add. 2012/05/17bf.:
+After the ``next" token is stored by the usual \cs{futurelet}, 
+the exception list is searched without using an iterator. 
+Addition and removal commands are provided as well. 
+
+%   \pagebreak                                                %% 2012/05/17b
+% \newpage                                                    %% 2012/05/19
+\section{Implementation}                                    %% 2012/05/10
+\label{sec:implement}
+\subsection{Package File Header (Legalese)}                 %% sub 2012/05/10
+\input{dowith.doc}
+
+\newpage                                                        %% 2012/06/04
+\section{Ack.: 25 Years of Kabel\-schacht's \cs{expandafter}}   %% 2012/05/20
+\label{sec:kabel}
+The essential idea of 'dowith' and `\DoWith' is 
+\[`\if<code>\expandafter<one-token>\fi'\]
+%     Alan Jeffrey: \tugbartref{tb11-2/tb28jeffrey}{``Lists in \TeX's Mouth,"} 
+%     \acro{TUG}boat Vol.~11 (1990), No.~2, pp.~237--245), 
+%     \urlhttpref{tug.org/TUGboat/tb11-2/tb28jeffrey.pdf}.}
+It was described by \textsc{Alois Kabelschacht} as 
+\tugbartref{tb08-2/tb18kabel}{``&\expandafter\ vs.\ &\let\ and &\def\ 
+    in Conditionals and a Generalization of PLAIN's &\loop"}
+in \acro{TUG}boat Vol.~8 (1987), No.~2, pp.~184f.\
+(a little more than one column).\foothttpurlref{tug.org/TUGboat/%
+    tb08-2/tb18kabel.pdf}
+See some German biographical notes on Kabelschacht in the 
+\wikideref{Benutzer:RolteVolte/Alois_Kabelschacht}{German Wikipedia.}\foothttpurlref{%% 
+    de.wikipedia.org/wiki/Benutzer:RolteVolte/Alois\string_Kabelschacht}
+It seems to me that Knuth didn't note this application of `\expandafter' 
+in \TTb.\footnote{%                                             %% 2012/05/22
+    However, the paper \meta{\qtd{uses the fact that the expansion of both 
+    \cs{else ... }\cs{fi} and \cs{fi} is empty.}} In \TTb\ I only find 
+    %% &\else and &\fi failed
+    \meta{\qtd{The ``expansion" of a conditional is empty}} on page~213.}
+It was then applied in many macros of \file{latex.ltx}, 
+cf.~\file{source2e.pdf}.
+
+\end{document}
+
+VERSION HISTORY
+
+2011/11/02  for v0.1    very first
+2011/11/03              discussing \loop; \pagebreak
+2011/11/07              xspace
+2011/11/10f.            zref added/removed
+2012/05/09  for v0.2    $\varepsilon$-\TeX
+2012/05/10              "iterator", \MDkeywords, \hypersetup,
+                        Legalize -> Legalese, "Related packages", 
+                        tighter sectioning
+2012/05/14  for v0.21   spurious space in title fixed
+2012/05/14b     r0.21a  another keyword
+2012/05/15              abstract: why expandable
+2012/05/16              discussion much extended; 
+                        stored separately before reworking
+2012/05/16b     r0.21b  reworking ... many mistakes!
+2012/05/17              updating date, was 2012/05/14 before!
+                        and from 2012/05/14b onwards it should 
+                        have been r0.21a; storing again, 
+                        renaming dir.s ...
+2012/05/17bf.   r0.21c  reducing text ...
+2012/05/19      r0.21d  braces and commands applicable
+2012/05/20              corrections, clarifications, reorder; 
+                        especially examples for `dowith' vs. 
+                        `\@tfor'; remarks about `\loop' corr.:
+                        how to `foreach' ...; Kabelschacht
+2012/05/22      r0.21e  Kabelschacht vs. TeXbook
+2012/06/03      r0.21f  cf. `catoptions'; \dots\unkern\@, vs.\ 
+2012/06/07      r0.22a  added \,s in "?typein ..."
+2012/07/25      r0.3    "\csname name construct"?
+2012/11/02ff.           gullet, plainpkg, more modifications
+2012/11/19              mod. on "mouth" (bibleref-mouth)
+2012/11/27      r0.3a   plainpkg
+2015/11/14              rm. "(five)" & \ctanpkgdref, code in two 
+                        footnotes, don't use hyperref draft

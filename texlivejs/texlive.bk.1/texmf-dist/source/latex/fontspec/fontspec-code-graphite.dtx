@@ -1,0 +1,128 @@
+%%^^A%%  fontspec-code-graphite.dtx -- part of FONTSPEC <wspr.io/fontspec>
+
+% \section{Graphite/AAT code}
+%
+% \iffalse
+%    \begin{macrocode}
+%<*fontspec&XE>
+%    \end{macrocode}
+% \fi
+%
+
+
+% \begin{macro}{\@@_define_aat_feature_group:n}
+%    \begin{macrocode}
+\cs_new:Nn \@@_define_aat_feature_group:n
+  {
+    \keys_define:nn {fontspec-aat} { #1 .multichoice: }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_define_aat_feature:nnnn}
+%    \begin{macrocode}
+\cs_new:Nn \@@_define_aat_feature:nnnn
+  {
+    \keys_define:nn {fontspec-aat}
+      {
+        #1/#2 .code:n = { \@@_make_AAT_feature:nn {#3}{#4} }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+
+% \begin{macro}{\@@_make_AAT_feature:nn}
+%    \begin{macrocode}
+\cs_new:Nn \@@_make_AAT_feature:nn
+  {
+    \tl_if_empty:nTF {#1}
+      { \@@_warning:n {aat-feature-not-exist} }
+      {
+        \exp_args:No \@@_make_AAT_feature_string:NnnTF \l_@@_fontface_cs_tl {#1} {#2}
+          {
+            \@@_update_featstr:n {\l_fontspec_feature_string_tl}
+          }
+          {
+            \@@_warning:nx {aat-feature-not-exist-in-font} {#1,#2}
+          }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_make_AAT_feature_string:NnnTF}
+%   This macro takes the numerical codes for a font feature and
+%   creates a specified macro containing the string required in the
+%   font definition to turn that feature on or off. Used primarily in
+%   [...], but also used to check if small caps
+%   exists in the requested font (see page~\pageref{mac:makesmallcaps}).
+%
+% For exclusive selectors, it's easy; just grab the string:
+% For \emph{non}-exclusive selectors, it's a little more complex.
+% If the selector is even, it corresponds to switching the feature on.
+% If the selector is \emph{odd}, it corresponds to switching the feature off.
+% But \XeTeX\ doesn't return a selector string for this number, since the
+% feature is defined for the `switching on' value. So we need to check the
+% selector of the previous number, and then prefix the feature string with |!|
+% to denote the switch.
+%
+% Finally, save out the complete feature string in \cmd\l_fontspec_feature_string_tl.
+%    \begin{macrocode}
+\prg_new_conditional:Nnn \@@_make_AAT_feature_string:Nnn {TF,T,F}
+  {
+    \tl_set:Nx \l_@@_tmpa_tl { \XeTeXfeaturename #1 #2 }
+    \tl_if_empty:NTF \l_@@_tmpa_tl
+      { \prg_return_false: }
+      {
+        \int_compare:nTF { \XeTeXisexclusivefeature #1 #2 > 0 }
+          {
+            \tl_set:Nx \l_@@_tmpb_tl {\XeTeXselectorname #1 #2\space #3}
+          }
+          {
+            \int_if_even:nTF {#3}
+              {
+                \tl_set:Nx \l_@@_tmpb_tl {\XeTeXselectorname #1 #2\space #3}
+              }
+              {
+                \tl_set:Nx \l_@@_tmpb_tl
+                  {
+                    \XeTeXselectorname #1 #2\space \numexpr#3-1\relax
+                  }
+                \tl_if_empty:NF \l_@@_tmpb_tl { \tl_put_left:Nn \l_@@_tmpb_tl {!} }
+              }
+          }
+
+        \tl_if_empty:NTF \l_@@_tmpb_tl
+          { \prg_return_false: }
+          {
+            \tl_set:Nx \l_fontspec_feature_string_tl { \l_@@_tmpa_tl = \l_@@_tmpb_tl }
+            \prg_return_true:
+          }
+     }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \iffalse
+%    \begin{macrocode}
+%</fontspec&XE>
+%    \end{macrocode}
+% \fi
+
+
+\endinput
+
+% /©
+% ------------------------------------------------
+% The FONTSPEC package  <wspr.io/fontspec>
+% ------------------------------------------------
+% Copyright  2004-2019  Will Robertson, LPPL "maintainer"
+% Copyright  2009-2015  Khaled Hosny
+% Copyright  2013       Philipp Gesang
+% Copyright  2013-2016  Joseph Wright
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% ©/

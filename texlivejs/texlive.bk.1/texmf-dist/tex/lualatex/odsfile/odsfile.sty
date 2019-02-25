@@ -1,0 +1,256 @@
+\ProvidesPackage{odsfile}
+\RequirePackage{luacode,xkeyval}
+
+%keyval keys
+
+\define@key{includespread}{file}{\loadodsfile{#1}}%
+\define@key{includespread}{sheet}{\luaexec{sheetname = "\luatexluaescapestring{#1}"}}%
+\define@key{includespread}{range}{\luaexec{%
+local x1,y1,x2,y2 = odsreader.getRange("\luatexluaescapestring{#1}")%
+range = {x1,y1,x2,y2}%
+}}
+\define@key{includespread}{template}{\luaexec{currenttemplate="\luatexluaescapestring{#1}"}}%
+\define@key{includespread}{rowtemplate}{\luaexec{rowtemplate="\luatexluaescapestring{\unexpanded{#1}}"}}%
+\define@key{includespread}{multicoltemplate}{\luaexec{multicoltpl="\luatexluaescapestring{\unexpanded{#1}}"}}%
+
+\define@choicekey*+{includespread}{rowseparator}[\val\nr]{tableline,hline,newline}[tableline]%
+{%
+\ifcase\nr\relax%
+  \luaexec{rowseparator=""}%
+\or%
+  \luaexec{rowseparator="\\hline "}%
+\or%
+\luaexec{%
+rowseparator=[[\\n]]
+}
+\fi%
+}{%
+	\luaexec{rowseparator="\luatexluaescapestring{#1}"}
+}
+\define@key{includespread}{columnbreak}{%
+  \luaexec{columnbreak="\luatexluaescapestring{\unexpanded{#1}}{}"}%
+}
+\define@key{includespread}{coltypes}{%
+  \luaexec{coltypes="\luatexluaescapestring{\unexpanded{#1}}"}%
+}
+\define@choicekey*+{includespread}{columns}[\val\nr]{head,top,none}{%
+\ifcase\nr\relax%
+  \luaexec{columns=1}%
+\or%
+  \luaexec{columns=2}%
+\fi%
+}{%
+\luaexec{%
+local function split(s,sep)
+        local sep, fields = sep or ":", {}
+        local pattern = string.format("([^\%s]+)", sep)
+        s:gsub(pattern, function(c) fields[\#fields+1] = c end)
+        return fields
+end
+local s="\luatexluaescapestring{#1}"
+columns = split(s,",")
+}%
+}{}%
+
+
+% Variable initialization and helper functions
+\begin{luacode*}
+odsreader   = require("odsfile")
+odsfile     = nil
+sheetname   = nil
+range       = {nil,nil,nil,nil}
+columns     = nil
+templates   = {}
+row         = {}
+body        = nil
+odsfilename = ""
+currenttemplate = nil
+rowtemplate = nil
+multicoltpl = "\\multicolumn{-{count}}{l}{-{value}}"
+\end{luacode*}
+
+\newcommand\loadodsfile[2][]{%
+  \setkeys{includespread}{#1}%
+  \luaexec{%
+    odsfilename     = "\luatexluaescapestring{#2}"%
+    local ods   = odsreader.load(odsfilename)%
+    odsfile, e  = ods:loadContent()%
+  }%
+}
+
+\newcommand\tabletemplate[2]{%
+  \luaexec{%
+    templates["#1"]="\luatexluaescapestring{\unexpanded{#2}}"%
+  }
+}
+
+\newcommand\includespread[1][]{%
+  \luaexec{%
+    range = {nil,nil,nil,nil}
+    rowseparator = ""
+    columns=nil
+    currenttemplate = nil 
+    rowtemplate = nil
+    columnbreak = "\\linebreak{}"
+    coltypes    = nil
+  }%
+  \setkeys{includespread}{#1}%
+  \luaexec{%
+    body   = odsreader.getTable(odsfile,sheetname)
+    local values = odsreader.tableValues(body,range[1],range[2],range[3],range[4])
+    %-- Conversion of odsfile table values to LaTeX tabular  
+    local concatParagraphs = function(column)
+      % -- second returned value signalize whether cell contain paragraph, or not 
+		  local getCell = odsreader.get_cell
+      if type(column) =="table" then 
+        return getCell(column, columnbreak), true
+      end
+      return getCell(column,""), false
+    end
+    local rowValues = function(row, headings)
+      local headings = headings or {}
+      local t={} 
+      local i = 1
+      for _,column in pairs(row) do 
+        local attr = column.attr or {}
+        local value, br  = concatParagraphs(column.value) 
+        value = value or ""
+        local x = attr["table:number-columns-spanned"] or "1"
+        x = tonumber(x)
+        if x > 1 then 
+           value = odsreader.interp(multicoltpl, {value = value, count = x})
+        end
+        table.insert(t,value)
+        headings[i] = br
+        i = i + x
+      end
+      return t, headings
+    end
+    local makeColtypes = function(h)
+      local maxsize = tex.hsize / 65536
+      local h = h or {}
+      local p = 0
+      for _, c in pairs(h) do
+        if c then 
+          p = p + 1 
+        end 
+      end
+      if p > 0 then
+        local j = {}
+        local size = tostring(math.floor(maxsize / \#h)) .. "pt"
+        for _, c in pairs(h) do 
+          local k = "l"
+          if c then k = "p{"..size.."}" end
+          j[\#j+1]= k
+        end
+        return table.concat(j)
+      else 
+        return string.rep("l",\#h)
+      end
+    end
+    if rowtemplate == nil then
+      local headings = {}
+      local currow = {}
+      currenttemplate = currenttemplate or "default"
+      content = {}   
+      for i,row in pairs(values) do
+        currow, headings = rowValues(row, headings)
+      	table.insert(content,table.concat(currow," & "))
+      end
+      %-- Column headings handling
+      local colheading=""
+      if type(columns) == "number" and columns == 1 then
+      	columns = rowValues(values[1])
+      	content = odsreader.table_slice(content,2,nil)
+      elseif type(columns) == "number" and columns == 2 then
+      	local t = odsreader.tableValues(body,range[1],1,range[3],2)
+      	columns = rowValues(t[1])
+      end  
+      if type(columns) == "table" then colheading = table.concat(columns," & ") .. "\\\\" end
+      % coltypes = ""
+      if type(content)== "table" then 
+        % coltypes= string.rep("l",\#content[1]) 
+        if not coltypes then
+          coltypes = makeColtypes(headings)
+        end
+      end
+      content = table.concat(content, "\\\\ "..rowseparator) .. "\\\\"
+      local result = odsreader.interp(templates[currenttemplate],{content=content,coltypes=coltypes,colheading=colheading,rowsep=rowseparator})
+      print(result)
+      tex.print(result)
+    else
+      local content = {}  
+      currenttemplate = currenttemplate or "empty"
+      for _,row in pairs(values) do
+        table.insert(content,odsreader.interp(rowtemplate,rowValues(row)))
+      end
+      content = table.concat(content,rowseparator) 
+      local result = odsreader.interp(templates[currenttemplate],{content=content,coltypes=coltypes,colheading=colheading,rowsep=rowseparator})
+      print(result)
+      tex.sprint(result)
+    end
+  }%
+}%
+
+\tabletemplate{empty}{-{content}}
+
+\tabletemplate{default}{-{colheading}-{rowsep}-{content}}
+
+\tabletemplate{booktabs}{%
+\begin{tabular}{-{coltypes}}
+\toprule
+-{colheading}
+\midrule
+-{content}
+\\ \bottomrule
+\end{tabular}
+}
+
+% Interface for adding of new rows
+
+\newenvironment{AddRow}[1][]{%
+\def\AddString##1##2{% 
+\luaexec{%
+local pos = "\luatexluaescapestring{##2}"%
+if pos == "" then pos = nil end; row:addString("\luatexluaescapestring{\unexpanded{##1}}",nil,pos)%
+}%
+}%
+\def\AddNumber##1##2{%
+\luaexec{%
+local pos = "\luatexluaescapestring{##2}"%
+if pos == "" then pos = nil end; row:addFloat("\luatexluaescapestring{##1}",nil,pos)%
+}%
+}%
+\luaexec{%
+pos = "\luatexluaescapestring{#1}"%
+if pos == "" then pos = nil end; row = odsreader.newRow()%
+}%
+}{%
+\luaexec{%
+body = body or odsreader.getTable(odsfile)
+row:insert(body,pos)%
+}%
+}
+
+% Interface for saving the spreadsheet
+
+\newcommand\savespreadsheet{%
+\luaexec{%
+ local xml = require("luaxml-mod-xml")
+ f = io.open("content.xml","w")%
+ f:write(xml.serialize(odsfile.root))%
+ f:close()%
+ odsreader.updateZip(odsfilename,"content.xml")%
+}%
+}
+
+% support for hyperlinks in cells
+
+\newcommand\odslink[2]{\texttt{#2}}
+
+\AtBeginDocument{%
+	\@ifpackageloaded{hyperref}{%
+		\renewcommand\odslink[2]{\href{#1}{#2}}%
+	}{}
+}
+\endinput

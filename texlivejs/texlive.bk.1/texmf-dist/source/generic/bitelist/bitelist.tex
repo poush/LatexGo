@@ -1,0 +1,319 @@
+\ProvidesFile{bitelist.tex}[2012/03/29 documenting bitelist.sty]
+\title{\textsf{\huge bitelist.sty                   %% \huge 2012/03/19
+       }\\---\\``Splitting" a List at a List Inside
+       \\in \TeX's Mouth\thanks{This
+       document describes version
+       \textcolor{blue}{\UseVersionOf{\jobname.sty}}
+       of \textsf{\jobname.sty} as of \UseDateOf{\jobname.sty}.}}
+% \listfiles
+{ \RequirePackage{makedoc} \ProcessLineMessage{}
+  \MakeJobDoc{17}
+  {\SectionLevelTwoParseInput}  }
+\documentclass[fleqn]{article}%% TODO paper dimensions!?
+\input{makedoc.cfg} %% shared formatting settings
+% \ReadPackageInfos{bitelist}
+\usepackage{bitelist}
+\sloppy
+\MDkeywords{macro programming, text filtering, substrings}
+\begin{document}
+\maketitle
+\begin{MDabstract}
+'bitelist.sty' provides commands for ``splitting" a token list 
+at the first occurrence of a contained token list 
+(i.e., for given $\sigma$, $\tau$, 
+ return $\beta$ and shortest $\alpha$ s.t.\ $\tau=\alpha\sigma\beta$). 
+ As opposed to other packages providing similar features, 
+\ (\textit{i})\enspace the method uses \TeX's mechanism of reading 
+delimited macro parameters;
+\ (\textit{ii})\enspace the splitting macros work by pure expansion, 
+without assignments, provided the macro doing the search has been 
+defined before processing (e.g., a file);
+\ (\textit{iii})\enspace instead of using one macro for a ``substring" 
+test and another one to replace the ``substring"---which includes 
+extracting corresponding prefix and suffix---, 
+the \emph{same} macro that detects the occurrence returns 
+the split;
+\ (\textit{iv})\enspace 
+\httpref{ctan.org/pkg/e-tex}{$\varepsilon$\hbox{-}\TeX} is not required.
+\ (And \LaTeX\ is not required.)
+
+This improves the author's \CtanPkgRef{fifinddo}{fifinddo.sty} 
+(v0.51---and may once be used there). An elaborated approach 
+(additionally to a simpler one) is provided that does not loose 
+outer braces of prefix/suffix.
+
+``Substring" detection and ``string" replacement are (implicitly) included 
+with respect to certain representations of characters by tokens.
+Counting occurrences and ``global" replacement could be achieved 
+by applying the operation to earlier results, etc.---so 
+this approach seems to be ``fundamental" for a certain larger 
+set of list analysis tasks.
+
+The documentation aims to prove the correctness of the methods 
+with mathematical rigour.
+\par\smallskip\noindent
+\strong{Related packages:}\quad 
+\ctanpkgref{datatool}, \ctanpkgref{stringstrings}, \ctanpkgref{ted}, 
+\ctanpkgref{texapi}, \ctanpkgref{xstring}
+\end{MDabstract}
+\newpage
+\tableofcontents
+
+\section{Task, Background Reasoning, and Usage}
+\subsection{The Task Quite Precisely}
+\label{sec:task}
+
+Perhaps I should not have written ``splitting" before, 
+see Section~\ref{sec:name} why I did so though. 
+Actually: 
+
+At first we are dealing with token lists $\tau$ and $\sigma$ 
+without braces 
+(unless their category code has been changed appropriately)
+that can be stored as macros without parameter or in token list registers. 
+We want to find out whether $\tau$ contains $\sigma$ (``as a subword") 
+in the sense that there are such token lists $\alpha$ and $\beta$ that 
+$\tau$ is composed as $\alpha\sigma\beta$, i.e.,
+\[\tau=\alpha\sigma\beta\]
+and in this case 
+we want to get $\alpha$ and $\beta$ of this kind with 
+$\alpha$ being the \emph{shortest} possible. 
+I.e., if there are such $\gamma$ and $\delta$ that $\tau$
+is composed as $\gamma\sigma\delta$, $\alpha$ must be contained 
+as a ``prefix" in $\gamma$, 
+i.e., $\gamma$ is composed as $\alpha\eta$ for some token list $\eta$. 
+The token lists $\alpha$, $\beta$, $\gamma$, $\delta$, $\eta$, 
+$\sigma$, and $\tau$ are allowed to be empty throughout.
+
+The task will be extended for some braces in Section~\ref{sec:braces}.
+
+\subsection{Idea of Solution}
+
+\TeX's mechanism of expanding macros (\TeX book Chapter~20)
+at least has a built-in mechanism to return such $\alpha$ and $\beta$
+\emph{provided} $\tau$ contains $\sigma$. Define
+\[`\def<cmd>#1'\sigma`#2'\theta`{<replace-def>}'\]
+where $\theta$ must be a token list (maybe of a single token)
+that won't occur in $\tau$.\footnote{I am still following others in confusing 
+    source code and tokens. I have better ideas, but must expand on them 
+    elsewhere. Writing `&\def' rather indicates that it is source code, 
+    then $\sigma$ etc. should be replaced by strings that are converted 
+    into tokens $\sigma$ etc. 
+    <cmd> sometimes is a \emph{string} starting with an escape character, 
+    or it is an active character; but sometimes it rather is an ``active" 
+    \emph{token} converted from such an escape string or an active character.}
+This is a \strong{limitation} of the approach: 
+It works for sets of such $\tau$ only that do not contain 
+any of a small set of tokens or combinations of them.
+('bitelist' will use `\BiteSep', `\BiteStop', and `\BiteCrit', 
+ or any other three that can be chosen.)
+
+On the other hand, \TeX's \emph{category codes} 
+(\TeX book Chapter~7) can ensure this quite well. 
+E.g., we may assume that input ``letters" always have category code 11
+(or 12, or one of them), and for $\theta$ we can choose letters 
+with \emph{different} category codes such as 3.
+Without such tricks, you may often assume that nobody will input 
+certain ``silly" commands such as `\BiteStop'. 
+(But it may become difficult when you use a package for 
+ replacement macros for generating its own documentation \dots)
+
+With a <cmd> as defined above, \TeX\ will
+\[\mbox{expand\quad}
+    `<cmd>'\tau\theta
+  \quad\mbox{to}\quad
+    <replace>,\]
+where <replace> will be the result of replacing 
+\ (a)\enspace all occurrences of `#1' in <replace-def> by $\alpha$ as wanted and
+\ (b)\enspace all occurrences of `#2' in <replace-def> by $\beta$ as wanted.
+\
+I.e., <cmd> returns $\alpha$ as its first argument and $\beta$ as its second argument.
+The reason is that <cmd>'s first parameter is delimited by $\sigma$ and the second one by 
+$\theta$ in the sense of The~\TeX book p.~203.
+Our requirement to get the \emph{shortest} $\alpha$ for the composition of $\tau$ as 
+$\alpha\sigma\beta$ is met because \TeX\ indeed looks for the \emph{first} occurrence of 
+$\sigma$ at the right of <cmd>. 
+
+
+\subsection{When We Don't Know \dots}
+When $\sigma$ does \emph{not} occur in $\tau$ and we present $\tau\theta$ to <cmd> as 
+before, \TeX\ will throw an error saying 
+``Use of <cmd> doesn't match its definition."
+When the purpose is ``substring detection" only, without returning $\beta$, 
+many packages have solved the problem by issuing something like
+\[`<cmd>'\tau\sigma\theta\]
+Then (still provided $\theta$ does not occurr in $\tau$) 
+<cmd>'s second argument is empty \emph{exactly} if $\sigma$ occurs in $\tau$.
+This method has, e.g., been employed in \LaTeX's internal &\in@ mechanism 
+(e.g., for dealing with package options) and by the \ctanpkgref{substr} package.
+\ctanpkgref{datatool} has used the latter's substring test (for $\sigma$)
+before calling a macro for replacing 
+($\sigma$ by another token list, perhaps thinking of character tokens).
+
+This way you get the wanted $\alpha$ as the first macro argument immediately indeed. 
+An obstacle for getting $\beta$ is that <cmd>'s \emph{second} argument now contains 
+an occurrence of $\sigma$ that is not an occurrence in $\tau$. 
+In \CtanPkgRef{fifinddo}{fifinddo.sty} I didn't have a better idea than using 
+another macro to remove the ``dummy text" from the second argument.
+I considered it an advantage as compared with 'datatool' that 
+\emph{one} macro could do this for \emph{all} replacement jobs, 
+while 'datatool' uses \emph{two} macros with $\sigma$ as a delimiter 
+for each $\sigma$ to be replaced.
+
+But still, 'fifinddo' has used \emph{two} macros for each replacement, 
+the extra one being for presenting $\tau$ to <cmd>, using a job identifier. 
+This could be improved within 'fifinddo', but I could never afford 
+to take the time for this.
+
+\subsection{The Trick}
+\label{sec:trick}
+
+The solution presented here is not very ingenious, 
+many students would have found it in an exercise for a math course.
+My personal approach was looking at &\GetFileInfo from \LaTeX's 
+\ctanpkgref{doc} package. There they try to get \emph{two} occurrences 
+of a space token this way:\footnote{We are undoubling the hash marks 
+                                    inside the definition text of 
+                                    &\GetFileInfo.}
+\[`\def\@tempb#1 #2 #3\relax#4\relax{%'\]
+and &\@tempb is called as 
+\[`\@tempb'\tau`\relax? ? \relax\relax'\]
+or with $\tau=<list>$
+\[`\@tempb<list>\relax? ? \relax\relax'\]
+The final &\relax may not be removed, but for 'doc' it doesn't harm. 
+It harms for \emph{me} when I don't want to have a `\relax' in a `.log' file list.
+`\empty' would be better, however \dots
+
+The idea is to use a \emph{three}-parameter macro for that \emph{single} occurrence 
+of $\sigma$. We introduce a 
+``dummy separator" $\zeta$ (or <sep>, `\BiteSep') 
+between $\tau$ and the ``dummy text" and a 
+``criterion" $\rho$ ($=<crit>$, `\BiteCrit') 
+for determining occurrence of $\sigma$ ($=<find>$) in $\tau$ ($=<list>$).
+Neither $\zeta$ nor $\rho$ must occur in $\tau$.
+We will have definitions about as
+\[`\def<cmd>#1'\sigma`#2'\zeta`#3'\theta`{<replace-def>}'\]
+or
+\[`\def<cmd>#1<find>#2<sep>#3<stop>{<replace-def>}'\]
+and $\tau$ will be presented with context
+\[`<cmd>'\tau\zeta\sigma\rho\zeta\theta
+  \quad\mbox{or}\quad
+  <cmd><list><sep><find><crit><sep><stop>
+  \]
+This ensures that <cmd> finds its parameter delimiters $\sigma$, $\zeta$, 
+and $\theta$, in this order. $\sigma$ occurs in $\tau$ exactly if the second 
+argument of <cmd> is $\rho$, and in this case the first occurrence 
+of the second parameter delimiter $\zeta$ delimits $\tau$. 
+Then <cmd>'s first argument is $\alpha$, and the second one is $\beta$, 
+as wanted.
+
+<cmd>'s \emph{third} parameter is delimited by the final $\theta$ (`\BiteStop'). 
+When $\sigma$ occurs in $\tau$, <cmd>'s third argument starts after the first 
+of the two $\zeta$, so it is $\sigma\rho\zeta$. 
+It is just ignored, this way <cmd> removes all the ``dummy" material 
+after $\tau$. When $\sigma$ does \emph{not} occur in $\tau$, 
+we ignore all of its arguments, and the macro that invoked <cmd> 
+must decide what to do next, e.g., keeping $\tau$ elsewhere 
+for presenting it to another parsing macro resembling <cmd>.
+
+
+\subsection{Installing and Calling}
+The file 'bitelist.sty' is provided ready, installation only requires
+putting it somewhere where \TeX\ finds it
+(which may need updating the filename data
+ base).\urlfoot{ukfaqref}{inst-wlcf}           %% corr. 2011/02/08
+
+Below the `\documentclass' line(s) and above `\begin{document}',
+you load 'bitelist.sty' (as usually) by
+\begin{verbatim}
+  \usepackage{bitelist}
+\end{verbatim}
+between the `\documentclass' line and `\begin{document}'; 
+or by 
+\begin{verbatim}
+  \RequirePackage{bitelist}
+\end{verbatim}
+within a package file, or above or without the `\documentclass' line.
+Moreover, the package should work \emph{without} \LaTeX\ and may be 
+loaded by 
+\begin{verbatim}
+  \input bitelist.sty
+\end{verbatim}
+Actually, using the package for macro programming requires understanding 
+of pp.~20f.\ of The~\TeX book. On the other hand, the package may be loaded
+(without the user noticing it) automatically by a different package that 
+uses programming tools from the present package.
+
+\section{Implementation Part I}
+\subsection{Package File Header (Legalize)}
+\input{bitelist.doc}
+
+\section{Examples/Tests}
+\label{sec:demo}
+You should find a separate file `bitedemo.tex' 
+with examples. It may be run separately with `tex' 
+(Plain \TeX)---demonstrating that 'bitelist' is ``\strong{generic}", 
+then finish by entering `\bye'. 
+With ```latex bitedemo.tex'", end the job by entering `\stop'.
+\strong{Expandability} is demonstrated by the `\BiteFind' commands 
+running with `\typeout'.
+\medskip
+\noNiceVerb
+\hrule
+\verbatiminput{bitedemo.tex}
+\hrule
+\useNiceVerb
+
+\section{The Package's Name}
+\label{sec:name}
+
+This package deals with \TeX's expansion mechanism. 
+In Knuth's metaphor, this is \TeX's mouth. 
+I am not entirely sure, I have never understood it, 
+or I have understood it only for a few days or hours. 
+However, the package deals with ``Lists in \TeX's Mouth" 
+as described in Alan Jeffrey's 1990 
+\tugbartref{tb11-2/tb28jeffrey}{\acro{TUG}boat paper} 
+(Volume~11, No.~2, pp.~237--245).\foothttpurlref{% 
+    tug.org/TUGboat/tb11-2/tb28jeffrey.pdf} 
+
+``Splitting" in title and abstract is an attempt to describe 
+the package brief{}ly without speaking Mathematicalese. 
+It roughly refers to certain \Wikienref{string functions} 
+in various programming languages\foothttpurlref{%
+    en.wikipedia.org/wiki/String\string_functions\string#split}
+with ```split'"  in their name.
+However, there strings are splitted at separators such as commas. 
+I am thinking here that a comma is a certain string ```,'", 
+and this can be generalized to ``splitting" at any substring. 
+With \TeX, the analogues are (a)~the token with the character code 
+of the comma and category code 12, or the token list consisting of this 
+single token,---and (b)~other lists of tokens~\dots
+
+Anyway, calling a triple $(\alpha,\sigma,\beta)$ of token lists 
+such that $\tau=\alpha\sigma\beta$ a ``split" of $\tau$ 
+is not necessarily a bad idea.
+Moreover, the blank space example (Section~\ref{sec:space})
+is very close to the original idea of splitting at separators, 
+a blank space is about as common as a separator as the comma is.
+
+Finally, according to \urlhttpref{en.wiktionary.org}, 
+the Proto-Indo-European origin of
+\httpref{en.wiktionary.org/wiki/bite}{``to bite"}
+just means ``to split."\foothttpurlref{en.wiktionary.org/wiki/bite\string#Etymology}
+So in \TeX's mouth, splitting and biting is the same.
+
+
+\end{document}
+
+VERSION HISTORY
+
+2012/03/26  for v0.1    started 
+2012/03/27              pages of motivation etc.
+2012/03/28              abstract: "mathematical rigour"; 
+                        \section{Implementation}, \section{Task, ...}; 
+                        \newpage, \LaTeX\; reference to sec:braces; 
+                        "Examples/Tests" halfway; "Package's"; 
+                        LaTeX not required, ...
+2012/03/29              "Implementation Part I", label sec:demo; 
+                        keywords etc. 

@@ -1,0 +1,104 @@
+%%
+%% This is file `lwarp-keyfloat.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `keyfloat')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+
+\LWR@ProvidesPackagePass{keyfloat}[2017/05/12]
+
+\AtBeginDocument{
+\RenewDocumentCommand{\KFLT@onefigureimage}{}
+{%
+\LWR@traceinfo{KFLT@onefigureimage}%
+\ifthenelse{\NOT\equal{\KFLT@lw}{}}%
+{\includegraphics%
+[scale=\KFLT@s,width=\KFLT@imagewidth]{\KFLT@i}}%
+{% not linewidth
+\ifthenelse{\dimtest{\KFLT@w}{>}{0pt}}%
+{% width is given
+\ifthenelse{\dimtest{\KFLT@h}{>}{0pt}}%
+{% w and h
+\includegraphics%
+[scale=\KFLT@s,%
+width=\KFLT@imagewidth,height=\KFLT@h]{\KFLT@i}%
+}% w and h
+{% only w
+\includegraphics%
+[scale=\KFLT@s,width=\KFLT@imagewidth]{\KFLT@i}%
+}% only w
+}% width is given
+{% width is not given
+\ifthenelse{\dimtest{\KFLT@h}{>}{0pt}}%
+{\includegraphics%
+[scale=\KFLT@s,height=\KFLT@h]{\KFLT@i}}%
+{\includegraphics%
+[scale=\KFLT@s]{\KFLT@i}}%
+}% width is not given
+}% not linewidth
+\LWR@traceinfo{KFLT@onefigureimage: done}%
+}
+\RenewDocumentEnvironment{KFLT@boxinner}{}
+{%
+\LWR@traceinfo{KFLT@boxinner}%
+\LWR@stoppars%
+}
+{
+\LWR@startpars%
+\LWR@traceinfo{KFLT@boxinner: done}%
+}
+
+\DeclareDocumentEnvironment{KFLT@marginfloat}{O{-1.2ex} m}
+{%
+\LWR@BlockClassWP{float:right; width:2in; margin:10pt}{}{marginblock}%
+\captionsetup{type=#2}%
+}
+{%
+\endLWR@BlockClassWP%
+}
+
+\DeclareDocumentEnvironment{marginfigure}{o}
+  {\begin{KFLT@marginfloat}{figure}}
+  {\end{KFLT@marginfloat}}
+
+\DeclareDocumentEnvironment{margintable}{o}
+  {\begin{KFLT@marginfloat}{table}}
+  {\end{KFLT@marginfloat}}
+
+\DeclareDocumentEnvironment{keywrap}{m +m}
+{%
+\LWR@ensuredoingapar%
+\setlength{\LWR@templengthone}{#1}%
+\begin{LWR@BlockClassWP}{%
+    float:right; width:\LWR@printlength{\LWR@templengthone};  % extra space
+    margin:10pt%
+}%
+{%
+    width:\LWR@printlength{\LWR@templengthone}%
+}%
+{marginblock}%
+\setlength{\linewidth}{.95\LWR@templengthone}%
+#2%
+\end{LWR@BlockClassWP}%
+}
+{%
+}
+
+
+}% AtBeginDocument
+
+\endinput
+%%
+%% End of file `lwarp-keyfloat.sty'.

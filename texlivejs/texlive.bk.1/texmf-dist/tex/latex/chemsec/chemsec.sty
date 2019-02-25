@@ -1,0 +1,333 @@
+%%
+%% This is file `chemsec.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% chemsec.dtx  (with options: `package')
+%% 
+%% This is a generated file.
+%% 
+%% Copyright (C) 2018 by Justin Finnerty <jfinn24985@gmail.com>
+%% 
+%% This file may be distributed and/or modified under the conditions of
+%% the LaTeX Project Public License, either version 1.3 of this license
+%% or (at your option) any later version.  The latest version of this
+%% license is in:
+%% 
+%%    http://www.latex-project.org/lppl.txt
+%% 
+%% and version 1.3 or later is part of all distributions of LaTeX version
+%% 2005/12/01 or later.
+%% 
+\NeedsTeXFormat{LaTeX2e}[1994/06/01]
+\ProvidesPackage{chemsec}
+    [2018/02/01 v1.12 .dtx chemsec file]
+\RequirePackage{ifthen}[1994/06/01]
+
+\DeclareRobustCommand*{\ChemLabelStyle}[1]{%
+  \textsl{\bfseries{}#1}}
+\DeclareRobustCommand*{\ChemFullLabelStyle}[3]{%
+  \ifthenelse{\equal{}{#3}}{%
+    #1 (\ChemLabelStyle{#2})%
+  }{%
+    #1 (\ChemLabelStyle{#2#3})%
+  }%
+}%
+\DeclareRobustCommand*{\ChemShortLabelStyle}[2]{%
+  \ifthenelse{\equal{}{#2}}{%
+    \ChemLabelStyle{#1}%
+  }{%
+    \ChemLabelStyle{#1#2}%
+  }%
+}%
+\DeclareRobustCommand*{\ChemMainCounterStyle}[1]{%
+  \arabic{#1}}
+\DeclareRobustCommand*{\ChemSubCounterStyle}[1]{%
+  \alph{#1}}
+\makeatletter
+\gdef\CN@DEBUG #1#2{}
+\gdef\CN@WARN #1#2{\PackageInfo{#1}{#2}}
+\gdef\CN@DRAFT #1{}
+\DeclareOption{debug}{%
+  \gdef\CN@DEBUG #1#2{\PackageInfo{#1}{#2}}%
+  \gdef\CN@WARN #1#2{\PackageWarning{#1}{#2}}%
+  \gdef\CN@DRAFT #1{$^{[#1]}$}%
+}
+\DeclareOption{draft}{%
+  \gdef\CN@DRAFT #1{$^{[#1]}$}%
+} \ProcessOptions
+\newcounter{CN@MaxLabelIndex}
+\setcounter{CN@MaxLabelIndex}{0}
+\newcounter{CN@LabelIndex}
+\newcounter{CN@SubLabelIndex}
+\expandafter\def\csname CN@@label\endcsname{999}
+\expandafter\def\csname CN@@name\endcsname{X}
+\expandafter\def\csname CN@@sublabel\endcsname{X}
+\newboolean{CN@KeyFound}
+\newboolean{CN@ScanList}
+\newboolean{CN@Star}
+\setboolean{CN@Star}{false}
+\newboolean{CN@Warning}
+\setboolean{CN@Warning}{false}
+\AtEndDocument{%
+  \ifthenelse{\boolean{CN@Warning}}{%
+    \PackageWarningNoLine{chemsec}{Chemsec-label(s) were used before they were
+      defined or were never defined.  Rerun to get chemsec-labels right. If
+      this warning message persists check that all names and labels have been
+      defined in the text}%
+  }{%else
+    % do nothing
+  }%end if
+}%end def
+\gdef\CN@mainpartofkey (#1!#2){#1}
+\gdef\CN@MainKey (#1){\CN@mainpartofkey(#1!)}%
+\DeclareRobustCommand*{\CN@definenewchemical}[3]{%key, name, label
+  % check for previous definition of name
+  \ifcsname CN@#1@label\endcsname%ifdef
+  % previous definition, do nothing
+  \CN@DEBUG{chemsec}{Attempt to redefine key "#1" ignored.}%
+  \else%
+  % label not defined
+  \CN@DEBUG{chemsec}{Defining new compound with key "#1". Name is "#2", sub-label is "#3".}%
+  \expandafter\gdef\csname CN@#1@label\endcsname{0}%
+  \expandafter\gdef\csname CN@#1@name\endcsname{#2}%
+  \ifthenelse{\equal{#3}{-}}{%if no sub-label
+  }{%else
+    \ifthenelse{\equal{#3}{}}{%if no sub-label
+    }{%else
+      \expandafter\gdef\csname CN@#1@sublabel\endcsname{#3}%
+    }%end if
+  }%end if
+  \fi%
+}%
+\DeclareRobustCommand*{\CN@defineLabelUsed}[2]{%key, label
+  % check for previous definition of name
+  \ifcsname CN@#1@labelUsed\endcsname%ifdef
+    \CN@DEBUG{chemsec}{Attempt to redefine label for key "#1" ignored.}%
+  \else
+    % label not defined
+    \expandafter\gdef\csname CN@#1@labelUsed\endcsname{#2}%
+    \CN@DEBUG{chemsec}{defineLabelUsed: Presetting label of key "#1" to "#2" -> "\csname CN@#1@labelUsed\endcsname"}%
+  \fi%
+}
+\DeclareRobustCommand*{\CN@defineSublabelUsed}[2]{%key, sublabel
+  % check for previous definition of name
+  \ifcsname CN@#1@sublabelUsed\endcsname%ifdef
+    \CN@DEBUG{chemsec}{Attempt to redefine sublabel for key "#1" ignored.}%
+  \else
+    % label not defined
+    \expandafter\gdef\csname CN@#1@sublabelUsed\endcsname{#2}%
+
+    \CN@DEBUG{chemsec}{defineLabelUsed: Presetting sublabel of key "#1" to "#2" -> "\csname CN@#1@sublabelUsed\endcsname"}%
+  \fi%
+}
+\DeclareRobustCommand*{\CN@GetFullName}[1]{%
+  \ifcsname CN@#1@name\endcsname%if name
+  % use my own name
+  \csname CN@#1@name\endcsname%
+  \else%
+  \ifcsname CN@\CN@MainKey(#1)@name\endcsname%if main key name
+  % Use main key name
+  \csname CN@\CN@MainKey(#1)@name\endcsname%
+  \else%
+  \CN@WARN{chemsec}{Attempt to find name for key "#1" failed.}%
+  \setboolean{CN@Warning}{true}%
+  ??%
+  \fi%endif main
+  \fi%endif full key
+}%
+\DeclareRobustCommand*{\CN@GetLabel}[3]{% key, foundbool,
+  % indexcount
+  \setboolean{#2}{true}%
+  \CN@DEBUG{chemsec}{GetLabel: looking for '#1'}%
+  \setcounter{#3}{\csname CN@#1@label\endcsname}%
+  \CN@DEBUG{chemsec}{GetLabel: Label count is \arabic{#3}}%
+  \CN@DEBUG{chemsec}{GetLabel: Star form is {\ifCN@Star true\else false\fi}}%
+  \ifthenelse{\value{#3} = 0}{%
+     %% label has NOT been defined
+     \CN@DEBUG{chemsec}{GetLabel: No local label for key '#1' is defined.}%
+     \ifthenelse{\boolean{CN@Star}}{%
+       %% Star form means can only use predefined value
+       \ifcsname CN@#1@labelUsed\endcsname% have predefined value
+         \CN@DEBUG{chemsec}{GetLabel: Predefined label for key '#1' is \csname CN@#1@labelUsed\endcsname.}%
+         \setcounter{#3}{\csname CN@#1@labelUsed\endcsname}%
+       \else% no predefined, set warning
+         \setboolean{CN@Warning}{true}%
+         \CN@DEBUG{chemsec}{GetLabel: No predefined label for key '#1'.}%
+       \fi%
+     }{%
+       %% Non-star form means calculate value
+       \CN@DEBUG{chemsec}{GetLabel: MaxLabelIndex is \arabic{CN@MaxLabelIndex}}%
+       \stepcounter{CN@MaxLabelIndex}%
+       \CN@DEBUG{chemsec}{GetLabel: Increment MaxLabelIndex to \arabic{CN@MaxLabelIndex}}%
+       \expandafter\xdef\csname CN@#1@label\endcsname{\arabic{CN@MaxLabelIndex}}%
+       \write\@auxout{\string\CN@defineLabelUsed{#1}{\csname CN@#1@label\endcsname}}%
+       \setcounter{#3}{\csname CN@#1@label\endcsname}%
+       \setboolean{#2}{false}%
+       %% Check that @labelUsed matches @label or set @Warning
+       \ifcsname CN@#1@labelUsed\endcsname%
+         \ifthenelse{\equal{\csname CN@#1@labelUsed\endcsname}{\csname CN@#1@label\endcsname}}{% predefined label matches label - do nothing
+         }{% predefined does not match.
+           \CN@DEBUG{chemsec}{GetLabel: Local label does not match predefined label}
+           \setboolean{CN@Warning}{true}%
+         }%
+       \fi
+    }%
+  }{%else
+    % do nothing
+  }%end if def to 0
+  \CN@DEBUG{chemsec}{GetLabel: Result counter \arabic{#3}}%
+}%end def
+\DeclareRobustCommand*{\CN@GetSubLabel}[3]{% key, found?, return-element
+  \setboolean{#2}{true}%
+  \CN@DEBUG{chemsec}{GetSubLabel: looking for sublabel of '#1'}%
+  \ifthenelse{\equal{\CN@MainKey(#1)}{#1}}{%if a main key
+    \CN@DEBUG{chemsec}{GetSubLabel: '#1' is a main key .: no sublabel}%
+    \xdef#3{}%
+  }{%else
+    \ifcsname CN@#1@sublabel\endcsname%if defined
+      \CN@DEBUG{chemsec}{GetSubLabel: Sublabel previously defined as '\csname
+      CN@#1@sublabel\endcsname'}%
+      \xdef#3{\csname CN@#1@sublabel\endcsname}%
+    \else% else need to define sublabel
+      \setboolean{#2}{false}%
+      \ifthenelse{\boolean{CN@Star}}{%
+         % Star form means can only use predefined value
+         \ifcsname CN@#1@sublabelUsed\endcsname% have predefined value
+           \CN@DEBUG{chemsec}{GetSubLabel: Predefined sublabel for key '#1' is \csname CN@#1@sublabelUsed\endcsname.}%
+           \xdef#3{\csname CN@#1@sublabelUsed\endcsname}%
+         \else% no predefined, set warning
+           \setboolean{CN@Warning}{true}%
+           \CN@DEBUG{chemsec}{GetSubLabel: No predefined sublabel for key
+             '#1'.}%
+           \xdef#3{??}%
+         \fi%
+       }{%
+        \CN@DEBUG{chemsec}{GetSubLabel: Sublabel not previously defined}%
+        \ifcsname CN@\CN@MainKey(#1)@sublabel\endcsname%if
+          % main key def
+          \setcounter{CN@SubLabelIndex}{\csname CN@\CN@MainKey(#1)@sublabel\endcsname}%
+        \else%
+          \setcounter{CN@SubLabelIndex}{0}%
+        \fi%
+        \CN@DEBUG{chemsec}{GetSubLabel: Highest label for these keys is
+          \arabic{CN@SubLabelIndex}.}%
+        \stepcounter{CN@SubLabelIndex}%
+        \expandafter\xdef\csname CN@\CN@MainKey(#1)@sublabel\endcsname{\arabic{CN@SubLabelIndex}}%
+        \expandafter\xdef\csname CN@#1@sublabel\endcsname{\ChemSubCounterStyle{CN@SubLabelIndex}}%
+        \write\@auxout{\string\CN@defineSublabelUsed{#1}{\csname CN@#1@sublabel\endcsname}}%
+        \CN@DEBUG{chemsec}{GetSubLabel: Sublabel now defined as '\csname
+          CN@#1@sublabel\endcsname'}%
+        \xdef#3{\csname CN@#1@sublabel\endcsname}%
+      }%
+    \fi%end if
+  }%end if
+}% enddef
+\DeclareRobustCommand*{\CN@RealCite}[4]{%key,
+  % found, index-counter,
+  % sub
+  \CN@DRAFT{#1}%
+  \CN@DEBUG{chemsec}{In RealCite}%
+  \setcounter{#3}{0}%
+  \setcounter{CN@SubLabelIndex}{0}%
+  \setboolean{#2}{false}%
+  \xdef#4{}%
+  \CN@DEBUG{chemsec}{Real: calling GetLabel for '\CN@MainKey(#1)', the main
+    part of '#1'}%
+  \CN@GetLabel{\CN@MainKey(#1)}{#2}{#3}%
+  \CN@DEBUG{chemsec}{Real: calling GetSubLabel for "#1"}%
+  \CN@GetSubLabel{#1}{CN@ScanList}{#4}%
+}%end def
+\DeclareRobustCommand*{\NoCite}[1]{%
+  \CN@RealCite{#1}{CN@KeyFound}{CN@LabelIndex}{\CN@SubLabel}%
+}
+\DeclareRobustCommand*{\CN@ChemCite}[1]{%
+  % \CN@DEBUG{chemsec}{in Chemcite}%
+  \CN@RealCite{#1}{CN@KeyFound}{CN@LabelIndex}{\CN@SubLabel}%
+  % \CN@DEBUG{chemsec}{Cite: called Real}%
+  \ifthenelse{\boolean{CN@KeyFound}}{%
+    % \CN@DEBUG{chemsec}{Cite: key found, use Short}%
+    \ChemShortLabelStyle{\ChemMainCounterStyle{CN@LabelIndex}}{\CN@SubLabel}%
+  }{%else
+    % \CN@DEBUG{chemsec}{Cite: key not found, use Long}%
+    \ChemFullLabelStyle{\CN@GetFullName{#1}}{\ChemMainCounterStyle{CN@LabelIndex}}{\CN@SubLabel}%
+  }%
+}%
+\DeclareRobustCommand*{\CN@ChemFCite}[1]{%
+  % \CN@DEBUG{chemsec}{in ChemFullCite}%
+  \CN@RealCite{#1}{CN@KeyFound}{CN@LabelIndex}{\CN@SubLabel}%
+  % \CN@DEBUG{chemsec}{Cite: called Real}%
+  \ChemFullLabelStyle{\CN@GetFullName{#1}}{\ChemMainCounterStyle{CN@LabelIndex}}{\CN@SubLabel}%
+}%
+\DeclareRobustCommand*{\CN@ChemSCite}[1]{%
+  % \CN@DEBUG{chemsec}{in ChemShortCite}%
+  \CN@RealCite{#1}{CN@KeyFound}{CN@LabelIndex}{\CN@SubLabel}%
+  % \CN@DEBUG{chemsec}{SCite: called Real}%
+  \ChemShortLabelStyle{\ChemMainCounterStyle{CN@LabelIndex}}{\CN@SubLabel}%
+}%
+\DeclareRobustCommand*{\CN@ChemMFCite}[1]{%
+  % \CN@DEBUG{chemsec}{in ChemMainFullCite}%
+  \CN@RealCite{\CN@MainKey(#1)}{CN@KeyFound}{CN@LabelIndex}{\CN@SubLabel}%
+  % \CN@DEBUG{chemsec}{Cite: called Real}%
+  \ChemFullLabelStyle{\CN@GetFullName{\CN@MainKey(#1)}}{\ChemMainCounterStyle{CN@LabelIndex}}{\CN@SubLabel}%
+}%
+\DeclareRobustCommand*{\CN@ChemMSCite}[1]{%
+  % \CN@DEBUG{chemsec}{in ChemMainShortCite}%
+  \CN@RealCite{\CN@MainKey{#1}}{CN@KeyFound}{CN@LabelIndex}{\CN@SubLabel}%
+  % \CN@DEBUG{chemsec}{SCite: called Real}%
+  \ChemShortLabelStyle{\ChemMainCounterStyle{CN@LabelIndex}}{\CN@SubLabel}%
+}%
+\DeclareRobustCommand*{\CN@ChemCiteStar}[1]{%
+  % \CN@DEBUG{chemsec}{in Chemcite}%
+  \setboolean{CN@Star}{true}%
+  \CN@ChemCite{#1}%
+  \setboolean{CN@Star}{false}%
+}
+\DeclareRobustCommand*{\CN@ChemFCiteStar}[1]{%
+  % \CN@DEBUG{chemsec}{in ChemFullCite}%
+  \setboolean{CN@Star}{true}%
+  \CN@ChemFCite{#1}%
+  \setboolean{CN@Star}{false}%
+}%
+\DeclareRobustCommand*{\CN@ChemSCiteStar}[1]{%
+  % \CN@DEBUG{chemsec}{in ChemShortCite}%
+  \setboolean{CN@Star}{true}%
+  \CN@ChemSCite{#1}%
+  \setboolean{CN@Star}{false}%
+}%
+\DeclareRobustCommand*{\CN@ChemMFCiteStar}[1]{%
+  % \CN@DEBUG{chemsec}{in ChemMainFullCite}%
+  \setboolean{CN@Star}{true}%
+  \CN@ChemMFCite{#1}%
+  \setboolean{CN@Star}{false}%
+}%
+\DeclareRobustCommand*{\CN@ChemMSCiteStar}[1]{%
+  % \CN@DEBUG{chemsec}{in ChemMainShortCite}%
+  \setboolean{CN@Star}{true}%
+  \CN@ChemMSCite{#1}%
+  \setboolean{CN@Star}{false}%
+}%
+\DeclareRobustCommand*{\ChemCite}{%
+  \@ifstar{\CN@ChemCiteStar}{\CN@ChemCite}%
+}
+\DeclareRobustCommand*{\ChemFCite}{%
+  \@ifstar{\CN@ChemFCiteStar}{\CN@ChemFCite}%
+}%
+\DeclareRobustCommand*{\ChemSCite}{%
+  \@ifstar{\CN@ChemSCiteStar}{\CN@ChemSCite}%
+}%
+\DeclareRobustCommand*{\ChemMFCite}{%
+  \@ifstar{\CN@ChemMFCiteStar}{\CN@ChemMFCite}%
+}%
+\DeclareRobustCommand*{\ChemMSCite}{%
+  \@ifstar{\CN@ChemMSCiteStar}{\CN@ChemMSCite}%
+}%
+\DeclareRobustCommand*{\DefineChemical}[3]{%
+  \CN@definenewchemical{#1}{#2}{#3}%
+  \write\@auxout{\string\CN@definenewchemical{#1}{#2}{#3}}%
+}%end def
+\makeatother
+\endinput
+%%
+%% End of file `chemsec.sty'.

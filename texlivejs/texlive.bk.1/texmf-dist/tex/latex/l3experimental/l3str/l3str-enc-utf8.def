@@ -1,0 +1,190 @@
+%%
+%% This is file `l3str-enc-utf8.def',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% l3str-convert.dtx  (with options: `utf8')
+%% 
+%% Copyright (C) 2011-2019 The LaTeX3 Project
+%% 
+%% It may be distributed and/or modified under the conditions of
+%% the LaTeX Project Public License (LPPL), either version 1.3c of
+%% this license or (at your option) any later version.  The latest
+%% version of this license is in the file:
+%% 
+%%    http://www.latex-project.org/lppl.txt
+%% 
+%% This file is part of the "l3experimental bundle" (The Work in LPPL)
+%% and all files in that bundle must be distributed together.
+%% 
+%% File: l3str-convert.dtx Copyright (C) 2013-2019 The LaTeX3 Project
+\cs_new_protected:cpn { __str_convert_encode_utf8: }
+  { \__str_convert_gmap_internal:N \__str_encode_utf_viii_char:n }
+\cs_new:Npn \__str_encode_utf_viii_char:n #1
+  {
+    \__str_encode_utf_viii_loop:wwnnw #1 ; - 1 + 0 * ;
+      { 128 } {       0 }
+      {  32 } {     192 }
+      {  16 } {     224 }
+      {   8 } {     240 }
+    \q_stop
+  }
+\cs_new:Npn \__str_encode_utf_viii_loop:wwnnw #1; #2; #3#4 #5 \q_stop
+  {
+    \if_int_compare:w #1 < #3 \exp_stop_f:
+      \__str_output_byte:n { #1 + #4 }
+      \exp_after:wN \use_none_delimit_by_q_stop:w
+    \fi:
+    \exp_after:wN \__str_encode_utf_viii_loop:wwnnw
+      \int_value:w \int_div_truncate:nn {#1} {64} ; #1 ;
+      #5 \q_stop
+    \__str_output_byte:n { #2 - 64 * ( #1 - 2 ) }
+  }
+\flag_clear_new:n { str_missing }
+\flag_clear_new:n { str_extra }
+\flag_clear_new:n { str_overlong }
+\flag_clear_new:n { str_overflow }
+\__kernel_msg_new:nnnn { str } { utf8-decode }
+  {
+    Invalid~UTF-8~string:
+    \exp_last_unbraced:Nf \use_none:n
+      {
+        \__str_if_flag_times:nT { str_missing }  { ,~missing~continuation~byte }
+        \__str_if_flag_times:nT { str_extra }    { ,~extra~continuation~byte }
+        \__str_if_flag_times:nT { str_overlong } { ,~overlong~form }
+        \__str_if_flag_times:nT { str_overflow } { ,~code~point~too~large }
+      }
+    .
+  }
+  {
+    In~the~UTF-8~encoding,~each~Unicode~character~consists~in~
+    1~to~4~bytes,~with~the~following~bit~pattern: \\
+    \iow_indent:n
+      {
+        Code~point~\ \ \ \ <~128:~0xxxxxxx \\
+        Code~point~\ \ \  <~2048:~110xxxxx~10xxxxxx \\
+        Code~point~\ \   <~65536:~1110xxxx~10xxxxxx~10xxxxxx \\
+        Code~point~    <~1114112:~11110xxx~10xxxxxx~10xxxxxx~10xxxxxx \\
+      }
+    Bytes~of~the~form~10xxxxxx~are~called~continuation~bytes.
+    \flag_if_raised:nT { str_missing }
+      {
+        \\\\
+        A~leading~byte~(in~the~range~[192,255])~was~not~followed~by~
+        the~appropriate~number~of~continuation~bytes.
+      }
+    \flag_if_raised:nT { str_extra }
+      {
+        \\\\
+        LaTeX~came~across~a~continuation~byte~when~it~was~not~expected.
+      }
+    \flag_if_raised:nT { str_overlong }
+      {
+        \\\\
+        Every~Unicode~code~point~must~be~expressed~in~the~shortest~
+        possible~form.~For~instance,~'0xC0'~'0x83'~is~not~a~valid~
+        representation~for~the~code~point~3.
+      }
+    \flag_if_raised:nT { str_overflow }
+      {
+        \\\\
+        Unicode~limits~code~points~to~the~range~[0,1114111].
+      }
+  }
+\cs_new_protected:cpn { __str_convert_decode_utf8: }
+  {
+    \flag_clear:n { str_error }
+    \flag_clear:n { str_missing }
+    \flag_clear:n { str_extra }
+    \flag_clear:n { str_overlong }
+    \flag_clear:n { str_overflow }
+    \tl_gset:Nx \g__str_result_tl
+      {
+        \exp_after:wN \__str_decode_utf_viii_start:N \g__str_result_tl
+          { \prg_break: \__str_decode_utf_viii_end: }
+        \prg_break_point:
+      }
+    \__str_if_flag_error:nnx { str_error } { utf8-decode } { }
+  }
+\cs_new:Npn \__str_decode_utf_viii_start:N #1
+  {
+    #1
+    \if_int_compare:w `#1 < "C0 \exp_stop_f:
+      \s__tl
+      \if_int_compare:w `#1 < "80 \exp_stop_f:
+        \int_value:w `#1
+      \else:
+        \flag_raise:n { str_extra }
+        \flag_raise:n { str_error }
+        \int_use:N \c__str_replacement_char_int
+      \fi:
+    \else:
+      \exp_after:wN \__str_decode_utf_viii_continuation:wwN
+      \int_value:w \int_eval:n { `#1 - "C0 } \exp_after:wN
+    \fi:
+    \s__tl
+    \use_none_delimit_by_q_stop:w {"80} {"800} {"10000} {"110000} \q_stop
+    \__str_decode_utf_viii_start:N
+  }
+\cs_new:Npn \__str_decode_utf_viii_continuation:wwN
+    #1 \s__tl #2 \__str_decode_utf_viii_start:N #3
+  {
+    \use_none:n #3
+    \if_int_compare:w `#3 <
+          \if_int_compare:w `#3 < "80 \exp_stop_f: - \fi:
+          "C0 \exp_stop_f:
+      #3
+      \exp_after:wN \__str_decode_utf_viii_aux:wNnnwN
+      \int_value:w \int_eval:n { #1 * "40 + `#3 - "80 } \exp_after:wN
+    \else:
+      \s__tl
+      \flag_raise:n { str_missing }
+      \flag_raise:n { str_error }
+      \int_use:N \c__str_replacement_char_int
+    \fi:
+    \s__tl
+    #2
+    \__str_decode_utf_viii_start:N #3
+  }
+\cs_new:Npn \__str_decode_utf_viii_aux:wNnnwN
+    #1 \s__tl #2#3#4 #5 \__str_decode_utf_viii_start:N #6
+  {
+    \if_int_compare:w #1 < #4 \exp_stop_f:
+      \s__tl
+      \if_int_compare:w #1 < #3 \exp_stop_f:
+        \flag_raise:n { str_overlong }
+        \flag_raise:n { str_error }
+        \int_use:N \c__str_replacement_char_int
+      \else:
+        #1
+      \fi:
+    \else:
+      \if_meaning:w \q_stop #5
+        \__str_decode_utf_viii_overflow:w #1
+      \fi:
+      \exp_after:wN \__str_decode_utf_viii_continuation:wwN
+      \int_value:w \int_eval:n { #1 - #4 } \exp_after:wN
+    \fi:
+    \s__tl
+    #2 {#4} #5
+    \__str_decode_utf_viii_start:N
+  }
+\cs_new:Npn \__str_decode_utf_viii_overflow:w #1 \fi: #2 \fi:
+  {
+    \fi: \fi:
+    \flag_raise:n { str_overflow }
+    \flag_raise:n { str_error }
+    \int_use:N \c__str_replacement_char_int
+  }
+\cs_new:Npn \__str_decode_utf_viii_end:
+  {
+    \s__tl
+    \flag_raise:n { str_missing }
+    \flag_raise:n { str_error }
+    \int_use:N \c__str_replacement_char_int \s__tl
+    \prg_break:
+  }
+%% 
+%%
+%% End of file `l3str-enc-utf8.def'.

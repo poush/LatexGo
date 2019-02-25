@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="setupalign" category="alignment" level="style" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes">
+                <cd:constant type="broad"/>
+                <cd:constant type="wide"/>
+                <cd:constant type="bottom" default="yes"/>
+                <cd:constant type="height"/>
+                <cd:constant type="line"/>
+                <cd:constant type="high"/>
+                <cd:constant type="low"/>
+                <cd:constant type="lohi"/>
+                <cd:constant type="flushright"/>
+                <cd:constant type="flushleft"/>
+                <cd:constant type="middle"/>
+                <cd:constant type="yes"/>
+                <cd:constant type="no"/>
+                <cd:constant type="width" default="yes"/>
+                <cd:constant type="normal"/>
+                <cd:constant type="reset"/>
+                <cd:constant type="inner"/>
+                <cd:constant type="outer"/>
+                <cd:constant type="flushinner"/>
+                <cd:constant type="flushouter"/>
+                <cd:constant type="left"/>
+                <cd:constant type="right"/>
+                <cd:constant type="center"/>
+                <cd:constant type="disable"/>
+                <cd:constant type="last"/>
+                <cd:constant type="end"/>
+                <cd:constant type="paragraph"/>
+                <cd:constant type="lefttoright"/>
+                <cd:constant type="righttoleft"/>
+                <cd:constant type="l2r"/>
+                <cd:constant type="r2l"/>
+                <cd:constant type="table"/>
+                <cd:constant type="lesshyphenation"/>
+                <cd:constant type="morehyphenation"/>
+                <cd:constant type="hanging"/>
+                <cd:constant type="nothanging"/>
+                <cd:constant type="hz"/>
+                <cd:constant type="fullhz"/>
+                <cd:constant type="nohz"/>
+                <cd:constant type="hyphenated"/>
+                <cd:constant type="nothyphenated"/>
+                <cd:constant type="tolerant"/>
+                <cd:constant type="verytolerant"/>
+                <cd:constant type="stretch"/>
+                <cd:constant type="extremestretch"/>
+                <cd:constant type="final"/>
+                <cd:constant type="1*final"/>
+                <cd:constant type="2*final"/>
+                <cd:constant type="3*final"/>
+                <cd:constant type="4*final"/>
+                <cd:constant type="more"/>
+                <cd:constant type="1*more"/>
+                <cd:constant type="2*more"/>
+                <!--
+                    <cd:constant type="cd:name"/>
+                -->
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="usealignparameter" level="system" category="alignment" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="alignment" type="environment" category="alignment" level="document" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes">
+                <cd:inherit name="setupalign"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="linealignment" type="environment" category="alignment" level="document" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="left"/>
+                <cd:constant type="middle"/>
+                <cd:constant type="right"/>
+                <cd:constant type="max"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="leftaligned" type="environment" category="alignment" level="document" file="spac-ali.mkiv"/>
+
+    <cd:command name="middlealigned" type="environment" category="alignment" level="document" file="spac-ali.mkiv"/>
+
+    <cd:command name="rightaligned" type="environment" category="alignment" level="document" file="spac-ali.mkiv"/>
+
+    <cd:command name="maxaligned" type="environment" category="alignment" level="document" file="spac-ali.mkiv"/>
+
+    <cd:command name="midaligned" type="environment" category="alignment" level="document" file="spac-ali.mkiv"/>
+
+    <cd:command name="centeraligned" type="environment" category="alignment" level="document" file="spac-ali.mkiv"/>
+
+    <cd:command name="leftaligned" category="alignment" level="document" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="rightaligned" category="alignment" level="document" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="middlealigned" category="alignment" level="document" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="maxaligned" category="alignment" level="document" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="midaligned" category="alignment" level="document" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="centeraligned" category="alignment" level="document" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="alignedline" level="system" category="alignment" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-alignline"/>
+            <cd:resolve name="argument-alignline"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="wordright" category="alignment" level="document" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="right"/>
+                <cd:constant type="cd:dimension"/>
+            </cd:keywords>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="simplealignedbox" level="system" category="alignment" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-alignsimple"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="simplealignedspreadbox" level="system" category="alignment" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-alignsimple"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="simplealignedboxplus" level="system" category="alignment" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-alignsimple"/>
+            <cd:resolve name="argument-text"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="simplereversealignedbox" level="system" category="alignment" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-alignsimple"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="simplereversealignedboxplus" level="system" category="alignment" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-alignsimple"/>
+            <cd:resolve name="argument-text"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="alignedbox" level="system" category="alignment" file="pack-box.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes">
+                <cd:resolve name="value-aligned"/>
+            </cd:keywords>
+            <cd:csname/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="aligned" level="system" category="alignment" file="pack-box.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes">
+                <cd:resolve name="value-aligned"/>
+            </cd:keywords>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="lefttoright" category="alignment" level="style" file="spac-ali.mkiv"/>
+
+    <cd:command name="righttoleft" category="alignment" level="style" file="spac-ali.mkiv"/>
+
+    <cd:command name="raggedbottom" category="alignment" level="style" file="spac-ali.mkiv"/>
+
+    <cd:command name="alignbottom" category="alignment" level="style" file="spac-ali.mkiv"/>
+
+    <cd:command name="baselinebottom" category="alignment" level="style" file="spac-ali.mkiv"/>
+
+    <cd:command name="notragged" category="alignment" level="style" file="spac-ali.mkiv"/>
+
+    <cd:command name="raggedleft" category="alignment" level="style" file="spac-ali.mkiv"/>
+
+    <cd:command name="raggedcenter" category="alignment" level="style" file="spac-ali.mkiv"/>
+
+    <cd:command name="raggedright" category="alignment" level="style" file="spac-ali.mkiv"/>
+
+    <cd:command name="veryraggedleft" category="alignment" level="style" file="spac-ali.mkiv"/>
+
+    <cd:command name="veryraggedcenter" category="alignment" level="style" file="spac-ali.mkiv"/>
+
+    <cd:command name="veryraggedright" category="alignment" level="style" file="spac-ali.mkiv"/>
+
+    <cd:command name="raggedwidecenter" category="alignment" level="style" file="spac-ali.mkiv"/>
+
+    <cd:command name="centeredlastline" category="alignment" level="style" file="spac-ali.mkiv"/>
+
+    <cd:command name="flushedrightlastline" category="alignment" level="style" file="spac-ali.mkiv"/>
+
+    <cd:command name="ttraggedright" category="alignment" level="style" file="spac-ali.mkiv"/>
+
+    <cd:command name="forgetragged" category="alignment" level="style" file="spac-ali.mkiv"/>
+
+    <cd:command name="line" category="alignment" level="document" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="leftline" category="alignment" level="document" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="rightline" category="alignment" level="document" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="centerline" category="alignment" level="document" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="hanging" type="environment" category="alignment" level="document" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="n">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="location">
+                    <cd:constant type="left" default="yes"/>
+                    <cd:constant type="right"/>
+                </cd:parameter>
+            </cd:assignments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="hanging" type="environment" variant="argument" category="alignment" level="document" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="left" default="yes"/>
+                <cd:constant type="right"/>
+            </cd:keywords>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="fixed" type="environment" category="alignment" level="document" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="low"/>
+                <cd:constant type="middle"/>
+                <cd:constant type="high"/>
+                <cd:constant type="lohi"/>
+                <cd:constant type="default" default="yes"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

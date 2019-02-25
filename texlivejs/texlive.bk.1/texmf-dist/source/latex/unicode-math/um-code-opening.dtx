@@ -1,0 +1,395 @@
+%%^^A%% um-code-opening.dtx -- part of UNICODE-MATH <wspr.io/unicode-math>
+%%^^A%% Assorted initialisation tasks, including some low-level function definitions.
+
+% \section{Start of the package code}
+%
+% The prefix for \pkg{unicode-math} is \texttt{um}:
+%    \begin{macrocode}
+%<@@=um>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%<*package>
+%    \end{macrocode}
+%
+% \paragraph{Packages}
+% Assuming people are running up-to-date packages.
+%    \begin{macrocode}
+\RequirePackage{xparse,l3keys2e}
+\RequirePackage{fontspec}
+\RequirePackage{filehook}
+\RequirePackage{fix-cm}
+%<LU>\RequirePackage{lualatex-math}
+%    \end{macrocode}
+%
+% \subsection{\pkg{expl3} variants}
+%
+% Variants needed from \pkg{expl3}:
+%    \begin{macrocode}
+\cs_set_protected_nopar:Npn \exp_last_unbraced:NNx { \::N \::x_unbraced \::: }
+%    \end{macrocode}
+%
+% For \pkg{fontspec}:
+%    \begin{macrocode}
+\cs_generate_variant:Nn \fontspec_set_family:Nnn {Nx,Nxx}
+\cs_generate_variant:Nn \prop_get:NnNTF {cx}
+\cs_generate_variant:Nn \tl_if_eq:nnF {o}
+%    \end{macrocode}
+%
+%
+% \subsection{Low level commands}
+%
+%    \begin{macrocode}
+\cs_set_eq:NN \@@_group_begin: \group_begin:
+\cs_set_protected:Npn \@@_group_end:n #1 { #1 \group_end: }
+\cs_set_eq:NN \@@_group_begin_frozen: \@@_group_begin:
+\cs_set_eq:NN \@@_group_end_frozen:n  \@@_group_end:n
+%    \end{macrocode}
+%
+%
+% \subsection{Primitive font commands}
+%
+% What might end up being provided by the kernel.
+%
+% \begin{macro}{\@@_glyph_if_exist:NnTF}
+%    \begin{macrocode}
+\prg_new_conditional:Nnn \@@_glyph_if_exist:Nn {p,TF,T,F}
+  {
+    \tex_iffontchar:D #1 #2 \scan_stop:
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_fontface_gset_eq:NN}
+%    \begin{macrocode}
+\cs_set_protected:Nn \@@_fontface_gset_eq:NN
+  {
+    \tex_global:D \tex_let:D #1 #2
+  }
+\cs_generate_variant:Nn \@@_fontface_gset_eq:NN {cN}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsubsection{Mathcode and friends}
+%
+% \begin{macro}{\@@_set_mathcode:nnnn}
+% \begin{macro}{\@@_set_mathcode:nnn}
+% These are all wrappers for the primitive commands that take numerical
+% input only.
+%    \begin{macrocode}
+\cs_set:Npn \@@_set_mathcode:nnnn #1#2#3#4
+  {
+    \Umathcode \int_eval:n {#1} =
+      \mathchar@type#2 \csname sym#3\endcsname \int_eval:n {#4} \scan_stop:
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_set:Npn \@@_set_mathcode:nnn #1#2#3
+  {
+    \Umathcode \int_eval:n {#1} =
+      \mathchar@type#2 \csname sym#3\endcsname \int_eval:n {#1} \scan_stop:
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\@@_set_mathchar:NNnn}
+% \begin{macro}{\@@_set_mathchar:cNnn}
+%    \begin{macrocode}
+\cs_set:Npn \@@_set_mathchar:NNnn #1#2#3#4
+  {
+    \Umathchardef #1 =
+      \mathchar@type#2 \csname sym#3\endcsname \int_eval:n {#4} \scan_stop:
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+%    \begin{macrocode}
+\cs_generate_variant:Nn \@@_set_mathchar:NNnn {c}
+%    \end{macrocode}
+%
+% \begin{macro}{\@@_set_delcode:nnn}
+%    \begin{macrocode}
+\cs_new:Nn \@@_set_delcode:nnn
+  {
+    \Udelcode#2 = \csname sym#1\endcsname #3 \scan_stop:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_radical:nn}
+%    \begin{macrocode}
+\cs_new:Nn \@@_radical:nn
+  {
+    \Uradical \csname sym#1\endcsname #2 \scan_stop:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_delimiter:Nnn}
+%    \begin{macrocode}
+\cs_new:Nn \@@_delimiter:Nnn
+  {
+    \Udelimiter \mathchar@type#1 \csname sym#2\endcsname #3 \scan_stop:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_accent:nnn}
+%    \begin{macrocode}
+\cs_new:Nn \@@_accent:nnn
+  {
+    \Umathaccent #1~ \mathchar@type\mathaccent \use:c { sym #2 } #3 \scan_stop:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_char_gmake_mathactive:N}
+% \begin{macro}{\@@_char_gmake_mathactive:n}
+%    \begin{macrocode}
+\cs_new:Nn \@@_char_gmake_mathactive:N
+  {
+    \tex_global:D \tex_mathcode:D `#1 = "8000 \scan_stop:
+  }
+%    \end{macrocode}
+%    \begin{macrocode}
+\cs_new:Nn \@@_char_gmake_mathactive:n
+  {
+    \tex_global:D \tex_mathcode:D \int_eval:n {#1} = "8000 \scan_stop:
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\@@_mathactive_remap:nn}
+% Makes |#1| math-active and defines its meaning to be |#2|.
+% This is a global operation.
+%    \begin{macrocode}
+\cs_new:Nn \@@_mathactive_remap:nn
+  {
+    \group_begin:
+      \cs_set_protected:Npn \@@_tmp: {#2}
+      \@@_char_gmake_mathactive:n {#1}
+      \char_gset_active_eq:nN {#1} \@@_tmp:
+    \group_end:
+  }
+%    \end{macrocode}
+%
+% \subsubsection{NFSS-related interfaces}
+%
+% \begin{macro}{\@@_mathgroup_set:n}
+% Remember that \cs{mathgroup} is just \cs{fam}!
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_mathgroup_set:n
+  {
+    \tex_fam:D #1 \scan_stop:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsubsection{Font parameters}
+%
+% \begin{macro}{\@@_copy_fontdimen:nnN}
+%    \begin{macrocode}
+\cs_new:Nn \@@_copy_fontdimen:nnN
+  {
+    \fontdimen #1 \font = \the \fontdimen #2 #3 \relax
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_zero_fontdimen:n}
+%    \begin{macrocode}
+\cs_new:Nn \@@_zero_fontdimen:n
+  {
+    \fontdimen #1 \font = 0pt\relax
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_fontdimen_from_param:Nnn}
+% This function extracts the math font dimen \verb|#3| from the font \verb|#1|
+% and sets fontdimen \verb|#2| of the same font to that value.
+%
+% Use \XeTeX's fontdimen approach because it's tidy. We don't need bells and whistles here.
+%    \begin{macrocode}
+%<*LU>
+\cs_new_protected:Nn \@@_fontdimen_from_param:nn
+  {
+    \fontdimen #1 \font =
+      \lua_now:n { fontspec.mathfontdimen(font.current(),"#2") }
+    \scan_stop:
+  }
+%</LU>
+%    \end{macrocode}
+% \end{macro}
+%
+%^^A \begin{function}[EXP, added = 2019-01-19]{\@@_int_if_zero_p:n, \@@_int_if_zero:nTF}
+%^^A   \begin{syntax}
+%^^A     \cs{int_if_zero_p:n} \Arg{intexpr}
+%^^A     \cs{int_if_zero:nTF} \Arg{intexpr} \Arg{true code} \Arg{false code}
+%^^A   \end{syntax}
+%^^A   A conditional for testing if the \meta{intexpr} evaluates to zero.
+%^^A   This is simply a shorthand for
+%^^A   \begin{verbatim}
+%^^A     \int_compare_p:nNn {intexpr} = {0}
+%^^A   \end{verbatim}
+%^^A \end{function}
+%
+% \begin{macro}{\@@_int_if_zero_p:n}
+% \begin{macro}{\@@_int_if_zero:nTF}
+%    \begin{macrocode}
+\prg_new_conditional:Nnn \@@_int_if_zero:n {p,TF,T,F}
+  {
+    \int_compare:nNnTF {#1} = 0 {\prg_return_true:} {\prg_return_false:}
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+%
+% \subsection{Alphabet Unicode positions (USVs)}
+%
+% Before we begin, let's define the positions of the various Unicode
+% alphabets so that our code is a little more readable.\footnote{`\textsc{u.s.v.}' stands
+% for `Unicode scalar value'.}
+%
+% \begin{macro}{\usv_set:nnn,\@@_to_usv:nn}
+% Rather than `readable', in the end, this makes the code more extensible.
+%    \begin{macrocode}
+\cs_new:Nn \usv_set:nnn  { \tl_const:cn { c_@@_#1_#2_usv } {#3} }
+\cs_new:Nn \@@_to_usv:nn {       \use:c { c_@@_#1_#2_usv } }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_usv_if_exist:nnTF}
+%    \begin{macrocode}
+\prg_new_conditional:Nnn \@@_usv_if_exist:nn {T,F,TF}
+  {
+    \cs_if_exist:cTF { c_@@_#1_#2_usv }
+      \prg_return_true: \prg_return_false:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \subsection{Overcoming \texorpdfstring{\cmd\@onlypreamble}{\textbackslash @onlypreamble}}
+%
+% The requirement of only setting up the maths fonts in the preamble is lifted.
+% (Perhaps unwisely.)
+%    \begin{macrocode}
+\tl_map_inline:nn
+  {
+    \new@mathgroup\cdp@list\cdp@elt\DeclareMathSizes
+    \@DeclareMathSizes\newmathalphabet\newmathalphabet@@\newmathalphabet@@@
+    \DeclareMathVersion\define@mathalphabet\define@mathgroup\addtoversion
+    \version@list\version@elt\alpha@list\alpha@elt
+    \restore@mathversion\init@restore@version\dorestore@version\process@table
+    \new@mathversion\DeclareSymbolFont\group@list\group@elt
+    \new@symbolfont\SetSymbolFont\SetSymbolFont@\get@cdp
+    \DeclareMathAlphabet\new@mathalphabet\SetMathAlphabet\SetMathAlphabet@
+    \DeclareMathAccent\set@mathaccent\DeclareMathSymbol\set@mathchar
+    \set@mathsymbol\DeclareMathDelimiter\@xxDeclareMathDelimiter
+    \@DeclareMathDelimiter\@xDeclareMathDelimiter\set@mathdelimiter
+    \set@@mathdelimiter\DeclareMathRadical\mathchar@type
+    \DeclareSymbolFontAlphabet\DeclareSymbolFontAlphabet@
+  }
+  {
+    \tl_remove_once:Nn \@preamblecmds {\do#1}
+  }
+%    \end{macrocode}
+%
+%
+% \subsection{Wrappers for kernel commands}
+%
+% Messages themselves are defined in \secref{codemsg}.
+%
+%    \begin{macrocode}
+\cs_new:Npn \@@_error:n     { \msg_error:nn     {unicode-math} }
+\cs_new:Npn \@@_error:nx    { \msg_error:nnx    {unicode-math} }
+\cs_new:Npn \@@_warning:n   { \msg_warning:nn   {unicode-math} }
+\cs_new:Npn \@@_warning:nnn { \msg_warning:nnxx {unicode-math} }
+\cs_new:Npn \@@_log:n       { \msg_log:nn       {unicode-math} }
+\cs_new:Npn \@@_log:nx      { \msg_log:nnx      {unicode-math} }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_generate_variant:Nn \msg_new:nnn  {nnx}
+\cs_generate_variant:Nn \msg_new:nnnn {nnxx}
+\cs_new:Nn \@@_msg_new:nn  { \msg_new:nnx  {unicode-math} {#1} { \tl_trim_spaces:n {#2} } }
+%    \end{macrocode}
+%
+%
+% \begin{macro}{\@@_cs_new:Nn}
+%    \begin{macrocode}
+%<*debug>
+\int_new:N \g_@@_debug_nest_int
+\cs_new:Nn \@@_debug:n
+  {
+    \typeout{ <UM~DEBUG>~\prg_replicate:nn \g_@@_debug_nest_int {::}~ #1}
+  }
+\cs_new:Nn \@@_debug_start:n
+  {
+    \int_gincr:N \g_@@_debug_nest_int
+    \@@_debug:n {#1}
+  }
+\cs_new:Nn \@@_debug_end:n
+  {
+    \int_gdecr:N \g_@@_debug_nest_int
+  }
+%</debug>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_new:Npn \@@_cs_set:Nn #1 #2
+  {
+    \cs_if_exist:NF #1 { \ERROR{CS~ DOES~ NOT~ EXIST,~ USE~ "NEW"} }
+    \cs_set_protected:Nn #1
+      {
+%<debug>\@@_debug_start:n { \cs_to_str:N #1 }
+        #2
+%<debug>\@@_debug_end:n   { \cs_to_str:N #1 }
+      }
+  }
+\cs_new:Npn \@@_cs_new:Nn #1 #2
+  {
+    \cs_new_protected:Nn #1
+      {
+%<debug>\@@_debug_start:n { \cs_to_str:N #1 }
+        #2
+%<debug>\@@_debug_end:n   { \cs_to_str:N #1 }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%
+%    \begin{macrocode}
+%</package>
+%    \end{macrocode}
+
+\endinput
+
+
+% /©
+%
+% ------------------------------------------------
+% The UNICODE-MATH package  <wspr.io/unicode-math>
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% Copyright 2006-2019  Will Robertson, LPPL "maintainer"
+% Copyright 2010-2017  Philipp Stephani
+% Copyright 2011-2017  Joseph Wright
+% Copyright 2012-2015  Khaled Hosny
+% ------------------------------------------------
+%
+% ©/

@@ -1,0 +1,45 @@
+%%%%
+%%%% This file belongs to the ROEX package.
+%%%%
+%%% draw write_preamble write_postamble find_BB set_BB fill_C draw_C
+%%% draw fix_fill_cmyk fix_draw_cmyk
+% RO-05.MF, ``GERBERA'':
+%  Non-standard application of removing overlaps; areas covered a specified
+%  number of times are collected separately using the macro |recombine_edges|
+%  (performing the last step of removing overlaps), and each area is painted
+%  with a different colour, yielding a gerbera-like form.
+% ---
+input mftoeps; eps_mode_setup; input roex; tracingremoving:=1;
+% ---
+beginchar("0",in#,in#,0);
+ path R[\\],V[\\][\\];
+ N:=9;
+ R.num:=0;
+ R[incr R.num]=fullcircle xscaled 1/5w yscaled h shifted (1/2w,1/2h);
+ for i:=1 upto N-1:
+  R[incr R.num]=R[R.num-1] rotatedaround((0.5w,.5h), 180/N);
+ endfor
+%
+ remove_overlap (make_list(1,R.num)R)() R; % dummy result
+ col.min:=infinity; col.max:=-infinity;
+ for i:=-EDGE_.num upto EDGE_.num : if i<>0:
+  col.min:=min(EDGE_.col[i],col.min);
+  col.max:=max(EDGE_.col[i],col.max);
+ fi endfor;
+ col.min:=max(1,col.min);
+ for k:=col.min upto col.max:
+  vardef good_colors(expr i,j) = (i=k) enddef;
+  message "recombine_edges: color=" & decimal(k); recombine_edges(V[k]);
+ endfor;
+ set_BB 0,0,w,h; write_preamble jobname;
+ for k:=col.min upto col.max:
+  if V[k]num>0:
+   fix_fill_cmyk 0,3/4((((k-col.min)/(col.max-col.min))**1/2)[1,0]),1,0;
+   fill_C make_list(1,V[k]num)V[k];
+  fi
+ endfor
+ write_postamble;
+endchar;
+end.
+%%\end
+

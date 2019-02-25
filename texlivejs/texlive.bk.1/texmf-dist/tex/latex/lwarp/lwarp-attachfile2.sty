@@ -1,0 +1,88 @@
+%%
+%% This is file `lwarp-attachfile2.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `attachfile2')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+\LWR@ProvidesPackagePass{attachfile2}[2016/05/16]
+\def\LWR@attachfiletwo@color{}%
+
+\define@key{AtFi}{color}{%
+    \def\LWR@attachfiletwo@color{#1}%   lwarp
+  \HyColor@AttachfileColor{#1}%
+          \atfi@color@tex\atfi@color@inline\atfi@color@annot
+          {attachfile2}{color}%
+}
+\newenvironment*{LWR@attachfile@icon}
+{
+    \begin{lateximage}*%
+        [-attachfile-]%
+        [%
+            \detokenize\expandafter{\atfi@icon@icon}-%
+            \detokenize\expandafter{\LWR@attachfiletwo@color}%
+        ]%
+}
+{
+    \end{lateximage}
+}
+\xpretocmd{\atfi@acroGraph}{\LWR@attachfile@icon}{}{}
+\xapptocmd{\atfi@acroGraph}{\endLWR@attachfile@icon}{}{}
+
+\xpretocmd{\atfi@acroPaperclip}{\LWR@attachfile@icon}{}{}
+\xapptocmd{\atfi@acroPaperclip}{\endLWR@attachfile@icon}{}{}
+
+\xpretocmd{\atfi@acroPushPin}{\LWR@attachfile@icon}{}{}
+\xapptocmd{\atfi@acroPushPin}{\endLWR@attachfile@icon}{}{}
+
+\xpretocmd{\atfi@acroTag}{\LWR@attachfile@icon}{}{}
+\xapptocmd{\atfi@acroTag}{\endLWR@attachfile@icon}{}{}
+\DeclareRobustCommand{\atfi@embedfile}[1]{}
+\newcommand*{\LWR@attachfile@appearance}{}
+
+\def\atfi@set@appearance@icon{%
+    \atfi@set@appearance{\csname atfi@acro\atfi@icon@icon\endcsname}%
+}
+
+\DeclareRobustCommand{\atfi@set@appearance}[1]{%
+    \def\LWR@attachfile@appearance{#1}%
+}
+\DeclareRobustCommand{\atfi@insert@file@annot}[1]{%
+    \href{#1}{\LWR@attachfile@appearance}%
+}
+\DeclareRobustCommand{\notextattachfile}[2][]{%
+  \begingroup
+    \atfi@setup{#1}%
+    \ifatfi@print
+      \leavevmode
+      \begingroup
+        \HyColor@UseColor\atfi@color@tex
+        \LWR@textcurrentcolor{#2}%      lwarp
+      \endgroup
+    \fi
+  \endgroup
+}
+\DeclareRobustCommand{\noattachfile}[1][]{%
+  \begingroup
+    \atfi@setup{#1}%
+    \atfi@set@appearance@icon
+    \ifatfi@print
+        \LWR@attachfile@appearance%     lwarp
+    \fi
+  \endgroup
+}
+
+\endinput
+%%
+%% End of file `lwarp-attachfile2.sty'.

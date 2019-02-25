@@ -1,0 +1,49 @@
+%%%%
+%%%% This file belongs to the ROEX package.
+%%%%
+%%% draw write_preamble write_postamble find_BB set_BB fill_C draw_C
+%%% draw fix_fill_cmyk fix_draw_cmyk roex_default
+% RO-04.MF, ``EOFILL'':
+%  Removing overlaps performed in two stages: first stage removes overlaps
+%  using even-odd filling rule, the second stage restores default meanings
+%  of |good_colors| and |touch_path| and performs ``traditional'' removing
+%  overlaps on the result of stage 1 and a positively oriented rectangle.
+% ---
+input mftoeps; eps_mode_setup; input roex; tracingremoving:=1;
+% ---
+beginchar("0",in#,in#,0);
+ path A,B,C,D,E,F;
+ A=fullcircle scaled 1w shifted (1/2w,1/2h);
+ B=fullcircle scaled 4/5w shifted (1/2w,1/2h);
+ C=fullcircle scaled 3/5w shifted (1/2w,1/2h);
+ D=fullcircle scaled 2/5w shifted (1/2w,1/2h);
+ E=unitsquare xscaled 1/5w yscaled 9/10h shifted (2/5w,1/20h);
+ F=unitsquare xscaled 7/5w yscaled 1/5h shifted (-1/5w,2/5h);
+%
+% STAGE 1: remove overlaps for |A|, |B|, |C|, |D| and |E| using
+% the `eofill' rule (the re-definition of |touch_path| is superfluous here,
+% but recommended in a general case):
+ vardef good_colors(expr i,o) = odd(i) and odd(o+1) enddef;
+ vardef touch_path(expr p) = pos_turn(p) enddef;
+ remove_overlap (A,B,C,D,E) () R;
+% STAGE 2: remove overlaps for |F| and the paths resulting from the stage 1:
+ roex_default good_colors, touch_path;
+ remove_overlap (F,make_list(1,R.num) R) () R;
+%
+ find_BB make_list(1,R.num) R;
+ write_preamble jobname;
+ fix_fill_cmyk 0,0,0,1/10;
+ fill_C make_list(1,R.num) R;
+ for i:=1 upto R.num:
+  fix_draw_cmyk if check_turn(R[i])>0: 0,1,1,0 else: 1,1,0,0 fi;
+  draw_C R[i];
+  if proofing>0:
+   for j:=0 upto length(R[i])-1:
+    makelabel(decimal(j) & "/" & decimal(i),point j of R[i]);
+   endfor
+  fi
+ endfor;
+ write_postamble;
+endchar;
+end.
+%%\end

@@ -1,0 +1,111 @@
+\NeedsTeXFormat{LaTeX2e}[1995/12/01]
+\ProvidesPackage{correctmathalign}
+   [2017/04/04 v1.1 style file ``correctmathalign.sty''^^J
+    by Yuwsuke Kieda]
+
+\newif\if@fleqn \@fleqnfalse
+
+\DeclareOption{latexorg}{\endinput}
+\DeclareOption{fleqn}{\@fleqntrue}
+
+\ProcessOptions
+
+\if@fleqn
+  \renewenvironment{eqnarray}{% fleqn.clo
+    \stepcounter{equation}%
+    \def\@currentlabel{\p@equation\theequation}%
+    \global\@eqnswtrue\m@th
+    \global\@eqcnt\z@
+    \tabskip\mathindent
+    \let\\=\@eqncr
+    \setlength\abovedisplayskip{\topsep}%
+    \ifvmode
+      \addtolength\abovedisplayskip{\partopsep}%
+    \fi
+    \addtolength\abovedisplayskip{\parskip}%
+    \setlength\belowdisplayskip{\abovedisplayskip}%
+    \setlength\belowdisplayshortskip{\abovedisplayskip}%
+    \setlength\abovedisplayshortskip{\abovedisplayskip}%
+    $$\everycr{}\halign to\linewidth% $$
+    \bgroup
+      \hskip\@centering
+      $\displaystyle\tabskip\z@skip{##}$\@eqnsel&%
+      \global\@eqcnt\@ne\hfil$\displaystyle{{}##{}}$\hfil&%
+      \global\@eqcnt\tw@$\displaystyle{##}$\hfil\tabskip\@centering&%
+      \global\@eqcnt\thr@@\hb@xt@\z@\bgroup\hss##\egroup\tabskip\z@skip\cr}%
+      {\@@eqncr
+    \egroup
+    \global\advance\c@equation\m@ne$$% $$
+    \@ignoretrue
+    }
+\else
+  \def\eqnarray{% latex.ltx
+    \stepcounter{equation}%
+    \def\@currentlabel{\p@equation\theequation}%
+    \global\@eqnswtrue
+    \m@th
+    \global\@eqcnt\z@
+    \tabskip\@centering
+    \let\\\@eqncr
+    $$\everycr{}\halign to\displaywidth\bgroup
+        \hskip\@centering$\displaystyle\tabskip\z@skip{##}$\@eqnsel
+       &\global\@eqcnt\@ne\hfil$\displaystyle{{}##{}}$\hfil
+       &\global\@eqcnt\tw@$\displaystyle{##}$\hfil\tabskip\@centering
+       &\global\@eqcnt\thr@@\hb@xt@\z@\bgroup\hss##\egroup
+          \tabskip\z@skip
+       \cr
+  }
+\fi
+
+\@ifpackageloaded{amsmath}{%
+  \@ifpackagelater{amsmath}{2016/11/05}{\relax}{%
+    \renewcommand{\start@aligned}[2]{%
+      \RIfM@\else
+          \nonmatherr@{\begin{\@currenvir}}%
+      \fi
+      \savecolumn@ % Assumption: called inside a group
+      \null%
+      \if #1t\vtop \else \if#1b \vbox \else \vcenter \fi \fi \bgroup
+          \maxfields@#2\relax
+          \ifnum\maxfields@>\m@ne
+              \multiply\maxfields@\tw@
+              \let\math@cr@@@\math@cr@@@alignedat
+              \alignsep@\z@skip
+          \else
+              \let\math@cr@@@\math@cr@@@aligned
+              \alignsep@\minalignsep
+          \fi
+          \Let@ \chardef\dspbrk@context\@ne
+          \default@tag
+          \spread@equation % no-op if already called
+          \global\column@\z@
+          \ialign\bgroup
+             &\column@plus
+              \hfil
+              \strut@
+              $\m@th\displaystyle{##}$%
+              \tabskip\z@skip
+             &\column@plus
+              $\m@th\displaystyle{{}##}$%
+              \hfil
+              \tabskip\alignsep@
+              \crcr
+    }
+    \renewenvironment{gathered}[1][c]{%
+      \RIfM@\else
+          \nonmatherr@{\begin{gathered}}%
+      \fi
+      \null%
+      \if #1t\vtop \else \if#1b\vbox \else \vcenter \fi\fi \bgroup
+          \Let@ \chardef\dspbrk@context\@ne \restore@math@cr
+          \spread@equation
+          \ialign\bgroup
+              \hfil\strut@$\m@th\displaystyle##$\hfil
+              \crcr
+    }{%
+      \endaligned
+    }%
+  }
+}{\relax}
+
+\endinput

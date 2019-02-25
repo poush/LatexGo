@@ -1,0 +1,2416 @@
+% \CheckSum{2283}
+% \iffalse meta-comment
+%
+% Copyright 1993, 1994, 1995, 1996 Alan Jeffrey,
+% hacked and maintained 1997, 1998 Sebastian Rahtz,
+% copyright 1998, 1999, 2000, 2001 the fontinst maintenance team and 
+% any individual authors listed elsewhere in this file.  
+% All rights reserved.
+% 
+% This file is part of the fontinst system version 1.9.
+% -----------------------------------------------------
+% 
+% It may be distributed under the terms of the LaTeX Project Public
+% License, as described in lppl.txt in the base LaTeX distribution.
+% Either version 1.2 or, at your option, any later version.
+% 
+%%% From file: ficommon.dtx
+%
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage{fisource}
+\title{The \package{fontinst} utility}
+\author{Alan Jeffrey, Sebastian Rahtz, Ulrik Vieth, Lars Hellstr\"om}
+\begin{document}
+\maketitle
+\tableofcontents
+\DocInput{ficommon.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \StopEventually{}
+%
+% 
+% \section{General commands}
+% \changes{1.916}{2000/12/27}{Moved Section \thesection\ to 
+%    \texttt{ficommon.dtx}. (LH)}
+% 
+% \changes{1.916}{2001/01/02}{\emph{Major} overhaul of \package{fontdoc} 
+%    mechanisms for integer and string expressions completed. (LH)}
+% There are roughly five types of arguments that \package{fontinst} 
+% commands can take. These are
+% \begin{itemize}
+%   \item integer expressions,
+%   \item string expressions,
+%   \item dimensions,
+%   \item commands (i.e., \TeX\ control sequences), and
+%   \item other (pretty much ``none of the above'').
+% \end{itemize}
+% The most common form of an integer expression is simply a \TeX\ 
+% \meta{number} and the most common form of a string expression is 
+% simply a sequence of character tokens, but there are more complicated 
+% forms. Dimensions are simply \TeX\ \meta{dimen}s; their use is rather 
+% limited. Common to integer expressions, string expressions, and 
+% dimensions is that these argument types get expanded during 
+% evaluation (in the case of string expressions, this expansion 
+% \emph{is} the evaluation), which means one can use macros in 
+% arguments of these types.
+% 
+% Command arguments do not get expanded---they are mainly used with 
+% commands that modify the definitions of other commands. As for the 
+% ``other'' arguments one cannot give any rules: they might get 
+% expanded, but it could also happen that they won't.
+% 
+% 
+% \subsection{String expressions}
+% 
+% The first problem with string expressions is to typeset the values. 
+% The character strings that appear in ETX and MTX files usually consist 
+% only of immediately printable characters, but there are a few 
+% characters (such as underscore) which may be used even though they 
+% aren't directly printable. This subsection defines commands which deal 
+% with this problem by replacing non-printable characters by commands. 
+% The implementation is based on the implementation of the 
+% |\MakeHarmless| command in the \package{xdoc} package.
+% 
+% \subsubsection{Typesetting problematic characters}
+% 
+% \begin{macro}{\PrintChar}
+% \begin{macro}{\InvisibleCharPrefix}
+% \begin{macro}{\InvisibleCharSuffix}
+%   The |\PrintChar| command has the syntax
+%   \begin{quote}
+%     |\PrintChar|\marg{8-bit number}
+%   \end{quote}
+%   where \meta{8-bit number} is a \TeX\ number in the range 0--255. 
+%   For arguments in the range 0--31, |\PrintChar| prints 
+%   `\textit{\ttfamily\string^\string^@}'--`\textit{\ttfamily
+%   \string^\string^_}'. For an argument in the range 32--126, 
+%   |\PrintChar| calls |\Print|\-|Visible|\-|Char| which typesets the 
+%   corresponding ASCII character (similar to |\char|, but it takes the 
+%   path via the \LaTeX\ internal representation so that it works with 
+%   non-typewriter \texttt{OT1} fonts); in particular, |\PrintChar{32}| 
+%   prints a ``visible space'' character. |\PrintChar{127}| prints 
+%   `\textit{\ttfamily\string^\string^?}'. For arguments in the range 
+%   128--255, |\PrintChar| prints 
+%   `\textit{\ttfamily\string^\string^80}'--`\textit{\ttfamily
+%   \string^\string^ff}'.
+%   The |\PrintChar| command is robust.
+%   
+%   The macros |\InvisibleCharPrefix| and |\InvisibleCharSuffix| begin 
+%   and end a |^^|-sequence. |\InvisibleCharPrefix| should print the 
+%   actual |^^|, but it may also for example select a new font for 
+%   the |^^|-sequence (such font changes are restored at the end of 
+%   |\PrintChar|).
+%    \begin{macrocode}
+%<*doc>
+\DeclareRobustCommand\PrintChar[1]{%
+   \leavevmode
+   \begingroup
+      \count@=#1\relax
+      \ifnum \@xxxii>\count@
+         \advance \count@ 64%
+         \InvisibleCharPrefix
+         \PrintVisibleChar\count@
+         \InvisibleCharSuffix
+      \else\ifnum 127>\count@
+         \PrintVisibleChar\count@
+      \else
+         \InvisibleCharPrefix
+         \ifnum 127=\count@ \PrintVisibleChar{63}\else
+            \@tempcnta=\count@
+            \divide \count@ \sixt@@n
+            \@tempcntb=\count@
+            \multiply \count@ \sixt@@n
+            \advance \@tempcnta -\count@
+            \advance \@tempcntb \ifnum 9<\@tempcntb 87\else 48\fi
+            \advance \@tempcnta \ifnum 9<\@tempcnta 87\else 48\fi
+            \char\@tempcntb \char\@tempcnta
+         \fi
+         \InvisibleCharSuffix
+      \fi\fi
+   \endgroup
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\newcommand\InvisibleCharPrefix{%
+   \/\em
+   \PrintVisibleChar{`\^}\PrintVisibleChar{`\^}%
+}
+\newcommand\InvisibleCharSuffix{\/}
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+% 
+% \begin{macro}{\PrintVisibleChar}
+%   The |\PrintVisibleChar| command should print the visible ASCII 
+%   character whose character code is given in the argument. The 
+%   definition given here translates every character code to the 
+%   corresponding \LaTeX\ internal representation, which is necessary 
+%   if the current font is e.g.\ an \texttt{OT1}-encoded non-typewriter 
+%   font. If the current font is known to be \texttt{T1}-encoded then 
+%   one can do just as well with |\char#1 | as the replacement text.
+%    \begin{macrocode}
+\newcommand\PrintVisibleChar[1]{%
+   \ifcase #1%
+   \or\or\or\or\or\or\or\or \or\or\or\or\or\or\or\or 
+   \or\or\or\or\or\or\or\or \or\or\or\or\or\or\or\or
+   % "20
+      \textvisiblespace \or!\or\textquotedbl \or\#\or\textdollar 
+      \or\%\or\&\or\textquoteright\or(\or)\or*\or+\or,\or-\or.\or/%
+   \or % "30
+      0\or1\or2\or3\or4\or5\or6\or7\or8\or9\or:\or;\or
+      \textless\or=\or\textgreater\or?%
+   \or % "40
+      @\or A\or B\or C\or D\or E\or F\or G\or 
+      H\or I\or J\or K\or L\or M\or N\or O%
+   \or % "50
+      P\or Q\or R\or S\or T\or U\or V\or W\or X\or Y\or Z\or [\or
+      \textbackslash \or]\or\textasciicircum \or\textunderscore
+   \or % "60
+      \textquoteleft \or a\or b\or c\or d\or e\or f\or g\or h\or 
+      i\or j\or k\or l\or m\or n\or o%
+   \or % "70
+      p\or q\or r\or s\or t\or u\or v\or w\or x\or y\or z\or
+      \textbraceleft \or\textbar \or\textbraceright \or\textasciitilde
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\textvisiblespace}
+%   The |\textvisiblespace| command, which is heavily used in names of 
+%   coding schemes, unfortunately has a default definition which lacks 
+%   leading on the right side. This redefinition attempts to improve 
+%   things.
+%   \changes{1.921}{2002/03/27}{Redefinition added. (LH)}
+%    \begin{macrocode}
+\DeclareTextCommandDefault{\textvisiblespace}{%
+   \makebox[\fontdimen\tw@\font]{%
+      \hfil
+      \vrule \@height.3ex%
+      \vbox{\hrule \@width .66\fontdimen\tw@\font}%
+      \vrule \@height.3ex%
+      \hfil
+   }%
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\FD@quoted@PrintChar}
+%   One sometimes wants to use a printable character string as part of a 
+%   control sequence name. If the normal definition of |\PrintChar| is 
+%   in force at such times then each |\PrintChar| in the string would 
+%   produce lots of errors, which is why |\FD@quoted@PrintChar| has 
+%   been defined. This macro is an alternative definition of 
+%   |\PrintChar| which expands to |"|\meta{number}|"|, which can be part 
+%   of a macro name.
+%    \begin{macrocode}
+\def\FD@quoted@PrintChar#1{"\number#1"}
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \subsubsection{Converting character strings}
+% 
+% Replacing all problematic characters with |\PrintChar| calls certainly 
+% makes the strings easier to manage, but actually making those 
+% replacements is a rather complicated task. This subsubsection 
+% contains the macros necessary for doing these replacements.
+% 
+% The first problem is how to efficiently recognise the problematic 
+% characters. One might think that it is sufficient to look at their 
+% |\catcode|, but that will fail for characters like |<| whose normal 
+% catcode is 12 but do not appear in the \texttt{OT1} encoding. Because 
+% of this, I have chosen a brute strength solution: build a table 
+% (indexed by character code) that gives the printable form of 
+% every character. This table is stored in the
+% \describecsfamily{FD@printable@\meta{code}}^^A
+% |\FD@printable@|\meta{code} family of control sequences, where the 
+% \meta{code} is in the range |32|--|126|. The printable form of 
+% characters outside this range is always the |\PrintChar| form.
+%    \begin{macrocode}
+\count@=32
+\begingroup
+   \catcode\z@=12\relax
+   \@firstofone{%
+\endgroup
+   \loop
+      \if \ifnum 11=\catcode\count@ 1\else \ifnum 12=\catcode\count@
+            1\else 0\fi\fi 1%
+         \uccode\z@=\count@
+         \uppercase{\def\@tempa{^^@}}%
+      \else
+         \edef\@tempa{\noexpand\PrintChar{\the\count@}}%
+      \fi
+      \x@cs\let{FD@printable@\the\count@}=\@tempa
+      \advance \count@ \@ne
+   \ifnum 127>\count@ \repeat
+}
+%    \end{macrocode}
+% This loop hasn't caught all non-printable characters, so a few 
+% entries have to be set explicitly.
+%    \begin{macrocode}
+\@namedef{FD@printable@34}{\PrintChar{34}} % "
+\@namedef{FD@printable@60}{\PrintChar{60}} % <
+\@namedef{FD@printable@62}{\PrintChar{62}} % >
+%    \end{macrocode}
+% 
+% 
+% \begin{macro}{\MakePrintable}
+%   To render a character string harmless, you do
+%   \begin{quote}
+%     |\MakePrintable|\marg{macro}\marg{flag}\marg{string}
+%   \end{quote}
+%   This locally assigns to \meta{macro} the printable character string 
+%   which corresponds to \meta{string}. Furthermore the control sequence 
+%   |\if|\meta{flag} is locally let to |\iftrue| or |\iffalse| 
+%   depending on whether the printable string is simple (only consists 
+%   of character tokens and |\PrintChar| commands) or not.
+%   
+%   During the conversion the converted part of the string is stored in 
+%   |\toks@| and the |@tempswa| switch keeps track of whether the string 
+%   so far is simple (yes when |false|), but those are both local to 
+%   |\MakePrintable|.
+%    \begin{macrocode}
+\def\MakePrintable#1#2#3{%
+   \begingroup
+      \toks@={}%
+      \escapechar=`\\%
+      \@tempswafalse
+      \FD@printable@#3\protect\FD@printable@
+      \toks@=\expandafter{%
+         \expandafter\let \csname if#2\expandafter\endcsname
+         \csname if\if@tempswa false\else true\fi \expandafter\endcsname
+         \expandafter\def \expandafter#1\expandafter{\the\toks@}%
+      }%
+   \expandafter\endgroup \the\toks@
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\FD@printable@iii}
+% \begin{macro}{\FD@printable@iv}
+% \begin{macro}{\FD@printable@v}
+% \begin{macro}{\FD@printable@vi}
+%   What one has to be most careful about when making strings printable
+%   are the space tokens, since many of \TeX's primitives gladly 
+%   snatches an extra space (or more) where you don't want them to in 
+%   this case. Macro parameters can be particularly dangerous, as \TeX\ 
+%   will skip any number of spaces while looking for the replacement 
+%   text for an undelimited macro argument. Therefore the algorithm for 
+%   rendering a character token harmless consists begins 
+%   (|\FD@printable@iii|) with |\string|ing the next token in the 
+%   string---this preserves the character code and sets the category to 
+%   12 for all characters except the ASCII space, which gets category 10 
+%   (space)---and then |\futurelet| is used to peek at the next token. If 
+%   it is a space token (|\FD@printable@iv|) then the character code 
+%   is 32 and the actual space can be gobbled (|\FD@printable@v|), and 
+%   if it isn't then the next token can be grabbed in a undelimited macro 
+%   argument (|\FD@printable@vi|). In either case, the harmless form 
+%   is given by the |\FD@printable@|\meta{code} table entry 
+%   (in |\FD@printable@v| or |\FD@printable@vi|).
+%    \begin{macrocode}  
+\def\FD@printable@iii{%
+   \expandafter\futurelet \expandafter\@let@token 
+   \expandafter\FD@printable@iv \string
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\FD@printable@iv{%
+   \ifx \@let@token\@sptoken
+      \expandafter\FD@printable@v
+   \else
+      \expandafter\FD@printable@vi
+   \fi
+}
+%    \end{macrocode}
+%   ^^A Hack:
+%   \begingroup
+%   \expandafter\def \expandafter\MakePrivateLetters \expandafter{^^A
+%      \MakePrivateLetters
+%      \catcode`3=11
+%      \catcode`2=11
+%   }
+%    \begin{macrocode}
+\begingroup
+   \catcode`3=\catcode`a
+   \catcode`2=\catcode`a
+   \@firstofone{\gdef\FD@printable@v} {%
+      \toks@=\expandafter{\the \expandafter\toks@ \FD@printable@32}%
+      \FD@printable@
+   }
+\endgroup
+%    \end{macrocode}
+%   \endgroup
+%    \begin{macrocode}
+\def\FD@printable@vi#1{%
+   \if \ifnum `#1<\@xxxii 1\else \ifnum `#1>126 1\else 0\fi\fi 1%
+      \toks@=\expandafter{\the\expandafter\toks@
+         \expandafter\PrintChar \expandafter{\number`#1}%
+      }%
+   \else
+      \toks@=\expandafter{\the\expandafter\expandafter\expandafter\toks@
+         \csname FD@printable@\number`#1\endcsname}%
+   \fi
+   \FD@printable@
+}
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}\end{macro}
+% 
+% \begin{macro}{\FD@printable@}
+% \begin{macro}{\FD@printable@i}
+% \begin{macro}{\FD@printable@ii}
+% \begin{macro}{\FD@printable@vii}
+%   But that is not all |\MakePrintable| can do. One must also deal 
+%   with things in the string that are not simply characters, but more 
+%   complex items (for example |\str| and |\strint| constructions). When 
+%   control sequences that start such complex items are fed to 
+%   |\MakePrintable| they must be preceeded by a |\protect| (they will 
+%   be if the original command is defined using \LaTeX's 
+%   |\Declare|\-|Robust|\-|Command| command and the string has been fed 
+%   through a |\protected@edef|, which happens to be the case); this 
+%   |\protect| is taken as a signal that the next token should get 
+%   special processing. Control sequences that are not preceeded by a 
+%   |\protect| are simply |\string|ed.
+%   
+%   To accommodate for this, |\FD@printable@| (which is the first step 
+%   in converting a token) always begins by checking (in |\FD@|\-^^A
+%   |printable@i|) whether the next token is a control sequence. If it 
+%   is and that control sequence is |\protect| then it is checked (in 
+%   |\FD@printable@ii|) whether the control sequence 
+%   \describecsfamily{FD@printable\PrintChar{`\\}\meta{cs-name}}^^A
+%   |\FD@printable\|\meta{cs-name}, where \meta{cs-name} is the name 
+%   without |\| (and with any spaces removed) of the control sequence 
+%   encountered, is defined. If it is defined then control is handed 
+%   over to |\FD@printable\|\meta{cs-name} which should process the 
+%   arguments (if any) of |\|\meta{cs-name} and add a suitable 
+%   representation to |\toks@|, but if |\FD@printable\|\meta{cs-name} 
+%   isn't defined then this is considered to be an error.
+%   
+%   If the next token isn't a control sequence then control is handed 
+%   over to |\FD@printable@ii|. If the next token is a control sequence 
+%   but not |\protect| then that token is |\string|ed (in 
+%   |\FD@printable@vii|) and control is handed over to 
+%   |\FD@printable@vi|.
+%    \begin{macrocode}
+\def\FD@printable@{\futurelet\@let@token \FD@printable@i}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\FD@printable@i{%
+   \csname FD@printable@%
+      \ifcat \noexpand\@let@token \noexpand\FD@printable@
+         \ifx \@let@token\protect ii\else vii\fi
+      \else iii\fi
+   \endcsname
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\FD@printable@ii\protect#1{%
+   \@ifundefined{FD@printable\expandafter\zap@space\string#1 \@empty}{%
+      \PackageError{fontdoc}{Command \protect#1 not allowed in string}%
+         \@eha
+   }{\csname FD@printable\expandafter\zap@space\string#1 \@empty
+     \endcsname}%
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\FD@printable@vii{\expandafter\FD@printable@vi \string}
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}\end{macro}
+% 
+% \begin{macro}{\FD@printable\FD@printable@}
+%   A control sequence |\FD@printable\|\meta{cs-name} is responsible for 
+%   interpreting the string item that begins with the control sequence 
+%   |\|\meta{cs-name} and appending a printable representation of it to 
+%   |\toks@|. Normal |\FD@printable\|\meta{cs-name} control sequences 
+%   must also end by inserting |\FD@printable@| in front of what remains 
+%   of the string after the complex string item has been removed. This 
+%   sees to that the rest of the string is also made printable. The only 
+%   such control sequence which does not insert |\FD@printable@| is 
+%   |\FD@printable\FD@printable@|, but that is as it should be since 
+%   |\MakePrintable| itself appends a |\FD@printable@| to every character 
+%   string it should convert to mark the end of it.
+%    \begin{macrocode}
+\expandafter\let 
+   \csname FD@printable\string\FD@printable@\endcsname \@empty
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\FD@printable\PrintChar}
+%   It is occasionally convenient to use a |\PrintChar| command as part 
+%   of a string that is to be made harmless instead of using the raw 
+%   character. The definition is very similar to that of 
+%   |\FD@printable@vi|.
+%    \begin{macrocode}
+\@namedef{FD@printable\string\PrintChar}#1{%
+   \if \ifnum #1<\@xxxii 1\else \ifnum #1>126 1\else 0\fi\fi 1%
+      \toks@=\expandafter{\the\expandafter\toks@
+         \expandafter\PrintChar \expandafter{\number#1}%
+      }%
+   \else
+      \toks@=\expandafter{\the\expandafter\expandafter\expandafter\toks@
+         \csname FD@printable@\number#1\endcsname}%
+   \fi
+   \FD@printable@
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \begin{macro}{\ExpandAndMakePrintable}
+%   The |\ExpandAndMakePrintable| command is an abbreviation for a 
+%   common use of |\MakePrintable|, namely to first feed the string 
+%   through a |\protected@edef| to get rid of all the simple macros.
+%    \begin{macrocode}
+\newcommand*\ExpandAndMakePrintable[3]{%
+   \protected@edef\@tempa{{#2}{#3}}%
+   \expandafter\MakePrintable \expandafter#1\@tempa
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \subsubsection{Evaluating string expressions}
+% 
+% In string expressions, the only available operation is juxtaposition 
+% (fancy name for putting things next to each other) and thus the 
+% syntax for a string expression is
+% \begin{quote}
+%   \meta{string expression} \(\longrightarrow\) $\emptyset \mid$ 
+%   \meta{string atom}\meta{string expression}
+% \end{quote}
+% where $\emptyset$ denotes the empty string. A \meta{string atom} is 
+% one of
+% \begin{quote}
+%   \meta{character token}\\
+%   |\str|\marg{string expression}\\
+%   |\strint|\marg{string expression}
+% \end{quote}
+% The meaning of a \meta{character token} is explained 
+% in~\cite{TeXbook}. The |\str| and |\strint| forms of 
+% \marg{string atom} refer to the respective values of the string and 
+% integer variables (see Subsection~\ref{Ssec:Variables}) whose names 
+% are given in the argument of |\str| or |\strint| respectively. Since 
+% the names of variables are themselves string expressions, |\str| and 
+% |\strint| may themselves be used in names of variables.
+% 
+% It should be noted that most of \package{fontinst}'s string 
+% expressions sooner or later end up between a |\csname| and the 
+% corresponding |\endcsname|. This places significant restrictions on 
+% what may occur in string expressions.
+% 
+% \begin{macro}{\str}
+% \begin{macro}{\strint}
+%   \changes{1.909}{1999/10/19}{Change to stop it from gobbling a 
+%      following space if the integer is stored in a macro. (LH)}
+%   In \package{fontinst} the only macros needed for dealing with string 
+%   expressions are |\str| and |\strint|.
+%    \begin{macrocode}
+%<*pkg>
+\def\str#1{\csname~s-#1\endcsname}
+\def\strint#1{\expandafter\identity_one\expandafter{\number\int{#1}}}
+%</pkg>
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% \package{fontdoc} mainly uses \TeX's text mode for typesetting string 
+% expressions because not all characters are available in math mode; 
+% it's easier to switch to text mode than to augment the math setup. One 
+% kind of material is however typeset in math mode, namely 
+% ``string-valued functions'': the name and functional parenthesis of 
+% such material is typeset in math mode to get a mathematical look.
+% 
+% \begin{macro}{\FD@string@func}
+%   The |\FD@string@func| macro has the syntax
+%   \begin{quote}
+%     |\FD@string@func|\marg{name}\marg{argument}
+%   \end{quote}
+%   It is used for typesetting the \meta{name}$($\meta{argument}$)$ of a 
+%   string-valued function (e.g.\ the value-of-string-variable function 
+%   $\mathrm{s}$). It should only be used in horizontal mode.
+%   
+%   |\FD@string@func| includes a bit of extra spacing around the typeset 
+%   text, but not at the beginning or end of a string and neither 
+%   between two string-valued functions. As a flag for this is used 
+%   that the value of |\spacefactor| is 1; when it is one should proceed 
+%   as if this extra spacing is already present.
+%    \begin{macrocode}
+%<*doc>
+\def\FD@string@func#1#2{%
+   \relax
+   \ifnum \spacefactor=\@ne $\mkern1mu\else$\fi
+   \mathrm{#1}($%
+   #2%
+   \ifnum \spacefactor=\@ne $\mkern-1mu\else $\fi)\mkern1mu$%
+   \spacefactor=\@ne
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\TypesetStringExpression}
+% \begin{macro}{\FD@typeset@string}
+% \begin{macro}{\ifFD@swa}
+%   In \package{fontdoc} the string expressions must be typeset, and 
+%   that is not trivial due to that (i) not all character tokens have 
+%   catcode 11 or 12 and (ii) not all characters are available in all 
+%   fonts. Furthermore the non-character string atoms should be given 
+%   special treatment in character strings!
+%   
+%   Because of this, string expressions that are to be typeset are 
+%   handed to a special command |\TypesetStringExpression|, which takes 
+%   the string to typeset as its only argument. This string may contain 
+%   user-defined macros.
+%    \begin{macrocode}
+\newcommand\TypesetStringExpression[1]{%
+   \protected@edef\@tempa{%
+      \noexpand\MakePrintable \noexpand\@tempa {FD@swa}{#1}%
+   }%
+   \@tempa
+   \FD@typeset@string{\@tempa}%
+}
+%    \end{macrocode}
+%   Actually typesetting the string is handled in |\FD@typeset@string|, 
+%   but strings handed to this macro must be preprocessed by a full 
+%   protected expansion and a |\MakeHarmless|.
+%    \begin{macrocode}
+\def\FD@typeset@string#1{%
+   \mbox{%
+      \normalfont\ttfamily
+      \spacefactor=\@ne
+      #1%
+      \ifnum \spacefactor=\@ne $\mkern-1mu\m@th$\fi
+   }%
+}
+%    \end{macrocode}
+%   The |\ifFD@swa| control sequence is often |\let| to |\iftrue| or 
+%   |\iffalse| by |\Make|\-|Printable|, and then it is used as a 
+%   conditional. Since that assignment sometimes takes place in 
+%   conditional text however, one must make sure that |\ifFD@swa| 
+%   always is some conditional.
+%    \begin{macrocode}
+\let\ifFD@swa\iffalse
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+% 
+% \begin{macro}{\str}
+% \begin{macro}{\FD@printable\str}
+%   The processing of the |\str| macro in \package{fontdoc} is far from 
+%   straightforward. |\str| has to be robust, but apart from that its 
+%   defintion has no effect on how its argument is processed. That is 
+%   instead controlled by |\FD@printable\str|, which happens to use 
+%   |\str| as an auxiliary formatting macro.
+%   
+%   Most of the complexity below is however due to the processing 
+%   needed to determine whether the string variable accessed has been 
+%   assigned a value. See |\Set|\-|String|\-|Variable| for more 
+%   information. 
+%    \begin{macrocode}
+\DeclareRobustCommand\str[1]{\FD@string@func{s}{#1}}
+\@namedef{FD@printable\string\str}#1{%
+   \MakePrintable\@tempa{FD@swa}{#1}%
+   \begingroup
+      \let\PrintChar=\FD@quoted@PrintChar
+   \if \ifFD@swa \@ifundefined{FD@s-\@tempa}{0}{1}\else 0\fi 1%
+      \expandafter
+   \endgroup
+      \csname FD@s-\@tempa\endcsname
+   \else
+   \endgroup
+      \toks@=\expandafter{\the\expandafter\toks@
+         \expandafter\str \expandafter{\@tempa}}%
+      \@tempswatrue
+   \fi
+   \FD@printable@
+}
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% 
+% \begin{macro}{\strint}
+% \begin{macro}{\FD@printable\strint}
+%   |\strint| is handled similarly to |\str|.
+%    \begin{macrocode}
+\DeclareRobustCommand\strint[1]{\FD@string@func{int}{#1}}
+\@namedef{FD@printable\string\strint}#1{%
+   \MakePrintable\@tempa{FD@swa}{#1}%
+   \protected@edef\@tempa{%
+      \ifFD@swa \protect\FD@simple@int \else \strint \fi{\@tempa}%
+   }
+   \toks@=\expandafter{\the\expandafter\toks@ \@tempa}%
+   \@tempswatrue
+   \FD@printable@
+}
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% \begin{macro}{\macroparameter}
+%   \changes{1.916}{2001/01/06}{Command added. (LH)}
+% \begin{macro}{\FD@printable\macroparameter}
+%   The |\macroparameter| command can be used in string and integer 
+%   expressions as a sort of ``macro parameter placeholder''. It is not 
+%   defined in \package{fontinst}, but in \package{fontdoc} one 
+%   occationally writes comments which say things like ``XXX is short 
+%   for ASDFSKADN'', and in those cases one can use |\macroparameter| 
+%   as a placeholder for an argument. The syntax is
+%   \begin{quote}
+%     |\macroparameter|\marg{digit}
+%   \end{quote}
+%   where \meta{digit} should be a decimal digit between |1| and |9| 
+%   inclusive.
+%   
+%   The definition in |\macroparameter| handles uses of the command in 
+%   integer expressions, whereas |\FD@printable\macroparameter| takes 
+%   care of uses in string expressions.
+%    \begin{macrocode}
+\DeclareRobustCommand\macroparameter[1]{%
+   \gdef\FD@expression{\text{\normalfont\itshape\##1}}%
+   \global\chardef\FD@priority=5%
+   \global\FD@bracket@level=\z@
+   \FD@evaluate@false
+}
+\@namedef{FD@printable\string\macroparameter}#1{%
+   \toks@=\expandafter{\the\toks@\textrm{\emph{\##1}}}%
+   \@tempswatrue
+   \FD@printable@
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% 
+% 
+% \subsection{Integer expressions}
+% 
+% An \meta{integer expression} is one of the following:
+% \begin{quote}
+%   \meta{number}\\
+%   |\int|\marg{string expression}\\
+%   |\neg|\marg{integer expression}\\
+%   |\add|\marg{integer expression}\marg{integer expression}\\
+%   |\sub|\marg{integer expression}\marg{integer expression}\\
+%   |\max|\marg{integer expression}\marg{integer expression}\\
+%   |\min|\marg{integer expression}\marg{integer expression}\\
+%   |\mul|\marg{integer expression}\marg{integer expression}\\
+%   |\div|\marg{integer expression}\marg{integer expression}\\
+%   |\half|\marg{integer expression}\\
+%   |\otherhalf|\marg{integer expression}\\
+%   |\scale|\marg{integer expression}\marg{integer expression}\\
+%   |\width|\marg{string expression}\\
+%   |\height|\marg{string expression}\\
+%   |\depth|\marg{string expression}\\
+%   |\italic|\marg{string expression}\\
+%   |\kerning|\marg{string expression}\marg{string expression}
+% \end{quote}
+% \meta{number} is any \TeX\ number, as defined in~\cite{TeXbook}. The 
+% \meta{string expression} in the argument of |\int| must be the name of 
+% an integer variable which is currently set, i.e., the condition
+% \begin{quote}
+%   |\ifisint|\marg{string expression}|\then|
+% \end{quote}
+% must evaluate to true. Likewise the \meta{string expression} in the 
+% argument of |\width|, |\height|, |\depth|, and |\italic| must be the 
+% name of a glyph which is currently set, i.e., the condition
+% \begin{quote}
+%   |\ifisglyph|\marg{string expression}|\then|
+% \end{quote}
+% must evaluate to true.
+% 
+% \begin{macro}{\eval_expr}
+% \begin{macro}{\eval_expr_to}
+% \begin{macro}{\g_eval_expr_to}
+% \begin{macro}{\result}
+%   The only thing \package{fontinst} does with integer expressions is 
+%   evaluating them. The macro
+%   \begin{quote}
+%     |\eval_expr|\marg{integer expression}
+%   \end{quote}
+%   globally assigns |\result| to the value of 
+%   \meta{integer expression}, and changes the value of no other 
+%   counters.
+%   
+%   The macro
+%   \begin{quote}
+%     |\eval_expr_to|\marg{\TeX\ integer variable}^^A
+%        \marg{integer expression}
+%   \end{quote}
+%   locally assigns the value of \meta{integer expression} to 
+%   \meta{\TeX\ integer variable} (which is an integer variable as 
+%   defined in~\cite{TeXbook}).
+%   |\g_eval_expr_to| does the same globally.
+%   
+%    \begin{macrocode}
+%<*pkg>
+\newcount\result
+\def\eval_expr#1{\global\result=#1\x_relax}
+\def\eval_expr_to#1#2{\eval_expr{#2}#1=\result}
+\def\g_eval_expr_to#1#2{\eval_expr{#2}\global#1=\result}
+%</pkg>
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}\end{macro}
+% 
+% 
+% \begin{macro}{\TypesetIntegerExpression}
+%   In \package{fontdoc} the main task is instead to typeset the 
+%   expression as a mathematical formula, but in some cases one wants to 
+%   know its value as well (if possible). Therefore things get a bit 
+%   more complex in that context. The top-level command there is
+%   \begin{quote}
+%     |\TypesetIntegerExpression|\marg{integer expression}
+%   \end{quote}
+%   which typesets the \meta{integer expression} by first forming (in the 
+%   |\FD@expression| macro) code for typesetting the integer expression.
+%   |\Typeset|\-|Integer|\-|Expression| should be only be used in math 
+%   mode.
+%   
+%   Most of the work in |\TypesetIntegerExpression| is carried out by 
+%   the |\FD@eval@expr| macro and hence |\TypesetIntegerExpression| sets 
+%   a couple of other variables as explained below. Apart from the fact 
+%   that |\FD@eval@expr| doesn't actually typeset anything, the main 
+%   difference between it and |\Typeset|\-|Integer|\-|Expression| is that 
+%   the latter also accepts code that after expansion will become integer 
+%   expressions, whereas the former requires that all such macros have 
+%   first been expanded.
+%    \begin{macrocode}
+%<*doc>
+\newcommand\TypesetIntegerExpression[1]{%
+   \protected@edef\@tempa{#1}%
+   \expandafter\FD@eval@expr \expandafter{\@tempa}%
+   \FD@expression
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\FD@expression}
+% \begin{macro}{\FD@result}
+% \begin{macro}{\FD@priority}
+% \begin{macro}{\FD@bracket@level}
+% \begin{switch}{FD@evaluate@}
+%   The |\FD@expression| macro, |\FD@result| and |\FD@bracket@level| 
+%   count registers, the |\FD@priority| chardef token, and the 
+%   |FD@evaluate@| switch are used by \package{fontdoc} when formatting 
+%   and evaluating an integer expression. They are all assigned globally.
+%   
+%   The |\FD@expression| macro contains code for typesetting an 
+%   expression. |\FD@priority| is a chardef token whose numerical value 
+%   specifies the priority of the outermost operation in 
+%   |\FD@expression| according to the following table:
+%   \begin{enumerate}
+%     \item[0]
+%       Outermost operation is $+$ or $-$.
+%     \item[1]
+%       Outermost operation is explicit multiplication ($\cdot$) or 
+%       division $/$. If it is one of the factors in a product then 
+%       that multiplication must be explicit.
+%     \item[2]
+%       Outermost operation is explicit multiplication. If it is to be 
+%       the right factor in a product, then the multiplication must be 
+%       made explicit too.
+%     \item[3]
+%       Outermost operation is explicit multiplication. It 
+%       does not need to be explicitly multiplied.
+%     \item[4]
+%       Outermost operation is implicit multiplication (juxtaposition), 
+%       unary prefix (unary $-$) or something which is bracketed anyway. 
+%       If it is to be the right factor in a product, then that 
+%       multiplication should be made explicit too. A typical example 
+%       of this kind of thing is an explicit negative number.
+%     \item[5]
+%       Outermost operation is implicit multiplication (juxtaposition) 
+%       or something which is bracketed anyway. It does not need to be 
+%       explicitly multiplied.
+%     \item[6]
+%       The expression is an explicit non-negative number. If it is to 
+%       be the right factor in a product, then the multiplication 
+%       should be made explicit. 
+%   \end{enumerate}
+%   |\FD@bracket@level| keeps track of what parenthesis size one must 
+%   use to cover the expression in |\FD@expression|: 0 is the normal 
+%   size, 1 is |\big| size, 2 is |\Big| size, etc. The |FD@evaluate@| 
+%   switch specifies whether |\FD@eval@expr| should try to (upon entry) 
+%   or managed to (after it is completed) evaluate the integer 
+%   expression (true is evaluate, false is don't bother). When the value 
+%   has been evaluated, it is returned in |\FD@result|.
+%    \begin{macrocode}
+\newcount\FD@result
+\newcount\FD@bracket@level
+\def\FD@evaluate@true{\global\let\ifFD@evaluate@\iftrue}
+\def\FD@evaluate@false{\global\let\ifFD@evaluate@\iffalse}
+\FD@evaluate@false
+%    \end{macrocode}
+% \end{switch}\end{macro}\end{macro}\end{macro}\end{macro}
+% 
+% \begin{macro}{\FD@eval@expr}
+%   The |\FD@eval@expr| macro has the syntax
+%   \begin{quote}
+%     |\FD@eval@expr|\marg{integer expression}
+%   \end{quote}
+%   It puts code for typesetting the \meta{integer expression} in the 
+%   |\FD@expression| macro, sets |\FD@bracket@level| to the 
+%   corresponding value, and if |FD@evaluate@| is true it also tries to 
+%   evaluate the expression and put the result in |\FD@result|.
+%   
+%   More precisely, |\FD@eval@expr| only handles the \meta{\TeX~number} 
+%   cases of integer expression. In the other cases the first token in 
+%   the integer expression is a robust command which should take care of 
+%   building the expression as needed.
+%    \begin{macrocode}
+\def\FD@eval@expr#1{%
+   \expandafter\expandafter \expandafter\ifx 
+         \expandafter\@car#1\x@relax\@nil \protect 
+      #1%
+   \else\ifcat \expandafter\noexpand \@car#1\x@relax\@nil 0%
+      \global\FD@result=#1\x@relax
+      \xdef\FD@expression{\the\FD@result}%
+      \global\chardef\FD@priority=\ifnum \FD@result<\z@ 4\else 6\fi
+      \global\FD@bracket@level=\z@
+   \else
+      \begingroup
+      \MakePrintable\@tempa{FD@swa}{#1}%
+      \global\FD@bracket@level=\ifFD@swa\z@\else\@ne\fi
+      \protected@xdef\FD@expression{\protect\mbox{\texttt{\@tempa}}}%
+      \endgroup
+      \global\chardef\FD@priority=5%
+      \FD@evaluate@false
+   \fi\fi
+}
+%</doc>
+%    \end{macrocode}
+%   Note: It is important that all groups that are started or ended 
+%   during the evaluation of an integer expression are of |\begingroup| 
+%   type, since |\bgroup| groups affect spacing in math mode.
+% \end{macro}
+% 
+% \begin{macro}{\add}
+%   The |\add| command has the syntax
+%   \begin{quote}
+%     |\add|\marg{integer expression}\marg{integer expression}
+%   \end{quote}
+%   It represents the sum of the two \meta{integer expression}s.
+%    \begin{macrocode}
+%<*pkg>
+\def\add#1#2{
+   #1
+   \bgroup
+      \a_count=\result
+      \eval_expr{#2}
+      \global\advance \result \a_count
+   \egroup
+}
+%</pkg>
+%<*doc>
+\DeclareRobustCommand\add[2]{%
+   \begingroup
+   \FD@eval@expr{#1}%
+   \let\@tempa=\FD@expression
+   \ifFD@evaluate@ \a@count=\FD@result \fi
+   \b@count=\FD@bracket@level
+   \FD@eval@expr{#2}%
+   \protected@xdef\FD@expression{\@tempa+\FD@expression}%
+   \ifFD@evaluate@ \global\advance \FD@result \a@count \fi
+   \ifnum \FD@bracket@level<\b@count
+      \global\FD@bracket@level=\b@count
+   \fi
+   \global\chardef\FD@priority=\z@
+   \endgroup
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\sub}
+%   The |\sub| command has the syntax
+%   \begin{quote}
+%     |\sub|\marg{integer expression}\marg{integer expression}
+%   \end{quote}
+%   It represents the difference between the two \meta{integer 
+%   expression}s.
+%    \begin{macrocode}
+%<*pkg>
+\def\sub#1#2{
+   #1
+   \bgroup
+      \a_count=\result
+      \eval_expr{#2}
+      \advance \a_count -\result
+      \global\result=\a_count
+   \egroup
+}
+%</pkg>
+%<*doc>
+\DeclareRobustCommand\sub[2]{%
+   \begingroup
+   \FD@eval@expr{#1}%
+   \let\@tempa=\FD@expression
+   \ifFD@evaluate@ \a@count=\FD@result \fi
+   \b@count=\FD@bracket@level
+   \FD@eval@expr{#2}%
+   \ifnum \FD@priority<\@ne \FD@bracket@expression \fi
+   \protected@xdef\FD@expression{\@tempa-\FD@expression}%
+   \ifFD@evaluate@ 
+      \advance \a@count -\FD@result
+      \global\FD@result=\a@count 
+   \fi
+   \ifnum \FD@bracket@level<\b@count
+      \global\FD@bracket@level=\b@count
+   \fi
+   \global\chardef\FD@priority=\z@
+   \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\FD@subexpression}
+% \begin{macro}{\FD@commapenalty}
+%   The |\FD@subexpression| macro has the syntax
+%   \begin{quote}
+%     |\FD@subexpression|\marg{math mode material}
+%   \end{quote}
+%   It should only be used in math mode and produces results very 
+%   similar to \meta{math mode material}, but it locally increases all 
+%   the math-related penalties by |\FD@commapenalty| for when the math 
+%   mode material is converted to a horizontal list. This allows 
+%   linebreaking to take notice of logical nesting in expressions.
+%   
+%   |\FD@commapenalty| is used as a companion of |\relpenalty| and 
+%   |\binoppenalty|, but which is used after commas (where \TeX\ doesn't 
+%   insert penalties automatically).
+%    \begin{macrocode}
+\def\FD@subexpression#1{${%
+   \advance \binoppenalty \FD@commapenalty
+   \advance \relpenalty \FD@commapenalty
+   \advance \FD@commapenalty \FD@commapenalty
+   $#1$}$%
+}
+\newcount\FD@commapenalty
+\FD@commapenalty=\binoppenalty
+\advance \FD@commapenalty \relpenalty
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% \begin{macro}{\FD@bracket@expression}
+%   The |\FD@bracket@expression| brackets the expression currently in 
+%   |\FD@expression| by the suitable size of parentheses and updates 
+%   |\FD@bracket@level| and |\FD@priority| accordingly.
+%    \begin{macrocode}
+\def\FD@bracket@expression{%
+   \protected@xdef\FD@expression{%
+      \ifcase\FD@bracket@level \or \protect\bigl \or \protect\Bigl \or 
+         \protect\biggl \else \protect\Biggl \fi (%
+      \protect\FD@subexpression{\FD@expression}%
+      \ifcase\FD@bracket@level \or \protect\bigr \or \protect\Bigr \or 
+         \protect\biggr \else \protect\Biggr \fi )%
+   }%
+   \global\chardef\FD@priority=5%
+   \global\advance \FD@bracket@level \@ne
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \begin{macro}{\int}
+%   \changes{1.909}{1999/10/19}{\package{fontdoc} implementation 
+%      changed to using \cs{typeset@integer}. (LH)}
+% \begin{macro}{\FD@simple@int}
+%   The |\int| command has the syntax
+%   \begin{quote}
+%     |\int|\marg{string expression}
+%   \end{quote}
+%   It is used to represent the value of the \package{fontinst} integer 
+%   whose name is the value of the \meta{string expression} in integer 
+%   expressions.
+%   
+%   The |\FD@simple@int| macro take the printable string form of the 
+%   name of an integer variable as its argument and typesets the 
+%   printed representation of this integer, but it should only be used 
+%   when the argument is a simple string expression. When the argument 
+%   is not a simple string expression, |\FD@integer@func| should be 
+%   used instead. |\FD@simple@int| should only be called in horizontal 
+%   mode.
+%    \begin{macrocode}
+%<pkg>\def\int#1{\csname i-#1 \endcsname}
+%<*doc>
+\DeclareRobustCommand\int[1]{%
+   \begingroup
+   \MakePrintable\@tempa{FD@swa}{#1}%
+   \protected@xdef\FD@expression{%
+      \ifFD@swa
+         \text{\protect\FD@simple@int{\@tempa}}%
+      \else
+         \protect\FD@integer@func{int}{\@tempa}%
+      \fi
+   }%
+   \global\chardef\FD@priority=5%
+   \global\FD@bracket@level=\ifFD@swa\z@\else\@ne\fi
+   \FD@evaluate@false
+   \endgroup
+}
+\def\FD@simple@int#1{{\normalfont\itshape #1\/}}
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% \begin{macro}{\FD@integer@func}
+%   The |\FD@integer@func| macro has the syntax
+%   \begin{quote}
+%     |\FD@integer@func|\marg{name}\marg{argument}
+%   \end{quote}
+%   It is used for typesetting the \meta{name}$($\meta{argument}$)$ 
+%   of an integer-valued function which takes a string expression as 
+%   argument (e.g.\ the width-of-glyph function $\mathrm{w}$). It 
+%   should only be used in math mode. 
+%   
+%   The empty group in the argument of |\mathop| is there to ensure 
+%   that the nucleus of the mathop atom isn't simply a symbol, since 
+%   \TeX\ in that case centers it vertically.
+%    \begin{macrocode}
+\def\FD@integer@func#1#2{%
+   \mathop{\mathrm{#1}{}}(\text{\FD@typeset@string{#2}})%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \begin{macro}{\neg}
+%   The |\neg| command has the syntax
+%   \begin{quote}
+%     |\neg|\marg{integer expression}
+%   \end{quote}
+%   It represents the negative of the \meta{integer expression}.
+%    \begin{macrocode}
+%<pkg>\def\neg#1{#1 \global\result=-\result}
+%<*doc>
+\DeclareRobustCommand\neg[1]{%
+   \FD@eval@expr{#1}%
+   \ifnum 5>\FD@priority \FD@bracket@expression \fi
+   \protected@xdef\FD@expression{-\FD@expression}%
+   \global\chardef\FD@priority=4%
+   \ifFD@evaluate@ \global\FD@result=-\FD@result \fi
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\mul}
+%   The |\mul| command has the syntax
+%   \begin{quote}
+%     |\mul|\marg{integer expression}\marg{integer expression}
+%   \end{quote}
+%   It represents the product of the two \meta{integer expression}s.
+%    \begin{macrocode}
+%<*pkg>
+\def\mul#1#2{
+   #1
+   \bgroup
+      \a_count=\result
+      \eval_expr{#2}
+      \global\multiply \result \a_count
+   \egroup
+}
+%</pkg>
+%    \end{macrocode}
+%   
+%   The main problem in the \package{fontdoc} definition of |\mul| is 
+%   to determine whether the multiplication should be made explicit or 
+%   not, and what priority code the resulting expression should be 
+%   given. It turns out that if the right factor has priority 1 (it is 
+%   a quotient or a product that ends with a quotient) then the 
+%   combined expression will be too, whereas if it isn't but the left 
+%   factor has priority 1 then the combined expression will get 
+%   priority 2. The remaining cases will be explicit or implicit 
+%   depending on the parity of the priority of the right expression, and 
+%   priority will be odd or even depending on the parity of the priority 
+%   of the left expression.
+%    \begin{macrocode}
+%<*doc>
+\DeclareRobustCommand\mul[2]{%
+   \begingroup
+   \FD@eval@expr{#1}%
+   \ifnum \FD@priority<\@ne \FD@bracket@expression \fi
+   \let\@tempa=\FD@expression
+   \ifFD@evaluate@ \a@count=\FD@result \fi
+   \b@count=\FD@bracket@level
+   \let\FD@left@priority=\FD@priority
+   \FD@eval@expr{#2}%
+   \ifnum \FD@priority<\@ne \FD@bracket@expression \fi
+   \protected@xdef\FD@expression{%
+      \@tempa
+      \if \ifnum \FD@left@priority=\@ne e%
+          \else\ifnum \FD@priority<\thr@@ e%
+          \else\ifodd \FD@priority i\else e\fi\fi\fi e%
+         \cdot
+      \fi
+      \FD@expression
+   }%
+   \ifFD@evaluate@ \global\multiply \FD@result \a@count \fi
+   \ifnum \FD@bracket@level<\b@count
+      \global\FD@bracket@level=\b@count
+   \fi
+   \a@count=%
+      \ifnum \FD@priority=\@ne 1%
+      \else\ifnum \FD@left@priority=\@ne 2%
+      \else\ifodd\FD@left@priority
+         \ifodd\FD@priority 5\else 3\fi
+      \else
+         \ifodd\FD@priority 4\else 2\fi
+      \fi\fi\fi
+   \global\chardef\FD@priority=\a@count
+   \endgroup
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\div}
+%   The |\div| command has the syntax
+%   \begin{quote}
+%     |\div|\marg{integer expression}\marg{integer expression}
+%   \end{quote}
+%   It represents the quotient of the two \meta{integer expression}s, as 
+%   computed by \TeX's |\divide| command: non-integer quotients are 
+%   rounded towards zero.
+%    \begin{macrocode}
+%<*pkg>
+\def\div#1#2{
+   #1
+   \bgroup
+      \a_count=\result
+      \eval_expr{#2}
+      \divide \a_count \result
+      \global\result=\a_count
+   \egroup
+}
+%</pkg>
+%<*doc>
+\DeclareRobustCommand\div[2]{%
+   \begingroup
+   \FD@eval@expr{#1}%
+   \ifnum \FD@priority<\@ne \FD@bracket@expression \fi
+   \let\@tempa=\FD@expression
+   \ifFD@evaluate@ \a@count=\FD@result \fi
+   \b@count=\FD@bracket@level
+   \FD@eval@expr{#2}%
+   \ifnum 4>\FD@priority \FD@bracket@expression \fi
+   \ifnum \FD@bracket@level<\b@count
+      \global\FD@bracket@level=\b@count
+   \fi
+   \protected@xdef\FD@expression{%
+      \@tempa
+      \ifcase\FD@bracket@level \or \protect\big \or \protect\Big \or
+         \protect\bigg \else \protect\Bigg \fi /%
+      \FD@expression
+   }%
+   \ifFD@evaluate@ 
+      \divide \a@count \FD@result
+      \global\FD@result=\a@count 
+   \fi
+   \global\chardef\FD@priority=\@ne
+   \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\FD@eval@spec@expr}
+%   The |\FD@eval@spec@expr| macro has the syntax
+%   \begin{isyntax}
+%     |\FD@eval@spec@expr|\marg{integer expression}^^A
+%        \discretionary{}{}{}\marg{spec-command}^^A
+%        \discretionary{}{}{}\marg{rep-command}
+%   \end{isyntax}
+%   It does pretty much the same thing as |\FD@eval@expr|, but if the 
+%   first token in the \meta{integer expression} is the 
+%   \meta{spec-command} then it will do
+%   \begin{quote}
+%     \meta{rep-command}\meta{integer expression}
+%   \end{quote}
+%   instead of the normal activities. This is useful for operations that 
+%   are normally denoted as $n$-ary operations rather that binary ones, 
+%   i.e., for |\max| and |\min|.
+%    \begin{macrocode}
+\def\FD@eval@spec@expr#1#2#3{%
+   \expandafter\ifx \@car#1\x@relax\@nil #2%
+      #3#1%
+   \else
+      \FD@eval@expr{#1}%
+   \fi
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\max}
+%   The |\max| command has the syntax
+%   \begin{quote}
+%     |\max|\marg{integer expression}\marg{integer expression}
+%   \end{quote}
+%   It represents the maximum of the two \meta{integer expression}s.
+%    \begin{macrocode}
+%<*pkg>
+\def\max#1#2{
+   #1
+   \bgroup
+      \a_count=\result
+      \eval_expr{#2}
+      \ifnum \a_count>\result \global\result=\a_count \fi
+   \egroup
+}
+%</pkg>
+%<*doc>
+\DeclareRobustCommand\max[2]{%
+   \begingroup
+   \toks@={}%
+   \a@count=-\maxdimen
+   \b@count=\z@
+   \FD@eval@spec@expr{\max{#1}{#2}}{\max}{\FD@maxmin@comma}%
+   \ifnum \a@count>\FD@bracket@level
+      \global\FD@bracket@level=\a@count
+   \fi
+   \protected@xdef\FD@expression{%
+      \protect\plainmax
+      \ifcase\FD@bracket@level \protect\@firstofone \or \protect\bigl 
+         \or \protect\Bigl \or \protect\biggl \else \protect\Biggl 
+      \fi{\{}%
+      \the\toks@
+      \protect\FD@subexpression{\FD@expression}%
+      \ifcase\FD@bracket@level \protect\@firstofone \or \protect\bigl 
+         \or \protect\Bigl \or \protect\biggl \else \protect\Biggl 
+      \fi{\}}%
+   }%
+   \ifFD@evaluate@
+      \ifnum \a@count>\FD@result \global\FD@result=\a@count \fi
+   \fi
+   \global\chardef\FD@priority=5%
+   \global\advance \FD@bracket@level \@ne
+   \endgroup
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\min}
+%   The |\min| command has the syntax
+%   \begin{quote}
+%     |\min|\marg{integer expression}\marg{integer expression}
+%   \end{quote}
+%   It represents the minimum of the two \meta{integer expression}s.
+%    \begin{macrocode}
+%<*pkg>
+\def\min#1#2{
+   #1
+   \bgroup
+      \a_count=\result
+      \eval_expr{#2}
+      \ifnum \a_count<\result \global\result=\a_count \fi
+   \egroup
+}
+%</pkg>
+%<*doc>
+\DeclareRobustCommand\min[2]{%
+   \begingroup
+   \toks@={}%
+   \a@count=\maxdimen
+   \b@count=\z@
+   \FD@eval@spec@expr{\min{#1}{#2}}{\min}{\FD@maxmin@comma}%
+   \ifnum \a@count>\FD@bracket@level
+      \global\FD@bracket@level=\a@count
+   \fi
+   \protected@xdef\FD@expression{%
+      \protect\plainmin
+      \ifcase\FD@bracket@level \protect\@firstofone \or \protect\bigl 
+         \or \protect\Bigl \or \protect\biggl \else \protect\Biggl 
+      \fi{\{}%
+      \the\toks@
+      \protect\FD@subexpression{\FD@expression}%
+      \ifcase\FD@bracket@level \protect\@firstofone \or \protect\bigl 
+         \or \protect\Bigl \or \protect\biggl \else \protect\Biggl 
+      \fi{\}}%
+   }%
+   \ifFD@evaluate@
+      \ifnum \a@count<\FD@result \global\FD@result=\a@count \fi
+   \fi
+   \global\chardef\FD@priority=5%
+   \global\advance \FD@bracket@level \@ne
+   \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\FD@maxmin@comma}
+%   The |\FD@maxmin@comma| macro does most of the work for |\max| and 
+%   |\min| in \package{fontdoc}. In some sense it inserts the commas 
+%   between the operands, but it also takes care of evaluating the 
+%   maximum\slash minimum and determining the proper bracketing level.
+%   
+%   The sequence of arguments (separated by commas) is compiled in 
+%   |\toks@|. The greatest\slash least value of an argument found so 
+%   far is kept in |\a@count|, and the greatest bracketing level found 
+%   is kept in |\b@count|.
+%    \begin{macrocode}
+\def\FD@maxmin@comma#1#2#3{%
+   \FD@eval@spec@expr{#2}{#1}{\FD@maxmin@comma}%
+   \toks@=\expandafter{\the\expandafter\toks@
+      \expandafter\protect \expandafter\FD@subexpression
+      \expandafter{\FD@expression}%
+      ,\penalty\FD@commapenalty\,%
+   }
+   \ifFD@evaluate@
+      \ifnum \a@count \ifx\max#1<\else>\fi \FD@result 
+         \a@count=\FD@result 
+      \fi
+   \fi
+   \ifnum \b@count<\FD@bracket@level \b@count=\FD@bracket@level \fi
+   \FD@eval@spec@expr{#3}{#1}{\FD@maxmin@comma}%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\half}
+% \begin{macro}{\otherhalf}
+%   \multchanges{\cs{half}\cs{otherhalf}}{1.916}{2000/12/31}{Macros 
+%      added. (LH)}
+%   The |\half| and |\otherhalf| macros have the syntaxes
+%   \begin{quote}
+%     |\half|\marg{integer expression}\\
+%     |\otherhalf|\marg{integer expression}
+%   \end{quote}
+%   They both represent one half of the \meta{integer expression}, but 
+%   they don't round it the same way. |\half| does rounding as 
+%   specified in~\cite[p.~237]{TAOCP2} (towards even integers) whereas 
+%   |\otherhalf| does it the other way (towards odd integers). This 
+%   means that
+%   \begin{quote}
+%     |\add{\half{|\meta{IE}|}}{\otherhalf{|\meta{IE}|}}|
+%   \end{quote}
+%   will always sum up to precisely the same as the \meta{IE} integer 
+%   expression.
+%    \begin{macrocode}
+%<*pkg>
+\def\half#1{
+   #1\x_relax
+   \ifodd\result
+      \global\advance \result \@ne
+      \global\divide \result \tw@
+      \ifodd\result \global\advance \result \m@ne \fi
+   \else
+      \global\divide \result \tw@
+   \fi
+}
+\def\otherhalf#1{
+   #1\x_relax
+   \ifodd\result
+      \global\advance \result \@ne
+      \global\divide \result \tw@
+      \ifodd\result \else \global\advance \result \m@ne \fi
+   \else
+      \global\divide \result \tw@
+   \fi
+}
+%</pkg>
+%<*doc>
+\DeclareRobustCommand\half[1]{%
+   \begingroup
+   \FD@eval@expr{#1}%
+   \ifnum \FD@priority<\@ne \FD@bracket@expression \fi
+   \a@count=%
+      \ifnum \FD@priority=\@ne 1%
+      \else\ifodd\FD@priority 5%
+      \else 3\fi\fi
+   \global\chardef\FD@priority=\a@count
+   \protected@xdef\FD@expression{%
+      \protect\frac{1}{2}%
+      \ifnum \FD@priority>\thr@@ \else \cdot \fi
+      \FD@expression
+   }%
+   \ifFD@evaluate@
+      \ifodd \FD@result
+         \global\advance \FD@result \@ne
+         \global\divide \FD@result \tw@
+         \ifodd\FD@result \global\advance \FD@result \m@ne \fi
+      \else
+         \global\divide \FD@result \tw@
+      \fi
+   \fi
+   \endgroup
+}
+\DeclareRobustCommand\otherhalf[1]{%
+   \begingroup
+   \FD@eval@expr{#1}%
+   \ifnum \FD@priority<\@ne \FD@bracket@expression \fi
+   \a@count=%
+      \ifnum \FD@priority=\@ne 1%
+      \else\ifodd\FD@priority 5%
+      \else 3\fi\fi
+   \global\chardef\FD@priority=\a@count
+   \protected@xdef\FD@expression{%
+      \protect\frac{1}{2}%
+      \ifnum \FD@priority>\thr@@ \else \cdot \fi
+      \FD@expression
+   }%
+   \ifFD@evaluate@
+      \ifodd \FD@result
+         \global\advance \FD@result \@ne
+         \global\divide \FD@result \tw@
+         \ifodd\FD@result\else \global\advance \FD@result \m@ne \fi
+      \else
+         \global\divide \FD@result \tw@
+      \fi
+   \fi
+   \endgroup
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% \begin{macro}{\scale}
+%   The |\scale| command has the syntax
+%   \begin{quote}
+%     |\scale|\marg{integer expression}\marg{integer expression}
+%   \end{quote}
+%   It represents the result of multiplying the first \meta{integer 
+%   expression} by as many thousands as is specified by the second 
+%   \meta{integer expression}. In practice, |\scale|\marg{ie1}\marg{ie2} 
+%   is very similar to
+%   \begin{quote}
+%     |\div{\mul|\marg{ie1}\marg{ie2}|}{1000}|
+%   \end{quote}
+%   but |\scale| also tries to do proper rounding (note however that 
+%   |\scale|ing by 500 is not rounded properly; use |\half| instead).
+%    \begin{macrocode}
+%<*pkg>
+\def\scale#1#2{
+   #1
+   \bgroup
+      \a_count=\result
+      \eval_expr{#2}
+      \global\multiply \result \a_count
+      \rounded_thousandths
+   \egroup
+}
+%</pkg>
+%    \end{macrocode}
+%   
+%   The second (scaling factor) argument of |\scale| is usually very 
+%   simple, and in that case the |\scale| will be formatted as a 
+%   fraction (containing the second argument) multiplied by the first 
+%   argument. 
+%    \begin{macrocode}
+%<*doc>
+\DeclareRobustCommand\scale[2]{%
+   \begingroup
+   \FD@eval@expr{#1}%
+   \ifnum \FD@priority<\@ne \FD@bracket@expression \fi
+   \let\@tempa=\FD@expression
+   \ifFD@evaluate@ \a@count=\FD@result \fi
+   \b@count=\FD@bracket@level
+   \let\FD@left@priority=\FD@priority
+   \FD@eval@expr{#2}%
+   \if \ifnum \FD@bracket@level<\@ne \ifnum \FD@priority>\thr@@
+         1\else 0\fi\else 0\fi 1%
+      \protected@xdef\FD@expression{%
+         \protect\frac{\FD@expression}{1000}%
+         \if \ifnum \FD@left@priority<\thr@@ e\else
+             \ifodd \FD@left@priority i\else e\fi\fi e%
+            \cdot
+         \fi
+         \@tempa
+      }
+      \global\chardef\FD@priority=%
+         \ifnum \FD@left@priority=\@ne 1\else
+         \ifodd\FD@left@priority 5\else 3\fi\fi
+      \global\FD@bracket@level=\b@count
+   \else
+      \ifnum \FD@priority<\@ne \FD@bracket@expression \fi
+      \protected@xdef\FD@expression{%
+         \@tempa
+         \if \ifnum \FD@left@priority=\@ne e%
+             \else\ifnum \FD@priority<\thr@@ e%
+             \else\ifodd \FD@priority i\else e\fi\fi\fi e%
+            \cdot
+         \fi
+         \FD@expression
+         \ifcase\FD@bracket@level \or \protect\big \or \protect\Big 
+            \or \protect\bigg \else \protect\Bigg \fi /1000%
+      }%
+      \ifnum \FD@bracket@level<\b@count
+         \global\FD@bracket@level=\b@count
+      \fi
+      \global\chardef\FD@priority=\@ne
+   \fi
+   \ifFD@evaluate@ 
+      \global\multiply \FD@result \a@count 
+      \global\divide \FD@result 500
+      \ifodd \FD@result
+         \global\advance \FD@result \ifnum 0>\FD@result - \fi \@ne
+      \fi
+      \global\divide \FD@result \tw@
+   \fi
+   \endgroup
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\rounded_thousandths}
+%   \changes{1.901}{1999/03/06}{Macro added. \cs{scale} changed to 
+%      use it. (LH)}
+% \begin{macro}{\l_rounded_thousandths}
+%   The |\rounded_thousandths| macro divides |\result| 
+%   by 1000 and rounds the result to the nearest integer. This is 
+%   different from
+%   \begin{quote}
+%     |\global\divide \result \one_thousand|
+%   \end{quote}
+%   since the latter always rounds positive numbers downwards and 
+%   negative numbers upwards.
+%   
+%   |\l_rounded_thousandths| does the same thing, but to the register 
+%   passed as parameter \#1 and is assigned locally.
+%   \changes{1.913}{2000/03/04}{Macro added. (LH)}
+%    \begin{macrocode}
+%<*pkg>
+\def\rounded_thousandths{
+   \global\divide \result \five_hundred
+   \ifodd \result
+      \global\advance \result by \ifnum 0>\result - \fi 1
+   \fi
+   \global\divide \result \tw@
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\l_rounded_thousandths#1{
+   \divide #1 \five_hundred
+   \ifodd #1
+      \advance #1 by \ifnum 0>#1 - \fi\@ne
+   \fi
+   \divide #1 \tw@
+}
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% \begin{macro}{\l_inv_scale}
+%   \changes{1.913}{2000/03/11}{Macro added. (LH)}
+%   The |\l_inv_scale| takes two arguments: as \#1 a count register, 
+%   and as \#2 a \TeX\ number. |\l_inv_scale| scales \#1 by the inverse 
+%   of \#2, if the value in \#1 is $n$ and the value in \#2 is $m$ then 
+%   |\l_inv_scale| computes
+%   $$
+%     \left[ \frac{1000n}{m} \right] \mbox{,}
+%   $$
+%   where the brackets denote rounding to the nearest integer, and 
+%   assigns this number to \#1 locally.
+%    \begin{macrocode}
+\def\l_inv_scale#1#2{
+   \multiply #1 \two_thousand
+   \divide #1 #2\x_relax
+   \ifodd#1 \advance #1 \ifnum 0>#1 - \fi\@ne \fi
+   \divide #1 \tw@
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \multchanges{\cs{priority}}{1.909}{1999/10/20}{Changed condition for 
+%    \cs{ifnum}, so that expressions with equal priority will not get 
+%    bracketed when nested. (LH)}
+% \multchanges{\cs{expression}\cs{priority}\cs{identity}^^A
+%    \cs{bracket}}{1.916}{2001/01/01}{Macros removed. (LH)}
+% 
+% \begin{macro}{\ifnumber}
+%   \changes{1.900}{1999/02/15}{Command added. (LH)}
+%   The call
+%   \begin{quote}
+%     |\ifnumber|\marg{integer expression}\meta{rel}^^A
+%     \marg{integer expression}|\then|
+%   \end{quote}
+%   can be used to compare the two integer expressions. \meta{rel} may 
+%   be |<|, |=|, or |>|.
+%    \begin{macrocode}
+\def\ifnumber#1#2#3\then{
+   \eval_expr_to\a_count{#1}
+   \eval_expr{#3}
+   \ifnum \a_count#2\result
+      \expandafter\if_true
+   \else
+      \expandafter\if_false
+   \fi
+}
+%</pkg>
+%    \end{macrocode}
+%   
+%   Like the other conditionals, |\ifnumber| is treated as being true by 
+%   \package{fontdoc}.
+%    \begin{macrocode}
+%<*doc>
+\def\ifnumber#1#2#3\then{%
+   \FD@evaluate@false
+   \generic@if{%
+      $\TypesetIntegerExpression{#1}#2\TypesetIntegerExpression{#3}$%
+   }%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% 
+% \subsection{Setting variables}
+% \label{Ssec:Variables}
+%
+% \meta{int}, \meta{str}, and \meta{dim} below are string expressions. 
+% \meta{command} can be any control sequence.
+% 
+% \DescribeMacro{\setint}
+% \DescribeMacro{\setstr}
+% \DescribeMacro{\setdim}
+% \DescribeMacro{\setcommand}
+% The macros:
+% \begin{quote}
+%    |\setint|\marg{int}\marg{integer expression}\\
+%    |\setstr|\marg{str}\marg{string}\\
+%    |\setdim|\marg{dim}\marg{dimension}\\
+%    |\setcommand|\meta{command}\meta{definition}
+% \end{quote}
+% define new macros 
+% \describecsfamily{i-\meta{int}}|\i-|\meta{int}, 
+% \describecsfamily{s-\meta{str}}|\s-|\meta{str}, 
+% \describecsfamily{d-\meta{dim}}|\d-|\meta{dim}, or 
+% \meta{command}.
+%
+% \DescribeMacro{\resetint}
+% \DescribeMacro{\resetstr}
+% \DescribeMacro{\resetdim}
+% \DescribeMacro{\resetcommand}
+% The macros:
+% \begin{quote}
+%    |\resetint|\marg{int}\marg{integer expression}\\
+%    |\resetstr|\marg{str}\marg{string}\\
+%    |\resetdim|\marg{dim}\marg{dimension}\\
+%    |\resetcommand|\meta{command}\meta{definition}
+% \end{quote}
+% redefine the macros |\i-|\meta{int}, |\s-|\meta{str}, |\d-|\meta{dim} or 
+% \meta{command}.
+%
+% \DescribeMacro{\int}
+% \DescribeMacro{\str}
+% \DescribeMacro{\dim}
+% The macros:
+% \begin{quote}
+%    |\int|\marg{int}\\
+%    |\str|\marg{str}\\
+%    |\dim|\marg{dim}\\
+%    \meta{command}
+% \end{quote}
+% return the values of |\i-|\meta{int}, |\s-|\meta{str}, |\d-|\meta{dim}, 
+% or \meta{command}.
+%
+% \DescribeMacro{\strint}
+% The macro
+% \begin{quote}
+%   |\strint|\marg{int}
+% \end{quote}
+% returns the value of |\i-|\meta{int} as a string.
+% 
+% \DescribeMacro{\ifisint}
+% \DescribeMacro{\ifisstr}
+% \DescribeMacro{\ifisdim}
+% \DescribeMacro{\ifiscommand}
+% The macros:
+% \begin{quote}
+%    |\ifisint|\marg{int}|\then|\\
+%    |\ifisstr|\marg{str}|\then|\\
+%    |\ifisdim|\marg{dim}|\then|\\
+%    |\ifiscommand|\meta{command}|\then|
+% \end{quote}
+% return |\if_true| if |\i-|\meta{int}, |\s-|\meta{str}, 
+% |\d-|\meta{dim}, or \meta{command} respectively have been defined, 
+% and |\if_false| otherwise.
+%
+% \DescribeMacro{\unsetint}
+% \DescribeMacro{\unsetstr}
+% \DescribeMacro{\unsetdim}
+% \DescribeMacro{\unsetcommand}
+% The macros:
+% \begin{quote}
+%    |\unsetint|\marg{int}\\
+%    |\unsetstr|\marg{str}\\
+%    |\unsetdim|\marg{dim}\\
+%    |\unsetcommand|\meta{command}
+% \end{quote}
+% undefine |\i-|\meta{int}, |\s-|\meta{str}, |\d-|\meta{dim}, or 
+% \meta{command}.
+%
+% \DescribeMacro{\x_setint}
+% \DescribeMacro{\x_resetint}
+% \DescribeMacro{\x_setstr}
+% The macros |\x_setint|, |\x_resetint|, and |\x_setstr| are ``private'' 
+% versions of |\setint|, |\resetint|, and |\setstr| respectively. They 
+% have been included to reduce the problems in case a user turns off one 
+% of these commands and forgets to turn it on again.
+% 
+% \changes{1.900}{1999/02/07}{Replaced internal \cs{setint}, 
+%    \cs{resetint}, and \cs{setstr} by \cs{x_setint}, \cs{x_resetint}, 
+%    and \cs{x_setstr} respectively, to make the public versions 
+%    possible to turn off. (LH)}
+% 
+% Integers are kept as |\mathchardef|s if possible; a comparision of 
+% doing this versus not doing this appears in 
+% Subsection~\ref{Ssec: ASAJ tests}.
+%
+% \begin{macro}{\setsomething_global}
+%   The |\setsomething_global| control sequence should be either 
+%   |\relax| or |\global|. It appears before the central assignments in 
+%   all the |\set|\textellipsis, |\reset|\textellipsis, and 
+%   |\unset|\textellipsis\ commands. The normal value is |\relax|, so 
+%   that these assignments are local.
+%   
+%   When there is counter-intuitive grouping, and it could seem that 
+%   \TeX\ should not be inside a group at all---i.e., between 
+%   |\installfonts| and |\endinstallfonts|---one can make the basic 
+%   assignment commands act more logical by setting 
+%   |\setsomething_global| to |\global|.
+%   
+%   \changes{1.912}{2000/01/15}{Control sequence introduced and added 
+%      to all \cs{set}\dots, \cs{reset}\dots, and \cs{unset}\dots\ 
+%      commands, as well as \cs{offcommand} and \cs{oncommand}. (LH)}
+%    \begin{macrocode}
+%<*pkg>
+\let\setsomething_global=\x_relax
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\x_setint}
+% \begin{macro}{\setint}
+% \begin{macro}{\x_setstr}
+% \begin{macro}{\setstr}
+% \begin{macro}{\setdim}
+% \begin{macro}{\setcommand}
+%   \changes{1.909}{1999/10/17}{Since \package{fontdoc} adds some 
+%      grouping, \cs{setcommand} must set its argument globally there. 
+%      (LH)}
+%   \changes{1.912}{2000/01/15}{Settings of a command already defined 
+%      is diverted to \cs{a_macro}; it used to be \cs{a_command}. Saves 
+%      one hash table position. (LH)}
+%   
+%    \begin{macrocode}
+\def\x_setint#1#2{
+   \x_cs\ifx{i-#1}\x_relax
+      \x_resetint{#1}{#2}
+   \fi
+}
+\let\setint=\x_setint
+\def\x_setstr#1#2{
+   \x_cs\ifx{s-#1}\x_relax
+      \setsomething_global\x_cs\edef{s-#1}{#2}
+   \fi
+}
+\let\setstr=\x_setstr
+\def\setdim#1#2{
+   \x_cs\ifx{d-#1}\x_relax
+      \a_dimen=#2\x_relax
+      \setsomething_global\x_cs\edef{d-#1}{\the\a_dimen}
+   \fi
+}
+\def\setcommand#1{
+   \ifx#1\undefined_command
+      \setsomething_global \expandafter\def \expandafter#1
+   \else
+      \expandafter\def \expandafter\a_macro
+   \fi
+}
+%</pkg>
+%    \end{macrocode}
+%   
+%   In \package{fontdoc}, |\setint|, |\setstr|, and |\setdim| print 
+%   headings. There is no need for the private forms |\x_setint| and 
+%   |\x_setstr|. |\setcommand|, finally, does the same thing as in 
+%   \package{fontinst}; the assignment is global because of grouping 
+%   not present in \package{fontinst}.
+%    \begin{macrocode}
+%<*doc>
+\newcommand\setint[2]{%
+   \Bheading{Default} \(\TypesetIntegerExpression{\int{#1}}\) = 
+   \(\TypesetIntegerExpression{#2}\)%
+}
+\newcommand\setstr[2]{%
+   \Bheading{Default} \TypesetStringExpression{\str{#1}} = 
+   \TypesetStringExpression{#2}%
+}
+\newcommand\setdim[2]{%
+   \a@dimen=#2\relax
+   \Bheading{Default} \TypesetStringExpression{#1} dimen = \the\a@dimen
+}
+\def\setcommand#1{\ifx#1\undefined@command
+   \expandafter\gdef\expandafter#1\else
+   \expandafter\gdef\expandafter\a@command\fi}
+%</doc>
+%    \end{macrocode}
+% \end{macro} \end{macro} \end{macro} \end{macro} \end{macro}
+% \end{macro}
+% 
+% \begin{macro}{\x_resetint}
+% \begin{macro}{\resetint}
+% \begin{macro}{\resetstr}
+% \begin{macro}{\resetdim}
+% \begin{macro}{\resetcommand}
+%   \changes{1.909}{1999/10/17}{Since \package{fontdoc} adds some 
+%      grouping, \cs{resetcommand} must set its argument globally there. 
+%      (LH)}
+%    \begin{macrocode}
+%<*pkg>
+\def\x_resetint#1#2{
+   \eval_expr{#2}
+   \setsomething_global
+   \ifnum\result<\max_mathchardef
+      \ifnum 0>\result
+         \x_cs\edef{i-#1}{\the\result}
+      \else
+         \x_cs\mathchardef{i-#1}=\result
+      \fi
+   \else
+      \x_cs\edef{i-#1}{\the\result}
+   \fi
+}
+\let\resetint=\x_resetint
+\def\resetstr#1#2{\setsomething_global\x_cs\edef{s-#1}{#2}}
+\def\resetdim#1#2{
+   \a_dimen=#2
+   \setsomething_global\x_cs\edef{d-#1}{\the\a_dimen}
+}
+\def\resetcommand#1{\setsomething_global\def#1}
+%</pkg>
+%    \end{macrocode}
+% 
+%   In \package{fontdoc}, |\resetint|, |\resetstr|, and |\resetdim| 
+%   print headings. There is no need for the private form |\x_resetint|. 
+%   |\resetcommand|, finally, does the same thing as in 
+%   \package{fontinst}.
+%   
+%    \begin{macrocode}
+%<*doc>
+\newcommand\resetint[2]{%
+   \Bheading{Value} \(\TypesetIntegerExpression{\int{#1}}\) = 
+   \(\TypesetIntegerExpression{#2}\)%
+}
+\newcommand\resetstr[2]{%
+   \Bheading{Value} \TypesetStringExpression{\str{#1}} = 
+   \TypesetStringExpression{#2}%
+}
+\newcommand\resetdim[2]{%
+   \a@dimen=#2\relax
+   \Bheading{Value} \TypesetStringExpression{#1} dimen = \the\a@dimen
+}
+\def\resetcommand#1{\gdef#1}
+%</doc>
+%    \end{macrocode}
+% \end{macro} \end{macro} \end{macro} \end{macro} \end{macro}
+%
+%
+% \begin{macro}{\dim}
+%    \begin{macrocode}
+%<pkg>\def\dim#1{\csname~d-#1\endcsname}
+%    \end{macrocode}
+%   \missing{doc}{\dim}
+% \end{macro}
+%
+% \multchanges{\cs{typeset@integer}\cs{typeset@string}^^A
+%    \cs{typeset@dimen}}{1.916}{2000/01/02}{Macros removed. (LH)}
+%
+% \begin{macro}{\ifisint}
+% \begin{macro}{\ifisstr}
+% \begin{macro}{\ifisdim}
+%   \multchanges{\cs{ifisint}\cs{ifisstr}\cs{ifisdim}}{1.912}
+%      {2000/02/10}{Reimplemented using \cs{if_defined}. (LH)}
+% \begin{macro}{\ifiscommand}
+%    \begin{macrocode}
+%<*pkg>
+\def\ifisint#1\then{\if_defined i-#1\then}
+\def\ifisstr#1\then{\if_defined s-#1\then}
+\def\ifisdim#1\then{\if_defined d-#1\then}
+\def\ifiscommand#1\then{
+   \ifx#1\undefined_command
+      \expandafter\if_false
+   \else
+      \expandafter\if_true
+   \fi
+}
+%</pkg>
+%    \end{macrocode}
+% 
+%   In \package{fontdoc}, all conditionals are handled through 
+%   |\generic@if|, which by default expands to |\iftrue|.
+%   \changes{1.909}{1999/10/17}{Changed one fontdoc definition of 
+%      \cs{ifisglyph} to a definition of \cs{ifiscommand}, which was 
+%      missing from fontdoc.}
+%    \begin{macrocode}
+%<*doc>
+\def\ifisint#1\then{%
+   \generic@if{integer $\TypesetIntegerExpression{\int{#1}}$ set}%
+}
+\def\ifisstr#1\then{%
+   \generic@if{string \TypesetStringExpression{#1} set}%
+}
+\def\ifisdim#1\then{%
+   \generic@if{dimension \TypesetStringExpression{#1} set}%
+}
+\def\ifiscommand#1\then{%
+   \generic@if{command \normalfont{\ttfamily\string#1} set}%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\unsetint}
+% \begin{macro}{\unsetstr}
+% \begin{macro}{\unsetdim}
+% \begin{macro}{\unsetcommand}
+%    \begin{macrocode}
+%<*pkg>
+\def\unsetint#1{\setsomething_global\x_cs\let{i-#1}\x_relax}
+\def\unsetstr#1{\setsomething_global\x_cs\let{s-#1}\x_relax}
+\def\unsetdim#1{\setsomething_global\x_cs\let{d-#1}\x_relax}
+\def\unsetcommand#1{\setsomething_global\let#1=\undefined_command}
+%</pkg>
+%    \end{macrocode}
+%   \missing{doc}{\unsetint}
+%   \missing{doc}{\unsetstr}
+%   \missing{doc}{\unsetdim}
+%   \missing{doc}{\unsetcommand}
+%    \begin{macrocode}
+%<*doc>
+%</doc>
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}\end{macro}
+% 
+% \begin{macro}{\offcommand}
+% \begin{macro}{\oncommand}
+%   \multchanges{\cs{offcommand}\cs{oncommand}}{1.900}{1999/02/07}
+%      {Commands added. (LH)}
+%   The calls
+%   \begin{quote}
+%     |\offcommand|\meta{command}\\
+%     |\oncommand|\meta{command}
+%   \end{quote}
+%   can be used to turn a command off (make it simply absorb its 
+%   arguments but expand to nothing) or on (return it to normal) 
+%   respectively. Their primary use is for ignoring some of the 
+%   commands in \texttt{.mtx} files that \package{fontinst} generates 
+%   from \texttt{.afm}, \texttt{.pl}, or other \texttt{.mtx} files.
+%   
+%   \describecsfamily{saved-\meta{\textbackslash command}}
+%   The normal definition of a command that has been turned off 
+%   is saved as the control sequence |\saved-|\meta{command}. If the 
+%   syntax of a command is tricky---not all arguments are read by the 
+%   base command or its parameter text contains tokens that are not 
+%   parameters---or if simply making it do nothing is not the expected 
+%   `off' behaviour, then the automatic off-turning may not work. In such 
+%   cases a handtooled off definition of the command \meta{command} 
+%   may be provided as the control sequence |\off-|\meta{command}.^^A
+%   \describecsfamily{off-\meta{\textbackslash command}}
+%   
+%   Nothing happens if |\offcommand| is called for a command that is 
+%   not on. Nothing happens if |\oncommand| is called for a command 
+%   that is not off.
+%    \begin{macrocode}
+%<*pkg>
+\def\offcommand#1{
+   \x_cs\ifx{saved-\string#1}\x_relax
+      \setsomething_global\x_cs\let{saved-\string#1}#1
+      \x_cs\ifx{off-\string#1}\x_relax
+         \generate_off_command{#1}
+      \else
+         \setsomething_global \expandafter\let \expandafter#1 
+            \csname off-\string#1\endcsname
+      \fi
+   \fi
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\oncommand#1{
+   \x_cs\ifx{saved-\string#1}\x_relax \else
+      \setsomething_global \expandafter\let \expandafter#1 
+            \csname saved-\string#1\endcsname
+      \setsomething_global\x_cs\let{saved-\string#1}\x_relax
+   \fi
+}
+%</pkg>
+%    \end{macrocode}
+%   \multchanges{\cs{offcommand}\cs{oncommand}}{1.914}{2000/05/28}
+%      {\package{fontdoc} definitions added. (LH)}
+%    \begin{macrocode}
+%<*doc>
+\def\offcommand#1{\Bheading{Turn off} \texttt{\string#1}}
+\def\oncommand#1{\Bheading{Turn on} \texttt{\string#1}}
+%</doc>
+%    \end{macrocode}
+% \end{macro}\end{macro}
+%
+% \begin{macro}{\generate_off_command}
+% \begin{macro}{\count_hashes}
+% \begin{macro}{\gobble_to_xrelax}
+%   |\generate_off_command|\meta{command} converts \meta{command} to 
+%   an ``off'' version of itself by counting the number of arguments 
+%   and defining it to gobble that many arguments. It cannot cope with 
+%   commands whose parameter texts are not simply of the type
+%   \begin{quote}
+%     |#1#2|\textellipsis|#|$n$
+%   \end{quote}
+%    \begin{macrocode}
+%<*pkg>
+\def\generate_off_command#1{
+   \a_count=0
+   \let\next=\count_hashes
+   \expandafter\next\meaning#1~->\x_relax
+   \b_count=0
+   \a_toks={}
+   \loop \ifnum \b_count<\a_count
+      \advance \b_count 1
+      \a_toks=\expandafter{\the\expandafter\a_toks \expandafter####
+         \the\b_count}
+   \repeat
+   \setsomething_global \expandafter\def \expandafter#1 \the\a_toks {}
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\count_hashes#1#2{
+   \if \hash_char#1
+      \advance \a_count 1
+   \else
+      \if -#1
+         \if >#2
+            \let\next=\gobble_to_xrelax
+      \fi\fi
+   \fi
+   \next#2
+}
+\def\gobble_to_xrelax#1\x_relax{}
+%</pkg>
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+% 
+% 
+% Control sequences of the form
+% \begin{quote}
+%   \describecsfamily{FD@s-\meta{name}}|\FD@s-|\meta{name}
+% \end{quote}
+% are used by \package{fontdoc} to store the values of string variables 
+% which have been assigned values; \meta{name} is the name of the string 
+% variable. Unlike the case in \package{fontinst}, the 
+% \package{fontdoc} |\setstr| command does not assign values to string 
+% variables, but |\SetStringVariable| does.
+% 
+% The contents of the |\FD@s-|\meta{name} macros aren't really the 
+% string values, but code that will append the printable form of the 
+% corresponding string expression to |\toks@| and update other variables 
+% used by |\MakePrintable| accordingly. Typically it might look 
+% something like
+% \begin{quote}
+%   |\toks@=\expandafter{\the\toks@ ab}|
+% \end{quote}
+% when the value of the string is |ab|.
+% 
+% \begin{macro}{\SetStringVariable}
+%   \changes{1.916}{2001/01/24}{Command added. (LH)}
+%   The |\SetStringVariable| command has the syntax
+%   \begin{quote}
+%     |\SetStringVariable|\marg{variable name}\marg{new value}
+%   \end{quote}
+%   where \meta{variable name} and \meta{new value} are both string 
+%   expressions. The \meta{variable name} must furthermore be a simple 
+%   string expression. The command globally defines the corresponding 
+%   |\FD@s-|\meta{name} control sequence to add the printable form of 
+%   the \marg{new value} string to the |\toks@| token list register and, 
+%   in case the \meta{new value} string is non-simple, sets the |@tempswa| 
+%   switch to true.
+%   
+%   The control sequence |\@tempa| can be used as part of \meta{new 
+%   value}, but not in the \meta{variable name}.
+%    \begin{macrocode}
+%<*doc>
+\newcommand\SetStringVariable[2]{%
+   \protected@edef\@tempa{\noexpand\MakePrintable \noexpand\@tempa 
+      {FD@swa}{#2}}%
+   \@tempa
+   \protected@edef\@tempa{%
+      \toks@=\noexpand\expandafter{\noexpand\the \toks@ \@tempa}%
+      \ifFD@swa \noexpand\@tempswatrue \fi
+   }%
+   \protected@edef\@tempb{\noexpand\MakePrintable \noexpand\@tempb 
+      {FD@swa}{#1}}%
+   \@tempb
+   \ifFD@swa
+      \begingroup
+         \let\PrintChar=\FD@quoted@PrintChar
+         \global\expandafter\let \csname FD@s-\@tempb\endcsname \@tempa
+      \endgroup
+   \else
+      \PackageError{fontdoc}{Names of string variables must be 
+         simple\MessageBreak if they are to be assigned values}\@eha
+   \fi
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+%   
+% 
+%
+%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% \subsection{For loops}
+%
+% 
+% \begin{macro}{\for}
+% \begin{macro}{\endfor}
+%   \multchanges{\cs{for}\cs{endfor}}{1.900}{1999/02/16}{Commands 
+%      added. (LH)}
+%   The command sequence
+%   \begin{quote}
+%     |\for|\parg{name}\marg{start}\marg{stop}\marg{step}\\
+%     \vadjust{}\quad\meta{body code}\\
+%     |\endfor|\parg{name}
+%   \end{quote}
+%   will cause the \meta{body code} to be repeated some number of times. 
+%   How many depends on the values of \meta{start}, \meta{stop}, and 
+%   \meta{step}, which are integer expressions.
+%   
+%   As a precaution, the \meta{body code} is not allowed to contain any 
+%   empty lines (|\par| tokens). If you want to have the visual 
+%   separation (for sakes of legibility or otherwise), put a |%| 
+%   somewhere on the line---that makes it nonempty.
+%   
+%   \meta{name} is used as the name of an integer variable. This 
+%   variable gets reset to the value of \meta{start} before the first 
+%   repetition of \meta{body code}. After each repetition but the last, 
+%   it is incremented by \meta{step}. \meta{body code} gets repeated if 
+%   the value of \meta{name} has not gotten past that of \meta{stop}. To 
+%   get past means to be bigger if \meta{step} is positive and to be 
+%   smaller if \meta{step} is negative. In the case that \meta{step} is 
+%   zero, the entire construction above will be equivalent to
+%   \begin{quote}
+%     |\resetint|\marg{name}\marg{start}\\
+%     \meta{body code}
+%   \end{quote}
+%   
+%   |\for| \textellipsis\ |\endfor| constructions can be nested. 
+%   \meta{name} is used by |\for| to identify its matching |\endfor|, so 
+%   they need to be identical in |\for| and |\endfor|.
+%   
+%   \multchanges{\cs{for}\cs{for_i}\cs{foreach}}{1.914}{2000/05/21}
+%      {\cs{setsomething_global} added to assignments of the 
+%       \cs{for-\meta{name}} and \cs{body-\meta{name}} control 
+%       sequences. (LH)}
+%    \begin{macrocode}
+%<*pkg>
+\def\for(#1)#2#3#4{
+   \eval_expr_to\a_count{#2}
+   \x_resetint{#1}{\a_count}
+   \eval_expr{#4}
+   \ifnum 0=\result \else
+      \c_count=\result
+      \eval_expr_to\b_count{#3}
+      \setsomething_global\x_cs\edef{for-#1}{
+         \the\c_count \x_relax
+         \noexpand\ifnum \gobble_one\fi
+         \the\b_count \ifnum 0>\c_count > \else < \fi
+      }
+      \def\next##1##2##3\endfor(#1){##2\for_i{##1}{##3}}
+      \next{#1}
+   \fi
+}
+%    \end{macrocode}
+%   
+%   The macro \describecsfamily{for-\meta{name}}|\for-|\meta{name} 
+%   will contain
+%   \begin{quote}
+%     \meta{step}|\x_relax\ifnum|\meta{stop}\meta{rel}
+%   \end{quote}
+%   \meta{step} is the value of the \meta{step} parameter of |\for|, 
+%   computed when the loop was entered and now expressed in digits. 
+%   \meta{stop} is likewise for the \meta{stop} parameter. \meta{rel} 
+%   is |>| or |<|, depending on whether \meta{step} is positive or 
+%   negative respectively. The reason for this curious definition will 
+%   be appearent in the light of the definition of |\for_ii|.
+%   
+%   |\for_i| is expanded in the context
+%   \begin{quote}
+%     |\for_i|\marg{name}\marg{body code}
+%   \end{quote}
+%   Also remember, when reading the definition below, that |\ifnum| 
+%   keeps on expanding tokens until it has found a 
+%   \begin{quote}
+%     \meta{number}\meta{relation}\meta{number}
+%   \end{quote}
+%   structure. It is therefore possible to nest |\ifnum|s like this!
+%   
+%    \begin{macrocode}
+\def\for_i#1#2{
+   \setsomething_global\x_cs\def{body-#1}{#2}
+   \ifnum \b_count \ifnum0>\c_count >\else<\fi \a_count
+      \expandafter\gobble_two
+   \else
+      \csname body-#1 \expandafter\endcsname
+   \fi
+   \for_ii{#1}
+}
+%    \end{macrocode}
+%   
+%   The macro \describecsfamily{body-\meta{name}}|\body-|\meta{name} 
+%   expands to the \meta{body code}.
+%   
+%   |\for_ii| executes the following code:
+%   \begin{quote}
+%     |\a_count=\int|\marg{name}\\
+%     |\advance \a_count |\meta{step}|\x_relax|\\
+%     |\ifnum |\meta{stop}\meta{rel}|\a_count|\\
+%     |   \expandafter\gobble_two|\\
+%     |\else|\\
+%     |   \resetint|\marg{name}|\a_count|\\
+%     |   \csname body-|\meta{name}| \expandafter\endcsname|\\
+%     |\fi|\\
+%     |\for_ii|\marg{name}
+%   \end{quote}
+%   \meta{step}, \meta{stop}, and \meta{rel} are in |\for-|\meta{name}, 
+%   and since there only are two other tokens between \meta{step} and 
+%   \meta{rel} in the above, one might as well include them in 
+%   |\for-|\meta{name} as well. Doing that requires that a matching 
+%   hole---that will be filled in by |\for-|\meta{name}---is made in the 
+%   definition of |\for_ii| and that is the reason for its somewhat 
+%   curious definition.
+%   
+%    \begin{macrocode}
+\def\for_ii#1{
+   \a_count=\int{#1}
+   \advance \a_count \csname for-#1\endcsname \a_count
+      \expandafter\gobble_two
+   \else
+      \x_resetint{#1}\a_count
+      \csname body-#1 \expandafter\endcsname
+   \fi
+   \for_ii{#1}
+}
+%    \end{macrocode}
+%   
+%   |\endfor| just gobbles its argument, so that the \meta{step}${}=0$ 
+%   case will work right.
+%   
+%    \begin{macrocode}
+\def\endfor(#1){}
+%</pkg>
+%    \end{macrocode}
+%   \missing{doc}{\for}
+%   \missing{doc}{\endfor}
+%    \begin{macrocode}
+%<*doc>
+%</doc>
+%    \end{macrocode}
+% \end{macro}\end{macro}
+%
+% 
+% \begin{macro}{\foreach}
+%   \changes{1.901}{1999/03/07}{Command added. (LH)}
+%   \changes{1.916}{2001/01/24}{\package{fontdoc} definition added. (LH)}
+% \begin{macro}{\foreach_i}
+%   The command sequence
+%   \begin{quote}
+%     |\foreach|\parg{name}\marg{csep-list}\\
+%     \vadjust{}\quad\meta{body code}\\
+%     |\endfor|\parg{name}
+%   \end{quote}
+%   will cause the \meta{body code} to be repeated one time for each item 
+%   in the \meta{csep-list}. \meta{csep-list} is a comma-separated list 
+%   of strings.
+%   
+%   As a precaution, the \meta{body code} is not allowed to contain any 
+%   empty lines (|\par| tokens). If you want to have the visual 
+%   separation (for sakes of legibility or otherwise), put a |%| 
+%   somewhere on the line---that makes it nonempty.
+%   
+%   \meta{name} is used as the name of a string variable. Before each 
+%   repetition of the \meta{body code}, this variable will get reset to 
+%   the next item in the \meta{csep-list}.
+%   
+%   |\foreach|\textellipsis\ |\endfor| constructions can be nested. 
+%   \meta{name} is used by |\foreach| to identify its matching |\endfor|, 
+%   so they need to be identical in |\foreach| and |\endfor|.
+%   
+%    \begin{macrocode}
+%<*pkg>
+\def\foreach(#1)#2{
+   \def\next##1\endfor(#1){
+      \setsomething_global\x_cs\def{body-#1}{##1}
+      \process_csep_list{\foreach_i{#1}}#2,\process_csep_list,
+   }
+   \next
+}
+\def\foreach_i#1#2{
+   \resetstr{#1}{#2}
+   \csname body-#1\endcsname
+}
+%</pkg>
+%<*doc>
+\def\foreach(#1)#2{%
+   \def\next##1\endfor(#1){%
+      \@for\@tempa:=#2\do{%
+         \SetStringVariable{#1}{\@tempa}%
+         ##1%
+      }%
+   }%
+   \next
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro} \end{macro}
+% 
+%
+%
+% \subsection{Comments}
+% 
+% \changes{1.911}{1999/11/30}{Comment commands included in 
+%    \texttt{finstmsc.sty}. (LH)}
+% 
+% \begin{macro}{\comment}
+%   In \package{fontinst}, |\comment| simply gobbles its argument.
+%    \begin{macrocode}
+%<pkg>\let\comment=\gobble_one
+%    \end{macrocode}
+%   
+%   In \package{fontdoc}, |\comment| starts a new text paragraph and 
+%   leaves the argument to be typeset. Note that the argument group 
+%   thus survives; some commands make use of this fact.
+%    \begin{macrocode}
+%<*doc>
+\def\comment{\par\noindent}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \begin{macro}{\begincomment}
+%   \changes{1.900}{1999/02/07}{Command added. (LH)}
+% \begin{macro}{\endcomment}
+%   \changes{1.900}{1999/02/07}{Command added. (LH)}
+%   Since |\comment| cannot be used for a comment longer than one 
+%   paragraph, we also provide the means of introducing longer comments, 
+%   by writing
+%   \begin{quote}
+%     |\begincomment| \meta{any amount of text} |\endcomment|
+%   \end{quote}
+%   The names are admittedly not nice from a \LaTeX\ point of view, but 
+%   it is hardly worth the cost to implement some kind of environment 
+%   processing in \package{fontinst}, just for the sake of this command.
+%    \begin{macrocode}
+%<pkg>\let\begincomment=\iffalse
+%<doc>\let\begincomment=\iftrue
+%<pkg|doc>\let\endcomment=\fi
+%    \end{macrocode}
+% \end{macro} \end{macro}
+%
+% \Finale
+% 
+\endinput

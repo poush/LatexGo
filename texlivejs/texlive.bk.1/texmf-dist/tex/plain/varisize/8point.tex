@@ -1,0 +1,40 @@
+%%% This file is public domain.
+%%% Originally written 1992, Don Hosek.
+%%% This declaration added by Clea F. Rees 2008/11/16 with the permission of Dan Hosek.
+%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This file sets up an eight point environment for TeX. It can be initialized
+% with the '\eightpoint' macro.
+% It also sets up a '\tenpoint' macro in case you want to go back down.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+\ifx\tenpoint\undefined\let\loadedfrommacro=Y
+         \input 10point
+         \let\loadedfrommacro=N\fi
+ 
+%%%
+%%% Load in the fonts
+%%%
+\font\eightrm=cmr8           \font\sixrm=cmr6
+\font\eighti=cmmi8           \font\sixi=cmmi6
+\font\eightsy=cmsy8          \font\sixsy=cmsy6
+\font\eightbf=cmbx8          \font\sixbf=cmbx6
+\font\eightsl=cmsl8          \font\eighttt=cmtt8    \font\eightit=cmti8
+%%%
+%%% Set up the eightpoint macros
+%%%
+\ifx\eightpoint\undefined
+   \def\eightpoint{\def\rm{\fam0\eightrm} %switch to a 8-point type
+       \textfont0=\eightrm  \scriptfont0=\sixrm  \scriptscriptfont0=\fiverm
+       \textfont1=\eighti   \scriptfont1=\sixi   \scriptscriptfont1=\fivei
+       \textfont2=\eightsy  \scriptfont2=\sixsy  \scriptscriptfont2=\fivesy
+       \textfont3=\tenex    \scriptfont3=\tenex  \scriptscriptfont3=\tenex
+       \textfont\itfam=\eightit   \def\it{\fam\itfam\eightit}%
+       \textfont\slfam=\eightsl   \def\sl{\fam\slfam\eightsl}%
+       \textfont\ttfam=\eighttt   \def\tt{\fam\ttfam\eighttt}%
+       \textfont\bffam=\eightbf   \scriptfont\bffam=\sixbf
+        \scriptscriptfont\bffam=\fivebf   \def\bf{\fam\bffam\eightbf}%
+       \normalbaselineskip=10pt
+       \setbox\strutbox=\hbox{\vrule height7.5pt depth2.5pt width0pt}%
+       \normalbaselines\rm}
+   \fi

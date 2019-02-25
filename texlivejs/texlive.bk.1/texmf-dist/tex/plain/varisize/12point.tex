@@ -1,0 +1,52 @@
+%%% This file is public domain.
+%%% Originally written 1992, Don Hosek.
+%%% This declaration added by Clea F. Rees 2008/11/16 with the permission of Dan Hosek.
+%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This file sets up a twelve point environment for TeX. It can be initialized
+% with the '\twelvepoint' macro.
+% It also sets up a '\tenpoint' macro in case you want to go back down.
+% By Don Hosek
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+\ifx\tenpoint\undefined\let\loadedfrommacro=Y
+         \input 10point
+         \let\loadedfrommacro=N\fi
+ 
+%%%
+%%% Load in the fonts
+%%%
+\font\twelverm=cmr12
+\font\twelvei=cmmi12
+\font\twelvesy=cmsy10 scaled \magstep1
+\font\twelveex=cmex10 scaled \magstep1
+\font\twelvebf=cmbx12
+\font\twelvesl=cmsl12
+\font\twelvett=cmtt12
+\font\twelveit=cmti12
+\font\twelvecsc=cmcsc10 scaled \magstep1
+ 
+\font\ninerm=cmr9            \font\sevenrm=cmr7
+\font\ninei=cmmi9            \font\seveni=cmmi7
+\font\ninesy=cmsy9           \font\sevensy=cmsy7
+\font\ninebf=cmbx9           \font\sevenbf=cmbx7
+ 
+%%%
+%%% Set up the twelvepoint macros
+%%%
+\ifx\twelvepoint\undefined
+   \def\twelvepoint{\def\rm{\fam0\twelverm}% switch to 11-point type
+       \textfont0=\twelverm \scriptfont0=\ninerm \scriptscriptfont0=\sevenrm
+       \textfont1=\twelvei  \scriptfont1=\ninei  \scriptscriptfont1=\seveni
+       \textfont2=\twelvesy \scriptfont2=\ninesy \scriptscriptfont2=\sevensy
+       \textfont3=\twelveex \scriptfont3=\twelveex\scriptscriptfont3=\twelveex
+       \textfont\itfam=\twelveit  \def\it{\fam\itfam\twelveit}%
+       \textfont\slfam=\twelvesl  \def\sl{\fam\slfam\twelvesl}%
+       \textfont\ttfam=\twelvett  \def\tt{\fam\ttfam\twelvett}%
+       \textfont\bffam=\twelvebf  \scriptfont\bffam=\ninebf
+        \scriptscriptfont\bffam=\sevenbf  \def\bf{\fam\bffam\twelvebf}%
+       \textfont\scfam=\twelvecsc \def\sc{\fam\scfam\twelvecsc}%
+       \normalbaselineskip=14pt
+       \setbox\strutbox=\hbox{\vrule height9.5pt depth4.5pt width0pt}%
+       \normalbaselines\rm}
+   \fi

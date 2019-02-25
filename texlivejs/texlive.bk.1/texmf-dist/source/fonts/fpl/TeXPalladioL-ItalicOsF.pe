@@ -1,0 +1,59 @@
+#!/usr/bin/env fontforge
+# Time-stamp: <2005-02-11 13:16:55 ralf> 
+# Copyright 2004, 2005 Ralf Stubner
+# See the file COPYING (GNU General Public License) for license
+# conditions. 
+
+Open("uplri8a.pfb");
+# proper setup with names etc
+fontname="TeXPalladioL-ItalicOsF";
+fontfamily="TeX Palladio L";
+fullname="TeX Palladio L Italic Old Style Figures";
+copyright=$copyright+", Copyright 2004, 2005 Ralf Stubner.";
+copyright=AddGPL(copyright);
+copyright=AddException(copyright);
+fontversion="1.003";
+
+SetFontNames(fontname,fontfamily,fullname,"",copyright,fontversion);
+# No UniqueID (needs recent ff to work properly)
+SetUniqueID(-1);
+# use OtherSubrs from URW (needs recent ff to work properly)
+ReadOtherSubrsFile("URW-OtherSubrs.ps");
+
+# copy OsF and SC
+Select("zero","nine");
+Clear();
+MergeFonts("Palladio-ItalicOsF.sfd");
+
+# underscore
+Select("underscore");
+Scale(100,116,0,0);
+Move(0,-15);
+
+# emdash
+Select("emdash");
+Scale(75,100,0,0);
+Move(125,0);
+SetWidth(1000);
+RoundToInt();
+
+# dotaccent
+Select("dotaccent");
+Move(-50,0);
+SetWidth(333);
+
+# kerning
+RemoveAllKerns();
+MergeKern("pplri9d-kern.afm");
+
+# hinting
+ChangePrivateEntry("StemSnapV","[72 76 78 88]");
+
+Save("TeXPalladioL-ItalicOsF.sfd");
+# generte Type1, scale generate TTF
+Generate("fplrij8a.pfb","",3); 
+# ScaleToEm(2048);
+# Generate("fplrij8a.ttf","",0x80); 
+
+Quit(0);
+

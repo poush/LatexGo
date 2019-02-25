@@ -1,0 +1,56 @@
+%D \module
+%D   [      file=s-fonts-tables,
+%D        version=2011.10.10,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Basic Font Data Tables,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% todo: make a mtxrun --script font <name> option
+
+\startmodule[fonts-tables]
+
+\registerctxluafile{s-fonts-tables}{}
+
+\definetabulate[Pair]      [|T|cw(3em)|T|cw(3em)|Tw(10em)|Tw(10em)|cw(4em)|cw(4em)|]
+\definetabulate[Single]    [|T|cw(3em)|Tw(10em)|cw(4em)|cw(4em)|]
+\definetabulate[SingleKern][|T|cw(3em)|Trw(5em)|cw(4em)|cw(4em)|]
+\definetabulate[PairKern]  [|T|cw(3em)|T|cw(3em)|Trw(5em)|cw(4em)|cw(4em)|]
+
+\definehead
+  [sequence]
+  [subsubject]
+  [style=\ttbf]
+
+\definecolor
+  [bbcolor]
+  [t=.5,a=1,s=.5]
+
+\definefontfeature
+  [boundingbox]
+  [boundingbox={background,bbcolor}]
+
+\installmodulecommandluasingle \showfontproperties     {moduledata.fonts.tables.showproperties}
+\installmodulecommandluasingle \showfontparameters     {moduledata.fonts.tables.showparameters}
+\installmodulecommandluasingle \showfontpositionings   {moduledata.fonts.tables.showpositionings}
+\installmodulecommandluasingle \showfontligatures      {moduledata.fonts.tables.showligatures}
+\installmodulecommandluasingle \showfontsubstitutions  {moduledata.fonts.tables.showsubstitutions}
+\installmodulecommandluasingle \showfontunicodevariants{moduledata.fonts.tables.showunicodevariants}
+
+\stopmodule
+
+\continueifinputfile{s-fonts-tables.mkiv}
+
+\usemodule[art-01]
+
+\setupbodyfont
+  [cambria]
+
+\starttext
+    \showfontproperties[name=cambria]
+\stoptext

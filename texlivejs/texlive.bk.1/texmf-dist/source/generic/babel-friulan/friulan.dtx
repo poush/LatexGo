@@ -1,0 +1,235 @@
+% \iffalse meta-comment
+%<*internal>
+\begingroup
+\input docstrip.tex
+\keepsilent
+
+\preamble
+  ------------------------------------------------------------------
+  The friulan module for babel
+  Copyright (C) 2012-2016 Claudio Beccari
+  All rights reserved
+  
+  Licence information appended
+
+  Created by Claudio Beccari claudio dot beccari at gmail dot com 
+  
+  
+\endpreamble
+\postamble
+Distributable under the LaTeX Project Public License,
+version 1.3c or higher (your choice). The latest version of
+this license is at: http://www.latex-project.org/lppl.txt
+
+This work is "author-maintained"
+The maintainer is Claudio Beccari
+
+\endpostamble
+
+\askforoverwritefalse
+
+\generate{\file{friulan.ldf}{\from{friulan.dtx}{code}}}
+
+\def\tmpa{plain}
+\ifx\tmpa\fmtname\endgroup\expandafter\bye\fi
+\endgroup
+%</internal>
+%
+% \fi
+% \CheckSum{156}
+% \iffalse
+%    Tell the \LaTeX\ system who we are and write an entry on the
+%    transcript.
+%<*dtx>
+\ProvidesFile{friulan.dtx}
+%</dtx>
+%<code>\ProvidesLanguage{friulan}
+%\fi
+%\ProvidesFile{friulan.dtx}
+        [2016/02/23 v.1.3 friulan support for the babel system]
+%\iffalse
+%<*filedriver>
+\documentclass{ltxdoc}
+\newcommand*{\TeXhax}{\TeX hax}
+\newcommand*{\babel}{\textsf{babel}}
+\newcommand*{\langvar}{$\langle \mathit lang \rangle$}
+\newcommand*{\note}[1]{}
+\newcommand*{\Lopt}[1]{\textsf{#1}}
+\newcommand*{\file}[1]{\texttt{#1}}
+\makeatletter\let\gobbletwo\@gobbletwo\makeatother
+\author{Claudio Beccari --- \texttt{claudio dot beccari at gmail dot com}}
+\title{The Friulan language module for \babel}
+\date{\filedate\ -- version \expandafter\gobbletwo\fileversion}
+\begin{document}
+ \DocInput{friulan.dtx}
+\end{document}
+%</filedriver>
+%\fi
+% \GetFileInfo{friulan.dtx}
+%\maketitle
+%
+%  \section{The Friulan language}
+%
+%    The file \file{\filename} defines all the language definition macros for the
+%    Friulan language. It is worth noting that in English 
+%    ``Friulan'' is the name of the language, and ``Friulian'' is the
+%    adjective concerning everything has to do with the Friuli Region 
+%    in North Eastern Italy.
+%
+%    This revised version of the Friulan documentation corrects some infix words
+%    that were hardcoded with an implied \Lopt{utf8} input encoding option to the 
+%    overall document, this  making it impossible to typeset documents with some 
+%    other traditional input encoding options such as \Lopt{latin1}, \Lopt{latin9}, 
+%    \Lopt{ansinew}, etc.
+%
+%    Moreover if the hyphenation patterns are not available or are not loaded 
+%    into the format file, so that |l@friulan| is undefined, then this module 
+%    uses the patterns for Italian, instead of those for English, even if the 
+%    latter are always available by default, while the former might not be 
+%    available at all. If they are, they might not produce completely correct 
+%    hyphenated line breaks, but at least they are less improbable than using 
+%    English patterns. At the same time we avoid using the |nohyphenation| 
+%    language, even of some people prefer avoid hyphenation rather than risking 
+%    to have a few wrong line breaks.
+%
+% \StopEventually{}
+% \section{The code}
+%    The macro |\LdfInit| takes care of preventing that this file is
+%    loaded more than once, checking the category code of the
+%    \texttt{@} sign, etc. |\CurrentOption| is actually the name of 
+%    language that was specified as an option in the call to \babel.
+%    \begin{macrocode}
+%<*code>
+\LdfInit{\CurrentOption}{captions\CurrentOption}
+%    \end{macrocode}
+%
+%    When this file is read as an option, i.e. by the |\usepackage|
+%    command, \texttt{friulan} could be an `unknown' language in
+%    which case we have to make it known.  So we check for the
+%    existence of |\l@friulan| to see whether we have to do
+%    something here. Since the name could be its alias |furlan|
+%    we must check that either name is known to \babel. In case it
+%    was undefined, we re-establish a meaning for the macros made up
+%    with |\CurrentOption|.
+%
+%    \begin{macrocode}
+\ifx\l@friulan\@undefined
+  \ifx\l@furlan\@undefined
+    \@nopatterns{friulan}
+    \unless\ifx\l@italian\@undefined
+      \adddialect\l@friulan \l@italian
+    \fi
+  \else
+    \let\l@friulan\l@furlan
+  \fi
+\fi
+\expandafter\ifx\csname l@\CurrentOption\endcsname\relax
+  \expandafter\let\csname l@\CurrentOption\endcsname\l@friulan
+\fi
+%    \end{macrocode}
+%    For the <Dialect> version of these definitions we just add a
+%    ``dialect''. Also, the macros |\captions<dialect>| and
+%    |\extras<dialect>| are |\let| to their \texttt{friulan}
+%    counterparts when these parts are defined.
+%    \begin{macrocode}
+\adddialect\l@furlan\l@friulan
+%    \end{macrocode}
+%    The next step consists of defining commands to switch to (and
+%    from) the Friulan language.
+%
+%
+%  \begin{macro}{\friulanhyphenmins}
+%    This macro is used to store the correct values of the hyphenation
+%    parameters |\lefthyphenmin| and |\righthyphenmin|.
+%    \begin{macrocode}
+\providehyphenmins{\CurrentOption}{\tw@\tw@}
+%    \end{macrocode}
+%  \end{macro}
+%
+% \begin{macro}{\captionsfriulan}
+%    The macro |\captionsfriulan| defines all strings used in the
+%    four standard documentclasses provided with \LaTeX.
+%    \begin{macrocode}
+\@namedef{captions\CurrentOption}{%
+    \def\prefacename{Prefazion}%
+    \def\refname{Riferiments}%
+    \def\abstractname{Somari}%
+    \def\bibname{Bibliografie}%
+    \def\chaptername{Cjapitul}%
+    \def\appendixname{Zonte}%
+    \def\contentsname{Tabele gjener\^al}%
+    \def\listfigurename{Liste des figuris}%
+    \def\listtablename{Liste des tabelis}%
+    \def\indexname{Tabele analitiche}%
+    \def\figurename{Figure}%
+    \def\tablename{Tabele}%
+    \def\partname{Part}%
+    \def\enclname{Zonte(is)}%
+    \def\ccname{Cun copie a}%
+    \def\headtoname{Par}%
+    \def\pagename{Pagjine}%
+    \def\seename{cjale}%
+    \def\alsoname{cjale ancje}%
+    \def\proofname{Dimostrazion}%
+    \def\glossaryname{Glossari}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\datefriulan}
+%    The macro |\datefriulan| redefines the command |\today| to
+%    produce friulan dates.
+%    \begin{macrocode}
+\@namedef{date\CurrentOption}{%
+    \def\today{\number\day\space di\space\ifcase\month\or
+      Gen\^ar\or Fevr\^ar\or Mar\c{c}\or Avril\or Mai\or Jugn\or
+      Lui\or Avost\or Setembar\or Otobar\or Novembar\or Dicembar%
+      \fi\space dal\space\number\year}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\extrasfriulan}
+% \begin{macro}{\noextrasfriulan}
+%    The macro |\extrasfriulan| will perform all the extra
+%    definitions needed for the friulan language. The macro
+%    |\noextrasfriulan| is used to cancel the actions of
+%    |\extrasfriulan|. In particular we set pretty high
+%    default values for widow and club lines and very high
+%    demerits to avoid that the paragraph last line starts with the
+%    second half of a hyphenated word. We also assign a non zero
+%    value |\lccode| to the apostrophe that in Friulan is being
+%    used for marking a vocalic elision; by giving it a non 
+%    zero value; the hyphenation algorithm treats the phrase formed
+%    by the article or articulated preposition and the following
+%    term as a single word and the patterns for Friulan take care
+%    of avoiding line breaks right after the apostrophe.
+%
+%    \begin{macrocode}
+\expandafter\addto\csname extras\CurrentOption\endcsname{%
+  \babel@savevariable\clubpenalty
+  \babel@savevariable\widowpenalty
+  \babel@savevariable\@clubpenalty
+  \clubpenalty3000\widowpenalty3000\@clubpenalty\clubpenalty}%
+\expandafter\addto\csname extras\CurrentOption\endcsname{%
+  \babel@savevariable\finalhyphendemerits
+  \finalhyphendemerits50000000}%
+\expandafter\addto\csname extras\CurrentOption\endcsname{%
+  \lccode`'=`'}%
+\expandafter\addto\csname noextras\CurrentOption\endcsname{%
+  \lccode`'=0}%
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+%
+%    The macro |\ldf@finish| takes care of looking for a
+%    configuration file, setting the main language to be switched on
+%    at |\begin{document}| and resetting the category code of
+%    \texttt{@} to its original value.
+%    \begin{macrocode}
+\ldf@finish\CurrentOption
+%</code>
+%    \end{macrocode}
+%
+% \Finale
+%\endinput

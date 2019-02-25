@@ -1,0 +1,113 @@
+% This is a mess.
+\newinsert\ptx@insert_footnotes
+\dimen\ptx@insert_footnotes20\baselineskip
+\skip\ptx@insert_footnotes12pt
+\count\ptx@insert_footnotes1000
+
+\newcount\ptx@footnote_count
+\newbox\ptx@footnote_box
+\newif\iffootnote
+
+\def\footnote{%
+  \global\advance\ptx@footnote_count1
+  \maintextfalse \footnotetrue
+  \ifnext[
+    {\ptx@label_withand{\the\ptx@footnote_count}\ptx@footnote}
+    {\ptx@footnote}%
+  }
+\long\def\ptx@footnote#1{%
+  {\verysmall
+  \unskip\kern.1em
+  \raise.53em\hbox{\the\ptx@footnote_count}%
+  \global\setbox\ptx@footnote_box\hbox{\the\ptx@footnote_count}%
+  }%
+  \insert\ptx@insert_footnotes\bgroup
+    \verysmall
+    \baselineskip12pt
+    \leftskip=0pt \rightskip=\leftskip
+    \floatingpenalty20000
+    \noindent\vrule width0pt depth0pt height9pt
+    \hbox to 0pt{\hss\the\ptx@footnote_count\hskip.5em\hfill}#1%
+  \egroup
+  \futurelet\temp\getpunc
+  }
+
+\def\getpunc{%
+  \bgroup
+  \ifx\temp\virgule
+    \kern-.4\wd\ptx@footnote_box,%
+    \egroup
+    \expandafter\gobble
+  \else
+    \ifx\temp\point
+      \kern-.4\wd\ptx@footnote_box.%
+      \egroup
+      \expandafter\expandafter\expandafter\gobble
+    \else
+      \egroup
+    \fi
+  \fi
+  \maintexttrue \footnotefalse
+  }  
+
+
+\newinsert\ptx@insert_figures
+\dimen\ptx@insert_figures\vsize
+\count\ptx@insert_figures1000
+\newcount\ptx@figure_count
+\newcount\ptx@table_count
+\newbox\ptx@figure_captionbox
+\newif\iffigure
+
+\newblock*\figure
+  {\ifnextnospace*
+     {\def\ptx@figure_type{table}\def\ptx@figure_word{Table}\gobbleoneand\ptx@figure_do}
+     {\def\ptx@figure_type{figure}\def\ptx@figure_word{Fig.}\ptx@figure_do}}
+  {\egroup
+   \insert\ptx@insert_figures{%
+     \penalty0
+     \floatingpenalty0
+     \vbox to \ptx@figure_measure{0}{\ht\ptx@box_temp+\dp\ptx@box_temp+\ht\ptx@figure_captionbox}{2\baselineskip}{%
+       \box\ptx@box_temp
+       \vfill
+       \vskip\baselineskip
+       \box\ptx@figure_captionbox
+       \vskip\baselineskip}}}
+\def\ptx@figure_do{%
+  \maintextfalse
+  \figuretrue
+  \global\advance\usecs{ptx@\ptx@figure_type _count}1
+  \def\ptx@label{\usevalue chapter:internalcount .\the\usecs{ptx@\ptx@figure_type _count}}%
+  \ifnextnospace[
+     {\ptx@figure_getcaption}
+     {\ptx@figure_getcaption[]}}
+
+\def\ptx@figure_getcaption[#1]{%
+  \setbox\ptx@figure_captionbox\vbox{%
+    \leftskip3em \rightskip\leftskip \parindent0pt
+    \ifdefined\figurefont
+      \figurefont
+    \else
+      \verysmall
+    \fi
+    \baselineskip16pt
+    \leavevmode
+    \llap{\bf \ptx@figure_word~\usevalueand chapter:internalcount {.}{}\the\usecs{ptx@\ptx@figure_type _count}\hskip.5em}#1}%
+  \setbox\ptx@box_temp=\vbox\bgroup
+    \leftskip0pt plus1fill \rightskip\leftskip \parindent0pt
+  }
+
+\newwhile\ptx@figure_measure3{#1+1}{#2}{#3}{%
+  \reverse\straighteniff{ifdim}
+    {\dimexpr\baselineskip*\numexpr(#1)<\dimexpr(#2)\relax}
+    {\breakwhile{\dimexpr(\numexpr(#1)\baselineskip\reverse\iffemptystring{#3}{+#3})\relax}}
+  }
+
+\newblock\infigure
+  {\par \setbox\ptx@box_temp=\hbox\bgroup
+   \leftskip0pt plus1fill \rightskip\leftskip \parindent0pt }
+  {\egroup
+   \kern-\prevdepth \nointerlineskip
+   \vbox to \ptx@figure_measure{0}{\ht\ptx@box_temp+\dp\ptx@box_temp}{}
+     {\vfil\box\ptx@box_temp\vfil}%
+  }

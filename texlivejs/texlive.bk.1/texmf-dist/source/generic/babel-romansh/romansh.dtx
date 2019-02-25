@@ -1,0 +1,206 @@
+% \iffalse meta-comment
+%
+% Copyright 1989-2009 Johannes L. Braams and any individual authors
+% listed elsewhere in this file.  All rights reserved.
+% 
+% This file is part of the Babel system.
+% --------------------------------------
+% 
+% It may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2003/12/01 or later.
+% 
+% This work has the LPPL maintenance status "maintained".
+% 
+% The Current Maintainer of this work is Johannes Braams.
+% 
+% The list of all files belonging to the Babel system is
+% given in the file `manifest.bbl. See also `legal.bbl' for additional
+% information.
+% 
+% The list of derived (unpacked) files belonging to the distribution
+% and covered by LPPL is defined by the unpacking scripts (with
+% extension .ins) which are part of the distribution.
+% \fi
+% \CheckSum{0}
+% \iffalse
+%    Tell the \LaTeX\ system who we are and write an entry on the
+%    transcript.
+%<*dtx>
+\ProvidesFile{romansh.dtx}
+%</dtx>
+%<code>\ProvidesLanguage{romansh}
+%\fi
+%\ProvidesFile{romansh.dtx}
+        [2012/01/13 v1.0 Romansh support from the babel system]
+%\iffalse
+%% Babel package for LaTeX version 2e
+%% Copyright (C) 1989 -- 2012
+%%           by Johannes Braams, TeXniek
+%
+%% Please report errors to: J.L. Braams
+%%                          babel at braams.xs4all.nl
+%                           Claudio Beccari
+%                           claudio dot beccari at gmail.com
+%
+%    This file is part of the babel system, it provides the source code for
+%    the Romansh language definition file.
+%<*filedriver>
+\documentclass{ltxdoc}
+\newcommand*{\TeXhax}{\TeX hax}
+\newcommand*{\babel}{\textsf{babel}}
+\newcommand*{\langvar}{$\langle \mathit lang \rangle$}
+\newcommand*{\note}[1]{}
+\newcommand*{\Lopt}[1]{\textsf{#1}}
+\newcommand*{\file}[1]{\texttt{#1}}
+\begin{document}
+ \DocInput{romansh.dtx}
+\end{document}
+%</filedriver>
+%\fi
+% \GetFileInfo{romansh.dtx}
+%  \section{The Romansh language}
+%    The file \file{\filename}\footnote{The file described in this
+%    section has version number \fileversion\ and was last revised on
+%    \filedate.}  defines all the language definition macros for the
+%    Romansh language. Here the language name Romansh refers itself to
+%    the official language Rumantsch Grischun used in Switzerland as
+%    the formal language used by the Federal offices for its communications
+%    with the Romansh speakers, mostly living in Chantun Grischun. Actually
+%    the Romansh speakers us one of seven Romansh dialects, but they can
+%    understand each other in spate of certain differences in wording and
+%    spelling. The Official Rumantsch Grischun has been developed as a
+%    unifying language, with no doubts in the written form, hopefully also
+%    in the spoken one.
+%
+% \StopEventually{}
+%
+%    The macro |\LdfInit| takes care of preventing that this file is
+%    loaded more than once, checking the category code of the
+%    \texttt{@} sign, etc.
+%<*code>
+%    \begin{macrocode}
+\LdfInit{romansh}{captionsromansh}%
+%    \end{macrocode}
+%
+%    When this file is read as an option, i.e. by the |\usepackage|
+%    command, \texttt{romansh} could be an `unknown' language in
+%    which case we have to make it known.  So we check for the
+%    existence of |\l@romansh| to see whether we have to do
+%    something here.
+%
+%    \begin{macrocode}
+\ifx\l@romansh\@undefined
+    \@nopatterns{romansh}%
+    \ifx\l@italian\@undefined
+    \adddialect\l@romansh0\else
+    \adddialect\l@romansh\l@italian\fi\fi
+%    \end{macrocode}
+%  \begin{macro}{\romanshhyphenmins}
+%    This macro is used to store the correct values of the hyphenation
+%    parameters |\lefthyphenmin| and |\righthyphenmin|.
+%    \begin{macrocode}
+\providehyphenmins{romansh}{\tw@\tw@}
+%    \end{macrocode}
+%  \end{macro}
+%
+% \begin{macro}{\captionsromansh}
+%    The macro |\captionsromansh| defines all strings used in the
+%    four standard documentclasses provided with \LaTeX.
+%    \begin{macrocode}
+\addto\captionsromansh{%
+  \def\prefacename{Prefaziun}%
+  \def\refname{Bibliografia}%
+  \def\abstractname{Recapitulaziun}%
+  \def\bibname{Index bibliografic}%
+  \def\chaptername{Chapitel}%
+  \def\appendixname{Appendix}%
+  \def\contentsname{Tavla dal cuntegn}%
+  \def\listfigurename{Tavla da las figuras}%
+  \def\listtablename{Tavla da las tabellas}%
+  \def\indexname{Register da materias}%       Index?
+  \def\figurename{Figura}%
+  \def\tablename{Tabella}%
+  \def\partname{Part}%
+  \def\enclname{Agiunta(s)}%
+  \def\ccname{Copia a}%
+  \def\headtoname{A}%
+  \def\pagename{pagina}%  
+  \def\seename{vesair }%
+  \def\alsoname{vesair era}%
+  \def\proofname{Demonstraziun}%
+  \def\glossaryname{Glossari}%
+  }%
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\dateromansh}
+%    The macro |\dateromansh| redefines the command |\today| to
+%    produce Romansh dates.
+%    \begin{macrocode}
+\def\dateromansh{%
+  \def\today{\ifcase\day\or 1.\else ils~\number\day\fi~da~%
+    \ifcase\month\or
+    schaner\or favrer\or mars\or avrigl\or matg\or zercladur\or
+    fanadur\or avust\or settember\or october\or november\or
+    december\fi\space \number\year}}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\extrasromansh}
+% \begin{macro}{\noextrasromansh}
+%    The macro |\extrasromansh| will perform all the extra
+%    definitions needed for the Romansh language. The macro
+%    |\noextrasromansh| is used to cancel the actions of
+%    |\extrasromansh|.  
+%
+%    \begin{macrocode}
+\addto\extrasromansh{%
+  \babel@savevariable\clubpenalty
+  \babel@savevariable\widowpenalty
+  \babel@savevariable\@clubpenalty
+  \clubpenalty3000\widowpenalty3000\@clubpenalty\clubpenalty}%
+\addto\extrasromansh{%
+  \babel@savevariable\finalhyphendemerits
+  \finalhyphendemerits50000000}%
+\addto\extrasromansh{%
+  \lccode`'=`' }%
+\addto\noextrasromansh{%
+  \lccode`'=0 }%
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+%    The macro |\ldf@finish| takes care of looking for a
+%    configuration file, setting the main language to be switched on
+%    at |\begin{document}| and resetting the category code of
+%    \texttt{@} to its original value.
+%    \begin{macrocode}
+\ldf@finish{romansh}
+\endinput
+%</code>
+%    \end{macrocode}
+%
+% \Finale
+%\endinput
+%% \CharacterTable
+%%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%%   Digits        \0\1\2\3\4\5\6\7\8\9
+%%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%%   Dollar        \$     Percent       \%     Ampersand     \&
+%%   Acute accent  \'     Left paren    \(     Right paren   \)
+%%   Asterisk      \*     Plus          \+     Comma         \,
+%%   Minus         \-     Point         \.     Solidus       \/
+%%   Colon         \:     Semicolon     \;     Less than     \<
+%%   Equals        \=     Greater than  \>     Question mark \?
+%%   Commercial at \@     Left bracket  \[     Backslash     \\
+%%   Right bracket \]     Circumflex    \^     Underscore    \_
+%%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%%   Right brace   \}     Tilde         \~}
+%%

@@ -1,0 +1,91 @@
+!config
+# Arara, the cool TeX automation tool
+# Copyright (c) 2018, Paulo Roberto Massa Cereda 
+# All rights reserved.
+#
+# This rule is part of arara.
+identifier: makeglossaries
+name: MakeGlossaries
+authors:
+- Marco Daniel
+- Nicola Talbot
+- Paulo Cereda
+commands:
+- name: The MakeGlossaries software
+  command: >
+    @{
+        if (isEmpty(clean))
+        {
+           return getCommand('makeglossaries', options, getBasename(file));
+        }
+        else {
+           prefix = [];
+           if (isUnix()) {
+               prefix = [ 'rm', '-f' ];
+           }
+           else {
+               prefix = [ 'cmd', '/c', 'del' ];
+           }
+
+           base = getBasename(file);
+           removals = [];
+
+           removals.add(getCommand(prefix, base.concat(".glsdefs")));
+
+           lines = readFromFile(base.concat('.').concat('aux'));
+
+           java.util.regex.Pattern glsPattern = 
+                java.util.regex.Pattern.compile(
+                 "\\\\@newglossary\\{.*\\}\\{(.*)\\}\\{(.*)\\}\\{(.*)\\}");
+
+           java.util.regex.Pattern istPattern = 
+             (clean == 'partial' ? null :
+              java.util.regex.Pattern.compile("\\\\@istfilename\\{(.*)\\}"));
+
+           foreach (line: lines)
+           {
+              matcher = glsPattern.matcher(line);
+
+              if (matcher.matches())
+              {
+                 foreach(extension: [matcher.group(1), matcher.group(2), matcher.group(3)])
+                 {
+                    removals.add(getCommand(prefix, base.concat('.').concat(extension)));
+                 }
+              }
+              else if (istPattern != null)
+              {
+                 matcher = istPattern.matcher(line);
+
+                 if (matcher.matches())
+                 {
+                    removals.add(getCommand(prefix, matcher.group(1)));
+                    istPattern = null;
+                 }
+              }
+           }
+
+           return removals;
+        }
+    }
+arguments:
+- identifier: options
+  flag: >
+    @{
+        if (isList(parameters.options)) {
+            return parameters.options;
+        }
+        else {
+            throwError('I was expecting a list of options.');
+        }
+    }
+- identifier: clean
+  flag: >
+    @{
+        if ([ 'all', 'partial' ].contains(parameters.clean)) {
+           return parameters.clean;
+        }
+        else {
+            throwError('The provided clean value is not valid.');
+        }
+    }

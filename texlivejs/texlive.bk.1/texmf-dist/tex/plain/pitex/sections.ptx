@@ -1,0 +1,332 @@
+\newcount\ptx@penalty
+\ptx@penalty=-10000
+
+\def\newbreakpenalty#1{%
+  \advance\ptx@penalty-1
+  \edef#1{\the\ptx@penalty\relax}
+  }
+
+\newbreakpenalty\clearpagepenalty
+\def\clearpage{\vfil\penalty\clearpagepenalty}
+
+\newbreakpenalty\breakpagepenalty
+\def\breakpage{\vfil\penalty\breakpagepenalty}
+
+\def\whitepage{\clearpage\shipout\hbox{}\advancepageno}
+
+% TODO: Rewrite in Lua.
+\def\needspace#1{%
+  \par\penalty0
+  \ifdim\dimexpr\pagegoal-\pagetotal<\dimexpr#1\relax
+    \breakpage
+  \fi
+  }
+
+\def\iflines#1{%
+  \par\penalty0
+  \ifdim\dimexpr(\pagegoal-\pagetotal) < \numexpr(#1)\baselineskip
+    \expandafter\secondoftwo
+  \else
+    \expandafter\firstoftwo
+  \fi}
+
+\long\def\ignorepars#1{%
+  \ifxnextnospace\par
+    {\gobbleoneand{\ignorepars{#1}}}
+    {#1}%
+  }
+  
+\def\sectioncommand#1#2#3{%
+  \ifnext[
+    {\ptx@sectioncommand{#1}{#2}{#3}}
+    {\ptx@sectioncommand{#1}{#2}{#3}[]}%
+  }
+
+\def\ptx@sectioncommand#1#2#3[#4]{%
+   \Section execute {section}{#1}{#2}{#3}{#4}%
+   \ignorepars{}%
+  }
+\def\makeroman#1{%
+  \uppercase\expandafter{\romannumeral#1\relax}%
+  }
+
+\newif\ifsectiontitle
+
+\luacode
+pitex.sections = { sections = {} }
+function pitex.sections.increment (type)
+  local n = type
+  type = pitex.sections.sections[type] or { num = 0 }
+  type.num = type.num + 1
+  local level = type.level
+  if level then
+    for name, tb in pairs(pitex.sections.sections) do
+      tb.num = tb.level > level and 0 or tb.num
+    end
+  end
+end
+function pitex.sections.counter (type)
+  type = pitex.sections.sections[type]
+  return type and type.num or -1
+end
+\luacode/
+
+\def\declaresection#1#2{%
+  \ptx@lua{pitex.sections.sections.#1 = {num = 0, level = #2}}%
+  }
+
+\def\incrementsection#1{%
+  \ptx@lua{pitex.sections.increment("#1")}%
+  }
+
+\def\getsectioncounter#1{%
+  \ptx@lua{tex.print(pitex.sections.counter ("#1"))}%
+  }
+
+%%% Gates in section %%%
+
+\gates new \Section {Section}
+\Section list {section} [4]
+  (section_break) [2]
+  . [section_vmode] [1] ?{conditional = \ifvalue #1 : vmode = true } {\par\removelastskip\penalty0 }
+  . [section_clearpage] [1] ?{conditional = \ifvalue #1 : clear = true } {\clearpage}
+  . [section_beforeskip] [2] ?{conditional = -\ifvalue #1 : clear = true }
+     {% Or skip some lines. The "beforeskip" attribute is
+      % the number of blank lines one wants before a section
+      % title, afterskip is the same thing after,
+      % and "minimum" is the minimum number of lines
+      % one wants after the section title.
+      \ifexpression{%
+        -\ifdim\dimexpr(\pagegoal-\pagetotal) < 0pt &
+        \ifdim\dimexpr(\pagegoal-\pagetotal) < \numexpr(\usevalueor #1 : beforeskip 0+\usevalueor #1 : afterskip 0+\usevalueor #1 : minimum 0) \baselineskip}
+        {\breakpage} % Not enough room.
+        {\passvaluenobracesand\vskip #1 : beforeskip \baselineskip{}}}
+%
+  [section_advance] [1] {\incrementsection{#1}}
+%
+  [section_bookmark] [4] ?{conditional = \ifvalue #1 : link = true } {%
+    \passvalueand{\outline[meta = #1bookmark]} #1 : bookmarklevel {[#4]{#3}}{}}
+%
+  [section_toc] [3] ?{conditional = \ifvalue #1 : toc = true } {%
+    \edef\ptx@temp{{#1}{\ifvalue #1 : number = none {}{\getsectioncounter{#1}}}{\unexpanded{\unexpanded{#3}}}{\the\pageno}}%
+    \expandafter\writeout\expandafter*\expandafter{\expandafter\noexpand\expandafter\ptx@toc\ptx@temp}}
+%
+  [section_pre] {%
+    \bgroup
+    \maintextfalse
+    \sectiontitletrue
+    \ptx@section_attribute=0\relax}
+%
+  (section_typeset) [2]
+  . [section_number] [2] {%
+      \ifvalue #1 : number = none
+        {\Section return3 {#1}{}{#2}}
+        {\Section return3
+           {#1}
+           {\usevalueor #1 : numbercommand \unbrace
+              {\usevalue #1 : beforenumber
+               \ifcasevalue #1 : number
+                 \val roman  \makeroman
+                 \val arabic \unbrace
+               \endval{\getsectioncounter{#1}}%
+               \usevalue #1 : afternumber }}
+           {#2}}}
+%
+  . [section_heading] [3] {%
+      \Section return2 {#1}{#2\usevalueor #1 : function \unbrace{#3}\usevalue #1 : aftertitle }}
+%
+  . [section_addfont] [2] {\Section return {#1}{\usevalue #1 : font #2}}
+%
+  . [section_addcolor] [2] ?{conditional = \ifattribute #1 : color } {%
+      \Section return {#1}{\passvalueand\color #1 : color {{#2}}{}}}
+%
+  . [section_do] [2] {%
+      \noindent
+      \settovalue\hskip #1 : indent
+      #2%
+      \ifvalue #1 : inline = true {}{\settovalue\rightskip #1 :ragged \endgraf}}
+%
+  [section_post] {\egroup}
+%
+  [section_afterskip] [1] ?{conditional = -\ifvalue #1 : inline = true } {%
+    \vskip\usevalueor #1 : afterskip 0\baselineskip
+    \ifvalue #1 : removenextindent = true {\removenextindent}{}}
+
+\setparameter metasection :
+  clear            = false
+  vmode            = true
+  minimum          = 3
+  inline           = false
+  number           = arabic
+	afternumber      = "\kern.3em"
+  link             = true
+	ragged           = 0pt
+	toc              = true
+  removenextindent = true
+
+\declaresection {chapter}    1
+\declaresection {section}    2
+\declaresection {subsection} 3
+\declaresection {paragraph}  4
+
+\setparameter chapter section subsection paragraph:
+  meta   = metasection
+
+\setparameter chapter :
+  clear         = true
+  number        = arabic
+  afterskip     = 3
+  indent        = "0pt plus 1fill"
+  beforenumber  = "chapitre "
+  afternumber   = {\par\hfill}
+  bookmarklevel = 1
+  
+\setparameter section :
+  beforeskip    = 2
+  bookmarklevel = 2
+
+\setparameter subsection paragraph:
+  font          = \it
+  beforeskip    = 1
+
+\setparameter subsection:
+  beforenumber  = "\getsectioncounter{section}."
+  minimum       = 3
+  bookmarklevel = 3
+
+\setparameter paragraph:
+  beforenumber = "\getsectioncounter{section}.\getsectioncounter{subsection}."
+  minimum      = 2
+  inline       = true
+  aftertitle   = ".\hskip.333em"
+  bookmarklevel = 4
+
+\setparameter chapterbookmark sectionbookmark subsectionbookmark paragraphbookmark:
+  meta = navigator
+
+\def\chaptertitle{}%
+\freedef\chapter{%
+  \sectioncommand{chapter}{#1}{#1}%	
+  }
+\freedef\section{\sectioncommand{section}{#1}{#1}}
+\freedef\subsection{\sectioncommand{subsection}{#1}{#1}}
+\freedef\paragraph{\sectioncommand{paragraph}{#1}{#1}}
+
+\newif\ifptx@sectioninfile
+\def\sectioninfile{%
+  \ifnextnospace*
+    {\ptx@sectioninfilefalse
+     \gobbleoneand\ptx@sectioninfile}
+    {\ptx@sectioninfiletrue
+     \ptx@sectioninfile}%
+  }
+
+\freedef\ptx@sectioninfile{%
+  \ptx@sectioninfile_do{#1}%
+  }
+\def\ptx@sectioninfile_do#1 #2 #3 {%
+  \sectioncommand{#2}{#1}{#1}%
+  \ptx@section_getlabel{#3}%
+  \ifptx@sectioninfile
+    \input #3\relax
+  \fi
+  }
+\newstring/
+\newwhile\ptx@section_getlabel1{#1}{%
+  \ifcontains/{#1}%
+    {\splitstringat/{#1}{\gobbleoneand\changewhile}}
+    {\label{#1}\breakwhile}%
+  }
+\freedef\ptx@sectioninfile_gobble{%
+  \ptx@sectioninfile_gobblerest
+  }
+\def\ptx@sectioninfile_gobblerest#1 #2 #3 {}
+
+\newattribute\ptx@section_attribute
+%
+% Move pending titles if they happen. They shouldn't by themselves,
+% but the next paragraph might want more room than available
+% and clear the page. Hence this.
+% It reads box 255 backwards and move everything with set
+% section attribute to the next page. If the first such material
+% is a line, a (totally arbitrary) one-line skip is added, unless
+% there's already a skip on top of the next page that isn't
+% TeX-inserted (e.g. \baselineskip).
+% This is probably totally insufficient.
+%
+\luacode
+onelineskip = node.new(11)
+onelineskip.kern = tex.baselineskip.width
+remove_pendingtitles = function (head)
+  local item, first = node.slide(head), true
+  while item do
+    if node.has_attribute(item,\attributenumber\ptx@section_attribute) then
+      local nextitem = item.prev
+      node.remove(head,item)
+      if not ((item.id == 10 or item.id == 11) and first) then
+        node.insert_before(tex.lists.contrib_head, tex.lists.contrib_head, item)
+        tex.lists.contrib_head = item
+      end
+      if item.id == 0 then
+        if first then
+          first = false
+          if not (tex.lists.contrib_head.next.id == 10 and tex.lists.contrib_head.next.subtype == 0) then
+            node.insert_after(tex.lists.contrib_head, item, node.copy(onelineskip))
+            lualog("A title has been moved from page " .. tex.count[0] ..
+                  " to page " .. tex.count[0]+1 .. ".")
+          end
+        end
+      else
+      end
+      item = nextitem
+    else
+      if item.id == 0 or item.id == 1 then
+        item = nil
+      else
+        item = item.prev
+      end
+    end
+  end
+end
+\luacode/
+
+\def\removependingtitles{%
+  \ptx@lua{remove_pendingtitles(tex.box[255].list)}%
+  }
+
+
+% ToC: this is an inefficient mess.
+
+\def\ptx@toc_tok{}
+\def\ptx@toc#1#2#3#4{%
+  \addright\ptx@toc_tok{%
+    \usecs{ptx@toc_item:#1}{#2}{#3}{#4}}%
+  }
+
+\def\tableofcontents{%
+  \bgroup
+  \parindent=0pt
+  \ifemptycommand\ptx@toc_tok
+    {\ptx@warn{No table of contents.}}
+    {\ptx@toc_tok}%
+  \egroup
+  }
+
+\long\def\ptx@def_tocitem#1#2#3#4{%
+  \defcs{ptx@toc_item:#1}##1##2##3{%
+    \edefcs{ptx@toc_current#1}{##1}%
+    \bgroup\par\quitvmode
+      \leftskip#2\relax
+      \rightskip=0pt plus 1fil
+      #3\reverse\iffemptystring{##1}{\llap{#4##1\kern1em}}%
+      ##2\leaders\hbox{. }\hfill\hbox to .8cm{\hfil##3}\par
+    \egroup}%
+  }
+
+\ptx@def_tocitem{chapter}{0pt}{\big\bf\sc}{}
+\ptx@def_tocitem{section}{1cm}{\sc}{}
+\ptx@def_tocitem{subsection}{2cm}{\it}
+  {\reverse\iffemptycs{ptx@toc_currentsection}{\usecs{ptx@toc_currentsection}.}}
+\ptx@def_tocitem{paragraph}{3cm}{}
+  {\reverse\iffemptycs{ptx@toc_currentsection}{\usecs{ptx@toc_currentsection}.}%
+   \reverse\iffemptycs{ptx@toc_currentsubsection}{\usecs{ptx@toc_currentsection}}.}

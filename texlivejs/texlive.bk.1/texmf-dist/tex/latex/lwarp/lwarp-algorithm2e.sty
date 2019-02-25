@@ -1,0 +1,161 @@
+%%
+%% This is file `lwarp-algorithm2e.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `algorithm2e')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+\LWR@ProvidesPackagePass{algorithm2e}[2017/07/18]
+
+\renewcommand{\l@algocf}[2]{\hypertocfloat{1}{algocf}{loa}{#1}{#2}}
+\newcommand*{\LWR@floatstyle@algocf}{ruled}
+
+\ifdefstring{\algocf@style}{boxed}{%
+\renewcommand*{\LWR@floatstyle@algocf}{boxed}
+}{}
+
+\ifdefstring{\algocf@style}{boxruled}{%
+\renewcommand*{\LWR@floatstyle@algocf}{boxruled}
+}{}
+
+\ifdefstring{\algocf@style}{plain}{%
+\renewcommand*{\LWR@floatstyle@algocf}{plain}
+}{}
+\newbool{LWR@algocf@dopars}
+\booltrue{LWR@algocf@dopars}
+
+\renewcommand{\algocf@everypar}{%
+\ifbool{LWR@algocf@dopars}{%
+    \ifbool{LWR@doingstartpars}{%
+        \ifnumcomp{\value{LWR@lateximagedepth}}{>}{0}%
+            {}%
+            {%
+                \algocf@everyparnl\algocf@everyparhanging%
+            }%
+    }{}%
+}{}%
+}
+\renewcommand{\algocf@makecaption}[2]{%
+\LWR@HTML@caption@begin{algocf}%
+\LWR@isolate{\algocf@captiontext{#1}{#2}}%
+\LWR@HTML@caption@end%
+}
+\renewcommand{\algocf@makecaption@plain}[2]{%
+    \LWR@HTML@caption@begin{algocf}%
+    \LWR@isolate{\algocf@captiontext{#1}{#2}}%
+    \LWR@HTML@caption@end%
+}
+
+\renewcommand{\algocf@makecaption@boxed}[2]{%
+    \LWR@HTML@caption@begin{algocf}%
+    \LWR@isolate{\algocf@captiontext{#1}{#2}}%
+    \LWR@HTML@caption@end%
+}
+
+\renewcommand{\algocf@makecaption@ruled}[2]{%
+    \LWR@HTML@caption@begin{algocf}%
+    \LWR@isolate{\algocf@captiontext{#1}{#2}}%
+    \LWR@HTML@caption@end%
+}
+\long\def\algocf@latexcaption#1[#2]#3{% original definition of caption
+\boolfalse{LWR@algocf@dopars}%  lwarp
+  \par%
+  \addcontentsline{\csname ext@#1\endcsname}{#1}%
+  {\protect\numberline{\csname the#1\endcsname}{\ignorespaces \LWR@isolate{#2}}}%
+  \begingroup%
+  \@parboxrestore%
+  \if@minipage%
+    \@setminipage%
+  \fi%
+  \normalsize%
+  \@makecaption{\csname fnum@#1\endcsname}{\ignorespaces #3}\par%
+  \endgroup%
+\booltrue{LWR@algocf@dopars}%   lwarp
+}
+\renewcommand{\algocf@printnl}[1]{%
+    \InlineClass{alg2elinenumber}{\NlSty{#1}}~%
+}%
+\preto\@algocf@init{%
+  \edef\LWR@floatstyle@figure{\LWR@floatstyle@algocf}%
+}
+\renewcommand{\@algocf@start}{%
+    \let\@mathsemicolon=\;\def\;{\ifmmode\@mathsemicolon\else\@endalgoln\fi}%
+    \AlFnt{}%
+    \booltrue{LWR@algocf@dopars}% lwarp
+}
+
+\renewcommand{\@algocf@finish}{%
+    \boolfalse{LWR@algocf@dopars}% lwarp
+    \lineskip\normallineskip\setlength{\skiptotal}{\@defaultskiptotal}%
+    \let\;=\@mathsemicolon%
+    \let\]=\@emathdisplay%
+}
+\renewcommand{\BlankLine}{%
+\LWR@stoppars%
+\LWR@htmltagc{br /}%
+\LWR@startpars%
+}
+\renewcommand{\SetKwInOut}[2]{%
+  \algocf@newcommand{#1}[1]{%
+    \ifthenelse{\boolean{algocf@hanginginout}}%
+        {\relax}%
+        {\algocf@seteveryparhanging{\relax}}%
+    \ifthenelse{\boolean{algocf@inoutnumbered}}%
+        {\relax}%
+        {\algocf@seteveryparnl{\relax}}%
+    {%
+            \KwSty{#2\algocf@typo:}%
+        ~##1\par%
+    }%
+    \algocf@linesnumbered% reset the numbering of the lines
+    \ifthenelse{\boolean{algocf@hanginginout}}%
+        {\relax}%
+        {\algocf@reseteveryparhanging}%
+  }%
+}%
+
+\renewcommand{\ResetInOut}[1]{}%
+\renewcommand{\algocf@Vline}[1]{%
+\boolfalse{LWR@algocf@dopars}%
+\begin{BlockClass}{alg2evline}
+\booltrue{LWR@algocf@dopars}%
+#1
+\boolfalse{LWR@algocf@dopars}%
+\end{BlockClass}
+\booltrue{LWR@algocf@dopars}%
+}
+\renewcommand{\algocf@Vsline}[1]{%
+\boolfalse{LWR@algocf@dopars}%
+\begin{BlockClass}{alg2evsline}
+\booltrue{LWR@algocf@dopars}%
+#1
+\boolfalse{LWR@algocf@dopars}%
+\end{BlockClass}
+\booltrue{LWR@algocf@dopars}%
+}
+\renewcommand{\algocf@Noline}[1]{%
+\boolfalse{LWR@algocf@dopars}%
+\begin{BlockClass}{alg2enoline}
+\booltrue{LWR@algocf@dopars}%
+#1
+\boolfalse{LWR@algocf@dopars}%
+\end{BlockClass}
+\booltrue{LWR@algocf@dopars}%
+}
+\LetLtxMacro\algocf@Here\algocf
+\LetLtxMacro\endalgocf@Here\endalgocf
+
+\endinput
+%%
+%% End of file `lwarp-algorithm2e.sty'.

@@ -1,0 +1,97 @@
+%%
+%% This is file `mathdots.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% mathdots.dtx  (with options: `sty')
+%% 
+%% -------------------------------------------------------------------
+%% 
+%% Copyright 2001--2014, Daniel H. Luecking
+%% 
+%% Mathdots may be distributed and/or modified under the conditions of the
+%% LaTeX Project Public License, either version 1.3 of this license or (at
+%% your option) any later version. The latest version of this license is in
+%%    <http://www.latex-project.org/lppl.txt>
+%% and version 1.3 or later is part of all distributions of LaTeX version
+%% 2003/12/01 or later.
+%% 
+%% Mathdots has maintenance status "author-maintained". The Current
+%% Maintainer is Daniel H. Luecking. The Base Interpreters associated with
+%% mathdots are plain TeX and LaTeX
+%% 
+\ifx\documentclass\UndEfInEd\input mathdots \expandafter\endinput\fi
+\ProvidesPackage{mathdots}
+[2014/06/11 v0.9 Improve and add various macros for dots in math.]%
+\def\MDo@us#1{\@nameuse{#1style}}%
+\def\MDo@uf#1{\@nameuse{#1font}0}%
+\def\MDo@t{text}\def\MDo@s{script}\def\MDo@ss{scriptscript}%
+\newdimen\MDo@unit \MDo@unit\p@
+\def\MDo@changestyle#1{\relax\MDo@unit0.1\fontdimen6\MDo@uf{#1}%
+  \everymath\expandafter{\the\everymath\MDo@us{#1}}}%
+\def\MDo@dot{$\m@th\ldotp$}%
+\def\MDo@palette#1{\mathchoice{#1\MDo@t}{#1\MDo@t}{#1\MDo@s}{#1\MDo@ss}}%
+\def\MDo@ddots#1{{\MDo@changestyle{#1}%
+  \mkern1mu\raise7\MDo@unit\vbox{\kern7\MDo@unit\hbox{\MDo@dot}}%
+  \mkern2mu\raise4\MDo@unit\hbox{\MDo@dot}%
+  \mkern2mu\raise \MDo@unit\hbox{\MDo@dot}\mkern1mu}}%
+\def\MDo@vdots#1{\vbox{\MDo@changestyle{#1}%
+  \baselineskip4\MDo@unit\lineskiplimit\z@
+  \kern6\MDo@unit\hbox{\MDo@dot}\hbox{\MDo@dot}\hbox{\MDo@dot}}}%
+\def\MDo@iddots#1{{\MDo@changestyle{#1}%
+  \mkern1mu\raise \MDo@unit\hbox{\MDo@dot}%
+  \mkern2mu\raise4\MDo@unit\hbox{\MDo@dot}%
+  \mkern2mu\raise7\MDo@unit\vbox{\kern7\MDo@unit\hbox{\MDo@dot}}}}%
+\DeclareRobustCommand\fixedvdots{%
+  \vbox{\baselineskip4\p@ \lineskiplimit\z@
+  \kern6\p@\hbox{.}\hbox{.}\hbox{.}}}%
+\DeclareRobustCommand\fixedddots{%
+  \mathinner{\mkern1mu
+  \raise7\p@\vbox{\kern7\p@\hbox{.}}\mkern2mu
+  \raise4\p@\hbox{.}\mkern2mu
+  \raise\p@\hbox{.}\mkern1mu}}%
+\DeclareRobustCommand\fixediddots{%
+  \mathinner{\mkern1mu
+  \raise\p@\hbox{.}\mkern2mu
+  \raise4\p@\hbox{.}\mkern2mu
+  \raise7\p@\vbox{\kern7\p@\hbox{.}}\mkern1mu}}%
+\let\originalddots=\ddots
+\let\originalvdots=\vdots
+\let\originaliddots=\iddots
+\DeclareRobustCommand\MDoddots{%
+  \mathinner{\MDo@palette\MDo@ddots}}%
+\DeclareRobustCommand\MDoiddots{%
+  \mathinner{\MDo@palette\MDo@iddots}}%
+\DeclareRobustCommand\MDovdots{%
+  \mathinner{\MDo@palette\MDo@vdots}}%
+\let\ddots \MDoddots
+\let\iddots\MDoiddots
+\let\vdots \MDovdots
+\newbox\MDo@dotsbox
+\newmuskip\MDoprekern
+\newmuskip\MDopostkern
+\newmuskip\MDodotkern
+\MDoprekern 0mu
+\MDopostkern -1mu
+\MDodotkern -1.3 mu
+\def\MDo@dotsaccent#1{\mathpalette{\MDo@@dotsaccent{#1}}}%
+\let\originaldddot \dddot
+\let\originalddddot\ddddot
+\def\MDo@@dotsaccent#1#2#3{%
+  {\setbox\MDo@dotsbox\hbox{$#2\mkern\MDoprekern#1\mkern\MDopostkern$}%
+   \mathop{#3\kern\z@}\limits^{%
+   \text{\vbox to-1.4\ex@{\kern-1.8\ex@\copy\MDo@dotsbox\vss}}}}%
+}%
+\@ifpackageloaded{amsmath}{%
+  \def\MDo@D{\mathchar"5F\mkern\MDodotkern}%
+  \DeclareRobustCommand\MDodddot {%
+    \MDo@dotsaccent{\MDo@D\MDo@D\MDo@D}}%
+  \DeclareRobustCommand\MDoddddot{%
+    \MDo@dotsaccent{\MDo@D\MDo@D\MDo@D\MDo@D}}%
+  \let\dddot \MDodddot
+  \let\ddddot\MDoddddot
+}{}%
+\endinput
+%%
+%% End of file `mathdots.sty'.

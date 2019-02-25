@@ -1,0 +1,59 @@
+% mlp-49.sty (the german interface for the mlp package)    last mods 2000/09/06
+%
+%%
+%%      checksum        = "63302 137 659 7109"
+%%
+\ProvidesFile{mlp-49.sty}% 
+        [2000/09/06 german interface for the mlp package]
+\expandafter% If this coding is not alreadly loaded
+\ifx\csname germanTeXmods\endcsname\relax% define the basic cs,
+  \def\beginlanguage{\german}% the language name cs and
+  \edef\beginFWdirection{L}% the direction of writing (write Left to right).
+\else%
+  \endinput% else do nothing at all.
+\fi%
+% A bypass required for other languages because
+\let\@SavedCF\captionsfrench% 1) german.sty destroys french captions coding
+\let\@SavedCE\captionsenglish% 2) german.sty destroys english captions coding.
+\RequirePackage{german}% Load german package.
+% The command to initialize all german tools except hyphenation:
+\@ifundefined{germanTeXmods}{%................................ \germanTeXmods
+    \gdef\germanTeXmods{\germanTeX% this is the cs for german.sty
+                        \ifx\captionsnames\captionsgerman\else%
+                         \let\captionsnames\captionsgerman%
+                         \let\date\dategerman%
+                         \let\bibsnames\bibssgerman%
+                        \fi%
+                        \let\switchtolanguage\endgerman% 
+                        }%
+                            }{}%
+\DeclareOption{german}{\def\beginlanguage{german}}% First language to start.
+\ProcessOptions% Process that option (german) defintely.
+% The command to set german hyphenation:
+% (normally set at INITeX) it should equal to \language=x and nothing else
+\@ifundefined{german}{\gdef\german{\relax}}{}% Default...............   \german
+% The command to do extra things and switch to another language:
+\@ifundefined{switchtolanguage}{%............................ \switchtolanguage
+                                \gdef\switchtolanguage#1{#1}}{}%
+\let\@enstGORI\switchtolanguage% save original switchtolanguage if any.
+\let\germanORI\german% assuming \language=x was set here
+\def\endgerman{\no@xtrasgerman%
+               \let\switchtolanguage\@enstGORI%
+%              \csname endL\endcsname%stop TeX--XeT 1st direction of writing
+               \ignorespaces}% but they are not after \end{english} !
+\let\no@xtrasgerman\noextrasgerman%
+% The final command to initialize german stuff:
+\def\german{\switchtolanguage\germanTeXmods\germanORI%...... Final \german
+             \ignorespaces}% but they are not after \begin{german} !
+%\german% Don't activate language now, postpone until \begin{document}.
+\originalTeX% go back to original stuff
+\let\captionsfrench\@SavedCF% restore original \captionsfrench
+\let\captionsenglish\@SavedCE% restore original \captionsenglish
+\def\@lastoption{german}% The option to start typesetting with.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Let few other packages know that german is loaded.
+%
+\PassOptionsToPackage{german}{varioref}% 
+%
+\endinput%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 

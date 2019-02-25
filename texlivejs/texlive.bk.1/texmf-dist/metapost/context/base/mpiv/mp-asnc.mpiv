@@ -1,0 +1,117 @@
+%D \module
+%D   [       file=mp-asnc.mpiv,
+%D        version=2012.02.19, % was mp-core: 1999.08.01, anchoring
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=anchored background macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+if known context_asnc : endinput ; fi ;
+
+boolean context_asnc ; context_asnc := true ;
+
+%D This is a rather old mechanism that we once needed in an actually nice
+%D design. Those were the times that processing a rather complex xml file
+%D with pdftex  into a 400 page document took 45 minutes (a few runs) while
+%D nowadays with luatex and mkiv we express runtime in seconds.
+%D
+%D The logic is mostly the same but some work is delegated to Lua so that
+%D we save memory and also run faster. As this was not really a used module
+%D the interface also was upgraded. As we know the bottlenecks in mp we also
+%D work around it a bit.
+
+numeric mfun_sync_count ;
+numeric mfun_sync_page ;
+
+vardef StartSync(expr n) =
+    numeric CurrentSyncClass ; CurrentSyncClass := n ;
+    numeric SyncHOffset      ; SyncHOffset      := 0 ;
+    numeric SyncVOffset      ; SyncVOffset      := 0 ;
+    numeric SyncWidth        ; SyncWidth        := 0 ;
+    path    SyncPaths[] ;
+    numeric SyncTasks[] ;
+    numeric SyncKinds[] ;
+    %
+    mfun_sync_page   := RealPageNumber ;
+    mfun_sync_count  := 0 ;
+enddef ;
+
+def StopSync =
+    % maybe some cleanup
+enddef ;
+
+vardef CollectSyncDataPage =
+    mfun_sync_count := lua.mp.sync_collect(CurrentSyncClass,mfun_sync_page) ;
+enddef ;
+
+vardef CollectSyncDataRegion(expr region) =
+    mfun_sync_count := lua.mp.sync_collect(CurrentSyncClass,mfun_sync_page,region) ;
+enddef ;
+
+vardef MakeSyncPaths =
+    if mfun_sync_count > 0 :
+        save k, t, b ;
+        save l ; l := SyncHOffset ;
+        save r ; r := SyncHOffset +  SyncWidth ;
+        save y ; y := lua.mp.sync_get_y() + SyncVOffset ;
+        for i=1 upto mfun_sync_count :
+            k := lua.mp.sync_get_kind(i) ;
+            t := lua.mp.sync_get_top(i)    - y ;
+            b := lua.mp.sync_get_bottom(i) - y ;
+            SyncPaths[i] = ((l,t) -- (r,t) -- (r,b) -- (l,b) -- cycle) ;
+            SyncTasks[i] = lua.mp.sync_get_task(i) ;
+            SyncKinds[i] = k ;
+        endfor ;
+    fi ;
+enddef ;
+
+% Extend to the top of the text area.
+
+vardef ExtendSyncPaths =
+    mfun_sync_count := lua.mp.sync_extend() ;
+enddef ;
+
+% Clip to the text area.
+
+vardef PruneSyncPaths =
+    mfun_sync_count := lua.mp.sync_prune() ;
+enddef ;
+
+% Remove duplicate tasks
+
+vardef CollapseSyncPaths =
+    mfun_sync_count := lua.mp.sync_collapse() ;
+enddef ;
+
+def SetSyncColor(expr n, i, c) =
+    lua.mp.sync_set_color(n,i,c) ;
+enddef ;
+
+vardef TheSyncColor(expr n, i) =
+    lua.mp.sync_get_color(n,i)
+enddef ;
+
+vardef SyncPathColor(expr i) =
+    lua.mp.sync_get_color(CurrentSyncClass,SyncTasks[i])
+enddef ;
+
+def DrawSyncPaths =
+    for i=1 upto NOfSyncPaths :
+        draw SyncPaths[i] withcolor SyncPathColor(i) ;
+    endfor ;
+enddef ;
+
+def FillSyncPaths =
+    for i=1 upto NOfSyncPaths :
+        fill SyncPaths[i] withcolor SyncPathColor(i) ;
+    endfor ;
+enddef ;
+
+vardef NOfSyncPaths =
+    mfun_sync_count
+enddef ;

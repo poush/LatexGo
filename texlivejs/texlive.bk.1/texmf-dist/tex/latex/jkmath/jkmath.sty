@@ -1,0 +1,110 @@
+% jkmath 0.1
+% Created by Jonas Kaerts
+% Updated 25th of March 2018
+%
+% This material is subject to the LaTeX Project Public License.
+% See http://www.ctan.org/tex-archive/help/Catalogue/licenses.lppl.html for 
+% the details of that license.
+%
+% Inspired by the physics package on CTAN, this package defines some simple macros for 
+% mathematical notation which make the code more readable and/or allow flexibility in typesetting material.
+%
+% The package is currently being developed as I gather examples of special notation fit for new macro's.
+
+\ProvidesPackage{jkmath}[2018/03/25 package jkmath]
+
+\RequirePackage{xparse}
+\RequirePackage{array}
+\RequirePackage{amsmath}
+\RequirePackage{physics}
+
+\let\oldsubset\subset
+\let\oldsupset\supset
+% Options
+\DeclareOption{subsetorder}{%
+    \renewcommand{\subset}{\subseteq}%
+    \newcommand{\stsubset}{\oldsubset}%
+    \renewcommand{\supset}{\supseteq}%
+    \newcommand{\stsupset}{\oldsupset}}
+\DeclareOption{subsetnonorder}{%
+    \newcommand{\stsubset}{\subsetneq}%
+    \newcommand{\stsupset}{\supsetneq}}
+\DeclareOption{subsetnonamb}{%
+    \renewcommand{\subset}{\subseteq}%
+    \newcommand{\stsubset}{\subsetneq}%
+    \renewcommand{\supset}{\supseteq}%
+    \newcommand{\stsupset}{\supsetneq}}
+
+\DeclareOption{bbsets}{
+    \newcommand{\N}{\mathbb{N}}%Natural numbers
+    \newcommand{\Z}{\mathbb{Z}}%Integers
+    \newcommand{\Q}{\mathbb{Q}}%Rational Numbers
+    \newcommand{\R}{\mathbb{R}}%Real Numbers
+    \newcommand{\C}{\mathbb{C}}%Complex Numbers
+    \newcommand{\F}{\mathbb{F}}%Field
+    \newcommand{\Aff}{\mathbb{A}}%Affine Space
+    \newcommand{\PP}{\mathbb{P}}%Projective Space
+}
+\DeclareOption{bfsets}{
+    \newcommand{\N}{\mathbf{N}}%Natural numbers
+    \newcommand{\Z}{\mathbf{Z}}%Integers
+    \newcommand{\Q}{\mathbf{Q}}%Rational Numbers
+    \newcommand{\R}{\mathbf{R}}%Real Numbers
+    \newcommand{\C}{\mathbf{C}}%Complex Numbers
+    \newcommand{\F}{\mathbf{F}}%Field
+    \newcommand{\Aff}{\mathbf{A}}%Affine Space
+    \newcommand{\PP}{\mathbf{P}}%Projective Space
+}
+\ProcessOptions\relax
+
+% Macro's using the array package
+\newcolumntype{e}{@{{}={}}}
+\newcolumntype{o}{>{{}}c<{{}}}
+
+\newenvironment{system}[1]% more control over systems of equations
+{\left\lbrace%
+    \setlength\arraycolsep{0pt}%
+    \begin{array}{#1}}%
+    {\end{array}\right.}
+
+\newenvironment{augmentedmatrix}[2]{% matrix with vertical bar
+    \begin{array}{@{}*{#1}{c}|*{#2}{c}@{}}
+    }{%
+    \end{array}
+}
+
+\newcommand{\apmqty}[2]{\left(\begin{augmentedmatrix}{#1}{1}#2\end{augmentedmatrix}\right)}
+\newcommand{\ipmqty}[2]{\left(\begin{augmentedmatrix}{#1}{#1}#2\end{augmentedmatrix}\right)}
+
+
+% Delimiters and intervals
+\newcommand{\lparens}{(}
+\newcommand{\rparens}{)}
+
+
+\newcommand{\oointerval}[1]{\lparens #1 \rparens}
+\newcommand{\ccinterval}[1]{\lbrack #1 \rbrack}
+\newcommand{\ocinterval}[1]{\lparens #1 \rbrack}
+\newcommand{\cointerval}[1]{\lbrack #1 \rparens}
+
+% Sets
+\newcommand{\set}[1]{\left\{#1\right\}}
+\newcommand{\where}{\mathrel{}\middle|\mathrel{}}
+
+\newcommand{\restr}[1]{\left.#1\right|}
+
+
+
+% Combinatorics
+\DeclareDocumentCommand{\stirlingfirstkind}{}{\genfrac{[}{]}{0pt}{}}
+\DeclareDocumentCommand{\stirlingsecondkind}{}{\genfrac\{\}{0pt}{}}
+
+% Number Theory
+
+\DeclareDocumentCommand{\legendre}{ m m }{\left(\frac{#1}{#2}\right)}
+\DeclareDocumentCommand{\jacobi}{ m m }{\legendre{#1}{#2}}
+
+% Mathematicians
+\newcommand{\mobius}{M\"{o}bius}
+\newcommand{\cech}{C\v{e}ch}
+\newcommand{\erdos}{Erd\H{os}}

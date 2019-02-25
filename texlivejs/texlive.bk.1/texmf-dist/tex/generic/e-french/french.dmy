@@ -1,0 +1,70 @@
+% This is the french dummy style (that redefine all french cs as dummy)
+%
+% After Bernard Gaulle's decease this work is now maintained as
+% the e-French project by a group of enthusiast users 
+% under LPPL copyright as declared in http://www.efrench.org/
+%
+% to be used only for testing/debugging purposes.
+%
+%                                                               rev. 2000/10/20
+%%
+%%      checksum        = "57290 67 195 2733"
+%%
+{\catcode`\]=13\def]{}
+\def\DmyDeF#1{\expandafter\gdef\csname#1\endcsname{\relax}}%
+\def\Dmydef#1,#2]{\DmyDeF{#1}%
+                  \def\temp{#2}\ifx\temp\empty\let\Dmydef\relax\fi%
+                  \Dmydef#2]}%
+\def\dummydef[{\Dmydef}%
+% Here are all the french defs names
+\ifx\french\undefined\let\french\relax\fi%                    %1
+\ifx\english\undefined\let\english\relax\fi%                    %2
+\input french.cmd %
+% The following is for commands used before \begin{document}
+% they must not produce any text.
+\def\email#1{}% 
+%
+\global\let\dsORI\dospecials\gdef\dospecials{\do<\do>\dsORI}
+\catcode`<=\active\catcode`>=\active
+\gdef\EBCDICbrackets{% let << >> do a grouping
+  \catcode`<=\active\catcode`>=\active
+  \global\let\ifOG\iffalse
+  \gdef\NNouv<{\ifOG\else\bgroup\fi\global\let\ifOG\iftrue}
+  \gdef\NNfer>{\ifOG\egroup\fi\global\let\ifOG\iffalse}
+  \gdef<{\protect\myNo}\gdef>{\protect\myNf}
+  \gdef\myNo{\ifmmode\string<\else\NNouv<\fi}
+  \gdef\myNf{\ifmmode\string>\else\NNfer>\fi}
+}
+\gdef<{\string<}%
+\gdef>{\string>}% for use with 8bits << and >>
+\gdef\normalbrackets{\catcode`<=12\catcode`>=12
+      \global\let\dospecials\dsORI}
+\catcode`<=12\catcode`>=12
+\gdef\guillemets{<<}\gdef\endguillemets{>>}
+\gdef\guillemotleft{<<}\gdef\guillemotright{>>}
+\gdef\ref#1{??}% contents nullified (too much code to write)
+\gdef\special#1{}\def\cite#1{??}% ditto
+\gdef\Sauter#1Lignes{}%
+% the following to let LaTeX know about the order and versatim env.
+\global\let\order\itemize\global\let\endorder\enditemize
+{\catcode`\@=11\relax
+%\global\let\@sanORI\@sanitize\def\@sanitize{\@sanORI\@makeother<\@makeother>}
+\begingroup \catcode `| =0  \catcode `[ = 1 \catcode`] =2 
+            \catcode `\{=12 \catcode `\}=12 \catcode`\\=12 
+            |gdef|@xversatim#1\end{versatim}[#1|end[versatim]]
+            |endgroup% running macro for versatim
+\gdef\versatim{\let\@xverbatim\@xversatim\verbatim%
+               \def\endversatim{\endverbatim}}
+}
+%\global\let\vers\verb% c'est un pb pour 2e (invalid in argument)
+\global\let\vers\relax
+\let\BSori\backslash\def\backslash{\ifmmode\BSori\else$\BSori$\fi}
+\global\def\|{\backslash|}% used in french.tst as a backslash in a verb.
+\def\frenchTeXmods{}% normally unused by user
+\let\figurette\figure\let\endfigurette\endfigure
+\def\CheckSevenBits/#1/#2{}% no-op
+\endinput
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+

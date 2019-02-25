@@ -1,0 +1,471 @@
+% \iffalse
+% +AMDG  This document was begun on 1E June 11EE, the vigil
+% of the Nativity of St. John the Baptist, and it is humbly
+% dedicated to him and to the Immaculate Heart of Mary, for
+% their prayers, and to the Sacred Heart of Jesus, for His
+% mercy.
+% 
+% This document is copyright 2015 by Donald P. Goodman, and is
+% released publicly under the LaTeX Project Public License.  The
+% distribution and modification of this work is constrained by the
+% conditions of that license.  See
+% 	http://www.latex-project.org/lppl.txt
+% for the text of the license.  This document is released
+% under version 1.3 of that license, and this work may be distributed
+% or modified under the terms of that license or, at your option, any
+% later version.
+% 
+% This work has the LPPL maintenance status 'maintained'.
+% 
+% The Current Maintainer of this work is Donald P. Goodman
+% (dgoodmaniii@gmail.com).
+% 
+% This work consists of the files shapes.dtx and
+% shapes.ins, along with the generated file shapes.mp
+% and shapes.pdf, and the README.
+% \fi
+
+% \iffalse
+%<*driver>
+
+\documentclass{ltxdoc}
+\usepackage{docmfp}
+\usepackage{url}
+\usepackage[typeone]{dozenal}
+\usepackage{verbatim}
+\usepackage{mflogo}
+\usepackage[everymp={input shapes;},latex]{gmp}
+\usepackage{makeidx}
+\makeindex
+\long\def\demonstrate#1#2{%
+	\bigskip%
+	\hrule%
+	\hbox to\linewidth{%
+		\hbox to0.65\linewidth{%
+			\vbox to1.4in{\vfil#1\vfil}%
+		}\hbox to0.35\linewidth{%
+			\vbox to1.4in{\vfil#2\vfil}%
+		}%
+	}%
+	\hrule%
+	\bigskip%
+}
+
+\begin{document}
+\DocInput{shapes.dtx}
+\end{document}
+%</driver>
+% \fi
+% \title{The \texttt{shapes} Macros, v1.0}
+% \author{Donald P.\ Goodman III}
+% \date{\today}
+%
+% \maketitle
+% \begin{abstract}\noindent
+% The |shapes| macros for \MP\ provide regular polygons,
+% their corresponding reentrant stars, and images
+% demonstrating fractions.  These macros are quite
+% configurable.
+% \end{abstract}
+% 
+% \tableofcontents
+%
+% \section{Introduction}
+%
+% The |shapes| macros are not revolutionary, and in fact are
+% quite simple; however, I spent some time generalizing them
+% for a text I'm currently working on, and so I thought they
+% might be useful for the general populace.  They are
+% divided into two main groups:  regular polygons and their
+% corresponding reentrant star shapes; and fractionals,
+% circles divided into a certain number of parts with the
+% desired fraction filled in.
+%
+% This document was typeset in accordance with the
+% |docstrip| utility, which allows the automatic extraction
+% of code and documentation from the same document.
+%
+% \section{Prerequisites and Conventions}
+%
+% Some prerequesites for using this package are \MP\ itself
+% (obviously).  If you're using the package with \LaTeX, the
+% |gmp| package would probably be helpful; be sure to use
+% the |latex| package option.  
+% These should be packaged in any
+% reasonably modern \LaTeX\ system, such as \TeX Live or
+% Mik\TeX.
+%
+% This documentation assumes nothing about your personal
+% \TeX\ or \MP\ environment.  Con\TeX t and the various
+% forms of Lua\TeX\ have \MP\ built-in; with pdf\LaTeX, the
+% author's choice, one can use the |gmp| package to
+% include the source directly in one's document (that's
+% what's been done in this documentation) or develop a
+% simple script to compile them afterwards and include them
+% in the source via |\includegraphics| (probably the
+% quickest option, since compilation is done in advance).
+% Here, we simply post the plain vanilla \MP\ code, and let
+% you work out those details however you prefer.
+%
+% \section{The Shapes Macros}
+%
+% We begin with the simple shapes macros, which are about as
+% basic as they can be.
+%
+% All of these shapes default to
+% circles with a one inch diameter, so you can scaled them
+% with that kept in mind.
+%
+% The simplest case is with a regular
+% polygon, like so:
+%
+% \demonstrate{%
+%	\hbox{|modfig(6,0);|}
+%	\hbox{|draw modfigure;|}
+% }{%
+% 	\begin{mpost}
+%	modfig(6,0); draw modfigure;
+%	\end{mpost}
+% }%
+%
+% Of course, these drawn figures can be manipulated in the
+% usual ways:
+%
+% \demonstrate{%
+%	\hbox{|modfig(6,0);|}
+%	\hbox{|draw modfigure rotated (45) withcolor red;|}
+% }{%
+% 	\begin{mpost}
+%	modfig(6,0); draw modfigure rotated (45) withcolor red;
+%	\end{mpost}
+% }%
+%
+% The two arguments to |modfig| are simple:  the first tells
+% the number of sides desired, while the second means
+% \emph{no numbers are printed} if 0, and \emph{print
+% numbers} if 1:
+% 
+% \demonstrate{%
+%	\hbox{|modfig(8,1);|}
+%	\hbox{|draw modfigure;|}
+% }{%
+% 	\begin{mpost}
+%	modfig(8,1); draw modfigure;
+%	\end{mpost}
+% }%
+%
+% If you don't want the circle to be printed, simply tell
+% \MP\ with |modcircle := false;| and it will not print it:
+%
+% \demonstrate{%
+%	\hbox{|modcircle := false;|}
+%	\hbox{|modfig(8,1);|}
+%	\hbox{|draw modfigure;|}
+% }{%
+% 	\begin{mpost}
+%	modcircle := false;
+%	modfig(8,1); draw modfigure;
+%	\end{mpost}
+% }%
+%
+% |modcircle| defaults to |true|.
+%
+% Notice that |modfig| doesn't care if there's a circle or
+% not; if you want numbers on the vertices, it will print
+% them there.
+%
+% You can adjust the width of the lines by specifying
+% |modcirclepen| and |modshapepen|:
+%
+% \demonstrate{%
+%	\hbox{|modcirclepen := pencircle scaled 3;|}
+%	\hbox{|modshapepen := pencircle scaled 2;|}
+%	\hbox{|modfig(4,0);|}
+%	\hbox{|draw modfigure;|}
+% }{%
+% 	\begin{mpost}
+%	modcirclepen := pencircle scaled 3;
+%	modshapepen := pencircle scaled 2;
+%	modfig(4,0); draw modfigure;
+%	\end{mpost}
+% }%
+%
+% Both |modcirclepen| and |modshapepen| default to 
+% |pencircle scaled 1|.
+%
+% We can also put ticks around the outside of the circle,
+% at whatever intervals we want.  The parameters here are
+% \DescribeMacro{modticks}|modticks|, which is a boolean set
+% to |false| by default.  Set it to |true| if you want
+% ticks.  You can control the number of ticks with
+% \DescribeMacro{nummodticks}|nummodticks|, which defaults
+% to twelve.  You can control the length of those ticks with
+% \DescribeMacro{ticklen}|ticklen|, which defaults to
+% |0.1in|.  Finally, you can control the pen that is used to
+% draw the ticks, which is \DescribeMacro{tickpen}|tickpen|,
+% which defaults to |pencircle scaled 1|:
+%
+% \demonstrate{%
+%	\hbox{|nummodticks := 6;|}
+%	\hbox{|ticklen := 0.2in;|}
+%	\hbox{|modticks := true;|}
+%	\hbox{|tickpen := pensquare scaled 2;|}
+%	\hbox{|modshapepen := pensquare scaled 4;|}
+%	\hbox{|modfig(4,0);|}
+%	\hbox{|draw modfigure;|}
+% }{%
+% 	\begin{mpost}
+%	nummodticks := 6;
+%	ticklen := 0.2in;
+%	modticks := true;
+%	tickpen := pensquare scaled 2;
+%	modshapepen := pensquare scaled 4;
+%	modfig(4,0); draw modfigure;
+%	\end{mpost}
+% }%
+%
+% We can do essentially the same thing with reentrant star
+% figures with |modstar|.  Unlike |modfig|, |modstar| takes
+% \emph{three} arguments:  the number of vertices, whether
+% or not you want those vertices numbered, and how many
+% points you want to skip as you go around the circle.
+%
+% \demonstrate{%
+%	\hbox{|modstar(11,1,3);|}
+%	\hbox{|draw modfigure;|}
+% }{%
+% 	\begin{mpost}
+%	modstar(11,1,3); draw modfigure;
+%	\end{mpost}
+% }%
+%
+% Note that the third argument actually skips $n - 1$
+% points, not $n$ points.  But all the same parameters we
+% saw when looking at |modfig| will still work in the same
+% way:
+% 
+% \demonstrate{%
+%	\hbox{|modcirclepen := pencircle scaled 1;|}
+%	\hbox{|modshapepen := pencircle scaled 2;|}
+%	\hbox{|modstar(11,1,4);|}
+%	\hbox{|draw modfigure;|}
+% }{%
+% 	\begin{mpost}
+%	modcirclepen := pencircle scaled 1;
+%	modshapepen := pencircle scaled 2;
+%	modstar(11,1,4); draw modfigure;
+%	\end{mpost}
+% }%
+%
+% And that's about all there is to it.
+%
+% \section{Fraction Images}
+% \label{sect:fraimg}
+%
+% The following macros are useful for demonstrating the
+% nature and size of fractions in a visible way.  The name
+% of the game here is |fraccirc|, which takes two arguments:
+% the number of parts to be filled, and the number of parts
+% in the whole:
+%
+% \demonstrate{%
+%	\hbox{|fraccirc(7)(12);|}
+%	\hbox{|draw thefrac;|}
+% }{%
+% 	\begin{mpost}
+%	fraccirc(7)(12);
+%	draw thefrac;
+%	\end{mpost}
+% }
+%
+% Note that, due to the internal implementation, these two
+% arguments must each be enclosed in their own parentheses.
+%
+% We can adjust these things as appropriate.  For example,
+% we can fill with blue rather than red, and use thicker
+% lines:
+%
+% \demonstrate{%
+%	\hbox{|fracfillcolor := blue;|}
+%	\hbox{|fraccirclepen := pencircle scaled 1;|}
+%	\hbox{|fractionpen := pencircle scaled 2;|}
+%	\hbox{|fraccirc(4)(7);|}
+%	\hbox{|draw thefrac;|}
+% }{%
+% 	\begin{mpost}
+%	fracfillcolor := blue;
+% 	fraccirclepen := pencircle scaled 1;
+%	fractionpen := pencircle scaled 2;
+%	fraccirc(4)(7);
+%	draw thefrac;
+%	\end{mpost}
+% }
+%
+% As the above example suggests, |fracfillcolor| gives the
+% color with which the portion of the fraction should be
+% filled; it defaults to |red|.  |fraccirclepen| is the pen
+% used to draw the circle around the fraction; it defaults
+% to |pencircle scaled 1.5|.  Finally, |fractionpen| is the
+% pen used to draw the partition and the circle immediately
+% surrounding them; it defaults to |pencircle scaled 1|.
+%
+% \section{Implementation}
+% \label{sect:implem}
+%
+%    \begin{macrocode}
+color fracfillcolor; fracfillcolor := red;
+pen fraccirclepen; fraccirclepen := pencircle scaled 1.5;
+pen fractionpen; fractionpen := pencircle scaled 1;
+def fraccirc(suffix x)(expr y) =
+	radius := 1in;
+	ticklen := radius/24;
+	path circ; circ := fullcircle scaled radius;
+	pair p[]; pair q[]; pair r[]; pair s[];
+	p[0] := (0,0) shifted (0,radius/2);
+	q[0] := p[0] shifted (0,ticklen);
+	r[0] := p[0] shifted (0,-ticklen);
+	s[0] := r[0];
+	picture thefrac;
+	picture addition;
+	thefrac := image(pickup fraccirclepen; draw circ;);
+	addition := image(pickup fractionpen; draw p[0]--q[0];);
+	addto thefrac also addition;
+	for i=1 upto 12:
+		p[i] := p[i-1] rotatedaround ((0,0),-30);
+		q[i] := q[i-1] rotatedaround ((0,0),-30);
+		addition := image(pickup fractionpen; draw p[i]--q[i];);
+		addto thefrac also addition;
+	endfor;
+	addition := image(pickup fractionpen; draw (0,0)--r[0];);
+	addto thefrac also addition;
+	pair t; pair q;
+	addition := image(
+		t = r[0] rotatedaround ((0,0),-((360/y)*x)/2);
+		q = r[0] rotatedaround ((0,0),-((360/y)*x));
+		fill r[0]--(0,0)--q..t..cycle withcolor fracfillcolor;
+		draw r[0]--(0,0)--q..t..cycle;
+	);
+	addto thefrac also addition;
+	for i=1 upto y:
+		r[i] := r[i-1] rotatedaround ((0,0),-(360/y));
+		s[i] := r[i-1] rotatedaround ((0,0),-(360/y)/2);
+		addition := image(%
+			pickup fractionpen;%
+			draw (0,0)--r[i];
+			draw r[i-1]..s[i]..r[i];
+		);
+		addto thefrac also addition;
+	endfor;
+enddef;
+% put in the pens for the modular shapes
+boolean modcircle; modcircle := true;
+pen modcirclepen; modcirclepen := pencircle scaled 1;
+pen modshapepen; modshapepen := pencircle scaled 1;
+boolean modticks; modticks := false;
+numeric nummodticks; nummodticks := 12;
+numeric ticklen; ticklen := 0.1in;
+pen tickpen; tickpen := pencircle scaled 1;
+def modstar(expr numpoints,numbers,numstar) =
+	picture modfigure;
+	if (modcircle = true):
+		modfigure := image(draw fullcircle scaled 1in withpen modcirclepen;);
+	else:
+		modfigure := image();
+	fi;
+	picture modtickpic;
+	if (modticks = true):
+		modtickpic := image(
+			pair tickstart[]; pair tickend[];
+			tickstart[0] = (0,0) shifted (0,0.5in);
+			tickend[0] = tickstart[0] shifted (0,ticklen);
+			draw tickstart[0]--tickend[0] withpen tickpen;
+			for i=1 upto (nummodticks-1):
+				tickstart[i] = tickstart[i-1] rotatedaround
+					((0,0), (360/nummodticks));
+				tickend[i] = tickend[i-1] rotatedaround
+					((0,0), (360/nummodticks));
+				draw tickstart[i]--tickend[i] withpen tickpen;
+			endfor;
+		);
+		addto modfigure also modtickpic;
+	fi
+	pickup modshapepen;
+	pair p[]; pair q[];
+	picture addition;
+	p[0] = (0,0.5in);
+	q[0] = (0,0.6in);
+	if (numbers = 1):
+		addition := image(label("0",q[0]));
+		addto modfigure also addition;
+	fi
+	for i=1 upto numpoints:
+		p[i] = p[i-1] rotatedaround ((0,0),-(360/numpoints));
+		q[i] = q[i-1] rotatedaround ((0,0),-(360/numpoints));
+		if (numbers = 1):
+			if (i <> numpoints):
+				addition := image(label(decimal i,q[i]));
+				addto modfigure also addition;
+			fi
+		fi
+	endfor
+	for i=0 upto numpoints:
+		if (i < numstar):
+			addition := image(%
+				draw p[i]--p[i+numstar];
+				draw p[i]--p[numpoints - numstar + i];
+			);
+			addto modfigure also addition;
+		elseif (i >= (numstar*2)):
+			addition := image(draw p[i-numstar]--p[i]);
+			addto modfigure also addition;
+		fi
+	endfor
+	addto modfigure also addition;
+enddef;
+def modfig(expr numpoints,numbers) =
+	picture modfigure;
+	if (modcircle = true):
+		modfigure := image(draw fullcircle scaled 1in withpen modcirclepen);
+	else:
+		modfigure := image();
+	fi
+	picture modtickpic;
+	if (modticks = true):
+		modtickpic := image(
+			pair tickstart[]; pair tickend[];
+			tickstart[0] = (0,0) shifted (0,0.5in);
+			tickend[0] = tickstart[0] shifted (0,ticklen);
+			draw tickstart[0]--tickend[0] withpen tickpen;
+			for i=1 upto (nummodticks-1):
+				tickstart[i] = tickstart[i-1] rotatedaround
+					((0,0), (360/nummodticks));
+				tickend[i] = tickend[i-1] rotatedaround
+					((0,0), (360/nummodticks));
+				draw tickstart[i]--tickend[i] withpen tickpen;
+			endfor;
+		);
+		addto modfigure also modtickpic;
+	fi
+	pair p[]; pair q[];
+	picture addition;
+	pickup modshapepen;
+	p[0] = (0,0.5in);
+	q[0] = (0,0.6in);
+	if (numbers = 1):
+		addition := image(label("0",q[0]));
+		addto modfigure also addition;
+	fi
+	for i=1 upto numpoints:
+		p[i] = p[i-1] rotatedaround ((0,0),-(360/numpoints));
+		q[i] = q[i-1] rotatedaround ((0,0),-(360/numpoints));
+		addition := image(draw p[i-1]--p[i]);
+		addto modfigure also addition;
+		if (numbers = 1):
+			if (i <> numpoints):
+				addition := image(label(decimal i,q[i]));
+				addto modfigure also addition;
+			fi
+		fi
+	endfor;
+enddef;
+%    \end{macrocode}

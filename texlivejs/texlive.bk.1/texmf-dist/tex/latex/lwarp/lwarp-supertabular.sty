@@ -1,0 +1,77 @@
+%%
+%% This is file `lwarp-supertabular.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `supertabular')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+
+\LWR@ProvidesPackageDrop{supertabular}[2004/02/20]
+\newcommand{\LWRST@firsthead}{}
+
+\newcommand{\tablefirsthead}[1]{%
+    \long\gdef\LWRST@firsthead{#1}%
+}
+
+\newcommand{\tablehead}[1]{}
+\newcommand{\tabletail}[1]{}
+
+\newcommand{\LWRST@lasttail}{}
+
+\newcommand{\tablelasttail}[1]{%
+    \long\gdef\LWRST@lasttail{#1}%
+}
+\newcommand{\tablecaption}[2][]{%
+    \long\gdef\LWRST@caption{%
+        \ifblank{#1}%
+            {\caption{#2}}%
+            {\caption[#1]{#2}}%
+    }%
+}
+
+\let\topcaption\tablecaption
+\let\bottomcaption\tablecaption
+\newcommand*{\LWRST@caption}{}
+
+\newcommand*{\shrinkheight}[1]{}
+
+\NewDocumentEnvironment{supertabular}{s o m}
+{%
+\LWR@traceinfo{supertabular}%
+\begin{table}%
+\LWRST@caption%
+\begin{tabular}{#3}%
+\TabularMacro\ifdefvoid{\LWRST@firsthead}%
+{\LWR@getmynexttoken}%
+{\expandafter\LWR@getmynexttoken\LWRST@firsthead}%
+}%
+{%
+\ifdefvoid{\LWRST@lasttail}%
+{}%
+{%
+\TabularMacro\ResumeTabular%
+\LWRST@lasttail%
+}%
+\end{tabular}%
+\end{table}%
+\LWR@traceinfo{supertabular done}%
+}
+
+\NewDocumentEnvironment{mpsupertabular}{s o m}
+{\minipage{\linewidth}\supertabular{#3}}
+{\endsupertabular\endminipage}
+
+\endinput
+%%
+%% End of file `lwarp-supertabular.sty'.

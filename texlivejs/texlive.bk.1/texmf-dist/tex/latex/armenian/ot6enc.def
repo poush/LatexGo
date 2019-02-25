@@ -1,0 +1,288 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% This is the `ot6enc.def' file (OT6 encoding definition file).
+%%
+%% This file is a part of the ArmTeX project [2014/04/09 v3.0-beta3]
+%%
+%% ArmTeX is a system for writing in Armenian with plain TeX and/or LaTeX(2e).
+%%
+%% Copyright 1997 - 2013:
+%%   Serguei Dachian (Serguei.Dachian_AT_math.univ-bpclermont.fr),
+%%   Arnak Dalalyan  (arnak.dalalyan_AT_ensae.fr),
+%%   Vardan Akopian  (vakopian_AT_yahoo.com).
+%%
+%% ArmTeX may be distributed and/or modified under the conditions of the LaTeX
+%% Project Public License, either version 1.3 of this license or (at your
+%% option) any later version.
+%%
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX version
+%% 2005/12/01 or later.
+%%
+%% ArmTeX has the LPPL maintenance status `author-maintained'.
+%%
+%% For more details, installation instructions and the complete list of files
+%% see the provided `readme.txt' file.
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%% Double input protection.
+%%
+\expandafter\ifx\csname ArmTeX@EncDefLoaded\endcsname\relax
+  \let\ArmTeX@EncDefLoaded\null\else\endinput\fi
+
+
+%% Begining of the code.
+%%
+\ProvidesFile{ot6enc.def}
+  [2014/04/09 v3.0-beta3 ot6enc.def (OT6 encoding definition file)]
+
+
+%% Declaring the encoding.
+%%
+\DeclareFontEncoding{OT6}{}{}
+
+
+%% Loading Font definition files.
+%%
+\newcommand{\ArmTeX@LoadFd}[1]{%
+  \InputIfFileExists{ot6#1.fd}{}
+    {\PackageError{ArmTeX}
+      {Font definition file `ot6#1.fd' not found.\MessageBreak
+       Check your installation}
+      {It seems that there is a problem with your installation.\MessageBreak
+       Normally the file `ot6#1.fd' should have been present on your system.\MessageBreak
+       But apparently it isn't !!!\MessageBreak
+       It is better to stop at this point and to check your installation.}}}
+\ArmTeX@LoadFd{cmr}
+\ArmTeX@LoadFd{cmss}
+
+
+%% Declaring default font substitution.
+%%
+\DeclareFontSubstitution{OT6}{cmr}{m}{n}
+
+
+%% Encoding specific definitions follows.
+%%
+
+
+%% The LaTeX macros "\{", "\}" and "\$" use "\text..." commands, so adjusted
+%% automaticaly.
+%%
+\DeclareTextSymbol{\textbraceleft}{OT6}{94}
+\DeclareTextSymbol{\textbraceright}{OT6}{95}
+\DeclareTextSymbol{\textdollar}{OT6}{36}
+
+
+%% The LaTeX macros "\#", "\%" and "\&" use current font, so not need to be
+%% adjusted.
+%%
+\DeclareTextSymbol{\texthash}{OT6}{35}
+\DeclareTextSymbol{\textpercent}{OT6}{37}
+\DeclareTextSymbol{\textand}{OT6}{38}
+
+
+%% Some more "\text..." commands.
+%% Note that the LaTeX macros "\!", "\?", "\|" and "\*" will be (re)defined.
+%%
+\DeclareTextSymbol{\textexclam}{OT6}{126}
+\DeclareTextSymbol{\textquestion}{OT6}{127}
+\DeclareTextSymbol{\textquotedblleft}{OT6}{92}
+\DeclareTextSymbol{\textquotedblright}{OT6}{34}
+\DeclareTextSymbol{\textemdash}{OT6}{125}
+
+
+%% Armenian uppercase letters.
+%%
+\DeclareTextSymbol{\Armayb}{OT6}{65}
+\DeclareTextSymbol{\Armben}{OT6}{66}
+\DeclareTextSymbol{\Armgim}{OT6}{71}
+\DeclareTextSymbol{\Armda}{OT6}{68}
+\DeclareTextSymbol{\Armyech}{OT6}{69}
+\DeclareTextSymbol{\Armza}{OT6}{90}
+\DeclareTextSymbol{\Arme}{OT6}{6}
+\DeclareTextSymbol{\Armat}{OT6}{7}
+\DeclareTextSymbol{\Armto}{OT6}{8}
+\DeclareTextSymbol{\Armzhe}{OT6}{9}
+\DeclareTextSymbol{\Armini}{OT6}{73}
+\DeclareTextSymbol{\Armlyun}{OT6}{76}
+\DeclareTextSymbol{\Armkhe}{OT6}{88}
+\DeclareTextSymbol{\Armtsa}{OT6}{13}
+\DeclareTextSymbol{\Armken}{OT6}{75}
+\DeclareTextSymbol{\Armho}{OT6}{72}
+\DeclareTextSymbol{\Armdza}{OT6}{3}
+\DeclareTextSymbol{\Armghat}{OT6}{4}
+\DeclareTextSymbol{\Armtche}{OT6}{5}
+\DeclareTextSymbol{\Armmen}{OT6}{77}
+\DeclareTextSymbol{\Armhi}{OT6}{89}
+\DeclareTextSymbol{\Armnu}{OT6}{78}
+\DeclareTextSymbol{\Armsha}{OT6}{10}
+\DeclareTextSymbol{\Armvo}{OT6}{79}
+\DeclareTextSymbol{\Armcha}{OT6}{11}
+\DeclareTextSymbol{\Armpe}{OT6}{80}
+\DeclareTextSymbol{\Armje}{OT6}{74}
+\DeclareTextSymbol{\Armra}{OT6}{12}
+\DeclareTextSymbol{\Armse}{OT6}{83}
+\DeclareTextSymbol{\Armvev}{OT6}{86}
+\DeclareTextSymbol{\Armtyun}{OT6}{84}
+\DeclareTextSymbol{\Armre}{OT6}{82}
+\DeclareTextSymbol{\Armtso}{OT6}{67}
+\DeclareTextSymbol{\Armvyun}{OT6}{87}
+\DeclareTextSymbol{\Armvovyun}{OT6}{85}
+\DeclareTextSymbol{\Armpyur}{OT6}{14}
+\DeclareTextSymbol{\Armke}{OT6}{81}
+\DeclareTextSymbol{\Armo}{OT6}{15}
+\DeclareTextSymbol{\Armfe}{OT6}{70}
+
+
+%% Armenian lowercase letters.
+%%
+\DeclareTextSymbol{\armayb}{OT6}{97}
+\DeclareTextSymbol{\armben}{OT6}{98}
+\DeclareTextSymbol{\armgim}{OT6}{103}
+\DeclareTextSymbol{\armda}{OT6}{100}
+\DeclareTextSymbol{\armyech}{OT6}{101}
+\DeclareTextSymbol{\armza}{OT6}{122}
+\DeclareTextSymbol{\arme}{OT6}{22}
+\DeclareTextSymbol{\armat}{OT6}{23}
+\DeclareTextSymbol{\armto}{OT6}{24}
+\DeclareTextSymbol{\armzhe}{OT6}{25}
+\DeclareTextSymbol{\armini}{OT6}{105}
+\DeclareTextSymbol{\armlyun}{OT6}{108}
+\DeclareTextSymbol{\armkhe}{OT6}{120}
+\DeclareTextSymbol{\armtsa}{OT6}{29}
+\DeclareTextSymbol{\armken}{OT6}{107}
+\DeclareTextSymbol{\armho}{OT6}{104}
+\DeclareTextSymbol{\armdza}{OT6}{19}
+\DeclareTextSymbol{\armghat}{OT6}{20}
+\DeclareTextSymbol{\armtche}{OT6}{21}
+\DeclareTextSymbol{\armmen}{OT6}{109}
+\DeclareTextSymbol{\armhi}{OT6}{121}
+\DeclareTextSymbol{\armnu}{OT6}{110}
+\DeclareTextSymbol{\armsha}{OT6}{26}
+\DeclareTextSymbol{\armvo}{OT6}{111}
+\DeclareTextSymbol{\armcha}{OT6}{27}
+\DeclareTextSymbol{\armpe}{OT6}{112}
+\DeclareTextSymbol{\armje}{OT6}{106}
+\DeclareTextSymbol{\armra}{OT6}{28}
+\DeclareTextSymbol{\armse}{OT6}{115}
+\DeclareTextSymbol{\armvev}{OT6}{118}
+\DeclareTextSymbol{\armtyun}{OT6}{116}
+\DeclareTextSymbol{\armre}{OT6}{114}
+\DeclareTextSymbol{\armtso}{OT6}{99}
+\DeclareTextSymbol{\armvyun}{OT6}{119}
+\DeclareTextSymbol{\armvovyun}{OT6}{117}
+\DeclareTextSymbol{\armpyur}{OT6}{30}
+\DeclareTextSymbol{\armke}{OT6}{113}
+\DeclareTextSymbol{\armo}{OT6}{31}
+\DeclareTextSymbol{\armfe}{OT6}{102}
+
+
+%% Armenian special symbols.
+%%
+\DeclareTextSymbol{\armparenright}{OT6}{40}
+\DeclareTextSymbol{\armparenleft}{OT6}{41}
+\DeclareTextSymbol{\armcomma}{OT6}{44}
+\DeclareTextSymbol{\armfullstop}{OT6}{58}
+\DeclareTextSymbol{\armquotright}{OT6}{62}
+\DeclareTextSymbol{\armquotleft}{OT6}{60}
+\DeclareTextSymbol{\armdot}{OT6}{46}
+\DeclareTextSymbol{\armsep}{OT6}{96}
+\DeclareTextSymbol{\armew}{OT6}{32}
+\DeclareTextSymbol{\armendash}{OT6}{45}
+\DeclareTextSymbol{\armyentamna}{OT6}{123}
+\DeclareTextSymbol{\armapostrophe}{OT6}{39}
+\DeclareTextSymbol{\armexclam}{OT6}{33}
+\DeclareTextSymbol{\armaccent}{OT6}{124}
+\DeclareTextSymbol{\armquestion}{OT6}{63}
+\DeclareTextSymbol{\armeternity}{OT6}{18}
+\DeclareTextSymbol{\armdram}{OT6}{17}
+\DeclareTextSymbol{\armnum}{OT6}{2}
+\DeclareTextCommand{\armellipsis}{OT6}{...}
+\DeclareTextCommand{\armsection}{OT6}{\S}
+%
+% Defining "\armemdash", which is diferent from "\textemdash" defined above.
+\DeclareTextCommand{\armemdash}{OT6}{\leavevmode
+  \kern0.02em\vrule height0.4ex depth-0.25ex width0.8em\kern0.02em\relax}
+%
+% Repeating "\armemdash" as "\textanjgic" for ArmTeX 2.0 compatibility.
+\DeclareTextCommand{\textanjgic}{OT6}{\leavevmode
+  \kern0.02em\vrule height0.4ex depth-0.25ex width0.8em\kern0.02em\relax}
+%
+% Defining the ligature breaking command "\armbl".
+\DeclareTextCommand{\armbl}{OT6}{{\kern0pt}}
+%
+% Repeating "\armbl" as "\textbreaklig" for ArmTeX 2.0 compatibility.
+\DeclareTextCommand{\textbreaklig}{OT6}{{\kern0pt}}
+%
+% Defining the uncondtional hyphenation command "\armuh"
+\DeclareTextCommand{\armuh}{OT6}{\armyentamna\break}
+%
+% Defining an internal symbol "\arm@abbrev".
+\DeclareTextSymbol{\arm@abbrev}{OT6}{1}
+%
+% The command "\armabr" will put the "\arm@abbrev" symbol over its argument.
+% We don't use the "\accent" primitive, so "\armabr" works with transliterations.
+\newbox\armabr@boxa\newbox\armabr@boxb
+\DeclareTextCommand{\armabr}{OT6}[1]{\leavevmode
+  #1\setbox\armabr@boxa=\hbox{#1}%
+  \setbox\armabr@boxb=\hbox to\wd\armabr@boxa{\hss\arm@abbrev\hss}%
+  \kern -\wd\armabr@boxa\lower 1ex\hbox{\raise\ht\armabr@boxa\box\armabr@boxb}}
+%
+% Finally, "\armabbrev" will produce the "\arm@abbrev" symbol alone.
+\DeclareTextCommand{\armabbrev}{OT6}{\armabr{\phantom{\armhi}}\kern0.12em\relax}
+
+
+%% Updating the @uclclist.
+%%
+\DeclareTextCommand{\Arm@yechvev}{OT6}{\Armyech\Armvev}
+\expandafter\def\expandafter\@uclclist\expandafter
+  {\@uclclist
+    \armayb\Armayb
+    \armben\Armben
+    \armgim\Armgim
+    \armda\Armda
+    \armyech\Armyech
+    \armza\Armza
+    \arme\Arme
+    \armat\Armat
+    \armto\Armto
+    \armzhe\Armzhe
+    \armini\Armini
+    \armlyun\Armlyun
+    \armkhe\Armkhe
+    \armtsa\Armtsa
+    \armken\Armken
+    \armho\Armho
+    \armdza\Armdza
+    \armghat\Armghat
+    \armtche\Armtche
+    \armmen\Armmen
+    \armhi\Armhi
+    \armnu\Armnu
+    \armsha\Armsha
+    \armvo\Armvo
+    \armcha\Armcha
+    \armpe\Armpe
+    \armje\Armje
+    \armra\Armra
+    \armse\Armse
+    \armvev\Armvev
+    \armtyun\Armtyun
+    \armre\Armre
+    \armtso\Armtso
+    \armvyun\Armvyun
+    \armvovyun\Armvovyun
+    \armpyur\Armpyur
+    \armke\Armke
+    \armew\Arm@yechvev
+    \armo\Armo
+    \armfe\Armfe}%
+
+
+%% That's all, Folks!
+%%
+\endinput

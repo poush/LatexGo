@@ -1,0 +1,25 @@
+% Kana Parser for LuaTeX
+% Author: Adam Zahumensky, FIT CVUT
+
+% initializer macro, use it before using any other macros in this package
+\def\parserInit{ \directlua{ dofile('kanaparser.lua') } }
+
+% supply a whitespace-separated list of syllables whose kana characters you'd like to toggle
+% list of supported alternatives ([] denotes default choice):
+% du : [づ], どぅ
+% ja : [じゃ], ぢゃ
+% ji : [じ], ぢ
+% jo : [じょ], ぢょ
+% ju : [じゅ], ぢゅ
+% we : [うぇ], ゑ
+% wo : [を], うぉ
+\def\toggleChars#1{\directlua{ toggleChars("\luatexluaescapestring{#1}") }}
+
+% convert all kana to latin
+\long\def\toLatin#1{\directlua{ toLatin("\luatexluaescapestring{#1}") }}
+
+% convert latin and katakana to hiragana
+\long\def\toHiragana#1{\directlua{ toHiragana("\luatexluaescapestring{#1}") }}
+
+% convert latin and hiragana to katakana
+\long\def\toKatakana#1{\directlua{ toKatakana("\luatexluaescapestring{#1}") }}

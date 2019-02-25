@@ -1,0 +1,737 @@
+%%
+%% This is file `ScratchX.sty',
+%%
+%% Copyright (C) 2016-2017 by Thibault Ralet - Thibault.Ralet@ac-clermont.fr
+%%
+%% 16 mars 2017 (version 0.1) - 27 juillet 2017 (version 1.1)
+%% 
+%% The LaTeX Project Public License v1.3c or later, see http://www.latex-project.org/lppl.txt
+%%
+%% Unlimited copying and redistribution of this file are permitted as
+%% long as this file is not modified.  Modifications, and distribution
+%% of modified versions, are permitted, but only if the resulting file
+%% is renamed.
+
+\usepackage[nomessages]{fp}
+\usepackage{calc}
+\usepackage{xstring}%StrLen calcule des longueurs
+\usepackage[alpine]{ifsym}%pour avoir le VarFlag comme drapeau de départ de Scratch
+\usepackage{ifthen}
+\usepackage{multido}
+\usepackage{xargs}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%-------------------------------------------------------------- FIN PACKAGE -------------------------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%-------------------------------------------------------- DÉBUT COMMANDES --------------------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcounter{decalageX}
+\newcounter{decalageY}
+\newcounter{NbrCptrLoupe}
+\newcounter{NbrCptrLoupeDuplicate}
+\newcounter{NbrCptrAlors}
+\newcounter{NbrCptrAlorsDuplicate}
+\newcounter{CompteurMax}%garde en mémoire le maximum de compteurs "loupe" créés dans un environnement Scratch
+\newlength{\malongueuR}
+\newlength{\malongueuRE}
+
+%----------------------------------------------------- SCRATCH COLORS --------------------------------------------------------------%
+\definecolor{mvt}{RGB}{85,120,216}%motion
+\definecolor{app}{RGB}{152,97,218}%looks
+\definecolor{son}{RGB}{202,77,199}%sound
+\definecolor{stylo}{RGB}{10,164,122}%pen
+\definecolor{data}{RGB}{249,133,58}%data
+\definecolor{evt}{RGB}{213,140,73}%events
+\definecolor{ctrl}{RGB}{237,178,71}%control
+\definecolor{capt}{RGB}{35,176,231}%sensing
+\definecolor{ope}{RGB}{90,193,69}%operators
+\definecolor{bloc}{RGB}{110,56,155}%more blocks
+\definecolor{flag}{RGB}{0,175,0}%flag
+\definecolor{myblack}{RGB}{10,10,10}
+%+10 to get R, G and V whiter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%----------------------------------------------------------- SCRATCH BOXES ----------------------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%-------------------------------------------------------- BEGIN BOX ----------------------------------------------------------------------%
+\newcommand{\beginbox}[1]{%avec ou sans drapeau (hauteur de la boîte)
+\ifthenelse{\equal{#1}{}}
+	{%avec le drapeau
+	\FPeval{X}{\x+(0.4)*\thedecalageX}	
+	\FPeval{Y}{\y+(0.66)*(neg 1)*\thedecalageY}
+	\settowidth{\malongueuR}{\pgfinterruptpicture \texttt{quand \SFlag est cliqué} \endpgfinterruptpicture}
+	\FPeval{C}{2.51+X}\FPeval{d}{0.66+(Y)}
+	\FPeval{h}{(neg 0.2)+(Y)}\FPeval{i}{0.8+(X)}\FPeval{j}{0.7+(X)}
+	\FPeval{k}{0.5+(X)}\FPeval{kk}{(neg 0.3)+(Y)}\FPeval{l}{0.4+(X)}\FPeval{m}{0.1+(X)}\FPeval{n}{(neg 0.1)+(Y)}
+	\FPeval{t}{0.6+(Y)}\FPeval{T}{0.66+(neg 0.1)}\FPeval{D}{d+(neg 0.1)}
+	\coordinate (A) at ($(\X,\d) ! \malongueuR*1+0.1cm ! (\C,\d)$);
+	\coordinate (AA) at ($(\X,\T) ! \malongueuR*1+0.2cm ! (\C,\D)$);
+	\draw[black,fill=evt] (\C,\d)--(A)--(AA)--($(AA)+(0,-0.66)$)--($(A)+(0,-0.86)$)--(\i,\h)--(\j,\kk)--(\k,\kk)--(\l,\h)--(\m,\h)--(\X,\n)--(\X,\t)arc(120:63:2.6)--cycle;
+	\draw(\X,\h)node[above right]{\color{white}\texttt{quand \SFlag est cliqué}};
+	\addtocounter{decalageY}{1}
+	}
+	{%les autres types
+	\FPeval{X}{x+(0.4)*\thedecalageX}
+	\FPeval{Y}{y+(neg 0.66)*\thedecalageY}
+\ifthenelse{\equal{#1}{clone}}
+	{%pour l'instruction contrôle
+	\settowidth{\malongueuR}{\pgfinterruptpicture quand je commence comme un clone \endpgfinterruptpicture}
+	\def\couleur{ctrl}
+	\def\texte{quand je commence comme un clone}
+	}
+	{%tous les autres cas (événements)
+	\settowidth{\malongueuR}{\pgfinterruptpicture #1 \endpgfinterruptpicture}
+	\def\couleur{evt}
+	\def\texte{#1}
+	}
+	\FPeval{b}{neg 0.1+(Y)}\FPeval{C}{0.36+(Y)}\FPeval{D}{0.1+(X)}
+	\FPeval{e}{0.46+(Y)}\FPeval{f}{0.4+(X)}\FPeval{g}{0.5+(X)}\FPeval{h}{0.7+(X)}
+	\FPeval{i}{0.8+(X)}
+	\FPeval{l}{neg 0.2+(Y)}
+	\FPeval{m}{neg 0.3+(Y)}\FPeval{o}{0.1+(Y)}
+	\FPeval{F}{f+0.1}\FPeval{G}{g+0.1}
+	\coordinate (A) at ($(\D,\e) ! \malongueuR*1 ! (\f,\e)$);
+	\coordinate (AA) at ($(\X,\C) ! \malongueuR*1+0.2cm ! (\G,\C)$);
+	\draw[black,fill=\couleur](\X,\b)--(\X,\e)arc(120:60:2.6)--(A)--(AA)--($(AA)+(0,-0.46)$)--($(A)+(0,-0.66)$)--(\i,\l)--(\h,\m)--(\g,\m)--(\f,\l)--(\D,\l)--cycle;
+	\draw(\X,\o)node[right]{\color{white}\texttt{\texte}};
+	\addtocounter{decalageY}{1}
+	}
+}
+
+%-------------------------------------------------------- BLOC BOX ----------------------------------------------------------------------%
+\newcommand{\blocbox}[1]{%
+	\FPeval{X}{0+(0.4)*\thedecalageX}
+	\FPeval{Y}{0+(neg 1.06)*\thedecalageY}
+	\StrLen{définir}[\valeur]
+	\settowidth{\malongueuR}{\pgfinterruptpicture #1 \endpgfinterruptpicture}
+	\def\texte{#1}
+	%pour la grande boîte :
+	\FPeval{b}{neg 0.1+(Y)}\FPeval{C}{0.76+(Y)}\FPeval{D}{0.1+(X)}
+	\FPeval{e}{0.76+(Y)}\FPeval{f}{0.4+(X)}\FPeval{g}{0.5+(X)}\FPeval{h}{0.7+(X)}
+	\FPeval{i}{0.8+(X)}
+	\FPeval{l}{neg 0.2+(Y)}
+	\FPeval{m}{neg 0.3+(Y)}\FPeval{o}{0.25+(Y)}
+	
+	\FPeval{F}{f+0.1}\FPeval{G}{g+0.1}
+	\coordinate (A) at ($(\D,\e) ! \malongueuR*1+\valeur/0.15 ! (\f,\e)$);
+	\coordinate (AA) at ($(\X,\C) ! \malongueuR*1+0.2cm+\valeur/0.15 ! (\G,\C)$);
+	
+	\coordinate (MXY) at ($0.5*(\X,\e)+0.5*(AA)$);
+	\coordinate (MMXY) at ($(MXY)+(0,0.4)$);
+	\draw[black,fill=bloc](\X,\b)--(\X,\e) parabola bend (MMXY)(AA)--($(AA)+(0,-0.86)$)--($(A)+(0,-0.96)$)--(\i,\l)--(\h,\m)--(\g,\m)--(\f,\l)--(\D,\l)--cycle;
+	%pour la petite boîte :
+	\FPeval{newX}{X+valeur*0.24}
+	\FPeval{newb}{0.1+(Y)}\FPeval{newC}{0.46+(Y)}\FPeval{newD}{0.1+(newX)}
+	\FPeval{newe}{0.56+(Y)}\FPeval{newf}{0.4+(newX)}\FPeval{newg}{0.5+(newX)}\FPeval{newh}{0.7+(newX)}
+	\FPeval{newi}{0.8+(newX)}
+	\FPeval{newl}{neg 0+(Y)}
+	\FPeval{newm}{neg 0.1+(Y)}
+	
+	\FPeval{newF}{newf+0.1}\FPeval{newG}{newg+0.1}
+	\coordinate (newA) at ($(\newD,\newe) ! \malongueuR*1-0.15cm ! (\newf,\newe)$);
+	\coordinate (newAA) at ($(\newX,\newC) ! \malongueuR*1+0.05cm ! (\newG,\newC)$);
+	\draw[app,thick](\newX,\newb)--(\newX,\newC)--(\newD,\newe)--(\newf,\newe)--(\newg,\newC)--(\newh,\newC)--(\newi,\newe)--(newA)--(newAA)--($(newAA)+(0,-0.36)$)--($(newA)+(0,-0.56)$)--(\newi,\newl)--(\newh,\newm)--(\newg,\newm)--(\newf,\newl)--(\newD,\newl)--cycle;
+
+	\draw(\X,\o)node[right]{\color{white}\texttt{définir \texte}};
+	\addtocounter{decalageY}{1}
+	}
+
+%-------------------------------------------------------- TURN BOX -----------------------------------------------------------------------%
+\newcommand{\turnbox}[2]{%turnbox{1: left; 2: right}{angle}
+	
+	\FPeval{X}{x+(0.4)*\thedecalageX}
+	\FPeval{Y}{y+(neg 0.66)*\thedecalageY}
+	
+	\StrLen{tourner de \quad degr  és}[\valeur]
+	\StrLen{#2}[\valeurr]
+	\FPeval{V}{valeurr*0.15+X+3.05}\FPeval{VV}{valeurr*0.15+X}
+	\ifnum%Si l'angle est pluspetit que -99 ou plus grand que 100
+		\ifnum#2>100 1
+		\else \ifnum#2<-99 1
+			\else 0
+			\fi
+		\fi
+	=1
+		\FPeval{IXE}{3.05+X}\FPeval{XX}{3.35+X}
+		\FPeval{j}{valeur*0.21+VV}\FPeval{k}{valeur*0.21+VV+0.1}%length of the box to the right
+	\else
+		\FPeval{IXE}{3.1+X}\FPeval{XX}{3.3+X}
+		\FPeval{j}{valeur*0.21+0.1+(X)}\FPeval{k}{valeur*0.21+0.2+(X)}
+	\fi
+	\FPeval{b}{neg 0.1+(Y)}\FPeval{C}{0.36+(Y)}\FPeval{d}{0.1+X}\FPeval{e}{0.46+(Y)}\FPeval{f}{0.4+X}\FPeval{g}{0.5+X}\FPeval{h}{0.7+X}\FPeval{i}{0.8+X}\FPeval{l}{neg 0.2+(Y)}\FPeval{m}{neg 0.3+(Y)}\FPeval{o}{0.1+(Y)}\FPeval{nn}{2+X}\FPeval{oo}{neg 0.1+(Y)}\FPeval{NN}{2.1+X}\FPeval{OO}{0.2+(Y)}\FPeval{NNN}{2.1+X}\FPeval{OOO}{0.2+(Y)}\FPeval{NNNN}{2.2+X}\FPeval{OOOO}{0.05+(Y)}\FPeval{nnn}{1.9+X}\FPeval{ooo}{0.25+(Y)}\FPeval{nnnn}{1.75+X}\FPeval{oooo}{0.05+(Y)}\FPeval{YY}{0.375+Y}\FPeval{YYY}{neg 0.065+Y}
+	\draw [black,fill=mvt](\X,\b)--(\X,\C)--(\d,\e)--(\f,\e)--(\g,\C)--(\h,\C)--(\i,\e)--(\j,\e)--(\k,\C)--(\k,\b)--(\j,\l)--(\i,\l)--(\h,\m)--(\g,\m)--(\f,\l)--(\d,\l)--cycle;%the box
+	\draw(\X,\o)node[right]{\color{white}\texttt{\,tourner \phantom{dg}\,de\cb[w]{#2}degrés}};
+		\ifthenelse{\equal{#1}{g}\or\equal{#1}{G}\or\equal{#1}{gauche}}
+		{\draw[white,fill=white](\NN,\oo)arc(-60:140:0.2)--($(\NN-0.3,\oo+0.33)$)--($(\NN-0.32,\oo+0.16)$)--($(\NN-0.182,\oo+0.258)$)--($(\NN-0.23,\oo+0.2875)$)arc(140:-58:0.17)--cycle;}%curved left arrow
+		{\draw[white,fill=white](\NN,\OO)arc(39:240:0.2)--($(\NN-0.24,\OO-0.275)$)arc(240:41:0.17)--($(\NN-0.066,\OO-0.0365)$)--($(\NN+0.05,\OO-0.12)$)--($(\NN+0.04,\OO+0.021)$)--cycle;}%curved right arrow
+		
+\multido{\i=1+1}{\value{NbrCptrLoupe}}{%Faire défiler tous les compteurs jusqu'au nombre de compteur : Si compteur différent de -1 :
+	%		si différent de 0, leur enlever 1. / si égal à 0 : enlever 1 à décalageX et mettre le compteur correspondant à -1.
+	\ifthenelse{\value{loupe\i}>-1}{
+			\ifthenelse{\value{loupe\i}=0}
+			{\addtocounter{decalageX}{-1}\addtocounter{decalageY}{1}\setcounter{loupe\i}{-1}%pour gérer le décalage quand boucle finie
+			\multido{\ia=1+1}{\i-1}{%si on termine une boucle mais que celle(s) d'avant ne sont pas terminées, alors on met -1 au compteur de celles d'avant
+				\ifthenelse{\value{loupe\ia}>0}{\addtocounter{loupe\ia}{-1}}{}
+					}
+			}
+			{\addtocounter{loupe\i}{-1}}
+						}{}
+	}
+	\addtocounter{decalageY}{1}
+}
+
+%-------------------------------------------------------- SIMPLE BOX --------------------------------------------------------------------%
+%\scbox{texte}{couleur}
+\newcommand{\scbox}[2]{%pour faire une boite avec du texte où on veut
+
+	\FPeval{X}{0+(0.4)*\thedecalageX}
+	\FPeval{Y}{0+(neg 0.66)*\thedecalageY}
+	\settowidth{\malongueuR}{\pgfinterruptpicture \text{#1} \endpgfinterruptpicture}
+
+	\FPeval{b}{neg 0.1+(Y)}\FPeval{C}{0.36+(Y)}\FPeval{D}{0.1+(X)}
+	\FPeval{e}{0.46+(Y)}\FPeval{f}{0.4+(X)}\FPeval{g}{0.5+(X)}\FPeval{h}{0.7+(X)}
+	\FPeval{i}{0.8+(X)}
+	\FPeval{l}{neg 0.2+(Y)}
+	\FPeval{m}{neg 0.3+(Y)}\FPeval{o}{0.1+(Y)}
+	\FPeval{F}{f+0.1}\FPeval{G}{g+0.1}
+	\coordinate (A) at ($(\D,\e) ! \malongueuR ! (\f,\e)$);
+	\coordinate (AA) at ($(\X,\C) ! \malongueuR+0.2cm ! (\G,\C)$);
+	\draw[black,fill=#2](\X,\b)--(\X,\C)--(\D,\e)--(\f,\e)--(\g,\C)--(\h,\C)--(\i,\e)--(A)--(AA)--($(AA)+(0,-0.46)$)--($(A)+(0,-0.66)$)--(\i,\l)--(\h,\m)--(\g,\m)--(\f,\l)--(\D,\l)--cycle;
+	\draw(\X,\o)node[right]{\color{white}{\text{#1}}};
+	
+	\multido{\i=1+1}{\value{NbrCptrLoupe}}{	%Faire défiler tous les compteurs jusqu'au nombre de compteur : Si compteur différent de -1 :
+	%		si différent de 0, leur enlever 1. / si égal à 0 : enlever 1 à décalageX et mettre le compteur correspondant à -1.
+	\ifthenelse{\value{loupe\i}>-1}{
+			\ifthenelse{\value{loupe\i}=0}
+			{\addtocounter{decalageX}{-1}\addtocounter{decalageY}{1}\setcounter{loupe\i}{-1}%pour gérer le décalage quand boucle finie
+			\multido{\ia=1+1}{\i-1}{%si on termine une boucle mais que celle d'avant ne sont pas terminées, alors on met -1 au compteur de celles d'avant
+				\ifthenelse{\value{loupe\ia}>0}{\addtocounter{loupe\ia}{-1}}{}
+					}
+			}
+			{\addtocounter{loupe\i}{-1}}
+						}{}
+	}
+	\addtocounter{decalageY}{1}
+}
+
+%-------------------------------------------------------- BLANK BOX --------------------------------------------------------------------%
+\newcommand{\blank}{%pour faire une boite blanche. SEULEMENT APRES DEUX FINS DE BOUCLE DE SUITE. VOIR EXEMPLE.
+	\multido{\i=1+1}{\value{NbrCptrLoupe}}{	%Faire défiler tous les compteurs jusqu'au nombre de compteur : Si compteur différent de -1 :
+	%		si différent de 0, leur enlever 1. / si égal à 0 : enlever 1 à décalageX et mettre le compteur correspondant à -1.
+	\ifthenelse{\value{loupe\i}>-1}{
+			\ifthenelse{\value{loupe\i}=0}
+			{\addtocounter{decalageX}{-1}\addtocounter{decalageY}{1}\setcounter{loupe\i}{-1}%pour gérer le décalage quand boucle finie
+			\multido{\ia=1+1}{\i-1}{%si on termine une boucle mais que celle d'avant ne sont pas terminées, alors on met -1 au compteur de celles d'avant
+				\ifthenelse{\value{loupe\ia}>0}{\addtocounter{loupe\ia}{-1}}{}
+					}
+			}
+			{\addtocounter{loupe\i}{-1}}
+						}{}
+	}
+}
+
+%----------------------------------------------------------- BOUCLE -----------------------------------------------------------------------%
+%\boucle{text}{number of blocks inside}{type : -1 means infinite loop ; 1 means with the arrow (répéter); 2 means si ... alors.
+\newcommand{\boucle}[3]{%loop with as many blocks as we want
+	%	Créer un compteur à chaque passage dans cette boucle.	%	l'incrémenter du nombre de fois où ce décalage s'opère
+	%	décaler en abscisse : ajouter 0,4 à x	%	mettre le compteur NbreComptr à NbreComptr+1
+	%\addtocounter{CompteurMax}{1}
+\ifthenelse{\value{NbrCptrLoupeDuplicate}=0}%aucun compteurs loupe créés
+		{
+		\ifthenelse{\value{CompteurMax}=0}
+		{\loope{\theNbrCptrLoupe}{#2}}
+		{
+			\ifthenelse{\value{NbrCptrLoupe}<\value{CompteurMax}}%\or\value{NbrCptrLoupe}=\value{CompteurMax}}
+				{\looope{\theNbrCptrLoupe}{#2}}
+				{\loope{\theNbrCptrLoupe}{#2}}%pour ne pas recréer des compteurs déjà créés
+		}
+		}
+		{\looope{\theNbrCptrLoupe}{#2}}
+		
+\settowidth{\malongueuR}{\pgfinterruptpicture #1 \endpgfinterruptpicture}
+
+	\FPeval{X}{\x+(0.4)*\thedecalageX}	
+	\FPeval{Y}{\y+(neg 0.66)*\thedecalageY}
+	\FPeval{b}{neg 0.1+Y}\FPeval{C}{0.36+Y}\FPeval{d}{0.1+X}
+	\FPeval{e}{0.46+Y}\FPeval{f}{0.4+X}\FPeval{g}{0.5+X}\FPeval{h}{0.7+X}\FPeval{i}{0.8+X}\FPeval{j}{0.7+(X)}
+	\FPeval{ii}{1.2+X}\FPeval{iii}{1.1+X}\FPeval{iiii}{0.9+X}\FPeval{gg}{0.6+X}
+	\FPeval{l}{neg 0.2+(Y)}\FPeval{m}{neg 0.3+(Y)}\FPeval{o}{0.1+(Y)}
+	%top
+	%bottom
+	\FPeval{mm}{neg 0.1+(neg 0.66)*(#2)+(Y)}
+	\FPeval{mmm}{neg 0.2+(neg 0.66)*(#2)+(Y)}\FPeval{mmmm}{neg 0.3+(neg 0.66)*(#2)+(Y)}\FPeval{M}{neg 0.75+(neg 0.66)*(#2)+(Y)}\FPeval{MM}{neg 0.85+(neg 0.66)*(#2)+(Y)}\FPeval{MN}{neg 0.95+(neg 0.66)*(#2)+(Y)}\FPeval{MMM}{neg 0.55+(neg 0.66)*(#2)+(Y)}\FPeval{MMMM}{MMM-0.02}\FPeval{JJ}{j+0.02}%adjusting the height of the bottom
+	\coordinate (A) at ($(\d,\e) ! \malongueuR ! (\f,\e)$);
+	\coordinate (AA) at ($(\X,\C) ! \malongueuR+0.2cm ! (\g,\C)$);
+	\coordinate (BB) at ($(\X,\M) ! \malongueuR+0.2cm ! (\f,\M)$);
+	\coordinate (B) at ($(\g,\mmm) ! \malongueuR-0.4cm ! (\i,\mmm)$);
+	\ifnum#3=-1%infinite loop
+	\draw [black,fill=ctrl](\X,\C)--(\d,\e)--(\f,\e)--(\g,\C)--(\h,\C)--(\i,\e)--(A)--(AA)--($(AA)+(0,-0.46)$) -- ($(A)+(0,-0.66)$)--(\ii,\l)--(\iii,\m)--(\iiii,\m)--(\i,\l)--(\g,\l)--(\f,\m)--(\f,\mm)--(\g,\mmm)--(\i,\mmm)--(\iiii,\mmmm)--(\iii,\mmmm)--(\ii,\mmm)--(B)--($(B)+(0.1,-0.1)$)--(BB)--($(BB)+(-0.1,-0.1)$)--(\d,\MM)--(\X,\M)--cycle;
+	\else%nombre fois loop
+	\draw [black,fill=ctrl](\X,\C) -- (\d,\e) -- (\f,\e) -- (\g,\C) -- (\h,\C) -- (\i,\e) -- (A) -- (AA) -- ($(AA)+(0,-0.46)$) -- ($(A)+(0,-0.66)$) -- (\ii,\l) -- (\iii,\m) -- (\iiii,\m) -- (\i,\l) -- (\g,\l) -- (\f,\m) -- (\f,\mm) -- (\g,\mmm) -- (\i,\mmm) -- (\iiii,\mmmm) -- (\iii,\mmmm) -- (\ii,\mmm) -- (B) -- ($(B)+(0.1,-0.1)$) -- (BB) -- ($(BB)+(-0.1,-0.1)$) -- (\i,\MM) -- (\h,\MN) -- (\g,\MN) -- (\f,\MM) -- (\d,\MM) -- (\X,\M) -- cycle ;
+	\fi
+	\draw (\X,\o) node[right]{\color{white}\texttt{#1}};
+	\ifnum#3=2
+	{}
+	\else
+	{\draw ($(BB)+(0.02,-0.17)$) node[above left]{\rotatebox{-90}{\Huge$\Lsh$}} ;
+	\draw($(BB)+(0,-0.15)$) node[above left]{\rotatebox{-90}{\Huge\color{white}$\Lsh$}} ;}
+	\fi
+		
+
+\multido{\i=1+1}{\value{NbrCptrLoupe}}{%Fait défiler tous les compteurs jusqu'au nombre de compteurs : si compteur différent de -1 :
+	%		si différent de 0, leur enlever 1. / si égal à 0 : enlever 1 à décalageX et mettre le compteur correspondant à -1.
+	\ifthenelse{\value{loupe\i}>-1}{
+			\ifthenelse{\value{loupe\i}=0}
+			{\addtocounter{decalageX}{-1}\addtocounter{decalageY}{1}\setcounter{loupe\i}{-1}}
+			{\addtocounter{loupe\i}{-1}}
+			}{}
+	}
+\addtocounter{decalageX}{1}
+\addtocounter{decalageY}{1}
+}
+
+%----------------------------------------------------------- SI ALORS ----------------------------------------------------------------------
+%\boucle{text}{number of blocks inside the si...alors}
+\newcommand{\sailors}[2]{%loop with as many blocks as we want
+	%	Créer un compteur à chaque passage dans cette boucle.	%	l'incrémenter du nombre de fois où ce décalage s'opère
+	%	décaler en abscisse : ajouter 0,4 à x	%	mettre le compteur NbreComptr à NbreComptr+1
+\ifthenelse{\value{NbrCptrLoupeDuplicate}=0}%aucun compteurs loupe créés
+		{
+		\ifthenelse{\value{CompteurMax}=0}
+		{\loope{\theNbrCptrLoupe}{#2}}
+		{
+			\ifthenelse{\value{NbrCptrLoupe}<\value{CompteurMax}}%\or\value{NbrCptrLoupe}=\value{CompteurMax}}
+				{\looope{\theNbrCptrLoupe}{#2}}
+				{\loope{\theNbrCptrLoupe}{#2}}%pour ne pas recréer des compteurs déjà créés
+		}
+		}
+		{\looope{\theNbrCptrLoupe}{#2}}
+
+\ifthenelse{\value{NbrCptrAlorsDuplicate}=0}%aucun compteurs aloors créés
+		{\sialoors{#1}}
+		{\sialooors{#1}}%pour ne pas recréer des compteurs déjà créés
+\settowidth{\malongueuR}{\pgfinterruptpicture #1 \endpgfinterruptpicture}
+
+	\FPeval{X}{\x+(0.4)*\thedecalageX}	
+	\FPeval{Y}{\y+(neg 0.66)*(\thedecalageY)}
+	
+	\FPeval{b}{neg 0.1+Y}\FPeval{C}{0.36+Y}\FPeval{d}{0.1+X}
+	\FPeval{e}{0.46+Y}\FPeval{f}{0.4+X}\FPeval{g}{0.5+X}\FPeval{h}{0.7+X}\FPeval{i}{0.8+X}\FPeval{j}{0.7+(X)}
+	\FPeval{ii}{1.2+X}\FPeval{iii}{1.1+X}\FPeval{iiii}{0.9+X}\FPeval{gg}{0.6+X}
+	\FPeval{l}{neg 0.2+(Y)}\FPeval{m}{neg 0.3+(Y)}\FPeval{o}{0.1+(Y)}
+	%top
+	%bottom#1
+	\FPeval{mm}{neg 0.1+(neg 0.66)*(#2)+(Y)}
+	\FPeval{mmm}{neg 0.2+(neg 0.66)*(#2)+(Y)}\FPeval{mmmm}{neg 0.3+(neg 0.66)*(#2)+(Y)}\FPeval{M}{neg 0.75+(neg 0.66)*(#2)+(Y)}\FPeval{MM}{neg 0.85+(neg 0.66)*(#2)+(Y)}\FPeval{MN}{neg 0.95+(neg 0.66)*(#2)+(Y)}\FPeval{MMM}{neg 0.55+(neg 0.66)*(#2)+(Y)}\FPeval{MMMM}{MMM-0.02}\FPeval{JJ}{j+0.02}%adjusting the height of the bottom
+	\coordinate (A) at ($(\d,\e) ! \malongueuR ! (\f,\e)$);
+	\coordinate (AA) at ($(\X,\C) ! \malongueuR+0.2cm ! (\g,\C)$);
+	\coordinate (BB) at ($(\X,\M) ! \malongueuR+0.2cm ! (\f,\M)$);
+	\coordinate (B) at ($(\g,\mmm) ! \malongueuR-0.4cm ! (\i,\mmm)$);
+	
+	\draw [ctrl,fill=ctrl](\X,\C)--(\d,\e)--(\f,\e)--(\g,\C)--(\h,\C)--(\i,\e)--(A)--(AA)--($(AA)+(0,-0.46)$) -- ($(A)+(0,-0.66)$)--(\ii,\l)--(\iii,\m)--(\iiii,\m)--(\i,\l)--(\g,\l)--(\f,\m)--(\f,\mm)--(\g,\mmm)--(\X,\mmm)--cycle;
+	\draw [black](\X,\mmm)--(\X,\C)--(\d,\e)--(\f,\e)--(\g,\C)--(\h,\C)--(\i,\e)--(A)--(AA)--($(AA)+(0,-0.46)$) -- ($(A)+(0,-0.66)$)--(\ii,\l)--(\iii,\m)--(\iiii,\m)--(\i,\l)--(\g,\l)--(\f,\m)--(\f,\mm)--(\g,\mmm);
+	\draw (\X,\o) node[right]{\color{white}\texttt{#1}};		
+
+\multido{\i=1+1}{\value{NbrCptrLoupe}}{%Fait défiler tous les compteurs jusqu'au nombre de compteurs : si compteur différent de -1 :
+	%		si différent de 0, leur enlever 1. / si égal à 0 : enlever 1 à décalageX et mettre le compteur correspondant à -1.
+	\ifthenelse{\value{loupe\i}>-1}{
+			\ifthenelse{\value{loupe\i}=0}
+			{\addtocounter{decalageX}{-1}\addtocounter{decalageY}{1}\setcounter{loupe\i}{-1}}
+			{\addtocounter{loupe\i}{-1}}
+			}{}
+	}
+\addtocounter{decalageX}{1}
+\addtocounter{decalageY}{1}
+}
+
+%-------------------------------------------------------------- SINON -----------------------------------------------------------------------%
+\newcommand{\simenon}[1]{%loop with as many blocks as we want
+	%	Créer un compteur à chaque passage dans cette boucle.	%	l'incrémenter du nombre de fois où ce décalage s'opère
+	%	décaler en abscisse : ajouter 0,4 à x	%	mettre le compteur NbreComptr à NbreComptr+1
+\ifthenelse{\value{NbrCptrLoupeDuplicate}=0}%aucun compteurs loupe créés
+		{
+		\ifthenelse{\value{CompteurMax}=0}
+		{\loope{\theNbrCptrLoupe}{#1}}
+		{
+			\ifthenelse{\value{NbrCptrLoupe}<\value{CompteurMax}}%\or\value{NbrCptrLoupe}=\value{CompteurMax}}
+				{\looope{\theNbrCptrLoupe}{#1}}
+				{\loope{\theNbrCptrLoupe}{#1}}%pour ne pas recréer des compteurs déjà créés
+		}
+		}
+		{\looope{\theNbrCptrLoupe}{#1}}
+
+	\FPeval{X}{\x+(0.4)*\thedecalageX}	
+	\FPeval{Y}{\y+(neg 0.66)*(\thedecalageY-1)}
+
+	\FPeval{b}{neg 0.1+Y}\FPeval{C}{0.36+Y}\FPeval{d}{0.1+X}
+	\FPeval{e}{0.46+Y}\FPeval{f}{0.4+X}\FPeval{g}{0.5+X}\FPeval{h}{0.7+X}\FPeval{i}{0.8+X}
+	\FPeval{ii}{1.2+X}\FPeval{iii}{1.1+X}\FPeval{iiii}{0.9+X}\FPeval{gg}{0.6+X}
+	\FPeval{l}{neg 0.2+(Y)}\FPeval{m}{neg 0.3+(Y)}\FPeval{o}{0.1+(Y)}
+	%top
+	%bottom
+	\FPeval{mm}{neg 0.1+(neg 0.66)*(#1)+(Y)}
+	\FPeval{mmm}{neg 0.2+(neg 0.66)*(#1)+(Y)}\FPeval{mmmm}{neg 0.3+(neg 0.66)*(#1)+(Y)}\FPeval{M}{neg 0.75+(neg 0.66)*(#1)+(Y)}\FPeval{MM}{neg 0.85+(neg 0.66)*(#1)+(Y)}\FPeval{MN}{neg 0.95+(neg 0.66)*(#1)+(Y)}\FPeval{MMM}{neg 0.55+(neg 0.66)*(#1)+(Y)}\FPeval{MMMM}{MMM-0.02}\FPeval{JJ}{j+0.02}%adjusting the height of the bottom
+
+%-------------------- pour gérer la longueur du si...alors associé -------------------------------------------------
+\foreach \i in {\theNbrCptrAlors,...,1}{
+\teste{\i}
+}
+%-------------------------------------------------------------------------------------------------------------------------------
+
+	\draw [ctrl,fill=ctrl](\X,\C) -- (\X,\e) -- (\f,\e) -- (\i,\e) -- (A) -- (AA) -- ($(AA)+(0,-0.46)$) -- ($(A)+(0,-0.66)$) -- (\ii,\l) -- (\iii,\m) -- (\iiii,\m) -- (\i,\l) -- (\g,\l) -- (\f,\m) -- (\f,\mm) -- (\g,\mmm) -- (\i,\mmm) -- (\iiii,\mmmm) -- (\iii,\mmmm) -- (\ii,\mmm) -- (B) -- ($(B)+(0.1,-0.1)$) -- (BB) -- ($(BB)+(-0.1,-0.1)$) -- (\i,\MM) -- (\h,\MN) -- (\g,\MN) -- (\f,\MM) -- (\d,\MM) -- (\X,\M) -- cycle ;
+	\draw [black](\g,\e) -- (\i,\e) -- (A) -- (AA) -- ($(AA)+(0,-0.46)$) -- ($(A)+(0,-0.66)$) -- (\ii,\l) -- (\iii,\m) -- (\iiii,\m) -- (\i,\l) -- (\g,\l) -- (\f,\m) -- (\f,\mm) -- (\g,\mmm) -- (\i,\mmm) -- (\iiii,\mmmm) -- (\iii,\mmmm) -- (\ii,\mmm) -- (B) -- ($(B)+(0.1,-0.1)$) -- (BB) -- ($(BB)+(-0.1,-0.1)$) -- (\i,\MM) -- (\h,\MN) -- (\g,\MN) -- (\f,\MM) -- (\d,\MM) -- (\X,\M)--(\X,\C) -- (\X,\e);
+	\draw (\X,\o) node[right]{\color{white}\texttt{sinon}};
+	
+
+\multido{\i=1+1}{\value{NbrCptrLoupe}}{%Fairt défiler tous les compteurs jusqu'au nombre de compteur : si compteur différent de -1 :
+	%		si différent de 0, leur enlever 1. / si égal à 0 : enlever 1 à décalageX et mettre le compteur correspondant à -1.
+	\ifthenelse{\value{loupe\i}>-1}{
+			\ifthenelse{\value{loupe\i}=0}
+			{\addtocounter{decalageX}{-1}\addtocounter{decalageY}{1}\setcounter{loupe\i}{-1}}
+			{\addtocounter{loupe\i}{-1}}
+			}{}
+	}
+\addtocounter{decalageX}{1}
+%\addtocounter{decalageY}{1}
+}
+
+%------------------------------------------------------------- KILL BOX --------------------------------------------------------------------%
+\newcommand{\kbox}[1]{%supprimer ce clone
+
+	\FPeval{X}{x+(0.4)*\thedecalageX}
+	\FPeval{Y}{y+(neg 0.66)*\thedecalageY}
+
+	\settowidth{\malongueuR}{\pgfinterruptpicture #1 \endpgfinterruptpicture}
+
+	\FPeval{b}{neg 0.1+(Y)}\FPeval{C}{0.36+(Y)}\FPeval{D}{0.1+(X)}
+	\FPeval{e}{0.46+(Y)}\FPeval{f}{0.4+(X)}\FPeval{g}{0.5+(X)}\FPeval{h}{0.7+(X)}
+	\FPeval{i}{0.8+(X)}
+	\FPeval{l}{neg 0.2+(Y)}
+	\FPeval{m}{neg 0.3+(Y)}\FPeval{o}{0.1+(Y)}
+	\FPeval{F}{f+0.1}\FPeval{G}{g+0.1}
+	\coordinate (A) at ($(\D,\e) ! \malongueuR ! (\f,\e)$);
+	\coordinate (AA) at ($(\X,\C) ! \malongueuR+0.2cm ! (\G,\C)$);
+	\draw[black,fill=ctrl](\X,\b)--(\X,\C)--(\D,\e)--(\f,\e)--(\g,\C)--(\h,\C)--(\i,\e)--(A)--(AA)--($(AA)+(0,-0.46)$)--($(A)+(0,-0.66)$)--(\f,\l)--(\D,\l)--cycle;
+	\draw(\X,\o)node[right]{\color{white}\texttt{#1}};
+	
+	\multido{\i=1+1}{\value{NbrCptrLoupe}}{%Fait défiler tous les compteurs jusqu'au nombre de compteurs : si compteur différent de -1 :
+	%		si différent de 0, leur enlever 1. / si égal à 0 : enlever 1 à décalageX et mettre le compteur correspondant à -1.
+	\ifthenelse{\value{loupe\i}>-1}{
+			\ifthenelse{\value{loupe\i}=0}
+			{\addtocounter{decalageX}{-1}\addtocounter{decalageY}{1}\setcounter{loupe\i}{-1}%pour gérer le décalage quand boucle finie
+			\multido{\ia=1+1}{\i-1}{%si on termine une boucle mais que celle d'avant ne sont pas terminées, alors on met -1 au compteur de celles d'avant
+				\ifthenelse{\value{loupe\ia}>0}{\addtocounter{loupe\ia}{-1}}{}
+					}
+			}
+			{\addtocounter{loupe\i}{-1}}
+						}{}
+	}
+	\addtocounter{decalageY}{1}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%------------------------------------------------------------ INSIDE BOXES -------------------------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------- RECTANGLE BOX ----------------------------------------------------------------%
+\newcommandx{\rb}[2][1=black]{%[Color: w or white (the same as the box by default)]{Text} 
+
+\ifthenelse{\equal{#1}{w}\or\equal{#1}{white}}
+{%If white
+\hspace{-0.9em}
+\settowidth\malongueuR{\small#2}
+\parbox{\malongueuR}{
+	\begin{tikzpicture}[scale=1, every node/.style={scale=1}]
+		\settowidth{\malongueuR}{\pgfinterruptpicture \small#2 \endpgfinterruptpicture}
+		\draw[white,fill=white](0,0)rectangle($(0+\malongueuR,0.4)$);
+		\draw(-0.05,0.2) node{\color{myblack}\small#2};
+		\draw[gray](0,0)--(0,0.4)--(\malongueuR,0.4);%shading
+	\end{tikzpicture}
+				}
+}
+{%if black
+\hspace{-1em}
+\settowidth\malongueuR{\small#2}
+\addtolength{\malongueuR}{3pt}
+\parbox{\malongueuR}{
+	\begin{tikzpicture}[scale=1, every node/.style={scale=1}]
+		\settowidth{\malongueuR}{\pgfinterruptpicture \small#2 \scriptsize$\blacktriangledown$ \endpgfinterruptpicture}
+		\fill[black,fill opacity=0.12](-0.05,0)rectangle($(0+\malongueuR,0.4)$);
+		\draw(-0.05,0.2) node{\color{white}\small#2};
+		\draw[black,opacity=0.5](-0.05,0)--(-0.05,0.4)--(\malongueuR,0.4);%shading
+		\draw($(\malongueuR*1+3,0.2)$) node[left]{\color{myblack}\scriptsize$\blacktriangledown$};
+	\end{tikzpicture}
+				}
+}
+}
+
+%---------------------------------------------- SPECIAL RECTANGLE BOX ----------------------------------------------------------%
+\newcommandx{\rbb}[2][1=black]{%[Color: w or white (the same as the box by default)]{Text} 
+%for begin box use only!
+\ifthenelse{\equal{#1}{w}\or\equal{#1}{white}}
+{%If white
+\hspace{-0.9em}
+\settowidth\malongueuR{\small#2}
+\parbox{\malongueuR}{
+	\begin{tikzpicture}[scale=1, every node/.style={scale=1}]
+		\settowidth{\malongueuR}{\pgfinterruptpicture \small#2 \endpgfinterruptpicture}
+		\draw[white,fill=white](0,0)rectangle($(0+\malongueuR,0.4)$);
+		\draw(-0.05,0.2) node{\color{myblack}\small#2};
+		\draw[gray](0,0)--(0,0.4)--(\malongueuR,0.4);%shading
+	\end{tikzpicture}
+				}
+}
+{%if black
+\hspace{-1em}
+\settowidth\malongueuR{\small#2}
+\addtolength{\malongueuR}{3pt}
+\parbox{\malongueuR}{
+	\begin{tikzpicture}[scale=1, every node/.style={scale=1}]
+		\settowidth{\malongueuR}{\pgfinterruptpicture \small#2 \scriptsize$\blacktriangledown$ \endpgfinterruptpicture}
+		\fill[black,fill opacity=0.12](-0.05,0)rectangle($(0+\malongueuR,0.4)$);
+		\draw(-0.05,0.2) node{\color{white}\small#2\phantom{pd}};
+		\draw[black,opacity=0.5](-0.05,0)--(-0.05,0.4)--(\malongueuR,0.4);%shading
+		\draw($(\malongueuR*1+3,0.2)$) node[left]{\color{myblack}\scriptsize$\blacktriangledown$};
+	\end{tikzpicture}
+				}
+}
+}
+
+%--------------------------------------------------------- CIRCLE BOX -------------------------------------------------------------------%
+\newcommandx{\cb}[2][1={black,fill opacity=0.05}]{%[Color: w or white (the same as the box by default)]{Text} 
+
+\ifthenelse{\equal{#1}{w}\or\equal{#1}{white}}
+{%If white
+\hspace{-0.9em}
+\settowidth\malongueuR{\small#2}
+\parbox{\malongueuR}{
+	\begin{tikzpicture}[scale=1, every node/.style={scale=1}]
+		\settowidth{\malongueuR}{\pgfinterruptpicture \small#2 \endpgfinterruptpicture}
+		\ifthenelse{\lengthtest{\the\malongueuR < 11pt}}{\settowidth{\malongueuR}{\pgfinterruptpicture M \endpgfinterruptpicture}}{}%{not smaller}%pour permettre un bel affichage avec une seule lettre en texte
+		\fill[white](-0.05,0.45)--(\malongueuR-0.44cm,0.45)arc(90:-90:0.22)--(-0.05,0.01)arc(270:90:0.22)--cycle;%corps
+		\draw[gray](\malongueuR-0.44cm,0.45)--(-0.05,0.45)arc(90:190:0.22);%contour haut
+		\draw[gray](\malongueuR-0.44cm,0.45)arc(90:45:0.22);%...suite
+		\draw[white](\malongueuR-0.22cm,0.23)arc(0:-90:0.22)--(-0.05,0.01);%contour bas
+		
+		\foreach \r in {0,...,45}%right shading
+{\FPeval{R}{45-r}
+\colorlet{degrade}{black!\R}
+		\FPeval{Z}{45-\r}
+\draw[degrade,opacity=1](\malongueuR-0.22cm,0.23) arc(0:\Z:0.22);	}
+
+\foreach \r in {0,...,45}%left shading
+{\FPeval{R}{45-r}
+\colorlet{degrade}{black!\R}
+		\FPeval{Z}{180+\r}
+\draw[degrade,opacity=1](-0.05,0.01) arc(270:\Z:0.22);	}
+		\draw(-0.3,0.2) node{\color{myblack}\small#2};
+	\end{tikzpicture}
+				}
+}
+{%if black or another color
+\hspace{-0.9em}
+\settowidth\malongueuR{\small#2}
+\parbox{\malongueuR}{
+	\begin{tikzpicture}[scale=1, every node/.style={scale=1}]
+		\settowidth{\malongueuR}{\pgfinterruptpicture \small#2 \endpgfinterruptpicture}
+		\ifthenelse{\lengthtest{\the\malongueuR < 11pt}}{\settowidth{\malongueuR}{\pgfinterruptpicture M \endpgfinterruptpicture}}{}%{not smaller}
+		\fill[#1](-0.05,0.45)--(\malongueuR-0.44cm,0.45)arc(90:-90:0.22)--(-0.05,0.01)arc(270:90:0.22)--cycle;%slighty shaded
+		\draw[white](\malongueuR-0.44cm,0.45)--(-0.05,0.45)arc(90:190:0.22);
+		\draw[white](\malongueuR-0.44cm,0.45)arc(90:45:0.22);
+		\draw[black!80](\malongueuR-0.22cm,0.23)arc(0:-90:0.22)--(-0.05,0.01);
+
+\foreach \r in {0,...,80}%right shading
+{%\colorlet{degrade}{black!\r}
+		\FPeval{Z}{45-\r/2+5}
+\draw[black!\r,opacity=1](\malongueuR-0.22cm,0.23) arc(0:\Z:0.22);	}
+
+\foreach \r in {0,...,80}%left shading
+{%\colorlet{degrade}{black!\r}
+		\FPeval{Z}{190+\r}
+\draw[black!\r,opacity=1](-0.05,0.01) arc(270:\Z:0.22);	}
+
+		\draw(-0.25,0.22) node{\color{white}\small#2};%text
+		
+	\end{tikzpicture}
+				}
+}
+}
+
+%------------------------------------------------------- HEXAGONAL BOX --------------------------------------------------------------%
+\newcommand{\hb}[2][1=ope]{%[Color : "capt" for  capteur (ope by default)]{Text} 
+\hspace{-1.5em}
+\settowidth\malongueuR{\small#2\,}
+\ifthenelse{\equal{#1}{capt}}{\def\cooleur{capt}}{\def\cooleur{ope}}
+\parbox{\malongueuR}{
+
+\begin{tikzpicture}[scale=1, every node/.style={scale=1}]
+		\settowidth{\malongueuR}{\pgfinterruptpicture \small#2 \endpgfinterruptpicture}
+		\draw[\cooleur,fill=\cooleur](-0.05,0.2)--(0.15,0.4)--($(\malongueuR-0.05cm,0.4)$)--($(\malongueuR+0.15cm,0.2)$)--($(\malongueuR-0.05cm,0)$)--(0.15,0)--cycle;
+	\ifthenelse{\equal{#1}{capt}}
+		{\draw[black,opacity=0.35]($(\malongueuR+0.15cm,0.2)$)--($(\malongueuR-0.05cm,0)$)--(0.15,0);}
+		{\draw[black,opacity=0.35]($(\malongueuR+0.15cm,0.2)$)--($(\malongueuR-0.05cm,0)$)--(0.15,0);
+		\draw[white,opacity=0.5](-0.05,0.2)--(0.15,0.4)--($(\malongueuR-0.05cm,0.4)$);}
+		\draw(-0.0,0.2) node{\color{white}\small#2};
+\end{tikzpicture}}
+}
+
+%------------------------------------------------------------ SQUARE BOX ---------------------------------------------------------------%
+\newcommand{\sqb}[1]{%{Shape : R or S or H}{Color : white or the same}{Triangle: 0 or 1}{Text} 
+\hspace{-1em}
+\settowidth\malongueuR{x}
+\parbox{\malongueuR}{
+
+\begin{tikzpicture}[scale=1, every node/.style={scale=1}]
+		\draw[#1,fill=#1](-0.05,0.2)rectangle(0.25,0.5);
+		\draw[black,opacity=0.5](-0.05,0.2)--(-0.05,0.5)--(0.25,0.5);
+		\draw[white,opacity=0.5](-0.05,0.2)--(0.25,0.2)--(0.25,0.5);
+\end{tikzpicture}}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%--------------------------------------------------------------- SCRATCHY ---------------------------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommandx{\Scratchy}[2][1=0.25,2=0.25]{
+
+\begin{tikzpicture}[scale=#1,line width=#2pt,every node/.style={scale=#1}]
+
+\draw[fill=ctrl](3,7.5)..controls(2,6.3)and(2.3,4.8)..(4,4.2) ..controls(4.55,4.05).. (5.5,3.99)..controls(6.6,4)and(7.8,4.1)..(8.6,5.3)..controls(9,6)and(8.5,6.7)..(7.9,6.7) .. controls(7.9,7.2)and(7.5,8.1)..(6.8,8.4)--(6.5,9.6)--(5.6,8.7) .. controls(5,8.8)and(4.4,8.7)..(4,8.5)--(2.7,9.4)--(3,7.5);%visage
+\draw[fill=white,line width=0.01pt,white] (5.5,3.99) ..controls(3.3,4.5)and(3,5.9).. (4.4,6.2) -- (5.2,6.5) -- (5.75,6.35)--(6.65,6.5)--(6.7,6.7)--(7.6,7)--(7.9,6.7) ..controls(8.5,6.7)and(9,6)..(8.6,5.3)..controls(7.8,4.1)and(6.6,4).. cycle;%visage pâle
+\draw(3,7.5)..controls(2,6.3)and(2.3,4.8)..(4,4.2) ..controls(4.55,4.05).. (5.5,3.99)..controls(6.6,4)and(7.8,4.1)..(8.6,5.3)..controls(9,6)and(8.5,6.7)..(7.9,6.7) .. controls(7.9,7.2)and(7.5,8.1)..(6.8,8.4)--(6.5,9.6)--(5.6,8.7) .. controls(5,8.8)and(4.4,8.7)..(4,8.5)--(2.7,9.4)--(3,7.5);%visage contour
+
+\draw[fill=white,rotate around={-50:(4.5,7)}] (4.5,7) ellipse (26.5pt and 18.5pt) ;\draw[fill=white,rotate around={-55:(6.85,7.4)}] (6.85,7.4) ellipse (26pt and 17pt) ;\draw[fill=black] (4.7,6.8) circle(0.15);\draw[fill=black] (7.12,7) circle(0.15);%yeux
+
+\draw[fill=darkgray] (6.6,6.5)--(5.9,6.5) ..controls(5.8,6.49)and(5.68,6.5).. (5.75,6.4) -- (6.1,6.1) ..controls(6.2,6.02)and(6.38,6).. (6.45,6.1) --(6.65,6.4) ..controls(6.7,6.5)and(6.63,6.5).. cycle;%nez
+
+\draw(2.6,6.1)..controls(2,6.5)..(1.4,6.65);\draw (2.6,5.8)..controls(2,5.7)..(1.5,5.7);\draw (8.4,5.7)..controls(8.8,5.5)..(9.3,5.55);\draw(8.3,6.2)..controls(8.9,6.4)..(9.4,6.6);\draw (4,8.5) -- (4.25,8.4);\draw (5.6,8.7)..controls(5.75,8.65)..(5.9,8.6);%visage fin
+
+\draw[fill=ctrl] (5.45,3)--(6.1,2.5) ..controls (6.2,2.4)and(6.3,2.4) .. (6.5,2.45) ..controls(7.1,2.7)and(7.45,3).. (7.5,3.3) ..controls(7.55,3.55)and(7.2,3.8).. (7,3.65)--(6.5,3.3) ..controls(6.4,3.25)and(6.25,3.25)..(6.15,3.35)--(5.61,3.9) ..controls(5.75,3.7)and(5.57,3.2).. cycle;%bras doit
+
+\draw[fill=ctrl] (1.3,1.5) ..controls(1.3,1)and(1.7,0.4).. (2.2,0.2) ..controls(2.7,0.1)and(3,0.6).. (2.4,1.05) ..controls(3.5,1.5)..(4.1,1.9)--(5.8,0.35)--(7.5,0.35) .. controls (8,0.4)and(7.7,1.15).. (7.2,1.1)--(6.2,1.1)--(4.95,2.35)..controls(5.3,2.75).. (5.45,3)..controls(5.57,3.2)and(5.75,3.7).. (5.61,3.9) ..controls(5.56,3.96).. (5.5,3.99)..controls(4.5,4)and(4.2,4.15)..(4,4.2) ..controls (3.8,4.28)and(3.5,4.3).. (3.4,4.25)--(2.4,3.5) ..controls(2.2,3.3).. (2.6,2.6) ..controls(2.7,2.45).. (2.95,2.25) -- (2.59,2.05)--(1.9,1.7) ..controls(1.6,1.9)and(1.3,1.8).. cycle;%corps gauche
+\draw[fill=white,line width=0.01pt,white] (4.95,2.35)--(4.25,3.05) ..controls(4.1,3.2)and(4.3,3.6)..(4.7,3.6) ..controls(5.1,3.6)and(5.5,3.4).. (5.45,3)..controls(5.3,2.75).. cycle;%ventre blanc
+\draw(1.3,1.5) ..controls(1.3,1)and(1.7,0.4).. (2.2,0.2) ..controls(2.7,0.1)and(3,0.6).. (2.4,1.05) ..controls(3.5,1.5)..(4.1,1.9)--(5.8,0.35)--(7.5,0.35) .. controls (8,0.4)and(7.7,1.15).. (7.2,1.1)--(6.2,1.1)--(4.95,2.35)..controls(5.3,2.75).. (5.45,3)..controls(5.57,3.2)and(5.75,3.7).. (5.61,3.9) ..controls(5.56,3.96).. (5.5,3.99)..controls(4.5,4)and(4.2,4.15)..(4,4.2) ..controls (3.8,4.28)and(3.5,4.3).. (3.4,4.25)--(2.4,3.5) ..controls(2.2,3.3).. (2.6,2.6) ..controls(2.7,2.45).. (2.95,2.25) -- (2.59,2.05)--(1.9,1.7) ..controls(1.6,1.9)and(1.3,1.8).. cycle;%corps contour
+\draw (4.95,2.35)--(4.6,2.65);\draw (4.1,1.9)--(3.65,2.3) ..controls(3.5,2.2)and(3.2,2.1).. (2.95,2.25) ; \draw(3.65,2.3)..controls(3.9,2.5)and(3.55,3.05)..(3.2,3.25);\draw  (3.35,3.15) -- (4,3.7) ..controls (4.1,3.8)and(4.2,4.15) .. (4,4.2);%corps fin
+
+\draw[fill=ctrl] (2.6,2.6) ..controls(2.1,2.75)..(1.8,3) ..controls(1.6,3.15)and(1.2,3.8)..(1,4) ..controls(0.6,4.3)and(0.2,3.2)..(1.05,2.45)..controls(1.4,2.2)and(1.7,2.05)..(2.59,2.05)--  (2.95,2.25) ..controls(2.7,2.45).. cycle;%queue jaune
+\draw[fill=white,line width=0.01pt,white] (1.8,3) ..controls(1.6,3.15)and(1.2,3.8)..(1,4) ..controls(0.6,4.3)and(0.2,3.2)..(1.05,2.45)..controls(1.1,2.9)and(1.2,3).. cycle;%queue blanche
+\draw  (2.6,2.6) ..controls(2.1,2.75)..(1.8,3) ..controls(1.6,3.15)and(1.2,3.8)..(1,4) ..controls(0.6,4.3)and(0.2,3.2)..(1.05,2.45)..controls(1.4,2.2)and(1.7,2.05)..(2.59,2.05)--  (2.95,2.25) ..controls(2.7,2.45).. cycle;%queue contour
+
+\draw[fill=white] (4.95,5.8)..controls(6.5,5.4)..(7.35,5.3)..controls(6.2,4)and(4.5,4.5)..cycle;%bouche
+
+
+\end{tikzpicture}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%----------------------------------------------- ENVIRONNEMENT SCRATCH ------------------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%--------------------------------------------------------- COMPTEURS LOOP ---------------------------------------------------------%
+\newcommand{\loope}[2]{
+\addtocounter{NbrCptrLoupe}{1}
+\newcounter{loupe#1}
+\setcounter{loupe#1}{#2}
+}
+
+%------------------------------------------------------- COMPTEURS LOOOP ---------------------------------------------------------%
+\newcommand{\looope}[2]{
+\addtocounter{NbrCptrLoupe}{1}
+\setcounter{loupe#1}{#2}
+\addtocounter{NbrCptrLoupeDuplicate}{-1}
+}
+
+%------------------------------------------------------- COMPTEURS SI ALOORS ----------------------------------------------------%
+\newcommand{\sialoors}[1]{
+\addtocounter{NbrCptrAlors}{1}
+\settowidth{\malongueuR}{\pgfinterruptpicture#1\endpgfinterruptpicture}
+\StrBefore{\the\malongueuR}{.}[\num]
+\newcounter{aloors\theNbrCptrAlors}
+\setcounter{aloors\theNbrCptrAlors}{\num}
+}
+
+%----------------------------------------------------- COMPTEURS SI ALOOORS ----------------------------------------------------%
+\newcommand{\sialooors}[1]{
+\addtocounter{NbrCptrAlors}{1}
+\settowidth{\malongueuR}{\pgfinterruptpicture#1\endpgfinterruptpicture}
+\StrBefore{\the\malongueuR}{.}[\num]
+\setcounter{aloors\theNbrCptrAlors}{\num}
+\addtocounter{NbrCptrAlorsDuplicate}{-1}
+}
+
+%-------------------------------------------------------- THE SCRATCH FLAG ---------------------------------------------------------%
+\newcommand{\SFlag}{
+\hspace{-1em}\rotatebox{-20}{\reflectbox{\textcolor{flag}\VarFlag}}
+}
+
+%-------------------------------------------------------- A VERY DELIVRANCE --------------------------------------------------------%
+\newcommand{\teste}[1]{
+\ifnum \value{aloors#1}>0 
+		\settowidth{\malongueuRE}{\pgfinterruptpicture {\hspace{\value{aloors#1}pt}} \endpgfinterruptpicture}	
+		\coordinate (A) at ($(\d+2+\malongueuRE,\e)$);
+		\coordinate (AA) at ($(\X+6+\malongueuRE,\C)$);
+		\coordinate (BB) at ($(\X+6+\malongueuRE,\M)$);
+		\coordinate (B) at ($(\g+2.6+\malongueuRE,\mmm)$);
+		\setcounter{aloors#1}{-1}
+		\breakforeach
+	\else	{}
+	\fi
+}
+
+%----------------------------------------------- ENVIRONNEMENT SCRATCH ------------------------------------------------------%
+\newenvironmentx{Scratch}[1][1=1]%pour réinitialiser tous les compteurs à chaque création de programme Scratch
+%réinitialise également les compteurs définis "localement" pour les boucles Fois !
+{\begingroup
+\begin{ttfamily}%pour gérer le calcul des longueurs \malongueuR
+\begin{tikzpicture}[scale=#1, every node/.style={scale=#1}]%#3 avant avec x et y en paramètres\def\x{#1}\def\y{#2}
+\def\x{0}\def\y{0}
+\setcounter{decalageX}{0}
+\setcounter{decalageY}{0}
+\setcounter{NbrCptrLoupe}{0}
+\setcounter{NbrCptrAlors}{0}
+}
+{
+\end{tikzpicture}
+\end{ttfamily}
+\multido{\i=1+1}{\value{NbrCptrLoupe}}{\setcounter{loupe\i}{0}}
+
+\ifthenelse{\value{NbrCptrLoupe}=0}
+	{	}
+	{\setcounter{NbrCptrLoupeDuplicate}{\value{NbrCptrLoupe}}}
+	
+\multido{\i=1+1}{\value{NbrCptrAlors}}{\setcounter{aloors\i}{0}}
+
+\ifthenelse{\value{NbrCptrAlors}=0}
+	{	}
+	{\setcounter{NbrCptrAlorsDuplicate}{\value{NbrCptrAlors}}	}
+
+\ifthenelse{\value{CompteurMax}>\value{NbrCptrLoupe}}
+	{	}
+	{\setcounter{CompteurMax}{\value{NbrCptrLoupe}}	}
+
+\endgroup}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%--------------------------------------------------------- FIN COMMANDES ------------------------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% This is file `ScratchX.sty',
+%%
+%% Copyright (C) 2016-2017 by Thibault Ralet - Thibault.Ralet@ac-clermont.fr
+%%
+%% 16 mars 2017 (version 0.1) - 27 juillet 2017 (version 1.1)
+%% 
+%% The LaTeX Project Public License v1.3c or later, see http://www.latex-project.org/lppl.txt
+%%
+%% Unlimited copying and redistribution of this file are permitted as
+%% long as this file is not modified.  Modifications, and distribution
+%% of modified versions, are permitted, but only if the resulting file
+%% is renamed.

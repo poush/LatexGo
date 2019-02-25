@@ -1,0 +1,1289 @@
+% Bugs (sigh) in Computers \& Typesetting
+
+\input manmac
+\def\curl{\mathop{\rm curl}}
+\def\cycle{{\rm cycle}}\indent
+\def\dashto{\mathrel{\hbox{-\thinspace-\kern-.05em}}}
+\font\sltt=cmsltt10
+\font\niness=cmss9
+\font\ninessi=cmssi9
+\proofmodefalse
+\raggedbottom
+\output{\hsize=29pc \onepageout{\unvbox255\kern-\dimen@ \vfil}}
+
+\def\today{\number\day\
+  \ifcase\month\or
+  Jan\or Feb\or Mar\or Apr\or May\or Jun\or
+  Jul\or Aug\or Sep\or Oct\or Nov\or Dec\fi
+  \ \number\year}
+
+\def\cutpar{{\parfillskip=0pt\par}}
+
+\def\rhead{Bugs in {\tensl Computers \& Typesetting, 2000}}
+\def\bugonpage#1(#2) \par{\bigbreak\tenpoint
+  \hrule width\hsize
+  \line{\lower3.5pt\vbox to13pt{}Page #1\hfil(#2)}\hrule width\hsize
+  \nobreak\medskip}
+\def\buginvol#1(#2) \par{\bigbreak\penalty-1000\tenpoint
+  \hrule width\hsize
+  \line{\lower3.5pt\vbox to13pt{}Volume #1\hfil(#2)}\hrule width\hsize
+  \nobreak\medskip}
+\def\slMF{{\manual 89:;}\-{\manual <=>:}} % slant the logo
+\def\0{\raise.7ex\hbox{$\scriptstyle\#$}}
+\newcount\nn
+\newdimen\nsize \newdimen\msize \newdimen\ninept \ninept=9pt
+\newbox\eqbox \setbox\eqbox=\hbox{\kern2pt\eightrm=\kern2pt}
+
+\tenpoint
+\noindent This is a list of all substantial corrections made to {\sl Computers
+\& Typesetting\/} from the mid-1990s until the first ``Millennium edition'' was
+published at the end of the year 2000.
+Corrections made to the softcover version of {\sl The \TeX book\/} are
+the same as corrections to Volume~A\null. Corrections to the softcover
+version of {\sl The \slMF\kern1ptbook\/} are the same as corrections
+to Volume~C\null. Changes to the mini-indexes
+and master indexes of Volumes B, D, and~E are not shown here unless they are
+not obviously derivable from what has been shown.
+\looseness=-1
+
+% volume A
+
+\bugonpage A3, line 14 {(in certain printings only)} (9/6/00)
+
+\tenpoint\noindent
+that
+looks like {\tt\char'15} or {\tt\char'23}.
+
+\bugonpage A8, lines 14 and 15 (9/6/00)
+
+\tenpoint\noindent
+that is not to be ignored. Notice that |\|\] is a control
+sequence of the second kind, namely a control symbol, since there is a
+single nonletter (\]) following\cutpar
+
+\bugonpage A43, line $-17$ (8/4/98)
+
+\tenpoint\noindent
+into your manuscript, if the |b|-key on your keyboard is broken. \
+(An optional\cutpar
+
+\bugonpage A88, lines 14, 16, 18, and 21 (8/12/00)
+
+\tenpoint\noindent
+[Insert two blank spaces between `{\tt blank space}' and `{\tt\char`\}}']
+
+\bugonpage A96, lines 9 and 10 (8/6/98)
+
+\ninepoint\indent
+Before 1998, some ^{German} words changed their spelling
+when split between lines. For example, `backen' became `bak-ken'
+and `Bettuch' sometimes became `Bett-\cutpar
+
+\bugonpage A107, line 2 (8/5/98)
+
+\ninepoint
+\line{\indent\spaceskip=.4em minus.35em
+ually, you might be tempted to set
+|\tolerance=10000|; this allows arbitrarily bad}
+
+\bugonpage A115, line $-19$ (8/5/98)
+
+\ninepoint\noindent
+If there's no room for such an insertion on this page, \TeX\
+will insert it at the top of\cutpar
+
+\bugonpage A119, line 15 (8/5/98)
+
+\ninepoint\noindent
+of\/ |\dimen3|, assuming that |\dimen3| is positive.
+
+\bugonpage A182, middle line of the displayed commutative diagram (12/3/99)
+
+\ninepoint
+\def\mapright#1{\smash{
+    \mathop{\longrightarrow}\limits^{#1}}}
+$$\matrix{
+  0&\mapright{}&{\cal O}_C&\mapright\pi&
+    \pi_*{\cal O}_D&\mapright\delta&
+    R^1f_*{\cal O}_V(-D)&\mapright{}&0\cr}$$
+
+\bugonpage A233, line $-2$ (8/5/98)
+
+\ninepoint\noindent
+could avoid this by adding |\hskip| |0pt| |minus-1fil|; then
+an oversize text would\cutpar
+
+\bugonpage A277, line 1 (8/5/98)
+
+\ninepoint\indent
+\<code assignment>\is\<codename>\<8-bit number>\<equals>\<number>
+
+\bugonpage A277, line $-11$ (8/5/98)
+
+\ninepoint\noindent
+[Move this line, which defines \<at clause>, up to the top of the page.]
+
+\bugonpage A289, line 24 (2/3/97)
+
+\ninepoint\indent
+\<math field>\is\<filler>\<math symbol>\alt\<filler>|{|\<math mode material>|}|
+
+\bugonpage A309, line 3 (8/12/97)
+
+\ninepoint
+\ansno8.4:
+|$|$_{3}$ |x|$_{11}$ |^|$_7$ |2|$_{12}$ |$|$_{3}$ |~|$_{13}$ \]$_{10}$
+\cstok{TeX} |b|$_{11}$ |v|$_{11}$ \]$_{10}$. The final space comes from
+the\cutpar
+
+\bugonpage A313, line 24 (9/19/00)
+
+\ninepoint\noindent
+stands for `|\par\vfill...|', so the next three commands are
+
+\bugonpage A313, line 27 (9/19/00)
+
+\ninepoint\indent
+|{vertical mode: \par}|
+
+\bugonpage A318, lines 12 and 13 (8/5/98)
+
+\ninepoint\noindent\hbox to\parindent{\hfil\bf15.8.\enspace}%
+|\advance\dimen2 by\ifnum\dimen2<0 -\fi.5\dimen3|\parbreak
+|\divide\dimen2 by\dimen3 \multiply\dimen2 by\dimen3|
+
+\bugonpage A325, line 22 (12/3/99)
+
+\ninepoint
+|  0&\mapright{}&{\cal O}_C&\mapright\pi&|
+
+\bugonpage A337, line 3 from the bottom (9/6/00)
+
+\rightline{\eightss DONALD E. KNUTH, {\eightssi The \TeX book\/} (1984)}
+
+\bugonpage A348, lines 14--16 (8/6/98)
+
+\ninepoint\noindent
+|   \def\@if#1{true}{\let#1=\iftrue}%|\par\noindent
+|  \expandafter\expandafter\expandafter|\par\noindent
+|   \def\@if#1{false}{\let#1=\iffalse}%|\par\noindent
+
+\bugonpage A356, line 21 (8/6/98)
+
+\ninepoint\noindent
+|\def\AA{\leavevmode\setbox0=\hbox{!}\dimen@=\ht0 \advance\dimen@ by-1ex|
+
+\bugonpage A356, lines 9--21 from the bottom (8/6/98)
+
+\ninepoint
+{\parindent=0pt
+|\def\S{\mathhexbox278} \def\P{\mathhexbox27B} \def\Orb{\mathhexbox20D}|\par
+\smallskip
+|\def\oalign#1{\leavevmode\vtop{\baselineskip0pt \lineskip.25ex|\par
+|  \ialign{##\crcr#1\crcr}}} \def\o@lign{\lineskiplimit=0pt \oalign}|\par
+|\def\ooalign{\lineskiplimit=-\maxdimen \oalign} % chars over each other|\par
+|{\catcode`p=12 \catcode`t=12 \gdef\\#1pt{#1}} \let\getf@ctor=\\|\par
+|\def\sh@ft#1{\dimen@=#1 \kern\expandafter\getf@ctor\the\fontdimen1\font|\par
+|  \dimen@} % kern by #1 times the current slant|\par
+|\def\d#1{{\o@lign{\relax#1\crcr\hidewidth\sh@ft{-1ex}.\hidewidth}}}|\par
+|\def\b#1{{\o@lign{\relax#1\crcr\hidewidth\sh@ft{-3ex}%|\par
+|    \vbox to.2ex{\hbox{\char'26}\vss}\hidewidth}}}|\par
+|\def\c#1{{\setbox0=\hbox{#1}\ifdim\ht0=1ex \accent'30 #1%|\par
+|  \else\ooalign{\unhbox0\crcr\hidewidth\char'30\hidewidth}\fi}}|\par
+|\def\copyright{{\ooalign{\hfil\raise.07ex\hbox{c}\hfil\crcr\Orb}}}|\par
+}
+
+\bugonpage A364, line 9 (8/9/98)
+
+\ninepoint\noindent
+|\def\makefootline{\baselineskip=24pt \lineskiplimit=0pt|\par\noindent
+|    \line{\the\footline}}|
+
+
+\bugonpage A364, line 4 from the bottom (8/6/98)
+
+\ninepoint\noindent
+|\def\fmtversion{3.1415926} % identifies the current format|
+
+\bugonpage A447, bottom line (6/3/98)
+
+\rightline{\eightss--- JOHN SMITH, {\eightssi The Printer's Grammar\/}\enspace
+ (1755)}
+
+\bugonpage A450, lines 11--13 (4/12/98)
+
+\def\\#1{$_{\kern\scriptspace#1}$}%
+\tenpoint\noindent
+between `|e|' and `|n|' there are five relevant values
+in this case (2~from {\tt\\0h\\0e\\2n\\0},
+0~from {\tt\\0h\\0e\\0n\\0a\\4},
+0~from {\tt\\0h\\0e\\0n\\5a\\0t\\0},
+1~from {\tt\\1n\\0a\\0},
+and 0~from {\tt\\0n\\2a\\0t\\0}); the maximum of these is~2.
+The result of all the maximizations is
+
+\bugonpage A453, line 6 (8/5/98)
+
+\ninepoint\noindent
+tion dictionary, except that plain \TeX\ blocks hyphens after the
+very first letter or be-\cutpar
+
+\bugonpage A458, left column (9/6/00)
+
+\eightpoint
+\leavevmode{\tt\rlap<\char`\_}, 45, 135, 368--369; {\sl see also\/} |\le|.\par
+\leavevmode{\tt\rlap/=}, 45, 135, 368--369; {\sl see also\/} |\ne|.\par
+\leavevmode{\tt\rlap>\char`\_}, 45, 135, 368--369; {\sl see also\/} |\ge|.
+
+\bugonpage A458, right column (7/5/99)
+
+\eightpoint
+{\tt\char'13} and {\tt\char'14}, 135, 343, 368--369, 429;\par
+al-Khw\^arizm\^\i, abu `Abd All\^ah Mu\d{h}ammad ibn M\^us\^a, 53.
+
+\bugonpage A464, right column (8/6/98)
+
+\eightpoint
+\newbox\astbox \setbox\astbox=\hbox to0pt{\hss\lower1pt\hbox{*}}
+\def\prim#1{\par\indent\copy\astbox{\tt\char`\\#1}}
+\prim{edef}, {\it215--216}, 275, {\it328}, {\it373--374}.
+
+\bugonpage A466, right column (8/8/98)
+
+\eightpoint
+|\getfactor|, {\it356}, $\underline{375}$, {\it398}.
+
+\bugonpage A467, right column (8/5/98)
+
+\eightpoint
+\prim{hfilneg}, 72, 100, 283, 285, 290, 397.
+
+\bugonpage A469, left column (8/5/98)
+
+\eightpoint
+italic type, 13--14, 100, 127, 165, 409, 428, 430.
+
+\bugonpage A469--A477, passim (5/13/98)
+
+\eightpoint\noindent
+Add page 272 to the index entries for |\lastskip|, |\pagedepth|,
+|\pagefilllstretch|,\hfil\break |\pagefillstretch|, |\pagefilstretch|,
+|\pagegoal|, |\pageshrink|, |\pagestretch|, |\pagetotal|,\hfil\break
+|\parshape|, |\prevdepth|, and |\spacefactor|.\par
+\smallskip\noindent Also change `369' to `370' in the index entries for
+|\lbrack|, |\lq|, |\rbrack|, |\rq|, |\sb|, and |\sp|.\par
+\smallskip\noindent Also change `Luckombe, Philip' to `Smith, John'.\par
+
+\bugonpage A472, right column (8/6/98)
+
+\eightpoint
+\prim{noexpand}, $\underline{209}$, $\underline{213}$, 215, 216,
+ {\it377}, {\it424}.
+
+\bugonpage A473, left column (8/6/98)
+
+\eightpoint
+|\Orb| ( \Orb\ ), $\underline{356}$.
+
+% volume B
+\def\\#1{\hbox{\it#1\/\kern.05em}} % italic type for identifiers
+\def\to{\mathrel{.\,.}} % double dot, used only in math mode
+
+\bugonpage Bix, line 16 (1/16/00)
+
+\tenpoint\textindent{\bull}``Word hy-phen-a-tion by com-put-er''
+by Franklin Mark Liang, Stan-\cutpar
+
+\bugonpage Bxiv, line 13 (4/19/96)
+
+\tenpoint\noindent preprocessor converts these into numeric constants that are
+256 or more. This\cutpar
+
+\bugonpage Bxiv, line $-1$ (4/19/96)
+
+\ninepoint\noindent This file contains one line per string, starting with
+string number 256, then number 257,\cutpar
+
+\bugonpage Bxv, lines 10 and 11 (4/19/96)
+
+\ninepoint\noindent
+In this case, occurrences of |""| in the |WEB| program will be replaced by
+256; occurrences of |"This longer string"| will be replaced by 257.
+The symbol |@$| stands for the numeric\cutpar
+
+\hsize=35pc
+\bugonpage B2, line $-10$ (3/8/95)
+
+\def\RQ/{{\char'23}} % right quote in a string
+\ninepoint\noindent\quad
+{\bf define} $\\{banner}\equiv\hbox{\tt\RQ/This\]is\]TeX,\]%
+   Version\]3.14159\RQ/}$\quad$\{\,$printed when \TeX\ starts$\,\}$
+
+\bugonpage B169, line 13 (9/22/95)
+
+\tenpoint\noindent
+something in a ``muskip'' register, or to one of the
+three parameters \hbox{\tt\char`\\thinmuskip},
+\hbox{\tt\char`\\medmuskip},\cutpar
+
+\bugonpage B221, line 9 (3/4/95)
+
+\ninepoint\noindent
+\quad{\bf define} $\\{non\_address}=0$\quad
+$\{\,$a spurious \\{bchar\_label}$\,\}$
+
+\bugonpage B221, line 17 (3/4/95)
+
+\ninepoint\noindent
+\\{font\_params}: {\bf array}[\\{internal\_font\_number}] {\bf of}
+ \\{font\_index};\quad$\{\,$how many font parameters are present$\,\}$
+
+\bugonpage B256, insert new line 12 before the bottom (3/7/95)
+
+\ninepoint\noindent\qquad
+\\{glue\_temp}: \\{real};\quad $\{\,$glue value before rounding$\,\}$
+
+\bugonpage B258, line 11 before the bottom becomes four lines (3/7/95)
+
+\ninepoint\noindent
+{\tenbf 625.}\quad{\bf define} $\\{billion}\equiv
+   \\{float\_constant}(1000000000)$\par\noindent
+{\bf define} $\\{vet\_glue}(\hbox{\tt\char`\#})\equiv
+  \\{glue\_temp}\gets\hbox{\tt\char`\#}$;\par\noindent
+\qquad{\bf if\/} $\\{glue\_temp}>\\{billion}$
+  {\bf then} $\\{glue\_temp}\gets\\{billion}$\par\noindent
+\qquad{\bf else if\/} $\\{glue\_temp}<-\\{billion}$
+  {\bf then} $\\{glue\_temp}\gets-\\{billion}$\smallskip\noindent
+$\langle\,$Move right or output leaders{\sevenrm\kern.5em625}$\,\rangle\equiv$
+
+\bugonpage B258, lines 3--6 from the bottom (3/7/95)
+
+\ninepoint\noindent
+\qquad\qquad{\bf begin} $\\{vet\_glue}(\\{float}(\\{glue\_set}
+         (\\{this\_box}))*\\{stretch}(g))$;\par\noindent
+\qquad\qquad$\\{rule\_wd}\gets\\{rule\_wd}+
+             \\{round}(\\{glue\_temp})$;\par\noindent
+\qquad\qquad{\bf end};\par\noindent
+\qquad\quad{\bf end}\par\noindent
+\qquad{\bf else if\/} $\\{shrink\_order}(g)=\\{g\_order}$
+             {\bf then}\par\noindent
+\qquad\quad{\bf begin} $\\{vet\_glue}(\\{float}(\\{glue\_set}
+                (\\{this\_box}))*\\{shrink}(g))$;\par\noindent
+\qquad\quad$\\{rule\_wd}\gets\\{rule\_wd}-\\{round}(\\{glue\_temp})$;
+
+\bugonpage B260, line 13 from the bottom (6/26/93)
+
+\ninepoint
+\noindent\hskip10pt
+$\\{doing\_leaders}\gets\\{outer\_doing\_leaders}$; \
+$\\{dvi\_v}\gets\\{save\_v}$; \
+$\\{dvi\_h}\gets\\{save\_h}$; \
+$\\{cur\_v}\gets\\{base\_line}$;
+
+\bugonpage B261, insert new line after line 7 (3/7/95)
+
+\ninepoint\noindent\qquad
+\\{glue\_temp}: \\{real};\quad $\{\,$glue value before rounding$\,\}$
+
+\bugonpage B262, lines 3--6 from the bottom (3/7/95)
+
+\ninepoint\noindent
+\qquad\qquad{\bf begin} $\\{vet\_glue}(\\{float}(\\{glue\_set}
+         (\\{this\_box}))*\\{stretch}(g))$;\par\noindent
+\qquad\qquad$\\{rule\_ht}\gets\\{rule\_ht}+
+             \\{round}(\\{glue\_temp})$;\par\noindent
+\qquad\qquad{\bf end};\par\noindent
+\qquad\quad{\bf end}\par\noindent
+\qquad{\bf else if\/} $\\{shrink\_order}(g)=\\{g\_order}$
+             {\bf then}\par\noindent
+\qquad\quad{\bf begin} $\\{vet\_glue}(\\{float}(\\{glue\_set}
+                (\\{this\_box}))*\\{shrink}(g))$;\par\noindent
+\qquad\quad$\\{rule\_ht}\gets\\{rule\_ht}-\\{round}(\\{glue\_temp})$;
+
+\bugonpage B264, line 22 (6/26/93)
+
+\ninepoint
+\noindent\hskip10pt
+$\\{doing\_leaders}\gets\\{outer\_doing\_leaders}$; \
+$\\{dvi\_v}\gets\\{save\_v}$; \
+$\\{dvi\_h}\gets\\{save\_h}$; \
+$\\{cur\_h}\gets\\{left\_edge}$;
+
+\bugonpage B297, line 11 (3/7/95)
+
+\ninepoint\noindent
+\qquad  $\\{width}(p)\gets\\{mu\_mult}(\\{width}(p))$; \
+ $\\{subtype}(p)\gets\\{explicit}$;
+
+\bugonpage B309, line 7 (9/22/95)
+
+\ninepoint\noindent
+\qquad {\bf if} $\\{cur\_style}<\\{text\_style}$ {\bf then}
+ \quad$\{\,$display style$\,\}$
+
+\bugonpage B356, line $-5$ (3/4/95)
+
+\tenpoint\noindent
+$\\{hang\_after}=1$, and $\\{hang\_indent}=0$.
+Note that if $\\{hang\_indent}=0$, the value of $\\{hang\_after}$ is\cutpar
+
+\bugonpage B388, bottom line (3/4/95)
+
+\ninepoint\noindent
+\quad {\bf if\/} $\\{bchar\_label}[\\{hf}]\ne\\{non\_address}$ {\bf then}\quad
+ $\{\,$put left boundary at beginning of new line$\,\}$
+
+\bugonpage B406, line 10 (5/1/98)
+
+\ninepoint\noindent
+\qquad$q\gets p$;\quad$\{\,$now node $q$ represents $p_1\ldots p_{l-1}\,\}$
+
+\bugonpage B503, line 12 (3/4/95)
+
+\tenpoint\noindent
+of the following procedure. (Exception: The tabskip
+glue isn't trapped while preambles are being scanned.)
+
+\bugonpage B529, line 12 (3/4/95)
+
+\ninepoint\noindent\quad
+\\{undump}(0)($\\{fmem\_ptr}-1$)(\\{bchar\_label}[$k$]);\par\noindent\quad
+\\{undump}(\\{min\_quarterword})(\\{non\_char})(\\{font\_bchar}[$k$]);
+
+\bugonpage B531, line 2 (11/23/98)
+
+\tenpoint\noindent
+from appearing again.
+
+\bugonpage B531, line 14 (11/23/98)
+
+\ninepoint\noindent
+\quad \\{print\_int}(\\{year}); \ \\{print\_char}(|"."|); \
+     \\{print\_int}(\\{month}); \ \\{print\_char}(|"."|); \
+     \\{print\_int}(\\{day});
+
+\bugonpage B534, insert new material between lines $-16$ and $-15$ (3/20/95)
+
+\ninepoint\noindent
+\quad {\bf while} $\\{input\_ptr}>0$ {\bf do}\par\noindent
+\qquad {\bf if\/} $\\{state}=\\{token\_list}$ {\bf then} \\{end\_token\_list}
+  {\bf else} \\{end\_file\_reading};
+
+\bugonpage B534, line $-2$ (3/20/95)
+
+\ninepoint\noindent
+\qquad $\\{temp\_ptr}\gets\\{cond\_ptr}$; \
+  $\\{cond\_ptr}\gets\\{link}(\\{cond\_ptr})$; \
+  $\\{free\_node}(\\{temp\_ptr},\\{if\_node\_size})$;
+
+\bugonpage B535, line 9 (3/20/95)
+
+\ninepoint\noindent
+\qquad {\bf begin init for} $c\gets\\{top\_mark\_code}$ {\bf to}
+        \\{split\_bot\_mark\_code} {\bf do}\par\noindent
+\qquad\qquad {\bf if\/} $\\{cur\_mark}[c]\ne\\{null}$  {\bf then}
+        $\\{delete\_token\_ref}(\\{cur\_mark}[c])$;\par\noindent
+\qquad\quad \\{store\_fmt\_file}; \ {\bf return}; \ {\bf tini}
+
+\bugonpage B581, Zabala entry (8/19/00)
+
+\eightpoint\noindent
+Zabala Salelles, Ignacio Andr\'es:\quad 2.
+
+% volume C
+\hsize=29pc
+\def\\#1{\hbox{\it#1\/\kern.05em}} % italic type for identifiers
+
+\bugonpage C17, lines 12 and 13 (9/6/00)
+
+\tenpoint
+{\bf draw} $z_4\{\curl0\}\to z_2\{z_3-z_4\}\to\{\curl0\}\,z_3$;\par
+{\bf draw} $z_4\{\curl2\}\to z_2\{z_3-z_4\}\to\{\curl2\}\,z_3$
+
+\bugonpage C23, line $-7$ (8/5/98)
+
+\ninepoint\indent
+$x_1=ss=w-x_5$;\quad$y_3-y_1=\\{ygap}$
+
+\bugonpage C69, line 17 (9/6/00)
+
+\ninepoint\noindent
+|"abra"|, while
+$p_1$ is `$(0,0)\to(3,3)$' and $p_2$ is `$(0,0)\to(3,3)\to\cycle$'.
+
+\bugonpage C94, line $-11$ (3/4/95)
+
+\ninepoint\noindent
+put
+are assumed to have square pixels. But if, for
+example, the {\bf mode\_def} sets\cutpar
+
+\bugonpage C107, line 15 (3/4/95)
+
+\ninepoint
+{\bf labels}$(1a,1b,2a,2b,3a,3b,4a,4b,\,${\bf range} 1 {\bf thru} 36);
+ \ {\bf endchar\/};
+
+\bugonpage C123, lines 21 and 22 (12/19/95)
+
+\chardef\circc=34 % rotated quartercircle
+\def\chapno{ 14} \exno=2 % for exercise 14.3!
+\dangerexercise
+Use a {\sl rotated\/} quarter-circle to produce `{\manual\circc}\kern1pt'
+in font position `{\tt c}'.
+
+\bugonpage C129, lines 6--17 (8/5/98)
+
+\ninepoint
+\beginsyntax
+<path primary>\is<pair primary>\alt<path variable>
+ \alt[(]<path expression>[)]
+ \alt[reverse]<path primary>
+ \alt[subpath]<pair expression>[of]<path primary>
+<path secondary>\is<pair secondary>\alt<path primary>
+ \alt<path secondary><transformer>
+<path tertiary>\is<pair tertiary>\alt<path secondary>
+<path expression>\is<pair expression>\alt<path tertiary>
+ \alt<path subexpression><direction specifier>
+ \alt<path subexpression><path join>[cycle]
+<path subexpression>\is<path expression>
+ \alt<path subexpression><path join><path tertiary>
+\endsyntax
+
+\bugonpage C134, line 8 (3/4/95)
+
+\ninepoint\noindent
+of~$p$; if $t\le 0$, precontrol~$t$ of~$p$ is~$z_0$.
+In particular, if $t$ is an integer, postcontrol~$t$ of~$p$\cutpar
+
+\bugonpage C139, illustration (8/5/98)
+
+\eightpoint\noindent
+[Remove the labels {\tt 2r}, {\tt 2}, and {\tt 2l} below their dots.]
+
+\bugonpage C143, top two lines (3/4/95)
+
+\danger In order to have some transform variables to work with, it's necessary
+to `^{hide}' some declarations and commands before giving the next |expr|s:
+
+\bugonpage C147, lines 14, 16, and 19 (9/6/00)
+
+\noindent
+[Change `{\bf savepen}' to `{\it savepen}'.]
+
+\bugonpage C147, line 2 from the bottom (9/6/00)
+
+\ninepoint\noindent
+{\manual lmnj}'s {\bf penrazor} stands for
+`{\bf makepen} $\bigl((-.5,0)\dashto(.5,0)\dashto \cycle\bigr)$',
+and {\bf pensquare}\cutpar
+
+\bugonpage C171, line 19 (8/5/98)
+
+\ninepoint\noindent
+(\<path tertiary>) and
+(\<pair tertiary>). A pair expression is not considered to\cutpar
+
+\bugonpage C172, line 14 (8/5/98)
+
+\tenpoint\noindent
+been evaluated and changed to numeric tokens before being
+substituted for~$s$.\cutpar
+
+\bugonpage C175, line 23 (1/11/88)
+
+\ninepoint\noindent
+expand into a sequence of tokens. \
+(The language {\eightrm{SIMULA67}} demonstrated that it is\cutpar
+
+\bugonpage C206, minor changes to lines $-19$ to $-5$ (3/4/95)
+
+\vbox to70mm{\ninepoint
+\beginlines \advance\hsize.71pt
+|Path at line 15, before subdivision into octants:|
+|(1.53745,9.05345)..controls (1.53745,4.00511) and (5.75409,-0.00049)|
+| ..(10.85147,-0.00049)..controls (16.2217,-0.00049) and (20.46255,4.51297)|%
+             \kern.5em\null
+| ..(20.46255,9.94655)..controls (20.46255,14.99713) and (16.23842,19.00049)|
+      \kern-.71pt
+| ..(11.13652,19.00049)..controls (5.77066,19.00049) and (1.53745,14.48491)|%
+             \kern.5em\null
+| ..cycle|
+\smallskip
+|Cycle spec at line 15, after subdivision:|
+|(1.53745,9.05345) % beginning in octant `SSE'|
+|   ..controls (1.53745,6.58786) and (2.54324,4.371)|
+| ..(4.16621,2.74803) % segment 0|
+|% entering octant `ESE'|
+|   ..controls (5.8663,1.04794) and (8.24362,-0.00049)|
+| ..(10.85147,-0.00049) % segment 0|
+|% entering octant `ENE'|
+\endlines
+$\ldots$ and so on; there are lots more numbers! What does this all mean?
+Well, the first segment of the curve, from $(1.53745,9.05345)$ to
+$(10.85147,-0.00049)$,
+has been\cutpar}
+
+\bugonpage C207, minor changes to lines 1--23 (3/4/95)
+
+\ninepoint
+\begingroup\let\HRULE=\hrule \def\hrule{\HRULE width\hsize}
+\beginlines
+|Cycle spec at line 15, after subdivision and autorounding:|
+|(2,9.05348) % beginning in octant `SSE'|
+|   ..controls (2,6.50526) and (3.02194,4.22272)|
+| ..(4.6577,2.58696) % segment 0|
+|% entering octant `ESE'|
+|   ..controls (6.2624,0.98225) and (8.45786,0)|
+| ..(10.85873,0) % segment 0|
+|% entering octant `ENE'|
+\endlines
+Point $(1.53745,9.05345)$, where there was a vertical tangent, has been
+rounded to $(2,9.05348)$; point $(10.85147,-.00049)$, where there was
+\vadjust{\goodbreak}%
+a horizontal tangent, has been rounded to $(10.85873,0)$; the intermediate
+control points have been adjusted accordingly. \ (Rounding of $x$~coordinates
+has been done separately from $y$~coordinates.) \ Finally, with
+$\\{autorounding}=2$, additional adjustments are made so that the
+$45^\circ$ transition point will occur at what \MF\ thinks is a good spot:
+\beginlines
+|Cycle spec at line 15, after subdivision and double autorounding:|
+|(2,9.05348) % beginning in octant `SSE'|
+|   ..controls (2,6.6761) and (3.07103,4.42897)|
+| ..(4.78537,2.71463) % segment 0|
+|% entering octant `ESE'|
+|   ..controls (6.46927,1.03073) and (8.62749,0)|
+| ..(10.85873,0) % segment 0|
+|% entering octant `ENE'|
+\endlines
+(Notice that $4.78537+2.71463=7.50000$; when the slope
+is~$-1$ at a transition point\cutpar
+\endgroup
+
+\bugonpage C210, line $-7$ (8/5/98)
+
+\ninepoint\indent\qquad\alt\<numeric token primary>
+
+\bugonpage C210, line $-2$ (8/5/98)
+
+\ninepoint\indent\<numeric token primary>\is\<numeric token>\thinspace
+{\tt/}\thinspace\<numeric token>
+
+\bugonpage C211, line 16 (8/5/98)
+
+\ninepoint\indent\qquad\alt\<numeric token primary not followed by
+{\tt+} or {\tt-} or a numeric token>
+
+\bugonpage C213, lines 17--27 (8/5/98)
+
+\ninepoint
+\beginsyntax
+<path primary>\is<pair primary>\alt<path variable>\alt<path argument>
+ \alt[(]<path expression>[)]
+ \alt[begingroup]<statement list><path expression>[endgroup]
+ \alt[makepath]<pen primary>\alt[makepath]<future pen primary>
+ \alt[reverse]<path primary>
+ \alt[subpath]<pair expression>[of]<path primary>
+<path secondary>\is<pair secondary>\alt<path primary>
+ \alt<path secondary><transformer>
+<path tertiary>\is<pair tertiary>\alt<path secondary>
+<path subexpression>\is<path expression>
+ \alt<path subexpression><path join><path tertiary>
+\endsyntax
+
+\bugonpage C213, line $-4$ (8/5/98)
+
+\ninepoint\indent
+\<path expression>\is\<pair expression>\alt\<path tertiary>
+\endsyntax
+
+\bugonpage C234, line 6 (9/6/00)
+
+\ninepoint\noindent
+line~$z_1\to z_5$ that bisects $z_4\to z_2$, so it starts out in a
+south-by-southwesterly direction;\cutpar
+
+\bugonpage C246, line 5 of answer 14.15 (8/5/98)
+
+\ninepoint\indent
+\qquad/ length(postcontrol $t$ of $p$ $-$ point $t$ of $p$) {\bf enddef\/};
+
+\bugonpage C246, line 10 of answer 14.15 (8/5/98)
+
+\ninepoint\indent
+\qquad/ length(precontrol $t$ of $p$ $-$ point $t$ of $p$) {\bf enddef\/};
+
+\bugonpage C252, line $-6$ (8/5/98)
+
+\ninepoint\noindent
+$h+o$ and $\\{bot}\,y_4=-o$, so nothing needs to be done there.
+We should, however, say
+
+\bugonpage C257, large display on line 5 (3/4/95)
+
+\def\bb{$\,\left\{\vcenter\bgroup\halign\bgroup\hfil##\hfil\cr}
+\def\ee{\crcr\egroup\egroup\right\}\,$}
+\tenpoint\noindent
+\bb|boolean|\cr|numeric|\cr|pair|\cr|path|\cr
+|pen|\cr|picture|\cr|string|\cr|transform|\ee\<expression>; \
+\bb\<boolean>\cr\<numeric>\cr\<pair>\cr\<string>\cr\<transform>\ee
+ \bb|<|\cr|<=|\cr|=|\cr|<>|\cr|>=|\cr|>|\ee
+ \bb\<boolean>\cr\<numeric>\cr\<pair>\cr\<string>\cr\<transform>\ee;
+
+\bugonpage C261, line $-15$ (8/5/98)
+
+\tenpoint\textindent\bull {\it Hacks:\/} \ |gobble|, |gobbled|, |killtext|; \
+|capsule_def|; \ |numtok|.
+
+\bugonpage C286, line 15 (8/5/98)
+
+\ninepoint\noindent
+isn't entirely expanded by {\bf expandafter\/}; only \MF's first
+step in loop expansion\cutpar
+
+\bugonpage C299, line 2 (12/6/99)
+
+\ninepoint\noindent
+\begindisplay
+$\displaystyle t[u_1,\ldots,u_n]\;=\;\sum_{k=1}^n{n-1\choose k-1}
+ (1-t)^{n-k}t^{k-1}u_k,$
+\enddisplay
+
+\bugonpage C299, swap lines 11 and 12 (8/5/98)
+
+\ninepoint\begintt
+def lbrack = hide(delimiters []) lookahead [ enddef;
+let [[[ = [; let ]]] = ]; let [ = lbrack;
+\endtt
+
+\bugonpage C306, line 1 (11/4/98)
+
+\ninepoint\noindent
+| ligtable oct"013": "i" =: oct"016", "l" =: oct"017",   % ffi and ffl|
+
+\bugonpage C311, line 2 (8/5/98)
+
+\ninepoint\noindent
+$\\{fine}:=4-\\{eps}$, and $\\{breadth\_}[1]:=4-\\{eps}$.
+\ (A small amount~\\{eps} has been subtracted\cutpar
+
+\bugonpage C323, line $-3$ (8/5/98)
+
+\ninepoint\noindent
+statement occurs,
+the special string `|"title "|\thinspace\&\thinspace\<title>'
+is output. \ (This is how the\cutpar
+
+\bugonpage C332, lines 22--24 (8/5/98)
+
+\ninepoint
+\item{}be replicated so that the final
+proofs will be \\{rep} times bigger than usual, and the pattern will be clipped
+slightly at the edges so that discrete pixels can be seen plainly.
+
+
+\bugonpage C341, line 23 (10/10/96)
+
+\ninepoint
+\noindent|\def\:{\setbox0=\hbox{\noboundary\char\n\noboundary}%|
+
+\bugonpage C346, left column (9/6/00)
+
+\eightpoint
+|...| (bounded join), 18--19, 127, 248, $\underline{262}$.\par
+|...| (truncation of displayed context), 44.
+
+\bugonpage C346, and throughout the index (3/7/95)
+
+\eightpoint\noindent
+(Many index entries for rules of syntax in chapters 25--26
+should have been underlined)
+
+\bugonpage C350, left column (4/24/00)
+
+\eightpoint\noindent
+Evetts, Leonard Charles, 153.
+
+\bugonpage C351, right column (9/22/97)
+
+\eightpoint\noindent
+\llap{\lower1pt\hbox{*}}%
+|intersectiontimes|, $\underline{136}$, {\it178}, 213, {\it265}, {\it294},
+{\it298}.
+
+\bugonpage C353, right column (8/5/98)
+
+\eightpoint\noindent
+\<numeric token atom>, {\it delete this entry}.\par\noindent
+\<numeric token primary>, 72, $\underline{210}$.
+
+\bugonpage C354, left column (7/26/98)
+
+\eightpoint\noindent
+Orwell, George (= Blair, Eric Arthur), 85.
+
+\bugonpage C355, right column (3/7/95)
+
+\eightpoint\noindent
+|rt|, {\it23}, {\it77}, 80, {\it103}, 147, 151, $\underline{273}$.
+
+\bugonpage C361, lines 14--15 (4/29/97)
+
+\tenpoint
+\begintt
+email: {\tt TUG@tug.org}
+internet: {\tt http://www.tug.org/}
+}
+\endtt
+
+\bugonpage C361, bottom five lines (4/29/97)
+
+\begingroup  \def\TeX{T\kern-.2em\lower.5ex\hbox{E}\kern-.000em X}
+\baselineskip10pt
+\rightline{\eightssi Don't delay, subscribe today! That address again is}
+\rightline{\eightssi \TeX\ Users Group}
+\rightline{\eightssi email: \eighttt TUG\char`\@ tug.org}
+\rightline{\eightssi internet: \eighttt http://www.tug.org/}
+\smallskip
+\rightline{\eightss DONALD E. KNUTH, {\eightssi The \TeX book\/} (1996)}
+\endgroup
+
+% Volume D
+\def\\#1{\hbox{\it#1\/\kern.05em}} % italic type for identifiers
+\def\to{\mathrel{.\,.}} % double dot, used only in math mode
+
+\bugonpage Dix, line ix (8/19/00)
+
+\tenpoint
+\textindent{\bull}``Interfacing with graphic objects'' by
+Ignacio Andr\'es Zabala Salelles,\cutpar
+
+\hsize=35pc
+
+\bugonpage D71, line 11 of section 178 (9/13/00)
+
+\ninepoint
+\noindent\quad\qquad\qquad$\{$ previous \\{mem\_end}, \\{lo\_mem\_max},
+  and \\{hi\_mem\_min} $\}$
+
+\bugonpage D132, line 6 of section 291 (9/13/00)
+
+\tenpoint\noindent
+$$=v_n+w_n\theta_0-u_n\bigl(v_1+w_1\theta_0-u_1(v_2+\cdots
+-u_{n-2}(v_{n-1}+w_{n-1}\theta_0-u_{n-1}\theta_0)\ldots{})\bigr),$$
+
+\bugonpage D213, line 7 (9/14/00)
+
+\tenpoint\noindent
+$(-y+\epsilon,
+x+y+\epsilon\delta)$. We should therefore round as if our skewed coordinates
+were $(x+\epsilon+\epsilon\delta,y-\epsilon)$\cutpar
+
+\bugonpage D349, line 4 of section 784 (9/14/00)
+
+\ninepoint\noindent
+{\bf procedure} \\{pack\_job\_name}($s\;$: \\{str\_number});\quad
+  $\{$ $s={}$|".log"|, |".gf"|, |".tfm"|, or \\{base\_extension} $\}$
+
+\bugonpage D451, line 11 (9/14/00)
+
+\tenpoint\noindent
+{\bf 1040}.\qquad The value of \\{cur\_mod} controls the \\{verbosity} in
+the \\{print\_exp} routine: If it's \\{show\_code},\cutpar
+
+\bugonpage D464, bottom line (9/14/00)
+
+\ninepoint\noindent
+\\{long\_help\_seen}: \\{boolean};\quad$\{$ has the long {\bf errmessage}
+   help been used? $\}$
+
+\bugonpage D551, Zabala entry (8/19/00)
+
+\eightpoint\noindent
+Zabala Salelles, Ignacio Andr\'es:\quad 812.
+
+% volume E
+\hsize=29pc
+\bugonpage Exiii, lines 3 and 4 from the bottom (7/17/98)
+
+\textindent{\bull}``Metamarks:
+Preliminary studies for a Pandora's Box of shapes''
+by Neenie Billawala, Stanford Computer Science report 1256 (Stanford,
+California,\cutpar
+
+\def\dashto{\mathrel{\hbox{-\kern-.05em}\mkern3.9mu\hbox{-\kern-.05em}}}
+\def\ddashto{\mathrel{\hbox{-\kern-.05em}\mkern3.9mu
+                      \hbox{-\kern-.05em}\mkern3.9mu\hbox{-\kern-.05em}}}
+
+\bugonpage E87, bottom line (6/4/98)
+
+\rightline{\eightss--- JOHN SMITH, {\eightssi The Printer's Grammar\/}\enspace
+ (1755)} % p129
+
+\bugonpage E95, line 16 (8/8/98)
+
+\ninepoint\noindent
+\quad$\dashto z_{1r}\dashto z_{1l}\dashto{}$%
+ {\bf subpath} $(t,0)$ {\bf of\/} $(z_{3l}\{z_9-z_3\}\,.\,.\,z_{5r})$
+
+\bugonpage E95, line 11 from the bottom (8/8/98)
+
+\ninepoint\noindent
+\quad$\dashto z_{1r}\dashto z_{1l}\dashto{}$%
+ {\bf subpath} $(t,0)$ {\bf of\/} $(z_{3r}\{z_9-z_3\}\,.\,.\,z_{5r})$
+
+\bugonpage E95, line 8 from the bottom (3/6/95)
+
+\ninepoint\noindent
+{\bf cmchar} |"Extensible vertical arrow--extension module"|;
+
+\bugonpage E97, line 8 from the bottom (3/6/95)
+
+\ninepoint\noindent
+{\bf cmchar} |"Extensible double vertical arrow--extension module"|;
+
+\bugonpage E113, line 9 (3/6/95)
+
+\ninepoint\noindent
+$x_5=.5[x_4,x_6]$; \ $x_4-x_6=1.2u$; \ $\\{lft}\,x_{5r}=\hbox{hround}
+   (.5w-.5\\{curve})$;
+
+\bugonpage E113, line 10 from the bottom (3/6/95)
+
+\ninepoint\noindent
+$x_5=.5[x_4,x_6]$; \ $x_4-x_6=4.8u$; \ $\\{lft}\,x_{5r}=\hbox{hround}
+   (.5w-.5\\{max\_size})$;
+
+\bugonpage E115, line 9 (3/6/95)
+
+\ninepoint\noindent
+$x_5=.5[x_4,x_6]$; \ $x_4-x_6=1.2u$; \ $\\{lft}\,x_{5r}=\hbox{hround}
+   (.5w-.5\\{curve})$;
+
+\bugonpage E115, line 12 from the bottom (3/6/95)
+
+\ninepoint\noindent
+$x_5=.5[x_4,x_6]$; \ $x_4-x_6=4.8u$; \ $\\{lft}\,x_{5r}=\hbox{hround}
+   (.5w-.5\\{max\_size})$;
+
+\bugonpage E147, lines 11--14 from the bottom (7/7/97)
+
+\ninepoint\noindent
+$\\{pos}_3(.8[\\{hair},\\{stem}],0)$; \ $\\{pos}_4(\\{vair},-90)$; \
+ $\\{pos}_5(\\{hair},-180)$;\par\noindent
+$\\{pos}_6(\\{vair},-270)$; \ ${pos}_7(\\{stem},-360)$; \
+ $\\{pos}_8(\\{vair},-450)$; \ ${pos}_9(\\{hair},-540)$;\par\noindent
+$x_0=x_1=x_9$; \ $\\{lft}\,x_{0l}=\hbox{hround}(1.5u-.5\\{hair})$; \
+ $x_2=x_4=x_6=x_8=.5w-.25u$;\par\noindent
+$\\{rt}\,x_{3r}=\hbox{hround}(w-1.75u)$; \ $\\{rt}\,x_{7r}=\hbox{hround}(w-u)$;
+
+\bugonpage E147, line 8 from the bottom (7/7/97)
+
+\ninepoint\noindent
+$y_5=.5[y_4,y_6]$; \ $\\{top}\,y_{6r}-\\{bot}\,y_{4r}=\\{vstem}+\\{eps}$; \
+$\\{bot}\,y_8=-\\{oo}$; \ $y_7=y_9=.55[y_6,y_8]$;
+
+\bugonpage E165, line 6 (2/8/97)
+
+\ninepoint\noindent
+$y_1+.5\\{hair}=h$; \ $x_1=x_2+.75u$; \
+ $\\{pos}_1(\\{hair}+\\{dw},\hbox{angle}(2(x_1-x_2),y_1-y_2)+90)$;
+
+\bugonpage E165, line 10 (2/8/97)
+
+\ninepoint\noindent
+$x_3=.5[x_2,x_4]$; \ $x_7-.25u=.5[x_6,x_8]$; \
+ $\\{rt}\,x_{8r}=\hbox{hround}(w-.5u)$;
+
+\bugonpage E187, line 9 (3/6/95)
+
+\ninepoint\noindent
+$\\{lft}\, x_{1l}=\\{lft}\, x_{2l}=\hbox{hround}(.5w-.5\\{shaved\_stem})$; \
+ $\\{top}\, y_1=h$; \ $\\{bot}\, y_2=0$;
+
+\bugonpage E189, line 8 (3/6/95)
+
+\ninepoint\noindent
+$\\{lft}\, x_{1l}=\\{lft}\, x_{2l}=\hbox{hround}(.5w-.5\\{shaved\_stem})$; \
+ $\\{top}\, y_1=h$; \ $\\{bot}\, y_2=0$;
+
+\bugonpage E233, line 21 (3/6/95)
+
+\ninepoint\noindent
+{\bf path} $p$; \
+$\{\{${\bf interim} $\\{superness}:=\\{more\_super}$; \
+  $p=\\{pulled\_super\_arc}_l(3,4)(\\{pull})\}\}$;
+
+\bugonpage E237, line 5 (8/6/98)
+
+\ninepoint\noindent
+$\\{lft}\,x_1={\rm hround}\,.5u$; \ $x_2=w-x_1$; \
+ $y_1=y_2=\\{good}.y\,.7[\\{x\_height},\\{asc\_height}]$;
+
+\bugonpage E239, line 7 from the bottom (3/6/95)
+
+\ninepoint\noindent
+$\\{lft}\,x_{6r}=\hbox{hround}\, u$; \
+$x_7=3u$; \ $x_8=w-3.5u$; \ $\\{rt}\,x_{9l}=\hbox{hround}(w-u)$;
+
+\bugonpage E253, line 2 from the bottom (8/9/98)
+
+\ninepoint
+\line{\quad$.\,.\,z_{3e}\{\\{down}\}\,.\,.\,\{z_{5l}-z_{4l}\}z_{4e}
+   \dashto z_{5e}\dashto z_{6e}$;\hfil  \% stroke}
+
+\bugonpage E263, line 21 (5/10/98)
+
+\ninepoint\noindent
+{\bf path} $p$; \
+$\{\{${\bf interim} $\\{superness}:=\\{more\_super}$; \
+  $p=\\{pulled\_super\_arc}_l(3,4)(\\{pull})\}\}$;
+
+\bugonpage E289, line 2 from the bottom (8/9/98)
+
+\ninepoint
+\line{\quad$.\,.\,z_{3e}\{\\{down}\}\,.\,.\,\{z_{5l}-z_{4l}\}z_{4e}
+   \dashto z_{5e}\dashto z_{6e}$;\hfil  \% stroke}
+
+\bugonpage E291, line 18 (3/6/95)
+
+\def\frac#1/#2{\leavevmode\kern.1em
+  \raise.5ex\hbox{\the\scriptfont0 #1}\kern-.1em
+  /\kern-.15em\lower.25ex\hbox{\the\scriptfont0 #2}}
+\ninepoint\noindent
+$x_4=\frac1/3[x_5,x_{3l}]$; \ $z_4=z_5+\\{whatever}*(15u,.1h)$;
+
+\bugonpage E297, line 17 (5/10/98)
+
+\ninepoint\noindent
+{\bf path} $p$; \
+$\{\{${\bf interim} $\\{superness}:=\\{more\_super}$; \
+  $p=\\{pulled\_super\_arc}_l(3,4)(\\{pull})\}\}$;
+
+\bugonpage E303, line 17 (5/10/98)
+
+\ninepoint\noindent
+{\bf path} $p$; \
+$\{\{${\bf interim} $\\{superness}:=\\{more\_super}$; \
+  $p=\\{pulled\_super\_arc}_l(3,4)(\\{pull})\}\}$;
+
+\bugonpage E309, line 7 from the bottom (5/8/98)
+
+\ninepoint\noindent
+\quad$y_{@0}=y_{@2l}-\\{bracket}-\\{eps}$;
+
+\bugonpage E313, line 7 from the bottom (5/8/98)
+
+\ninepoint\noindent
+\quad$y_{@0}=y_{@2l}+\\{bracket}+\\{eps}$;
+
+\bugonpage E319, line 8 (5/11/98)
+
+\ninepoint\noindent
+$\\{loop\_top}=$ {\bf if\/} \\{serifs}:
+ Vround .77$[\\{vair},\\{fudged.stem}]$ {\bf else}: \\{vair} {\bf fi};
+
+\bugonpage E373, lines 5 and 6 from the bottom (7/13/97)
+
+\ninepoint\noindent
+\quad$\\{top}\,y_{1r}=\hbox{vround}\, .95h+\\{oo}$; \
+$\\{top}\,y_{2r}=h+\\{oo}$; \ $y_3=.5h$;\par\noindent
+\quad$\\{bot}\,y_{4r}=-\\{oo}$; \
+$\\{bot}\,y_{5r}=\hbox{vround}\,.08h-\\{oo}$; \
+$y_{5l}:=\\{good}.y\, y_{5l}$; \ $x_{5l}:=\\{good}.x\,x_{5l}$;
+
+\bugonpage E381, lines 11 and 12 from the bottom (7/13/97)
+
+\ninepoint\noindent
+\quad$\\{top}\,y_{1r}=\hbox{vround}\, .93h+\\{oo}$; \
+$\\{top}\,y_{2r}=h+\\{oo}$; \ $y_3=.5h$;\par\noindent
+\quad$\\{bot}\,y_{4r}=-\\{oo}$; \
+$\\{bot}\,y_{5r}=\hbox{vround}\,.07h-\\{oo}$;
+
+\bugonpage E389, bottom two lines (8/7/98)
+
+\ninepoint\noindent
+\quad {\bf numeric} $\\{aa\_},\\{bb\_},\\{cc\_}$; 
+  \ $\\{bb\_}=b/y$;  \ $\\{cc\_}=c/y$;
+  \ $\\{aa\_}=a*a-\\{bb\_}*\\{bb\_}$;\par\noindent
+\quad $(a*(\\{cc\_}\mathbin{++}\hbox{sqrt}\,\\{aa\_})-\\{bb\_}*\\{cc\_})/\\{aa\_}$
+  {\bf enddef\/};
+
+\bugonpage E423, line 17 (8/8/98)
+
+\ninepoint\noindent\quad
+$x_{13}=x_{11}-.5$; \ $\\{top}\,y_{14r}=\min(\frac10/7\\{x\_height}+
+ .5\\{bulb\_diam},h)+1$; \ $\\{top}\,y_{11}=\\{x\_height}$;
+
+\bugonpage E427, line 21 (8/8/98)
+
+\ninepoint\noindent\quad
+$x_{23}=x_{21}-.5$; \ $\\{top}\,y_{24r}=\min(\frac10/7\\{x\_height}+
+ .5\\{bulb\_diam},h)+1$; \ $\\{top}\,y_{21}=\\{x\_height}$;
+
+\bugonpage E431, lines 18 and 19 (8/8/98)
+
+\ninepoint\noindent
+{\bf filldraw} $z_0\dashto(x_0,y_{2l})\dashto z_{1l}\{\\{right}\}\,.\,.\,
+  \{\\{left}\}z_{1r}$\par
+\noindent\quad$\dashto{}${\bf subpath} $(t,0)$ {\bf of\/}
+  $(z_{3r}\,.\,.\,\{2(x_0-x_3),y_0-y_3\}z_{5r})$
+
+\bugonpage E431, line 2 from the bottom (8/8/98)
+
+\ninepoint\line{\quad
+$\dashto z_{1l}\{\\{right}\}\,.\,.\,\{\\{left}\}z_{1r}\dashto
+  (x_0,y_{2r})\dashto{}$cycle;\hfill\% arrowhead and stem}
+
+\bugonpage E433, lines 13 and 14 (8/8/98)
+
+\ninepoint\noindent
+{\bf filldraw} $z_0\dashto(x_0,y_{2l})\dashto z_{1l}\{\\{left}\}\,.\,.\,
+  \{\\{right}\}z_{1r}$\par
+\noindent\quad$\dashto{}${\bf subpath} $(t,0)$ {\bf of\/}
+  $(z_{3l}\,.\,.\,\{2(x_0-x_3),y_0-y_3\}z_{5r})$
+
+\bugonpage E433, line 2 from the bottom (8/8/98)
+
+\ninepoint\line{\quad
+$\dashto z_{1l}\{\\{left}\}\,.\,.\,\{\\{right}\}z_{1r}\dashto
+  (x_0,y_{2r})\dashto{}$cycle;\hfill\% arrowhead and stem}
+
+\bugonpage E463, line 15 (8/8/98)
+
+\ninepoint\noindent\quad
+$\ddashto z_{1r}\,.\,.\,z_{1l}\ddashto{}${\bf subpath} $(t,0)$ {\bf of\/}
+  $(z_{3r}\{z_9-z_3\}\,.\,.\,z_{5r})$
+
+\bugonpage E463, line 3 from the bottom (8/8/98)
+
+\ninepoint\noindent\quad
+$\ddashto z_{1r}\,.\,.\,z_{1l}\ddashto{}${\bf subpath} $(t,0)$ {\bf of\/}
+  $(z_{3l}\{z_9-z_3\}\,.\,.\,z_{5r})$
+
+\bugonpage E465, line 16 (8/8/98)
+
+\ninepoint\noindent\quad
+$\ddashto z_{1l}\,.\,.\,z_{1r}\ddashto{}${\bf subpath} $(t,0)$ {\bf of\/}
+  $(z_{3r}\{z_9-z_3\}\,.\,.\,z_{5r})$
+
+\bugonpage E465, line 3 from the bottom (8/8/98)
+
+\ninepoint\noindent\quad
+$\ddashto z_{1l}\,.\,.\,z_{1r}\ddashto{}${\bf subpath} $(t,0)$ {\bf of\/}
+  $(z_{3l}\{z_9-z_3\}\,.\,.\,z_{5r})$
+
+\bugonpage E467, line 18 (8/8/98)
+
+\ninepoint\noindent\quad
+$\ddashto z_{1l}\,.\,.\,z_{1r}\ddashto{}${\bf subpath} $(t,0)$ {\bf of\/}
+  $(z_{3r}\{z_9-z_3\}\,.\,.\,z_{5r})$
+
+\bugonpage E467, line 3 from the bottom (8/8/98)
+
+\ninepoint\noindent\quad
+$\ddashto z_{11l}\,.\,.\,z_{12r}\ddashto{}${\bf subpath} $(t,0)$ {\bf of\/}
+  $(z_{13l}\{z_{19}-z_{13}\}\,.\,.\,z_{15r})$
+
+\bugonpage E483, lines 12--14 from the bottom (3/6/95)
+
+\ninepoint\noindent
+{\bf beginarithchar}(oct$\,$|"004"|); \
+{\bf pickup} \\{fine}.\\{nib}; \
+{\bf pickup} \\{rule}.\\{nib};\par
+\line{{\bf numeric} \\{del};
+ \ $\\{del}=\\{dot\_size}-\\{currentbreadth}$;\hfill
+          \% $\\{currentbreadth}=\\{fine}$}
+\noindent
+$x_3-.5\\{del}=\\{good}.x(.5w-.5\\{del})$;
+ \ $\\{center\_on}(x_3)$;\par\noindent
+$y_3+.5del=\\{good}.y(\\{math\_axis}+\\{math\_spread}[.5\\{x\_height}
+   ,.6\\{x\_height}]+.5\\{del})$;
+
+\bugonpage E485, bottom line (6/4/98)
+
+\rightline{\eightss--- JOHN SMITH, {\eightssi The Printer's Grammar\/}\enspace
+ (1755)} % p80
+
+\bugonpage E489, line 4 (8/8/98)
+
+\ninepoint\noindent
+$\\{lft}\,x_6={\rm hround}\,u$; \ $x_2=w-x_6$; \ $\\{top}\,y_8=h$; \
+ $y_8-y_4=x_2-x_6$;
+
+\bugonpage E489, line 10 (8/8/98)
+
+\ninepoint\noindent
+$\\{lft}\,x_6={\rm hround}\,u$; \ $x_2=w-x_6$; \ $\\{top}\,y_8=h$; \
+ $y_8-y_4=x_2-x_6$; \ \\{circle\_points};
+
+\bugonpage E491, line 3 from the bottom (3/6/95)
+
+\def\SH{\raise.7ex\hbox{$\scriptstyle\#$}} % sharp sign for sharped units
+\ninepoint\noindent
+\quad $\\{spread}:=2\hbox{ceiling}(\\{spread}\SH*\\{hppp}/2)+\\{eps}$;
+ \  {\bf enddef\/};
+
+\bugonpage E507, line 15 (8/8/98)
+
+\ninepoint\noindent\quad
+$\ddashto z_{1r}\,.\,.\,z_{1l}\ddashto{}${\bf subpath} $(t,0)$ {\bf of\/}
+  $(z_{3r}\{z_9-z_3\}\,.\,.\,z_{5r})$
+
+\bugonpage E507, line 3 from the bottom (8/8/98)
+
+\ninepoint\noindent\quad
+$\ddashto z_{11r}\,.\,.\,z_{11l}\ddashto{}${\bf subpath} $(t,0)$ {\bf of\/}
+  $(z_{13l}\{z_{19}-z_{13}\}\,.\,.\,z_{15r})$
+
+\bugonpage E509, line 17 (8/8/98)
+
+\ninepoint\noindent\quad
+$\ddashto z_{1l}\,.\,.\,z_{1r}\ddashto{}${\bf subpath} $(t,0)$ {\bf of\/}
+  $(z_{3l}\{z_9-z_3\}\,.\,.\,z_{5r})$
+
+\bugonpage E509, lines 3 and 4 from the bottom (8/8/98)
+
+\ninepoint\noindent\quad
+$\ddashto z_{1l}\,.\,.\,z_{1r}\ddashto{}${\bf subpath} $(t,0)$ {\bf of\/}
+  $(z_{3l}\{z_9-z_3\}\,.\,.\,z_{5r})$
+
+\bugonpage E511, line 17 (8/8/98)
+
+\ninepoint\noindent\quad
+$\ddashto z_{1l}\,.\,.\,z_{1r}\ddashto{}${\bf subpath} $(t,0)$ {\bf of\/}
+  $(z_{3l}\{z_9-z_3\}\,.\,.\,z_{5r})$
+
+\bugonpage E511, lines 3 and 4 from the bottom (8/8/98)
+
+\ninepoint\noindent\quad
+$\ddashto z_{1l}\,.\,.\,z_{1r}\ddashto{}${\bf subpath} $(t,0)$ {\bf of\/}
+  $(z_{3l}\{z_9-z_3\}\,.\,.\,z_{5r})$
+
+\bugonpage E541, bottom line (2/27/97)
+
+{\bf labels}\kern.05em$(1,2,3,5,6,7,8,9,10,11,12,13,14,15)$; \ {\bf endchar};
+
+\bugonpage E568, the example of {\tt cmtex8} (4/18/96)
+
+\eightpoint\indent
+(The word `{\tt logician}' should not be hyphenated.)
+
+\bugonpage E574, left column (3/6/95)
+
+\eightpoint\indent
+\\{currentbreadth}, 483, $\underline{545}$, 546.
+
+\bugonpage E575, right column (9/10/98)
+
+Holmes, Kris Ann, vi, vii.
+
+\bugonpage E576, right column (6/4/98)
+
+\eightpoint\noindent Delete the entry for Luckombe
+
+\bugonpage E579, left column (6/4/98)
+
+\eightpoint Smith, John, 87, 485.
+
+\bye

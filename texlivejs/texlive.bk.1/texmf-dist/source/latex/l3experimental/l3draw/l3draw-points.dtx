@@ -1,0 +1,929 @@
+% \iffalse meta-comment
+%
+%% File: l3draw-points.dtx
+%
+% Copyright (C) 2018,2019 The LaTeX3 Project
+%
+% It may be distributed and/or modified under the conditions of the
+% LaTeX Project Public License (LPPL), either version 1.3c of this
+% license or (at your option) any later version.  The latest version
+% of this license is in the file
+%
+%    http://www.latex-project.org/lppl.txt
+%
+% This file is part of the "l3experimental bundle" (The Work in LPPL)
+% and all files in that bundle must be distributed together.
+%
+% -----------------------------------------------------------------------
+%
+% The development version of the bundle can be found at
+%
+%    https://github.com/latex3/latex3
+%
+% for those people who are interested.
+%
+%<*driver>
+\RequirePackage{expl3}
+\documentclass[full]{l3doc}
+\begin{document}
+  \DocInput{\jobname.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \title{^^A
+%   The \pkg{l3draw-points} package\\ Calculating points^^A
+% }
+%
+% \author{^^A
+%  The \LaTeX3 Project\thanks
+%    {^^A
+%      E-mail:
+%        \href{mailto:latex-team@latex-project.org}
+%          {latex-team@latex-project.org}^^A
+%    }^^A
+% }
+%
+% \date{Released 2019-01-28}
+%
+% \maketitle
+%
+% \begin{implementation}
+%
+% \section{\pkg{l3draw-points} implementation}
+%
+%    \begin{macrocode}
+%<*initex|package>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%<@@=draw>
+%    \end{macrocode}
+%
+% This sub-module covers more-or-less the same ideas as
+% \texttt{pgfcorepoints.code.tex}, though the approach taken to returning
+% values is different: point expressions here are processed by expansion
+% and return a co-ordinate pair in the form |{|\meta{x}|}{|\meta{y}|}|.
+% Equivalents of following \pkg{pgf} functions are deliberately omitted:
+% \begin{itemize}
+%   \item \cs{pgfpointorigin}: Can be given explicitly as |0pt,0pt|.
+%   \item \cs{pgfpoint}, \cs{pgfpointadd}, \cs{pgfpointdiff},
+%     \cs{pgfpointscale}: Can be given explicitly.
+%   \item \cs{pgfextractx}, \cs{pgfextracty}: Available by applying
+%     \cs{use_i:nn}/\cs{use_ii:nn} or similar to the \texttt{x}-type
+%     expansion of a point expression.
+%    \item \cs{pgfgetlastxy}: Unused in the entire \pkg{pgf} core, may be
+%      emulated by \texttt{x}-type expansion of a point expression, then using
+%      the result.
+% \end{itemize}
+% In addition, equivalents of the following \emph{may} be added in future but
+% are currently absent:
+% \begin{itemize}
+%   \item \cs{pgfpointcylindrical}, \cs{pgfpointspherical}: The usefulness
+%     of these commands is not currently clear.
+%   \item \cs{pgfpointborderrectangle}, \cs{pgfpointborderellipse}: To be
+%     revisited once the semantics and use cases are clear.
+%   \item \cs{pgfqpoint}, \cs{pgfqpointscale}, \cs{pgfqpointpolar},
+%     \cs{pgfqpointxy}, \cs{pgfqpointxyz}: The expandable approach taken in
+%     the code here, along with the absolute requirement for \eTeX{}, means
+%     it is likely many use cases for these commands may be covered in other
+%     ways. This may be revisited as higher-level structures are constructed.
+% \end{itemize}
+%
+% \subsection{Support functions}
+%
+% \begin{macro}[EXP]{\@@_point_process:nn}
+% \begin{macro}[EXP]{\@@_point_process_auxi:nn, \@@_point_process_auxi:fn}
+% \begin{macro}[EXP]{\@@_point_process_auxii:nw}
+% \begin{macro}[EXP]{\@@_point_process:nnn}
+% \begin{macro}[EXP]{\@@_point_process_auxiii:nnn, \@@_point_process_auxiii:ffn}
+% \begin{macro}[EXP]{\@@_point_process_auxiv:nw}
+%   Execute whatever code is passed to extract the $x$ and $y$ co-ordinates.
+%   The first argument here should itself absorb two arguments. There is
+%   also a version to deal with two co-ordinates: common enough to justify a
+%   separate function.
+%    \begin{macrocode}
+\cs_new:Npn \@@_point_process:nn #1#2
+  {
+    \@@_point_process_auxi:fn
+      { \@@_point_to_dim:n {#2} }
+      {#1}
+  }
+\cs_new:Npn \@@_point_process_auxi:nn #1#2
+  { \@@_point_process_auxii:nw {#2} #1 \q_stop }
+\cs_generate_variant:Nn \@@_point_process_auxi:nn { f }
+\cs_new:Npn \@@_point_process_auxii:nw #1 #2 , #3 \q_stop
+  { #1 {#2} {#3} }
+\cs_new:Npn \@@_point_process:nnn #1#2#3
+  {
+    \@@_point_process_auxiii:ffn
+      { \@@_point_to_dim:n {#2} }
+      { \@@_point_to_dim:n {#3} }
+      {#1}
+  }
+\cs_new:Npn \@@_point_process_auxiii:nnn #1#2#3
+  { \@@_point_process_auxiv:nw {#3} #1 \q_mark #2 \q_stop }
+\cs_generate_variant:Nn \@@_point_process_auxiii:nnn { ff }
+\cs_new:Npn \@@_point_process_auxiv:nw #1 #2 , #3 \q_mark #4 , #5 \q_stop
+  { #1 {#2} {#3} {#4} {#5} }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\@@_point_to_dim:n}
+% \begin{macro}[EXP]{\@@_point_to_dim_aux:n, \@@_point_to_dim_aux:f}
+% \begin{macro}[EXP]{\@@_point_to_dim_aux:w} 
+%   Co-ordinates are always returned as two dimensions. 
+%    \begin{macrocode} 
+\cs_new:Npn \@@_point_to_dim:n #1 
+  { \@@_point_to_dim_aux:f { \fp_eval:n {#1} } }
+\cs_new:Npn \@@_point_to_dim_aux:n #1 
+  { \@@_point_to_dim_aux:w #1 }
+\cs_generate_variant:Nn \@@_point_to_dim_aux:n { f }
+\cs_new:Npn \@@_point_to_dim_aux:w ( #1 , ~ #2 ) { #1pt , #2pt }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Polar co-ordinates}
+%
+% \begin{macro}[EXP]{\draw_point_polar:nn}
+% \begin{macro}[EXP]{\draw_point_polar:nnn}
+% \begin{macro}[EXP]{\@@_draw_polar:nnn, \@@_draw_polar:fnn}
+%   Polar co-ordinates may have either one or two lengths, so there is a need
+%   to do a simple split before the calculation. As the angle gets used twice,
+%   save on any expression evaluation there and force expansion.
+%    \begin{macrocode}
+\cs_new:Npn \draw_point_polar:nn #1#2
+  { \draw_point_polar:nnn {#1} {#2} {#2} }
+\cs_new:Npn \draw_point_polar:nnn #1#2#3
+  { \@@_draw_polar:fnn { \fp_eval:n {#1} } {#2} {#3} }
+\cs_new:Npn \@@_draw_polar:nnn #1#2#3
+  { \@@_point_to_dim:n { cosd(#1) * (#2) , sind(#1) * (#3) } }
+\cs_generate_variant:Nn \@@_draw_polar:nnn { f }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Point expression arithmetic}
+%
+% These functions all take point expressions as arguments.
+%
+% \begin{macro}[EXP]{\draw_point_unit_vector:n}
+% \begin{macro}[EXP]{\@@_point_unit_vector:nn}
+%   Only a single point expression so the expansion is done here. The
+%   outcome is the normalised vector from $(0,0)$ in the direction of
+%   the point, \emph{i.e.}
+%   \[
+%     P_{x} = \frac{x}{\sqrt{x^{2} + y^{2}}} \quad
+%     P_{y} = \frac{y}{\sqrt{x^{2} + y^{2}}}
+%   \]
+%    \begin{macrocode}
+\cs_new:Npn \draw_point_unit_vector:n #1
+  { \@@_point_process:nn { \@@_point_unit_vector:nn } {#1} }
+\cs_new:Npn \@@_point_unit_vector:nn #1#2
+  {
+    \@@_point_to_dim:n
+      { ( #1 , #2 ) / (sqrt(#1 * #1 + #2 * #2)) }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Intersection calculations}
+%
+% \begin{macro}[EXP]{\draw_point_intersect_lines:nnnn}
+% \begin{macro}[EXP]{\@@_point_intersect_lines:nnnnnn}
+% \begin{macro}[EXP]{\@@_point_intersect_lines:nnnnnnnn}
+% \begin{macro}[EXP]
+%   {\@@_point_intersect_lines_aux:nnnnnn, \@@_point_intersect_lines_aux:ffffff}
+%    The intersection point~$P$ between a line joining points $(x_{1}, y_{1})$
+%    and $(x_{2}, y_{2})$ with a second line joining points $(x_{3}, y_{3})$
+%    and $(x_{4}, y_{4})$ can be calculated using the formulae
+%    \[
+%      P_{x} =
+%          \frac{(x_{1}y_{2} - y_{1}x_{2})(x_{3} - x_{4})
+%            - (x_{3}y_{4} - y_{3}x_{4})(x_{1} - x_{2})}
+%          {(x_{1} - x_{2})(y_{3} - y_{4}) - (y_{1} - y_{2})(x_{3} - x_{4})}
+%    \]
+%    and
+%    \[
+%      P_{y} =
+%          \frac{(x_{1}y_{2} - y_{1}x_{2})(y_{3} - y_{5})
+%          - (x_{3}y_{4} - y_{3}x_{4})(y_{1} - y_{2})}
+%          {(x_{1} - x_{2})(y_{3} - y_{4}) - (y_{1} - y_{2})(x_{3} - x_{4})} 
+%    \]
+%    The work therefore comes down to expanding the incoming data, then
+%    pre-calculating as many parts as possible before the final work to find
+%    the intersection. (Expansion and argument re-ordering is much less work
+%    than additional floating point calculations.)
+%    \begin{macrocode}
+\cs_new:Npn \draw_point_intersect_lines:nnnn #1#2#3#4
+  {
+    \@@_point_process:nnn
+      {
+        \@@_point_process:nnn
+          { \@@_point_intersect_lines:nnnnnnnn } {#3} {#4}
+      }
+      {#1} {#2}
+  }
+%    \end{macrocode}
+%   At this stage we have all of the information we need, fully expanded:
+%   \begin{enumerate}[label = \#\arabic*, font = \ttfamily]
+%     \item $x_{3}$
+%     \item $y_{3}$
+%     \item $x_{4}$
+%     \item $y_{4}$
+%     \item $x_{1}$
+%     \item $y_{1}$
+%     \item $x_{2}$
+%     \item $y_{2}$
+%   \end{enumerate}
+%   so now just have to do all of the calculation.
+%    \begin{macrocode}
+\cs_new:Npn \@@_point_intersect_lines:nnnnnnnn #1#2#3#4#5#6#7#8
+  {
+    \@@_point_intersect_lines_aux:ffffff
+      { \fp_eval:n { #1 * #4 - #2 * #3 } }
+      { \fp_eval:n { #5 * #8 - #6 * #7 } }
+      { \fp_eval:n { #1 - #3 } }
+      { \fp_eval:n { #5 - #7 } }
+      { \fp_eval:n { #2 - #4 } }
+      { \fp_eval:n { #6 - #8 } }
+  }
+\cs_new:Npn \@@_point_intersect_lines_aux:nnnnnn #1#2#3#4#5#6
+  {
+    \@@_point_to_dim:n
+      {
+        ( #2 * #3 - #1 * #4 , #2 * #5 - #1 * #6 )
+          / ( #4 * #5 - #6 * #3 )
+      }
+  }
+\cs_generate_variant:Nn \@@_point_intersect_lines_aux:nnnnnn { ffffff }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\draw_point_intersect_circles:nnnnn}
+% \begin{macro}[EXP]{\@@_point_intersect_circles_auxi:nnnnnnn}
+% \begin{macro}[EXP]
+%   {
+%     \@@_point_intersect_circles_auxii:nnnnnnn,
+%     \@@_point_intersect_circles_auxii:ffnnnnn,
+%     \@@_point_intersect_circles_auxiii:nnnnnnn,
+%     \@@_point_intersect_circles_auxiii:ffnnnnn
+%   }
+%  \begin{macro}[EXP]
+%    {
+%      \@@_point_intersect_circles_auxiv:nnnnnnnn,
+%      \@@_point_intersect_circles_auxiv:fnnnnnnn
+%    }
+%  \begin{macro}[EXP]
+%    {
+%      \@@_point_intersect_circles_auxv:nnnnnnnnn,
+%      \@@_point_intersect_circles_auxv:ffnnnnnnn
+%    }
+%  \begin{macro}[EXP]
+%    {
+%      \@@_point_intersect_circles_auxvi:nnnnnnnn,
+%      \@@_point_intersect_circles_auxvi:fnnnnnnn
+%    }
+% \begin{macro}[EXP]
+%   {
+%     \@@_point_intersect_circles_auxvii:nnnnnnn,
+%     \@@_point_intersect_circles_auxvii:fffnnnn
+%   }
+%   Another long expansion chain to get the values in the right places.
+%   We have two circles, the first with center $(a, b)$ and radius~$r$,
+%   the second with center $(c, d)$ and radius~$s$. We use the intermediate
+%   values
+%   \begin{align*}
+%     e &= c - a \\
+%     f &= d - b \\
+%     p &= \sqrt{e^{2} + f^{2}} \\
+%     k &= \frac{p^{2} + r^{2} - s^{2}}{2p}
+%   \end{align*}
+%   in either
+%   \begin{align*}
+%     P_{x} &= a + \frac{ek}{p} + \frac{f}{p}\sqrt{r^{2} - k^{2}} \\
+%     P_{y} &= b + \frac{fk}{p} - \frac{e}{p}\sqrt{r^{2} - k^{2}}
+%   \end{align*}
+%   or
+%   \begin{align*}
+%     P_{x} &= a + \frac{ek}{p} - \frac{f}{p}\sqrt{r^{2} - k^{2}} \\
+%     P_{y} &= b + \frac{fk}{p} + \frac{e}{p}\sqrt{r^{2} - k^{2}}
+%   \end{align*}
+%   depending on which solution is required. The rest of the work is simply
+%   forcing the appropriate expansion and shuffling arguments.
+%    \begin{macrocode}
+\cs_new:Npn \draw_point_intersect_circles:nnnnn #1#2#3#4#5
+  {
+    \@@_point_process:nnn
+      { \@@_point_intersect_circles_auxi:nnnnnnn {#2} {#4} {#5} }
+      {#1} {#3}
+  }
+\cs_new:Npn \@@_point_intersect_circles_auxi:nnnnnnn #1#2#3#4#5#6#7
+  {
+    \@@_point_intersect_circles_auxii:ffnnnnn
+      { \fp_eval:n {#1} } { \fp_eval:n {#2} } {#4} {#5} {#6} {#7} {#3}
+  }
+%    \end{macrocode}
+%   At this stage we have all of the information we need, fully expanded:
+%   \begin{enumerate}[label = \#\arabic*, font = \ttfamily]
+%     \item $r$
+%     \item $s$
+%     \item $a$
+%     \item $b$
+%     \item $c$
+%     \item $d$
+%     \item $n$
+%   \end{enumerate}
+%   Once we evaluate $e$ and $f$, the co-ordinate $(c,d)$ is no longer
+%   required: handy as we will need various intermediate values in the
+%   following.
+%    \begin{macrocode}
+\cs_new:Npn \@@_point_intersect_circles_auxii:nnnnnnn #1#2#3#4#5#6#7
+  {
+    \@@_point_intersect_circles_auxiii:ffnnnnn
+      { \fp_eval:n { #5 - #3 } }
+      { \fp_eval:n { #6 - #4 } }
+      {#1} {#2} {#3} {#4} {#7}
+  }
+\cs_generate_variant:Nn \@@_point_intersect_circles_auxii:nnnnnnn { ff }
+\cs_new:Npn \@@_point_intersect_circles_auxiii:nnnnnnn #1#2#3#4#5#6#7
+  {
+    \@@_point_intersect_circles_auxiv:fnnnnnnn
+      { \fp_eval:n { sqrt( #1 * #1 + #2 * #2 ) } }
+      {#1} {#2} {#3} {#4} {#5} {#6} {#7}
+  }
+\cs_generate_variant:Nn \@@_point_intersect_circles_auxiii:nnnnnnn { ff }
+%    \end{macrocode}
+%   We now have $p$: we pre-calculate $1/p$ as it is needed a few times and
+%   is relatively expensive. We also need $r^{2}$ twice so deal with that
+%   here too.
+%    \begin{macrocode}
+\cs_new:Npn \@@_point_intersect_circles_auxiv:nnnnnnnn #1#2#3#4#5#6#7#8
+  {
+    \@@_point_intersect_circles_auxv:ffnnnnnnn
+      { \fp_eval:n { 1 / #1 } }
+      { \fp_eval:n { #4 * #4 } }
+      {#1} {#2} {#3} {#5} {#6} {#7} {#8}
+  }
+\cs_generate_variant:Nn \@@_point_intersect_circles_auxiv:nnnnnnnn { f }
+\cs_new:Npn \@@_point_intersect_circles_auxv:nnnnnnnnn #1#2#3#4#5#6#7#8#9
+  {
+    \@@_point_intersect_circles_auxvi:fnnnnnnn
+      { \fp_eval:n { 0.5 * #1 * ( #2 + #3 * #3 - #6 * #6 ) } }
+      {#1} {#2} {#4} {#5} {#7} {#8} {#9}
+  }
+\cs_generate_variant:Nn \@@_point_intersect_circles_auxv:nnnnnnnnn { ff }
+%    \end{macrocode}
+%   We now have all of the intermediate values we require, with one division
+%   carried out up-front to avoid doing this expensive step twice:
+%   \begin{enumerate}[label = \#\arabic*, font = \ttfamily]
+%     \item $k$
+%     \item $1/p$
+%     \item $r^{2}$
+%     \item $e$
+%     \item $f$
+%     \item $a$
+%     \item $b$
+%     \item $n$
+%   \end{enumerate}
+%   There are some final pre-calculations, $k/p$,
+%   $\frac{\sqrt{r^{2} - k^{2}}}{p}$ and the usage of $n$, then we
+%   can yield a result.
+%    \begin{macrocode}
+\cs_new:Npn \@@_point_intersect_circles_auxvi:nnnnnnnn #1#2#3#4#5#6#7#8
+  {
+    \@@_point_intersect_circles_auxvii:fffnnnn
+      { \fp_eval:n { #1 * #2 } }
+      { \int_if_odd:nTF {#8} { 1 } { -1 } }
+      { \fp_eval:n { sqrt ( #3 - #1 * #1 ) * #2 } }
+      {#4} {#5} {#6} {#7}
+  }
+\cs_generate_variant:Nn \@@_point_intersect_circles_auxvi:nnnnnnnn { f }
+\cs_new:Npn \@@_point_intersect_circles_auxvii:nnnnnnn #1#2#3#4#5#6#7
+  {
+    \@@_point_to_dim:n
+      { #6 + #4 * #1 + #2 * #3 * #5 , #7 + #5 * #1 + -1 * #2 * #3 * #4 }
+  }
+\cs_generate_variant:Nn \@@_point_intersect_circles_auxvii:nnnnnnn { fff }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Interpolation on a line (vector) or arc}
+%
+% \begin{macro}[EXP]{\draw_point_interpolate_line:nnn}
+% \begin{macro}[EXP]
+%   {
+%     \@@_point_interpolate_line_aux:nnnnn,
+%     \@@_point_interpolate_line_aux:fnnnn,
+%   }
+% \begin{macro}[EXP]
+%   {
+%     \@@_point_interpolate_line_aux:nnnnnn,
+%     \@@_point_interpolate_line_aux:fnnnnn,
+%   }
+%   Simple maths after expansion.
+%    \begin{macrocode}
+\cs_new:Npn \draw_point_interpolate_line:nnn #1#2#3
+  {
+    \@@_point_process:nnn
+      { \@@_point_interpolate_line_aux:fnnnn { \fp_eval:n {#1} } }
+      {#2} {#3}
+  }
+\cs_new:Npn \@@_point_interpolate_line_aux:nnnnn #1#2#3#4#5
+  {
+    \@@_point_interpolate_line_aux:fnnnnn { \fp_eval:n { 1 - #1 } }
+      {#1} {#2} {#3} {#4} {#5}
+  }
+\cs_generate_variant:Nn \@@_point_interpolate_line_aux:nnnnn { f }
+\cs_new:Npn \@@_point_interpolate_line_aux:nnnnnn #1#2#3#4#5#6
+  { \@@_point_to_dim:n { #2 * #3 + #1 * #5 , #2 * #4 + #1 * #6 } }
+\cs_generate_variant:Nn \@@_point_interpolate_line_aux:nnnnnn { f }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\draw_point_interpolate_distance:nnn}
+% \begin{macro}[EXP]{\@@_point_interpolate_distance:nnnnn}
+% \begin{macro}[EXP]
+%   {
+%     \@@_point_interpolate_distance:nnnnnn,
+%     \@@_point_interpolate_distance:fnnnnn,
+%   }
+%   Same idea but using the normalised length to obtain the scale factor.
+%   The start point is needed twice, so we force evaluation, but the end
+%   point is needed only the once.
+%    \begin{macrocode}
+\cs_new:Npn \draw_point_interpolate_distance:nnn #1#2#3
+  {
+    \@@_point_process:nn
+      { \@@_point_interpolate_distance:nnnn {#1} {#3} }
+      {#2}
+  }
+\cs_new:Npn \@@_point_interpolate_distance:nnnn #1#2#3#4
+  {
+    \@@_point_process:nn
+      {
+        \@@_point_interpolate_distance:fnnnn
+          { \fp_eval:n {#1} } {#3} {#4}
+      }
+      { \draw_point_unit_vector:n { ( #2 ) - ( #3 , #4 ) } }
+  }
+\cs_new:Npn \@@_point_interpolate_distance:nnnnn #1#2#3#4#5
+  { \@@_point_to_dim:n { #2 + #1 * #4 , #3 + #1 * #5 } }
+\cs_generate_variant:Nn \@@_point_interpolate_distance:nnnnn { f }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\draw_point_interpolate_arcaxes:nnnnnn}
+% \begin{macro}[EXP]{\@@_point_interpolate_arcaxes_auxi:nnnnnnnnn}
+% \begin{macro}[EXP]
+%   {
+%     \@@_point_interpolate_arcaxes_auxii:nnnnnnnnn,
+%     \@@_point_interpolate_arcaxes_auxii:fnnnnnnnn
+%   }
+% \begin{macro}[EXP]
+%   {
+%     \@@_point_interpolate_arcaxes_auxiii:nnnnnnn,
+%     \@@_point_interpolate_arcaxes_auxiii:fnnnnnn
+%   }
+% \begin{macro}[EXP]
+%   {
+%     \@@_point_interpolate_arcaxes_auxiv:nnnnnnnn,
+%     \@@_point_interpolate_arcaxes_auxiv:ffnnnnnn
+%   }
+%   Finding a point on an ellipse arc is relatively easy: find the correct
+%   angle between the two given, use the sine and cosine of that angle,
+%   apply to the axes. We just have to work a bit with the co-ordinate
+%   expansion.
+%    \begin{macrocode}
+\cs_new:Npn \draw_point_interpolate_arcaxes:nnnnnn #1#2#3#4#5#6
+  {
+    \@@_point_process:nnn
+      {
+        \@@_point_process:nn
+          { \@@_point_interpolate_arcaxes_auxi:nnnnnnnnn {#1} {#5} {#6} }
+          {#4}
+      }
+      {#2} {#3}
+  }
+\cs_new:Npn \@@_point_interpolate_arcaxes_auxi:nnnnnnnnn #1#2#3#4#5#6#7#8#9
+  {
+    \@@_point_interpolate_arcaxes_auxii:fnnnnnnnn
+      { \fp_eval:n {#1} } {#2} {#3} {#6} {#7} {#8} {#9} {#4} {#5}
+  }
+%    \end{macrocode}
+%   At this stage, the three co-ordinate pairs are fully expanded but somewhat
+%   re-ordered:
+%   \begin{enumerate}[label = \#\arabic*, font = \ttfamily]
+%     \item $p$
+%     \item $\theta_{1}$
+%     \item $\theta_{2}$
+%     \item $x_{c}$
+%     \item $y_{c}$
+%     \item $x_{a1}$
+%     \item $y_{a1}$
+%     \item $x_{a2}$
+%     \item $y_{a2}$
+%   \end{enumerate}
+%   We are now in a position to find the target angle, and from that
+%   the sine and cosine required.
+%    \begin{macrocode}
+\cs_new:Npn \@@_point_interpolate_arcaxes_auxii:nnnnnnnnn #1#2#3#4#5#6#7#8#9
+  {
+    \@@_point_interpolate_arcaxes_auxiii:fnnnnnn
+      { \fp_eval:n { #1 * (#3) + ( 1 - #1 ) * (#2) } }
+      {#4} {#5} {#6} {#7} {#8} {#9}
+  }
+\cs_generate_variant:Nn \@@_point_interpolate_arcaxes_auxii:nnnnnnnnn { f }
+\cs_new:Npn \@@_point_interpolate_arcaxes_auxiii:nnnnnnn #1#2#3#4#5#6#7
+  {
+    \@@_point_interpolate_arcaxes_auxiv:ffnnnnnn
+      { \fp_eval:n { cosd (#1) } }
+      { \fp_eval:n { sind (#1) } }
+      {#2} {#3} {#4} {#5} {#6} {#7}
+  }
+\cs_generate_variant:Nn \@@_point_interpolate_arcaxes_auxiii:nnnnnnn { f }
+\cs_new:Npn \@@_point_interpolate_arcaxes_auxiv:nnnnnnnn #1#2#3#4#5#6#7#8
+  {
+    \@@_point_to_dim:n
+      { #3 + #1 * #5 + #2 * #7 , #4 + #1 * #6 + #2 * #8 }
+  }
+\cs_generate_variant:Nn \@@_point_interpolate_arcaxes_auxiv:nnnnnnnn { ff }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\draw_point_interpolate_curve:nnnnn}
+% \begin{macro}[EXP]{\draw_point_interpolate_curve_auxi:nnnnnnnnn}
+% \begin{macro}[EXP]
+%   {
+%     \draw_point_interpolate_curve_auxii:nnnnnnnnn,
+%     \draw_point_interpolate_curve_auxii:fnnnnnnnn,
+%   }
+% \begin{macro}[EXP]
+%   {
+%     \draw_point_interpolate_curve_auxiii:nnnnnn,
+%     \draw_point_interpolate_curve_auxiii:fnnnnn,
+%   }
+% \begin{macro}[EXP]{\draw_point_interpolate_curve_auxiv:nnnnnn}
+% \begin{macro}[EXP]
+%   {
+%     \draw_point_interpolate_curve_auxv:nnw,
+%     \draw_point_interpolate_curve_auxv:ffw,
+%   }
+% \begin{macro}[EXP]{\draw_point_interpolate_curve_auxvi:n}
+% \begin{macro}[EXP]{\draw_point_interpolate_curve_auxvii:nnnnnnnn}
+% \begin{macro}[EXP]
+%   {
+%     \draw_point_interpolate_curve_auxviii:nnnnnn,
+%     \draw_point_interpolate_curve_auxviii:ffnnnn,
+%   }
+%   Here we start with a proportion of the curve ($p$) and four points
+%   \begin{enumerate}
+%     \item The initial point $(x_{1},y_{1})$
+%     \item The first control point $(x_{2},y_{2})$
+%     \item The second control point $(x_{3},y_{3})$
+%     \item The final point $(x_{4},y_{4})$
+%   \end{enumerate}
+%   The first phase is to expand out all of these values.
+%    \begin{macrocode}
+\cs_new:Npn \draw_point_interpolate_curve:nnnnnn #1#2#3#4#5
+  {
+    \@@_point_process:nnn
+      {
+        \@@_point_process:nnn
+          { \@@_point_interpolate_curve_auxi:nnnnnnnnn {#1} }
+          {#4} {#5}
+      }
+      {#2} {#3}
+  }
+\cs_new:Npn \@@_point_interpolate_curve_auxi:nnnnnnnnn #1#2#3#4#5#6#7#8#9
+  {
+    \@@_point_interpolate_curve_auxii:fnnnnnnnn
+      { \fp_eval:n {#1} }
+      {#6} {#7} {#8} {#9} {#2} {#3} {#4} {#5}
+  }
+%    \end{macrocode}
+%   At this stage, everything is fully expanded and back in the input order.
+%   The approach to finding the required point is iterative. We carry out
+%   three phases. In phase one, we need all of the input co-ordinates
+%   \begin{align*}
+%     x_{1}' &= (1 - p)x_{1} + px_{2} \\
+%     y_{1}' &= (1 - p)y_{1} + py_{2} \\
+%     x_{2}' &= (1 - p)x_{2} + px_{3} \\
+%     y_{2}' &= (1 - p)y_{2} + py_{3} \\
+%     x_{3}' &= (1 - p)x_{3} + px_{4} \\
+%     y_{3}' &= (1 - p)y_{3} + py_{4}
+%   \end{align*}
+%   In the second stage, we can drop the final point
+%   \begin{align*}
+%     x_{1}'' &= (1 - p)x_{1}' + px_{2}' \\
+%     y_{1}'' &= (1 - p)y_{1}' + py_{2}' \\
+%     x_{2}'' &= (1 - p)x_{2}' + px_{3}' \\
+%     y_{2}'' &= (1 - p)y_{2}' + py_{3}'
+%   \end{align*}
+%   and for the final stage only need one set of calculations
+%   \begin{align*}
+%     P_{x} &= (1 - p)x_{1}'' + px_{2}'' \\
+%     P_{y} &= (1 - p)y_{1}'' + py_{2}''
+%   \end{align*}
+%   Of course, this does mean a lot of calculations and expansion!
+%    \begin{macrocode}
+\cs_new:Npn \@@_point_interpolate_curve_auxii:nnnnnnnnn
+  #1#2#3#4#5#6#7#8#9
+  {
+    \@@_point_interpolate_curve_auxiii:fnnnnn
+      { \fp_eval:n { 1 - #1 } }
+      {#1}
+      { {#2} {#3} } { {#4} {#5} } { {#6} {#7} } { {#8} {#9} }
+  }
+\cs_generate_variant:Nn \@@_point_interpolate_curve_auxii:nnnnnnnnn { f }
+%    \begin{macrocode}
+%   We need to do the first cycle, but haven't got enough arguments to keep
+%   everything in play at once. So her ewe use a but of argument re-ordering
+%   and a single auxiliary to get the job done. 
+%    \begin{macrocode}
+\cs_new:Npn \@@_point_interpolate_curve_auxiii:nnnnnn #1#2#3#4#5#6
+  {
+    \@@_point_interpolate_curve_auxiv:nnnnnn {#1} {#2} #3 #4
+    \@@_point_interpolate_curve_auxiv:nnnnnn {#1} {#2} #4 #5
+    \@@_point_interpolate_curve_auxiv:nnnnnn {#1} {#2} #5 #6
+    \prg_do_nothing:
+    \@@_point_interpolate_curve_auxvi:n { {#1} {#2} }
+  }
+\cs_generate_variant:Nn \@@_point_interpolate_curve_auxiii:nnnnnn { f }
+\cs_new:Npn \@@_point_interpolate_curve_auxiv:nnnnnn #1#2#3#4#5#6
+  {
+    \@@_point_interpolate_curve_auxv:ffw
+      { \fp_eval:n { #1 * #3 + #2 * #5 } }
+      { \fp_eval:n { #1 * #4 + #2 * #6 } }
+  }
+\cs_new:Npn \@@_point_interpolate_curve_auxv:nnw
+  #1#2#3 \prg_do_nothing: #4#5
+  {
+    #3
+    \prg_do_nothing:
+    #4 { #5 {#1} {#2} }
+  }
+\cs_generate_variant:Nn \@@_point_interpolate_curve_auxv:nnw { ff }
+%    \begin{macrocode}
+%   Get the arguments back into the right places and to the second and
+%   third cycles directly.
+%    \begin{macrocode}
+\cs_new:Npn \@@_point_interpolate_curve_auxvi:n #1
+  { \@@_point_interpolate_curve_auxvii:nnnnnnnn #1 }
+\cs_new:Npn \@@_point_interpolate_curve_auxvii:nnnnnnnn #1#2#3#4#5#6#7#8
+  {
+    \@@_point_interpolate_curve_auxviii:ffffnn
+      { \fp_eval:n { #1 * #5 + #2 * #3 } }
+      { \fp_eval:n { #1 * #6 + #2 * #4 } }
+      { \fp_eval:n { #1 * #7 + #2 * #5 } }
+      { \fp_eval:n { #1 * #8 + #2 * #6 } }
+      {#1} {#2}
+  }
+\cs_new:Npn \@@_point_interpolate_curve_auxviii:nnnnnn #1#2#3#4#5#6
+  {
+    \@@_point_to_dim:n
+      { #5 * #3 + #6 * #1 , #5 * #4 + #6 * #2 }
+  }
+\cs_generate_variant:Nn \@@_point_interpolate_curve_auxviii:nnnnnn { ffff }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Vector support}
+%
+% As well as co-ordinates relative to the drawing 
+%
+% \begin{variable}
+%   {
+%     \l_@@_xvec_x_dim,
+%     \l_@@_xvec_y_dim,
+%     \l_@@_yvec_x_dim,
+%     \l_@@_yvec_y_dim,
+%     \l_@@_zvec_x_dim,
+%     \l_@@_zvec_y_dim
+%   }
+%   Base vectors to map to the underlying two-dimensional drawing space.
+%    \begin{macrocode}
+\dim_new:N \l_@@_xvec_x_dim
+\dim_new:N \l_@@_xvec_y_dim
+\dim_new:N \l_@@_yvec_x_dim
+\dim_new:N \l_@@_yvec_y_dim
+\dim_new:N \l_@@_zvec_x_dim
+\dim_new:N \l_@@_zvec_y_dim
+%    \end{macrocode}
+% \end{variable}
+%
+% \begin{macro}{\draw_xvec:n, \draw_yvec:n, \draw_zvec:n}
+% \begin{macro}{\@@_vec:nn}
+% \begin{macro}{\@@_vec:nnn}
+%   Calculate the underlying position and store it.
+%    \begin{macrocode}
+\cs_new_protected:Npn \draw_xvec:n #1
+  { \@@_vec:nn { x } {#1} }
+\cs_new_protected:Npn \draw_yvec:n #1
+  { \@@_vec:nn { y } {#1} }
+\cs_new_protected:Npn \draw_zvec:n #1
+  { \@@_vec:nn { z } {#1} }
+\cs_new_protected:Npn \@@_vec:nn #1#2
+  {
+    \@@_point_process:nn { \@@_vec:nnn {#1} } {#2}
+  }
+\cs_new_protected:Npn \@@_vec:nnn #1#2#3
+  {
+    \dim_set:cn { l_@@_ #1 vec_x_dim } {#2}
+    \dim_set:cn { l_@@_ #1 vec_y_dim } {#3}
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% Initialise the vectors.
+%    \begin{macrocode}
+\draw_xvec:n { 1cm , 0cm }
+\draw_yvec:n { 0cm , 1cm }
+\draw_zvec:n { -0.385cm , -0.385cm }
+%    \end{macrocode}
+%
+% \begin{macro}[EXP]{\draw_point_vec:nn}
+% \begin{macro}[EXP]{\@@_point_vec:nn, \@@_point_vec:ff}
+% \begin{macro}[EXP]{\draw_point_vec:nnn}
+% \begin{macro}[EXP]{\@@_point_vec:nnn, \@@_point_vec:fff}
+%   Force a single evaluation of each factor, then use these to work out the
+%   underlying point.
+%    \begin{macrocode}
+\cs_new:Npn \draw_point_vec:nn #1#2
+  { \@@_point_vec:ff { \fp_eval:n {#1} } { \fp_eval:n {#2} } }
+\cs_new:Npn \@@_point_vec:nn #1#2
+  {
+    \@@_point_to_dim:n
+      {
+        #1 * \l_@@_xvec_x_dim + #2 * \l_@@_yvec_x_dim ,
+        #1 * \l_@@_xvec_y_dim + #2 * \l_@@_yvec_y_dim
+      }
+  }
+\cs_generate_variant:Nn \@@_point_vec:nn { ff }
+\cs_new:Npn \draw_point_vec:nnn #1#2#3
+  {
+    \@@_point_vec:fff
+      { \fp_eval:n {#1} } { \fp_eval:n {#2} } { \fp_eval:n {#3} }
+  }
+\cs_new:Npn \@@_point_vec:nnn #1#2#3
+  {
+    \@@_point_to_dim:n
+      {
+             #1 * \l_@@_xvec_x_dim
+           + #2 * \l_@@_yvec_x_dim
+           + #3 * \l_@@_zvec_x_dim
+        ,
+            #1 * \l_@@_xvec_y_dim
+          + #2 * \l_@@_yvec_y_dim
+          + #3 * \l_@@_zvec_y_dim
+    }
+  }
+\cs_generate_variant:Nn \@@_point_vec:nnn { fff }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\draw_point_vec_polar:nn}
+% \begin{macro}[EXP]{\draw_point_vec_polar:nnn}
+% \begin{macro}[EXP]{\@@_point_vec_polar:nnn, \@@_point_vec_polar:fnn}
+%   Much the same as the core polar approach.
+%    \begin{macrocode}
+\cs_new:Npn \draw_point_vec_polar:nn #1#2
+  { \draw_point_vec_polar:nnn {#1} {#2} {#2} }
+\cs_new:Npn \draw_point_vec_polar:nnn #1#2#3
+  { \@@_draw_vec_polar:fnn { \fp_eval:n {#1} } {#2} {#3} }
+\cs_new:Npn \@@_draw_vec_polar:nnn #1#2#3
+  {
+    \@@_point_to_dim:n
+      {
+        cosd(#1) * (#2) * \l_@@_xvec_x_dim ,
+        sind(#1) * (#3) * \l_@@_yvec_y_dim
+     }
+  }
+\cs_generate_variant:Nn \@@_draw_vec_polar:nnn { f }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Transformations}
+%
+% \begin{macro}[EXP]{\draw_point_transform:n}
+% \begin{macro}[EXP]{\@@_point_transform:nn}
+%   Applies a transformation matrix to a point: see \texttt{l3draw-transforms}
+%   for the business end. Where possible, we avoid the relatively expensive
+%   multiplication step.
+%    \begin{macrocode}
+\cs_new:Npn \draw_point_transform:n #1
+  {
+    \@@_point_process:nn
+      { \@@_point_transform:nn } {#1}
+  }
+\cs_new:Npn \@@_point_transform:nn #1#2
+  {
+    \bool_if:NTF \l_@@_matrix_active_bool
+      {
+        \@@_point_to_dim:n
+          {
+            (
+                \l_@@_matrix_a_fp * #1
+              + \l_@@_matrix_c_fp * #2
+              + \l_@@_xshift_dim
+            )
+            ,
+            (
+                \l_@@_matrix_b_fp * #1
+              + \l_@@_matrix_d_fp * #2
+              + \l_@@_yshift_dim
+            )
+        }
+      }
+      {
+        \@@_point_to_dim:n
+          {
+              (#1, #2)
+            + ( \l_@@_xshift_dim , \l_@@_yshift_dim )
+          }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\@@_point_transform_noshift:n}
+% \begin{macro}[EXP]{\@@_point_transform_noshift:nn}
+%   A version with no shift: used for internal purposes.
+%    \begin{macrocode}
+\cs_new:Npn \@@_point_transform_noshift:n #1
+  {
+    \@@_point_process:nn
+      { \@@_point_transform_noshift:nn } {#1}
+  }
+\cs_new:Npn \@@_point_transform_noshift:nn #1#2
+  {
+    \bool_if:NTF \l_@@_matrix_active_bool
+      {
+        \@@_point_to_dim:n
+          {
+            (
+                \l_@@_matrix_a_fp * #1
+              + \l_@@_matrix_c_fp * #2
+            )
+            ,
+            (
+                \l_@@_matrix_b_fp * #1
+              + \l_@@_matrix_d_fp * #2
+            )
+        }
+      }
+      { \@@_point_to_dim:n { (#1, #2) } }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+%    \begin{macrocode}
+%</initex|package>
+%    \end{macrocode}
+%
+% \end{implementation}
+%
+% \PrintIndex

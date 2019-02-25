@@ -1,0 +1,187 @@
+%% This is file `quran-de.sty', and it's completely relies on the quran package.
+%% 
+%% Copyright © 2018 by Seiied-Mohammad-Javad Razavian
+%% <javadr@gmail.com>
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+%%
+%% This work has the LPPL maintenance status `maintained'.
+%% 
+%% This work is “author-maintained” (as per LPPL maintenance status)
+%% by Seiied-Mohammad-Javad Razavian..
+%% The Current Maintainer of this work is Seiied-Mohammad-Javad Razavian.
+%% 
+%% This work consists of the files quran-de.sty, qurantext-deii.translation.def, qurantext-deiii.translation.def, 
+%% qurantext-deiv.translation.def, quran-de-doc.tex, quran-de-doc.pdf, and quran.png. 
+%%
+%% To one having devoted his life to the Holy Quran
+%%
+%% Change Log
+%% ver 0.14 ## December 31th, 2018
+%% Now \deSetTrans also accepts integers as its argument.
+%% ver 0.13 ## December 19th, 2018
+%% \deGetTrans return the name of current translation. 
+%% ver 0.12 ## December 14th, 2018
+%% support for name in options of  \deSetTrans
+%% ver 0.1 ## December 1st, 2018
+%% initial commit
+\NeedsTeXFormat{LaTeX2e}
+\def\qurandedate{2018/12/31}
+\def\qurandeversion{ver 0.14}
+\ProvidesPackage{quran-de}[%
+\qurandedate\space \qurandeversion\space 
+German translations extension to the quran package.%
+]
+\RequirePackage{xstring}
+\RequirePackage{xkeyval}
+\define@boolkeys{quran-de.sty}[de@]{aburida,bubenheim,khoury,zaidan,all}[true]
+\DeclareOptionX*{\PassOptionsToPackage{\CurrentOption}{quran}}
+\DeclareOption*{\PackageWarning{quran-de}{Unknown option ‘\CurrentOption’}}
+\ProcessOptionsX\relax
+\ifde@all
+    \ExecuteOptionsX{aburida,bubenheim,khoury,zaidan}
+\else
+    \ExecuteOptionsX{aburida}
+\fi
+\RequirePackage[transde]{quran}
+%
+\ifde@aburida%
+    \PackageInfo{quran-de}{aburida's translation is choosen.}%
+\fi%
+\ifde@bubenheim%
+    \PackageInfo{quran-de}{bubenheim's translation is choosen.}%
+\fi%
+\ifde@khoury%
+    \PackageInfo{quran-de}{khoury's translation is choosen.}%
+\fi%
+\ifde@zaidan%
+    \PackageInfo{quran-de}{zaidan's translation is choosen.}%
+\fi%
+\newcount\trans@de
+\trans@de=\z@
+\define@choicekey*+{quran-de}{trans}[\val\nr]{aburida,bubenheim,khoury,zaidan}{%
+    \ifcase\nr\relax
+        \global\trans@de=\z@\relax
+    \or
+        \global\trans@de=\@ne\relax
+    \or
+        \global\trans@de=\tw@\relax
+    \or
+        \global\trans@de=\thr@@\relax
+ \fi}{%
+    \PackageWarning{quran-de}{\string \deSetTrans' paramenter should be one of  `aburida', `bubenheim', `khoury', or `zaidan'. The package sets to `aburida' by default.}{}%
+    \global\trans@de=\z@\relax
+}%
+\newcommand*{\deGetTrans}{%
+    \ifcase\trans@de
+        aburida%
+    \or
+        bubenheim%
+    \or
+        khoury%
+    \or
+        zaidan%
+    \fi%
+}
+%
+\newcommand{\deSetTrans}[1]{%
+\IfInteger{#1}%
+{%Yes
+\count255=#1%
+\advance\count255 by -1\relax%
+\trans@de=\count255}%
+{%NO
+\setkeys{quran-de}{trans=#1}}%
+%
+\makeatother
+\let\bidi@newrobustcmd\bidi@renewrobustcmd
+\makeatletter
+\ifcase\trans@de%
+    \ifde@aburida%
+        \ifx\basmalahde\relax\else%
+            \def\basmalahde{Im Namen Allahs, des Allerbarmers, des Barmherzigen! \qt@par}%
+        \fi%
+        \bidi@renewrobustcmd\ToggleBasmalahde{%
+            \ifx\basmalahde\relax%
+                \def\basmalahde{Im Namen Allahs, des Allerbarmers, des Barmherzigen! \qt@par}%
+            \else%
+                \let\basmalahde\relax%
+            \fi%
+        }%        
+        \input{qurantext-de.translation.def}%
+    \else%
+        \PackageError{quran-de}{Aburida's translation has not been loaded}{}%
+    \fi%
+\or%
+    \ifde@bubenheim
+        \ifx\basmalahde\relax\else%
+            \def\basmalahde{Im Namen Allahs, des Allerbarmers, des Barmherzigen. \qt@par}%
+        \fi
+        \bidi@renewrobustcmd\ToggleBasmalahde{%
+            \ifx\basmalahde\relax%
+                \def\basmalahde{Im Namen Allahs, des Allerbarmers, des Barmherzigen. \qt@par}%
+            \else%
+                \let\basmalahde\relax%
+            \fi%
+        }%      
+        \input{qurantext-deii.translation.def}%
+    \else%
+        \PackageError{quran-de}{Bubenheim's translation has not been loaded}{}%
+    \fi
+\or%
+    \ifde@khoury
+        \ifx\basmalahde\relax\else%
+            \def\basmalahde{Im Namen Gottes, des Erbarmers, des Barmherzigen. \qt@par}%
+        \fi    
+        \bidi@renewrobustcmd\ToggleBasmalahde{%
+            \ifx\basmalahde\relax%
+                \def\basmalahde{Im Namen Gottes, des Erbarmers, des Barmherzigen. \qt@par}%
+            \else%
+                \let\basmalahde\relax%
+            \fi%
+        }%          
+        \input{qurantext-deiii.translation.def}%
+    \else%
+        \PackageError{quran-de}{Khoury's translation has not been loaded}{}%
+    \fi
+\or%
+    \ifde@zaidan
+        \ifx\basmalahde\relax\else%
+            \def\basmalahde{Bismil-lahir-rahmanir-rahim: Mit dem Namen ALLAHs, Des Allgnade Erweisenden, Des Allgnädigen (rezitiere ich). \qt@par}%
+        \fi            
+        \bidi@renewrobustcmd\ToggleBasmalahde{%
+            \ifx\basmalahde\relax%
+                \def\basmalahde{Bismil-lahir-rahmanir-rahim: Mit dem Namen ALLAHs, Des Allgnade Erweisenden, Des Allgnädigen (rezitiere ich). \qt@par}%
+            \else%
+                \let\basmalahde\relax%
+            \fi%
+        }%         
+        \input{qurantext-deiv.translation.def}%
+    \else%
+        \PackageError{quran-de}{Zaidan's translation has not been loaded}{}%
+    \fi
+\else%
+    \PackageError{quran-de}{\string \deSetTrans{} paramenter should be between 1 to 4 }{}%
+\fi
+}%
+\bidi@renewrobustcmd\ToggleBasmalahde{%
+    \ifx\basmalahde\relax%
+        \ifcase\trans@de% aburida
+            \def\basmalahde{Im Namen Allahs, des Allerbarmers, des Barmherzigen! \qt@par}%
+        \or% bubenheim
+            \def\basmalahde{Im Namen Allahs, des Allerbarmers, des Barmherzigen. \qt@par}%
+        \or% khoury
+            \def\basmalahde{Im Namen Gottes, des Erbarmers, des Barmherzigen. \qt@par}%
+        \or% zaidan
+            \def\basmalahde{Bismil-lahir-rahmanir-rahim: Mit dem Namen ALLAHs, Des Allgnade Erweisenden, Des Allgnädigen (rezitiere ich). \qt@par}%
+        \fi%
+    \else%
+        \let\basmalahde\relax%
+    \fi%
+}%
+%% End of file `quran-de.sty'.

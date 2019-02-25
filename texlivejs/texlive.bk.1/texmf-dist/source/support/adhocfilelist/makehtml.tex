@@ -1,0 +1,24 @@
+\ProvidesFile{makehtml.tex}[2013/01/04 HTML driver]
+\RequirePackage[r,wrap]{nicefilelist}       %% wrap 2012/11/22
+\MFfieldtemplate{f-base}{adhocfilelist}     %% 2012/10/19
+\RequirePackage{myfilist}
+\RequirePackage[ligs]{blog}                 %% ligs 2012/12/30
+\BlogInterceptEnvironments
+\RequirePackage{texlinks} 
+\RequirePackage{catchdq,langcode} 
+\input{atari_ht.fdf}
+\input{texblog.fdf} 
+\useWWWctanbases                            %% 2013/01/04
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\htmljob{adhocfilelist}
+\ResultFile{adhocfilelist.htm} 
+\BlogProcessFinalFile[\TextCodes\catchdqs] 
+                     {\htmljob.tex}
+%% 2012/10/19:
+\ReadFileInfos{makehtml} 
+\ReadFileInfos{\htmljob.tex}            %% TODO blogexec 2012/10/19
+\ReadShInfos{\htmljob.sh,herelist.sh}   %% 2012/11/22
+\ReadFileInfos{srcfiles,\htmljob.RLS}
+\input{fdatechk}
+\ListInfos[AllSRCes.txt]                %% [...] 2012/11/20
+\stop

@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <!--
+
+        <cd:command name="definelayoutelement" level="system" category="layout" file="page-txt.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name"/>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuplayoutelement"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="setuplayoutelement" level="system" category="layout" file="page-txt.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:parameter name="state">
+                        <cd:constant type="start"/>
+                        <cd:constant type="stop"/>
+                        <cd:constant type="empty"/>
+                        <cd:constant type="high"/>
+                        <cd:constant type="none"/>
+                        <cd:constant type="normal" default="yes"/>
+                        <cd:constant type="nomarking"/>
+                        <cd:constant type="cd:name"/>
+                    </cd:parameter>
+                    <cd:parameter name="style">
+                        <cd:resolve name="value-style"/>
+                    </cd:parameter>
+                    <cd:parameter name="color">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="strut">
+                        <cd:constant type="yes" default="yes"/>
+                        <cd:constant type="no"/>
+                    </cd:parameter>
+                    <cd:parameter name="n">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="before">
+                        <cd:constant type="cd:command"/>
+                    </cd:parameter>
+                    <cd:parameter name="after">
+                        <cd:constant type="cd:command"/>
+                    </cd:parameter>
+                    <cd:parameter name="leftstyle">
+                        <cd:resolve name="value-style"/>
+                    </cd:parameter>
+                    <cd:parameter name="rightstyle">
+                        <cd:resolve name="value-style"/>
+                    </cd:parameter>
+                    <cd:parameter name="leftcolor">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="rightcolor">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="width">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="leftwidth">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="rightwidth">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="setuplayouttext" level="system" category="layout" file="page-txt.mkvi">
+            <cd:arguments>
+                <cd:keywords>
+                    <cd:constant type="top"/>
+                    <cd:constant type="header"/>
+                    <cd:constant type="text"/>
+                    <cd:constant type="footer"/>
+                    <cd:constant type="bottom"/>
+                </cd:keywords>
+                <cd:keywords optional="yes">
+                    <cd:constant type="text"/>
+                    <cd:constant type="margin"/>
+                    <cd:constant type="edge"/>
+                </cd:keywords>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setuplayoutelement"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setuplayouttext" level="style" category="layout" file="page-txt.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="top"/>
+                <cd:constant type="header"/>
+                <cd:constant type="text"/>
+                <cd:constant type="footer"/>
+                <cd:constant type="bottom"/>
+            </cd:keywords>
+            <cd:keywords optional="yes">
+                <cd:constant type="text"/>
+                <cd:constant type="margin"/>
+                <cd:constant type="edge"/>
+            </cd:keywords>
+            <cd:assignments list="yes">
+                <cd:parameter name="state">
+                    <cd:constant type="start"/>
+                    <cd:constant type="stop"/>
+                    <cd:constant type="empty"/>
+                    <cd:constant type="high"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="normal" default="yes"/>
+                    <cd:constant type="nomarking"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="strut">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="n">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="leftstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="rightstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="leftcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="rightcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="leftwidth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rightwidth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="setuptop" level="style" category="layout" file="page-txt.mkvi">
+            <cd:arguments>
+                <cd:keywords optional="yes">
+                    <cd:constant type="text"/>
+                    <cd:constant type="margin"/>
+                    <cd:constant type="edge"/>
+                </cd:keywords>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setuplayoutelement"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="setupheader" level="style" category="layout" file="page-txt.mkvi">
+            <cd:arguments>
+                <cd:keywords optional="yes">
+                    <cd:constant type="text"/>
+                    <cd:constant type="margin"/>
+                    <cd:constant type="edge"/>
+                </cd:keywords>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setuplayoutelement"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="setuptext" level="style" category="layout" file="page-txt.mkvi">
+            <cd:arguments>
+                <cd:keywords optional="yes">
+                    <cd:constant type="text"/>
+                    <cd:constant type="margin"/>
+                    <cd:constant type="edge"/>
+                </cd:keywords>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setuplayoutelement"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="setupfooter" level="style" category="layout" file="page-txt.mkvi">
+            <cd:arguments>
+                <cd:keywords optional="yes">
+                    <cd:constant type="text"/>
+                    <cd:constant type="margin"/>
+                    <cd:constant type="edge"/>
+                </cd:keywords>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setuplayoutelement"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="setupbottom" level="style" category="layout" file="page-txt.mkvi">
+            <cd:arguments>
+                <cd:keywords optional="yes">
+                    <cd:constant type="text"/>
+                    <cd:constant type="margin"/>
+                    <cd:constant type="edge"/>
+                </cd:keywords>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setuplayoutelement"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setuptop" level="style" category="layout" file="page-txt.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="text"/>
+                <cd:constant type="margin"/>
+                <cd:constant type="edge"/>
+            </cd:keywords>
+            <cd:assignments list="yes">
+                <cd:inherit name="setuplayouttext"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupheader" level="style" category="layout" file="page-txt.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="text"/>
+                <cd:constant type="margin"/>
+                <cd:constant type="edge"/>
+            </cd:keywords>
+            <cd:assignments list="yes">
+                <cd:inherit name="setuplayouttext"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuptext" level="style" category="layout" file="page-txt.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="text"/>
+                <cd:constant type="margin"/>
+                <cd:constant type="edge"/>
+            </cd:keywords>
+            <cd:assignments list="yes">
+                <cd:inherit name="setuplayouttext"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupfooter" level="style" category="layout" file="page-txt.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="text"/>
+                <cd:constant type="margin"/>
+                <cd:constant type="edge"/>
+            </cd:keywords>
+            <cd:assignments list="yes">
+                <cd:inherit name="setuplayouttext"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupbottom" level="style" category="layout" file="page-txt.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="text"/>
+                <cd:constant type="margin"/>
+                <cd:constant type="edge"/>
+            </cd:keywords>
+            <cd:assignments list="yes">
+                <cd:inherit name="setuplayouttext"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelselayouttextline" level="system" category="layout conditional" file="page-txt.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doiflayouttextlineelse" level="system" category="layout conditional" file="page-txt.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelselayoutsomeline" level="system" category="layout conditional" file="page-txt.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doiflayoutsomelineelse" level="system" category="layout conditional" file="page-txt.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="noheaderandfooterlines" level="style" category="layout" file="page-txt.mkvi"/>
+
+    <cd:command name="notopandbottomlines" level="style" category="layout" file="page-txt.mkvi"/>
+
+    <cd:command name="setuptoptexts" level="style" category="layout" file="page-txt.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="text" default="yes"/>
+                <cd:constant type="margin"/>
+                <cd:constant type="edge"/>
+            </cd:keywords>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupheadertexts" level="style" category="layout" file="page-txt.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="text" default="yes"/>
+                <cd:constant type="margin"/>
+                <cd:constant type="edge"/>
+            </cd:keywords>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuptexttexts" level="style" category="layout" file="page-txt.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="text" default="yes"/>
+                <cd:constant type="margin"/>
+                <cd:constant type="edge"/>
+            </cd:keywords>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupfootertexts" level="style" category="layout" file="page-txt.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="text" default="yes"/>
+                <cd:constant type="margin"/>
+                <cd:constant type="edge"/>
+            </cd:keywords>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupbottomtexts" level="style" category="layout" file="page-txt.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="text" default="yes"/>
+                <cd:constant type="margin"/>
+                <cd:constant type="edge"/>
+            </cd:keywords>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="settextcontent" level="style" category="layout" file="page-txt.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="top"/>
+                <cd:constant type="header"/>
+                <cd:constant type="text"/>
+                <cd:constant type="footer"/>
+                <cd:constant type="bottom"/>
+            </cd:keywords>
+            <cd:keywords>
+                <cd:constant type="text"/>
+                <cd:constant type="margin"/>
+                <cd:constant type="edge"/>
+            </cd:keywords>
+            <cd:keywords optional="yes">
+                <cd:constant type="left"/>
+                <cd:constant type="middle" default="yes"/>
+                <cd:constant type="right"/>
+            </cd:keywords>
+            <cd:resolve name="keyword-layoutelement"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definetext" level="style" category="layout" file="page-txt.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:keywords>
+                <cd:constant type="top"/>
+                <cd:constant type="header"/>
+                <cd:constant type="text"/>
+                <cd:constant type="footer"/>
+                <cd:constant type="bottom"/>
+            </cd:keywords>
+            <cd:keywords optional="yes">
+                <cd:constant type="text"/>
+                <cd:constant type="margin"/>
+                <cd:constant type="edge"/>
+            </cd:keywords>
+            <cd:resolve name="keyword-layoutelement"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+            <cd:resolve name="keyword-layoutelement-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

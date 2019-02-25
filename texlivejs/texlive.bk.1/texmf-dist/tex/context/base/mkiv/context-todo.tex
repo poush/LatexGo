@@ -1,0 +1,166 @@
+\setuplayout
+  [width=middle,
+   height=middle,
+   topspace=2cm,
+   header=0pt,
+   footer=1cm]
+
+\setupbodyfont
+  [bookman]
+
+\usemodule
+  [punk,abr-02]
+
+\setuphead
+  [section]
+  [color=ColorThree,
+   style=\bfb]
+
+\setupitemgroup
+  [itemize] [each]
+  [packed] [color=ColorThree,symcolor=ColorThree]
+
+\setupfooter
+  [color=ColorThree,
+   style=bold]
+
+\setupfootertexts
+  [pagenumber]
+
+\setupwhitespace
+  [big]
+
+\definefont[PunkFont][demo@punk at 20pt]
+
+% \def\aterm{\sym{?}}
+% \def\rterm{\sym{--}}
+% \def\dterm{\sym{+}}
+% \def\pterm{\sym{!}}
+%
+% \startitemize[packed]
+%     \aterm on the agenda (update, extension, rewrite)
+%     \rterm no longer on the agenda, rejected
+%     \dterm no longer on the agenda, done
+%     \pterm work in progress (so keep an eye on the betas)
+% \stopitemize
+
+\definecolor[ColorOne]  [c=0.5,m=0.2,y=0.5,k=0.2]
+\definecolor[ColorTwo]  [c=0.5,m=0.5,y=0.1,k=0.1]
+\definecolor[ColorThree][c=0.1,m=1.0,y=1.0,k=0.2]
+
+\starttext
+
+\startMPpage
+    StartPage ;
+        numeric n ; n := 200 ;
+        numeric o ; o :=  25 ;
+
+        pair p[] ;
+        for i=1 upto n :
+            p[i] = (o + uniformdeviate (PaperWidth-2*o), o + uniformdeviate (PaperHeight-2*o)) ;
+        endfor ;
+
+        picture d ; d := image (      for i=1 upto n :             draw p[i] ; endfor ) ;
+        picture l ; l := image ( draw for i=1 upto n : if i > 1 : -- fi p[i]   endfor ) ;
+        picture t ; t := textext("\framed[frame=off,align={middle,lohi},foregroundcolor=ColorThree,foregroundstyle=\PunkFont]{\ConTeXt\endgraf MkIV\endgraf\kern-\strutdepth RoadMap}") ;
+
+        fill Page enlarged 10 withcolor "ColorOne" ;
+
+        draw d withcolor white      withpen pencircle scaled  o      ;
+        draw d withcolor "ColorTwo" withpen pencircle scaled (o - 5) ;
+        draw l withcolor white      withpen pencircle scaled (o / 5) ;
+        draw l withcolor "ColorTwo" withpen pencircle scaled (o /10) ;
+        draw thelabel.ulft(t xsized .5PaperWidth,lrcorner Page shifted - (PaperWidth/20,-PaperWidth/40)) ;
+    StopPage ;
+\stopMPpage
+
+
+\startsubject[title={Introduction}]
+
+There is not really a long term roadmap for development. One reason is that there is already
+a lot available. When we started with \LUATEX, the \CONTEXT\ code was mostly rewritten,
+and that process is more of less finished. Of course there is always work left.
+
+This file is not a complete overview of our plans but users can at least get an
+idea of what we're working on and what is coming. Feel free to submit
+suggestions.
+
+\startlines
+Hans Hagen
+Hasselt NL
+\currentdate
+\stoplines
+
+\stopsubject
+
+\startsubject[title={On the agenda for \LUATEX}]
+
+\startitemize
+    \startitem
+        cleanup passive nodes
+    \stopitem
+    \startitem
+        optimize some callback resolution (more direct)
+    \stopitem
+    \startitem
+        add \type {--output-filename} for \PDF\ filename
+    \stopitem
+    \startitem
+        more consistent \type {lang_variables} and \type {tex_language} in \type
+        {texlang.w} and also store the \type {*mins}
+    \stopitem
+    \startitem
+        remove local par in head of line when done with linebreak
+    \stopitem
+    \startitem
+        check why leftskip doesn't always inherit attributes (maybe dir notes don't have them)
+        (also check redundant \type {delete_attribute_ref} after \type {new_glue})
+    \stopitem
+    \startitem
+        only return nil when we expect multiple calls in in one line
+    \stopitem
+    \startitem
+        pdf injection in virtual characters (currently qQ interferes with font switch
+        flushing) so a pdf page hack is needed
+    \stopitem
+\stopitemize
+
+\stopsubject
+
+\startsubject[title={On the agenda for \CONTEXT\ \MKIV}]
+
+\startitemize
+    \startitem
+        play with par callback and properties
+    \stopitem
+    \startitem
+        optimize positions for columnareas and parpos (sequential)
+    \stopitem
+    \startitem
+        add flag to font for math engine
+    \stopitem
+    \startitem
+        get rid of components
+    \stopitem
+    \startitem
+        play with box attributes
+    \stopitem
+    \startitem
+        check consistency between footnotes and running text (main color,
+        styles, properties)
+    \stopitem
+    \startitem
+        redo some of the spacing (adapt to improvements in engine)
+    \stopitem
+    \startitem
+        reorganize position data (more subtables)
+    \stopitem
+    \startitem
+        use \type {\matheqnogapstep}, \type {\Ustack}, \type {\mathscriptsmode},
+        \type {\mathdisplayskipmode} and other new math primitives
+    \stopitem
+\stopitemize
+
+\stopsubject
+
+\stoptext

@@ -1,0 +1,236 @@
+% This is piTeX, a set of macros I (Paul Isambert) use to
+% typeset documentations for my packages (that's why it is
+% archived on CTAN).
+%
+% Perhaps in the future, when this achieves some kind of
+% format-like completude, it'll be publicly announced. In the
+% meanwhile, a documentation exists (pitex-doc.pdf, also readable
+% in a text editor as pitex-doc.txt).
+%
+%
+% You can of course use those macros, but you are on your
+% own, and the files will probably be modified without announcement.
+% The file is supposed to be \input on plain TeX with LuaTeX, at least v.0.6.
+%
+%
+% The files needed are:
+%
+% texapi.tex              (an independent package for programming)
+% yax.tex                 (an independent package for key=value interface)
+% gates.tex and gates.lua (an independant package for overall architecture)
+% navigator.tex           (an independant package for PDF features)
+% lua.ptx and base.ptxlua (Lua side)
+% files.ptx               (file management)
+% fonts.ptx, fonts.ptxlua and foundry-settings.lua
+%                         (fonts, should be independant some day; actually
+%                         fonts.ptxlua can be used independantly, but there is
+%                         no doc)
+% sections.ptx            (sectionning commands)
+% blocks.ptx              (text blocks)
+% references.ptx          (labels and references)
+% verbatim.ptx            (typesetting verbatim)
+% inserts.ptx             (footnotes and figures, a mess)
+% output.ptx              (output routine)
+%
+% The file i-pitex.lua is needed only to typeset the documentation with the
+% Interpreter package.
+%
+%
+% Date: November 2011.
+%
+%
+% User interface
+\input yax % which itself \input's texapi
+\input gates
+
+\setcatcodes{\@\_=11}
+\suppressoutererror=1
+
+% MESSAGES
+\def\ptx@error{\senderror{PiTeX}}
+\def\ptx@log#1{%
+  \immediate\write17{^^J#1^^J}%
+  }
+\def\ptx@warn#1{%
+  \ptx@log{PiTeX warning: #1}%
+  }
+
+% ATTRIBUTES
+\newcount\ptx@attribute_count
+\ptx@attribute_count=100 % The first 100 attributes are scratch.
+\def\newattribute#1{%
+  \advance\ptx@attribute_count1
+  \attributedef#1=\ptx@attribute_count
+  \xdefcs{ptx@attribute:\commandtoname#1}{\the\ptx@attribute_count}%
+  }
+\def\unsetattribute#1{#1=-"7FFFFFFF\relax}
+\def\attributenumber#1{\usecs{ptx@attribute:\commandtoname#1}}
+
+% FREEDEF
+\def\freedef#1{%
+  \def#1{%
+    \ifnextnospace"
+           {\ptx@freedef_quote#1}
+           {\ifnextnospace/
+             {\ptx@freedef_slash#1}
+             {\usecs{ptx@freedef_user:\commandtoname#1}}}%
+    }%
+  \defcs{ptx@freedef_user:\commandtoname#1}##1%
+  }
+\def\ptx@freedef_quote#1"#2"{%
+  \usecs{ptx@freedef_user:\commandtoname#1}{#2}%
+  }
+\def\ptx@freedef_slash#1/#2/{%
+  \usecs{ptx@freedef_user:\commandtoname#1}{#2}%
+  }
+
+
+\newbox\ptx@box_temp
+
+\newif\ifmaintext
+\maintexttrue
+
+% CATCODE TABLES
+\newcount\ptx@catcodetable_count
+\ptx@catcodetable_count=100 % First 100 are scratch.
+\def\newcatcodetable#1#2{%
+  \global\advance\ptx@catcodetable_count1
+  \chardef#1=\ptx@catcodetable_count
+  \begingroup
+    \setcatcodes{#2}%
+    \savecatcodetable#1%
+  \endgroup
+  }
+
+\newcatcodetable\texcatcodes{\@\_=12}
+
+\def\inputpitexfile#1 {\input #1.ptx }
+
+\inputpitexfile lua
+\inputpitexfile files
+\inputpitexfile fonts
+\inputpitexfile sections
+\inputpitexfile blocks
+\inputpitexfile references
+\inputpitexfile verbatim
+\inputpitexfile inserts
+\inputpitexfile output
+\input navigator.tex
+
+% AUXILIARY FILE
+\iffile{\jobname.aux}{%
+  \ptx@lua{%
+    remove_conversion()
+    tex.print("\luaescapestring{\noexpand\input\noexpand\jobname.aux}")
+    }%
+  \directlua{restore_conversion()}}
+\immediate\openout\ptx@auxfile=\jobname.aux
+
+% PDF SETTINGS
+\restrictparameter document : author title pdftitle date pdfdate subject keywords mode layout version\par
+\restrictattribute document : mode   outlines bookmarks thumbs thumbnails attachments files oc\par
+\restrictattribute document : layout onepage onecolumn twopage twocolumn twopage* twocolumn*\par
+
+\suppressoutererror=1
+\let\ptx@bye\bye
+\def\bye{%
+  \passvalueand{\setattribute navigator : title = } document : pdftitle { }{}
+  % The "date" attribute in the "document" parameter isn't supposed to hold a
+  % PDF-date, as navigator expects.
+  \deleteattribute document : date
+  \passvalueand{\setattribute navigator : date  = } document : pdfdate { }{}
+  \finishpdffile\ptx@bye
+  }
+
+\setattribute navigator : meta = document
+
+% Turns a dimen into PostScript points, without the unit (as wanted by PDF).
+\def\pdfpoint#1{%
+  \directlua{%
+    local d = "\the\dimexpr#1"
+    d = string.gsub(d, "pt", "")
+    tex.print(tostring(d * (72/72.27)))
+    }}
+
+
+
+
+% TEX SETTINGS
+\long\def\ptx@tex_set#1#2#3{%
+  \ifcs{#2}
+    {\usecs{#2}=#3\relax}
+    {\ptx@error{No TeX parameter `#2'}}
+  }
+
+\defactiveparameter tex {%
+  \parameterloop #1 : \ptx@tex_set
+  }
+
+\frenchspacing
+\maxdepth=\maxdimen
+
+\def\antigobblespace{%
+  \ifcatnext a{ }{\iffnext({ }}%
+  }
+
+\def\strut#1#2{%
+  \vrule height#1 depth#2 width0pt
+  }
+
+\newdimen\extraboxspace
+\newdimen\ptx@extraboxspace_top
+\newdimen\ptx@extraboxspace_right
+\newdimen\ptx@extraboxspace_bottom
+\newdimen\ptx@extraboxspace_left
+
+\newfornoempty\ptx@colorbox_loop{1}#2,{%
+  \ifcase#1
+    \ptx@extraboxspace_top    =#2
+    \ptx@extraboxspace_right  =#2
+    \ptx@extraboxspace_bottom =#2
+    \ptx@extraboxspace_left   =#2
+  \or
+    \ptx@extraboxspace_right  =#2
+    \ptx@extraboxspace_left   =#2
+  \or
+    \ptx@extraboxspace_bottom =#2
+  \or
+    \ptx@extraboxspace_left   =#2
+  \fi
+  \passarguments{\numexpr(#1+1)}%
+  }
+\def\colorbox{%
+  \ifnextnospace[\ptx@colorbox_setborders
+          {\ptx@extraboxspace_top    =\extraboxspace
+           \ptx@extraboxspace_right  =\extraboxspace
+           \ptx@extraboxspace_bottom =\extraboxspace
+           \ptx@extraboxspace_left   =\extraboxspace
+           \ptx@colorbox_do}%
+  }
+\def\ptx@colorbox_setborders[#1]{%
+  \ptx@colorbox_loop{0}{#1,}%
+  \ptx@colorbox_do
+  }
+{\setcatcodes{pt=12}
+\gdef\noPT#1pt{#1 }}
+\def\ptx@colorbox_do#1#2{%
+  \bgroup
+  \setbox\ptx@box_temp=\hbox{#2}%
+  \hbox{%
+    \pdfliteral{
+      q #1 rg #1 RG
+      -\expandafter\noPT\the\ptx@extraboxspace_left
+       \expandafter\noPT\the\dimexpr(\ht\ptx@box_temp+\ptx@extraboxspace_top)\relax
+       \expandafter\noPT\the\dimexpr(\wd\ptx@box_temp+\ptx@extraboxspace_left+\ptx@extraboxspace_right)\relax
+      -\expandafter\noPT\the\dimexpr(\ht\ptx@box_temp+\ptx@extraboxspace_top+\dp\ptx@box_temp+\ptx@extraboxspace_bottom)\relax
+      re f Q}%
+    #2}%
+  \egroup
+  }
+
+\def\og{\char"00AB~} \def\fg{~\char"00BB\antigobblespace}
+
+\def\trace{\tracingcommands3 \tracingmacros2 }
+\def\untrace{\tracingcommands0 \tracingmacros0 }
+
+\restorecatcodes

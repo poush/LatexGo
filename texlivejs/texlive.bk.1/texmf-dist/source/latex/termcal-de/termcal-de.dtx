@@ -1,0 +1,242 @@
+%\iffalse
+%<*package>
+%% \CharacterTable
+%%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%%   Digits        \0\1\2\3\4\5\6\7\8\9
+%%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%%   Dollar        \$     Percent       \%     Ampersand     \&
+%%   Acute accent  \'     Left paren    \(     Right paren   \)
+%%   Asterisk      \*     Plus          \+     Comma         \,
+%%   Minus         \-     Point         \.     Solidus       \/
+%%   Colon         \:     Semicolon     \;     Less than     \<
+%%   Equals        \=     Greater than  \>     Question mark \?
+%%   Commercial at \@     Left bracket  \[     Backslash     \\
+%%   Right bracket \]     Circumflex    \^     Underscore    \_
+%%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%%   Right brace   \}     Tilde         \~}
+%</package>
+%\fi
+% \iffalse
+% Doc-Source file to use with LaTeX2e
+% Copyright (C) 2017-18 Sebastian Friedl
+%
+% This work is subject to the LaTeX Project Public License, Version 1.3c or -- at
+% your option -- any later version of this license.
+% The work consists of the files termcal-de.dtx, termcal-de.ins,
+% termcal-de-doc.dtx, termcal-de-doc-example1.dtx, termcal-de-doc-example2.dtx
+% and the derived file termcal-de.sty
+%
+% This work has the LPPL maintenance status `maintained'.
+% Current maintainer of the work is Sebastian Friedl.
+% \fi
+%
+%
+%
+% \subsubsection*{Initialize}
+% \changes{1.0}{2017/08/03}{Initial release}
+% Identify the package and require \LaTeXe
+%    \begin{macrocode}
+\ProvidesPackage{termcal-de}[2018/03/23 v2.0 German locals to the termcal package]
+\NeedsTeXFormat{LaTeX2e}
+%    \end{macrocode}
+%
+%
+%
+% \subsubsection*{Require a basic set of packages}
+%
+% Require the \enquote{original} "termcal" package
+%    \begin{macrocode}
+\RequirePackage{termcal}
+%    \end{macrocode}
+%
+% Require packages providing the key-value option stuff
+% \changes{2.0}{2018/03/23}{Key-Value-Options}
+%    \begin{macrocode}
+\RequirePackage{pgfkeys}
+\RequirePackage{pgfopts}
+%    \end{macrocode}
+%
+%
+%
+% \subsubsection*{Define options}
+%
+% Define variables:
+%    \begin{macrocode}
+\newif\if@termcalde@compat
+\newif\if@termcalde@drawbox
+\newif\if@termcalde@dtmconf@frompreamble
+\newif\if@termcalde@dtmconf@useregional
+\newif\if@termcalde@dtmconf@numeric
+%    \end{macrocode}
+%
+% Set variables to default values:
+%    \begin{macrocode}
+\@termcalde@compatfalse
+\@termcalde@drawboxfalse
+\@termcalde@dtmconf@frompreamblefalse
+\@termcalde@dtmconf@useregionaltrue
+\@termcalde@dtmconf@numerictrue
+%    \end{macrocode}
+%
+% Define variables, p.r.n. with default values:
+%    \begin{macrocode}
+\def\termcalde@setdrawbox{}
+\def\termcalde@dtmdialect{german}
+%    \end{macrocode}
+%
+%
+% \medskip
+% Define a \opt{compat} option for switching on compatibility mode:
+% \changes{2.0}{2018/03/23}{Introduce a compatibility option}
+%    \begin{macrocode}
+\pgfkeys{%
+    /termcal-de/compat/.cd, .is choice, .default=true,
+        true/.code={\@termcalde@compattrue},
+        false/.code={\@termcalde@compatfalse}}
+%    \end{macrocode}
+%
+% Define a \opt{drawdateframe} option set for configuring whether a frame is drawn around the date:
+% \begin{itemize}
+%     \item[\texttt{always}] Always draw a frame around the date 
+%     \item[\texttt{atNewMonth}] Draw a frame around the date at the beginning of a month
+%     \item[\texttt{never}] Never draw a frame around the date
+% \end{itemize}
+% \changes{2.0}{2018/03/23}{Configurable date frame}
+%    \begin{macrocode}
+\pgfkeys{%
+    /termcal-de/drawdateframe/.cd, .is choice, .default=always,
+            always/.code={\def\termcalde@setdrawbox{\@termcalde@drawboxtrue}},
+            atNewMonth/.code={\def\termcalde@setdrawbox{%
+                \ifnewmonth\@termcalde@drawboxtrue%
+                \else\@termcalde@drawboxfalse%
+                \fi}},
+            never/.code={\def\termcalde@setdrawbox{\@termcalde@drawboxfalse}}}
+%    \end{macrocode}
+%
+% Define a \opt{datetime2} option for configuring "datetime2":
+% \begin{itemize}
+%     \item[\texttt{local}] Defines which language module should be loaded. \\
+%         Possible values are "german", "de-DE", "de-AT" and "de-CH" loading "datetime2-german"'s according sub-module and "useregional",
+%         which determines the used sub-module based on the language settings of "babel" or "polyglossia"
+%     \item[\texttt{numeric}] Influences whether to use the numeric style when printing dates. \\
+%         Possible values are "true" and "false". Is the "numeric" key set without a value, it is assumed to be "true".
+%     \item[\texttt{frompreamble}] This option has to be set when "datetime2" is loaded in the preamble. Overrides all other options.
+% \end{itemize}
+%    \begin{macrocode}
+\pgfkeys{%
+    /termcal-de/datetime2/.code={\pgfkeys{/termcal-de/datetime2/.cd, #1}},
+    /termcal-de/datetime2/local/.cd, .is choice, .default=useregional,
+        useregional/.code={\@termcalde@dtmconf@useregionaltrue},
+        german/.code={%
+            \@termcalde@dtmconf@useregionalfalse%
+            \def\termcalde@dtmdialect{german}},
+        de-DE/.code={%
+            \@termcalde@dtmconf@useregionalfalse%
+            \def\termcalde@dtmdialect{de-DE}},
+        de-AT/.code={%
+            \@termcalde@dtmconf@useregionalfalse%
+            \def\termcalde@dtmdialect{de-AT}},
+        de-CH/.code={%
+            \@termcalde@dtmconf@useregionalfalse%
+            \def\termcalde@dtmdialect{de-CH}},
+    /termcal-de/datetime2/numeric/.cd, .is choice, .default=true,
+        true/.code={\@termcalde@dtmconf@numerictrue},
+        false/.code={\@termcalde@dtmconf@numericfalse},
+    /termcal-de/datetime2/frompreamble/.cd, .is choice, .default=true,
+        true/.code={\@termcalde@dtmconf@frompreambletrue},
+        false/.code={\@termcalde@dtmconf@frompreamblefalse}}
+%    \end{macrocode}
+% Process the options:
+%    \begin{macrocode}
+\ProcessPgfPackageOptions{/termcal-de}
+%    \end{macrocode}
+%
+%
+%
+% \subsubsection*{Require and configure \texttt{datetime2}}
+% \changes{2.0}{2018/03/23}{Require \texttt{datetime2}}
+%
+% \begin{macro}{\termcalde@dtmnumeric}
+% Define an auxiliary command adding "=numeric" to "datetime2"'s "useregional" key and adding "-numeric" to "datetime2"'s module names,
+% depending on the current configuration of "datetime2":
+%    \begin{macrocode}
+\def\termcalde@dtmnumeric{%
+    \if@termcalde@dtmconf@numeric%
+        \if@termcalde@dtmconf@useregional=\else-\fi%
+        numeric\fi}
+%    \end{macrocode}
+% \end{macro}
+%
+% Require "datetime2" for printing dates inside the calendar boxes and configure it as long as the "datetime2=frompreamble" key is not set.
+%    \begin{macrocode}
+\if@termcalde@dtmconf@frompreamble\RequirePackage{datetime2}%
+\else%
+    \RequirePackage[%
+        \if@termcalde@dtmconf@useregional{useregional}%
+        \else\termcalde@dtmdialect\fi%
+        %
+        \if@termcalde@dtmconf@useregional\termcalde@dtmnumeric\fi]{datetime2}%
+\fi
+%    \end{macrocode}
+%
+% When "datetime2"'s language module is loaded by using the module name, a hook executing "\DTMsetstyle" at the begin of the document is required
+% for setting the date style to the numeric format.
+%    \begin{macrocode}
+\if@termcalde@dtmconf@frompreamble\else%
+    \if@termcalde@dtmconf@useregional\else%
+        \if@termcalde@dtmconf@numeric%
+            \AtBeginDocument{\DTMsetstyle{\termcalde@dtmdialect\termcalde@dtmnumeric}}%
+\fi\fi\fi
+%    \end{macrocode}
+%
+%
+%
+% \subsubsection*{Redefinitions}
+%
+% \begin{macro}{\setdate}
+% Use "D.M.YYYY" instead of "m/d/y" when entering dates from the code unless the \opt{compat} option is given.
+% Do \emph{not} use leading zeros in date specifications!
+%    \begin{macrocode}
+\if@termcalde@compat\else%
+    \def\setdate@#1.#2.#3!{%
+        \setcounter{date}{#1}%
+        \setcounter{month}{#2}%
+        \setcounter{year}{#3}%
+        \global\newmonthtrue\setleap}%
+\fi
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\curdate}
+% This command is used internally by "termcal". \\
+% Redefine "\curdate"'s output format to be the same as "\setdate"'s. \\
+% Remember: Do \emph{not} use leading zeros in date specifications!
+%    \begin{macrocode}
+\if@termcalde@compat\else%
+    \def\curdate{\arabic{date}.\arabic{month}.\arabic{year}}%
+\fi
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\currentdate}
+% Provides a facility to print the date inside a cell's content. \\
+% The date format can be configured via configuring "\DTMdisplaydate".
+%    \begin{macrocode}
+\def\currentdate{\DTMdisplaydate{%
+    \arabic{year}}{\arabic{month}}{\arabic{date}}{-1}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\calprintdate}
+% Prints the date displayed in the cell heading. \\
+% The date format can be configured via configuring "\DTMDisplaydate".
+%    \begin{macrocode}
+\def\calprintdate{%
+    \termcalde@setdrawbox%
+    \if@termcalde@drawbox\framebox{%
+        \DTMDisplaydate{\arabic{year}}{\arabic{month}}{\arabic{date}}{-1}}%
+    \else\DTMDisplaydate{\arabic{year}}{\arabic{month}}{\arabic{date}}{-1}%
+    \fi}
+%    \end{macrocode}
+% \end{macro}

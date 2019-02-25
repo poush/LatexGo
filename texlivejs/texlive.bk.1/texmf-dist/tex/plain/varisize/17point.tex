@@ -1,0 +1,57 @@
+%%% This file is public domain.
+%%% Originally written 1992, Don Hosek.
+%%% This declaration added by Clea F. Rees 2008/11/16 with the permission of Dan Hosek.
+%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This file sets up a seventeen point environment for TeX. It can be initialized
+% with the '\seventeenpoint' macro.
+% It also sets up a '\tenpoint' macro in case you want to go back down.
+% By Don Hosek
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+\ifx\tenpoint\undefined\let\loadedfrommacro=Y
+         \input 10point
+         \let\loadedfrommacro=N\fi
+ 
+%%%
+%%% Load in the fonts
+%%%
+\font\seventeenrm=cmr17
+\font\seventeeni=cmmi12 scaled \magstep2
+\font\seventeensy=cmsy10 scaled \magstep3
+\font\seventeenex=cmex10 scaled \magstep3
+\font\seventeenbf=cmbx12 scaled \magstep2
+\font\seventeensl=cmsl12 scaled \magstep2
+\font\seventeentt=cmtt12 scaled \magstep2
+\font\seventeenit=cmti12 scaled \magstep2
+\font\seventeencsc=cmcsc10 scaled \magstep3
+\font\twelverm=cmr12
+\font\twelvei=cmmi12
+\font\twelvesy=cmsy10 scaled \magstep1
+\font\twelvebf=cmbx12
+ 
+\font\ninerm=cmr9
+\font\ninei=cmmi9
+\font\ninesy=cmsy9
+\font\ninebf=cmbx9
+ 
+%%%
+%%% Set up the seventeenpoint macros
+%%%
+\ifx\seventeenpoint\undefined
+   \def\seventeenpoint{\def\rm{\fam0\seventeenrm}% switch to 17-point type
+       \textfont0=\seventeenrm \scriptfont0=\twelverm \scriptscriptfont0=\ninerm
+       \textfont1=\seventeeni  \scriptfont1=\twelvei  \scriptscriptfont1=\ninei
+       \textfont2=\seventeensy \scriptfont2=\twelvesy \scriptscriptfont2=\ninesy
+       \textfont3=\seventeenex \scriptfont3=\seventeenex
+                              \scriptscriptfont3=\seventeenex
+       \textfont\itfam=\seventeenit  \def\it{\fam\itfam\seventeenit}%
+       \textfont\slfam=\seventeensl  \def\sl{\fam\slfam\seventeensl}%
+       \textfont\ttfam=\seventeentt  \def\tt{\fam\ttfam\seventeentt}%
+       \textfont\bffam=\seventeenbf  \scriptfont\bffam=\twelvebf
+        \scriptscriptfont\bffam=\ninebf  \def\bf{\fam\bffam\seventeenbf}%
+       \textfont\scfam=\seventeencsc \def\sc{\fam\scfam\seventeencsc}%
+       \normalbaselineskip=21pt
+       \setbox\strutbox=\hbox{\vrule height17pt depth4pt width0pt}%
+       \normalbaselines\rm}
+   \fi

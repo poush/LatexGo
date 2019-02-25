@@ -1,0 +1,240 @@
+%%
+%% This is file `lwarp-siunitx.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `siunitx')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+\RequirePackage{xcolor}% for \convertcolorspec
+
+\LWR@ProvidesPackagePass{siunitx}[2018/05/17]
+
+\AtBeginDocument{% in case textcomp was not loaded
+\DeclareSIUnit\bohr{\textit{a}\textsubscript{0}}
+\DeclareSIUnit\clight{\textit{c}\textsubscript{0}}
+\DeclareSIUnit\elementarycharge{\textit{e}}
+\DeclareSIUnit\electronmass{\textit{m}\textsubscript{e}}
+\DeclareSIUnit\hartree{\textit{E}\textsubscript{h}}
+\DeclareSIUnit\planckbar{\LWR@siunitx@textplanckbar}
+}% AtBeginDocument
+
+\ExplSyntaxOn
+\cs_undefine:N \__siunitx_print_aux:
+\cs_new_protected:Npn \__siunitx_print_aux:
+  {
+    \text
+      {
+        \__siunitx_ensure_ltr:n
+          {
+            \color@begingroup
+            \__siunitx_print_color:
+            \__siunitx_font_shape:
+            \__siunitx_font_weight:
+            \use:c
+              {
+                @@_ \l__siunitx_print_type_tl _
+                text \l__siunitx_font_family_tl :
+              }
+            \bool_if:NTF \l__siunitx_font_math_mode_bool
+              { \__siunitx_print_math: }
+              {
+                \LWR@findcurrenttextcolor% lwarp
+                \ifdefstring{\LWR@tempcolor}{000000}% lwarp
+                {\__siunitx_print_text:}% lwarp
+                {% lwarp
+                    \LWR@textcurrentcolor{% lwarp
+                        \__siunitx_print_text:
+                    }% lwarp
+                }% lwarp
+              }
+            \color@endgroup
+          }
+      }
+  }
+
+\cs_undefine:N \__siunitx_set_math_fam:n
+\cs_new_protected:Npn \__siunitx_set_math_fam:n #1 {
+  \int_new:c { c__siunitx_math #1 _int }
+  \group_begin:% lwarp
+    \LetLtxMacro\@ensuredmath\LWR@origensuredmath% lwarp
+    \LetLtxMacro\mbox\LWR@print@mbox% lwarp
+    \hbox_set:Nn \l__siunitx_tmp_box
+      {
+        \ensuremath
+          {
+            \use:c { math #1 }
+              {
+                \int_gset:cn { c__siunitx_math #1 _int } { \fam }
+              }
+          }
+      }
+  \group_end:% lwarp
+}
+
+\cs_undefine:N \__siunitx_combined_output:n
+\cs_new_protected:Npn \__siunitx_combined_output:n #1 {
+    \group_begin:% lwarp
+    \LetLtxMacro\@ensuredmath\LWR@origensuredmath% lwarp
+    \LetLtxMacro\mbox\LWR@print@mbox% lwarp
+  \bool_if:NTF \l__siunitx_number_parse_bool
+    {
+      \tl_clear:N \l__siunitx_number_out_tl
+      \bool_set_false:N \l__siunitx_number_compound_bool
+      \__siunitx_number_output_parse:n {#1}
+    }
+    {
+      \__siunitx_unit_output_pre_print:
+        \LWR@subsingledollar{% lwarp
+            \textbackslash( \LWR@HTMLsanitize{#1} \textbackslash)% lwarp
+        }{siunitx}{%
+            \__siunitx_print:nn { number } {%
+                \LWR@origensuredmath{#1}%
+            }%
+        }% lwarp
+      \__siunitx_unit_output_print:
+    }
+    \group_end:% lwarp
+}
+\cs_undefine:N \__siunitx_number_output_quotient_fraction:
+\cs_new_protected:Npn \__siunitx_number_output_quotient_fraction: {
+  \bool_set_true:N \l__siunitx_number_compound_bool
+  \__siunitx_number_output_quotient_aux_i:
+  \tl_set_eq:NN \l__siunitx_number_out_tl
+    \l__siunitx_number_numerator_tl
+  \tl_put_right:NV \l__siunitx_number_out_tl \l__siunitx_output_quotient_tl
+  \tl_put_right:NV \l__siunitx_number_out_tl
+    \l__siunitx_number_denominator_tl
+  \__siunitx_number_output_single_aux:
+}
+\cs_undefine:N \__siunitx_unit_format_fraction_fraction:
+\cs_new_protected:Npn \__siunitx_unit_format_fraction_fraction: {
+  \__siunitx_unit_format_fraction_symbol_aux:
+  \int_compare:nNnT { \l__siunitx_unit_denominator_int } > { 1 }
+    {
+      \bool_if:NT \l__siunitx_unit_denominator_bracket_bool
+        {
+          \tl_put_left:NV \l__siunitx_unit_denominator_tl \l__siunitx_bracket_open_tl
+          \tl_put_right:NV \l__siunitx_unit_denominator_tl \l__siunitx_bracket_close_tl
+        }
+    }
+  \tl_set_eq:NN \l__siunitx_unit_tl \l__siunitx_unit_numerator_tl
+  \tl_put_right:NV \l__siunitx_unit_tl \l__siunitx_per_symbol_tl
+  \tl_put_right:NV \l__siunitx_unit_tl \l__siunitx_unit_denominator_tl
+}
+\cs_undefine:N \__siunitx_angle_print_astronomy_aux:
+\cs_new_protected:Npn \__siunitx_angle_print_astronomy_aux: {
+  \prop_get:NnNT \l__siunitx_number_out_prop { mantissa-integer }
+    \l__siunitx_tmpa_tl
+    { \__siunitx_print:nV { number } \l__siunitx_tmpa_tl }
+ \ifnumcomp{\value{LWR@lateximagedepth}}{>}{0}% lwarp
+ {% lateximage
+  \hbox_set:Nn \l__siunitx_angle_marker_box
+    {
+      \__siunitx_print:nn { number } { { \l__siunitx_output_decimal_tl } }
+    }
+  \hbox_set:Nn \l__siunitx_angle_unit_box
+    {
+      \__siunitx_print:nV { unit } \l__siunitx_unit_tl
+      \skip_horizontal:n { -\scriptspace }
+    }
+  \__siunitx_angle_print_astronomy_aux:n { marker }
+  \__siunitx_angle_print_astronomy_aux:n { unit }
+  \hbox_set:Nn \l__siunitx_angle_marker_box
+    {
+      \box_use:N \l__siunitx_angle_marker_box
+      \box_use:N \l__siunitx_angle_unit_box
+    }
+  \dim_compare:nNnTF
+    { \l__siunitx_angle_marker_dim } > { \l__siunitx_angle_unit_dim }
+    { \__siunitx_angle_print_astronomy_marker: }
+    { \__siunitx_angle_print_astronomy_unit: }
+ }% lateximage
+ {% not a lateximage
+      \__siunitx_print:nV { unit } \l__siunitx_unit_tl
+      \__siunitx_print:nn { number } { { \l__siunitx_output_decimal_tl } }
+ }% not a lateximage
+  \prop_get:NnNT \l__siunitx_number_out_prop { mantissa-decimal }
+    \l__siunitx_tmpa_tl
+    { \__siunitx_print:nV { number } \l__siunitx_tmpa_tl }
+}
+\RenewDocumentCommand \num { o m } {
+  \leavevmode
+  \group_begin:% lwarp
+    \LetLtxMacro\@ensuredmath\LWR@origensuredmath% lwarp
+    \LetLtxMacro\mbox\LWR@print@mbox% lwarp
+    \bool_set_false:N \l__siunitx_font_set_bool
+    \IfNoValueF {#1}
+      { \keys_set:nn { siunitx } {#1} }
+    \__siunitx_number_output:n {#2}
+  \group_end:% lwarp
+}
+
+\RenewDocumentCommand \numrange { o m m } {
+  \leavevmode
+  \group_begin:% lwarp
+    \LetLtxMacro\@ensuredmath\LWR@origensuredmath% lwarp
+    \LetLtxMacro\mbox\LWR@print@mbox% lwarp
+    \bool_set_false:N \l__siunitx_font_set_bool
+    \IfNoValueF {#1}
+      { \keys_set:nn { siunitx } {#1} }
+    \__siunitx_range_numbers:nn {#2} {#3}
+  \group_end:% lwarp
+}
+
+\RenewDocumentCommand \ang { o > { \SplitArgument { 2 } { ; } } m } {
+  \group_begin:% lwarp
+    \LetLtxMacro\@ensuredmath\LWR@origensuredmath% lwarp
+    \LetLtxMacro\mbox\LWR@print@mbox% lwarp
+    \IfNoValueF {#1}
+      { \keys_set:nn { siunitx } {#1} }
+    \__siunitx_angle_output:nnn #2
+  \group_end:% lwarp
+}
+
+\RenewDocumentCommand \si { o m } {
+  \leavevmode
+  \group_begin:% lwarp
+    \LetLtxMacro\@ensuredmath\LWR@origensuredmath% lwarp
+    \LetLtxMacro\mbox\LWR@print@mbox% lwarp
+    \bool_set_false:N \l__siunitx_font_set_bool
+    \IfNoValueTF {#1}
+      { \__siunitx_unit_output:nn {#2} { } }
+      {
+        \keys_set:nn { siunitx } {#1}
+        \__siunitx_unit_output:nn {#2} {#1}
+      }
+  \group_end:% lwarp
+}
+
+\RenewDocumentCommand{\SIrange}{o m m m}
+{%
+  \leavevmode
+  \group_begin:% lwarp
+    \LetLtxMacro\@ensuredmath\LWR@origensuredmath% lwarp
+    \LetLtxMacro\mbox\LWR@print@mbox% lwarp
+    \bool_set_false:N \l__siunitx_font_set_bool
+    \IfNoValueTF {#1}
+      { \__siunitx_range_unit:nnnn {#4} { } {#2} {#3} }
+      {
+        \keys_set:nn { siunitx } {#1}
+        \__siunitx_range_unit:nnnn {#4} {#1} {#2} {#3}
+      }
+  \group_end:% lwarp
+}
+
+\ExplSyntaxOff
+
+\endinput
+%%
+%% End of file `lwarp-siunitx.sty'.

@@ -1,0 +1,308 @@
+\inputluafile fonts.ptxlua
+\pdfadjustspacing=2
+
+\def\currentfont{}
+\def\currentsize{normal}
+\def\currentstyle{rm}
+\def\currentweight{rg}
+\def\currentcase{lc}
+\def\makecurrentfont{%
+  \csname\currentfont @\currentsize @\currentstyle @\currentweight @\currentcase\endcsname
+  }
+\def\normalsize{%
+  \def\currentsize{normal}%
+  \makecurrentfont
+  }
+\def\small{%
+  \def\currentsize{small}%
+  \makecurrentfont
+  }
+\def\verysmall{%
+  \def\currentsize{verysmall}%
+  \makecurrentfont
+  }
+\def\smaller{%
+  \passexpanded\ifstring\currentsize{normal}%
+    {\def\currentsize{small}}
+    {\def\currentsize{verysmall}}
+  \makecurrentfont
+  }
+\def\big{%
+  \def\currentsize{big}%
+  \makecurrentfont
+  }
+\def\verybig{%
+  \def\currentsize{verybig}%
+  \makecurrentfont
+  }
+\def\bigger{%
+  \passexpanded\ifstring\currentsize{normal}%
+    {\def\currentsize{big}}
+    {\def\currentsize{verybig}}
+  \makecurrentfont
+  }
+\def\it{%
+  \def\currentstyle{it}%
+  \makecurrentfont
+  }
+\def\rm{%
+  \def\currentstyle{rm}%
+  \makecurrentfont
+  }
+\def\rmstring{rm}
+\def\emph{%
+  \ifx\currentstyle\rmstring
+    \expandafter\ital
+  \else
+    \expandafter\rom
+  \fi
+  }
+\def\bf{%
+  \def\currentweight{bf}%
+  \makecurrentfont
+  }
+%\def\normalweight{%
+\def\rg{%
+  \def\currentweight{rg}%
+  \makecurrentfont  
+  }
+\def\sc{%
+  \def\currentcase{sc}%
+  \makecurrentfont
+  }
+%\def\normalcase{%
+\def\lc{%
+  \def\currentcase{lc}%
+  \makecurrentfont
+  }
+\freedef\ital{{\it#1}}
+\freedef\bold{{\bf#1}}
+\freedef\scap{{\sc#1}}
+\freedef\rom{{\rm#1}}
+
+
+\restrictparameter font :
+  command    % The command to be used to switch to that font.
+  name       % Actually the part common to all files' names for that font.
+  size       % Well, the size.
+  small      % Smaller size.
+  verysmall  % Smaller yet.
+  big        % Bigger.
+  verybig    % Insanely big.
+  bold       % Modifier for bold font.
+  italic     % Modifier for italic font.
+  math       % If set to "true", then used for math font.
+             % small, verysmall and italic should be specified
+             % (which shows I don't use it very often).
+  features   % Font features (e.g. +onum, etc.).
+  slant      % A number representing an angle, loading an italic
+             % font if no real italic is a available.
+  slantsc    % The same, for small caps.
+
+% The font parameter should disappear some day, it's clumsy.
+\def\setfont#1:{%
+  \setparameter font : command = #1%
+  }
+
+\setparameter metafont :  % No relation :)
+  size     = 10pt
+  bold     = Bold
+  italic   = Italic
+  features = "+onum; +liga; +trep; +tlig; expansion=30 20 5;"
+  
+\setparameter font :
+  meta = metafont
+
+\newdimen\ptx@fontsize
+\luacode
+ptx_fonts = {}
+function ptx_getfont(Font, ...)
+  if ptx_fonts[Font] then
+    local tempfont = ptx_fonts[Font]
+    for _, style in ipairs(arg) do
+      if ptx_getstyle[style] then
+        tempfont = tempfont:gsub("(%w+)@(%w+)@(%w+)@(%w+)@(%w+)",ptx_getstyle[style])
+      else
+        tempfont = nil
+        texio.write_nl("! PiTeX error: Unknown font style `style'.")
+        return Font
+      end
+    end
+    return font.id(tempfont)
+  else
+    texio.write_nl("! PiTeX error: " .. Font .. " is not a PiTeX font. It can't be changed.")
+  end
+end
+ptx_getstyle = {
+  normal    = "%1@normal@%3@%4@%5",
+  small     = "%1@small@%3@%4@%5",
+  verysmall = "%1@verysmall@%3@%4@%5",
+  big       = "%1@big@%3@%4@%5",
+  verybig   = "%1@verybig@%3@%4@%5",
+  rm        = "%1@%2@rm@%4@%5",
+  it        = "%1@%2@it@%4@%5",
+  rg        = "%1@%2@%3@rg@%5",
+  bf        = "%1@%2@%3@bf@%5",
+  lc        = "%1@%2@%3@%4@lc",
+  sc        = "%1@%2@%3@%4@sc"
+  }
+\luacode/
+
+\newstring{+} \newstring{-}
+\def\ptx@dofont#1#2#3#4#5{%
+  \edef\ptx@temp{\passvaluenobraces\commandtoname font : command }%
+  \ifexpression{ -\ifstring{#4}{normal} & { \ifprefix-{#5} | \ifprefix+{#5} } }
+     {\def\ptx@dofont_size{\dimexpr\usevalue font : size + #5\relax}}
+     {\def\ptx@dofont_size{#5}}%
+  \ptx@dofont_load{\ptx@temp @#4@#1@#2@lc}{#3}{}{\ptx@dofont_size}%
+  \ifstring{#1}{rm}
+    {\ptx@dofont_load{\ptx@temp @#4@#1@#2@sc}{#3}{+smcp;}{\ptx@dofont_size}%
+     \ifattribute font : slant % Loading a slanted version of the font if no italic was given
+       {\ptx@dofont_load{\ptx@temp @#4@it@#2@lc}{#3}{slant=\usevalue font: slant ;}{\ptx@dofont_size}
+        \ifattribute font : slantsc {}
+          {\ptx@dofont_load{\ptx@temp @#4@it@#2@sc}{#3}{+smcp;slant=\usevalue font: slant ;}{\ptx@dofont_size}}}{}%
+     \ifattribute font : slantsc
+       {\ptx@dofont_load{\ptx@temp @#4@it@#2@sc}{#3}{+smcp;slant=\usevalue font: slantsc ;}{\ptx@dofont_size}}{}}%
+    {\ifattribute font : slantsc {}{\ptx@dofont_load{\ptx@temp @#4@it@#2@sc}{#3}{+smcp;}{\ptx@dofont_size}}}
+  }
+
+\def\ptx@dofont_load#1#2#3#4{%
+  \passcs\font{#1}="\usevalue font : name #2:#3\usevalue font : features " at #4\relax
+  \ptx@lua{ptx_fonts[font.id("#1")] = "#1"}%
+  }
+
+
+
+\def\dofont#1#2#3{%
+  \passvalue{\ptx@dofont{#1}{#2}{#3}{normal}}    font : size
+  \passvalue{\ptx@dofont{#1}{#2}{#3}{small}}     font : small
+  \passvalue{\ptx@dofont{#1}{#2}{#3}{verysmall}} font : verysmall
+  \passvalue{\ptx@dofont{#1}{#2}{#3}{big}}       font : big
+  \passvalue{\ptx@dofont{#1}{#2}{#3}{verybig}}   font : verybig
+%
+  \ifvalue font : math = true
+    {\ifstring{#1#2}{rmrg}
+       {\passcs{\textfont0=}{\passvalue\commandtoname font : command @normal@#1@#2@lc}%
+        \passcs{\scriptfont0=}{\passvalue\commandtoname font : command @small@#1@#2@lc}%
+        \passcs{\scriptscriptfont0=}{\passvalue\commandtoname font : command @verysmall@#1@#2@lc}
+        \passcs{\textfont2=}{\passvalue\commandtoname font : command @normal@#1@#2@lc}%
+        \passcs{\scriptfont2=}{\passvalue\commandtoname font : command @small@#1@#2@lc}%
+        \passcs{\scriptscriptfont2=}{\passvalue\commandtoname font : command @verysmall@#1@#2@lc}}
+       {\iffstring{#1#2}{itrg}
+          {\passcs{\textfont1=}{\passvalue\commandtoname font : command @normal@#1@#2@lc}%
+           \passcs{\scriptfont1=}{\passvalue\commandtoname font : command @verysmall@#1@#2@lc}%
+           \passcs{\scriptscriptfont1=}{\passvalue\commandtoname font : command @verysmall@#1@#2@lc}}}%
+    }{}%
+  }
+
+\gates new \FontLoader {FontLoader}
+\FontLoader list {fontloader}
+  [fl_command]
+    {%
+    \passvaluenobraces\edef font : command {%
+      \def\noexpand\currentfont{\passvalue\commandtoname font : command }%
+      \noexpand\makecurrentfont}}
+  (fl_load)
+  .  ( fl_roman )
+  .  .  [ fl_doromanregular ]
+        {\dofont{rm}{rg}{}}
+  .  .  [ fl_doromanbold ] ? {conditional  = -\ifvalue font : bold = none }
+        {\dofont{rm}{bf}{/\usevalue font : bold }}
+  .  ( fl_italic ) ? {conditional = -\ifvalue font : italic = none }
+  .  .  [ fl_doitalicregular ]
+        {\dofont{it}{rg}{/\usevalue font : italic }}
+  .  .  [ fl_doitalicbold ] ? {conditional = -\ifvalue font : bold = none }
+        {\dofont{it}{bf}{/\usevalue font : italic /\usevalue font : bold }}
+  [fl_use] ? {conditional = \ifvalue font : command = {\mainfont} }
+    {\mainfont}
+  (fl_post)
+  .  [fl_delete]
+      {\deleteparameter font:}
+  .  [fl_meta]
+      {\setattribute font : meta = metafont }
+
+\defactiveparameter font {%
+  \FontLoader execute {fontloader}%
+  }
+
+
+
+
+
+
+
+\long\def\color#1#2{%
+  \pdfcolorstack0 push {#1 rg #1 RG}%
+  #2%
+  \pdfcolorstack0 pop%
+  }
+
+\newattribute\ptx@underline_attribute
+\luacode
+local do_underline = function (head,order,ratio,sign)
+  local item, leader = head, false
+  while item do
+    leader = false
+    if node.has_attribute(item,\attributenumber\ptx@underline_attribute)
+       and not (item.id == 10 and (item.subtype == 8 or item.subtype == 9)) then
+      local item_line = node.new(2)
+      item_line.depth = tex.sp("1.4pt")
+      item_line.height = tex.sp("-1pt")
+      if node.has_field(item,"spec") then
+        item_line.width = item.spec.width
+        if order == 0 then
+          if sign == 1 then
+            item_line.width = item_line.width + ratio * item.spec.stretch
+          else
+            item_line.width = item_line.width - ratio * item.spec.shrink
+          end
+        else
+          if item.spec.stretch_order > 0 or item.spec.shrink_order > 0 then
+            lualog(item.spec.stretch_order)
+            item_line.width = 1
+            item.subtype = 100
+            item.leader = item_line
+            leader = true
+          end
+        end
+      elseif node.has_field(item,"width") then
+        item_line.width = item.width
+      elseif node.has_field(item,"kern") then
+        item_line.width = item.kern
+      end
+      if leader then
+        item = item.next
+      else
+        local item_kern = node.new(11)
+        item_kern.kern = -item_line.width
+        node.insert_after(head,item,item_line)
+        node.insert_after(head,item,item_kern)
+        item = item_line.next
+      end
+    else
+      item = item.next
+    end
+  end
+end
+pitex.misc.underline = function (head)
+  for line in node.traverse_id(0,head) do
+    do_underline(line.list,line.glue_order,line.glue_set,line.glue_sign)
+  end
+  return head
+end
+pitex.callback.register("post_linebreak_filter", "pitex.misc:underline")
+pitex.callback.close("pitex.misc:underline", "post_linebreak_filter")
+\luacode/
+
+\freedef\underline{%
+  \ptx@lua{%
+    pitex.callback.ajar("pitex:underline", "post_linebreak_filter")
+    }
+%    local plf = callback.list_functions("post_linebreak_filter")
+%    if not plf or not plf["underline"] then
+%    	callback.add_function(underline, "underline", "post_linebreak_filter")
+%    end}%
+  \quitvmode % Otherwise it might also underline the indentation box.
+  \ptx@underline_attribute=0\relax
+  #1\unsetattribute\ptx@underline_attribute
+  }

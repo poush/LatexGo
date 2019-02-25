@@ -1,0 +1,76 @@
+%%
+%% This is file `lwarp-multirow.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `multirow')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+
+\LetLtxMacro\multirow\relax
+\LWR@ProvidesPackagePass{multirow}[2018/08/03]
+\newcommand{\LWR@multirowborder}{}
+\NewDocumentCommand{\LWR@HTML@multirow}{O{c} m o m o +m}%
+{%
+\LWR@traceinfo{*** LWR@HTML@multirow #1 #2 #4}%
+\LWR@maybenewtablerow%
+\LWR@tabularleftedge%
+\LWR@htmltag{td rowspan="#2" %
+\IfValueT{#1}{%
+\ifstrequal{#1}{b}{style="\LWR@print@mbox{vertical-align:bottom}" }{}%
+\ifstrequal{#1}{t}{style="\LWR@print@mbox{vertical-align:top}" }{}%
+}%
+\ifdefvoid{\LWR@multirowborder}{}{%
+style="\LWR@print@mbox{border-\LWR@multirowborder:} 2px dotted black ; %
+\LWR@print@mbox{padding-\LWR@multirowborder:} 2px" %
+}%
+class="td%
+\LWR@getexparray{LWR@tablecolspec}{\arabic{LWR@tableLaTeXcolindex}}%
+\LWR@addcmidruletrim%
+\LWR@addleftmostbartag%
+\LWR@printbartag{\arabic{LWR@tableLaTeXcolindex}}%
+"%
+\LWR@tdstartstyles%
+\LWR@addcmidrulewidth%
+\LWR@addcdashline%
+\LWR@addtabularrulecolors%
+\LWR@tdendstyles%
+}%
+\LWR@getexparray{LWR@colbeforespec}{\arabic{LWR@tableLaTeXcolindex}}%
+\begingroup\LetLtxMacro{\\}{\LWR@endofline}#6\endgroup%
+\LWR@stoppars%
+\global\boolfalse{LWR@intabularmetadata}%
+\renewcommand{\LWR@multirowborder}{}%
+\LWR@traceinfo{*** LWR@HTML@multirow done}%
+}%
+
+\LWR@formatted{multirow}
+\AtBeginDocument{
+
+\NewExpandableDocumentCommand{\LWR@HTML@multicolumnrow}{m m O{} m O{} m O{} +m}{%
+\LWR@tabularhtmlcolumns{\arabic{LWR@tableLaTeXcolindex}}{#1}
+\begingroup%
+\LetLtxMacro{\\}{\LWR@endofline}%
+\LWR@domulticolumn[#3][#4]{#1}{\arabic{LWR@tabhtmlcoltotal}}{#2}{#8}%
+\endgroup%
+\addtocounter{LWR@tableLaTeXcolindex}{#1}%
+\addtocounter{LWR@tableLaTeXcolindex}{-1}%
+\global\booltrue{LWR@skipatbang}%
+}
+
+\LWR@expandableformatted{multicolumnrow}
+
+}% \AtBeginDocument
+\endinput
+%%
+%% End of file `lwarp-multirow.sty'.

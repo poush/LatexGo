@@ -1,0 +1,32 @@
+%%%%
+%%%% This file belongs to the ROEX package.
+%%%%
+%%% draw write_preamble write_postamble find_BB set_BB fill_C draw_C
+%%% draw fix_fill_cmyk fix_draw_cmyk
+% ES-02.MF, ``PARALLELOGRAM'':
+%  Another trivial example: expanding stroke applied to a parallelogram.
+% ---
+input mftoeps; eps_mode_setup; input roex; tracingexpanding:=1;
+% ---
+beginchar("0",1/10in#,in#,0);
+ path p; p=((1/2w,0)--(1/4w,1/4h)--(0,1/2h)--(1/2w,h)--(w,1/2h)--cycle);
+ miter_size:=w;
+ expand_stroke (p) (2/5w) R;
+% change_weight (p) (2/5w) R;
+ find_BB make_list(1,R.num) R;
+ write_preamble jobname;
+ fix_draw_cmyk 0,0,0,1; draw_C p;
+ for i:=1 upto R.num:
+  fix_draw_cmyk if check_turn(R[i])>0: 0,1,1,0 else: 1,1,0,0 fi; 
+  draw_C R[i];
+  if proofing>0:
+   for j:=0 upto length(R[i])-1:
+    makelabel(decimal(j) & "/" & decimal(i),point j of R[i]);
+   endfor
+  fi
+ endfor 
+ write_postamble;
+endchar;
+end.
+%%\end
+

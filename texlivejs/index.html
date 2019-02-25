@@ -162,24 +162,25 @@
     console.log(msg);
   }
 
+  var texlive = new TeXLive();
+  var pdftex = texlive.pdftex;
+  pdftex.on_stdout = appendOutput;
+  pdftex.on_stderr = appendOutput;
+
+
   var pdf_dataurl = undefined;
   var compile = function(source_code) {
     document.getElementById("output").textContent = "";
     showLoadingIndicator(true);
 
-    var texlive = new TeXLive();
-    var pdftex = texlive.pdftex;
-    pdftex.on_stdout = appendOutput;
-    pdftex.on_stderr = appendOutput;
 
     var start_time = new Date().getTime();
     
-    pdftex.FS_createLazyFile('.', 'IEEEtran.cls', 'texlive/texmf-dist/ieee/IEEEtran.cls', true, false).then(function() {
-      console.log("here")
+    // pdftex.FS_createLazyFile('.', 'IEEEtran.cls', 'texlive/texmf-dist/ieee/IEEEtran.cls', true, false).then(function() {
       pdftex.compile(source_code).then(function(pdf_dataurl) {
         var end_time = new Date().getTime();
         console.info("Execution time: " + (end_time - start_time) / 1000 + ' sec');
-
+        console.log(pdf_dataurl, pdftex)
         showLoadingIndicator(false);
 
         if (pdf_dataurl === false)
@@ -187,8 +188,9 @@
         showOpenButton(true);
         document.getElementById("open_pdf_btn").focus();
         texlive.terminate();
+        console.log(pdftex)
       });
-    });
+    // });
   }
 
   document.getElementById("compile").addEventListener("click", function(e) {

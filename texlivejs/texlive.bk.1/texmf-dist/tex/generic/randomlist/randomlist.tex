@@ -1,0 +1,682 @@
+%%
+%% This is file `randomlist.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% randomlist.dtx  (with options: `tex')
+%% 
+%% randomlist.dtx
+%% Copyleft 2013-2017 J.-C. Charpentier & C. Tellechea
+%% Packages `randomlist' to use with (La)eTeX
+%% Copyleft (L) 2013-2017 Jean-C\^ome Charpentier & Christian Tellechea.
+%% \CharacterTable
+%%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%%   Digits        \0\1\2\3\4\5\6\7\8\9
+%%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%%   Dollar        \$     Percent       \%     Ampersand     \&
+%%   Acute accent  \'     Left paren    \(     Right paren   \)
+%%   Asterisk      \*     Plus          \+     Comma         \,
+%%   Minus         \-     Point         \.     Solidus       \/
+%%   Colon         \:     Semicolon     \;     Less than     \<
+%%   Equals        \=     Greater than  \>     Question mark \?
+%%   Commercial at \@     Left bracket  \[     Backslash     \\
+%%   Right bracket \]     Circumflex    \^     Underscore    \_
+%%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%%   Right brace   \}     Tilde         \~}
+%%
+\csname RandomListLoaded\endcsname
+\let\RandomListLoaded\endinput
+\edef\RLAtCatcode{\the\catcode`\@}
+\catcode`\@=11
+\ifx\@ifnextchar\@undefined
+  \long\def\@ifnextchar#1#2#3{%
+    \let\reserved@d=#1%
+    \def\reserved@a{#2}%
+    \def\reserved@b{#3}%
+    \futurelet\@let@token\@ifnch}
+  \def\@ifnch{%
+    \ifx\@let@token\@sptoken
+      \let\reserved@c\@xifnch
+    \else
+      \ifx\@let@token\reserved@d
+        \let\reserved@c\reserved@a
+      \else
+        \let\reserved@c\reserved@b
+      \fi
+    \fi
+    \reserved@c}
+  \def\:{\let\@sptoken= } \:  %
+  \def\:{\@xifnch} \expandafter\def\: {\futurelet\@let@token\@ifnch}
+\fi
+\ifx\PackageError\@undefined
+  \long\def\@firstoftwo#1#2{#1}
+  \long\def\@secondoftwo#1#2{#2}
+  \def\@nnil{\@nil}%
+  \alloc@7\write\chardef\sixt@@n\@unused
+  \def\typeout#1{\immediate\write\@unused{#1}}%
+  \def\@spaces{\space\space\space\space}
+  \def\PackageError#1#2#3{%
+    \begingroup
+    \newlinechar`\^^J
+    \edef\RL@temp{#3}%
+    \expandafter\errhelp\expandafter{\RL@temp}%
+    \typeout{%
+      #1 error. \space See User's Manual for further information.^^J
+      \@spaces\@spaces\@spaces\@spaces
+      Type \space H <return> \space for immediate help.}%
+    \errmessage{#2}%
+    \endgroup
+  }
+\fi
+\ifx\numexpr\@undefined
+    \begingroup
+    \newlinechar`\^^J
+    \errhelp{Run under etex, pdftex, xetex, luatex, ... but not under
+      tex}%
+    \typeout{%
+      randomlist error. \space See User's Manual for further information.^^J
+      \@spaces\@spaces\@spaces\@spaces
+      Type \space H <return> \space for immediate help.}%
+    \errmessage{You can't use randomlist under tex without etex extension.}%
+    \endgroup
+\fi
+\ifx\@gobble\@undefined
+  \long\def\@gobble#1{}
+\fi
+\def\RL@addtomacro#1#2{\expandafter\def\expandafter#1\expandafter{#1#2}}
+\def\RL@ifempty#1{%
+  \ifcat\relax\detokenize{#1}\relax
+    \expandafter\@firstoftwo
+  \else
+    \expandafter\@secondoftwo
+  \fi
+}
+\newcount\RL@random
+\newcount\RL@random@a
+\newcount\RL@random@b
+\def\RLsetrandomseed#1{%
+  \ifnum#1=0
+    \global\RL@random \numexpr \time + \year * \month * \day \relax
+  \else
+    \global\RL@random \numexpr \ifnum#1<0 -\fi#1 \relax
+  \fi
+}
+\ifx\RL@seed\@undefined
+  \RLsetrandomseed{0}
+\else
+  \RLsetrandomseed{\RL@seed}
+\fi
+\def\RL@nextrand{%
+  \global\RL@random@a=\RL@random
+  \global\divide\RL@random@a 127773
+  \global\RL@random@b=\RL@random@a
+  \global\multiply\RL@random@a -2836
+  \global\multiply\RL@random@b -127773
+  \global\advance\RL@random\RL@random@b
+  \global\multiply\RL@random 16807
+  \global\advance\RL@random\RL@random@a
+  \ifnum\RL@random<0
+    \global\advance\RL@random 2147483647
+  \fi
+}
+\def\RLuniformdeviate#1#2{%
+  \RL@nextrand
+  \global\RL@random@a=\RL@random
+  \global\RL@random@b=\RL@random
+  \global\divide\RL@random@a \numexpr#1\relax
+  \global\RL@random@b \numexpr\RL@random@b - \RL@random@a * (#1)\relax
+  \expandafter\edef\csname #2\endcsname{\number\RL@random@b}%
+}%
+\newtoks\@ListOfList
+\def\@ifIsList#1{%
+  \expandafter\@ifIsList@\expandafter{#1}%
+}
+\def\@ifIsList@#1{%
+  \def\@@ifIsList##1#1\sep##2\@@ifIsList{%
+    \csname @\ifx\empty##2\empty second\else first\fi oftwo\endcsname
+  }%
+  \expandafter\@@ifIsList\the\@ListOfList#1\sep\@@ifIsList
+}
+\def\RL@lenof#1{\csname #1-len\endcsname}
+\newif\if@EmptyListFound
+\def\@ifIsListNotEmpty#1{%
+  \global\@EmptyListFoundfalse
+  \@ifIsList{#1}{%
+    \ifnum\RL@lenof{#1}=0
+      \global\@EmptyListFoundtrue
+      \expandafter\@secondoftwo
+    \else
+      \expandafter\@firstoftwo
+    \fi
+  }%
+  \@secondoftwo
+}
+\def\@NoListError#1{%
+  \if@EmptyListFound
+    \@EmptyListError{#1}%
+    \global\@EmptyListFoundfalse
+  \else
+    \PackageError{randomlist}%
+                 {List #1 doesn't exist}%
+                 {Maybe you mistyped the list name?}%
+  \fi
+}
+\def\@EmptyListError#1{%
+  \if@EmptyListFound
+  \PackageError{randomlist}%
+               {List #1 is empty}%
+               {Ask yourself why this list is empty.}%
+}
+\def\@OutOfRangeError#1#2{%
+  \PackageError{randomlist}%
+               {Index #2 is greater than last index of list #1}%
+               {There aren't enough elements in the list.}%
+}
+\long\def\RL@nameldef#1{%
+  \long\expandafter\def\csname #1\endcsname
+}
+\long\def\RL@nameledef#1{%
+  \long\expandafter\edef\csname #1\endcsname
+}
+\long\def\RL@namelgdef#1{%
+  \long\expandafter\gdef\csname #1\endcsname
+}
+\long\def\RL@namelxdef#1{%
+  \long\expandafter\xdef\csname #1\endcsname
+}
+\def\RL@let#1#2{%
+  \expandafter\let\csname#1\expandafter\endcsname\csname#2\endcsname
+}
+\long\def\RL@doafterfi#1\fi{\fi#1}
+\def\RLfor#1=#2to#3\do{%
+  \edef#1{\number\numexpr#2}%
+  \edef\RL@sgncomp{\ifnum#1<\numexpr#3\relax>+\else<-\fi}%
+  \expandafter\RLfor@i
+  \csname RLfor@ii@\string#1\expandafter\endcsname\expandafter
+  {\number\numexpr#3\expandafter}%
+  \RL@sgncomp
+  #1%
+}
+\long\def\RLfor@i#1#2#3#4#5#6{%
+  \def#1{%
+    \unless\ifnum#5#3#2\relax
+    \RL@doafterfi{%
+      #6%
+      \edef#5{\number\numexpr#5#41\relax}%
+      #1%
+    }%
+    \fi
+  }%
+  #1%
+}
+\def\NewList#1{%
+  \@ifIsList{#1}{%
+    \PackageError{randomlist}%
+                 {List #1 already exists}%
+                 {Use \string\ClearList.}%
+  }%
+  {%
+    \ifcsname #1\endcsname
+      \PackageError{randomlist}%
+                   {Command \csname#1\endcsname already exists}%
+                   {Creating list #1 defines a \csname#1\endcsname command.}%
+    \else
+      \RL@nameldef{#1-len}{0}%
+      \@ListOfList\expandafter{\the\@ListOfList#1\sep}%
+      \expandafter\def\csname #1\endcsname[##1]{%
+        \ifnum##1>\csname#1-len\endcsname
+          \relax
+        \else
+          \csname #1-##1\endcsname
+        \fi
+      }%
+    \fi
+  }%
+}
+\def\ClearList#1{%
+  \@ifIsList{#1}{%
+     \RL@nameldef{#1-len}{0}%
+  }%
+  {\@NoListError{#1}}%
+}
+\def\CopyList#1#2{%
+  \@ifIsList{#1}{%
+    \@ifIsList{#2}{%
+      \RL@let{#2-len}{#1-len}%
+      \ifnum\RL@lenof{#1}>0
+        \RLfor\RL@iter=0 to \RL@lenof{#1}-1 \do{%
+          \RL@let{#2-\RL@iter}{#1-\RL@iter}%
+        }%
+      \fi
+    }%
+    {\@NoListError{#2}}%
+  }%
+  {\@NoListError{#1}}%
+}
+\def\InsertList#1#2#3{%
+  \@ifIsList{#1}{%
+    \@ifIsList{#3}{%
+      \ifnum #2>\RL@lenof{#1}
+        \@OutOfRangeError{#1}{#2}%
+      \else
+        \ShiftList{#1}{#2}{\RL@lenof{#3}}%
+        \ifnum\RL@lenof{#3}>0
+          \RLfor\RL@iter=0 to \RL@lenof{#3}-1 \do{%
+            \RL@let{#1-\number\numexpr\RL@iter+#2}{#3-\RL@iter}%
+          }%
+        \fi
+      \fi
+    }%
+    {\@NoListError{#3}}%
+  }%
+  {\@NoListError{#1}}%
+}
+\newcount\RL@counti
+\newcount\RL@countii
+\newcount\RL@countiii
+\def\ShowList#1{%
+  \@ifIsList{#1}{%
+    \ifhmode\par\noindent\fi
+    \begingroup
+      \ifdefined\ttfamily\ttfamily\else\tt\fi
+      BEGIN\detokenize{{#1}}
+      (\ifcase\RL@lenof{#1}
+        empty list%
+      \or
+        1 element%
+      \else
+        \RL@lenof{#1} elements%
+      \fi)\par
+      \ifnum\RL@lenof{#1}>0
+        \parindent=1em
+        \RLfor\RL@iter=0 to \RL@lenof{#1}-1 \do {%
+          #1[\RL@iter] = \expandafter\RL@meaning\csname
+          #1-\RL@iter\endcsname
+          \par
+        }%
+      \fi
+      \noindent
+      END\detokenize{{#1}}\par
+    \endgroup
+  }%
+  {\@NoListError{#1}}%
+}
+\def\RL@meaning#1{\expandafter\RL@meaningi\meaning#1}
+\expandafter\def\expandafter\RL@meaningi\expandafter#\expandafter1\string>{}
+\def\CountList#1#2{%
+  \@ifIsList{#1}%
+  {\RL@nameledef{#2}{\RL@lenof{#1}}}%
+  {\@NoListError{#1}}%
+}
+\def\ShiftList#1#2#3{%
+  \@ifIsList{#1}%
+  {%
+    \unless\ifnum#3=0
+      \ifnum\numexpr#2<0
+        \PackageError{randomlist}%
+                     {Negative index number}%
+                     {Index must be equal or greater than 0}%
+      \else
+      \ifnum\numexpr#2>\RL@lenof{#1}\relax
+        \PackageError{randomlist}%
+                     {Index \number\numexpr #2\relax\space too big
+                       (<=\RL@lenof{#1})}%
+                     {Index must be equal or smaller than length of
+                       the list}%
+      \else
+      \ifnum\numexpr#3>0
+        \RLfor\RL@iter = \RL@lenof{#1} to #2 \do{%
+          \RL@let{#1-\number\numexpr\RL@iter+#3}{#1-\RL@iter}%
+        }%
+        \RLfor\RL@iter = #2 to #2 + #3 - 1 \do{%
+          \RL@nameldef{#1-\RL@iter}{}%
+        }%
+      \else
+        \ifnum-#3>\numexpr#2\relax
+          \PackageError{randomlist}%
+                       {Negative shift to big}%
+                       {When negative, shift must not be greater than index}%
+        \else
+          \RLfor\RL@iter=#2 to \RL@lenof{#1} \do{%
+            \RL@let{#1-\number\numexpr\RL@iter+#3}{#1-\RL@iter}%
+          }%
+        \fi
+      \fi
+      \RL@nameledef{#1-len}{\number\numexpr\RL@lenof{#1} + #3}%
+    \fi\fi\fi
+  }%
+  {\@NoListError{#1}}%
+}
+\long\def\InsertLastItem#1#2{%
+  \@ifIsList{#1}
+  {%
+    \RL@nameldef{#1-\RL@lenof{#1}}{#2}%
+    \RL@nameledef{#1-len}{\number\numexpr\RL@lenof{#1}+1}%
+  }
+  {\@NoListError{#1}}%
+}
+\long\def\InsertFirstItem#1#2{%
+  \InsertItem{#1}{0}{#2}%
+}
+\long\def\InsertItem#1#2#3{%
+  \@ifIsList{#1}%
+  {%
+    \ShiftList{#1}{#2}{1}%
+    \RL@nameldef{#1-#2}{#3}%
+  }%
+  {\@NoListError{#1}}%
+}
+\long\def\InsertRandomItem#1#2{%
+  \@ifIsList{#1}%
+  {%
+    \RLuniformdeviate{\RL@lenof{#1}+1}{RL@temp}%
+    \InsertItem{#1}{\RL@temp}{#2}%
+  }%
+  {\@NoListError{#1}}%
+}
+\def\ExtractFirstItem#1#2{%
+  \@ifIsList{#1}%
+  {%
+    \ExtractItem{#1}{0}{#2}%
+  }%
+  {\@NoListError{#1}}%
+}
+\def\ExtractLastItem#1#2{%
+  \@ifIsListNotEmpty{#1}%
+  {%
+    \RL@let{#2}{#1-\number\numexpr\RL@lenof{#1}-1}%
+    \RL@nameledef{#1-len}{\number\numexpr\RL@lenof{#1}-1}%
+  }%
+  {\@NoListError{#1}}%
+}
+\def\ExtractItem#1#2#3{%
+  \@ifIsListNotEmpty{#1}%
+  {%
+    \RL@let{#3}{#1-#2}%
+    \ShiftList{#1}{#2+1}{-1}%
+  }%
+  {\@NoListError{#1}}%
+}
+\def\ExtractRandomItem#1#2{%
+  \@ifIsListNotEmpty{#1}%
+  {%
+    \RLuniformdeviate{\RL@lenof{#1}}{RL@temp}%
+    \ExtractItem{#1}{\RL@temp}{#2}%
+  }%
+  {\@NoListError{#1}}%
+}
+\def\ExtractList#1#2#3#4{%
+  \@ifIsList{#1}{%
+    \@ifIsList{#4}{%
+      \ifnum#2<\RL@lenof{#1}%
+        \ifnum#3<\RL@lenof{#1}%
+          \ifnum#2>#3\relax
+            \RL@nameldef{#4-len}{0}%
+          \else
+            \RLfor\RL@iterextract=0 to #3 - #2 \do{%
+              \RL@let{#4-\RL@iterextract}{#1-#2}%
+              \ExtractItem{#1}{#2}{RL@temp}%
+            }%
+            \RL@nameledef{#4-len}{\number\numexpr #3 - #2 + 1}%
+          \fi
+        \else
+          \@OutOfRangeError{#1}{#3}%
+        \fi
+      \else
+        \@OutOfRangeError{#1}{#2}%
+      \fi
+    }%
+    {\@NoListError{#4}}%
+  }%
+  {\@NoListError{#1}}%
+}
+\def\GetFirstItem#1#2{%
+  \GetItem{#1}{0}{#2}%
+}
+\def\GetLastItem#1#2{%
+  \GetItem{#1}{\number\numexpr\RL@lenof{#1}-1}{#2}%
+}
+\def\GetItem#1#2#3{%
+  \@ifIsListNotEmpty{#1}
+  {%
+    \ifnum\numexpr\RL@lenof{#1}-1-#2<0
+      \@OutOfRangeError{#1}{#2}%
+    \else
+      \RL@let{#3}{#1-#2}%
+    \fi
+  }
+  {\@NoListError{#1}}%
+}
+\def\GetRandomItem#1#2{%
+  \@ifIsListNotEmpty{#1}%
+  {%
+    \RLuniformdeviate{\RL@lenof{#1}}{RL@temp}%
+    \GetItem{#1}{\RL@temp}{#2}%
+  }%
+  {\@NoListError{#1}}%
+}
+\def\GetList#1#2#3#4{%
+  \@ifIsList{#1}{%
+    \@ifIsList{#4}{%
+      \ifnum#2<\RL@lenof{#1}%
+        \ifnum#3<\RL@lenof{#1}%
+          \ifnum#2>#3\relax
+            \RL@nameldef{#4-len}{0}%
+          \else
+            \RLfor\RL@iter=#2 to #3 \do{%
+              \RL@let{#4-\number\numexpr \RL@iter - #2}{#1-\RL@iter}%
+            }%
+            \RL@nameledef{#4-len}{\number\numexpr #3 - #2 + 1}%
+          \fi
+        \else
+          \@OutOfRangeError{#1}{#3}%
+        \fi
+      \else
+        \@OutOfRangeError{#1}{#2}%
+      \fi
+    }%
+    {\@NoListError{#4}}%
+  }%
+  {\@NoListError{#1}}%
+}
+\long\def\SetFirstItem#1#2{%
+  \SetItem{#1}{0}{#2}%
+}
+\long\def\SetLastItem#1#2{%
+  \SetItem{#1}{\number\numexpr\RL@lenof{#1}-1}{#2}%
+}
+\long\def\SetItem#1#2#3{%
+  \@ifIsListNotEmpty{#1}%
+  {%
+    \ifnum\numexpr\RL@lenof{#1}-1-#2<0
+      \@OutOfRangeError{#1}{#2}%
+    \else
+      \RL@nameldef{#1-#2}{#3}%
+    \fi
+  }%
+  {\@NoListError{#1}}%%
+}
+\long\def\SetRandomItem#1#2{%
+  \@ifIsListNotEmpty{#1}%
+  {%
+    \RLuniformdeviate{\RL@lenof{#1}}{RL@temp}%
+    \SetItem{#1}{\RL@temp}{#2}%
+  }%
+  {\@NoListError{#1}}%
+}
+\def\SetList#1#2{%
+  \@ifIsList{#1}%
+  {%
+    \ClearList{#1}%
+    \def\RL@name{#1}%
+    \RL@setlist#2,\@nil,%
+  }%
+  {\@NoListError{#1}}%
+}
+\long\def\RL@setlist#1,{%
+  \def\RL@arg{#1}%
+  \unless\ifx\RL@arg\@nnil
+    \InsertLastItem{\RL@name}{#1}%
+    \expandafter\RL@setlist
+  \fi
+}
+\long\def\ForEachFirstItem#1#2#3{%
+  \begingroup
+    \RLfor \RL@var = 0 to \RL@lenof{#1}-1 \do{%
+      \ExtractFirstItem{#1}{#2}%
+      #3%
+    }%
+  \endgroup
+}
+\long\def\ForEachLastItem#1#2#3{%
+  \begingroup
+    \RLfor \RL@var = 0 to \RL@lenof{#1}-1 \do{%
+      \ExtractLastItem{#1}{#2}%
+      #3%
+    }%
+  \endgroup
+}
+\long\def\ForEachRandomItem#1#2#3{%
+  \begingroup
+    \RLfor \RL@var = 0 to \RL@lenof{#1}-1 \do{%
+      \ExtractRandomItem{#1}{#2}%
+      #3%
+    }%
+  \endgroup
+}
+\long\def\ReadFieldItem#1#2#3{%
+  \RL@counti #2\relax
+  \expandafter\RL@ReadFieldItem#1\@nil
+  \expandafter\let\csname#3\endcsname\RL@temp
+}
+\long\def\RL@ReadFieldItem{%
+  \@ifnextchar\bgroup{\RL@@ReadFieldItem}{\RL@@ReadFieldItemError}%
+}
+\long\def\RL@@ReadFieldItem#1{%
+  \ifnum\RL@counti=\z@
+    \def\RL@temp{#1}%
+    \expandafter\RL@@ReadFieldItemEnd
+  \else
+    \advance\RL@counti \m@ne
+    \expandafter\RL@ReadFieldItem
+  \fi
+}
+\long\def\RL@@ReadFieldItemEnd#1\@nil{}
+\long\def\RL@@ReadFieldItemError#1\@nil{%
+  \PackageError{randomlist}%
+               {There aren't enough fields in the record}%
+               {Pay attention that field number starts from zero.}%
+}
+\def\RL@SetDelimiters#1#2#3\@nil{%
+  \def\RL@markstrings##1{%
+    \let\RL@accu\empty
+    \expandafter\RL@markstrings@i##1#2\@nil#2%
+    \let##1=\RL@accu
+  }%
+  \def\RL@markstrings@i##1#2##2#2{%
+    \RL@addtomacro\RL@accu{##1}%
+    \def\RL@current{##2}%
+    \unless\ifx\@nnil\RL@current
+      \RL@addtomacro\RL@accu{\RL@string{##2}}%
+      \expandafter\RL@markstrings@i
+    \fi
+  }%
+  \def\RL@unmarkstrings##1{%
+    \let\RL@accuA\empty
+    \expandafter\RL@unmarkstrings@i##1\RL@string\@nil
+    \let##1=\RL@accuA
+  }%
+  \def\RL@unmarkstrings@i##1\RL@string##2{%
+    \RL@addtomacro\RL@accuA{##1}%
+    \def\RL@current{##2}%
+    \unless\ifx\@nnil\RL@current
+      \RL@ifempty{##2}%
+        {\RL@addtomacro\RL@accuA{#2}}%
+        {\RL@addtomacro\RL@accuA{##2}}%
+      \expandafter\RL@unmarkstrings@i
+    \fi
+  }%
+  \def\RL@parsefields##1{%
+    \let\RL@accu\empty
+    \expandafter\RL@parsefields@i##1#1\@nil#1%
+    \let##1=\RL@accu
+  }%
+  \def\RL@parsefields@i##1#1{%
+    \def\RL@current{##1}%
+    \unless\ifx\@nnil\RL@current
+      \RL@unmarkstrings\RL@current
+      \RL@removefirstspaces\RL@current
+      \RL@removelastspaces \RL@current
+      \expandafter\RL@addtomacro\expandafter\RL@accu\expandafter
+        {\expandafter{\RL@current}}%
+      \expandafter\RL@parsefields@i
+    \fi
+  }%
+}
+\newread\RL@hdle
+\def\@ppar{\par}
+\def\ReadFileList{\@ifnextchar[{\@ReadFileList}{\@ReadFileList[,"]}}
+\def\@ReadFileList[#1]#2#3{%
+  \openin \RL@hdle = #3
+  \ifeof\RL@hdle
+    \PackageError{randomlist}%
+      {File #3 doesn't exist}%
+      {Verify its name, its extension, its location, its permissions.}%
+  \else
+    \RL@ifempty{#1}%
+      {%
+        \PackageError{randomlist}
+          {Optional argument empty: [,"] inserted}
+          {Do not leave an optional argument empty}%
+          \RL@SetDelimiters,"\@nil
+      }
+      {\RL@SetDelimiters#1"\@nil}%
+    \loop
+      \read\RL@hdle to \RL@buffer
+      \unless\ifx\RL@buffer\@ppar
+        \RL@markstrings\RL@buffer
+        \RL@parsefields\RL@buffer
+        \def\RL@accuA{\InsertLastItem{#2}}%
+        \expandafter\RL@accuA\expandafter{\RL@buffer}%
+      \fi
+      \ifeof\RL@hdle\else
+    \repeat
+  \fi
+}
+\def\RL@ifspacefirst#1{%
+  \RL@ifspacefirst@i#1A \@nil
+}
+\expandafter\def\expandafter\RL@ifspacefirst@i
+  \expandafter#\expandafter1\space#2\@nil{%
+    \RL@ifempty{#1}%
+}
+\def\RL@removefirstspaces#1{%
+  \expandafter\RL@ifspacefirst\expandafter{#1}
+    {\expandafter\removefistspace@i#1\@nil#1}
+    {}%
+}
+\expandafter\def\expandafter\removefistspace@i\space#1\@nil#2{%
+  \def#2{#1}%
+  \RL@removefirstspaces#2%
+}
+\edef\RL@restorecatcodezero{\catcode0=\number\catcode0\relax}
+\catcode0=12
+\def\RL@removelastspaces#1{%
+  \expandafter\def\expandafter#1\expandafter{%
+    \romannumeral\expandafter
+    \RL@removelastspaces@i\expandafter\relax#1^^00 ^^00\@nil
+  }%
+}
+\def\RL@removelastspaces@i#1 ^^00{\RL@removelastspaces@ii#1^^00}
+\def\RL@removelastspaces@ii#1^^00#2\@nil{%
+  \RL@ifspacefirst{#2}
+    {\RL@removelastspaces@i#1^^00 ^^00\@nil}
+    {\expandafter\z@\@gobble#1}%
+}
+\RL@restorecatcodezero
+\catcode`\@=\RLAtCatcode\relax
+\endinput
+%%
+%% End of file `randomlist.tex'.

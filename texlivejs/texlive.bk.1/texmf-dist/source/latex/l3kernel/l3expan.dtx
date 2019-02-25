@@ -1,0 +1,2714 @@
+% \iffalse meta-comment
+%
+%% File: l3expan.dtx
+%
+% Copyright (C) 1990-2019 The LaTeX3 Project
+%
+% It may be distributed and/or modified under the conditions of the
+% LaTeX Project Public License (LPPL), either version 1.3c of this
+% license or (at your option) any later version.  The latest version
+% of this license is in the file
+%
+%    https://www.latex-project.org/lppl.txt
+%
+% This file is part of the "l3kernel bundle" (The Work in LPPL)
+% and all files in that bundle must be distributed together.
+%
+% -----------------------------------------------------------------------
+%
+% The development version of the bundle can be found at
+%
+%    https://github.com/latex3/latex3
+%
+% for those people who are interested.
+%
+%<*driver>
+\documentclass[full,kernel]{l3doc}
+\begin{document}
+  \DocInput{\jobname.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \title{^^A
+%   The \pkg{l3expan} package\\ Argument expansion^^A
+% }
+%
+% \author{^^A
+%  The \LaTeX3 Project\thanks
+%    {^^A
+%      E-mail:
+%        \href{mailto:latex-team@latex-project.org}
+%          {latex-team@latex-project.org}^^A
+%    }^^A
+% }
+%
+% \date{Released 2019-02-15}
+%
+% \maketitle
+%
+% \begin{documentation}
+%
+% This module provides generic methods for expanding \TeX{} arguments in a
+% systematic manner. The functions in this module all have prefix |exp|.
+%
+% Not all possible variations are implemented for every base
+% function. Instead only those that are used within the \LaTeX3 kernel
+% or otherwise seem to be of general interest are implemented.
+% Consult the module description to find out which functions are
+% actually defined. The next section explains how to define missing
+% variants.
+%
+% \section{Defining new variants}
+% \label{sec:l3expan:defining-variants}
+%
+% The definition of variant forms for base functions may be necessary
+% when writing new functions or when applying a kernel function in a
+% situation that we haven't thought of before.
+%
+% Internally preprocessing of arguments is done with functions of the form
+% \cs[no-index]{exp_\ldots{}}.  They all look alike, an example would be
+% \cs{exp_args:NNo}. This function has three arguments, the first and the
+% second are a single tokens, while the third argument should be given
+% in braces. Applying \cs{exp_args:NNo} expands the content of third
+% argument once before any expansion of the first and second arguments.
+% If \cs{seq_gpush:No} was not defined it could be coded in the following way:
+% \begin{verbatim}
+%   \exp_args:NNo \seq_gpush:Nn
+%      \g_file_name_stack
+%      { \l_tmpa_tl }
+% \end{verbatim}
+% In other words, the first argument to \cs{exp_args:NNo} is the base
+% function and the other arguments are preprocessed and then passed to
+% this base function. In the example the first argument to the base
+% function should be a single token which is left unchanged while the
+% second argument is expanded once. From this example we can also see
+% how the variants are defined. They just expand into the appropriate
+% |\exp_| function followed by the desired base function, \emph{e.g.}
+% \begin{quote}
+%   |\cs_generate_variant:Nn \seq_gpush:Nn { No } |
+% \end{quote}
+% results in the definition of |\seq_gpush:No|
+% \begin{quote}
+%   |\cs_new:Npn \seq_gpush:No { \exp_args:NNo \seq_gpush:Nn }|
+% \end{quote}
+% Providing variants in this way in style files is safe as the
+% \cs{cs_generate_variant:Nn} function will only create new definitions if
+% there is not already one available. Therefore adding
+% such definition to later releases of the kernel will not make such
+% style files obsolete.
+%
+% The steps above may be automated by using the function
+% \cs{cs_generate_variant:Nn}, described next.
+%
+% \section{Methods for defining variants}
+% \label{sec:l3expan:variants-method}
+%
+% We recall the set of available argument specifiers.
+% \begin{itemize}
+% \item |N|~is used for single-token arguments while |c|~constructs a
+%   control sequence from its name and passes it to a parent function as
+%   an |N|-type argument.
+% \item Many argument types extract or expand some tokens and provide it
+%   as an |n|-type argument, namely a braced multiple-token argument:
+%   |V|~extracts the value of a variable, |v|~extracts the value from
+%   the name of a variable, |n|~uses the argument as it is, |o|~expands
+%   once, |f|~expands fully the front of the token list, |e| and
+%   |x|~expand fully all tokens (differences are explained later).
+% \item A few odd argument types remain: |T|~and |F|~for conditional
+%   processing, otherwise identical to |n|-type arguments,
+%   |p|~for the parameter text
+%   in definitions, |w|~for arguments with a specific syntax, and |D|~to
+%   denote primitives that should not be used directly.
+% \end{itemize}
+%
+% \begin{function}[updated = 2017-11-28]
+%   {\cs_generate_variant:Nn, \cs_generate_variant:cn}
+%   \begin{syntax}
+%     \cs{cs_generate_variant:Nn} \meta{parent control sequence} \Arg{variant argument specifiers}
+%   \end{syntax}
+%   This function is used to define argument-specifier variants of the
+%   \meta{parent control sequence} for \LaTeX3 code-level macros. The
+%   \meta{parent control sequence} is first separated into the
+%   \meta{base name} and \meta{original argument specifier}. The
+%   comma-separated list of \meta{variant argument specifiers} is
+%   then used to define variants of the
+%   \meta{original argument specifier} if these are not already
+%   defined. For each \meta{variant} given, a function is created
+%   that expands its arguments as detailed and passes them
+%   to the \meta{parent control sequence}. So for example
+%   \begin{verbatim}
+%     \cs_set:Npn \foo:Nn #1#2 { code here }
+%     \cs_generate_variant:Nn \foo:Nn { c }
+%   \end{verbatim}
+%   creates a new function |\foo:cn| which expands its first
+%   argument into a control sequence name and passes the result to
+%   |\foo:Nn|. Similarly
+%   \begin{verbatim}
+%     \cs_generate_variant:Nn \foo:Nn { NV , cV }
+%   \end{verbatim}
+%   generates the functions |\foo:NV| and |\foo:cV| in the same
+%   way. The \cs{cs_generate_variant:Nn} function can only be applied if
+%   the \meta{parent control sequence} is already defined. If the \meta{parent
+%   control sequence} is protected or if the \meta{variant} involves any
+%   |x|~argument, then the \meta{variant control sequence} is also
+%   protected.  The \meta{variant} is created globally, as is any
+%   \cs[no-index]{exp_args:N\meta{variant}} function needed to carry out the
+%   expansion.
+%
+%   Only |n|~and |N| arguments can be changed to other types.  The only
+%   allowed changes are
+%   \begin{itemize}
+%   \item |c|~variant of an |N|~parent;
+%   \item |o|, |V|, |v|, |f|, |e|, or~|x| variant of an |n|~parent;
+%   \item |N|, |n|, |T|, |F|, or |p| argument unchanged.
+%   \end{itemize}
+%   This means the \meta{parent} of a \meta{variant} form is always
+%   unambiguous, even in cases where both an |n|-type parent and an
+%   |N|-type parent exist, such as for \cs{tl_count:n} and
+%   \cs{tl_count:N}.
+%
+%   For backward compatibility it is currently possible to make |n|,
+%   |o|, |V|, |v|, |f|, |e|, or |x|-type variants of an |N|-type argument or
+%   |N| or |c|-type variants of an |n|-type argument.  Both are
+%   deprecated.  The first because passing more than one token to an
+%   |N|-type argument will typically break the parent function's code.
+%   The second because programmers who use that most often want to
+%   access the value of a variable given its name, hence should use a
+%   |V|-type or |v|-type variant instead of |c|-type.  In those cases,
+%   using the lower-level \cs{exp_args:No} or \cs{exp_args:Nc}
+%   functions explicitly is preferred to defining confusing variants.
+% \end{function}
+%
+% \section{Introducing the variants}
+%
+% The |V| type returns the value of a register, which can be one of
+% |tl|, |clist|, |int|, |skip|, |dim|, |muskip|, or built-in \TeX{}
+% registers. The |v| type is the same except it first creates a
+% control sequence out of its argument before returning the
+% value.
+%
+% In general, the programmer should not need to be concerned with
+% expansion control. When simply using the content of a variable,
+% functions with a |V| specifier should be used. For those referred to by
+% (cs)name, the |v| specifier is available for the same purpose. Only when
+% specific expansion steps are needed, such as when using delimited
+% arguments, should the lower-level functions with |o| specifiers be employed.
+%
+% The |e| type expands all tokens fully, starting from the first.  More
+% precisely the expansion is identical to that of \TeX{}'s \tn{message}
+% (in particular |#| needs not be doubled).  It was added in May 2018.
+% In recent enough engines (starting around 2019) it relies on the
+% primitive \tn{expanded} hence is fast.  In older engines it is very
+% much slower.  As a result it should only be used in performance
+% critical code if typical users will have a recent installation of the
+% \TeX{} ecosystem.
+%
+% The |x| type expands all tokens fully, starting from the first.  In
+% contrast to |e|, all macro parameter characters |#| must be doubled,
+% and omitting this leads to low-level errors.  In addition this type of
+% expansion is not expandable, namely functions that have |x| in their
+% signature do not themselves expand when appearing inside |x| or |e|
+% expansion.
+%
+% The |f| type is so special that it deserves an example.  It is
+% typically used in contexts where only expandable commands are allowed.
+% Then |x|-expansion cannot be used, and |f|-expansion provides an
+% alternative that expands the front of the token list
+% as much as can be done in such contexts.  For
+% instance, say that we want to evaluate the integer expression $3 + 4$
+% and pass the result $7$ as an argument to an expandable function
+% |\example:n|.  For this, one should define a variant using
+% \cs{cs_generate_variant:Nn} |\example:n| |{| |f| |}|, then do
+% \begin{quote}
+%   |\example:f { \int_eval:n { 3 + 4 } }|
+% \end{quote}
+% Note that |x|-expansion would also expand \cs{int_eval:n} fully to its
+% result~$7$, but the variant |\example:x| cannot be expandable.  Note
+% also that |o|-expansion would not expand \cs{int_eval:n} fully to its
+% result since that function requires several expansions.  Besides the
+% fact that |x|-expansion is protected rather than expandable, another
+% difference between |f|-expansion and |x|-expansion is that
+% |f|-expansion expands tokens from the beginning and stops as soon as a
+% non-expandable token is encountered, while |x|-expansion continues
+% expanding further tokens.  Thus, for instance
+% \begin{quote}
+%   |\example:f { \int_eval:n { 1 + 2 } , \int_eval:n { 3 + 4 } }|
+% \end{quote}
+% results in the call
+% \begin{quote}
+%   |\example:n { 3 , \int_eval:n { 3 + 4 } }|
+% \end{quote}
+% while using |\example:x| or |\example:e| instead results in
+% \begin{quote}
+%   |\example:n { 3 , 7 }|
+% \end{quote}
+% at the cost of being protected (for |x| type) or very much slower in
+% old engines (for |e| type).
+% If you use |f| type expansion in conditional processing then
+% you should stick to using |TF|  type functions only as the expansion
+% does not finish any |\if... \fi:| itself!
+%
+% It is important to note that both \texttt{f}- and \texttt{o}-type
+% expansion are concerned with the expansion of tokens from left to
+% right in their arguments. In particular, \texttt{o}-type expansion
+% applies to the first \emph{token} in the argument it receives: it
+% is conceptually similar to
+% \begin{verbatim}
+%   \exp_after:wN <base function> \exp_after:wN { <argument> }
+% \end{verbatim}
+% At the same time, \texttt{f}-type expansion stops at the \emph{first}
+% non-expandable token. This means for example that both
+% \begin{verbatim}
+%    \tl_set:No \l_tmpa_tl { { \g_tmpb_tl } }
+% \end{verbatim}
+% and
+% \begin{verbatim}
+%    \tl_set:Nf \l_tmpa_tl { { \g_tmpb_tl } }
+% \end{verbatim}
+% leave |\g_tmpb_tl| unchanged: |{| is the first token in the
+% argument and is non-expandable.
+%
+% It is usually best to keep the following in mind when using variant
+% forms.
+% \begin{itemize}
+%   \item
+%     Variants with |x|-type arguments (that are fully expanded before
+%     being passed to the |n|-type base function) are never expandable
+%     even when the base function is.  Such variants cannot work
+%     correctly in arguments that are themselves subject to expansion.
+%     Consider using |f| or |e| expansion.
+%   \item
+%     In contrast, |e|~expansion (full expansion, almost like~|x| except
+%     for the treatment of~|#|) does not prevent variants from being
+%     expandable (if the base function is).  The drawback is that
+%     |e|~expansion is very much slower in old engines (before 2019).
+%     Consider using |f|~expansion if that type of expansion is
+%     sufficient to perform the required expansion, or |x|~expansion if
+%     the variant will not itself need to be expandable.
+%   \item
+%     Finally |f|~expansion only expands the front of the token list,
+%     stopping at the first non-expandable token.  This may fail to
+%     fully expand the argument.
+% \end{itemize}
+%
+% When speed is essential (for functions that do very little work and
+% whose variants are used numerous times in a document) the following
+% considerations apply because internal functions for argument expansion
+% come in two flavours, some faster than others.
+% \begin{itemize}
+%   \item
+%     Arguments that might need expansion should come first in the list
+%     of arguments.
+%   \item
+%     Arguments that should consist of single tokens |N|, |c|, |V|, or
+%     |v| should come first among these.
+%   \item
+%     Arguments that appear after the first multi-token argument |n|,
+%     |f|, |e|, or |o| require slightly slower special processing to be
+%     expanded.  Therefore it is best to use the optimized functions,
+%     namely those that contain only |N|, |c|, |V|, and |v|, and, in the
+%     last position, |o|, |f|, |e|, with possible trailing |N| or |n| or
+%     |T| or |F|, which are not expanded.  Any |x|-type argument causes
+%     slightly slower processing.
+% \end{itemize}
+%
+% \section{Manipulating the first argument}
+%
+% These functions are described in detail: expansion of multiple tokens follows
+% the same rules but is described in a shorter fashion.
+%
+% \begin{function}[EXP]{\exp_args:Nc, \exp_args:cc}
+%   \begin{syntax}
+%     \cs{exp_args:Nc} \meta{function} \Arg{tokens}
+%   \end{syntax}
+%   This function absorbs two arguments (the \meta{function} name and
+%   the \meta{tokens}). The \meta{tokens} are expanded until only characters
+%   remain, and are then turned into a control sequence.
+%   The result is inserted into the input stream \emph{after} reinsertion
+%   of the \meta{function}. Thus the \meta{function} may take more than
+%   one argument: all others are left unchanged.
+%
+%   The |:cc| variant constructs the \meta{function} name in the same
+%   manner as described for the \meta{tokens}.
+%   \begin{texnote}
+%     Protected macros that appear in a \texttt{c}-type argument are
+%     expanded despite being protected; \cs{exp_not:n} also has no
+%     effect.  An internal error occurs if non-characters or active
+%     characters remain after full expansion, as the conversion to a
+%     control sequence is not possible.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[EXP]{\exp_args:No}
+%   \begin{syntax}
+%     \cs{exp_args:No} \meta{function} \Arg{tokens} ...
+%   \end{syntax}
+%   This function absorbs two arguments (the \meta{function} name and
+%   the \meta{tokens}). The \meta{tokens} are expanded once, and the result
+%   is inserted in braces into the input stream \emph{after} reinsertion
+%   of the \meta{function}. Thus the \meta{function} may take more than
+%   one argument: all others are left unchanged.
+% \end{function}
+%
+% \begin{function}[EXP]{\exp_args:NV}
+%   \begin{syntax}
+%     \cs{exp_args:NV} \meta{function} \meta{variable}
+%   \end{syntax}
+%   This function absorbs two arguments (the names of the \meta{function} and
+%   the \meta{variable}). The content of the \meta{variable} are recovered
+%   and placed inside braces into the input stream \emph{after} reinsertion
+%   of the \meta{function}. Thus the \meta{function} may take more than
+%   one argument: all others are left unchanged.
+% \end{function}
+%
+% \begin{function}[EXP]{\exp_args:Nv}
+%   \begin{syntax}
+%     \cs{exp_args:Nv} \meta{function} \Arg{tokens}
+%   \end{syntax}
+%   This function absorbs two arguments (the \meta{function} name and
+%   the \meta{tokens}). The \meta{tokens} are expanded until only characters
+%   remain, and are then turned into a control sequence.
+%   This control sequence should
+%   be the name of a \meta{variable}.   The content of the \meta{variable} are
+%   recovered and placed inside braces into the input stream \emph{after}
+%   reinsertion of the \meta{function}. Thus the \meta{function} may take more
+%   than one argument: all others are left unchanged.
+%   \begin{texnote}
+%     Protected macros that appear in a \texttt{v}-type argument are
+%     expanded despite being protected; \cs{exp_not:n} also has no
+%     effect.  An internal error occurs if non-characters or active
+%     characters remain after full expansion, as the conversion to a
+%     control sequence is not possible.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[EXP, added = 2018-05-15]{\exp_args:Ne}
+%   \begin{syntax}
+%     \cs{exp_args:Ne} \meta{function} \Arg{tokens}
+%   \end{syntax}
+%   This function absorbs two arguments (the \meta{function} name and
+%   the \meta{tokens}) and exhaustively expands the \meta{tokens}.
+%   The result is inserted in braces into the input stream
+%   \emph{after} reinsertion of the \meta{function}.
+%   Thus the \meta{function} may take more
+%   than one argument: all others are left unchanged.
+%   \begin{texnote}
+%     This relies on the \tn{expanded} primitive when available (in
+%     \LuaTeX{} and starting around 2019 in other engines).  Otherwise
+%     it uses some fall-back code that is very much slower.  As a result
+%     it should only be used in performance-critical code if typical
+%     users have a recent installation of the \TeX{} ecosystem.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[EXP]{\exp_args:Nf}
+%   \begin{syntax}
+%     \cs{exp_args:Nf} \meta{function} \Arg{tokens}
+%   \end{syntax}
+%   This function absorbs two arguments (the \meta{function} name and
+%   the \meta{tokens}). The \meta{tokens} are fully expanded until the
+%   first non-expandable token is found (if that is a space it is
+%   removed), and the result
+%   is inserted in braces into the input stream \emph{after} reinsertion
+%   of the \meta{function}. Thus the \meta{function} may take more than
+%   one argument: all others are left unchanged.
+% \end{function}
+%
+% \begin{function}{\exp_args:Nx}
+%   \begin{syntax}
+%     \cs{exp_args:Nx} \meta{function} \Arg{tokens}
+%   \end{syntax}
+%   This function absorbs two arguments (the \meta{function} name and
+%   the \meta{tokens}) and exhaustively expands the \meta{tokens}.
+%   The result is inserted in braces into the input stream
+%   \emph{after} reinsertion of the \meta{function}.
+%   Thus the \meta{function} may take more
+%   than one argument: all others are left unchanged.
+% \end{function}
+%
+% \section{Manipulating two arguments}
+%
+% \begin{function}[EXP, updated = 2018-05-15]
+%   {
+%     \exp_args:NNc,
+%     \exp_args:NNo,
+%     \exp_args:NNV,
+%     \exp_args:NNv,
+%     \exp_args:NNe,
+%     \exp_args:NNf,
+%     \exp_args:Ncc,
+%     \exp_args:Nco,
+%     \exp_args:NcV,
+%     \exp_args:Ncv,
+%     \exp_args:Ncf,
+%     \exp_args:NVV
+%   }
+%   \begin{syntax}
+%     \cs{exp_args:NNc} \meta{token_1} \meta{token_2} \Arg{tokens}
+%   \end{syntax}
+%   These optimized functions absorb three arguments and expand the second and
+%   third as detailed by their argument specifier. The first argument
+%   of the function is then the next item on the input stream, followed
+%   by the expansion of the second and third arguments.
+% \end{function}
+%
+% \begin{function}[EXP, updated = 2018-05-15]
+%   {
+%     \exp_args:Nnc,
+%     \exp_args:Nno,
+%     \exp_args:NnV,
+%     \exp_args:Nnv,
+%     \exp_args:Nne,
+%     \exp_args:Nnf,
+%     \exp_args:Noc,
+%     \exp_args:Noo,
+%     \exp_args:Nof,
+%     \exp_args:NVo,
+%     \exp_args:Nfo,
+%     \exp_args:Nff,
+%   }
+%   \begin{syntax}
+%     \cs{exp_args:Noo} \meta{token} \Arg{tokens_1} \Arg{tokens_2}
+%   \end{syntax}
+%   These functions absorb three arguments and expand the second and
+%   third as detailed by their argument specifier. The first argument
+%   of the function is then the next item on the input stream, followed
+%   by the expansion of the second and third arguments.
+%   These functions need slower processing.
+% \end{function}
+%
+% \begin{function}
+%   {
+%     \exp_args:NNx,
+%     \exp_args:Ncx,
+%     \exp_args:Nnx,
+%     \exp_args:Nox,
+%     \exp_args:Nxo,
+%     \exp_args:Nxx
+%   }
+%   \begin{syntax}
+%     \cs{exp_args:NNx} \meta{token_1} \meta{token_2} \Arg{tokens}
+%   \end{syntax}
+%   These functions absorb three arguments and expand the second and
+%   third as detailed by their argument specifier. The first argument
+%   of the function is then the next item on the input stream, followed
+%   by the expansion of the second and third arguments. These functions
+%   are not expandable due to their |x|-type argument.
+% \end{function}
+%
+% \section{Manipulating three arguments}
+%
+% \begin{function}[EXP]
+%   {
+%     \exp_args:NNNo,
+%     \exp_args:NNNV,
+%     \exp_args:Nccc,
+%     \exp_args:NcNc,
+%     \exp_args:NcNo,
+%     \exp_args:Ncco
+%   }
+%   \begin{syntax}
+%     \cs{exp_args:NNNo} \meta{token_1} \meta{token_2} \meta{token_3} \Arg{tokens}
+%   \end{syntax}
+%   These optimized functions absorb four arguments and expand the second, third
+%   and fourth as detailed by their argument specifier. The first
+%   argument of the function is then the next item on the input stream,
+%   followed by the expansion of the second argument, \emph{etc}.
+% \end{function}
+%
+% \begin{function}[EXP]
+%   {
+%     \exp_args:NNcf,
+%     \exp_args:NNno,
+%     \exp_args:NNnV,
+%     \exp_args:NNoo,
+%     \exp_args:NNVV,
+%     \exp_args:Ncno,
+%     \exp_args:NcnV,
+%     \exp_args:Ncoo,
+%     \exp_args:NcVV,
+%     \exp_args:Nnnc,
+%     \exp_args:Nnno,
+%     \exp_args:Nnnf,
+%     \exp_args:Nnff,
+%     \exp_args:Nooo,
+%     \exp_args:Noof,
+%     \exp_args:Nffo,
+%   }
+%   \begin{syntax}
+%     \cs{exp_args:NNoo} \meta{token_1} \meta{token_2} \Arg{token_3} \Arg{tokens}
+%   \end{syntax}
+%   These functions absorb four arguments and expand the second, third
+%   and fourth as detailed by their argument specifier. The first
+%   argument of the function is then the next item on the input stream,
+%   followed by the expansion of the second argument, \emph{etc}.
+%   These functions need slower processing.
+% \end{function}
+%
+% \begin{function}[added = 2015-08-12]
+%   {
+%     \exp_args:NNNx,
+%     \exp_args:NNnx,
+%     \exp_args:NNox,
+%     \exp_args:Nccx,
+%     \exp_args:Ncnx,
+%     \exp_args:Nnnx,
+%     \exp_args:Nnox,
+%     \exp_args:Noox,
+%   }
+%   \begin{syntax}
+%     \cs{exp_args:NNnx} \meta{token_1} \meta{token_2} \Arg{tokens_1} \Arg{tokens_2}
+%   \end{syntax}
+%   These functions absorb four arguments and expand the second, third
+%   and fourth as detailed by their argument specifier. The first
+%   argument of the function is then the next item on the input stream,
+%   followed by the expansion of the second argument, \emph{etc.}
+% \end{function}
+%
+% \section{Unbraced expansion}
+%
+% \begin{function}[EXP, updated = 2018-05-15]
+%   {
+%     \exp_last_unbraced:No,
+%     \exp_last_unbraced:NV,
+%     \exp_last_unbraced:Nv,
+%     \exp_last_unbraced:Ne,
+%     \exp_last_unbraced:Nf,
+%     \exp_last_unbraced:NNo,
+%     \exp_last_unbraced:NNV,
+%     \exp_last_unbraced:NNf,
+%     \exp_last_unbraced:Nco,
+%     \exp_last_unbraced:NcV,
+%     \exp_last_unbraced:Nno,
+%     \exp_last_unbraced:Noo,
+%     \exp_last_unbraced:Nfo,
+%     \exp_last_unbraced:NNNo,
+%     \exp_last_unbraced:NNNV,
+%     \exp_last_unbraced:NNNf,
+%     \exp_last_unbraced:NnNo,
+%     \exp_last_unbraced:NNNNo,
+%     \exp_last_unbraced:NNNNf,
+%   }
+%   \begin{syntax}
+%     \cs{exp_last_unbraced:Nno} \meta{token} \Arg{tokens_1} \Arg{tokens_2}
+%   \end{syntax}
+%   These functions absorb the number of arguments given by their
+%   specification, carry out the expansion
+%   indicated and leave the results in the input stream, with the
+%   last argument not surrounded by the usual braces.
+%   Of these, the |:Nno|, |:Noo|, |:Nfo| and |:NnNo|
+%   variants need slower processing.
+%   \begin{texnote}
+%     As an optimization, the last argument is unbraced by some
+%     of those functions before expansion. This can cause problems
+%     if the argument is empty: for instance,
+%     \cs{exp_last_unbraced:Nf} |\foo_bar:w| |{ }| \cs{q_stop}
+%     leads to an infinite loop, as the quark is \texttt{f}-expanded.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}{\exp_last_unbraced:Nx}
+%   \begin{syntax}
+%     \cs{exp_last_unbraced:Nx} \meta{function} \Arg{tokens}
+%   \end{syntax}
+%   This function fully expands the \meta{tokens} and leaves the result
+%   in the input stream after reinsertion of the \meta{function}.
+%   This function is not expandable.
+% \end{function}
+%
+% \begin{function}[EXP]{\exp_last_two_unbraced:Noo}
+%   \begin{syntax}
+%     \cs{exp_last_two_unbraced:Noo} \meta{token} \Arg{tokens_1} \Arg{tokens_2}
+%   \end{syntax}
+%   This function absorbs three arguments and expands the second and third
+%   once. The first argument of the function is then the next item on the
+%   input stream, followed by the expansion of the second and third arguments,
+%   which are not wrapped in braces.
+%   This function needs special (slower) processing.
+% \end{function}
+%
+% \begin{function}[EXP]{\exp_after:wN}
+%   \begin{syntax}
+%     \cs{exp_after:wN} \meta{token_1} \meta{token_2}
+%   \end{syntax}
+%   Carries out a single expansion of \meta{token_2} (which may consume
+%   arguments) prior to the expansion of \meta{token_1}. If \meta{token_2} has
+%   no expansion (for example, if it is a character) then it is left
+%   unchanged. It is important to notice that \meta{token_1} may be
+%   \emph{any} single token, including group-opening and -closing
+%   tokens (|{| or |}| assuming normal \TeX{} category codes). Unless
+%   specifically required this should be avoided: expansion should be carried out using an
+%   appropriate argument specifier variant or the appropriate
+%   \cs[no-index]{exp_arg:N} function.
+%   \begin{texnote}
+%     This is the \TeX{} primitive \tn{expandafter} renamed.
+%   \end{texnote}
+% \end{function}
+%
+%
+% \section{Preventing expansion}
+%
+% Despite the fact that the following functions are all about preventing
+% expansion, they're designed to be used in an expandable context and hence
+% are all marked as being `expandable' since they themselves disappear
+% after the expansion has completed.
+%
+% \begin{function}[EXP]{\exp_not:N}
+%   \begin{syntax}
+%     \cs{exp_not:N} \meta{token}
+%   \end{syntax}
+%   Prevents expansion of the \meta{token} in a context where it would
+%   otherwise be expanded, for example an |x|-type argument or the first
+%   token in an |o| or |e| or |f| argument.
+%   \begin{texnote}
+%     This is the \TeX{} \tn{noexpand} primitive.  It only prevents
+%     expansion.  At the beginning of an |f|-type argument, a space
+%     \meta{token} is removed even if it appears as \cs{exp_not:N}
+%     \cs{c_space_token}.  In an |x|-expanding definition
+%     (\cs{cs_new:Npx}), a macro parameter introduces an argument even
+%     if it appears as \cs{exp_not:N} |#| |1|.  This differs from
+%     \cs{exp_not:n}.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[EXP]{\exp_not:c}
+%   \begin{syntax}
+%     \cs{exp_not:c} \Arg{tokens}
+%   \end{syntax}
+%   Expands the \meta{tokens} until only characters remain, and then
+%   converts this into a control sequence.
+%   Further expansion of this control sequence is then inhibited using
+%   \cs{exp_not:N}.
+%   \begin{texnote}
+%     Protected macros that appear in a \texttt{c}-type argument are
+%     expanded despite being protected; \cs{exp_not:n} also has no
+%     effect.  An internal error occurs if non-characters or active
+%     characters remain after full expansion, as the conversion to a
+%     control sequence is not possible.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[EXP]{\exp_not:n}
+%   \begin{syntax}
+%     \cs{exp_not:n} \Arg{tokens}
+%   \end{syntax}
+%   Prevents expansion of the \meta{tokens} in an |e| or |x|-type argument.  In
+%   all other cases the \meta{tokens} continue to be expanded, for
+%   example in the input stream or in other types of arguments such as
+%   \texttt{c}, \texttt{f}, \texttt{v}.  The argument of \cs{exp_not:n}
+%   \emph{must} be surrounded by braces.
+%   \begin{texnote}
+%     This is the \eTeX{} \tn{unexpanded} primitive.  In an
+%     |x|-expanding definition (\cs{cs_new:Npx}), \cs{exp_not:n}~|{#1}|
+%     is equivalent to |##1| rather than to~|#1|, namely it inserts the
+%     two characters |#| and~|1|.  In an |e|-type argument
+%     \cs{exp_not:n}~|{#}| is equivalent to |#|, namely it inserts the
+%     character~|#|.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[EXP]{\exp_not:o}
+%   \begin{syntax}
+%     \cs{exp_not:o} \Arg{tokens}
+%   \end{syntax}
+%   Expands the \meta{tokens} once, then prevents any further expansion
+%   in |x|-type arguments using \cs{exp_not:n}.
+% \end{function}
+%
+% \begin{function}[EXP]{\exp_not:V}
+%   \begin{syntax}
+%     \cs{exp_not:V} \meta{variable}
+%   \end{syntax}
+%   Recovers the content of the \meta{variable}, then prevents expansion
+%   of this material in |x|-type arguments using \cs{exp_not:n}.
+% \end{function}
+%
+% \begin{function}[EXP]{\exp_not:v}
+%   \begin{syntax}
+%     \cs{exp_not:v} \Arg{tokens}
+%   \end{syntax}
+%   Expands the \meta{tokens} until only characters remains, and then
+%   converts this into a control sequence which should be a \meta{variable}
+%   name.
+%   The content of the \meta{variable} is recovered, and further
+%   expansion in |x|-type arguments is prevented using \cs{exp_not:n}.
+%   \begin{texnote}
+%     Protected macros that appear in a \texttt{v}-type argument are
+%     expanded despite being protected; \cs{exp_not:n} also has no
+%     effect.  An internal error occurs if non-characters or active
+%     characters remain after full expansion, as the conversion to a
+%     control sequence is not possible.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[EXP]{\exp_not:e}
+%   \begin{syntax}
+%     \cs{exp_not:e} \Arg{tokens}
+%   \end{syntax}
+%   Expands \meta{tokens} exhaustively, then protects the result of the
+%   expansion (including any tokens which were not expanded) from
+%   further expansion in |e| or |x|-type arguments using \cs{exp_not:n}.
+%   This is very rarely useful but is provided for consistency.
+% \end{function}
+%
+% \begin{function}[EXP]{\exp_not:f}
+%   \begin{syntax}
+%     \cs{exp_not:f} \Arg{tokens}
+%   \end{syntax}
+%   Expands \meta{tokens} fully until the first unexpandable token is
+%   found (if it is a space it is removed). Expansion then stops, and
+%   the result of the expansion (including any tokens which were not
+%   expanded) is protected from further expansion in |x|-type arguments
+%   using \cs{exp_not:n}.
+% \end{function}
+%
+% \begin{function}[updated = 2011-06-03, EXP]{\exp_stop_f:}
+%   \begin{syntax}
+%     |\foo_bar:f| \{ \meta{tokens} \cs{exp_stop_f:} \meta{more tokens} \}
+%   \end{syntax}
+%   This function terminates an \texttt{f}-type expansion. Thus if
+%   a function |\foo_bar:f| starts an \texttt{f}-type expansion
+%   and all of \meta{tokens} are expandable \cs{exp_stop_f:}
+%   terminates the expansion of tokens even if \meta{more tokens}
+%   are also expandable. The function itself is an implicit space
+%   token. Inside an \texttt{x}-type expansion, it retains its
+%   form, but when typeset it produces the underlying space (\verb*| |).
+% \end{function}
+%
+%
+% \section{Controlled expansion}
+%
+% The \pkg{expl3} language makes all efforts to hide the complexity of
+% \TeX{} expansion from the programmer by providing concepts that
+% evaluate/expand arguments of functions prior to calling the \enquote{base}
+% functions. Thus, instead of using many \tn{expandafter} calls and
+% other trickery it is usually a matter of choosing the right variant
+% of a function to achieve a desired result.
+%
+% Of course, deep down \TeX{} is using expansion as always and there
+% are cases where a programmer needs to control that expansion
+% directly; typical situations are basic data manipulation tools. This
+% section documents the functions for that level. These
+% commands are used throughout the kernel code, but we hope that outside
+% the kernel there will be little need to resort to them. Instead the
+% argument manipulation methods document above should usually be sufficient.
+%
+% While \cs{exp_after:wN} expands one token (out of order) it is
+% sometimes necessary to expand several tokens in one go. The next set
+% of commands provide this functionality. Be aware that it is
+% absolutely required that the programmer has full control over the
+% tokens to be expanded, i.e., it is not possible to use these
+% functions to expand unknown input as part of
+% \meta{expandable-tokens} as that will break badly if unexpandable
+% tokens are encountered in that place!
+%
+% \begin{function}[added=2015-08-23,EXP]
+%       {
+%         \exp:w ,
+%         \exp_end:
+%       }
+%   \begin{syntax}
+%     \cs{exp:w} \meta{expandable tokens} \cs{exp_end:} \\
+%   \end{syntax}
+%   Expands \meta{expandable-tokens} until reaching \cs{exp_end:} at
+%   which point expansion stops.
+%   The full expansion of \meta{expandable tokens} has to be empty.
+%   If any token in \meta{expandable tokens} or any token generated by
+%   expanding the tokens therein is not expandable the expansion will end
+%   prematurely and as a result \cs{exp_end:} will be misinterpreted
+%   later on.\footnotemark
+%
+%   In typical use cases the \cs{exp_end:} is hidden somewhere
+%   in the replacement text of \meta{expandable-tokens} rather than
+%   being on the same expansion level than \cs{exp:w}, e.g., you may
+%   see code such as
+%\begin{verbatim}
+%    \exp:w \@@_case:NnTF #1 {#2} { } { }
+%\end{verbatim}
+%   where somewhere during the expansion of |\@@_case:NnTF| the
+%   \cs{exp_end:} gets generated.
+%   \begin{texnote}
+%     The current implementation uses \tn{romannumeral} hence ignores
+%     space tokens and explicit signs |+| and |-| in the expansion of the
+%     \meta{expandable tokens}, but this should not be relied upon.
+%   \end{texnote}
+% \end{function}
+% \footnotetext{Due to the implementation you might get the character
+%   in position 0 in the current font (typically \enquote{\texttt{`}})
+%   in the output without any error message!}
+%
+% \begin{function}[added=2015-08-23, EXP, label = \exp_end_continue_f:w]
+%       {
+%         \exp:w ,
+%         \exp_end_continue_f:w
+%       }
+%   \begin{syntax}
+%     \cs{exp:w} \meta{expandable-tokens} \cs{exp_end_continue_f:w} \meta{further-tokens}
+%   \end{syntax}
+%   Expands \meta{expandable-tokens} until reaching \cs{exp_end_continue_f:w} at
+%   which point expansion continues as an \texttt{f}-type expansion expanding
+%   \meta{further-tokens} until an unexpandable token is encountered (or
+%   the \texttt{f}-type expansion is explicitly terminated by
+%   \cs{exp_stop_f:}). As with all \texttt{f}-type expansions a space ending
+%   the expansion gets removed.
+%
+%   The full expansion of \meta{expandable-tokens} has to be empty.
+%   If any token in \meta{expandable-tokens} or any token generated by
+%   expanding the tokens therein is not expandable the expansion will end
+%   prematurely and as a result \cs{exp_end_continue_f:w} will be misinterpreted
+%   later on.\footnotemark
+%
+%
+%   In typical use cases  \meta{expandable-tokens} contains no tokens at all,
+%   e.g., you will see code such as
+%\begin{verbatim}
+%    \exp_after:wN { \exp:w \exp_end_continue_f:w #2 }
+%\end{verbatim}
+%   where the \cs{exp_after:wN} triggers an \texttt{f}-expansion of the tokens
+%   in |#2|. For technical reasons this has to happen using two tokens
+%   (if they would be hidden inside another command \cs{exp_after:wN}
+%   would only expand the command but not trigger any additional
+%   |f|-expansion).
+%
+%   You might wonder why there are two different approaches available,
+%   after all the effect of
+%   \begin{quote}
+%     \cs{exp:w} \meta{expandable-tokens} \cs{exp_end:}
+%   \end{quote}
+%   can be alternatively achieved through an \texttt{f}-type expansion by using
+%   \cs{exp_stop_f:}, i.e.
+%   \begin{quote}
+%     \cs{exp:w} \cs{exp_end_continue_f:w} \meta{expandable-tokens} \cs{exp_stop_f:}
+%   \end{quote}
+%   The reason is simply that the first approach is slightly faster
+%   (one less token to parse and less expansion internally)
+%   so in places where such performance really matters and where we
+%   want to explicitly stop the expansion at a defined point the first
+%   form is preferable.
+% \end{function}
+% \footnotetext{In this particular case you may get a character into
+%    the output as well as an error message.}
+%
+% \begin{function}[added=2015-08-23, EXP, label = \exp_end_continue_f:nw]
+%       {
+%         \exp:w ,
+%         \exp_end_continue_f:nw
+%       }
+%   \begin{syntax}
+%     \cs{exp:w} \meta{expandable-tokens} \cs{exp_end_continue_f:nw} \meta{further-tokens}
+%   \end{syntax}
+%   The difference to \cs{exp_end_continue_f:w} is that we first we pick
+%   up an argument which is then returned to the input stream.  If
+%   \meta{further-tokens} starts with space tokens then these space
+%   tokens are removed while searching for the argument.  If it starts
+%   with a brace group then the braces are removed. Thus such spaces or
+%   braces will not terminate the \texttt{f}-type expansion.
+% \end{function}
+%
+% \section{Internal functions}
+%
+% \begin{function}{\::n, \::N, \::p, \::c, \::o, \::e, \::f, \::x, \::v, \::V, \:::}
+%   \begin{syntax}
+%     |\cs_new:Npn \exp_args:Ncof { \::c \::o \::f \::: }|
+%   \end{syntax}
+%   Internal forms for the base expansion types. These names do \emph{not}
+%   conform to the general \LaTeX3 approach as this makes them more readily
+%   visible in the log and so forth.  They should not be used outside this module.
+% \end{function}
+%
+% \begin{function}
+%   {\::o_unbraced, \::e_unbraced, \::f_unbraced, \::x_unbraced, \::v_unbraced, \::V_unbraced}
+%   \begin{syntax}
+%     |\cs_new:Npn \exp_last_unbraced:Nno { \::n \::o_unbraced \::: }|
+%   \end{syntax}
+%   Internal forms for the expansion types which leave the terminal argument
+%   unbraced. These names do \emph{not}
+%   conform to the general \LaTeX3 approach as this makes them more readily
+%   visible in the log and so forth.  They should not be used outside this module.
+% \end{function}
+%
+% \end{documentation}
+%
+% \begin{implementation}
+%
+% \section{\pkg{l3expan} implementation}
+%
+%    \begin{macrocode}
+%<*initex|package>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%<@@=exp>
+%    \end{macrocode}
+%
+% \begin{variable}{\l_@@_internal_tl}
+%   The |\exp_| module has its private variable to temporarily store the
+%   result of |x|-type argument expansion. This is done to avoid interference
+%   with other functions using temporary variables.
+% \end{variable}
+%
+% \begin{macro}{\exp_after:wN}
+% \begin{macro}{\exp_not:N}
+% \begin{macro}{\exp_not:n}
+%   These are defined in \pkg{l3basics}, as they are needed
+%   \enquote{early}.  This is just a reminder of that fact!
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{General expansion}
+%
+% In this section a general mechanism for defining functions that handle
+% arguments is defined.  These general expansion functions are
+% expandable unless |x| is used.  (Any version of |x| is going to have
+% to use one of the \LaTeX3 names for \cs{cs_set:Npx} at some
+% point, and so is never going to be expandable.)
+%
+% The definition of expansion functions with this technique happens
+% in section~\ref{sec:l3expan:gendef}.
+% In section~\ref{sec:l3expan:handtune} some common cases are coded by a more direct
+% method for efficiency, typically using calls to \cs{exp_after:wN}.
+%
+% \begin{variable}{\l_@@_internal_tl}
+%   This scratch token list variable is defined in \pkg{l3basics}.
+% \end{variable}
+%
+% This code uses internal functions with names that start with |\::| to
+% perform the expansions. All macros are |long| since the tokens
+% undergoing expansion may be arbitrary user input.
+%
+% An argument manipulator |\::|\meta{Z} always has signature |#1\:::#2#3|
+% where |#1| holds the remaining argument manipulations to be performed,
+% \cs{:::} serves as an end marker for the list of manipulations, |#2|
+% is the carried over result of the previous expansion steps and |#3| is
+% the argument about to be processed.
+% One exception to this rule is \cs{::p}, which has to grab an argument
+% delimited by a left brace.
+%
+% \begin{macro}[EXP]{\@@_arg_next:nnn}
+% \begin{macro}[EXP]{\@@_arg_next:Nnn}
+%   |#1| is the result of an expansion step, |#2| is the remaining
+%   argument manipulations and |#3| is the current result of the
+%   expansion chain.  This auxiliary function moves |#1| back after
+%   |#3| in the input stream and checks if any expansion is left to
+%   be done by calling |#2|. In by far the most cases we need
+%   to add a set of braces to the result of an argument manipulation
+%   so it is more effective to do it directly here. Actually, so far
+%   only the |c| of the final argument manipulation variants does not
+%   require a set of braces.
+%    \begin{macrocode}
+\cs_new:Npn \@@_arg_next:nnn #1#2#3 { #2 \::: { #3 {#1} } }
+\cs_new:Npn \@@_arg_next:Nnn #1#2#3 { #2 \::: { #3 #1 } }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\:::}
+%   The end marker is just another name for the identity function.
+%    \begin{macrocode}
+\cs_new:Npn \::: #1 {#1}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\::n}
+%   This function is used to skip an argument that doesn't need to
+%   be expanded.
+%    \begin{macrocode}
+\cs_new:Npn \::n #1 \::: #2#3 { #1 \::: { #2 {#3} } }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\::N}
+%   This function is used to skip an argument that consists of a
+%   single token and doesn't need to be expanded.
+%    \begin{macrocode}
+\cs_new:Npn \::N #1 \::: #2#3 { #1 \::: {#2#3} }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\::p}
+%   This function is used to skip an argument that is delimited by a
+%   left brace and doesn't need to be expanded.  It is not
+%   wrapped in braces in the result.
+%    \begin{macrocode}
+\cs_new:Npn \::p #1 \::: #2#3# { #1 \::: {#2#3} }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\::c}
+%   This function is used to skip an argument that is turned into
+%   a control sequence without expansion.
+%    \begin{macrocode}
+\cs_new:Npn \::c #1 \::: #2#3
+  { \exp_after:wN \@@_arg_next:Nnn \cs:w #3 \cs_end: {#1} {#2} }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\::o}
+%   This function is used to expand an argument once.
+%    \begin{macrocode}
+\cs_new:Npn \::o #1 \::: #2#3
+  { \exp_after:wN \@@_arg_next:nnn \exp_after:wN {#3} {#1} {#2} }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\::e}
+%   With the \tn{expanded} primitive available, just expand.  Otherwise
+%   defer to \cs{exp_args:Ne} implemented later.
+%    \begin{macrocode}
+\cs_if_exist:NTF \tex_expanded:D
+  {
+    \cs_new:Npn \::e #1 \::: #2#3
+      { \tex_expanded:D { \exp_not:n { #1 \::: } { \exp_not:n {#2} {#3} } } }
+  }
+  {
+    \cs_new:Npn \::e #1 \::: #2#3
+      { \exp_args:Ne \@@_arg_next:nnn {#3} {#1} {#2} }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\::f}
+% \begin{macro}{\exp_stop_f:}
+%   This function is used to expand a token list until the first
+%   unexpandable token is found. This is achieved through \cs{exp:w}
+%   \cs{exp_end_continue_f:w} that expands everything in its way
+%   following it. This scanning procedure is terminated once the
+%   expansion hits something non-expandable (if that is a space it is
+%   removed).  We introduce \cs{exp_stop_f:} to mark such an
+%   end-of-expansion marker.  For example, |f|-expanding
+%   |\cs_set_eq:Nc \aaa { b \l_tmpa_tl b }| where |\l_tmpa_tl| contains
+%   the characters |lur| gives |\tex_let:D \aaa = \blurb| which then
+%   turns out to start with the non-expandable token |\tex_let:D|.
+%   Since the expansion of \cs{exp:w} \cs{exp_end_continue_f:w} is
+%   empty, we wind up with a fully expanded list, only \TeX{} has not
+%   tried to execute any of the non-expandable tokens. This is what
+%   differentiates this function from the |x| argument type.
+%    \begin{macrocode}
+\cs_new:Npn \::f #1 \::: #2#3
+  {
+    \exp_after:wN \@@_arg_next:nnn
+      \exp_after:wN { \exp:w \exp_end_continue_f:w #3 }
+      {#1} {#2}
+  }
+\use:nn { \cs_new_eq:NN \exp_stop_f: } { ~ }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\::x}
+%   This function is used to expand an argument fully.
+%   We build in the expansion of \cs{@@_arg_next:nnn}.
+%    \begin{macrocode}
+\cs_new_protected:Npn \::x #1 \::: #2#3
+  {
+    \cs_set_nopar:Npx \l_@@_internal_tl
+      { \exp_not:n { #1 \::: } { \exp_not:n {#2} {#3} } }
+    \l_@@_internal_tl
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\::v}
+% \begin{macro}[EXP]{\::V}
+%   These functions return the value of a register, i.e., one of
+%   |tl|, |clist|, |int|, |skip|, |dim|, |muskip|, or built-in
+%   \TeX{} register. The |V| version
+%   expects a single token whereas |v| like |c| creates a csname from
+%   its argument given in braces and then evaluates it as if it was a
+%   |V|. The \cs{exp:w} sets off an expansion
+%   similar to an |f|-type expansion, which we terminate using
+%   \cs{exp_end:}. The argument is returned in braces.
+%    \begin{macrocode}
+\cs_new:Npn \::V #1 \::: #2#3
+  {
+    \exp_after:wN \@@_arg_next:nnn
+      \exp_after:wN { \exp:w \@@_eval_register:N #3 }
+      {#1} {#2}
+}
+\cs_new:Npn \::v # 1\::: #2#3
+  {
+    \exp_after:wN \@@_arg_next:nnn
+      \exp_after:wN { \exp:w \@@_eval_register:c {#3} }
+      {#1} {#2}
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\@@_eval_register:N, \@@_eval_register:c}
+% \begin{macro}[EXP]{\@@_eval_error_msg:w}
+%   This function evaluates a register. Now a register might exist as
+%   one of two things: A parameter-less macro or a built-in \TeX{}
+%   register such as |\count|. For the \TeX{} registers we have to
+%   utilize a \tn{the} whereas for the macros we merely have to
+%   expand them once. The trick is to find out when to use
+%   \tn{the} and when not to. What we want here is to find out
+%   whether the token expands to something else when hit with
+%   \cs{exp_after:wN}. The technique is to compare the meaning of the
+%   token in question when it has been prefixed with \cs{exp_not:N}
+%   and the token itself. If it is a macro, the prefixed
+%   \cs{exp_not:N} temporarily turns it into the primitive
+%   \cs{scan_stop:}.
+%    \begin{macrocode}
+\cs_new:Npn \@@_eval_register:N #1
+  {
+    \exp_after:wN \if_meaning:w \exp_not:N #1 #1
+%    \end{macrocode}
+%   If the token was not a macro it may be a malformed variable from a
+%   |c| expansion in which case it is equal to the primitive
+%   \cs{scan_stop:}. In that case we throw an error. We could let \TeX{}
+%   do it for us but that would result in the rather obscure
+%   \begin{quote}
+%     |! You can't use `\relax' after \the.|
+%   \end{quote}
+%   which while quite true doesn't give many hints as to what actually
+%   went wrong. We provide something more sensible.
+%    \begin{macrocode}
+      \if_meaning:w \scan_stop: #1
+        \@@_eval_error_msg:w
+      \fi:
+%    \end{macrocode}
+%   The next bit requires some explanation. The function must be
+%   initiated by \cs{exp:w} and we want to
+%   terminate this expansion chain by inserting the \cs{exp_end:}
+%    token.
+%   However, we have to expand the register |#1| before we do
+%   that. If it is a \TeX{} register, we need to execute the sequence
+%   |\exp_after:wN \exp_end: \tex_the:D #1| and if it is a macro we
+%   need to execute |\exp_after:wN \exp_end: #1|. We therefore issue
+%   the longer of the two sequences and if the register is a macro, we
+%   remove the \cs{tex_the:D}.
+%    \begin{macrocode}
+    \else:
+      \exp_after:wN \use_i_ii:nnn
+    \fi:
+    \exp_after:wN \exp_end: \tex_the:D #1
+  }
+\cs_new:Npn \@@_eval_register:c #1
+  { \exp_after:wN \@@_eval_register:N \cs:w #1 \cs_end: }
+%    \end{macrocode}
+%   Clean up nicely, then call the undefined control sequence. The
+%   result is an error message looking like this:
+%   \begin{verbatim}
+%     ! Undefined control sequence.
+%     <argument> \LaTeX3 error:
+%                               Erroneous variable used!
+%     l.55 \tl_set:Nv \l_tmpa_tl {undefined_tl}
+%   \end{verbatim}
+%    \begin{macrocode}
+\cs_new:Npn \@@_eval_error_msg:w #1 \tex_the:D #2
+  {
+      \fi:
+    \fi:
+    \__kernel_msg_expandable_error:nnn { kernel } { bad-variable } {#2}
+    \exp_end:
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Hand-tuned definitions}
+% \label{sec:l3expan:handtune}
+%
+% One of the most important features of these functions is that they
+% are fully expandable.
+%
+% \begin{macro}[EXP]{\exp_args:Nc, \exp_args:cc}
+%   In \pkg{l3basics}.
+% \end{macro}
+%
+% \begin{macro}[EXP]{\exp_args:NNc, \exp_args:Ncc, \exp_args:Nccc}
+%   Here are the functions that turn their argument into csnames but are
+%   expandable.
+%    \begin{macrocode}
+\cs_new:Npn \exp_args:NNc #1#2#3
+  { \exp_after:wN #1 \exp_after:wN #2 \cs:w # 3\cs_end: }
+\cs_new:Npn \exp_args:Ncc #1#2#3
+  { \exp_after:wN #1 \cs:w #2 \exp_after:wN \cs_end: \cs:w #3 \cs_end: }
+\cs_new:Npn \exp_args:Nccc #1#2#3#4
+  {
+    \exp_after:wN #1
+      \cs:w #2 \exp_after:wN \cs_end:
+      \cs:w #3 \exp_after:wN \cs_end:
+      \cs:w #4 \cs_end:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\exp_args:No}
+% \begin{macro}[EXP]{\exp_args:NNo}
+% \begin{macro}[EXP]{\exp_args:NNNo}
+%   Those lovely runs of expansion!
+%    \begin{macrocode}
+\cs_new:Npn \exp_args:No #1#2 { \exp_after:wN #1 \exp_after:wN {#2} }
+\cs_new:Npn \exp_args:NNo #1#2#3
+  { \exp_after:wN #1 \exp_after:wN #2 \exp_after:wN {#3} }
+\cs_new:Npn \exp_args:NNNo #1#2#3#4
+  { \exp_after:wN #1 \exp_after:wN#2 \exp_after:wN #3 \exp_after:wN {#4} }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\exp_args:Ne}
+%   When the \tn{expanded} primitive is available, use it.  Otherwise
+%   use \cs{@@_e:nn}, defined later, to fully expand tokens.
+%    \begin{macrocode}
+\cs_if_exist:NTF \tex_expanded:D
+  {
+    \cs_new:Npn \exp_args:Ne #1#2
+      { \exp_after:wN #1 \tex_expanded:D { {#2} } }
+  }
+  {
+    \cs_new:Npn \exp_args:Ne #1#2
+      {
+        \exp_after:wN #1 \exp_after:wN
+          { \exp:w \@@_e:nn {#2} { } }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\exp_args:Nf, \exp_args:NV, \exp_args:Nv}
+%    \begin{macrocode}
+\cs_new:Npn \exp_args:Nf #1#2
+  { \exp_after:wN #1 \exp_after:wN { \exp:w \exp_end_continue_f:w #2 } }
+\cs_new:Npn \exp_args:Nv #1#2
+  {
+    \exp_after:wN #1 \exp_after:wN
+      { \exp:w \@@_eval_register:c {#2} }
+  }
+\cs_new:Npn \exp_args:NV #1#2
+  {
+    \exp_after:wN #1 \exp_after:wN
+      { \exp:w \@@_eval_register:N #2 }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]
+%   {
+%     \exp_args:NNV, \exp_args:NNv, \exp_args:NNe, \exp_args:NNf,
+%     \exp_args:Nco, \exp_args:NcV, \exp_args:Ncv, \exp_args:Ncf,
+%     \exp_args:NVV,
+%   }
+%   Some more hand-tuned function with three arguments.
+%   If we forced that an |o| argument always has braces,
+%   we could implement \cs{exp_args:Nco} with less tokens
+%   and only two arguments.
+%    \begin{macrocode}
+\cs_new:Npn \exp_args:NNV #1#2#3
+  {
+    \exp_after:wN #1
+    \exp_after:wN #2
+    \exp_after:wN { \exp:w \@@_eval_register:N #3 }
+  }
+\cs_new:Npn \exp_args:NNv #1#2#3
+  {
+    \exp_after:wN #1
+    \exp_after:wN #2
+    \exp_after:wN { \exp:w \@@_eval_register:c {#3} }
+  }
+\cs_if_exist:NTF \tex_expanded:D
+  {
+    \cs_new:Npn \exp_args:NNe #1#2#3
+      {
+        \exp_after:wN #1
+        \exp_after:wN #2
+        \tex_expanded:D { {#3} }
+      }
+  }
+  { \cs_new:Npn \exp_args:NNe { \::N \::e \::: } }
+\cs_new:Npn \exp_args:NNf #1#2#3
+  {
+    \exp_after:wN #1
+    \exp_after:wN #2
+    \exp_after:wN { \exp:w \exp_end_continue_f:w #3 }
+  }
+\cs_new:Npn \exp_args:Nco #1#2#3
+  {
+    \exp_after:wN #1
+    \cs:w #2 \exp_after:wN \cs_end:
+    \exp_after:wN {#3}
+  }
+\cs_new:Npn \exp_args:NcV #1#2#3
+  {
+    \exp_after:wN #1
+    \cs:w #2 \exp_after:wN \cs_end:
+    \exp_after:wN { \exp:w \@@_eval_register:N #3 }
+  }
+\cs_new:Npn \exp_args:Ncv #1#2#3
+  {
+    \exp_after:wN #1
+    \cs:w #2 \exp_after:wN \cs_end:
+    \exp_after:wN { \exp:w \@@_eval_register:c {#3} }
+  }
+\cs_new:Npn \exp_args:Ncf #1#2#3
+  {
+    \exp_after:wN #1
+    \cs:w #2 \exp_after:wN \cs_end:
+    \exp_after:wN { \exp:w \exp_end_continue_f:w #3 }
+  }
+\cs_new:Npn \exp_args:NVV #1#2#3
+  {
+    \exp_after:wN #1
+    \exp_after:wN { \exp:w \exp_after:wN
+      \@@_eval_register:N \exp_after:wN #2 \exp_after:wN }
+    \exp_after:wN { \exp:w \@@_eval_register:N #3 }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]
+%   {
+%     \exp_args:NNNV, \exp_args:NcNc, \exp_args:NcNo,
+%     \exp_args:Ncco,
+%   }
+%   A few more that we can hand-tune.
+%    \begin{macrocode}
+\cs_new:Npn \exp_args:NNNV #1#2#3#4
+  {
+    \exp_after:wN #1
+    \exp_after:wN #2
+    \exp_after:wN #3
+    \exp_after:wN { \exp:w \@@_eval_register:N #4 }
+  }
+\cs_new:Npn \exp_args:NcNc #1#2#3#4
+  {
+    \exp_after:wN #1
+    \cs:w #2 \exp_after:wN \cs_end:
+    \exp_after:wN #3
+    \cs:w #4 \cs_end:
+  }
+\cs_new:Npn \exp_args:NcNo #1#2#3#4
+  {
+    \exp_after:wN #1
+    \cs:w #2 \exp_after:wN \cs_end:
+    \exp_after:wN #3
+    \exp_after:wN {#4}
+  }
+\cs_new:Npn \exp_args:Ncco #1#2#3#4
+  {
+    \exp_after:wN #1
+    \cs:w #2 \exp_after:wN \cs_end:
+    \cs:w #3 \exp_after:wN \cs_end:
+    \exp_after:wN {#4}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Definitions with the automated technique}
+% \label{sec:l3expan:gendef}
+%
+% Some of these could be done more efficiently, but the complexity of
+% coding then becomes an issue. Notice that the auto-generated functions
+% actually take no arguments themselves.
+%
+% \begin{macro}{\exp_args:Nx}
+%    \begin{macrocode}
+\cs_new_protected:Npn \exp_args:Nx { \::x \::: }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]
+%   {
+%     \exp_args:Nnc, \exp_args:Nno, \exp_args:NnV, \exp_args:Nnv, \exp_args:Nne, \exp_args:Nnf,
+%     \exp_args:Noc, \exp_args:Noo, \exp_args:Nof,
+%     \exp_args:NVo, \exp_args:Nfo, \exp_args:Nff,
+%   }
+% \begin{macro}
+%   {
+%     \exp_args:NNx, \exp_args:Ncx, \exp_args:Nnx,
+%     \exp_args:Nox, \exp_args:Nxo, \exp_args:Nxx,
+%   }
+%   Here are the actual function definitions, using the helper functions
+%   above.
+%    \begin{macrocode}
+\cs_new:Npn \exp_args:Nnc { \::n \::c \::: }
+\cs_new:Npn \exp_args:Nno { \::n \::o \::: }
+\cs_new:Npn \exp_args:NnV { \::n \::V \::: }
+\cs_new:Npn \exp_args:Nnv { \::n \::v \::: }
+\cs_new:Npn \exp_args:Nne { \::n \::e \::: }
+\cs_new:Npn \exp_args:Nnf { \::n \::f \::: }
+\cs_new:Npn \exp_args:Noc { \::o \::c \::: }
+\cs_new:Npn \exp_args:Noo { \::o \::o \::: }
+\cs_new:Npn \exp_args:Nof { \::o \::f \::: }
+\cs_new:Npn \exp_args:NVo { \::V \::o \::: }
+\cs_new:Npn \exp_args:Nfo { \::f \::o \::: }
+\cs_new:Npn \exp_args:Nff { \::f \::f \::: }
+\cs_new_protected:Npn \exp_args:NNx { \::N \::x \::: }
+\cs_new_protected:Npn \exp_args:Ncx { \::c \::x \::: }
+\cs_new_protected:Npn \exp_args:Nnx { \::n \::x \::: }
+\cs_new_protected:Npn \exp_args:Nox { \::o \::x \::: }
+\cs_new_protected:Npn \exp_args:Nxo { \::x \::o \::: }
+\cs_new_protected:Npn \exp_args:Nxx { \::x \::x \::: }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]
+%   {
+%     \exp_args:NNcf,
+%     \exp_args:NNno, \exp_args:NNnV, \exp_args:NNoo, \exp_args:NNVV,
+%     \exp_args:Ncno, \exp_args:NcnV, \exp_args:Ncoo, \exp_args:NcVV,
+%     \exp_args:Nnnc, \exp_args:Nnno, \exp_args:Nnnf, \exp_args:Nnff,
+%     \exp_args:Nooo, \exp_args:Noof, \exp_args:Nffo,
+%   }
+% \begin{macro}
+%   {
+%     \exp_args:NNNx, \exp_args:NNnx, \exp_args:NNox,
+%     \exp_args:Nccx, \exp_args:Ncnx,
+%     \exp_args:Nnnx, \exp_args:Nnox, \exp_args:Noox,
+%   }
+%    \begin{macrocode}
+\cs_new:Npn \exp_args:NNcf { \::N \::c \::f \::: }
+\cs_new:Npn \exp_args:NNno { \::N \::n \::o \::: }
+\cs_new:Npn \exp_args:NNnV { \::N \::n \::V \::: }
+\cs_new:Npn \exp_args:NNoo { \::N \::o \::o \::: }
+\cs_new:Npn \exp_args:NNVV { \::N \::V \::V \::: }
+\cs_new:Npn \exp_args:Ncno { \::c \::n \::o \::: }
+\cs_new:Npn \exp_args:NcnV { \::c \::n \::V \::: }
+\cs_new:Npn \exp_args:Ncoo { \::c \::o \::o \::: }
+\cs_new:Npn \exp_args:NcVV { \::c \::V \::V \::: }
+\cs_new:Npn \exp_args:Nnnc { \::n \::n \::c \::: }
+\cs_new:Npn \exp_args:Nnno { \::n \::n \::o \::: }
+\cs_new:Npn \exp_args:Nnnf { \::n \::n \::f \::: }
+\cs_new:Npn \exp_args:Nnff { \::n \::f \::f \::: }
+\cs_new:Npn \exp_args:Nooo { \::o \::o \::o \::: }
+\cs_new:Npn \exp_args:Noof { \::o \::o \::f \::: }
+\cs_new:Npn \exp_args:Nffo { \::f \::f \::o \::: }
+\cs_new_protected:Npn \exp_args:NNNx { \::N \::N \::x \::: }
+\cs_new_protected:Npn \exp_args:NNnx { \::N \::n \::x \::: }
+\cs_new_protected:Npn \exp_args:NNox { \::N \::o \::x \::: }
+\cs_new_protected:Npn \exp_args:Nnnx { \::n \::n \::x \::: }
+\cs_new_protected:Npn \exp_args:Nnox { \::n \::o \::x \::: }
+\cs_new_protected:Npn \exp_args:Nccx { \::c \::c \::x \::: }
+\cs_new_protected:Npn \exp_args:Ncnx { \::c \::n \::x \::: }
+\cs_new_protected:Npn \exp_args:Noox { \::o \::o \::x \::: }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Last-unbraced versions}
+%
+% \begin{macro}[EXP]{\@@_arg_last_unbraced:nn}
+% \begin{macro}[EXP]{\::o_unbraced}
+% \begin{macro}[EXP]{\::V_unbraced}
+% \begin{macro}[EXP]{\::v_unbraced}
+% \begin{macro}[EXP]{\::e_unbraced}
+% \begin{macro}[EXP]{\::f_unbraced}
+% \begin{macro}[EXP]{\::x_unbraced}
+%   There are a few places where the last argument needs to be available
+%   unbraced. First some helper macros.
+%    \begin{macrocode}
+\cs_new:Npn \@@_arg_last_unbraced:nn #1#2 { #2#1 }
+\cs_new:Npn \::o_unbraced \::: #1#2
+  { \exp_after:wN \@@_arg_last_unbraced:nn \exp_after:wN {#2} {#1} }
+\cs_new:Npn \::V_unbraced \::: #1#2
+  {
+    \exp_after:wN \@@_arg_last_unbraced:nn
+      \exp_after:wN { \exp:w \@@_eval_register:N #2 } {#1}
+  }
+\cs_new:Npn \::v_unbraced \::: #1#2
+  {
+    \exp_after:wN \@@_arg_last_unbraced:nn
+      \exp_after:wN { \exp:w \@@_eval_register:c {#2} } {#1}
+  }
+\cs_if_exist:NTF \tex_expanded:D
+  {
+    \cs_new:Npn \::e_unbraced \::: #1#2
+      { \tex_expanded:D { \exp_not:n {#1} #2 } }
+  }
+  {
+    \cs_new:Npn \::e_unbraced \::: #1#2
+      { \exp:w \@@_e:nn {#2} {#1} }
+  }
+\cs_new:Npn \::f_unbraced \::: #1#2
+  {
+    \exp_after:wN \@@_arg_last_unbraced:nn
+      \exp_after:wN { \exp:w \exp_end_continue_f:w #2 } {#1}
+  }
+\cs_new_protected:Npn \::x_unbraced \::: #1#2
+  {
+    \cs_set_nopar:Npx \l_@@_internal_tl { \exp_not:n {#1} #2 }
+    \l_@@_internal_tl
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]
+%   {
+%     \exp_last_unbraced:No,
+%     \exp_last_unbraced:NV,
+%     \exp_last_unbraced:Nv,
+%     \exp_last_unbraced:Nf,
+%     \exp_last_unbraced:NNo,
+%     \exp_last_unbraced:NNV,
+%     \exp_last_unbraced:NNf,
+%     \exp_last_unbraced:Nco,
+%     \exp_last_unbraced:NcV,
+%     \exp_last_unbraced:NNNo,
+%     \exp_last_unbraced:NNNV,
+%     \exp_last_unbraced:NNNf,
+%     \exp_last_unbraced:Nno,
+%     \exp_last_unbraced:Noo,
+%     \exp_last_unbraced:Nfo,
+%     \exp_last_unbraced:NnNo,
+%     \exp_last_unbraced:NNNNo,
+%     \exp_last_unbraced:NNNNf,
+%   }
+% \begin{macro}{\exp_last_unbraced:Nx}
+%   Now the business end: most of these are hand-tuned for speed, but the
+%   general system is in place.
+%    \begin{macrocode}
+\cs_new:Npn \exp_last_unbraced:No #1#2 { \exp_after:wN #1 #2 }
+\cs_new:Npn \exp_last_unbraced:NV #1#2
+  { \exp_after:wN #1 \exp:w \@@_eval_register:N #2 }
+\cs_new:Npn \exp_last_unbraced:Nv #1#2
+  { \exp_after:wN #1 \exp:w \@@_eval_register:c {#2} }
+\cs_if_exist:NTF \tex_expanded:D
+  {
+    \cs_new:Npn \exp_last_unbraced:Ne #1#2
+      { \exp_after:wN #1 \tex_expanded:D {#2} }
+  }
+  { \cs_new:Npn \exp_last_unbraced:Ne { \::e_unbraced \::: } }
+\cs_new:Npn \exp_last_unbraced:Nf #1#2
+  { \exp_after:wN #1 \exp:w \exp_end_continue_f:w #2 }
+\cs_new:Npn \exp_last_unbraced:NNo #1#2#3
+  { \exp_after:wN #1 \exp_after:wN #2 #3 }
+\cs_new:Npn \exp_last_unbraced:NNV #1#2#3
+  {
+    \exp_after:wN #1
+    \exp_after:wN #2
+    \exp:w \@@_eval_register:N #3
+  }
+\cs_new:Npn \exp_last_unbraced:NNf #1#2#3
+  {
+    \exp_after:wN #1
+    \exp_after:wN #2
+    \exp:w \exp_end_continue_f:w #3
+  }
+\cs_new:Npn \exp_last_unbraced:Nco #1#2#3
+  { \exp_after:wN #1 \cs:w #2 \exp_after:wN \cs_end: #3 }
+\cs_new:Npn \exp_last_unbraced:NcV #1#2#3
+  {
+    \exp_after:wN #1
+    \cs:w #2 \exp_after:wN \cs_end:
+    \exp:w \@@_eval_register:N #3
+  }
+\cs_new:Npn \exp_last_unbraced:NNNo #1#2#3#4
+  { \exp_after:wN #1 \exp_after:wN #2 \exp_after:wN #3 #4 }
+\cs_new:Npn \exp_last_unbraced:NNNV #1#2#3#4
+  {
+    \exp_after:wN #1
+    \exp_after:wN #2
+    \exp_after:wN #3
+    \exp:w \@@_eval_register:N #4
+  }
+\cs_new:Npn \exp_last_unbraced:NNNf #1#2#3#4
+  {
+    \exp_after:wN #1
+    \exp_after:wN #2
+    \exp_after:wN #3
+    \exp:w \exp_end_continue_f:w #4
+  }
+\cs_new:Npn \exp_last_unbraced:Nno { \::n \::o_unbraced \::: }
+\cs_new:Npn \exp_last_unbraced:Noo { \::o \::o_unbraced \::: }
+\cs_new:Npn \exp_last_unbraced:Nfo { \::f \::o_unbraced \::: }
+\cs_new:Npn \exp_last_unbraced:NnNo { \::n \::N \::o_unbraced \::: }
+\cs_new:Npn \exp_last_unbraced:NNNNo #1#2#3#4#5
+  { \exp_after:wN #1 \exp_after:wN #2 \exp_after:wN #3 \exp_after:wN #4 #5 }
+\cs_new:Npn \exp_last_unbraced:NNNNf #1#2#3#4#5
+  {
+    \exp_after:wN #1
+    \exp_after:wN #2
+    \exp_after:wN #3
+    \exp_after:wN #4
+    \exp:w \exp_end_continue_f:w #5
+  }
+\cs_new_protected:Npn \exp_last_unbraced:Nx { \::x_unbraced \::: }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\exp_last_two_unbraced:Noo}
+% \begin{macro}[EXP]{\@@_last_two_unbraced:noN}
+%   If |#2| is a single token then this can be implemented as
+%   \begin{verbatim}
+%     \cs_new:Npn \exp_last_two_unbraced:Noo #1 #2 #3
+%      { \exp_after:wN \exp_after:wN \exp_after:wN #1 \exp_after:wN #2 #3 }
+%   \end{verbatim}
+%   However, for robustness this is not suitable. Instead, a bit of a
+%   shuffle is used to ensure that |#2| can be multiple tokens.
+%    \begin{macrocode}
+\cs_new:Npn \exp_last_two_unbraced:Noo #1#2#3
+  { \exp_after:wN \@@_last_two_unbraced:noN \exp_after:wN {#3} {#2} #1 }
+\cs_new:Npn \@@_last_two_unbraced:noN #1#2#3
+   { \exp_after:wN #3 #2 #1 }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Preventing expansion}
+%
+% \begin{macro}{\__kernel_exp_not:w}
+%   At the kernel level, we need the primitive behaviour to allow expansion
+%   \emph{before} the brace group.
+%    \begin{macrocode}
+\cs_new_eq:NN \__kernel_exp_not:w \tex_unexpanded:D
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\exp_not:c}
+% \begin{macro}[EXP]{\exp_not:o}
+% \begin{macro}[EXP]{\exp_not:e}
+% \begin{macro}[EXP]{\exp_not:f}
+% \begin{macro}[EXP]{\exp_not:V}
+% \begin{macro}[EXP]{\exp_not:v}
+%   All these except \cs{exp_not:c} call the kernel-internal
+%   \cs{__kernel_exp_not:w} namely \tn{tex_unexpanded:D}.
+%    \begin{macrocode}
+\cs_new:Npn \exp_not:c #1 { \exp_after:wN \exp_not:N \cs:w #1 \cs_end: }
+\cs_new:Npn \exp_not:o #1 { \__kernel_exp_not:w \exp_after:wN {#1} }
+\cs_if_exist:NTF \tex_expanded:D
+  {
+    \cs_new:Npn \exp_not:e #1
+      { \__kernel_exp_not:w \tex_expanded:D { {#1} } }
+  }
+  {
+    \cs_new:Npn \exp_not:e
+      { \__kernel_exp_not:w \exp_args:Ne \prg_do_nothing: }
+  }
+\cs_new:Npn \exp_not:f #1
+  { \__kernel_exp_not:w \exp_after:wN { \exp:w \exp_end_continue_f:w #1 } }
+\cs_new:Npn \exp_not:V #1
+  {
+    \__kernel_exp_not:w \exp_after:wN
+      { \exp:w \@@_eval_register:N #1 }
+  }
+\cs_new:Npn \exp_not:v #1
+  {
+    \__kernel_exp_not:w \exp_after:wN
+      { \exp:w \@@_eval_register:c {#1} }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Controlled expansion}
+%
+% \begin{macro}{\exp:w}
+% \begin{macro}{\exp_end:}
+% \begin{macro}{\exp_end_continue_f:w}
+% \begin{macro}{\exp_end_continue_f:nw}
+%   To trigger a sequence of \enquote{arbitrarily} many expansions we
+%   need a method to invoke \TeX's expansion mechanism in such a way
+%   that (a) we are able to stop it in a controlled manner and (b) the
+%   result of what triggered the expansion in the first place is null,
+%   i.e.\@, that we do not get any unwanted side effects. There aren't
+%   that many possibilities in \TeX{}; in fact the one explained below
+%   might well be the only one (as normally the result of expansion is
+%   not null).
+%
+%   The trick here is to make use of the fact that
+%   \cs{tex_romannumeral:D} expands the tokens following it when looking
+%   for a number and that its expansion is null if that number turns out
+%   to be zero or negative. So we use that to start the expansion
+%   sequence: \cs{exp:w} is set equal to \cs{tex_romannumeral:D} in
+%   \pkg{l3basics}.  To stop the expansion sequence in a controlled way
+%   all we need to provide is a constant integer zero as part of
+%   expanded tokens. As this is an integer constant it immediately stops
+%   \cs{tex_romannumeral:D}'s search for a number.  Again, the
+%   definition of \cs{exp_end:} as the integer constant zero is in
+%   \pkg{l3basics}.  (Note that according to our specification all
+%   tokens we expand initiated by \cs{exp:w} are supposed to be
+%   expandable (as well as their replacement text in the expansion) so
+%   we will not encounter a \enquote{number} that actually result in a
+%   roman numeral being generated. Or if we do then the programmer made
+%   a mistake.)
+%
+%   If on the other hand we want to stop the initial expansion sequence
+%   but continue with an \texttt{f}-type expansion we provide the
+%   alphabetic constant |`^^@| that also represents |0| but this time
+%   \TeX's syntax for a \meta{number} continues searching for an
+%   optional space (and it continues expansion doing that) --- see
+%   \TeX{}book page~269 for details.
+%    \begin{macrocode}
+\group_begin:
+  \tex_catcode:D `\^^@ = 13
+  \cs_new_protected:Npn \exp_end_continue_f:w { `^^@ }
+%    \end{macrocode}
+%    If the above definition ever appears outside its proper context
+%    the active character |^^@| will be executed so we turn this into an
+%    error. The test for existence covers the (unlikely) case that some
+%    other code has already defined |^^@|: this is true for example for
+%    \texttt{xmltex.tex}.
+%    \begin{macrocode}
+  \if_cs_exist:N ^^@
+  \else:
+    \cs_new:Npn ^^@
+      { \__kernel_msg_expandable_error:nn { kernel } { bad-exp-end-f } }
+  \fi:
+%    \end{macrocode}
+%   The same but grabbing an argument to remove spaces and braces.
+%    \begin{macrocode}
+  \cs_new:Npn \exp_end_continue_f:nw #1 { `^^@ #1 }
+\group_end:
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+%
+% \subsection{Emulating \texttt{e}-type expansion}
+%
+% When the \tn{expanded} primitive is available it is used to implement
+% \texttt{e}-type expansion; otherwise we emulate it.
+%
+%    \begin{macrocode}
+\cs_if_exist:NF \tex_expanded:D
+  {
+%    \end{macrocode}
+%
+% \begin{macro}[EXP]{\@@_e:nn}
+%   Repeatedly expand tokens, keeping track of fully-expanded tokens in
+%   the second argument to \cs{@@_e:nn}; this function eventually
+%   calls \cs{@@_e_end:nn} to leave \cs{exp_end:} in the input
+%   stream, followed by the result of the expansion.  There are many
+%   special cases: spaces, brace groups, \tn{noexpand}, \tn{unexpanded},
+%   \tn{the}, \tn{primitive}.
+%    \begin{macrocode}
+    \cs_new:Npn \@@_e:nn #1
+      {
+        \if_false: { \fi:
+          \tl_if_head_is_N_type:nTF {#1}
+            { \@@_e:N }
+            {
+              \tl_if_head_is_group:nTF {#1}
+                { \@@_e_group:n }
+                {
+                  \tl_if_empty:nTF {#1}
+                    { \exp_after:wN \@@_e_end:nn }
+                    { \exp_after:wN \@@_e_space:nn }
+                  \exp_after:wN { \if_false: } \fi:
+                }
+            }
+          #1
+        }
+      }
+    \cs_new:Npn \@@_e_end:nn #1#2 { \exp_end: #2 }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\@@_e_space:nn}
+%   For an explicit space character, remove it by \texttt{f}-expansion
+%   and put it in the (future) output.
+%    \begin{macrocode}
+    \cs_new:Npn \@@_e_space:nn #1#2
+      { \exp_args:Nf \@@_e:nn {#1} { #2 ~ } }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\@@_e_group:n, \@@_e_put:nn, \@@_e_put:nnn}
+%   For a group, expand its contents, wrap it in two pairs of braces,
+%   and call \cs{@@_e_put:nn}.  This function places the first item (the
+%   double-brace wrapped result) into the output.  Importantly,
+%   \cs{tl_head:n} works even if the input contains quarks.
+%    \begin{macrocode}
+    \cs_new:Npn \@@_e_group:n #1
+      {
+        \exp_after:wN \@@_e_put:nn
+        \exp_after:wN { \exp_after:wN { \exp_after:wN {
+              \exp:w \if_false: } \fi: \@@_e:nn {#1} { } } }
+      }
+    \cs_new:Npn \@@_e_put:nn #1
+      {
+        \exp_args:NNo \exp_args:No \@@_e_put:nnn
+          { \tl_head:n {#1} } {#1}
+      }
+    \cs_new:Npn \@@_e_put:nnn #1#2#3
+      { \exp_args:No \@@_e:nn { \use_none:n #2 } { #3 #1 } }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\@@_e:N}
+%   For an \texttt{N}-type token, call \cs{@@_e:Nnn} with arguments the
+%   \meta{first token}, the remaining tokens to expand and what's
+%   already been expanded.  If the \meta{first token} is non-expandable,
+%   including \tn{protected} (\tn{long} or not) macros, it is put in the
+%   result by \cs{@@_e_protected:Nnn}.  The four special primitives
+%   \tn{unexpanded}, \tn{noexpand}, \tn{the}, \tn{primitive} are
+%   detected; otherwise the token is expanded by
+%   \cs{@@_e_expandable:Nnn}.
+%    \begin{macrocode}
+    \cs_new:Npn \@@_e:N #1
+      {
+        \exp_after:wN \@@_e:Nnn
+        \exp_after:wN #1
+        \exp_after:wN { \if_false: } \fi:
+      }
+    \cs_new:Npn \@@_e:Nnn #1
+      {
+        \if_case:w
+          \exp_after:wN \if_meaning:w \exp_not:N #1 #1 1 ~ \fi:
+          \token_if_protected_macro:NT #1 { 1 ~ }
+          \token_if_protected_long_macro:NT #1 { 1 ~ }
+          \if_meaning:w \exp_not:n #1 2 ~ \fi:
+          \if_meaning:w \exp_not:N #1 3 ~ \fi:
+          \if_meaning:w \tex_the:D #1 4 ~ \fi:
+          \if_meaning:w \tex_primitive:D #1 5 ~ \fi:
+          0 ~
+          \exp_after:wN \@@_e_expandable:Nnn
+        \or: \exp_after:wN \@@_e_protected:Nnn
+        \or: \exp_after:wN \@@_e_unexpanded:Nnn
+        \or: \exp_after:wN \@@_e_noexpand:Nnn
+        \or: \exp_after:wN \@@_e_the:Nnn
+        \or: \exp_after:wN \@@_e_primitive:Nnn
+        \fi:
+        #1
+      }
+    \cs_new:Npn \@@_e_protected:Nnn #1#2#3
+      { \@@_e:nn {#2} { #3 #1 } }
+    \cs_new:Npn \@@_e_expandable:Nnn #1#2
+      { \exp_args:No \@@_e:nn { #1 #2 } }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\@@_e_primitive:Nnn}
+%   Quite rare.  Will be implemented later.
+%    \begin{macrocode}
+    \cs_new:Npn \@@_e_primitive:Nnn #1
+      {
+        \__kernel_msg_expandable_error:nnn { kernel } { e-type }
+          { \primitive not~implemented }
+        \@@_e:nn
+      }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\@@_e_noexpand:Nnn}
+%   The \tn{noexpand} primitive has no effect when followed by a token
+%   that is not \texttt{N}-type; otherwise \cs{@@_e_put:nn} can grab the
+%   next token and put it in the result unchanged.
+%    \begin{macrocode}
+    \cs_new:Npn \@@_e_noexpand:Nnn #1#2
+      {
+        \tl_if_head_is_N_type:nTF {#2}
+          { \@@_e_put:nn } { \@@_e:nn } {#2}
+      }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]
+%   {
+%     \@@_e_unexpanded:Nnn, \@@_e_unexpanded:nn,
+%     \@@_e_unexpanded:nN, \@@_e_unexpanded:N
+%   }
+%   The \tn{unexpanded} primitive expands and ignores any space,
+%   \cs{scan_stop:}, or token affected by \cs{exp_not:N}, then expects a
+%   brace group.  Since we only support brace-balanced token lists it is
+%   impossible to support the case where the argument of \tn{unexpanded}
+%   starts with an implicit brace.  Even though we want to expand and
+%   ignore spaces we cannot blindly \texttt{f}-expand because tokens
+%   affected by \cs{exp_not:N} should discarded without being expanded
+%   further.
+%
+%   As usual distinguish four cases: brace group (the normal case, where
+%   we just put the item in the result), space (just \texttt{f}-expand
+%   to remove the space), empty (an error), or \texttt{N}-type
+%   \meta{token}.  In the last case call \cs{@@_e_unexpanded:nN}
+%   triggered by an \texttt{f}-expansion.  Having a non-expandable
+%   \meta{token} after \tn{unexpanded} is an error (we recover by
+%   passing |{}| to \tn{unexpanded}; this is different from \TeX{}
+%   because the error recovery of \tn{unexpanded} changes the balance of
+%   braces), unless that \meta{token} is \cs{scan_stop:} or a space
+%   (recall that we don't implement the case of an implicit begin-group
+%   token).  An expandable \meta{token} is instead expanded, unless it
+%   is \tn{noexpand}.  That primitive can be followed by an expandable
+%   \texttt{N}-type token, to be removed, by a non-expandable one, kept
+%   (and later causing an error), by a space, removed by
+%   \texttt{f}-expansion, or by a brace group or nothing (later causing
+%   an error).
+%    \begin{macrocode}
+    \cs_new:Npn \@@_e_unexpanded:Nnn #1 { \@@_e_unexpanded:nn }
+    \cs_new:Npn \@@_e_unexpanded:nn #1
+      {
+        \tl_if_head_is_N_type:nTF {#1}
+          {
+            \exp_args:Nf \@@_e_unexpanded:nn
+              { \@@_e_unexpanded:nN {#1} #1 }
+          }
+          {
+            \tl_if_head_is_group:nTF {#1}
+              { \@@_e_put:nn }
+              {
+                \tl_if_empty:nTF {#1}
+                  {
+                    \__kernel_msg_expandable_error:nnn
+                      { kernel } { e-type }
+                      { \unexpanded missing~brace }
+                    \@@_e_end:nn
+                  }
+                  { \exp_args:Nf \@@_e_unexpanded:nn }
+              }
+            {#1}
+          }
+      }
+    \cs_new:Npn \@@_e_unexpanded:nN #1#2
+      {
+        \exp_after:wN \if_meaning:w \exp_not:N #2 #2
+          \exp_after:wN \use_i:nn
+        \else:
+          \exp_after:wN \use_ii:nn
+        \fi:
+        {
+          \token_if_eq_catcode:NNTF #2 \c_space_token
+            { \exp_stop_f: }
+            {
+              \token_if_eq_meaning:NNTF #2 \scan_stop:
+                { \exp_stop_f: }
+                {
+                  \__kernel_msg_expandable_error:nnn
+                    { kernel } { e-type }
+                    { \unexpanded missing~brace }
+                  { }
+                }
+            }
+        }
+        {
+          \token_if_eq_meaning:NNTF #2 \exp_not:N
+            {
+              \exp_args:No \tl_if_head_is_N_type:nT { \use_none:n #1 }
+                { \@@_e_unexpanded:N }
+            }
+            { \exp_after:wN \exp_stop_f: #2 }
+        }
+      }
+    \cs_new:Npn \@@_e_unexpanded:N #1
+      {
+        \exp_after:wN \if_meaning:w \exp_not:N #1 #1 \else:
+          \exp_after:wN \use_i:nn
+        \fi:
+        \exp_stop_f: #1
+      }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\@@_e_the:Nnn, \@@_e_the:N, \@@_e_the_toks_reg:N}
+%   Finally implement \tn{the}.  Followed by anything other than an
+%   \texttt{N}-type \meta{token} this causes an error (we just let
+%   \TeX{} make one), otherwise we test the \meta{token}.  If the
+%   \meta{token} is expandable, expand it.  Otherwise it could be any
+%   kind of register, or things like \tn{numexpr}, so there is no way to
+%   deal with all cases.  Thankfully, only \tn{toks} data needs to be
+%   protected from expansion since everything else gives a string of
+%   characters.  If the \meta{token} is \tn{toks} we find a number and
+%   unpack using the |the_toks| functions.  If it is a token register we
+%   unpack it in a brace group and call \cs{@@_e_put:nn} to move it to
+%   the result.  Otherwise we unpack and continue expanding (useless but
+%   safe) since it is basically impossible to have a handle on where the
+%   result of \tn{the} ends.
+%    \begin{macrocode}
+    \cs_new:Npn \@@_e_the:Nnn #1#2
+      {
+        \tl_if_head_is_N_type:nTF {#2}
+          { \if_false: { \fi: \@@_e_the:N #2 } }
+          { \exp_args:No \@@_e:nn { \tex_the:D #2 } }
+      }
+    \cs_new:Npn \@@_e_the:N #1
+      {
+        \exp_after:wN \if_meaning:w \exp_not:N #1 #1
+          \exp_after:wN \use_i:nn
+        \else:
+          \exp_after:wN \use_ii:nn
+        \fi:
+        {
+          \if_meaning:w \tex_toks:D #1
+            \exp_after:wN \@@_e_the_toks:wnn \int_value:w
+            \exp_after:wN \@@_e_the_toks:n
+            \exp_after:wN { \int_value:w \if_false: } \fi:
+          \else:
+            \@@_e_if_toks_register:NTF #1
+              { \exp_after:wN \@@_e_the_toks_reg:N }
+              {
+                \exp_after:wN \@@_e:nn \exp_after:wN {
+                  \tex_the:D \if_false: } \fi:
+              }
+            \exp_after:wN #1
+          \fi:
+        }
+        {
+          \exp_after:wN \@@_e_the:Nnn \exp_after:wN ?
+          \exp_after:wN { \exp:w \if_false: } \fi:
+          \exp_after:wN \exp_end: #1
+        }
+      }
+    \cs_new:Npn \@@_e_the_toks_reg:N #1
+      {
+        \exp_after:wN \@@_e_put:nn \exp_after:wN {
+          \exp_after:wN {
+            \tex_the:D \if_false: } \fi: #1 }
+      }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\@@_e_the_toks:wnn, \@@_e_the_toks:n, \@@_e_the_toks:N}
+%   The calling function has applied \cs{int_value:w} so we collect
+%   digits with \cs{@@_e_the_toks:n} (which gets the token list as an
+%   argument) and \cs{@@_e_the_toks:N} (which gets the first token in
+%   case it is \texttt{N}-type).  The digits are themselves collected
+%   into an \cs{int_value:w} argument to \cs{@@_e_the_toks:wnn}.  Then
+%   that function unpacks the \tn{toks}\meta{number} into the result.
+%   We include |?| because \cs{@@_e_put:nnn} removes one item from its
+%   second argument.  Note that our approach is rather crude: in cases
+%   like |\the\toks12~34| the first \cs{int_value:w} removes the space
+%   and we will incorrectly unpack the |\the\toks1234|.
+%    \begin{macrocode}
+    \cs_new:Npn \@@_e_the_toks:wnn #1; #2
+      {
+        \exp_args:No \@@_e_put:nnn
+          { \tex_the:D \tex_toks:D #1 } { ? #2 }
+      }
+    \cs_new:Npn \@@_e_the_toks:n #1
+      {
+        \tl_if_head_is_N_type:nTF {#1}
+          { \exp_after:wN \@@_e_the_toks:N \if_false: { \fi: #1 } }
+          { ; {#1} }
+      }
+    \cs_new:Npn \@@_e_the_toks:N #1
+      {
+        \if_int_compare:w 10 < 9 \token_to_str:N #1 \exp_stop_f:
+          \exp_after:wN \use_i:nn
+        \else:
+          \exp_after:wN \use_ii:nn
+        \fi:
+        {
+          #1
+          \exp_after:wN \@@_e_the_toks:n
+        }
+        { \exp_after:wN ; }
+        \exp_after:wN { \if_false: } \fi:
+      }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\@@_e_if_toks_register:NTF}
+%   We need to detect both \tn{toks} registers like \tn{toks@} (in
+%   \LaTeXe{}) and parameters such as \tn{everypar}, as the result of
+%   unpacking the register should not expand further.  The list of
+%   parameters is finite so we just use a \cs{cs_if_exist:cTF} test to
+%   look up in a table.  Registers are found by
+%   \cs{token_if_toks_register:NTF} by inspecting the meaning.  We abuse
+%   \cs{cs_to_str:N}'s ability to remove a leading escape character
+%   whatever it is.
+%    \begin{macrocode}
+    \prg_new_conditional:Npnn \@@_e_if_toks_register:N #1 { TF }
+      {
+        \token_if_toks_register:NTF #1 { \prg_return_true: }
+          {
+            \cs_if_exist:cTF
+              {
+                @@_e_the_
+                \exp_after:wN \cs_to_str:N
+                \token_to_meaning:N #1
+                :
+              } { \prg_return_true: } { \prg_return_false: }
+          }
+      }
+    \cs_new_eq:NN \@@_e_the_XeTeXinterchartoks: ?
+    \cs_new_eq:NN \@@_e_the_errhelp: ?
+    \cs_new_eq:NN \@@_e_the_everycr: ?
+    \cs_new_eq:NN \@@_e_the_everydisplay: ?
+    \cs_new_eq:NN \@@_e_the_everyeof: ?
+    \cs_new_eq:NN \@@_e_the_everyhbox: ?
+    \cs_new_eq:NN \@@_e_the_everyjob: ?
+    \cs_new_eq:NN \@@_e_the_everymath: ?
+    \cs_new_eq:NN \@@_e_the_everypar: ?
+    \cs_new_eq:NN \@@_e_the_everyvbox: ?
+    \cs_new_eq:NN \@@_e_the_output: ?
+    \cs_new_eq:NN \@@_e_the_pdfpageattr: ?
+    \cs_new_eq:NN \@@_e_the_pdfpageresources: ?
+    \cs_new_eq:NN \@@_e_the_pdfpagesattr: ?
+    \cs_new_eq:NN \@@_e_the_pdfpkmode: ?
+%    \end{macrocode}
+% \end{macro}
+%
+% We are done emulating \texttt{e}-type argument expansion when
+% \tn{expanded} is unavailable.
+%    \begin{macrocode}
+  }
+%    \end{macrocode}
+%
+%
+% \subsection{Defining function variants}
+%
+%    \begin{macrocode}
+%<@@=cs>
+%    \end{macrocode}
+%
+% \begin{macro}{\cs_generate_variant:Nn, \cs_generate_variant:cn}
+%   \begin{arguments}
+%     \item Base form of a function; \emph{e.g.},~\cs{tl_set:Nn}
+%     \item One or more variant argument specifiers; e.g., |{Nx,c,cx}|
+%   \end{arguments}
+%   After making sure that the base form exists, test whether it is
+%   protected or not and define \cs{@@_tmp:w} as either
+%   \cs{cs_new:Npx} or \cs{cs_new_protected:Npx}, which is
+%   then used to define all the variants (except those involving
+%   \texttt{x}-expansion, always protected).  Split up the original base
+%   function only once, to grab its name and signature.  Then we wish to
+%   iterate through the comma list of variant argument specifiers, which
+%   we first convert to a string: the reason is explained later.
+%    \begin{macrocode}
+\__kernel_patch:nnNNpn { \__kernel_chk_cs_exist:N #1 } { }
+\cs_new_protected:Npn \cs_generate_variant:Nn #1#2
+  {
+    \@@_generate_variant:N #1
+    \use:x
+      {
+        \@@_generate_variant:nnNN
+          \cs_split_function:N #1
+          \exp_not:N #1
+          \tl_to_str:n {#2} ,
+            \exp_not:N \scan_stop: ,
+            \exp_not:N \q_recursion_stop
+      }
+  }
+\cs_new_protected:Npn \cs_generate_variant:cn
+  { \exp_args:Nc \cs_generate_variant:Nn }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_generate_variant:N}
+% \begin{macro}{\@@_generate_variant:ww, \@@_generate_variant:wwNw}
+%   The goal here is to pick up protected parent functions.  There are
+%   four cases: the parent function can be a primitive or a macro, and
+%   can be expandable or not.  For non-expandable primitives, all
+%   variants should be protected; skipping the \cs{else:} branch is safe
+%   because non-expandable primitives cannot be \TeX{} conditionals.
+%
+%   The other case where variants should be protected is when the parent
+%   function is a protected macro: then |protected| appears in the
+%   meaning before the fist occurrence of |macro|.  The |ww| auxiliary
+%   removes everything in the meaning string after the first |ma|.  We
+%   use |ma| rather than the full |macro| because the meaning of the
+%   \tn{firstmark} primitive (and four others) can contain an arbitrary
+%   string after a leading |firstmark:|.  Then, look for |pr| in the
+%   part we extracted: no need to look for anything longer: the only
+%   strings we can have are an empty string, \verb*|\long |,
+%   \verb*|\protected |, \verb*|\protected\long |, |\first|, |\top|,
+%   |\bot|, |\splittop|, or |\splitbot|, with |\| replaced by the
+%   appropriate escape character.  If |pr| appears in the part before
+%   |ma|, the first \cs{q_mark} is taken as an argument of the |wwNw|
+%   auxiliary, and |#3| is \cs{cs_new_protected:Npx}, otherwise it
+%   is \cs{cs_new:Npx}.
+%    \begin{macrocode}
+\cs_new_protected:Npx \@@_generate_variant:N #1
+  {
+    \exp_not:N \exp_after:wN \exp_not:N \if_meaning:w
+      \exp_not:N \exp_not:N #1 #1
+      \cs_set_eq:NN \exp_not:N \@@_tmp:w \cs_new_protected:Npx
+    \exp_not:N \else:
+      \exp_not:N \exp_after:wN \exp_not:N \@@_generate_variant:ww
+        \exp_not:N \token_to_meaning:N #1 \tl_to_str:n { ma }
+          \exp_not:N \q_mark
+        \exp_not:N \q_mark \cs_new_protected:Npx
+        \tl_to_str:n { pr }
+        \exp_not:N \q_mark \cs_new:Npx
+        \exp_not:N \q_stop
+    \exp_not:N \fi:
+  }
+\exp_last_unbraced:NNNNo
+  \cs_new_protected:Npn \@@_generate_variant:ww
+    #1 { \tl_to_str:n { ma } } #2 \q_mark
+    { \@@_generate_variant:wwNw #1 }
+\exp_last_unbraced:NNNNo
+  \cs_new_protected:Npn \@@_generate_variant:wwNw
+    #1 { \tl_to_str:n { pr } } #2 \q_mark #3 #4 \q_stop
+    { \cs_set_eq:NN \@@_tmp:w #3 }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\@@_generate_variant:nnNN}
+%   \begin{arguments}
+%     \item Base name.
+%     \item Base signature.
+%     \item Boolean.
+%     \item Base function.
+%   \end{arguments}
+%   If the boolean is \cs{c_false_bool}, the base function has no colon
+%   and we abort with an error; otherwise, set off a loop through the
+%   desired variant forms. The original function is retained as |#4| for
+%   efficiency.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_generate_variant:nnNN #1#2#3#4
+  {
+    \if_meaning:w \c_false_bool #3
+      \__kernel_msg_error:nnx { kernel } { missing-colon }
+        { \token_to_str:c {#1} }
+      \exp_after:wN \use_none_delimit_by_q_recursion_stop:w
+    \fi:
+    \@@_generate_variant:Nnnw #4 {#1}{#2}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_generate_variant:Nnnw}
+%   \begin{arguments}
+%     \item Base function.
+%     \item Base name.
+%     \item Base signature.
+%     \item Beginning of variant signature.
+%   \end{arguments}
+%   First check whether to terminate the loop over variant forms.  Then,
+%   for each variant form, construct a new function name using the
+%   original base name, the variant signature consisting of $l$ letters
+%   and the last $k-l$ letters of the base signature (of length $k$).
+%   For example, for a base function \cs{prop_put:Nnn} which needs a
+%   |cV| variant form, we want the new signature to be |cVn|.
+%
+%   There are further subtleties:
+%   \begin{itemize}
+%     \item In \cs{cs_generate_variant:Nn} |\foo:nnTF| |{xxTF}|, we must define
+%       |\foo:xxTF| using |\exp_args:Nxx|,
+%       rather than a hypothetical |\exp_args:NxxTF|.  Thus, we wish to
+%       trim a common trailing part from the base signature and the
+%       variant signature.
+%     \item In \cs{cs_generate_variant:Nn} |\foo:on| |{ox}|, the
+%       function |\foo:ox| must be defined using |\exp_args:Nnx|, not
+%       |\exp_args:Nox|, to avoid double |o| expansion.
+%     \item Lastly, \cs{cs_generate_variant:Nn} |\foo:on| |{xn}| must
+%       trigger an error, because we do not have a means to replace
+%       |o|-expansion by |x|-expansion.
+%       More generally, we can only convert |N| to |c|, or convert |n|
+%       to |V|, |v|, |o|, |f|, |x|.
+%     \end{itemize}
+%     All this boils down to a few rules.  Only |n| and |N|-type
+%     arguments can be replaced by \cs{cs_generate_variant:Nn}.  Other
+%     argument types are allowed to be passed unchanged from the base
+%     form to the variant: in the process they are changed to |n|
+%     except for |N| and |p|-type arguments.  A common trailing
+%     part is ignored.
+%
+%     We compare the base and variant signatures one character at a time
+%     within |x|-expansion.  The result is given to
+%     \cs{@@_generate_variant:wwNN} (defined later) in the form
+%     \meta{processed variant signature} \cs{q_mark} \meta{errors}
+%     \cs{q_stop} \meta{base function} \meta{new function}.  If all went
+%     well, \meta{errors} is empty; otherwise, it is a kernel error
+%     message and some clean-up code.
+%
+%     Note the space after |#3| and after the following brace group.
+%     Those are ignored by \TeX{} when fetching the last argument for
+%     \cs{@@_generate_variant_loop:nNwN}, but can be used as a delimiter
+%     for \cs{@@_generate_variant_loop_end:nwwwNNnn}.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_generate_variant:Nnnw #1#2#3#4 ,
+  {
+    \if_meaning:w \scan_stop: #4
+      \exp_after:wN \use_none_delimit_by_q_recursion_stop:w
+    \fi:
+    \use:x
+      {
+        \exp_not:N \@@_generate_variant:wwNN
+        \@@_generate_variant_loop:nNwN { }
+          #4
+          \@@_generate_variant_loop_end:nwwwNNnn
+          \q_mark
+          #3 ~
+          { ~ { } \fi: \@@_generate_variant_loop_long:wNNnn } ~
+          { }
+          \q_stop
+        \exp_not:N #1 {#2} {#4}
+      }
+    \@@_generate_variant:Nnnw #1 {#2} {#3}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[rEXP]
+%   {
+%     \@@_generate_variant_loop:nNwN,
+%     \@@_generate_variant_loop_base:N,
+%     \@@_generate_variant_loop_same:w,
+%     \@@_generate_variant_loop_end:nwwwNNnn,
+%     \@@_generate_variant_loop_long:wNNnn,
+%     \@@_generate_variant_loop_invalid:NNwNNnn,
+%     \@@_generate_variant_loop_special:NNwNNnn
+%   }
+%   \begin{arguments}
+%     \item Last few consecutive letters common between the base and
+%       variant (more precisely, \cs{@@_generate_variant_same:N}
+%       \meta{letter} for each letter).
+%     \item Next variant letter.
+%     \item Remainder of variant form.
+%     \item Next base letter.
+%   \end{arguments}
+%   The first argument is populated by
+%   \cs{@@_generate_variant_loop_same:w} when a variant letter and a
+%   base letter match.  It is flushed into the input stream whenever the
+%   two letters are different: if the loop ends before, the argument is
+%   dropped, which means that trailing common letters are ignored.
+%
+%   The case where the two letters are different is only allowed if the
+%   base is |N| and the variant is |c|, or when the base is |n| and the
+%   variant is |o|, |V|, |v|, |f| or |x|.  Otherwise, call
+%   \cs{@@_generate_variant_loop_invalid:NNwNNnn} to remove the end of
+%   the loop, get arguments at the end of the loop, and place an
+%   appropriate error message as a second argument of
+%   \cs{@@_generate_variant:wwNN}.  If the letters are distinct and the
+%   base letter is indeed |n| or |N|, leave in the input stream whatever
+%   argument |#1| was collected, and the next variant letter |#2|, then
+%   loop by calling \cs{@@_generate_variant_loop:nNwN}.
+%
+%   The loop can stop in three ways.
+%   \begin{itemize}
+%     \item If the end of the variant form is encountered first, |#2| is
+%       \cs{@@_generate_variant_loop_end:nwwwNNnn} (expanded by the
+%       conditional \cs{if:w}), which inserts some tokens to end the
+%       conditional; grabs the \meta{base name} as |#7|, the
+%       \meta{variant signature} |#8|, the \meta{next base letter} |#1|
+%       and the part |#3| of the base signature that wasn't read yet;
+%       and combines those into the \meta{new function} to be defined.
+%     \item If the end of the base form is encountered first, |#4| is
+%       |~{}\fi:| which ends the conditional (with an empty expansion),
+%       followed by \cs{@@_generate_variant_loop_long:wNNnn}, which
+%       places an error as the second argument of
+%       \cs{@@_generate_variant:wwNN}.
+%     \item The loop can be interrupted early if the requested expansion
+%       is unavailable, namely when the variant and base letters differ
+%       and the base is not the right one (|n| or |N| to support the
+%       variant).  In that case too an error is placed as the second
+%       argument of \cs{@@_generate_variant:wwNN}.
+%   \end{itemize}
+%   Note that if the variant form has the same length as the base form,
+%   |#2| is as described in the first point, and |#4| as described in
+%   the second point above.  The \cs{@@_generate_variant_loop_end:nwwwNNnn}
+%   breaking function takes the empty brace group in |#4| as its first
+%   argument: this empty brace group produces the correct signature for
+%   the full variant.
+%    \begin{macrocode}
+\cs_new:Npn \@@_generate_variant_loop:nNwN #1#2#3 \q_mark #4
+  {
+    \if:w #2 #4
+      \exp_after:wN \@@_generate_variant_loop_same:w
+    \else:
+      \if:w #4 \@@_generate_variant_loop_base:N #2 \else:
+        \if:w 0
+          \if:w N #4 \else: \if:w n #4 \else: 1 \fi: \fi:
+          \if:w \scan_stop: \@@_generate_variant_loop_base:N #2 1 \fi:
+          0
+          \@@_generate_variant_loop_special:NNwNNnn #4#2
+        \else:
+          \@@_generate_variant_loop_invalid:NNwNNnn #4#2
+        \fi:
+      \fi:
+    \fi:
+    #1
+    \prg_do_nothing:
+    #2
+    \@@_generate_variant_loop:nNwN { } #3 \q_mark
+  }
+\cs_new:Npn \@@_generate_variant_loop_base:N #1
+  {
+    \if:w c #1 N \else:
+      \if:w o #1 n \else:
+        \if:w V #1 n \else:
+          \if:w v #1 n \else:
+            \if:w f #1 n \else:
+              \if:w e #1 n \else:
+                \if:w x #1 n \else:
+                  \if:w n #1 n \else:
+                    \if:w N #1 N \else:
+                      \scan_stop:
+                    \fi:
+                  \fi:
+                \fi:
+              \fi:
+            \fi:
+          \fi:
+        \fi:
+      \fi:
+    \fi:
+  }
+\cs_new:Npn \@@_generate_variant_loop_same:w
+    #1 \prg_do_nothing: #2#3#4
+  { #3 { #1 \@@_generate_variant_same:N #2 } }
+\cs_new:Npn \@@_generate_variant_loop_end:nwwwNNnn
+    #1#2 \q_mark #3 ~ #4 \q_stop #5#6#7#8
+  {
+    \scan_stop: \scan_stop: \fi:
+    \exp_not:N \q_mark
+    \exp_not:N \q_stop
+    \exp_not:N #6
+    \exp_not:c { #7 : #8 #1 #3 }
+  }
+\cs_new:Npn \@@_generate_variant_loop_long:wNNnn #1 \q_stop #2#3#4#5
+  {
+    \exp_not:n
+      {
+        \q_mark
+        \__kernel_msg_error:nnxx { kernel } { variant-too-long }
+          {#5} { \token_to_str:N #3 }
+        \use_none:nnn
+        \q_stop
+        #3
+        #3
+      }
+  }
+\cs_new:Npn \@@_generate_variant_loop_invalid:NNwNNnn
+    #1#2 \fi: \fi: \fi: #3 \q_stop #4#5#6#7
+  {
+    \fi: \fi: \fi:
+    \exp_not:n
+      {
+        \q_mark
+        \__kernel_msg_error:nnxxxx { kernel } { invalid-variant }
+          {#7} { \token_to_str:N #5 } {#1} {#2}
+        \use_none:nnn
+        \q_stop
+        #5
+        #5
+      }
+  }
+\cs_new:Npn \@@_generate_variant_loop_special:NNwNNnn
+  #1#2#3 \q_stop #4#5#6#7
+  {
+    #3 \q_stop #4 #5 {#6} {#7}
+    \exp_not:n
+      {
+        \__kernel_msg_error:nnxxxx
+          { kernel } { deprecated-variant }
+          {#7} { \token_to_str:N #5 } {#1} {#2}
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[rEXP]{\@@_generate_variant_same:N}
+%   When the base and variant letters are identical, don't do any
+%   expansion.  For most argument types, we can use the |n|-type
+%   no-expansion, but the |N| and |p| types require a slightly different
+%   behaviour with respect to braces.  For |V|-type this function could
+%   output |N| to avoid adding useless braces but that is not a problem.
+%    \begin{macrocode}
+\cs_new:Npn \@@_generate_variant_same:N #1
+  {
+    \if:w N #1 N \else:
+      \if:w p #1 p \else:
+        n
+        \if:w n #1 \else:
+          \@@_generate_variant_loop_special:NNwNNnn #1#1
+        \fi:
+      \fi:
+    \fi:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_generate_variant:wwNN}
+%   If the variant form has already been defined, log its existence
+%   (provided \texttt{log-functions} is active).
+%   Otherwise, make sure that the |\exp_args:N #3| form is defined, and
+%   if it contains |x|, change \cs{@@_tmp:w} locally to
+%   \cs{cs_new_protected:Npx}.  Then define the variant by
+%   combining the |\exp_args:N #3| variant and the base function.
+%    \begin{macrocode}
+\__kernel_patch:nnNNpn
+  {
+    \cs_if_free:NF #4
+      {
+        \__kernel_debug_log:x
+          {
+            Variant~\token_to_str:N #4~%
+            already~defined;~ not~ changing~ it~ \msg_line_context:
+          }
+      }
+  }
+  { }
+\cs_new_protected:Npn \@@_generate_variant:wwNN
+    #1 \q_mark #2 \q_stop #3#4
+  {
+    #2
+    \cs_if_free:NT #4
+      {
+        \group_begin:
+          \@@_generate_internal_variant:n {#1}
+          \@@_tmp:w #4 { \exp_not:c { exp_args:N #1 } \exp_not:N #3 }
+        \group_end:
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_generate_internal_variant:n}
+% \begin{macro}{\@@_generate_internal_variant:wwnw}
+% \begin{macro}[rEXP]{\@@_generate_internal_variant_loop:n}
+%   Test if |\exp_args:N #1| is already defined and if not define it via
+%   the |\::| commands using the chars in |#1|.  If |#1| contains an |x|
+%   (this is the place where having converted the original comma-list
+%   argument to a string is very important), the result should be
+%   protected, and the next variant to be defined using that internal
+%   variant should be protected.
+%    \begin{macrocode}
+\cs_new_protected:Npx \@@_generate_internal_variant:n #1
+  {
+    \exp_not:N \@@_generate_internal_variant:wwnNwnn
+      #1 \exp_not:N \q_mark
+        { \cs_set_eq:NN \exp_not:N \@@_tmp:w \cs_new_protected:Npx }
+        \cs_new_protected:cpx
+      \token_to_str:N x \exp_not:N \q_mark
+        { }
+        \cs_new:cpx
+    \exp_not:N \q_stop
+      { exp_args:N #1 }
+      {
+        \exp_not:N \@@_generate_internal_variant_loop:n #1
+          { : \exp_not:N \use_i:nn }
+      }
+  }
+\exp_last_unbraced:NNNNo
+  \cs_new_protected:Npn \@@_generate_internal_variant:wwnNwnn #1
+    { \token_to_str:N x } #2 \q_mark #3#4#5 \q_stop #6#7
+  {
+    #3
+    \cs_if_free:cT {#6} { #4 {#6} {#7} }
+  }
+%    \end{macrocode}
+%   This command grabs char by char outputting |\::#1| (not expanded
+%   further).  We avoid tests by putting a trailing |: \use_i:nn|, which
+%   leaves \cs{cs_end:} and removes the looping macro.  The colon is in
+%   fact also turned into \cs{:::} so that the required structure for
+%   |\exp_args:N...| commands is correctly terminated.
+%    \begin{macrocode}
+\cs_new:Npn \@@_generate_internal_variant_loop:n #1
+  {
+    \exp_after:wN \exp_not:N \cs:w :: #1 \cs_end:
+    \@@_generate_internal_variant_loop:n
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}
+%   {
+%     \prg_generate_conditional_variant:Nnn,
+%     \@@_generate_variant:nnNnn,
+%     \@@_generate_variant:w,
+%     \@@_generate_variant:n,
+%     \@@_generate_variant_p_form:nnn,
+%     \@@_generate_variant_T_form:nnn,
+%     \@@_generate_variant_F_form:nnn,
+%     \@@_generate_variant_TF_form:nnn,
+%   }
+%    \begin{macrocode}
+\cs_new_protected:Npn \prg_generate_conditional_variant:Nnn #1
+  {
+    \use:x
+      {
+        \@@_generate_variant:nnNnn
+          \cs_split_function:N #1
+      }
+  }
+\cs_new_protected:Npn \@@_generate_variant:nnNnn #1#2#3#4#5
+  {
+    \if_meaning:w \c_false_bool #3
+      \__kernel_msg_error:nnx { kernel } { missing-colon }
+        { \token_to_str:c {#1} }
+      \use_i_delimit_by_q_stop:nw
+    \fi:
+    \exp_after:wN \@@_generate_variant:w
+    \tl_to_str:n {#5} , \scan_stop: , \q_recursion_stop
+    \use_none_delimit_by_q_stop:w \q_mark {#1} {#2} {#4} \q_stop
+  }
+\cs_new_protected:Npn \@@_generate_variant:w
+    #1 , #2 \q_mark #3#4#5
+  {
+    \if_meaning:w \scan_stop: #1 \scan_stop:
+      \if_meaning:w \q_nil #1 \q_nil
+        \use_i:nnn
+      \fi:
+      \exp_after:wN \use_none_delimit_by_q_recursion_stop:w
+    \else:
+      \cs_if_exist_use:cTF { @@_generate_variant_#1_form:nnn }
+        { {#3} {#4} {#5} }
+        {
+          \__kernel_msg_error:nnxx
+            { kernel } { conditional-form-unknown }
+            {#1} { \token_to_str:c { #3 : #4 } }
+        }
+    \fi:
+    \@@_generate_variant:w #2 \q_mark {#3} {#4} {#5}
+  }
+\cs_new_protected:Npn \@@_generate_variant_p_form:nnn #1#2
+  { \cs_generate_variant:cn { #1 _p : #2 } }
+\cs_new_protected:Npn \@@_generate_variant_T_form:nnn #1#2
+  { \cs_generate_variant:cn { #1 : #2 T } }
+\cs_new_protected:Npn \@@_generate_variant_F_form:nnn #1#2
+  { \cs_generate_variant:cn { #1 : #2 F } }
+\cs_new_protected:Npn \@@_generate_variant_TF_form:nnn #1#2
+  { \cs_generate_variant:cn { #1 : #2 TF } }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\exp_args_generate:n, \@@_args_generate:Nn}
+% \begin{macro}[EXP]{\@@_args_generate:n}
+%   This function is not used in the kernel hence we can use functions
+%   that are defined in later modules.  It also does not need to be fast
+%   so use inline mappings.  For each requested variant we check that
+%   there are no characters besides |NnpcofVvx|, in particular that
+%   there are no spaces.  Then we loop through the variant specifier and
+%   convert each letter to \cs[no-index]{::\meta{variant letter}}, with a
+%   trailing \cs{:::}.
+%    \begin{macrocode}
+\cs_new_protected:Npn \exp_args_generate:n #1
+  {
+    \exp_args:No \clist_map_inline:nn { \tl_to_str:n {#1} }
+      {
+        \str_map_inline:nn {##1}
+          {
+            \str_if_in:nnF { NnpcofeVvx } {####1}
+              {
+                \__kernel_msg_error:nnnn { kernel } { invalid-exp-args }
+                  {####1} {##1}
+                \str_map_break:n { \use_none:nnnn }
+              }
+          }
+        \exp_args:Nc \@@_args_generate:Nn { exp_args:N ##1 } {##1}
+      }
+  }
+\cs_new_protected:Npn \@@_args_generate:Nn #1#2
+  {
+    \cs_if_exist:NF #1
+      {
+        \str_if_in:nnTF {#2} { x } { \cs_new_protected:Npx } { \cs_new:Npx }
+          #1 { \tl_map_function:nN { #2 : } \@@_args_generate:n }
+      }
+  }
+\cs_new:Npn \@@_args_generate:n #1 { \exp_not:c { :: #1 } }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+%    \begin{macrocode}
+%</initex|package>
+%    \end{macrocode}
+%
+% \end{implementation}
+%
+% \PrintIndex

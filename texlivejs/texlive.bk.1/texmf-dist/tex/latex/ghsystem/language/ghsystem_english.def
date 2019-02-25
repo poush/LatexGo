@@ -1,0 +1,780 @@
+% --------------------------------------------------------------------------
+% - the CHEMMACROS bundle
+% - ghsystem_english.def
+% - loads of little helpers for chemists
+% --------------------------------------------------------------------------
+% - Clemens Niederberger
+% --------------------------------------------------------------------------
+% - https://bitbucket.org/cgnieder/chemmacros/
+% - contact@mychemistry.eu
+% --------------------------------------------------------------------------
+% - If you have any ideas, questions, suggestions or bugs to report, please
+% - feel free to contact me.
+% --------------------------------------------------------------------------
+% - Copyright 2011-2016 Clemens Niederberger
+% -
+% - This work may be distributed and/or modified under the
+% - conditions of the LaTeX Project Public License, either version 1.3
+% - of this license or (at your option) any later version.
+% - The latest version of this license is in
+% -   http://www.latex-project.org/lppl.txt
+% - and version 1.3 or later is part of all distributions of LaTeX
+% - version 2005/12/01 or later.
+% -
+% - This work has the LPPL maintenance status `maintained'.
+% -
+% - The Current Maintainer of this work is Clemens Niederberger.
+% --------------------------------------------------------------------------
+% ENGLISH DEFINITIONS
+\ghsystemlanguagefile{english}{2016/01/16}
+
+% table head and foot:
+\tl_set:Nn \l_ghsystem_identifier_tl { Identifier }
+\tl_set:Nn \l_ghsystem_table_text_tl { Statement }
+\tl_set:Nn \l_ghsystem_table_next_page_tl { continues~on~next~page }
+\tl_set:Nn \l_ghsystem_table_caption_tl { All~H,~EUH,~and~P~Statements. }
+
+% fill-in functions:
+% <state route of exposure if it is conclusively proven that no other routes of exposure cause the hazard>.
+\cs_set:Npn \ghsystem_exposure:
+  {
+    \bool_if:NT \l_ghsystem_fill_in_bool
+      {
+        \c_space_tl
+        \ghsystem_filler:n {
+          state~ route~ of~ exposure~ if~ it~ is~ conclusively~ proven~ that~
+          no~ other~ routes~ of~ exposure~ cause~ the~ hazard
+        }
+      }
+  }
+
+%  <state specific effect if known> 
+\cs_set:Npn \ghsystem_effect:
+  {
+    \bool_if:NT \l_ghsystem_fill_in_bool
+      {
+        \c_space_tl
+        \ghsystem_filler:n { state~ specific~ effect~ if~ known }
+      }
+  }
+
+% <or state all organs affected, if known>
+\cs_set:Npn \ghsystem_organs:
+  {
+    \bool_if:nT { \l_ghsystem_fill_in_bool && !\l_ghsystem_organs_bool }
+      {
+        \c_space_tl
+        \ghsystem_filler:n { or~ state~ all~ organs~ affected,~ if~ known }
+      }
+  }
+
+% <name of sensitising substance>
+\cs_set:Npn \ghsystem_substance:
+  {
+    \bool_if:NF \l_ghsystem_substance_bool
+      {
+        \c_space_tl
+        \ghsystem_filler:n { name~ of~ sensitising~ substance }
+      }
+  }
+
+% HAZARD STATEMENTS (Annex 3)
+% 1. Hazard Statements
+% 1.1 Physical Hazards
+\ghsystem_add_statement:nnn {H} { 200 }
+  { Unstable~ explosives. }
+\ghsystem_add_statement:nnn {H} { 201 }
+  { Explosive;~ mass~ explosion~ hazard. }
+\ghsystem_add_statement:nnn {H} { 202 }
+  { Explosive,~ severe~ projection~hazard. }
+\ghsystem_add_statement:nnn {H} { 203 }
+  { Explosive;~ fire,~ blast~ or~ projection~hazard. }
+\ghsystem_add_statement:nnn {H} { 204 }
+  { Fire~ or~ projection~ hazard. }
+\ghsystem_add_statement:nnn {H} { 205 }
+  { May~ mass~ explode~ in~ fire. }
+\ghsystem_add_statement:nnn {H} { 220 }
+  { Extremely~ flammable~ gas. }
+\ghsystem_add_statement:nnn {H} { 221 }
+  { Flammable~ gas. }
+\ghsystem_add_statement:nnn {H} { 222 }
+  { Extremely~ flammable~ aerosol. }
+\ghsystem_add_statement:nnn {H} { 223 }
+  { Flammable~ aerosol. }
+\ghsystem_add_statement:nnn {H} { 224 }
+  { Extremely~ flammable~ liquid~ and~ vapour. }
+\ghsystem_add_statement:nnn {H} { 225 }
+  { Highly~ flammable~ liquid~ and~ vapour. }
+\ghsystem_add_statement:nnn {H} { 226 }
+  { Flammable~ liquid~ and~ vapour. }
+\ghsystem_add_statement:nnn {H} { 228 }
+  { Flammable~ solid. }
+\ghsystem_add_statement:nnn {H} { 240 }
+  { Heating~ may~ cause~ an~ explosion. }
+\ghsystem_add_statement:nnn {H} { 241 }
+  { Heating~ may~ cause~ a~ fire~ or~ explosion. }
+\ghsystem_add_statement:nnn {H} { 242 }
+  { Heating~ may~ cause~ a~ fire. }
+\ghsystem_add_statement:nnn {H} { 250 }
+  { Catches~ fire~ spontaneously~ if~ exposed~ to~ air. }
+\ghsystem_add_statement:nnn {H} { 251 }
+  { Self-heating:~ may~ catch~ fire. }
+\ghsystem_add_statement:nnn {H} { 252 }
+  { Self-heating~ in~ large~ quantities;~ may~ catch~ fire. }
+\ghsystem_add_statement:nnn {H} { 260 }
+  {
+    In~ contact~ with~ water~ releases~ flammable~ gases~ which~ may~ ignite~
+    spontaneously.
+  }
+\ghsystem_add_statement:nnn {H} { 261 }
+  { In~ contact~ with~ water~ releases~ flammable~ gases. }
+\ghsystem_add_statement:nnn {H} { 270 }
+  { May~ cause~ or~ intensify~ fire;~ oxidiser. }
+\ghsystem_add_statement:nnn {H} { 271 }
+  { May~ cause~ fire~ or~ explosion;~ strong~ oxidiser. }
+\ghsystem_add_statement:nnn {H} { 272 }
+  { May~ intensify~ fire;~ oxidiser. }
+\ghsystem_add_statement:nnn {H} { 280 }
+  { Contains~ gas~ under~ pressure;~ may~ explode~ if~ heated. }
+\ghsystem_add_statement:nnn {H} { 281 }
+  { Contains~ refrigerated~ gas;~ may~ cause~ cryogenic~ burns~ or~ injury. }
+\ghsystem_add_statement:nnn {H} { 290 }
+  { May~ be~ corrosive~ to~ metals. }
+
+% 1.2 Health Hazards
+\ghsystem_add_statement:nnn {H} { 300 }
+  { Fatal~ if~ swallowed. }
+\ghsystem_add_statement:nnn {H} { 301 }
+  { Toxic~ if~ swallowed. }
+\ghsystem_add_statement:nnn {H} { 302 }
+  { Harmful~ if~ swallowed. }
+\ghsystem_add_statement:nnn {H} { 304 }
+  { May~ be~ fatal~ if~ swallowed~ and~ enters~ airways. }
+\ghsystem_add_statement:nnn {H} { 310 }
+  { Fatal~ in~ contact~ with~ skin. }
+\ghsystem_add_statement:nnn {H} { 311 }
+  { Toxic~ in~ contact~ with~ skin. }
+\ghsystem_add_statement:nnn {H} { 312 }
+  { Harmful~ in~ contact~ with~ skin. }
+\ghsystem_add_statement:nnn {H} { 314 }
+  { Causes~ severe~ skin~ burns~ and~ eye~ damage. }
+\ghsystem_add_statement:nnn {H} { 315 }
+  { Causes~ skin~ irritation. }
+\ghsystem_add_statement:nnn {H} { 317 }
+  { May~ cause~ an~ allergic~ skin~ reaction. }
+\ghsystem_add_statement:nnn {H} { 318 }
+  { Causes~ serious~ eye~ damage. }
+\ghsystem_add_statement:nnn {H} { 319 }
+  { Causes~ serious~ eye~ irritation. }
+\ghsystem_add_statement:nnn {H} { 330 }
+  { Fatal~ if~ inhaled. }
+\ghsystem_add_statement:nnn {H} { 331 }
+  { Toxic~ if~ inhaled. }
+\ghsystem_add_statement:nnn {H} { 332 }
+  { Harmful~ if~ inhaled. }
+\ghsystem_add_statement:nnn {H} { 334 }
+  {
+    May~ cause~ allergy~ or~ asthma~ symptoms~ orbreathing~ difficulties~ if~
+    inhaled.
+  }
+\ghsystem_add_statement:nnn {H} { 335 }
+  { May~ cause~ respiratory~ irritation. }
+\ghsystem_add_statement:nnn {H} { 336 }
+  { May~ cause~ drowsiness~ or~ dizziness. }
+\ghsystem_add_statement:nnn {H} { 340 }
+  { May~ cause~ genetic~ defects. \ghsystem_exposure: }
+\ghsystem_add_statement:nnn {H} { 341 }
+  { Suspected~ of~ causing~ genetic~ defects. \ghsystem_exposure: }
+\ghsystem_add_statement:nnn {H} { 350 }
+  { May~ cause~ cancer. \ghsystem_exposure: }
+\ghsystem_add_statement:nnn {H} { 351 }
+  { Suspected~ of~ causing~ cancer. \ghsystem_exposure: }
+\ghsystem_add_statement:nnn {H} { 360 }
+  {
+    May~ damage~ fertility~ or~ the~ unborn~ child.
+    \ghsystem_effect:
+    \ghsystem_exposure:
+  }
+\ghsystem_add_statement:nnn {H} { 361 }
+  {
+    Suspected~ of~ damaging~ fertility~ or~ the~ unborn~ child.
+    \ghsystem_effect:
+    \ghsystem_exposure:
+  }
+\ghsystem_add_statement:nnn {H} { 362 }
+  { May~ cause~ harm~ to~ breast-fed~ children. }
+\ghsystem_add_statement:nnn {H} { 370 }
+  {
+    Causes~ damage
+    \bool_if:NF \l_ghsystem_organs_bool { ~to~ organs }
+    \ghsystem_organs: .
+    \ghsystem_exposure:
+  }
+\ghsystem_add_statement:nnn {H} { 371 }
+  {
+    May~ cause~ damage
+    \bool_if:NF \l_ghsystem_organs_bool { ~to~ organs }
+    \ghsystem_organs: .
+    \ghsystem_exposure:
+  }
+\ghsystem_add_statement:nnn {H} { 372 }
+  {
+    Causes~ damage
+    \bool_if:NF \l_ghsystem_organs_bool { ~to~ organs }
+    \ghsystem_organs: \c_space_tl
+    through~ prolonged~ or~ repeated~ exposure.
+    \ghsystem_exposure:
+  }
+\ghsystem_add_statement:nnn {H} { 373 }
+  {
+    May~ cause~ damage
+    \bool_if:NF \l_ghsystem_organs_bool { ~to~ organs }
+    \ghsystem_organs:\c_space_tl
+    through~ prolonged~ or~ repeated~ exposure.
+    \ghsystem_exposure:
+  }
+
+% 1.3 Environmental hazards
+\ghsystem_add_statement:nnn {H} { 400 }
+  { Very~ toxic~ to~ aquatic~ life. }
+\ghsystem_add_statement:nnn {H} { 410 }
+  { Very~ toxic~ to~ aquatic~ life~ with~ long~ lasting~ effects. }
+\ghsystem_add_statement:nnn {H} { 411 }
+  { Toxic~ to~ aquatic~ life~ with~ long~ lasting~ effects. }
+\ghsystem_add_statement:nnn {H} { 412 }
+  { Harmful~ to~ aquatic~ life~ with~ long~ lasting~ effects. }
+\ghsystem_add_statement:nnn {H} { 413 }
+  { May~ cause~ long~ lasting~ harmful~ effects~ to~ aquatic~ life. }
+
+% 2 Supplemental Hazard Informations
+% 2.1 Physical Properties
+\ghsystem_add_statement:nnn {EUH} { 001 }
+  { Explosive~ when~ dry. }
+\ghsystem_add_statement:nnn {EUH} { 006 }
+  { Explosive~ with~ or~ without~ contact~ with~ air. }
+\ghsystem_add_statement:nnn {EUH} { 014 }
+  { Reacts~ violently~ with~ water. }
+\ghsystem_add_statement:nnn {EUH} { 018 }
+  { In~ use~ may~ form~ flammable\ghsystem_slash: explosive~ vapour-air~ mixture. }
+\ghsystem_add_statement:nnn {EUH} { 019 }
+  { May~ form~ explosive~ peroxides. }
+\ghsystem_add_statement:nnn {EUH} { 044 }
+  { Risk~ of~ explosion~ if~ heated~ under~ confinement. }
+
+% 2.2 Health Properties
+\ghsystem_add_statement:nnn {EUH} { 029 }
+  { Contact~ with~ water~ liberates~ toxic~ gas. }
+\ghsystem_add_statement:nnn {EUH} { 031 }
+  { Contact~ with~ acids~ liberates~ toxic~ gas. }
+\ghsystem_add_statement:nnn {EUH} { 032 }
+  { Contact~ with~ acids~ liberates~ very~ toxic~ gas. }
+\ghsystem_add_statement:nnn {EUH} { 066 }
+  { Repeated~ exposure~ may~ cause~ skin~ dryness~ or~ cracking. }
+\ghsystem_add_statement:nnn {EUH} { 070 }
+  { Toxic~ by~ eye~ contact. }
+\ghsystem_add_statement:nnn {EUH} { 071 }
+  { Corrosive~ to~ the~ respiratory~ tract. }
+
+% 2.3 Environmental Properties
+\ghsystem_add_statement:nnn {EUH} { 059 }
+  { Hazardous~ to~ the~ ozone~ layer. }
+
+% 2.4 Supplemental Label Elements/Information On Certain Substances And Mixtures
+\ghsystem_add_statement:nnn {EUH} { 201 }
+  {
+    Contains~ lead.~ Should~ not~ be~ used~ on~ surfaces~ liable~ to~ be~
+    chewed~ or~ sucked~ by~ children.
+  }
+\ghsystem_add_statement:nnn {EUH} { 201A }
+  { Warning!~ contains~ lead. }
+\ghsystem_add_statement:nnn {EUH} { 202 }
+  {
+    \iupac { Cyano|acrylate } . ~ Danger.~ Bonds~ skin~ and~ eyes~ in~
+    seconds.~ Keep~ out~ of~ the~ reach~ of~ children.
+  }
+\ghsystem_add_statement:nnn {EUH} { 203 }
+  {
+    Contains ~ chromium \, (VI) .~ May~ produce~ an~ allergic~
+    reaction.
+  }
+\ghsystem_add_statement:nnn {EUH} { 204 }
+  {
+    Contains ~ \iupac { iso|cyanates } . ~ May~ produce~ an~ allergic~
+    reaction.
+  }
+\ghsystem_add_statement:nnn {EUH} { 205 }
+  { Contains~ epoxy~ constituents.~ May~ produce~ an~ allergic~ reaction. }
+\ghsystem_add_statement:nnn {EUH} { 206 }
+  {
+    Warning!~ Do~ not~ use~ together~ with~ other~ products.~ May~ release~
+    dangerous~ gases ~(chlorine).
+  }
+\ghsystem_add_statement:nnn {EUH} { 207 }
+  {
+    Warning!~ Contains ~ \iupac { cadmium } .~ Dangerous~ fumes~ are~ formed~
+    during~ use.~ See~ information~ supplied~ by~ the~ manufacturer.~ Comply~
+    with~ the~ safety~ instructions.
+  }
+\ghsystem_add_statement:nnn {EUH} { 208 }
+  { Contains \ghsystem_substance: .~ May~ produce~ an~ allergic~ reaction. }
+\ghsystem_add_statement:nnn {EUH} { 209 }
+  { Can~ become~ highly~ flammable~ in~ use. }
+\ghsystem_add_statement:nnn {EUH} { 209A }
+  { Can~ become~ flammable~ in~ use. }
+\ghsystem_add_statement:nnn {EUH} { 210 }
+  { Safety~ data~ sheet~ available~ on~ request. }
+\ghsystem_add_statement:nnn {EUH} { 401 }
+  {
+    To~ avoid~ risks~ to~ human~ health~ and~ the~ environment,~ comply~ with~
+    the~ instructions~ for~ use.
+  }
+
+% PRECAUTIONARY STATEMENTS (Annex 4 page 19ff)
+% 3 Precautionary Statements
+% 3.1 General
+\ghsystem_add_statement:nnn {P} { 101 }
+  {
+    If~ medical~ advice~ is~ needed,~ have~ product~ container~ or~ label~ at~
+    hand.
+  }
+\ghsystem_add_statement:nnn {P} { 102 }
+  { Keep~ out~ of~ reach~ of~ children. }
+\ghsystem_add_statement:nnn {P} { 103 }
+  { Read~ label~ before~ use. }
+
+% 3.2 Precautionary Statements — Prevention
+\ghsystem_add_statement:nnn {P} { 201 }
+  { Obtain~ special~ instructions~ before~ use. }
+\ghsystem_add_statement:nnn {P} { 202 }
+  {
+    Do~ not~ handle~ until~ all~ safety~ precautions~ have~ been~ read~ and~
+    understood.
+  }
+\ghsystem_add_statement:nnn {P} { 210 }
+  {
+    Keep~ away~ from~ heat\ghsystem_slash: sparks\ghsystem_slash: open~
+    flames\ghsystem_slash: hot~ surfaces.~ \textemdash\ No~ smoking.
+  }
+\ghsystem_add_statement:nnn {P} { 211 }
+  { Do~ not~ spray~ on~ an~ open~ flame~ or~ other~ ignition~ source. }
+\ghsystem_add_statement:nnn {P} { 220 }
+  {
+    Keep\ghsystem_slash: Store~ away~ from~ clothing\ghsystem_slash:
+    \l_ghsystem_dots_tl \ghsystem_slash: combustible~ materials.
+  }
+\ghsystem_add_statement:nnn {P} { 221 }
+  {
+    Take~ any~ precaution~ to~ avoid~ mixing~ with~ combustibles~
+    \l_ghsystem_dots_tl
+  }
+\ghsystem_add_statement:nnn {P} { 222 }
+  { Do~ not~ allow~ contact~ with~ air. }
+\ghsystem_add_statement:nnn {P} { 223 }
+  {
+    Keep~ away~ from~ any~ possible~ contact~ with~ water,~ because~ of~
+    violent~ reaction~ and~ possible~ flash~ fire.
+  }
+\ghsystem_add_statement:nnn {P} { 230 }
+  { Keep~ wetted~ with~ \l_ghsystem_dots_tl }
+\ghsystem_add_statement:nnn {P} { 231 }
+  { Handle~ under~ inert~ gas. }
+\ghsystem_add_statement:nnn {P} { 232 }
+  { Protect~ from~ moisture. }
+\ghsystem_add_statement:nnn {P} { 233 }
+  { Keep~ container~ tightly~ closed. }
+\ghsystem_add_statement:nnn {P} { 234 }
+  { Keep~ only~ in~ original~ container. }
+\ghsystem_add_statement:nnn {P} { 235 }
+  { Keep~ cool. }
+\ghsystem_add_statement:nnn {P} { 240 }
+  { Ground\ghsystem_slash: bond~ container~ and~ receiving~ equipment. }
+\ghsystem_add_statement:nnn {P} { 241 }
+  {
+    Use~ explosion-proof~ electrical\ghsystem_slash:
+    ventilating\ghsystem_slash: lighting \ghsystem_slash: 
+    \l_ghsystem_dots_tl\ equipment.
+  }
+\ghsystem_add_statement:nnn {P} { 242 }
+  { Use~ only~ non-sparking~ tools. }
+\ghsystem_add_statement:nnn {P} { 243 }
+  { Take~ precautionary~ measures~ against~ static~ discharge. }
+\ghsystem_add_statement:nnn {P} { 244 }
+  { Keep~ reduction~ valves~ free~ from~ grease~ and~ oil. }
+\ghsystem_add_statement:nnn {P} { 250 }
+  {
+    Do~ not~ subject~ to~ grinding\ghsystem_slash: shock \ghsystem_slash:
+    \l_ghsystem_dots_tl \ghsystem_slash: friction.
+  }
+\ghsystem_add_statement:nnn {P} { 251 }
+  { Pressurized~ container:~ Do~ not~ pierce~ or~ burn,~ even~ after~ use. }
+\ghsystem_add_statement:nnn {P} { 260 }
+  {
+    Do~ not~ breathe~ dust\ghsystem_slash: fume\ghsystem_slash:
+    gas\ghsystem_slash: mist\ghsystem_slash: vapours\ghsystem_slash: 
+    spray.
+  }
+\ghsystem_add_statement:nnn {P} { 261 }
+  {
+    Avoid~ breathing~ dust\ghsystem_slash: fume\ghsystem_slash:
+    gas\ghsystem_slash: mist\ghsystem_slash: vapours\ghsystem_slash: 
+    spray.
+  }
+\ghsystem_add_statement:nnn {P} { 262 }
+  { Do~ not~ get~ in~ eyes,~ on~ skin,~ or~ on~ clothing. }
+\ghsystem_add_statement:nnn {P} { 263 }
+  { Avoid~ contact~ during~ pregnancy\ghsystem_slash: while~ nursing. }
+\ghsystem_add_statement:nnn {P} { 264 }
+  { Wash~ \l_ghsystem_dots_tl\  thoroughly~ after~ handling. }
+\ghsystem_add_statement:nnn {P} { 270 }
+  { Do~ not~ eat,~ drink~ or~ smoke~ when~ using~ this~ product. }
+\ghsystem_add_statement:nnn {P} { 271 }
+  { Use~ only~ outdoors~ or~ in~ a~ well-ventilated~ area. }
+\ghsystem_add_statement:nnn {P} { 272 }
+  {
+    Contaminated~ work~ clothing~ should~ not~ be~ allowed~ out~ of~ the~
+    workplace.
+  }
+\ghsystem_add_statement:nnn {P} { 273 }
+  { Avoid~ release~ to~ the~ environment. }
+\ghsystem_add_statement:nnn {P} { 280 }
+  {
+    Wear~ protective~ gloves\ghsystem_slash: protective~
+    clothing\ghsystem_slash: eye~ protection\ghsystem_slash: face~
+    protection.
+  }
+\ghsystem_add_statement:nnn {P} { 281 }
+  { Use~ personal~ protective~ equipment~ as~ required. }
+\ghsystem_add_statement:nnn {P} { 282 }
+  {
+    Wear~ cold~ insulating~ gloves\ghsystem_slash: face~
+    shield\ghsystem_slash: eye~ protection.
+  }
+\ghsystem_add_statement:nnn {P} { 283 }
+  {
+    Wear~ fire\ghsystem_slash: flame~ resistant\ghsystem_slash: retardant~
+    clothing.
+  }
+\ghsystem_add_statement:nnn {P} { 284 }
+  { Wear~ respiratory~ protection. }
+\ghsystem_add_statement:nnn {P} { 285 }
+  { In~ case~ of~ inadequate~ ventilation~ wear~ respiratory~ protection. }
+\ghsystem_add_statement:nnn {P} { 231 + 232 }
+  { Handle~ under~ inert~ gas.~ Protect~ from~ moisture. }
+\ghsystem_add_statement:nnn {P} { 235 + 410 }
+  { Keep~ cool.~ Protect~ from~ sunlight. }
+
+% 3.3 Precautionary Statements — Response
+\ghsystem_add_statement:nnn {P} { 301 }
+  { IF~ SWALLOWED: \ghsystem_text: }
+\ghsystem_add_statement:nnn {P} { 302 }
+  { IF~ ON~ SKIN: \ghsystem_text: }
+\ghsystem_add_statement:nnn {P} { 303 }
+  { IF~ ON~ SKIN~ (or~ hair): \ghsystem_text: }
+\ghsystem_add_statement:nnn {P} { 304 }
+  { IF~ INHALED: \ghsystem_text: }
+\ghsystem_add_statement:nnn {P} { 305 }
+  { IF~ IN~ EYES: \ghsystem_text: }
+\ghsystem_add_statement:nnn {P} { 306 }
+  { IF~ ON~ CLOTHING: \ghsystem_text: }
+\ghsystem_add_statement:nnn {P} { 307 }
+  { IF~ exposed: \ghsystem_text: }
+\ghsystem_add_statement:nnn {P} { 308 }
+  { IF~ exposed~ or~ concerned: \ghsystem_text: }
+\ghsystem_add_statement:nnn {P} { 309 }
+  { IF~ exposed~ or~ if~ you~ feel~ unwell : \ghsystem_text: }
+\ghsystem_add_statement:nnn {P} { 310 }
+  { Immediately~ call~ a~ POISON~ CENTER~ or~ doctor\ghsystem_slash: physician. }
+\ghsystem_add_statement:nnn {P} { 311 }
+  { Call~ a~ POISON~ CENTER~ or~ doctor\ghsystem_slash: physician. }
+\ghsystem_add_statement:nnn {P} { 312 }
+  {
+    Call~ a~ POISON~ CENTER~ or~ doctor\ghsystem_slash: physician~ if~ you~ feel~
+    unwell.
+  }
+\ghsystem_add_statement:nnn {P} { 313 }
+  { Get~ medical~ advice\ghsystem_slash: attention. }
+\ghsystem_add_statement:nnn {P} { 314 }
+  { Get~ medical~ advice\ghsystem_slash: attention~ if~ you~ feel~ unwell. }
+\ghsystem_add_statement:nnn {P} { 315 }
+  { Get~ immediate~ medical~ advice\ghsystem_slash: attention. }
+\ghsystem_add_statement:nnn {P} { 320 }
+  {
+    Specific~ treatment~ is~ urgent~ (see~ \l_ghsystem_dots_tl\ on~ this~
+    label).
+  }
+\ghsystem_add_statement:nnn {P} { 321 }
+  { Specific~ treatment~ (see~ \l_ghsystem_dots_tl\ on~ this~ label). }
+\ghsystem_add_statement:nnn {P} { 322 }
+  { Specific~ measures~ (see~ \l_ghsystem_dots_tl\ on~ this~ label). }
+\ghsystem_add_statement:nnn {P} { 330 }
+  { Rinse~ mouth. }
+\ghsystem_add_statement:nnn {P} { 331 }
+  { Do~ NOT~ induce~ vomitting. }
+\ghsystem_add_statement:nnn {P} { 332 }
+  { If~ skin~ irritation~ occurs : \ghsystem_text: }
+\ghsystem_add_statement:nnn {P} { 333 }
+  { If~ skin~ irritation~ or~ rash~ occurs : \ghsystem_text: }
+\ghsystem_add_statement:nnn {P} { 334 }
+  { Immerse~ in~ cool~ water\ghsystem_slash: wrap~ in~ wet~ bandages. }
+\ghsystem_add_statement:nnn {P} { 335 }
+  { Brush~ off~ loose~ particles~ from~ skin. }
+\ghsystem_add_statement:nnn {P} { 336 }
+  {
+    Thaw~ frosted~ parts~ with~ lukewarm~ water.~ Do~ not~ rub~ affected~
+    area.
+  }
+\ghsystem_add_statement:nnn {P} { 337 }
+  { If~ eye~ irritation~ persists: \ghsystem_text: }
+\ghsystem_add_statement:nnn {P} { 338 }
+  {
+    Remove~ contact~ lenses,~ if~ present~ and~ easy~ to~ do.~ Continue~
+    rinsing.
+  }
+\ghsystem_add_statement:nnn {P} { 340 }
+  {
+    Remove~ victim~ to~ fresh~ air~ and~ keep~ at~ rest~ in~ a~ position~
+    comfortable~ for~ breathing.
+  }
+\ghsystem_add_statement:nnn {P} { 341 }
+  {
+    If~ breathing~ is~ difficult,~ remove~ victim~ to~ fresh~ air~ and~ keep~
+    at~ rest~ in~ a~ position~ comfortable~ for~ breathing.
+  }
+\ghsystem_add_statement:nnn {P} { 342 }
+  { If~ experiencing~ respiratory~ symptoms : \ghsystem_text: }
+\ghsystem_add_statement:nnn {P} { 350 }
+  { Gently~ wash~ with~ plenty~ of~ soap~ and~ water. }
+\ghsystem_add_statement:nnn {P} { 351 }
+  { Rinse~ cautiously~ with~ water~ for~ several~ minutes. }
+\ghsystem_add_statement:nnn {P} { 352 }
+  { Wash~ with~ plenty~ of~ soap~ and~ water. }
+\ghsystem_add_statement:nnn {P} { 353 }
+  { Rinse~ skin~ with~ water\ghsystem_slash: shower. }
+\ghsystem_add_statement:nnn {P} { 360 }
+  {
+    Rinse~ immediately~ contaminated~ clothing~ and~ skin~ with~ plenty~ of~
+    water~ before~ removing~ clothes.
+  }
+\ghsystem_add_statement:nnn {P} { 361 }
+  { Remove\ghsystem_slash: Take~ off~ immediately~ all~ contaminated~ clothing. }
+\ghsystem_add_statement:nnn {P} { 362 }
+  { Take~ off~ contaminated~ clothing~ and~ wash~ before~ reuse. }
+\ghsystem_add_statement:nnn {P} { 363 }
+  { Wash~ contaminated~ clothing~ before~ reuse. }
+\ghsystem_add_statement:nnn {P} { 370 }
+  { In~ case~ of~ fire : \ghsystem_text: }
+\ghsystem_add_statement:nnn {P} { 371 }
+  { In~ case~ of~ major~ fire~ and~ large~ quantities : \ghsystem_text: }
+\ghsystem_add_statement:nnn {P} { 372 }
+  { Explosion~ risk~ in~ case~ of~ fire. }
+\ghsystem_add_statement:nnn {P} { 373 }
+  { DO~ NOT~ fight~ fire~ when~ fire~ reaches~ explosives. }
+\ghsystem_add_statement:nnn {P} { 374 }
+  { Fight~ fire~ with~ normal~ precautions~ from~ a~ reasonable~ distance. }
+\ghsystem_add_statement:nnn {P} { 375 }
+  { Fight~ fire~ remotely~ due~ to~ the~ risk~ of~ explosion. }
+\ghsystem_add_statement:nnn {P} { 376 }
+  { Stop~ leak~ if~ safe~ to~ do~ so. }
+\ghsystem_add_statement:nnn {P} { 377 }
+  {
+    Leaking~ gas~ fire: \ghsystem_text:\ Do~ not~ extinguish,~ unless~ leak~
+    can~ be~ stopped~ safely.
+  }
+\ghsystem_add_statement:nnn {P} { 378 }
+  { Use~ \l_ghsystem_dots_tl\ for~ extinction. }
+\ghsystem_add_statement:nnn {P} { 380 }
+  { Evacuate~ area. }
+\ghsystem_add_statement:nnn {P} { 381 }
+  { Eliminate~ all~ ignition~ sources~ if~ safe~ to~ do~ so. }
+\ghsystem_add_statement:nnn {P} { 390 }
+  { Absorb~ spillage~ to~ prevent~ material~ damage. }
+\ghsystem_add_statement:nnn {P} { 391 }
+  { Collect~ spillage. }
+\ghsystem_add_statement:nnn {P} { 301 + 310 }
+  {
+    IF~ SWALLOWED:~ Immediately~ call~ a~ POISON~ CENTER~ or~
+    doctor\ghsystem_slash: physician.
+  }
+\ghsystem_add_statement:nnn {P} { 301 + 312 }
+  {
+    IF~ SWALLOWED:~ Call~ a~ POISON~ CENTER~ or~ doctor\ghsystem_slash:
+    physician~ if~ you~ feel~ unwell.
+  }
+\ghsystem_add_statement:nnn {P} { 301 + 330 + 331 }
+  { IF~ SWALLOWED:~ rinse~ mouth.~ Do~ NOT~ induce~ vomitting. }
+\ghsystem_add_statement:nnn {P} { 302 + 334 }
+  {
+    IF~ ON~ SKIN:~ Immerse~ in~ cool~ water\ghsystem_slash: wrap~ in~ wet~
+    bandages.
+  }
+\ghsystem_add_statement:nnn {P} { 302 + 350 }
+  { IF~ ON~ SKIN:~ Gently~ wash~ with~ plenty~ of~ soap~ and~ water. }
+\ghsystem_add_statement:nnn {P} { 302 + 352 }
+  { IF~ ON~ SKIN:~ Wash~ with~ plenty~ of~ soap~ and~ water. }
+\ghsystem_add_statement:nnn {P} { 303 + 361 + 353 }
+  {
+    IF~ ON~ SKIN~ (or~ hair):~ Remove\ghsystem_slash: Take~ off~ immediately~
+    all~ contaminated~ clothing.~ Rinse~ skin~ with~ water\ghsystem_slash:
+    shower.
+  }
+\ghsystem_add_statement:nnn {P} { 304 + 340 }
+  {
+    IF~ INHALED:~ Remove~ victim~ to~ fresh~ air~ and~ keep~ at~ rest~ in~ a~
+    position~ comfortable~ for~ breathing.
+  }
+\ghsystem_add_statement:nnn {P} { 304 + 341 }
+  {
+    IF~ INHALED:~ If~ breathing~ is~ difficult,~ remove~ victim~ to~ fresh~
+    air~ and~ keep~ at~ rest~ in~ a~ position~ comfortable~ for~ breathing.
+  }
+\ghsystem_add_statement:nnn {P} { 305 + 351 + 338 }
+  {
+    IF~ IN~ EYES:~ Rinse~ cautiously~ with~ water~ for~ several~ minutes.~
+    Remove~ contact~ lenses,~ if~ present~ and~ easy~ to~ do.~ Continue~
+    rinsing.
+  }
+\ghsystem_add_statement:nnn {P} { 306 + 360 }
+  {
+    IF~ ON~ CLOTHING:~ Rinse~ immediately~ contaminated~ clothing~ and~ skin~
+    with~ plenty~ of~ water~ before~ removing~ clothes.
+  }
+\ghsystem_add_statement:nnn {P} { 307 + 311 }
+  { IF~ exposed:~ Call~ a~ POISON~ CENTER~ or~ doctor\ghsystem_slash: physician. }
+\ghsystem_add_statement:nnn {P} { 308 + 313 }
+  { IF~ exposed~ or~ concerned:~ Get~ medical~ advice\ghsystem_slash: attention. }
+\ghsystem_add_statement:nnn {P} { 309 + 311 }
+  {
+    IF~ exposed~ or~ if~ you~ feel~ unwell:~ Call~ a~ POISON~ CENTER~ or~
+    doctor\ghsystem_slash: physician.
+  }
+\ghsystem_add_statement:nnn {P} { 332 + 313 }
+  { If~ skin~ irritation~ occurs:~ Get~ medical~ advice\ghsystem_slash: attention. }
+\ghsystem_add_statement:nnn {P} { 333 + 313 }
+  {
+    If~ skin~ irritation~ or~ rash~ occurs:~ Get~ medical~
+    advice\ghsystem_slash: attention.
+  }
+\ghsystem_add_statement:nnn {P} { 335 + 334 }
+  {
+    Brush~ off~ loose~ particles~ from~ skin.~ Immerse~ in~ cool~
+    water\ghsystem_slash: wrap~ in~ wet~ bandages.
+  }
+\ghsystem_add_statement:nnn {P} { 337 + 313 }
+  { If~ eye~ irritation~ persists:~ Get~ medical~ advice\ghsystem_slash: attention. }
+\ghsystem_add_statement:nnn {P} { 342 + 311 }
+  {
+    If~ experiencing~ respiratory~ symptoms:~ Call~ a~ POISON~ CENTER~ or~
+    doctor\ghsystem_slash: physician.
+  }
+\ghsystem_add_statement:nnn {P} { 370 + 376 }
+  { In~ case~ of~ fire:~ Stop~ leak~ if~ safe~ to~ do~ so. }
+\ghsystem_add_statement:nnn {P} { 370 + 378 }
+  { In~ case~ of~ fire:~ Use~ \l_ghsystem_dots_tl\ for~ extinction. }
+\ghsystem_add_statement:nnn {P} { 370 + 380 }
+  { In~ case~ of~ fire:~ Evacuate~ area. }
+\ghsystem_add_statement:nnn {P} { 370 + 380 + 375 }
+  {
+    In~ case~ of~ fire:~ Evacuate~ area.~ Fight~ fire~ remotely~ due~ to~ the~
+    risk~ of~ explosion.
+  }
+\ghsystem_add_statement:nnn {P} { 371 + 380 + 375 }
+  {
+    In~ case~ of~ major~ fire~ and~ large~ quantities:~ Evacuate~ area.~
+    Fight~ fire~ remotely~ due~ to~ the~ risk~ of~ explosion.
+  }
+
+% 3.4 Precautionary Statements — Storage
+\ghsystem_add_statement:nnn {P} { 401 }
+ { Store~ \l_ghsystem_dots_tl }
+\ghsystem_add_statement:nnn {P} { 402 }
+  { Store~ in~ a~ dry~ place. }
+\ghsystem_add_statement:nnn {P} { 403 }
+  { Store~ in~ a~ well-ventilated~ place. }
+\ghsystem_add_statement:nnn {P} { 404 }
+  { Store~ in~ a~ closed~ container. }
+\ghsystem_add_statement:nnn {P} { 405 }
+  { Store~ locked~ up. }
+\ghsystem_add_statement:nnn {P} { 406 }
+  {
+    Store~ in~ corrosive~ resistant\ghsystem_slash: \l_ghsystem_dots_tl\ container~
+    with~ a~ resistant~ inner~ liner.
+  }
+\ghsystem_add_statement:nnn {P} { 407 }
+  { Maintain~ air~ gap~ between~ stacks\ghsystem_slash: pallets. }
+\ghsystem_add_statement:nnn {P} { 410 }
+  { Protect~ from~ sunlight. }
+\ghsystem_add_statement:nnn {P} { 411 }
+  {
+    Store~ at~ temperatures~ not~ exceeding~
+    \exp_args:No
+    \SI { \l_ghsystem_celsius_temperature_tl }{ \GHScelsius }
+    \ghsystem_slash:
+    \exp_args:No
+    \SI { \l_ghsystem_fahrenheit_temperature_tl } { \GHSfahrenheit } .
+  }
+\ghsystem_add_statement:nnn {P} { 412 }
+  {
+    Store~at~temperatures~not~exceeding ~ \SI { 50 } { \GHScelsius } \ghsystem_slash:
+    \SI { 122 } { \GHSfahrenheit } .
+  }
+\ghsystem_add_statement:nnn {P} { 413 }
+  {
+    Store~bulk~masses~greater~than ~
+    \exp_args:No \SI { \l_ghsystem_kg_mass_tl } { \GHSkilogram } \ghsystem_slash:
+    \exp_args:No \SI { \l_ghsystem_lbs_mass_tl } { \GHSpounds } ~
+    at~ temperatures~ not~ exceeding ~
+    \exp_args:No \SI { \l_ghsystem_celsius_temperature_tl } { \GHScelsius } \ghsystem_slash:
+    \exp_args:No \SI { \l_ghsystem_fahrenheit_temperature_tl } { \GHSfahrenheit } .
+  }
+\ghsystem_add_statement:nnn {P} { 420 }
+  { Store~ away~ from~ other~ materials. }
+\ghsystem_add_statement:nnn {P} { 422 }
+  { Store~ contents~ under~ \l_ghsystem_dots_tl }
+\ghsystem_add_statement:nnn {P} { 402 + 404 }
+  { Store~ in~ a~ dry~ place.~ Store~ in~ a~ closed~ container. }
+\ghsystem_add_statement:nnn {P} { 403 + 233 }
+  { Store~ in~ a~ well-ventilated~ place.~ Keep~ container~ tightly~ closed. }
+\ghsystem_add_statement:nnn {P} { 403 + 235 }
+  { Store~ in~ a~ well-ventilated~ place.~ Keep~ cool. }
+\ghsystem_add_statement:nnn {P} { 410 + 403 }
+  { Protect~ from~ sunlight.~ Store~ in~ a~ well-ventilated~ place. }
+\ghsystem_add_statement:nnn {P} { 410 + 412 }
+  {
+    Protect~ from~ sunlight.~ Do~ not~ expose~ to~ temperatures~ exceeding~
+    \SI { 50 } { \GHScelsius } \ghsystem_slash:  \SI { 122 } { \GHSfahrenheit } .
+  }
+\ghsystem_add_statement:nnn {P} { 411 + 235 }
+  {
+    Store~at~temperatures~not~exceeding ~
+    \exp_args:No \SI { \l_ghsystem_celsius_temperature_tl }{ \GHScelsius } \ghsystem_slash:
+    \exp_args:No \SI { \l_ghsystem_fahrenheit_temperature_tl } { \GHSfahrenheit }
+    ~ . ~ Keep~ cool.
+  }
+
+% 3.5 Precautionary Statements — Disposal
+\ghsystem_add_statement:nnn {P} { 501 }
+  { Dispose~ of~ contents\ghsystem_slash: container~ to~ \l_ghsystem_dots_tl }
+
+% 4 Hazard Statement Codes (Annex 6 page 4f)
+\ghsystem_add_statement:nnn {H} { 350i }
+  { May~ cause~ cancer~ by~ inhalation. }
+\ghsystem_add_statement:nnn {H} { 360F }
+  { May~ damage~ fertility. }
+\ghsystem_add_statement:nnn {H} { 360D }
+  { May~ damage~ the~ unborn~ child. }
+\ghsystem_add_statement:nnn {H} { 361f }
+  { Suspected~ of~ damaging~ fertility. }
+\ghsystem_add_statement:nnn {H} { 361d }
+  { Suspected~ of~ damaging~ the~ unborn~ child. }
+\ghsystem_add_statement:nnn {H} { 360FD }
+  { May~ damage~ fertility.~ May~ damage~ the~ unborn~ child. }
+\ghsystem_add_statement:nnn {H} { 361fd }
+  {
+    Suspected~ of~ damaging~ fertility.~ Suspected~ of~ damaging~ the~ unborn~
+    child.
+  }
+\ghsystem_add_statement:nnn {H} { 360Fd }
+  { May~ damage~ fertility.~ Suspected~ of~ damaging~ the~ unborn~ child. }
+\ghsystem_add_statement:nnn {H} { 360Df }
+  { May~ damage~ the~ unborn~ child.~ Suspected~ of~ damaging~ fertility. }
+

@@ -1,0 +1,617 @@
+%%
+%% This is file `fascicules.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% fascicules.dtx  (with options: `package')
+%% 
+%% This is a generated file.
+%% 
+%% Copyright (C) 2018 by Martin Moritz
+%% 
+%% This file may be distributed and/or modified under the conditions of
+%% the LaTeX Project Public License, either version 1.3 of this license
+%% or (at your option) any later version.  The latest version of this
+%% license is in:
+%% 
+%%    http://www.latex-project.org/lppl.txt
+%% 
+%% and version 1.3 or later is part of all distributions of LaTeX version
+%% 1999/12/01 or later.
+%% 
+%% This work consists of the files fascicules.dtx and fascicules.ins
+%% and the derived file fascicules.sty.
+%% 
+
+\NeedsTeXFormat{LaTeX2e}[1994/06/01]
+\ProvidesPackage{fascicules}[2018/02/22]
+\RequirePackage[svgnames]{xcolor}   % nice colors with nice names
+\@ifclassloaded{scrbook}{
+\RequirePackage[noxcolor]{beamerarticle}
+}{}
+
+\RequirePackage{amsthm}
+\RequirePackage{keyval}
+\RequirePackage{comment}
+\RequirePackage{ifthen}
+\@ifclassloaded{scrbook}{
+\RequirePackage{enumitem}
+}
+
+
+\RequirePackage{multicol}
+\RequirePackage{calc}  %commande widthof
+\RequirePackage{tikz}
+\RequirePackage{nameref}
+\usetikzlibrary{calc}
+\RequirePackage{tcolorbox}      % differentes box colorées
+\tcbuselibrary{theorems}
+\RequirePackage{pgfopts}   % use keyval option in the package
+\RequirePackage{environ}  % new command \NewEnviron
+\RequirePackage{comment}  % include environment as a comment. The goal here is to include or not the lessons, the activities or the exercises
+\RequirePackage{tagging}   % conditionnal compiling (used for the methods)
+\RequirePackage{xcomment}  % to comment everything but some environments (used for the methods)
+\RequirePackage{hyperref}  % references
+\RequirePackage{cleveref}   % clever references
+
+
+\DeclareOldFontCommand{\bf}{\normalfont\bfseries}{\mathbf}
+\DeclareOldFontCommand{\it}{\normalfont\bfseries}{\mathit}
+
+
+\newcommand{\methodscolor}{DarkOrchid}
+\newcommand{\lessoncolor}{LimeGreen}
+\newcommand{\exercisescolor}{SlateBlue}
+\newcommand{\activitiescolor}{OrangeRed}
+\newcommand{\solutionscolor}{red}
+\newcommand{\notez}{}
+\newlength{\fascicules@groupexoswidth}
+\newcommand{\esbook@lessonname}{cours}
+\newcommand{\esbook@activitiesname}{activit\'es}
+\newcommand{\esbook@activityname}{activit\'e}
+\newcommand{\esbook@exercisesname}{exercices}
+\newcommand{\esbook@solutionsname}{corrig\'es}
+\newcommand{\esbook@methodsname}{m\'ethodes}
+
+\renewenvironment{theorem}[2][]{\begin{theo}[label=#1]{#2}{}}{\end{theo}}
+\renewenvironment{definition}[2][]{\begin{defi}[label=#1]{#2}{}}{\end{defi}}
+\newenvironment{objective}{\begin{obj}{}{}}{\end{obj}}
+\newenvironment{property}[2][]{\begin{prop}[label=#1]{#2}{}}{\end{prop}}
+\newenvironment{formula}[2][]{\begin{form}[label=#1]{#2}{}}{\end{form}}
+
+
+\@ifclassloaded{scrbook}{
+
+
+
+\setitemize{itemsep=0pt,parsep=0pt,leftmargin=*,labelsep=1pt,noitemsep}
+\setenumerate{wide,nosep,noitemsep,labelsep=0pt}
+\setenumerate[1]{label=\bf{\arabic*.}\; }
+\setenumerate[2]{label=\bf{\alph*)\;}   } 
+
+\newenvironment{method}[2][]{\begin{meth}[label=#1]{#2}{}  }{\end{meth}}
+}
+{}
+\@ifclassloaded{beamer}{
+\newenvironment{method}[2][]{\begin{meth}[label=#1]{#2}{} %
+\only<1>{\addcontentsline{lom}{method}{m\'ethode \protect\ref{#1} .#2\par} }}{\end{meth}}
+}
+{}
+
+\makeatletter
+
+\newtcbtheorem{theo}{Th\'eorème}
+{code={\NR@gettitle{#2}},colback=green!5,colframe=green!35!black,%
+fonttitle=\bfseries,theorem name,separator sign none,%
+description delimiters parenthesis,label type=theorem}{th}
+
+\@ifclassloaded{scrbook}{
+\newtcbtheorem[list inside=method,number within=chapter]%
+{meth}{m\'ethode}{code={\NR@gettitle{#2}},%
+colback=blue!5,colframe=blue!30,coltitle=black,fonttitle=\bfseries,%
+theorem name and number,separator sign colon,description delimiters none,%
+label type=method}{}
+}
+{}
+\@ifclassloaded{beamer}{
+\newtcbtheorem{meth}{m\'ethode}{code={\NR@gettitle{#2}},colback=blue!5,colframe=blue!30%
+,coltitle=black,fonttitle=\bfseries,theorem name and number,separator sign colon,%
+description delimiters none,label type=method}{}
+}
+{}
+
+\newtcbtheorem{prop}{Propri\'et\'e}{code={\NR@gettitle{#2}},colback=green!5,%
+colframe=green!35!black,fonttitle=\bfseries,theorem name,separator sign none,%
+description delimiters parenthesis,label type=property}{}
+
+\newtcbtheorem{obj}{Objectif}{colback=orange!5,colframe=orange!35!black,%
+fonttitle=\bfseries,theorem name,separator sign none,description delimiters parenthesis}{}
+
+\newtcbtheorem{form}{Formule}{code={\NR@gettitle{#2}},colback=orange!5,colframe=green!35!black,%
+fonttitle=\bfseries,theorem name,separator sign none,label type=formula}{}
+
+\newtcbtheorem{defi}{D\'efinition}{code={\NR@gettitle{#2}},colback=red!5,%
+colframe=red!35!black,fonttitle=\bfseries,theorem name,separator sign none,%
+description delimiters parenthesis,label type=definition}{}
+
+\newenvironment{remark}{  \begin{tikzpicture}[baseline]  %
+\node[fill=orange!30,anchor=base,circle,draw=orange,line width=1pt]%
+ at (0,0) {NB:}; \end{tikzpicture} \begin{minipage}{.8\columnwidth}}{\end{minipage}}
+
+\renewenvironment{proof}{\textbf{D\'emonstration:} \par}{\hfill \qed}
+
+
+\@ifclassloaded{scrbook}{
+
+\RequirePackage[noxcolor]{beamerarticle}
+
+\makeatletter
+\def\fasciculestitle{
+\begin{titlepage}
+\begin{center}
+\hspace{0pt}\\
+\vspace{4cm}
+{\Large\bfseries \@author}\\
+\vspace{3cm}
+ {\scalebox{1.5}{\Huge\bfseries \@title }}\\
+\vspace{0.8cm}
+ {\LARGE\bfseries \@subtitle}\\[10pt]
+ % ----------------------------------------------------------------
+ \vfill
+\@publishers\\
+\@date
+ % ----------------------------------------------------------------
+\end{center}
+
+
+\thispagestyle{empty}
+
+\clearpage
+\end{titlepage}
+}
+\makeatother
+
+\pgfkeys{
+/include/.is family,/include,
+default/.style = {exercises = true,lesson = true,activities=true,solutions=true},
+exercises/.store in=\fascicules@modeexercises,
+lesson/.store in=\fascicules@modelesson,
+activities/.store in=\fascicules@modeactivities,
+solutions/.store in=\fascicules@modesolutions,
+}
+\pgfkeys{/include,/include/default}
+\ProcessPgfOptions{/include}
+
+\ifthenelse
+{\equal{\fascicules@modesolutions}{inside}}
+{\PassOptionsToPackage{nosolutionfiles}{answers}}
+{}
+
+\RequirePackage{answers}
+
+
+\RequirePackage[headsepline=1pt,footsepline=1pt]{scrlayer-scrpage}
+\clearpairofpagestyles
+
+\addtokomafont{pagehead}{\color{white} \bfseries}  % font for the page headers
+\addtokomafont{pagefoot}{\large \bfseries}  % font for the page headers
+
+\newcommand*{\headcontents}[1]{%
+  \raisebox{0pt}[\ht\strutbox][\dimexpr\headheight-\ht\strutbox\relax]{#1}}
+
+\newpairofpagestyles[scrheadings]{lesson}%
+{\ihead{\esbook@lessonname} \ohead{\leftmark} \ofoot{\thepage} }
+\newpairofpagestyles[scrheadings]{activities}%
+{\ihead{\esbook@activitiesname} \ohead{\leftmark} \ofoot{\thepage} }
+\newpairofpagestyles[scrheadings]{exercises}%
+{\ihead{\esbook@exercisesname} \ohead{\leftmark} \ofoot{\thepage} }
+\newpairofpagestyles[scrheadings]{solutions}%
+{\ihead{\esbook@solutionsname}  \ofoot{\thepage} }
+\newpairofpagestyles[scrheadings]{methods}%
+{\ihead{\esbook@methodsname}  \ohead{\leftmark} \ofoot{\thepage} }
+
+\newcommand*\headcoloredbg[1]{%
+  \begin{tikzpicture}
+  \fill[color=#1](0,0)rectangle({\layerwidth},{\layerheight});
+  \end{tikzpicture}
+  }
+\DeclareNewLayer[background,topmargin,
+addheight=20pt,
+  contents=\headcoloredbg{\lessoncolor}
+]{lesson.bg}
+\DeclareNewLayer[background,topmargin,
+addheight=20pt,
+  contents=\headcoloredbg{\exercisescolor}
+]{exercises.bg}
+\DeclareNewLayer[background,topmargin,
+addheight=20pt,
+  contents=\headcoloredbg{\activitiescolor}
+]{activities.bg}
+\DeclareNewLayer[background,topmargin,
+addheight=20pt,
+  contents=\headcoloredbg{\solutionscolor}
+]{solutions.bg}
+\DeclareNewLayer[background,topmargin,
+addheight=20pt,
+ contents=\headcoloredbg{\methodscolor}
+]{methods.bg}
+
+\AddLayersAtBeginOfPageStyle{lesson}{lesson.bg}
+\AddLayersAtBeginOfPageStyle{exercises}{exercises.bg}
+\AddLayersAtBeginOfPageStyle{activities}{activities.bg}
+\AddLayersAtBeginOfPageStyle{solutions}{solutions.bg}
+\AddLayersAtBeginOfPageStyle{methods}{methods.bg}
+
+\newpairofpagestyles[scrheadings]{chapterpage}{}
+\makeatletter
+\newcommand*\@backgroundimage{}
+\newcommand*\backgroundimage[1]{%
+  \ifstr{#1}{}{\gdef\@backgroundimage{}}{%
+    \gdef\@backgroundimage{\includegraphics[width=\layerwidth\relax]{#1}}%
+}}
+
+\colorlet{backgroundcolor}{white}
+\newcommand*\coloredbg{%
+  \tikz\fill[backgroundcolor,opacity=.5](0,0)rectangle({\layerwidth},{\layerheight});}
+\DeclareNewLayer[background,textarea,
+  addvoffset=-5pt,addhoffset=-5pt,addwidth=10pt,addheight=10pt,
+  contents=\coloredbg
+]{text.bg}
+\DeclareNewLayer[background,
+  textarea, mode=picture,align=t,
+  contents={
+    \putLL{\begin{tikzpicture}
+     \fill[top color=PeachPuff,bottom color=PapayaWhip] (0,0) rectangle (\layerwidth,\layerheight/4+\layerheight/10);
+    \draw (0,\layerheight/5) rectangle (\layerwidth,\layerheight/2+\layerheight/5);
+    \shade[top color=Peru,bottom color=PeachPuff] (0,\layerheight/2) rectangle (\layerwidth,\layerheight);
+    \clip (0,\layerheight/5) rectangle (\layerwidth,\layerheight/2+\layerheight/5);
+    \node at (\layerwidth/2,\layerheight/4+\layerheight/10) {\@backgroundimage};
+    \end{tikzpicture}
+  }}
+]{image.bg}
+\AddLayersAtBeginOfPageStyle{chapterpage}{text.bg,image.bg}
+
+\Newassociation{sol}{Solution}{solution}
+\Newassociation{sol*}{Solution}{soluce}
+
+\renewcommand{\Solutionlabel}[1]{\tikz{\node[rectangle,draw=red!50,fill=red!20] at(0,0) {#1}; }}
+
+\newcommand{\headerFormat}{\color{white} \Large \bf } %le format des header des sections
+\newcommand{\groupexosFormat}{\color{blue}} %le format de l'intitule des groupes d'exos
+\newcommand{\activitytitleFormat}{\color{\activitiescolor} \Large \bf}
+\newcommand{\fascicules@exocolour}{}   % la couleur des étiquettes des exercices
+
+\newcounter{fascicules@exo}
+\newcounter{fascicules@activity}
+\newenvironment{activities}{
+\setcounter{fascicules@activity}{0}
+\newpage
+\pagestyle{activities}
+}{ \clearpage}
+
+
+\newcommand{\onecolumnexos}[1]
+{
+\end{multicols}
+\thispagestyle{exercises}
+#1
+\pagestyle{exercises}
+\begin{multicols}{2}
+}
+
+\NewEnviron{exercises}{
+\newpage
+\begin{multicols}{2}
+\pagestyle{exercises}
+\Opensolutionfile{solution}[solutions/ch\thechapter]
+\Opensolutionfile{soluce}[solutions/ch\thechapter_prof]
+  \BODY
+  \clearpage
+\Closesolutionfile{solution}
+\Closesolutionfile{soluce}
+\end{multicols}
+}
+
+\NewEnviron{solutions}{
+\newpage
+\pagestyle{solutions}
+\begin{multicols}{2}
+  \BODY
+  \clearpage
+\end{multicols}
+}
+
+\newenvironment{lesson}{
+     \setcounter{fascicules@exo}{0}
+\newpage
+\ifthenelse{\equal{\fascicules@modelesson}{true}}%
+{\pagestyle{lesson}}{}
+\ifthenelse{\equal{\fascicules@modelesson}{methods}}{
+     \pagestyle{methods}
+     \Opensolutionfile{solution}[solutions/ch\thechapter_methods]
+}{}
+}
+{
+\clearpage
+\ifthenelse{\equal{\fascicules@modelesson}{methods}}{
+\pagestyle{methods}
+\Closesolutionfile{solution}
+}{}
+}
+
+\newcommand{\activity}[1]{
+\refstepcounter{fascicules@activity}
+{
+\activitytitleFormat \esbook@activityname~\thefascicules@activity.  #1}
+\medskip
+}
+
+\newcommand{\groupexos}[1]
+{
+\setlength{\fascicules@groupexoswidth}{\minof{\widthof{#1}}{.4\textwidth}}
+
+\begin{center}
+\begin{minipage}{\fascicules@groupexoswidth}
+\groupexosFormat
+\dotfill \par
+#1
+\end{minipage}
+\end{center}
+}
+
+
+\ifthenelse
+{\equal{\fascicules@modeexercises}{true}}
+{}
+{\excludecomment{exercises}}
+\ifthenelse
+{\equal{\fascicules@modeactivities}{true}}
+{}
+{\excludecomment{activities}}
+\ifthenelse
+{\equal{\fascicules@modelesson}{true}}
+{}
+{}
+\ifthenelse
+{\equal{\fascicules@modelesson}{false}}
+{\excludecomment{lesson}}
+{}
+\ifthenelse
+{\equal{\fascicules@modelesson}{methods}}
+{\usetag{method}}  % will print only the methods
+{} 
+\ifthenelse
+{\equal{\fascicules@modesolutions}{false}}
+{\excludecomment{solutions}}
+{}
+\ifthenelse
+{\equal{\fascicules@modesolutions}{inside}}
+{\excludecomment{solutions}}
+{}
+
+\pgfkeys{
+/fascicules/.is family,/fascicules,
+default/.style = {title = ,type = none},
+title/.estore in = \exotitle,
+type/.estore in = \exotype,
+}
+
+
+\newenvironment{exo}[1][]
+{%
+ \pgfkeys{/fascicules, default, #1}%
+ \vspace{3mm}
+ \refstepcounter{fascicules@exo}
+
+ \ifthenelse{\equal{\exotype}{solution}}{\renewcommand{\fascicules@exocolour}{red}}
+ {
+ \ifthenelse{\equal{\exotype}{method}}{
+ \renewcommand{\fascicules@exocolour}{\methodscolor}
+      \untagged{method}{
+         \begin{multicols}{2}
+         \bgroup
+         \renewenvironment{sol}{{\bfseries solution:}}{}
+      }
+
+ }{
+ \renewcommand{\fascicules@exocolour}{blue}
+ }
+ }
+ \tikz \node[rectangle,draw=\fascicules@exocolour!50,fill=\fascicules@exocolour!20] {\thefascicules@exo};
+ \ifthenelse{\equal{\exotitle}{}}{}{{\bf \exotitle.}}
+}
+{
+\ifthenelse{\equal{\exotype}{method}}{
+\untagged{method}{\egroup \end{multicols}}
+}{}
+\penalty -1000 \par
+}
+
+\setkomafont{chapter}{\color{white} \usefont{T1}{qhv}{b}{n}\selectfont\huge}
+\renewcommand\chapterformat{%
+\begin{tikzpicture}
+ \node[rotate=90]at (0,0) {\Large \chapapp};
+ \node[rectangle,draw,fill=Olive] at (1,0) {\thechapter};
+\end{tikzpicture}
+}
+\addtokomafont{subsection}{\fontsize{12pt}{12pt}\color{LimeGreen}\selectfont}
+\addtokomafont{section}{\fontsize{14pt}{14pt}\color{LimeGreen}\selectfont}
+\newkomafont{sectionnumber}{\fontsize{18pt}{18pt}\selectfont\rmfamily\color{white}} 
+\makeatletter
+\renewcommand\sectionlinesformat[4]{%
+  \makebox[0pt][l]{\rule[-5pt]{\textwidth}{1pt}}%
+  \@hangfrom{#3}{#4}%
+}
+\makeatother
+
+\makeatletter
+
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand\sectionformat{%
+  \setlength\fboxsep{5pt}%
+  \raisebox{-4pt}{\colorbox{LimeGreen}{%
+    \enskip{\usekomafont{sectionnumber} \thesection\autodot}\enskip}%
+  \quad%
+}}
+
+\makeatletter
+\def\cref@getref#1#2{%
+  \xdef\@lastusedlabel{#1}%
+  \expandafter\let\expandafter#2\csname r@#1@cref\endcsname%
+  \expandafter\expandafter\expandafter\def%
+    \expandafter\expandafter\expandafter#2%
+    \expandafter\expandafter\expandafter{%
+      \expandafter\@firstoftwo#2}}%
+\crefformat{method}{\color{\lessoncolor}  M\'ethode #2#1#3 \nameref*{\@lastusedlabel} }
+\crefformat{section}{\color{\lessoncolor}  \S #2#1#3 \nameref*{\@lastusedlabel} }
+\crefformat{fascicules@activity}{\color{\activitiescolor}  \esbook@activityname~#2#1#3 \nameref*{\@lastusedlabel} }
+
+\newcommand\listofmethods{\tcblistof[\section*]{method}{Liste des M\'ethodes} }
+
+} % class scrbook uniquement
+{}
+
+\makeatother
+\makeatletter
+\@ifclassloaded{beamer}
+{
+
+     \usecolortheme{rose}
+     \useoutertheme[hideallsubsections,height=8pt]{sidebar}
+     \setbeamertemplate{section in toc}[sections numbered]
+     \setbeamercolor{structure}{fg=\lessoncolor, bg=green!10}
+\resetcounteronoverlays{tcb@cnt@meth}   % reset counters for methods
+
+\AtBeginSection[
+{
+\begin{frame}<beamer>
+    \begin{centering}
+    \begin{beamercolorbox}[sep=12pt,center]{part title}
+    \usebeamerfont{section title} \insertsection\par
+    \end{beamercolorbox}
+    \end{centering}
+
+    \vfill
+    \tableofcontents[currentsection,sectionstyle=hide/hide,subsectionstyle=show/show/hide]
+    \vfill
+\end{frame}
+}
+]
+     {
+\begin{frame}<beamer>
+    \begin{centering}
+    \begin{beamercolorbox}[sep=12pt,center]{part title}
+    \usebeamerfont{section title}\S \thesection.~ \insertsection\par
+    \end{beamercolorbox}
+    \end{centering}
+
+    \vfill
+    \tableofcontents[currentsection,sectionstyle=hide/hide,subsectionstyle=show/show/hide]
+    \vfill
+\end{frame}
+     }
+
+\newenvironment{cours}[1][]{   
+\title{\Cref{#1}. \nameref{#1}}
+ \begin{frame}
+ \titlepage
+ \end{frame}
+ % table des matières
+ \begin{frame}
+ \setcounter{tocdepth}{1}
+ \tableofcontents
+ \setcounter{tocdepth}{2}
+ \end{frame}
+}{} 
+
+
+\AtBeginDocument{
+  \def\beamer@label<#1>{%
+    \def\hack@arg{#1}%
+    \@ifnextchar[\beamer@label@opt\beamer@label@noopt
+  }%
+  \def\beamer@label@opt[#1]#2{%
+    \expandafter\alt\expandafter<\hack@arg>%
+      {\beamer@origlabel[#1]{#2}\beamer@nameslide{#2}}%
+      {\beamer@dummynameslide}%
+  }%
+  \def\beamer@label@noopt#1{%
+    \expandafter\alt\expandafter<\hack@arg>%
+      {\beamer@origlabel{#1}\beamer@nameslide{#1}}%
+      {\beamer@dummynameslide}%
+  }%
+}
+
+\renewcommand{\notez}{
+\mode<beamer>{
+\begin{tikzpicture}[remember picture,overlay]
+\node[scale=2,text opacity=0.1]
+  at (current page.center) {\includegraphics{../../commons/img/crayon}
+};
+\end{tikzpicture}
+}
+}
+
+
+     \makeatletter
+     \newcommand\listofmethods{\@starttoc{lom}}
+     \makeatother
+
+
+\newcounter{beamerExo}
+\resetcounteronoverlays{beamerExo}
+
+\pgfkeys{
+/fascicules/.is family,/fascicules,
+default/.style = {title = ,type = none},
+title/.estore in = \exotitle,
+type/.estore in = \exotype,
+}
+
+\newenvironment{exo}[1][]
+{    \pgfkeys{/fascicules, default, #1}%
+\refstepcounter{beamerExo}
+\tikz \node[rectangle,draw=\methodscolor!50,fill=\methodscolor!20] {\thebeamerExo};
+\ifthenelse{\equal{\exotitle}{}}{}{{\bf \exotitle.}}
+}
+
+\newenvironment{sol}
+{{\bfseries r\'eponse :}}
+{}
+
+}
+{}
+\makeatother
+
+
+\tikzstyle{general}=[line width=0.3mm, >=latex, x=1cm, y=1cm,line cap=round, line join=round]
+\tikzstyle{grid}=[line width=0.3mm, color=LightBlue]
+\tikzstyle{courbe} = [draw=blue,line width=1.2pt]
+
+\newcommand{\window}[4]
+{
+\def\poslabelX{above left}
+\def\poslabelY{below right}
+\pgfmathsetmacro{\windowwidth}{7}; % la largeur par défaut d'une window
+
+\pgfmathsetmacro{\Xmin}{#1}; %
+\pgfmathsetmacro{\Xmax}{#2}; %
+\pgfmathsetmacro{\Ymin}{#3}; %
+\pgfmathsetmacro{\Ymax}{#4}; %
+}
+
+\newenvironment{windowsratio}[1][0.66]
+{
+ \begin{scope}[xscale=\windowwidth/(\Xmax-\Xmin),yscale=(\windowwidth * #1)/(\Ymax-\Ymin)]
+}
+{
+\end{scope}
+}
+\newcommand{\axeH}[1][$x$]{\draw[line width=1.5pt,->] (\Xmin,0)--(\Xmax,0) node[\poslabelX]{#1};}
+\newcommand{\axeV}[1][$y$]{\draw[line width=1.5pt,->] (0,\Ymin)--(0,\Ymax) node[\poslabelY]{#1};}
+\newcommand{\tickX}[1][1]{\draw (#1,0) node {\scriptsize$+$} node[below]{#1};}
+\newcommand{\tickY}[1][1]{\draw (0,#1) node {\scriptsize$+$} node[left]{#1}; }
+\endinput
+%%
+%% End of file `fascicules.sty'.

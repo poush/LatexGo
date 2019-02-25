@@ -1,0 +1,141 @@
+                                                     \input plainpkg
+\ProvidesPackage{langcode}[2012/09/20 v0.2 language adjustment (UL)]
+
+%% Copyright (C) 2012 Uwe Lueck,
+%% http://www.contact-ednotes.sty.de.vu
+%% -- author-maintained in the sense of LPPL below --
+%%
+%% This file can be redistributed and/or modified under
+%% the terms of the LaTeX Project Public License; either
+%% version 1.3c of the License, or any later version.
+%% The latest version of this license is in
+%%     http://www.latex-project.org/lppl.txt
+%% We did our best to help you, but there is NO WARRANTY.
+%%
+%% Please report bugs, problems, and suggestions via
+%%
+%%   http://www.contact-ednotes.sty.de.vu
+%%
+%% == Required                 ==
+%% 'langcode' is based on \ctanpkgref{dowith}:
+\RequirePackage{dowith}
+%% 
+%% == General Commands         ==
+%% |\uselangcode{<lcode>}| \ sets `\langcode' to <lcode>, runs 
+%% `\langcodeadjust' on the items stored in `\langcodedependent', 
+%% and finally executes what is stored in `\langcodeextras':
+\def\uselangcode#1{%
+    \def\langcode{#1}%                                  %% 2012/01/07:
+    \DoWithAllIn\langcodeadjust\langcodedependent
+    \langcodeextras} 
+%% |\langcodeadjust\<letters>| \ defines `\<letters>' to expand to 
+%% `\<lcode><letters>':
+\def\langcodeadjust#1{%
+%     \edef#1{\expandafter\noexpand
+%                 \csname\langcode
+    %% <- 2012/09/17 ->
+    \edef#1{\withcsname\noexpand \langcode
+                    \expandafter\@gobble\string#1\endcsname}}
+%% 
+%% == Sample Settings          == 
+%% Such settings once should be in some \file{.cfg} file TODO
+%% === What Must Be Varied    ===
+%% |\langcodedependent| \ is a list of commands that 
+%% must be adjusted:                                    %% ready 2012/09/20
+\def\langcodedependent{%                                %% 2012/01/07
+    \langcodeextras\dqtd\qtd\pardash\lastrev\totopofpage
+    \monthname}                                         %% 2012/01/17
+%%
+%% === English vs. German     ===
+%% ==== Months ====
+%% |\enmonthname{<num>}| yields the English name of the <num>th month 
+%% of the year:
+\def\enmonthname#1{%
+    \ifcase #1\or
+        January\or February\or March\or    April\or
+            May\or June\or     July\or     August\or
+      September\or October\or  November\or December%
+    \fi}
+%% |\demonthname{<num>}| yields the \emph{German} name of the <num>th month 
+%% month of the year:
+\def\demonthname#1{%
+    \ifcase #1\or
+         Januar\or Februar\or  M\"arz\or   April\or
+            Mai\or Juni\or     Juli\or     August\or
+      September\or Oktober\or  November\or Dezember%
+    \fi}
+%% ==== Quotes ====
+%% For |\dqtd| settings, see (load)                     %% load 2012/09/20
+%% 'catchdq' (\ctanpkgref{catcodes} bundle).\footnote{% %%      2012/09/20
+%%   The test below required loading 'catchdq' \emph{earlier} 
+%%   than 'langcode'.} 
+%% % while |\qtd| settings are in 'blog.sty' (\ctanpkgref{morehype} bundle).
+%% |\enqtd{<en-text>}| and |\deqtd{<de-text>}| 
+%% (overridable, e.g., with 'blog.sty'):
+\ifx\deqtd\undefined \def\deqtd#1{\glq#1\grq} \fi
+\ifx\enqtd\undefined \def\enqtd#1{`#1'}       \fi
+%% You may get `\glq' and `\grq' from \CtanPkgRef{ngerman}{ngerman.sty}
+%% \[(`\usepackage{ngerman}\originalTeX'\]
+%% if needed. Here is a little 
+%% \dqtd{tessst \qtd{inner}}, 
+%% due to the default |\uselangcode{en}|, we now issue |\uselangcode{de}|
+%% \let\delangcodeextras\empty
+%% \uselangcode{de}to get
+%% \dqtd{tessst \qtd{inner}}. 
+%% ==== Dashes ====
+%% I introduced |\pardash| thinking of 
+%% (German \dqtd{Gedankenstrich} and)
+%% long dashes as a weak version of a paragraph break. 
+%% \uselangcode{en}
+%% A paragraph break somehow means moving from one thought 
+%% to another\pardash almost the same what a long dash may 
+%% mean.\pardash Here I have switched to \qtd{`en'} 
+%% again, in order to get |\enpardash| by |\pardash|:
+\ifx\enpardash\undefined \let\enpardash\textemdash \fi
+%% \uselangcode{de}
+%% The \dqtd{Gedankenstrich} |\depardash| is not as long 
+%% \uselangcode{en}
+%% as the \dqtd{thought dash}\uselangcode{de}\pardash er ist nur 
+%% halb so lang\uselangcode{en}\pardash but it is surrounded 
+%% by regular spaces:
+\ifx\depardash\undefined \def\depardash{ \textendash\space} \fi
+%% Some people prefer a so-called \dqtd{\Wikiref{hair space}}
+%% surrounding the long dash. 
+%% ==== Wikipedia ====
+%% The previous Wikipedia link was obtained by |\Wikiref{hair space}|, 
+%% working like |\Wikienref{hair space}|. This is an example of how 
+%% \ctanpkgref{texlinks} makes use of |\uselangcode{<two-chars>}|.
+%% ==== 'blog.sty' ====
+%% In the present sample of \ |\langcodedependent|, \ 
+%% \[|\lastrev|\quad\mbox{and}\quad|\totopofpage|\] remain. 
+%% I use them for \acro{HTML} with 'blog.sty'\pardash sorry, 
+%% at present I cannot afford separating 
+%% settings for a wider audience from my own ones.
+%% 
+%% === Other Settings         ===
+%% I haven't used English extras so far:
+\let\enlangcodeextras\empty                      %% \empty 2012/01/17
+%% With German, I have used the \ctanpkgref{dhua} package 
+%% for certain abbrevations:
+\def\delangcodeextras{\RequirePackage{dhua}}
+%% However, this setting disables `\uselangcode{de}' after 
+%% `\begin{document}'---which has not a problem with 'blog.sty', 
+%% where I use it daily. For the tests above, 
+%% I \emph{emptied} `\delangcodeextras'.
+%% I had not thought of changing the language \emph{within} 
+%% one document before.
+%% 
+%% == Default Language Code ==
+%% The default `\langcode' is \qtd{`en'} for English:
+\uselangcode{en}
+%% == Leaving the Package File ==
+\endinput
+%%
+%% == VERSION HISTORY ==
+
+v0.1   2012/01/07   in `texblog.fdf'
+       2012/01/17
+v0.2   2012/09/17   own plainpkg package (\newcommand -> \def, ...) 
+       2012/09/20   doc. much expanded; 
+                    more blog-independent settings; 
+                    \Provides: v0.2, caption shortened (tld -> lc ->)

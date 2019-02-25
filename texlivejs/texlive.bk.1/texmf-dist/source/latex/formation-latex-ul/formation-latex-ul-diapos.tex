@@ -1,0 +1,270 @@
+\documentclass[aspectratio=54,10pt,xcolor=x11names]{beamer}
+  \usepackage[french]{babel}
+  \usepackage[autolanguage]{numprint}
+  \usepackage{amsmath}
+  \usepackage{booktabs,tabularx}
+  \usepackage{metalogo}                % logo \XeLaTeX
+  \usepackage{fontawesome}
+  \usepackage{listings}
+  \usepackage[export]{adjustbox}       % cadre serré autour d'une image
+  \usepackage[overlay,absolute]{textpos}
+
+  %% =============================
+  %%  Informations de publication
+  %% =============================
+  \renewcommand{\year}{2016}
+  \renewcommand{\month}{11-3}
+  \newcommand{\ctanurl}{https://ctan.org/pkg/formation-latex-ul/}
+
+  %% =======================
+  %%  Apparence du document
+  %% =======================
+
+  %% Polices de caractères
+  \usepackage{fontspec}
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Ligatures=TeX,Scale=0.88}
+  \setmainfont{Lucida Bright OT}
+  \setsansfont{Lucida Sans OT}
+  \setmathfont{Lucida Bright Math OT}
+  \setmonofont{Lucida Grande Mono DK}
+  \newfontfamily\titles{Myriad Pro}
+  \newfontfamily\oldstyle[Numbers=OldStyle]{Myriad Pro}
+  \usepackage{microtype}
+
+  %% Couleurs
+  \definecolor{comments}{rgb}{0.7,0,0}  % rouge foncé
+  \definecolor{alert}{rgb}{0,0.7,0}     % vert foncé
+  \definecolor{link}{rgb}{0,0.4,0.6}    % ~RoyalBlue de dvips
+  \definecolor{url}{rgb}{0.6,0,0}       % rouge-brun
+  \definecolor{rouge}{rgb}{0.85,0,0.07} % rouge bandeau identitaire
+  \definecolor{or}{rgb}{1,0.8,0}        % or bandeau identitaire
+  \colorlet{emphasis}{link}
+  \colorlet{exercices}{gray}
+
+  %% Hyperliens
+  \hypersetup{%
+    pdfauthor = {Vincent Goulet},
+    pdftitle = {Rédaction avec LaTeX - Premiers pas},
+    colorlinks = {true},
+    linktocpage = {true},
+    allcolors = {link},
+    urlcolor = {url},
+    pdfpagemode = {UseOutlines},
+    pdfstartview = {Fit},
+    bookmarksopen = {true},
+    bookmarksnumbered = {true},
+    bookmarksdepth = {subsection}}
+
+  %% Paramètres de beamer
+  \useinnertheme{default}
+  \useoutertheme[width=10mm,height=2.2\baselineskip]{sidebar}
+  \usefonttheme[onlylarge]{structurebold}
+  \usefonttheme{professionalfonts}
+  \addtobeamertemplate{headline}{\rule{0pt}{12pt}\par}{}
+  \setbeamercolor{frametitle}{fg=white,bg=black}
+  \setbeamerfont{frametitle}{family=\titles}
+  \setbeamercolor{structure}{fg=emphasis,bg=white}
+  \setbeamercolor{block title}{fg=black,bg=Snow2}
+  \setbeamercolor{alerted text}{fg=black}
+  \setbeamerfont{alerted text}{series=\bfseries}
+  \setbeamercolor{block title alerted}{fg=white,bg=alert}
+  \setbeamercolor{block title example}{fg=white,bg=exercices}
+  \setbeamercolor{example text}{fg=exercices,bg=white}
+  \setbeamertemplate{frametitle continuation}{}
+  \setbeamertemplate{theorems}[numbered]
+  \setbeamertemplate{section in toc}[sections numbered]
+  \setbeamertemplate{navigation symbols}{}
+  \setbeamertemplate{section in sidebar}{}
+  \setbeamertemplate{subsection in sidebar}{}
+  \setbeamertemplate{section in sidebar shaded}{}
+  \setbeamertemplate{subsection in sidebar shaded}{}
+  \AtBeginSection[]
+  {
+    \begin{frame}
+      \frametitle{Sommaire}
+      \small
+      \begin{columns}[t]
+        \begin{column}{.5\textwidth}
+          \tableofcontents[sections={1-3},%
+            currentsection,subsectionstyle=show/show/hide]
+        \end{column}
+        \begin{column}{.5\textwidth}
+          \tableofcontents[sections={4-6},%
+            currentsection,subsectionstyle=show/show/hide]
+        \end{column}
+      \end{columns}
+    \end{frame}
+  }
+
+  %% Paramétrage de babel pour les guillemets
+  \frenchbsetup{og=«, fg=»}
+
+  %% Sections de code source
+  \lstloadlanguages{[LaTeX]TeX}
+  \lstset{language=[LaTeX]TeX,
+    escapeinside=`',
+    extendedchars=true,
+    inputencoding=utf8/latin1,
+    basicstyle=\small\ttfamily\NoAutoSpacing,
+    commentstyle=\color{comments}\slshape,
+    keywordstyle=\mdseries,
+    emphstyle=\color{emphasis}\bfseries,
+    backgroundcolor=\color{LightYellow1},
+    frame=none,
+    showstringspaces=false}
+
+  %%% =========================
+  %%%  Nouveaux environnements
+  %%% =========================
+
+  %% Exercices
+  \theoremstyle{example}
+  \newtheorem{exercice}[theorem]{Exercice}
+
+  %% Environnements pour les demo de code; tirés du document
+  %% principal.
+  \newenvironment{demo}{%
+    \begin{beamercolorbox}[wd=\linewidth,sep=6pt]{block body example}}
+    {\end{beamercolorbox}}
+  \newenvironment{texample}[1][0.45\linewidth]{%
+    \noindent\begin{minipage}{#1}%
+      \def\producing{\end{minipage}\hfill\begin{minipage}{\dimexpr0.9\linewidth-#1}%
+        \hbox\bgroup\kern-.2pt%
+        \vbox\bgroup\parindent0pt\relax
+        % The 3pt is to cancel the -\lineskip from \displ@y
+        \abovedisplayskip3pt \abovedisplayshortskip\abovedisplayskip
+        \belowdisplayskip0pt \belowdisplayshortskip\belowdisplayskip
+        \noindent}
+    }{%
+      \par
+      % Ensure that a lonely \[\] structure doesn't take up width less than
+      % \hsize.
+      \hrule height0pt width\hsize
+      \egroup\kern-.2pt\egroup
+    \end{minipage}%
+    \par
+  }
+  \renewenvironment{quote}{%
+    \begin{beamercolorbox}[wd=\linewidth,sep=6pt]{block body example}}
+    {\end{beamercolorbox}}
+  \newenvironment{texoutput}[1]{%
+    \begin{minipage}[t]{#1} \small}{%
+    \end{minipage}}
+
+  %% Rubriques conseil du TeXpert
+  \newenvironment{conseil}{%
+    \begin{alertblock}{Conseil du {\TeX}pert}
+      \medskip
+      \begin{minipage}[t]{0.1\textwidth}
+        \color{alert}\raisebox{-1.2em}[0em][0em]{\huge\faThumbsOUp}
+      \end{minipage}
+      \begin{minipage}[t]{0.88\textwidth}}%
+    {\end{minipage}\end{alertblock}}
+
+  %% =====================
+  %%  Nouvelles commandes
+  %% =====================
+
+  %% Noms de fonctions, code, environnement, etc.
+  \newcommand{\fichier}[1]{\fbox{\texttt{#1}}}
+  \newcommand{\class}[1]{\textbf{#1}}
+  \newcommand{\pkg}[1]{\textbf{#1}}
+  \newcommand{\link}[2]{\href{#1}{#2~\raisebox{-0.2ex}{\faExternalLink}}}
+  \newcommand{\capsule}[2]{\href{#1}{\faYoutubePlay~#2}}
+
+  %% «Bouton» de la page de copyright
+  \newcommand{\browsebutton}{%
+    \setlength{\fboxrule}{0.5pt}%
+    \framebox[20mm][c]{%
+      \makebox[2.5mm]{\raisebox{-1pt}{\footnotesize\faGithub}}\;%
+      {\sffamily Voir sur GitHub}}}
+
+  %% «Bouton» pour accéder à CTAN
+  \newcommand{\ctanbutton}{%
+    \setlength{\fboxrule}{1pt}%
+    \framebox[60mm][l]{%
+      \rule[-5pt]{0mm}{16pt}%
+      \makebox[7mm]{\raisebox{-2.5pt}{\Large\faExternalLink}}\;%
+      {\sffamily Accéder aux fichiers dans CTAN}}}
+
+  %%% =======
+  %%%  Varia
+  %%% =======
+
+  %% Nouveaux compteurs requis pour ajouter les numéros d'exercices
+  %% dans la table des matières. Une page compte deux exercices;
+  %% besoin de deux compteurs pour celle-là.
+  \newcounter{exerciceref}
+  \newcounter{exercicerefb}
+
+  %% Longueurs pour la composition des pages couvertures avant et
+  %% arrière.
+  \newlength{\banderougewidth} \newlength{\banderougeheight}
+  \newlength{\bandeorwidth}    \newlength{\bandeorheight}
+  \newlength{\imageheight}
+  \newlength{\logoheight}
+  \newlength{\gapwidth}
+
+\begin{document}
+
+\input{couverture-avant-diapos}
+\input{frontispice-diapos}
+\input{licence-diapos}
+\input{prerequis-diapos}
+
+\begin{frame}
+  \frametitle{Sommaire}
+  \small
+  \begin{columns}[t]
+    \begin{column}{.5\textwidth}
+      \tableofcontents[sections={1-3},hideallsubsections]
+    \end{column}
+    \begin{column}{.5\textwidth}
+      \tableofcontents[sections={4-6},hideallsubsections]
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\input{presentation-diapos}
+\input{bases-diapos}
+\input{organisation-diapos}
+\input{apparence-diapos}
+\input{mathematiques-diapos}
+\input{ulthese-diapos}
+
+\begin{frame}
+  \frametitle{Et la suite?}
+
+  \begin{columns}
+    \begin{column}{.5\textwidth}
+      Le document de référence couvre des concepts plus avancés:
+      \begin{itemize}
+        \small
+      \item boîtes, tableaux et figures
+      \item équations mathématiques élaborées
+      \item bibliographie et citations
+      \item commandes et environnement sur mesure
+      \item changement de police
+      \item diapositives
+      \item rapports avec analyse intégrée
+      \item etc.
+      \end{itemize}
+      Références additionnelles dans l'introduction.
+    \end{column}
+    \begin{column}{.5\textwidth}
+      \includegraphics[width=\linewidth,frame]{formation-latex-ul}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\input{colophon-diapos}
+\input{couverture-arriere-diapos}
+
+\end{document}
+
+%%% Local Variables:
+%%% TeX-engine: xetex
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

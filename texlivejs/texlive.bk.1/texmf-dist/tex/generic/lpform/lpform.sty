@@ -1,0 +1,78 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{lpform}[2015/04/18]
+
+\usepackage{xifthen}
+
+\makeatletter
+
+\newcounter{subcounter} % This is the counter for the sub-equations
+\newcounter{eqcounter} % This counts the number of equations in the lpformulation environment
+
+% Creating custom labels
+\newcommand{\customlabel}[2]{\protected@write \@auxout{}{\string \newlabel {#1}{{#2}{}}}}
+
+% The name of the formulation
+\newcommand{\lpname}{}
+
+% The lpformulation environment
+\newenvironment{lpformulation}[1][]{\setcounter{eqcounter}{0}\renewcommand{\lpname}{#1} \start@align\tw@\st@rredfalse\m@ne \ifthenelse{\isempty{#1}}{}{\lpname}}{\endalign}
+
+% The method that is used to display the for all arguments
+\newcommand{\lpforall}[1]{\quad \forall #1}
+
+% The size of the left indent
+\newcommand{\lpindent}{\hspace{20pt}}
+
+% The method that is used to tag subequations
+\newcommand{\lpsubeqtag}{\theequation\alph{subcounter}}
+
+% The text that is shown on the 'subject to' line
+\newcommand{\lpsubjectto}{s.t.}
+
+% Labeling the lp formulation
+\newcommand{\lplabel}[1]{\customlabel{#1}{\lpname}}
+
+% Splitting one equation into two lines
+\newcommand{\lpnewline}{\nonumber\\&\lpindent}
+
+% \lpobj(*)[label]{min/max}{objective function}
+\def\lpobj{\@ifstar\@@lpobj\@lpobj}
+\newcommand{\@lpobj}[3][]{\ifthenelse{\value{eqcounter} = 0}{}{\displaybreak[0]\\}\stepcounter{eqcounter}&\lpindent\textrm{#2 } #3 \ifthenelse{\isempty{#1}}{}{\label{#1}}&\\&\lpindent\nonumber\textrm{\lpsubjectto}&}
+\newcommand{\@@lpobj}[3][]{\ifthenelse{\value{eqcounter} = 0}{}{\displaybreak[0]\\}\stepcounter{eqcounter}&\lpindent\textrm{#2 } #3 \nonumber \ifthenelse{\isempty{#1}}{}{\label{#1}}&\\&\lpindent\nonumber\textrm{\lpsubjectto}&}
+
+% \lpeq(*)[label]{constraint}{for all}
+\def\lpeq{\@ifstar\@@lpeq\@lpeq}
+\newcommand{\@lpeq}[3][]{\ifthenelse{\value{eqcounter} = 0}{}{\displaybreak[0]\\}\stepcounter{eqcounter}&\lpindent #2 \ifthenelse{\isempty{#3}}{}{\lpforall{#3}}\ifthenelse{\isempty{#1}}{}{\label{#1}}&}
+\newcommand{\@@lpeq}[3][]{\ifthenelse{\value{eqcounter} = 0}{}{\displaybreak[0]\\}\stepcounter{eqcounter}&\lpindent #2 \nonumber\ifthenelse{\isempty{#3}}{}{\lpforall{#3}}\ifthenelse{\isempty{#1}}{}{\label{#1}}&}
+
+% \lpnewsubeq(*)[label]{constraint}{for all}
+\def\lpnewsubeq{\@ifstar\@@lpnewsubeq\@lpnewsubeq}
+\newcommand{\@lpnewsubeq}[3][]{\ifthenelse{\value{eqcounter} = 0}{}{\displaybreak[0]\\}\stepcounter{eqcounter}&\lpindent\refstepcounter{equation}\setcounter{subcounter}{1} #2 \ifthenelse{\isempty{#3}}{}{\lpforall{#3}}\tag{\lpsubeqtag}\ifthenelse{\isempty{#1}}{}{\label{#1}}&}
+\newcommand{\@@lpnewsubeq}[3][]{\ifthenelse{\value{eqcounter} = 0}{}{\displaybreak[0]\\}\stepcounter{eqcounter}&\lpindent\refstepcounter{equation}\setcounter{subcounter}{0} #2 \nonumber\ifthenelse{\isempty{#3}}{}{\lpforall{#3}}\ifthenelse{\isempty{#1}}{}{\label{#1}}&}
+
+% \lpsubeq(*)[label]{constraint}{for all}
+\def\lpsubeq{\@ifstar\@@lpsubeq\@lpsubeq}
+\newcommand{\@lpsubeq}[3][]{\ifthenelse{\value{eqcounter} = 0}{}{\displaybreak[0]\\}\stepcounter{eqcounter}&\lpindent\refstepcounter{subcounter} #2 \ifthenelse{\isempty{#3}}{}{\lpforall{#3}}\tag{\lpsubeqtag}\ifthenelse{\isempty{#1}}{}{\label{#1}}&}
+\newcommand{\@@lpsubeq}[3][]{\ifthenelse{\value{eqcounter} = 0}{}{\displaybreak[0]\\}\stepcounter{eqcounter}&\lpindent #2 \nonumber\ifthenelse{\isempty{#3}}{}{\lpforall{#3}}\ifthenelse{\isempty{#1}}{}{\label{#1}}&}
+
+% Using the noforall option
+\DeclareOption{noforall}{
+	\renewcommand{\@lpeq}[2][]{\ifthenelse{\value{eqcounter} = 0}{}{\displaybreak[0]\\}\stepcounter{eqcounter}&\lpindent #2 \ifthenelse{\isempty{#1}}{}{\label{#1}}&}
+	\renewcommand{\@@lpeq}[2][]{\ifthenelse{\value{eqcounter} = 0}{}{\displaybreak[0]\\}\stepcounter{eqcounter}&\lpindent #2 \nonumber\ifthenelse{\isempty{#1}}{}{\label{#1}}&}
+	\renewcommand{\@lpnewsubeq}[2][]{\ifthenelse{\value{eqcounter} = 0}{}{\displaybreak[0]\\}\stepcounter{eqcounter}&\lpindent\refstepcounter{equation}\setcounter{subcounter}{1} #2 \tag{\lpsubeqtag}\ifthenelse{\isempty{#1}}{}{\label{#1}}&}
+	\renewcommand{\@@lpnewsubeq}[2][]{\ifthenelse{\value{eqcounter} = 0}{}{\displaybreak[0]\\}\stepcounter{eqcounter}&\lpindent\refstepcounter{equation}\setcounter{subcounter}{0} #2 \nonumber\ifthenelse{\isempty{#1}}{}{\label{#1}}&}
+	\renewcommand{\@lpsubeq}[2][]{\ifthenelse{\value{eqcounter} = 0}{}{\displaybreak[0]\\}\stepcounter{eqcounter}&\lpindent\refstepcounter{subcounter} #2 \tag{\lpsubeqtag}\ifthenelse{\isempty{#1}}{}{\label{#1}}&}
+	\renewcommand{\@@lpsubeq}[2][]{\ifthenelse{\value{eqcounter} = 0}{}{\displaybreak[0]\\}\stepcounter{eqcounter}&\lpindent #2 \nonumber\ifthenelse{\isempty{#1}}{}{\label{#1}}&}
+}
+
+% Using the alignedforall option
+\DeclareOption{alignedforall}{
+	\renewcommand{\lpforall}[1]{&& \forall #1}
+}
+
+\ExecuteOptions{}
+\ProcessOptions\relax
+
+\makeatother
+
+\endinput

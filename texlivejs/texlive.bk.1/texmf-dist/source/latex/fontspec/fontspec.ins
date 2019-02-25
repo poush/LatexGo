@@ -1,0 +1,60 @@
+%%^^A%%  fontspec.ins -- part of FONTSPEC <wspr.io/fontspec>
+
+\input fontspec.dtx\relax
+\input l3docstrip.tex\relax
+
+\keepsilent
+\usedir{tex/latex/fontspec}
+\let\MetaPrefix\relax
+\preamble
+------------------------------------------------
+The FONTSPEC package  <wspr.io/fontspec>
+------------------------------------------------
+Copyright  2004-2017  Will Robertson, LPPL "maintainer"
+Copyright  2009-2013  Khaled Hosny
+------------------------------------------------
+This package is free software and may be redistributed and/or modified under
+the conditions of the LaTeX Project Public License, version 1.3c or higher
+(your choice): <http://www.latex-project.org/lppl/>.
+------------------------------------------------
+\endpreamble
+\nopostamble
+\askforoverwritefalse
+
+\def\MetaPrefix{-- }
+\generate{\file{fontspec.lua}{
+  \from{fontspec.dtx}{lua}
+  \from{fontspec-lua.dtx}{lua}
+}}
+
+\let\MetaPrefix\DoubleperCent
+\ifx\FontspecDebug\undefined\def\FSDEBUG{}\else\def\FSDEBUG{,debug}\fi
+
+\generate{\file{fontspec.sty}{
+  \from{fontspec.dtx}{fontspec,load\FSDEBUG}
+  \from{fontspec-code-load.dtx}{fontspec,load\FSDEBUG}
+}}
+
+\def\DTX#1{\from{#1}{fontspec,XE\FSDEBUG}}
+\generate{\file{fontspec-xetex.sty}{\FONTSPECDTX}}
+
+\def\DTX#1{\from{#1}{fontspec,LU\FSDEBUG}}
+\generate{\file{fontspec-luatex.sty}{\FONTSPECDTX}}
+
+\endbatchfile
+\endinput
+
+% /©
+% ------------------------------------------------
+% The FONTSPEC package  <wspr.io/fontspec>
+% ------------------------------------------------
+% Copyright  2004-2019  Will Robertson, LPPL "maintainer"
+% Copyright  2009-2015  Khaled Hosny
+% Copyright  2013       Philipp Gesang
+% Copyright  2013-2016  Joseph Wright
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% ©/

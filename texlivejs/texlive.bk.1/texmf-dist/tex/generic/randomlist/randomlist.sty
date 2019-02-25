@@ -1,0 +1,67 @@
+%%
+%% This is file `randomlist.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% randomlist.dtx  (with options: `latex')
+%% 
+%% randomlist.dtx
+%% Copyleft 2013-2017 J.-C. Charpentier & C. Tellechea
+%% Packages `randomlist' to use with (La)eTeX
+%% Copyleft (L) 2013-2017 Jean-C\^ome Charpentier & Christian Tellechea.
+%% \CharacterTable
+%%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%%   Digits        \0\1\2\3\4\5\6\7\8\9
+%%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%%   Dollar        \$     Percent       \%     Ampersand     \&
+%%   Acute accent  \'     Left paren    \(     Right paren   \)
+%%   Asterisk      \*     Plus          \+     Comma         \,
+%%   Minus         \-     Point         \.     Solidus       \/
+%%   Colon         \:     Semicolon     \;     Less than     \<
+%%   Equals        \=     Greater than  \>     Question mark \?
+%%   Commercial at \@     Left bracket  \[     Backslash     \\
+%%   Right bracket \]     Circumflex    \^     Underscore    \_
+%%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%%   Right brace   \}     Tilde         \~}
+%%
+\NeedsTeXFormat{LaTeX2e}[1995/06/01]
+\ProvidesPackage{randomlist}
+         [2017/09/11 v1.3 Package for random list (JCC, CT)]
+\RequirePackage{xkeyval}
+\DeclareOptionX{seed}{\gdef\RL@seed{#1}}
+\ExecuteOptions{seed=0}
+\ProcessOptionsX
+\input{randomlist}
+\NewList{*RandomList*}
+\def\RandomItemizeList{%
+  \def\RL@Type{itemize}%
+  \ClearList{*RandomList*}%
+  \@ifnextchar\bgroup{\@randomlist}{\@@randomlist}%
+}
+\long\def\@randomlist#1{%
+  \InsertRandomItem{*RandomList*}{#1}%
+  \@ifnextchar\bgroup{\@randomlist}{\@@randomlist}%
+}
+\def\@@randomlist{%
+  \long\edef\RL@body{\noexpand\begin{\RL@Type}}%
+  \RLfor \RL@var = 0 to \RL@lenof{*RandomList*}-1 \do{%
+    \long\edef\RL@body{%
+      \unexpanded\expandafter{\RL@body}%
+      \unexpanded\expandafter{%
+        \expandafter\item \csname *RandomList*-\RL@var\endcsname
+      }%
+    }%
+  }%
+  \long\edef\RL@body{\unexpanded\expandafter{\RL@body}\noexpand\end{\RL@Type}}%
+  \RL@body
+}
+\newcommand*\RandomEnumerateList{%
+  \def\RL@Type{enumerate}
+  \ClearList{*RandomList*}%
+  \@ifnextchar\bgroup{\@randomlist}{\@@randomlist}
+}
+\endinput
+%%
+%% End of file `randomlist.sty'.

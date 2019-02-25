@@ -1,0 +1,44 @@
+%%% This file is public domain.
+%%% Originally written 1992, Don Hosek.
+%%% This declaration added by Clea F. Rees 2008/11/16 with the permission of Dan Hosek.
+%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This file sets up an nine point environment for TeX. It can be initialized
+% with the '\ninepoint' macro.
+% It also sets up a '\tenpoint' macro in case you want to go back down.
+% By Don Hosek
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+\ifx\tenpoint\undefined\let\loadedfrommacro=Y
+         \input 10point
+         \let\loadedfrommacro=N\fi
+ 
+%%%
+%%% Load in the fonts
+%%%
+\font\ninerm=cmr9            \font\sixrm=cmr6
+\font\ninei=cmmi9            \font\sixi=cmmi6
+\font\ninesy=cmsy9           \font\sixsy=cmsy6
+\font\ninebf=cmbx9           \font\sixbf=cmbx6
+\font\ninesl=cmsl9           \font\ninett=cmtt9      \font\nineit=cmti9
+\font\ninecsc=cmcsc10
+ 
+%%%
+%%% Set up the ninepoint macros
+%%%
+\ifx\ninepoint\undefined
+   \def\ninepoint{\def\rm{\fam0\ninerm} %switch to a 9-point type
+       \textfont0=\ninerm  \scriptfont0=\sixrm  \scriptscriptfont0=\fiverm
+       \textfont1=\ninei   \scriptfont1=\sixi   \scriptscriptfont1=\fivei
+       \textfont2=\ninesy  \scriptfont2=\sixsy  \scriptscriptfont2=\fivesy
+       \textfont3=\tenex   \scriptfont3=\tenex  \scriptscriptfont3=\tenex
+       \textfont\itfam=\nineit   \def\it{\fam\itfam\nineit}%
+       \textfont\slfam=\ninesl   \def\sl{\fam\slfam\ninesl}%
+       \textfont\ttfam=\ninett   \def\tt{\fam\ttfam\ninett}%
+       \textfont\bffam=\ninebf   \scriptfont\bffam=\sixbf
+        \scriptscriptfont\bffam=\fivebf   \def\bf{\fam\bffam\ninebf}%
+       \textfont\scfam=\ninecsc  \def\sc{\fam\scfam\ninecsc}%
+       \normalbaselineskip=11pt
+       \setbox\strutbox=\hbox{\vrule height8pt depth3pt width0pt}%
+       \normalbaselines\rm}
+   \fi

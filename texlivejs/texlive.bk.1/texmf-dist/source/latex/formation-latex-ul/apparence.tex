@@ -1,0 +1,571 @@
+\chapter{Apparence et disposition du texte}
+\label{chap:apparence}
+
+Les bonnes pratiques dictent de séparer le contenu du texte de son
+apparence lorsque l'on utilise un système de mise en page comme
+{\LaTeX}. Néanmoins, vient un moment où l'on peut souhaiter modifier
+l'apparence générale du document ou disposer le texte d'une manière
+particulière. {\LaTeX} offre toute la flexibilité voulue, que ce soit
+pour contrôler les attributs et la taille des polices de caractères,
+disposer du texte sous forme de liste numérotée ou à puce, centrer du
+texte ou créer des notes de base de page et des citations.
+
+\section{Police de caractères}
+\label{sec:apparence:police}
+
+Par défaut, tous les documents {\LaTeX} utilisent la même police de
+caractères\footnote{%
+  Donald~Knuth a créé la police en même temps que {\TeX}.}, %
+{\fontfamily{lmr}\selectfont Computer Modern}. Chose qui ne manquera
+pas de surprendre les utilisateurs débutants: le système n'a pas été
+conçu pour changer facilement la police du document!
+
+Cela dit, il est aujourd'hui devenu assez simple d'utiliser d'autres
+polices pour son document, surtout avec les moteurs
+{\TeX} modernes comme {\XeTeX}. La \autoref{sec:trucs:polices} traite
+du sujet plus en détail.
+
+Cette section se concentre plutôt sur le changement d'\emph{attribut}
+de la police du document, qu'il s'agisse de la famille (avec ou sans
+empattements, à largeur fixe ou variable), de la forme (droit,
+italique, penché) ou de la graisse (normal, gras). Le
+\autoref{tab:apparence:police} dresse la liste des commandes de
+changement d'attribut de la police.
+
+\begin{table}
+  \centering
+  \caption{Commandes de changement d'attribut de la police. Les
+    commandes de la deuxième colonne s'appliquent à tout le texte qui
+    suit. Celles de la troisième colonne s'appliquent uniquement au
+    texte en argument.}
+  \label{tab:apparence:police}
+  \begin{tabularx}{0.9\linewidth}{p{0.35\linewidth}Xl}
+    \toprule
+    \textbf{Famille} \\
+    \textrm{romain} & \cmd{\rmfamily} & \cmd{\textrm}\marg{texte} \\
+    \texttt{largeur fixe} & \cmd{\ttfamily} & \cmd{\texttt}\marg{texte} \\
+    \textsf{sans empattements} & \cmd{\sffamily} & \cmd{\textsf}\marg{texte} \\
+    \addlinespace[6pt]
+    \textbf{Forme} \\
+    \textup{\rmfamily droit} & \cmd{\upshape} & \cmd{\textup}\marg{texte} \\
+    \textit{\rmfamily italique} & \cmd{\itshape} & \cmd{\textit}\marg{texte} \\
+    \textsl{penché}$^\dagger$ & \cmd{\slshape} & \cmd{\textsl}\marg{texte} \\
+    \textsc{\rmfamily petites capitales} & \cmd{\scshape} & \cmd{\textsc}\marg{texte} \\
+
+    \addlinespace[6pt]
+    \textbf{Série} \\
+    \textmd{\rmfamily moyen} & \cmd{\mdseries} & \cmd{\textmd}\marg{texte} \\
+    \textbf{\rmfamily gras} & \cmd{\bfseries} & \cmd{\textbf}\marg{texte} \\
+    \bottomrule
+  \end{tabularx} \\
+  \raggedright
+  \hspace*{3em}{\footnotesize $^\dagger$ diffère de l'italique selon
+    la police utilisée}
+\end{table}
+
+La commande
+\begin{lstlisting}
+\normalfont
+\end{lstlisting}
+permet de revenir d'un trait à la police par défaut, soit le romain,
+droit de graisse moyenne.
+
+\begin{exemple}
+  \label{ex:apparence:police}
+  La commande \cmd{\setsecheadstyle} de la classe \class{memoir}
+  permet de modifier facilement le style des titres de section pour
+  tout le document. Pour obtenir des titres de section en gras sans
+  empattements, on placera dans le préambule d'un document utilisant
+  cette classe la commande suivante:
+\begin{lstlisting}
+\setsecheadstyle{\normalfont\sffamily\bfseries}
+\end{lstlisting}
+  L'utilisation de \cmd{\normalfont} au début de la série de commandes
+  permet de réinitialiser le style des titres, question d'éviter
+  d'éventuels conflits avec une configuration antérieure. %
+  \qed
+\end{exemple}
+
+\section{Taille du texte}
+\label{sec:apparence:taille}
+
+On se souviendra que l'on règle la taille de base du texte au
+chargement de la classe du document, tel qu'expliqué à la
+\autoref{sec:bases:classes}. Les commandes du
+\autoref{tab:apparence:taille} permettent néanmoins de réduire ou
+d'agrandir la taille des caractères pour une section du texte. Les
+commandes servent également pour la configuration de l'apparence
+générale du document dans le préambule.
+
+La taille des car
+
+\begin{table}
+  \centering
+  \caption{Commandes de changement de la taille des caractères. Toutes
+    les tailles sont relatives à celle de police de base du document.}
+  \label{tab:apparence:taille}
+  \begin{tabularx}{0.9\linewidth}{Xl}
+    \toprule
+    \cmd{\miniscule}$^\dagger$ & {\miniscule minuscule} \\
+    \cmd{\tiny} & {\tiny vraiment petit} \\
+    \cmd{\scriptsize} & {\scriptsize encore plus petit} \\
+    \cmd{\footnotesize} & {\footnotesize plus petit} \\
+    \cmd{\small} & {\small petit} \\
+    \cmd{\normalsize} & {\normalsize taille normale} \\
+    \cmd{\large} & {\large grand} \\
+    \cmd{\Large} & {\Large plus grand} \\
+    \cmd{\LARGE} & {\LARGE encore plus grand} \\
+    \cmd{\huge} & {\huge énorme} \\
+    \cmd{\Huge} & {\Huge encore plus énorme} \\
+    \cmd{\HUGE}$^\dagger$ & {\HUGE vraiment énorme} \\
+    \bottomrule
+  \end{tabularx} \\
+  \raggedright
+  \hspace*{3em}{\footnotesize $^\dagger$ ajout de la classe
+    \class{memoir} (et donc aussi de \class{ulthese})}
+\end{table}
+
+\begin{exemple}
+  \label{ex:taille-du-texte}
+  Les titres de sections sont généralement composés dans une taille
+  supérieure à celle du texte. La commande suivante permet d'augmenter
+  de deux échelons la taille des titres de
+  l'\autoref{ex:apparence:police}:
+\begin{lstlisting}
+\setsecheadstyle{\normalfont\Large\sffamily\bfseries}
+\end{lstlisting}
+  \qed
+\end{exemple}
+
+\section{Italique}
+
+L'italique est l'un des attributs de police les plus fréquemment
+employés dans le texte. Il sert, notamment, à insister sur des mots, à
+composer les expressions et locutions en langue étrangère ou à
+détacher les titres d'{\oe}uvres du fil du texte.
+
+Évidemment, il est possible d'obtenir de l'italique avec la commande
+\cmd{\textit} du \autoref{tab:apparence:police}. Cependant, nous
+recommandons plutôt d'utiliser une commande spécifiquement dédiée à
+mettre en évidence une portion de texte:
+\begin{lstlisting}
+\emph`\marg{texte}'
+\end{lstlisting}
+Par défaut, la commande \cmd{\emph} (pour \emph{emphasis}, «emphase»)
+placera \meta{texte} en italique dans du texte en romain (droit), ou
+encore en romain dans du texte déjà en italique.
+\begin{demo}
+  \begin{texample}
+\begin{lstlisting}
+C'était un peu \emph{rough}
+par moments.
+\end{lstlisting}
+    \producing
+    C'était un peu \emph{rough} par moments.
+  \end{texample}
+  \begin{texample}
+\begin{lstlisting}
+Il m'a dit: «\emph{Enough
+\emph{poutine} for the
+week!}»
+\end{lstlisting}
+    \producing
+    Il m'a dit: «\emph{Enough \emph{poutine} for the week!}»
+  \end{texample}
+\end{demo}
+
+\begin{conseil}
+  Le soulignement\index{soulignement} servait pour remplacer
+  l'italique à l'ère des dactylos. C'est aujourd'hui une marque de
+  typographie très rarement utilisée, voire à éviter. Ce n'est donc
+  pas pour rien qu'il n'existe pas de commande de soulignement dans
+  les classes {\LaTeX} standards.
+\end{conseil}
+
+
+\section{Listes}
+\label{sec:apparence:listes}
+
+{\LaTeX} offre deux environnements principaux pour la composition de
+listes ou d'énumérations:
+\begin{demo}
+  \begin{minipage}{0.48\linewidth}
+\begin{lstlisting}
+\begin{itemize}
+\item `\meta{texte}'
+\item `\meta{texte}'
+...
+\end{itemize}
+\end{lstlisting}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.48\linewidth}
+\begin{lstlisting}
+\begin{enumerate}
+\item `\meta{texte}'
+\item `\meta{texte}'
+...
+\end{enumerate}
+\end{lstlisting}
+  \end{minipage}
+\end{demo}
+L'environnement \Ie{itemize} crée une liste à puce, alors que
+l'environnement \Ie{enumerate} crée une énumération. Il est possible
+d'imbriquer les listes les unes dans les autres, et ce, peu importe
+leur type. {\LaTeX} se chargera d'adapter les marqueurs ou la
+numérotation jusqu'à quatre niveaux de profondeur.
+
+Illustrons ces concepts par le biais d'un exemple.
+
+\begin{exemple}
+  La liste mixte suivante résume les étapes de création d'une liste
+  avec {\LaTeX}.
+  \begin{enumerate}
+  \item Décider s'il s'agit d'une liste à puce ou d'une énumération;
+    \begin{itemize}
+    \item pour une liste à puce utiliser environnement \Ie{itemize};
+      \begin{itemize}
+      \item chaque niveau d'une liste à puce possède un marqueur
+        différent;
+      \end{itemize}
+    \item pour une énumération utiliser environnement \Ie{enumerate};
+    \end{itemize}
+  \item Débuter chaque élément de la liste par la commande
+    \cmdprint{\item}.
+    \begin{enumerate}
+    \item utiliser simplement un autre environnement \Pe{itemize} ou
+      \Pe{enumerate} comme texte d'un élément pour créer des listes
+      imbriquées;
+    \item {\LaTeX} ajustera automatiquement les marqueurs;
+    \end{enumerate}
+  \item S'assurer de fermer tous les environnements dans le bon ordre
+    pour retourner au texte normal.
+  \end{enumerate}
+
+  On a composé la liste ci-dessus avec le texte suivant.
+  \begin{demo}
+\begin{lstlisting}[emph={enumerate,itemize}]
+\begin{enumerate}
+\item Décider s'il s'agit d'une liste à puce ou [...]
+  \begin{itemize}
+  \item pour une liste à puce utiliser [...]
+    \begin{itemize}
+    \item chaque niveau d'une liste à puce [...]
+    \end{itemize}
+  \item pour une énumération utiliser [...]
+  \end{itemize}
+\item Débuter chaque élément de la liste par la commande
+  \verb=\item=.
+  \begin{enumerate}
+  \item utiliser simplement un autre environnement [...]
+  \item {\LaTeX} ajustera automatiquement les marqueurs;
+  \end{enumerate}
+\item S'assurer de fermer tous les environnements [...]
+\end{enumerate}
+\end{lstlisting}
+  \end{demo}
+  \qed
+\end{exemple}
+
+{\LaTeX} permet de configurer à peu près toutes les facettes de la
+présentation des listes: puces, folios, alignement, espacement entre
+les éléments, etc. Cette grande flexibilité implique une certaine
+complexité et la configuration des listes dépasse le cadre du présent
+document. Plusieurs paquetages facilitent toutefois la configuration
+des listes; nous recommandons à ce titre le paquetage \pkg{enumitem}
+\citep{enumitem}.
+
+\begin{conseil}
+  Le mode français de \pkg{babel} remplace les puces par défaut en
+  anglais ({\textbullet}, {\textendash}, $\ast$ et $.$ pour chacun
+  des quatre niveaux de l'environnement \Ie{itemize}) par le tiret
+  cadratin {\textemdash}. On peut désactiver cette fonctionnalité de
+  \pkg{babel} en insérant dans le préambule:
+\begin{lstlisting}
+\frenchbsetup{StardardItemLabels=true}
+\end{lstlisting}
+  Il est également possible de modifier le symbole utilisé comme
+  puce pour l'un, l'autre ou chacun des quatre niveaux avec:
+\begin{lstlisting}
+\frenchbsetup{
+  ItemLabeli=\`\meta{commande}',
+  ItemLabelii=\`\meta{commande}',
+  ItemLabeliii=\`\meta{commande}',
+  ItemLabeliv=\`\meta{commande}'}
+\end{lstlisting}
+  La \emph{Comprehensive {\LaTeX} Symbol List} \citep{comprehensive}
+  propose une immense sélection de symboles pouvant faire office de
+  puces.
+\end{conseil}
+
+Il existe un troisième environnement, plus rarement utilisé, pour
+composer du texte sous une forme s'apparentant à une liste.
+L'environnement \Ie{description} permet d'associer des termes à une
+définition ou une description pour chacun.
+\begin{demo}
+  \begin{texample}
+\begin{lstlisting}
+\begin{description}
+\item[rouge] première couleur
+  primaire
+\item[vert] seconde couleur
+  primaire
+\item[bleu] troisième couleur
+  primaire
+\end{description}
+\end{lstlisting}
+    \producing
+\begin{description}
+\item[rouge] première couleur primaire
+\item[vert] seconde couleur primaire
+\item[bleu] troisième couleur primaire
+\end{description}
+  \end{texample}
+\end{demo}
+
+
+\section{Texte centré}
+\label{sec:apparence:centering}
+
+On obtient du texte centré avec l'environnement \Ie{center} ou à
+l'aide de la commande \cmd{\centering}. L'environnement sert
+principalement pour centrer un bloc de texte.
+\begin{demo}
+  \begin{eqxample}
+\begin{lstlisting}
+\begin{center}
+  Centrer un mot ou une
+  expression les met en
+  évidence.
+\end{center}
+\end{lstlisting}
+    \producing
+\begin{center}
+  Centrer un mot ou une expression
+  les met en évidence.
+\end{center}
+  \end{eqxample}
+\end{demo}
+On remarquera que le texte centré n'est pas placé en retrait des
+marges gauche et droite (illustrées par les lignes verticales
+ci-dessus). Lorsque le texte fait plus d'une ligne, on pourra
+souhaiter forcer des retours à la ligne avec la commande {\bs\bs}.
+\begin{demo}
+  \begin{eqxample}
+\begin{lstlisting}
+\begin{center}
+  Centrer un mot \\
+  ou une expression \\
+  les met en évidence.
+\end{center}
+\end{lstlisting}
+    \producing
+\begin{center}
+  Centrer un mot \\
+  ou une expression \\
+  les met en évidence.
+\end{center}
+  \end{eqxample}
+\end{demo}
+
+La commande \cmd{\centering} s'applique à tout le texte qui suit. Elle
+s'avère surtout utile à l'intérieur d'environnements comme \Pe{table}
+ou \Pe{figure} pour centrer un tableau ou une figure sur la page. On
+trouvera plusieurs exemples de son utilisation
+au \autoref{chap:tableaux}.
+
+
+\section{Citations}
+\label{sec:apparence:citations}
+
+Une citation est une reproduction d'un propos ou d'un écrit antérieur
+d'un auteur qui est habituellement mentionné. Il existe deux
+environnements dans {\LaTeX} pour composer les citations.
+
+\begin{quote}
+  L'environnement \Ie{quote} est utilisé pour les citations courtes.
+  Le texte est placé en retrait des marges gauche et droite. Le
+  présent texte a été placé dans cet environnement.
+\end{quote}
+
+\begin{quotation}
+  L'environnement \Ie{quotation}, lui, sert pour les citations plus
+  longues se comptant en paragraphes.
+
+  La principale différence par rapport à l'environnement \Pe{quote},
+  c'est que \Pe{quotation} prend aussi en charge les marques de
+  paragraphes.
+
+  Ce paragraphe et les deux précédents sont composés dans
+  un environnement \Pe{quotation}.
+\end{quotation}
+
+
+\section{Notes de bas de page}
+\label{sec:apparence:notes}
+
+Une note de bas de page --- ou tout simplement \emph{note},
+puisqu'elle peut apparaître ailleurs qu'au bas de la page --- est un
+court texte qui sert à expliquer un mot ou une phrase du texte
+principal. L'\emph{appel de note} désigne le signe, le chiffre ou la
+lettre que l'on place après la partie à expliquer.
+
+La commande
+\begin{lstlisting}
+\footnote`\marg{texte de la note}'
+\end{lstlisting}
+insère un appel de note à l'endroit où la commande apparaît dans le
+texte et affiche \meta{texte de la note} à l'endroit
+approprié\footnote{%
+  Au bas de la page par défaut, comme ici. La note est composée dans
+  un corps plus petit et elle est séparée du texte par un trait.}. %
+{\LaTeX} se charge automatiquement de la numérotation et de la
+disposition des notes.
+
+Pour éviter que l'appel de note ne soit séparé du texte à expliquer,
+la commande \cmd{\footnote} doit immédiatement suivre celui-ci. La
+gestion des espaces peut alors devenir délicate, surtout si l'appel de
+note se trouve en fin de phrase. Nous recommandons de faire bon usage
+du symbole \% pour délimiter le contenu de \cmdprint{\footnote} du
+texte courant.
+\begin{lstlisting}[emph=footnote]
+%% note en fin de phrase
+Nous remercions Pierre Lasou\footnote{%
+  Spécialiste en ressources documentaires.}. %
+Il fut d'une grande aide dans la préparation de ...
+\end{lstlisting}
+\begin{lstlisting}[emph=footnote]
+%% note au fil de la phrase
+Nous soulignons que Pierre Lasou\footnote{%
+  Spécialiste en ressources documentaires.} %
+fut d'une grande aide dans la préparation de ...
+\end{lstlisting}
+
+Les usages en matière de numérotation et de disposition des notes
+varient beaucoup d'une discipline à l'autre: numérotation consécutive
+pour tout le document, notes dans la marge plutôt qu'au bas de la
+page, notes rassemblées à la fin de chaque chapitre ou à la toute fin
+du document, etc. Différents paquetages permettent de réaliser ce type
+de disposition, notamment \pkg{footmisc} \citep{footmisc}. Les
+utilisateurs de la classe \class{ulthese} pourront également tirer
+profit des nombreuses fonctionnalités de la classe \class{memoir} pour
+la gestion des notes; consulter le chapitre~12 de la %
+\doc{memman}{http://texdoc.net/pkg/memoir} de \class{memoir}.
+
+
+\section{Texte brut et code source}
+\label{sec::apparence:code}
+
+Il est parfois utile d'afficher du texte exactement comme il a été
+saisi dans un fichier, sans que {\LaTeX} n'interprète les commandes
+qui s'y trouvent ou n'en modifie la disposition. C'est ainsi que nous
+avons composé les nombreux extraits de code du présent document.
+
+L'environnement \Ie{verbatim} permet de présenter du texte tel qu'il
+est entré dans le code source du document.
+\begin{demo}
+  \begin{texample}
+\begin{lstlisting}
+\begin{verbatim}
+Texte disposé exactement tel
+qu'il est tapé et
+présenté dans une police
+à largeur fixe
+\end{verbatim}
+\end{lstlisting}
+    \producing
+\begin{verbatim}
+Texte disposé exactement tel
+qu'il est tapé et
+présenté dans une police
+à largeur fixe
+\end{verbatim}
+\end{texample}
+\end{demo}
+La variante \Ie{verbatim*} affiche les espaces de manière explicite en
+les remplaçant par le symbole \verb*| |. C'est surtout utile pour le
+code source de langages informatiques où le nombre d'espaces joue un rôle
+important.
+
+Pour afficher du texte brut ou une commande {\LaTeX} au fil du texte,
+on aura recours à la commande
+\cmd{\verb}. Sa syntaxe est un peu particulière:
+\begin{lstlisting}
+\verb`\meta{c}\meta{source}\meta{c}'
+\end{lstlisting}
+où \meta{c} est un symbole quelconque ne se trouvant pas dans
+\meta{source} et qui sert à délimiter le début et la fin de
+\meta{source}. La variante
+\cmd{\verb*} affiche elle aussi les espaces.
+\begin{demo}
+  \begin{texample}
+\begin{lstlisting}
+{\LaTeX} n'interprète pas la
+commande \verb=\bfseries=
+lorsqu'elle est placée
+dans \verb=\verb=.
+\end{lstlisting}
+    \producing
+    {\LaTeX} n'interprète pas la
+    commande \verb=\bfseries=
+    lorsqu'elle est placée
+    dans \verb=\verb=.
+  \end{texample}
+  \begin{texample}
+\begin{lstlisting}
+Le nombre d'espaces entre les
+mots ne compte pas dans
+{\LaTeX}: \verb*=a b= et
+\verb*=a  b= donnent «a b».
+\end{lstlisting}
+    \producing
+    Le nombre d'espaces entre les mots ne
+    compte pas dans {\LaTeX}: \verb*=a b= et
+    \verb*=a  b= donnent «a b».
+  \end{texample}
+\end{demo}
+
+Pour tout document comportant une grande quantité de texte brut ou de
+code source, nous recommandons d'avoir le paquetage \pkg{listings}
+\citep{listings}. La \autoref{sec:trucs:listings} approfondit le
+sujet.
+
+
+%%%
+%%% Exercices
+%%%
+
+\section{Exercice}
+\label{sec:apparence:exercices}
+
+% \Opensolutionfile{solutions}[solutions-apparence]
+
+% \begin{Filesave}{solutions}
+% \section*{Chapitre \ref*{chap:apparence}}
+% \addcontentsline{toc}{section}{Chapitre \protect\ref*{chap:apparence}}
+
+% \end{Filesave}
+
+\begin{exercice}[nosol]
+  \begin{enumerate}
+  \item Ouvrir le fichier \fichier{exercice\_complet.tex} et en
+    étudier le code source, puis le compiler.
+  \item Supprimer l'option \code{article} au chargement de la classe
+    et compiler de nouveau le document. Observer l'effet de cette
+    option de la classe \class{memoir}.
+  \item Au dernier paragraphe de la première section, placer toute la
+    phrase débutant par \code{«De simple dérivé»} à l'intérieur d'une
+    commande \cmd{\emph} et compiler de nouveau le document.
+  \item Changer la puce des listes pour le symbole \code{\$>\$} et
+    compiler de nouveau le document.
+  \end{enumerate}
+\end{exercice}
+
+% \Closesolutionfile{solutions}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-engine: xetex
+%%% TeX-master: "formation-latex-ul"
+%%% coding: utf-8
+%%% End:

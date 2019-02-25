@@ -1,0 +1,48 @@
+%%% This file is public domain.
+%%% Originally written 1992, Don Hosek.
+%%% This declaration added by Clea F. Rees 2008/11/16 with the permission of Dan Hosek.
+%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This file sets up a fourteen point environment for TeX. It can be initialized
+% with the '\fourteenpoint' macro.
+% It also sets up a '\tenpoint' macro in case you want to go back down.
+% By Don Hosek
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+\ifx\tenpoint\undefined\let\loadedfrommacro=Y
+         \input 10point
+         \let\loadedfrommacro=N\fi
+ 
+%%%
+%%% Load in the fonts
+%%%
+\font\fourteenrm=cmr12 scaled \magstep1
+\font\fourteeni=cmmi12 scaled \magstep1
+\font\fourteensy=cmsy10 scaled \magstep2
+\font\fourteenex=cmex10 scaled \magstep2
+\font\fourteenbf=cmbx12 scaled \magstep1
+\font\fourteensl=cmsl12 scaled \magstep1
+\font\fourteentt=cmtt12 scaled \magstep1
+\font\fourteenit=cmti12 scaled \magstep1
+\font\fourteencsc=cmcsc10 scaled \magstep2
+ 
+%%%
+%%% Set up the fourteenpoint macros
+%%%
+\ifx\fourteenpoint\undefined
+   \def\fourteenpoint{\def\rm{\fam0\fourteenrm}% switch to 14-point type
+       \textfont0=\fourteenrm \scriptfont0=\tenrm \scriptscriptfont0=\sevenrm
+       \textfont1=\fourteeni  \scriptfont1=\teni  \scriptscriptfont1=\seveni
+       \textfont2=\fourteensy \scriptfont2=\tensy \scriptscriptfont2=\sevensy
+       \textfont3=\fourteenex \scriptfont3=\fourteenex
+                              \scriptscriptfont3=\fourteenex
+       \textfont\itfam=\fourteenit  \def\it{\fam\itfam\fourteenit}%
+       \textfont\slfam=\fourteensl  \def\sl{\fam\slfam\fourteensl}%
+       \textfont\ttfam=\fourteentt  \def\tt{\fam\ttfam\fourteentt}%
+       \textfont\bffam=\fourteenbf  \scriptfont\bffam=\tenbf
+        \scriptscriptfont\bffam=\sevenbf  \def\bf{\fam\bffam\fourteenbf}%
+       \textfont\scfam=\fourteencsc \def\sc{\fam\scfam\fourteencsc}%
+       \normalbaselineskip=17pt
+       \setbox\strutbox=\hbox{\vrule height11.9pt depth6.3pt width0pt}%
+       \normalbaselines\rm}
+   \fi

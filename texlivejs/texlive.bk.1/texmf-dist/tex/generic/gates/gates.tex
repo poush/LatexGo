@@ -1,0 +1,925 @@
+% This is the Gates package.
+% Relevant information can be found in gates-doc.pdf
+% (or gates-doc.txt in a text editor).
+%
+% Author: Paul Isambert.
+% E-mail: zappathustra AT free DOT fr
+% Comments and suggestions are welcome.
+% Date: May 2012.
+
+\csname Come on, Gates is already loaded\endcsname
+\expandafter\let\csname Come on, Gates is already loaded\endcsname\endinput
+\input texapi
+\setcatcodes{_@=11}
+
+\def\gates@error{\senderror{Gates}}%
+\def\gates@error_nogate#1{\gates@error{`#1' isn't a gate}}
+\def\gates@error_nogatelist#1{\gates@error{`#1' isn't a gate list}}
+\def\gates@error_nogatein#1#2{\gates@error{No gate `#1' in list `#2'}}
+
+\def\gates@family_update#1{%
+  \def\gates@family_current{#1}%
+  }
+\newstring{:}
+\def\gates@family_check{%
+  \gates@family_pass\unbrace
+  }
+\def\gates@family_pass#1#2{%
+  \passexpanded{\passtrim{#2}{\gates@family_passdo{#1}}}{\gates@family_current}%
+  }
+\def\gates@family_passdo#1#2#3{%
+  \passexpanded{\ifcontains{:}}{#2}
+    {#1{#2}}{#1{#3:#2}}%
+  }
+\def\gates@ifexists#1#2{%
+  \ifcs{gate \gates@family_check{#1}:#2}%
+  }
+
+
+\def\gates@gates#1#2{%
+  \ifstring{#2}[
+    {\gates@family_update{#1}%
+     \gates@gates_macro}
+    {\ifstring{#2}(
+       {\gates@family_update{#1}%
+        \gates@gates_list}
+       {\gates@gates_check{#1}}}#2%
+  }
+\def\gates@gates_macro[#1]{%
+  \passtrim{#1}\gates@action@def
+  }
+\def\gates@gates_list(#1){%
+  \passtrim{#1}\gates@action@list
+  }
+\def\gates@gates_check#1#2 {%
+  \ifelseif{%
+    {\ifcs{gates@action@#2}}
+      {\gates@family_update{#1}\usecs{gates@action@#2}}
+    {\ifcs{gates@action@#2_withfamily}}
+      {\usecs{gates@action@#2_withfamily}{#1}}
+    {\ifcs{gate \gates@family_passdo\unbrace{#2}{#1}:code}}
+      {\gates@family_update{#1}\gates@action@execute{#2}}
+    \iftrue
+      {\gates@error{Action `\gates@family_passdo\unbrace{#2}{#1}' doesn't exist and there is no gate with that name}}}%
+  }
+
+\def\gates{%
+  \gates@gates{gates}%
+  }
+
+\def\gates@action#1{%
+  \long\defcs{gates@action@#1}%
+  }
+\def\gates@action_withfamily#1{%
+  \long\defcs{gates@action@#1_withfamily}%
+  }
+
+\gates@action{new}#1#2{%
+  \def#1{%
+    \gates@gates{#2}%
+    }%
+  }
+
+\gates@action_withfamily{family}#1{#1}
+
+%%%
+%%% The gate stack.
+%%%
+\def\gates@stack{}
+\protected\def\gates@stack_push#1{%
+  \xdef\gates@current_gate{#1}%
+  \xdef\gates@stack{{#1}{\gates@stack}}%
+  }
+\protected\def\gates@stack_pop{%
+  \expandafter\gates@stack_popit\gates@stack\gates@end
+  }
+\def\gates@stack_popit#1#2\gates@end{%
+  \gdef\gates@stack{#2}%
+  \gates@stack_getcurrent#2{}\gates@end
+  }
+\def\gates@stack_getcurrent#1#2\gates@end{%
+  \gdef\gates@current_gate{#1}%
+  }
+
+%%%
+%%% Tracing and showing.
+%%%
+\def\gates@trace_value{0}
+\gates@action{trace}#1{%
+  \defcs{gates@trace_value:\gates@family_current}{#1}%
+  }
+\def\gates@trace_tab{}
+\def\gates@trace_white{}
+\def\gates@trace_addtab{%
+  \edef\gates@trace_tab{\gates@trace_tab. }%
+  \edef\gates@trace_white{\gates@trace_white\unbrace{ } }%
+  }
+\def\gates@trace_untab{%
+  \passexpanded{\removeprefixin{. }}\gates@trace_tab\gates@trace_tab
+  \passexpanded{\passexpanded\removeprefixin{\unbrace{ } }}\gates@trace_white\gates@trace_white
+  }
+\def\gates@trace_write#1#2{%
+  \iffcs{gates@trace_value:\gates@trace_getfamily#1\gates@terminator}
+    {\ifnum\usecs{gates@trace_value:\gates@trace_getfamily#1\gates@terminator}>0
+       \immediate\write16{\gates@trace_white #2}%
+     \fi}}
+\def\gates@trace_writetab#1#2{%
+  \iffcs{gates@trace_value:\gates@trace_getfamily#1\gates@terminator}
+    {\ifnum\usecs{gates@trace_value:\gates@trace_getfamily#1\gates@terminator}>0
+       \immediate\write16{\gates@trace_tab #2}%
+     \fi}}
+\def\gates@trace_getfamily#1:#2\gates@terminator{#1}
+
+\gates@action{show}#1{%
+  \immediate\write16{}%
+  \gates@family_pass\gates@show{#1}%
+  }
+\def\gates@show#1{%
+  \ifcs{gate #1:list}
+    {\gates@show_write{#1 is an l-gate}{}{#1}%
+     \passexpandedcs{\gates@show_loop{#1}{. }}{gate #1:list}}%
+    {\ifcs{gate #1:code}
+       {\gates@show_write{#1 is an m-gate}{}{#1}}{\gates@error_nogate{#1}}}%
+  }
+\newfor\gates@show_loop{2}#3,{%
+  \gates@show_write{#2#3}{#1_subgate_}{#3}%
+  \iffcs{gate #3:list}{\passexpandedcs{\gates@show_loop{#3}{#2. }}{gate #3:list}}%
+  }
+\def\gates@show_write#1#2#3{%
+  \immediate\write16{#1
+    \reverse\iffemptystring{#2}{(\ifcs{gate #3:list}lm-gate) }%
+    [\usecs{gate #3:args}]
+    (status: \ifcase\usecs{gate #2#3:status}
+     \or open\or ajar\or skip\or close\fi)%
+    \gates@show_condition{#2#3}{conditional}%
+    \gates@show_condition{#2#3}{loop}%
+    \gates@show_condition{#2#3}{loopuntil}%
+    }%
+  }
+
+\def\gates@show_condition#1#2{%
+  \iffcs{gate #1:#2}
+    { (#2: \expandafter\expandafter\expandafter\gates@show_conditionstrip
+     \expandafter\meaning\csname gate #1:#2\endcsname)}%
+  }
+\def\gates@show_conditionstrip#1->{}%
+    
+
+%%%
+%%% Checking conditions in gate definition.
+%%%
+\long\def\gates@conditions_get#1{%
+  \ifnextnospace?
+    {\gates@conditions_getlaunch{#1}}
+    {#1{{}{}{}{}}}%
+  }
+\newstring{,}
+\long\def\gates@conditions_getlaunch#1?#2{%
+  \ifsuffix,{#2}
+    {\gates@conditions_getloop{#1}{}{}{}{}{#2}}
+    {\gates@conditions_getloop{#1}{}{}{}{}{#2,}}%
+  }
+\newfornoempty\gates@conditions_getloop{5}#6=#7,{%
+  \ifelseif{%
+    {\passtrim{#6}\ifstring{status}}      {\passarguments{#1}{\trim{#7}}{#3}{#4}{#5}}
+    {\passtrim{#6}\ifstring{conditional}} {\passarguments{#1}{#2}{#7}{#4}{#5}}
+    {\passtrim{#6}\ifstring{loop}}        {\passarguments{#1}{#2}{#3}{#7}{#5}}
+    {\passtrim{#6}\ifstring{loopuntil}}   {\passarguments{#1}{#2}{#3}{#4}{#7}}
+     \iftrue {\gates@error{`#6' isn't a condition}}%
+    }
+  }[#1{{#2}{#3}{#4}{#5}}]
+\long\def\gates@conditions_make#1#2#3#4#5{%
+  \gates@list_checkmaster
+   {\gates@action@add{#1}{\gates@list_master}%
+    \reverse\iffemptystring{#2}{\usecs{gates@action@#2}{#1}{\gates@list_master}}%
+    \reverse\iffemptystring{#3}{\gates@action@conditional{#1}{\gates@list_master}{#3}}
+    \reverse\iffemptystring{#4}{\gates@action@loop{#1}{\gates@list_master}{#4}}
+    \reverse\iffemptystring{#5}{\gates@action@loopuntil{#1}{\gates@list_master}{#5}}}
+   {\straightenif{ifnum}{\gates@list_subcount>0 }
+      {\gates@error{Wrong level of embedding for gate `#1'}}%
+      {\reverse\iffemptystring{#2}{\usecs{gates@action@#2!}{#1}}%
+       \reverse\iffemptystring{#3}{\usecs{gates@action@conditional!}{#1}{#3}}
+       \reverse\iffemptystring{#4}{\usecs{gates@action@loop!}{#1}{#4}}%
+       \reverse\iffemptystring{#5}{\usecs{gates@action@loopuntil!}{#1}{#5}}}}%
+  }
+
+%%%
+%%% Defining list-gates.
+%%%
+\newcount\gates@list_subcount
+\def\gates@list_masterlist{}%
+\gates@action{list}#1{%
+  \ifnextnospace[
+    {\gates@family_pass\gates@list_checkarg{#1}}
+    {\gates@family_pass\gates@list_checkarg{#1}[0]}%
+  }
+
+\def\gates@list_checkarg#1[#2]{%
+  \ifcs{gates@execute_get_#2_args}
+    {\gates@conditions_get{\gates@list_create{#1}{#2}}}
+    {\gates@list_create{#1}{0}{{}{}{}{}}[#2]}%
+  }
+
+\long\def\gates@list_create#1#2#3{%
+  \straightenif{ifnum}{#2<10 }
+    {\xdefcs{gate #1:args}{#2}%
+     \gdefcs{gate #1:status}{\gates@state_open}%
+     \gdefcs{gate #1:conditional}##1##2##3##4##5##6##7##8##9{\iftrue}%
+     \gdefcs{gate #1:list}{}%
+     \long\xdefcs{gate #1:code}##1##2##3##4##5##6##7##8##9{%
+       \ifcase#2
+           \noexpand\passexpandedcs{\noexpand\gates@process{#1}{{}{}{}{}{}{}{}{}{}}}{gate #1:list}%
+       \or \noexpand\passexpandedcs{\noexpand\gates@process{#1}{{##1}{}{}{}{}{}{}{}{}}}{gate #1:list}%
+       \or \noexpand\passexpandedcs{\noexpand\gates@process{#1}{{##1}{##2}{}{}{}{}{}{}{}}}{gate #1:list}%
+       \or \noexpand\passexpandedcs{\noexpand\gates@process{#1}{{##1}{##2}{##3}{}{}{}{}{}{}}}{gate #1:list}%
+       \or \noexpand\passexpandedcs{\noexpand\gates@process{#1}{{##1}{##2}{##3}{##4}{}{}{}{}{}}}{gate #1:list}%
+       \or \noexpand\passexpandedcs{\noexpand\gates@process{#1}{{##1}{##2}{##3}{##4}{##5}{}{}{}{}}}{gate #1:list}%
+       \or \noexpand\passexpandedcs{\noexpand\gates@process{#1}{{##1}{##2}{##3}{##4}{##5}{##6}{}{}{}}}{gate #1:list}%
+       \or \noexpand\passexpandedcs{\noexpand\gates@process{#1}{{##1}{##2}{##3}{##4}{##5}{##6}{##7}{}{}}}{gate #1:list}%
+       \or \noexpand\passexpandedcs{\noexpand\gates@process{#1}{{##1}{##2}{##3}{##4}{##5}{##6}{##7}{##8}{}}}{gate #1:list}%
+       \or \noexpand\passexpandedcs{\noexpand\gates@process{#1}{{##1}{##2}{##3}{##4}{##5}{##6}{##7}{##8}{##9}}}{gate #1:list}%
+       \fi}%
+     \gates@conditions_make{#1}#3%
+     \eaddright\gates@list_masterlist{{#1}}%
+     \gates@list_checknext}
+    {\gates@error{Gates can't take more than 9 arguments}}%
+  }
+
+\def\gates@list_checknext{%
+  \gates@list_subcount=1
+  \skipspace{\futurelet\gates@list_nextchar\gates@list_checknextchar}%
+  }
+
+\def\gates@list_checknextchar{%
+  \expandafter\gates@list_checknextcharloop\expandafter{\gates@list_charlist}%
+  }
+
+\def\gates@list_charlist{.}
+\gates@action{subchar}#1{%
+  \ifexpression{%
+     \if\noexpand#1[%
+   | \if\noexpand#1(%
+   | \if\noexpand#1<%
+   | \if\noexpand#1?}
+    {\gates@error{You can't use `#1' as a continuation char}}
+    {\eaddright\gates@list_charlist{\string#1}}%
+  }
+
+\newfor\gates@list_checknextcharloop#1{%
+  \if\noexpand\gates@list_nextchar\noexpand#1%
+    \advance\gates@list_subcount1
+    \afterfi{\breakfor{\gobbleoneand{%
+      \skipspace{\futurelet\gates@list_nextchar\gates@list_checknextchar}}}}%
+  \fi
+  }[\gates@list_getsub]
+
+\def\gates@list_getsub{%
+  \ifnext[
+    {\gates@list_getsubdef}
+    {\ifnext(
+       {\gates@list_getsublist}
+       {\ifnext<
+          {\gates@list_getsubgate}
+          {\gates@list_subcount=0
+           \def\gates@list_masterlist{}}}}%
+  }
+
+\def\gates@list_getsublist(#1){%
+  \gates@action@list{#1}%
+  }
+
+\def\gates@list_getsubdef[#1]{%
+  \gates@def\gdefcs{#1}%
+  }
+
+\def\gates@list_getsubgate<#1>{%
+  \gates@conditions_get{\gates@list_dosubgate{#1}}%
+  }
+
+\def\gates@list_dosubgate#1#2{%
+  \gates@list_subgateloop#2{}{#1,}%
+  }
+
+\newfornoempty\gates@list_subgateloop{5}#6,{%
+  \gates@ifexists{#6}{code}
+    {\gates@family_pass\gates@conditions_make{#6}{#1}{#2}{#3}{#4}%
+     \passarguments{#1}{#2}{#3}{#4}{#6}}
+    {\gates@error_nogate{\gates@family_check{#6}}}%
+  }[\gates@ifexists{#5}{list}
+      {\eaddright\gates@list_masterlist{{\gates@family_check{#5}}}}{}%
+    \gates@list_checknext]
+
+\def\gates@list_checkmaster{%
+  \let\gates@list_master\gates@HopefullyThisRemainsUndefined
+  \passexpanded{\gates@list_getmaster{}{1}}\gates@list_masterlist
+  }
+
+\newfor\gates@list_getmaster{2}#3{%
+  \ifnum\gates@list_subcount=\numexpr#2\relax
+    \def\gates@list_master{#3}%
+    \afterfi{\breakfor{\def\gates@list_masterlist{#1{#3}}\firstoftwo}}%
+  \else
+    \afterfi{\passarguments{#1{#3}}{#2+1}}%
+  \fi
+  }[\def\gates@list_masterlist{#1}\secondoftwo]%
+
+
+%%%
+%%% Defining macro-gates.
+%%%
+\gates@action{def}{\gates@def\gdefcs}
+\gates@action{edef}{\gates@def\xdefcs}
+
+\def\gates@def#1#2{%
+  \ifnextnospace[
+    {\gates@family_pass{\gates@def_getargs{#1}}{#2}}
+    {\gates@family_pass{\gates@def_getargs{#1}}{#2}[0]}%
+  }
+
+\def\gates@def_getargs#1#2[#3]{%
+  \gates@conditions_get{\gates@def_prepare{#1}{#2}{#3}}%
+  }
+
+\long\def\gates@def_prepare#1#2#3#4#5{%
+  \ifelseif{% Can't use \ifcase, because #5 might contain an unbalanced conditional.
+    {\ifnum#3=0 } {\gates@def_do#1{#2}{#3}{}{}{#5}{#4}}
+    {\ifnum#3=1 } {\gates@def_do#1{#2}{#3}{##1}{{##1}}{#5}{#4}}
+    {\ifnum#3=2 } {\gates@def_do#1{#2}{#3}{##1##2}{{##1}{##2}}{#5}{#4}}
+    {\ifnum#3=3 } {\gates@def_do#1{#2}{#3}{##1##2##3}{{##1}{##2}{##3}}{#5}{#4}}
+    {\ifnum#3=4 } {\gates@def_do#1{#2}{#3}{##1##2##3##4}{{##1}{##2}{##3}{##4}}{#5}{#4}}
+    {\ifnum#3=5 } {\gates@def_do#1{#2}{#3}{##1##2##3##4##5}{{##1}{##2}{##3}{##4}{##5}}{#5}{#4}}
+    {\ifnum#3=6 } {\gates@def_do#1{#2}{#3}{##1##2##3##4##5##6}{{##1}{##2}{##3}{##4}{##5}{##6}}{#5}{#4}}
+    {\ifnum#3=7 } {\gates@def_do#1{#2}{#3}{##1##2##3##4##5##6##7}{{##1}{##2}{##3}{##4}{##5}{##6}{##7}}{#5}{#4}}
+    {\ifnum#3=8 } {\gates@def_do#1{#2}{#3}{##1##2##3##4##5##6##7##8}{{##1}{##2}{##3}{##4}{##5}{##6}{##7}{##8}}{#5}{#4}}
+    {\ifnum#3=9 } {\gates@def_do#1{#2}{#3}{##1##2##3##4##5##6##7##8##9}{{##1}{##2}{##3}{##4}{##5}{##6}{##7}{##8}{##9}}{#5}{#4}}
+    {\iftrue}     {\gates@error{Wrong number of arguments}}}%
+  }
+
+% #1: \gdef or \xdef
+% #2: gate's name
+% #3: number of arguments
+% #4: parameter text (e.g., ##1, ##1##2, etc.) for internal code
+% #5: replacement text (e.g., {##1}, {##1}{##2}, etc.) for internal code
+% #6: definition of internal code
+% #7: conditions
+\long\def\gates@def_do#1#2#3#4#5#6#7{%
+  \xdefcs{gate #2:args}{#3}%
+  \gdefcs{gate #2:status}{\gates@state_open}%
+  \gdefcs{gate #2:conditional}##1##2##3##4##5##6##7##8##9{\iftrue}%
+  \long#1{gate #2:code}##1##2##3##4##5##6##7##8##9{%
+    \iffcs{gates@trace_value:\gates@trace_getfamily#2\gates@terminator}
+      {\ifnum\usecs{gates@trace_value:\gates@trace_getfamily#2\gates@terminator}=2
+         \gates@trace_args{1}{#2}{#5}%
+        \fi}%
+    \usecs{gate #2:innercode}#5}%
+  \long#1{gate #2:innercode}#4{#6}%
+  \gates@conditions_make{#2}#7%
+  \reverse\iffemptycommand\gates@list_masterlist{\gates@list_checknext}%
+  }
+
+\newfor\gates@trace_args{2}#3{%
+  \gates@trace_write{#2}{\string##\the\numexpr#1<-\unexpanded{#3}}%
+  \passarguments{#1+1}{#2}%
+  }
+
+\gates@action_withfamily{type}#1#2{%
+  \ifcs{gate \gates@family_passdo\unbrace{#2}{#1}:code}
+    {\ifcs{gate \gates@family_passdo\unbrace{#2}{#1}:list}{2}{1}}
+    {0}%
+  }
+
+%%%
+%%% Copying gates.
+%%%
+\gates@action{copy}#1#2{%
+  \gates@family_pass{\gates@family_pass\gates@copy_do{#1}}{#2}%
+  }
+\def\gates@copy_do#1#2{%
+  \gates@ifexists{#2}{code}
+    {\global\letcstocs{gate #1:args}{gate #2:args}%
+     \gdefcs{gate #1:status}{\gates@state_open}% Better than to copy the gate's status.
+     \global\letcstocs{gate #1:conditional}{gate #2:conditional}%
+     \global\letcstocs{gate #1:loop}{gate #2:loop}%
+     \global\letcstocs{gate #1:loopuntil}{gate #2:loopuntil}%
+     \global\letcstocs{gate #1:code}{gate #2:code}
+     \gates@ifexists{#2}{list}
+       {\global\letcstocs{gate #1:list}{gate #2:list}%
+        \passexpandedcs{\gates@let_list{#1}{#2}}{gate #2:list}}
+       {\global\letcstocs{gate #1:internalcode}{gate #2:internalcode}}}%
+    {\gates@error_nogate{#2}}%
+  }
+
+\newfor\gates@let_list{2}#3,{%
+  \global\letcstocs{gate #1_subgate_#3:status}{gate #2_subgate_#3:status}%
+  \global\letcstocs{gate #1_subgate_#3:conditional}{gate #2_subgate_#3:conditional}%
+  \global\letcstocs{gate #1_subgate_#3:loop}{gate #2_subgate_#3:loop}%
+  \global\letcstocs{gate #1_subgate_#3:loopuntil}{gate #2_subgate_#3:loopuntil}%
+  }
+
+%%%
+%%% Executing gates.
+%%%
+\def\gates@ifinlist{%
+  \ifdefined\gates@current_gate
+    \ifcsname gate \gates@current_gate:list\endcsname
+      \expandafter\expandafter\expandafter\firstoftwo
+    \else
+      \expandafter\expandafter\expandafter\secondoftwo
+    \fi
+  \else
+    \expandafter\secondoftwo
+  \fi
+  }
+\gates@action{execute}#1{%
+  \gates@family_pass\gates@execute{#1}%
+  }
+\def\gates@execute#1{%
+  \gates@ifexists{#1}{code}
+    {\gates@ifinlist
+       {\usecs{gates@execute_get_9_args}{#1}}
+       {\usecs{gates@execute_get_\usecs{gate #1:args}_args}{#1}}}
+    {\gates@error_nogate{#1}}%
+  }
+\long\defcs{gates@execute_get_0_args}#1{%
+  \gates@execute_do{#1}{{}{}{}{}{}{}{}{}{}}%
+  }
+\long\defcs{gates@execute_get_1_args}#1#2{%
+  \gates@execute_do{#1}{{#2}{}{}{}{}{}{}{}{}}%
+  }
+\long\defcs{gates@execute_get_2_args}#1#2#3{%
+  \gates@execute_do{#1}{{#2}{#3}{}{}{}{}{}{}{}}%
+  }
+\long\defcs{gates@execute_get_3_args}#1#2#3#4{%
+  \gates@execute_do{#1}{{#2}{#3}{#4}{}{}{}{}{}{}}%
+  }
+\long\defcs{gates@execute_get_4_args}#1#2#3#4#5{%
+  \gates@execute_do{#1}{{#2}{#3}{#4}{#5}{}{}{}{}{}}%
+  }
+\long\defcs{gates@execute_get_5_args}#1#2#3#4#5#6{%
+  \gates@execute_do{#1}{{#2}{#3}{#4}{#5}{#6}{}{}{}{}}%
+  }
+\long\defcs{gates@execute_get_6_args}#1#2#3#4#5#6#7{%
+  \gates@execute_do{#1}{{#2}{#3}{#4}{#5}{#6}{#7}{}{}{}}%
+  }
+\long\defcs{gates@execute_get_7_args}#1#2#3#4#5#6#7#8{%
+  \gates@execute_do{#1}{{#2}{#3}{#4}{#5}{#6}{#7}{#8}{}{}}%
+  }
+\long\defcs{gates@execute_get_8_args}#1#2#3#4#5#6#7#8#9{%
+  \gates@execute_do{#1}{{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}{}}%
+  }
+\long\defcs{gates@execute_get_9_args}#1#2#3#4#5#6#7#8#9{%
+  \gates@execute_get_nine_arg{#1}{{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}}%
+  }
+\long\def\gates@execute_get_nine_arg#1#2#3{%
+  \gates@execute_do{#1}{#2{#3}}%
+  } 
+
+\long\def\gates@execute_do#1#2{%
+  \ifcase\usecs{gate #1:status}
+  \or % open
+    \gates@processtrue
+    \def\gates@trace_status{}%
+  \or % ajar
+    \gates@processtrue
+    \gdefcs{gate #1:status}{\gates@state_close}%
+    \def\gates@trace_status{ (ajar -> close)}%
+  \or % skip
+    \gates@processfalse
+    \gdefcs{gate #1:status}{\gates@state_open}%
+    \def\gates@trace_status{ (skip -> open)}%
+  \or % close
+    \gates@processfalse
+    \def\gates@trace_status{ (close)}%
+  \fi
+%
+  \iffemptycommand\gates@trace_tab{\gates@trace_write{#1}{}}%
+%
+  \edef\gates@process_tempconditional{\primunexpanded\expandafter\expandafter\expandafter{\csname gate #1:conditional\endcsname#2}}%
+  \ifexpression{\ifgates@process & \expandafter\ifexpression\expandafter{\gates@process_tempconditional}}
+      {\gates@trace_write{#1}{Executing \ifcs{gate #1:list}{l-}{m-}gate #1\gates@trace_status}%
+       \gates@stack_push{#1}%
+       \gates@execute_launchloop{#1}{#2}}
+      {\gates@trace_write{#1}{Ignoring \ifcs{gate #1:list}{l-}{m-}gate #1\gates@trace_status
+         \expandafter\reverse\expandafter\iffexpression{\gates@process_tempconditional}{ (False conditional)}}%
+       \gates@ifinlist{\gates@execute_backtolist{#2}}{}}%
+  }
+
+\long\def\gates@execute_launchloop#1#2{%
+  \iffcs{gate #1:list}\gates@trace_addtab
+  \ifcs{gate #1:loop}
+    {\gates@execute_loop{#1}{#2}}
+    {\usecs{gate #1:code}#2\gates@execute_stoploop{#1}{#2}}%
+  }
+\long\def\gates@execute_loop#1#2{%
+  \expandafter\expandafter\expandafter\ifexpression
+  \expandafter\expandafter\expandafter{\csname gate #1:loop\endcsname#2}
+    {\usecs{gate #1:code}#2\gates@execute_stoploop{#1}{#2}}%
+    {\gates@execute_end{#2}}%
+  }
+\long\def\gates@execute_loopuntil#1#2{%
+  \expandafter\expandafter\expandafter\ifexpression
+  \expandafter\expandafter\expandafter{\csname gate #1:loopuntil\endcsname#2}
+    {\gates@execute_end{#2}}%
+    {\usecs{gate #1:code}#2\gates@execute_stoploop{#1}{#2}}%
+  }
+\long\def\gates@execute_stoploop#1#2{%
+  \ifcs{gate #1:loop}
+    {\gates@execute_loop{#1}{#2}}
+    {\ifcs{gate #1:loopuntil}
+       {\gates@execute_loopuntil{#1}{#2}}
+       {\gates@execute_end{#2}}}%
+  }
+\long\def\gates@execute_end#1{%
+  \iffcs{gate \gates@current_gate:list}\gates@trace_untab
+  \gates@stack_pop
+  \iffcs{gate \gates@current_gate:list}
+    {\gates@execute_backtolist{#1}}%
+  }
+\long\def\gates@execute_backtolist#1#2#3{%
+  \gates@process_stoploop{#2}{#3}{#1}{#2}{#3}%
+  }
+
+\gates@action{return}{\usecs{gates@action@return\usecs{gate \gates@current_gate:args}}}
+\gates@action{return!}#1{%
+  \gates@process_returncount#1{gates@end}{gates@end}{gates@end}{gates@end}{gates@end}{gates@end}{gates@end}{gates@end}{gates@end}\gates@reallytheend#1%
+  }%
+\long\def\gates@process_returncount#1#2#3#4#5#6#7#8#9{%
+  \gates@process_returngobble{%
+    \ifelseif{%
+      {\ifstring{#1}{gates@end}} {\usecs{gates@action@return0}}
+      {\ifstring{#2}{gates@end}} {\usecs{gates@action@return1}}
+      {\ifstring{#3}{gates@end}} {\usecs{gates@action@return2}}
+      {\ifstring{#4}{gates@end}} {\usecs{gates@action@return3}}
+      {\ifstring{#5}{gates@end}} {\usecs{gates@action@return4}}
+      {\ifstring{#6}{gates@end}} {\usecs{gates@action@return5}}
+      {\ifstring{#7}{gates@end}} {\usecs{gates@action@return6}}
+      {\ifstring{#8}{gates@end}} {\usecs{gates@action@return7}}
+      {\ifstring{#9}{gates@end}} {\usecs{gates@action@return8}}
+       \ifrue                    {\usecs{gates@action@return9}}}
+     }%
+  }
+\gates@action{return0}{%
+  \gates@return_pass{\unbrace{}}%
+  }
+\gates@action{return1}#1{%
+  \gates@return_pass{\gobbleoneand{{#1}}}%
+  }
+\gates@action{return2}#1#2{%
+  \gates@return_pass{\gobbletwoand{{#1}{#2}}}%
+  }
+\gates@action{return3}#1#2#3{%
+  \gates@return_pass{\gobblethreeand{{#1}{#2}{#3}}}%
+  }
+\gates@action{return4}#1#2#3#4{%
+  \gates@return_pass{\gobblefourand{{#1}{#2}{#3}{#4}}}%
+  }
+\gates@action{return5}#1#2#3#4#5{%
+  \gates@return_pass{\gobblefiveand{{#1}{#2}{#3}{#4}{#5}}}%
+  }
+\gates@action{return6}#1#2#3#4#5#6{%
+  \gates@return_pass{\gobblesixand{{#1}{#2}{#3}{#4}{#5}{#6}}}%
+  }
+\gates@action{return7}#1#2#3#4#5#6#7{%
+  \gates@return_pass{\gobblesevenand{{#1}{#2}{#3}{#4}{#5}{#6}{#7}}}%
+  }
+\gates@action{return8}#1#2#3#4#5#6#7#8{%
+  \gates@return_pass{\gobbleeightand{{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}}}%
+  }
+\gates@action{return9}#1#2#3#4#5#6#7#8#9{%
+  \gates@return_passnine{{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}}%
+  }
+\long\def\gates@return_pass#1#2\gates@execute_stoploop#3#4{%
+  \passexpanded{\gates@execute_stoploop{#3}}{#1#4}%
+  }
+\long\def\gates@return_passnine#1#2\gates@execute_stoploop#3#4{%
+  \gates@execute_stoploop{#3}{#1}%
+  }
+
+
+%%%
+%%% Processing l-gates.
+%%%
+\newife\ifgates@process
+\newfornoempty\gates@process{2}#3,{%
+  \ifcase\usecs{gate #1_subgate_#3:status}
+  \or % open
+    \gates@processtrue
+    \def\gates@trace_status{}%
+  \or % ajar
+    \gates@processtrue
+    \gdefcs{gate #1_subgate_#3:status}{\gates@state_close}%
+    \def\gates@trace_status{ (ajar -> close)}%
+  \or % skip
+    \gates@processfalse
+    \gdefcs{gate #1_subgate_#3:status}{\gates@state_open}%
+    \def\gates@trace_status{ (skip -> open)}%
+  \or % close
+    \gates@processfalse
+    \def\gates@trace_status{ (close)}%
+  \fi
+  \edef\gates@process_tempconditional{\primunexpanded\expandafter\expandafter\expandafter{\csname gate #1_subgate_#3:conditional\endcsname#2}}%
+  \ifexpression{\ifgates@process & \expandafter\ifexpression\expandafter{\gates@process_tempconditional}}
+    {\gates@trace_writetab{#1}{Calling subgate #3\gates@trace_status}%
+     \gates@process_launchloop{#1}{#3}{#2}{#1}{#3}}%
+    {\gates@trace_writetab{#1}{Ignoring subgate #3\gates@trace_status
+                        \expandafter\ifexpression\expandafter{\gates@process_tempconditional}{}{ (False conditional)}}}%
+  }[\usecs{gates@action@return\usecs{gate #1:args}}#2]
+
+\def\gates@process_launchloop#1#2#3{%
+  \ifcs{gate #1_subgate_#2:loop}
+    {\gates@process_loop{#1}{#2}{#3}}
+    {\gates@action@execute{#2}#3}%
+  }
+\def\gates@process_loop#1#2#3{%
+  \expandafter\expandafter\expandafter\ifexpression
+  \expandafter\expandafter\expandafter{\csname gate #1_subgate_#2:loop\endcsname#3}
+    {\gates@action@execute{#2}#3}
+    {\gates@process_nextgate{#3}}%
+  }
+\def\gates@process_loopuntil#1#2#3{%
+  \expandafter\expandafter\expandafter\ifexpression
+  \expandafter\expandafter\expandafter{\csname gate #1_subgate_#2:loopuntil\endcsname#3}
+    {\gates@process_nextgate{#3}}%
+    {\gates@action@execute{#2}#3}
+  }
+\def\gates@process_stoploop#1#2#3{%
+  \ifcs{gate #1_subgate_#2:loop}
+    {\gates@process_loop{#1}{#2}{#3}}
+    {\ifcs{gate #1_subgate_#2:loopuntil}
+       {\gates@process_loopuntil{#1}{#2}{#3}}
+       {\gates@process_nextgate{#3}}}%
+  }
+\long\def\gates@process_nextgate#1#2{%
+  \passarguments{#2}{#1}%
+  }
+
+
+\gates@action{subgates}#1{%
+  \gates@family_pass{\def\gates@subgates_gate}{#1}%
+  \afterassignment\gates@subgates_create
+  \def\gates@subgates_macro##1%
+  }
+
+\def\gates@subgates_create{%
+  \ifcs{gate \gates@subgates_gate:list}
+    {\passexpandedcs{\gates@subgates_process{\gates@subgates_macro}}{gate \gates@subgates_gate:list}}
+    {\gates@error_nogatelist{\gates@subgates_gate}}%
+  }
+
+\newfor\gates@subgates_process{1}#2,{%
+  #1{#2}%
+  }
+
+%%%
+%%% Managing gate lists.
+%%%
+\gates@action{add}#1{%
+  \ifnextnospace[
+    {\gates@add{#1}}
+    {\gates@add{#1}[]}%
+  }
+
+\newstring{before } \newstring{after }
+\def\gates@add#1[#2]#3{%
+  \gates@family_pass{\gates@add_prepare{#1}{#2}}{#3}%
+  }
+\def\gates@add_prepare#1#2#3{%
+  \ifcs{gate #3:list}
+    {\let\gates@add_prefix\gates@somethingtotallyundefined
+     \let\gates@add_suffix\gates@somethingtotallyundefined
+%
+     \ifelseif{%
+       {\ifexpression{ \ifemptystring{#2} | \ifstring{#2}{last} | \ifstring{#2}{after last} }}
+          {\passexpandedcs\gates@add_setends{gate #3:list}{}}
+       {\ifexpression{ \ifstring{#2}{first} | \ifstring{#2}{before first} }}
+          {\passexpandedcs{\gates@add_setends{}}{gate #3:list}}
+       {\ifprefix{before }{#2}}
+          {\removeprefixand{before }{#2}{\passexpandedcs\gates@add_split{gate #3:list}{0}{#3}}}
+       {\ifprefix{after }{#2}}
+          {\removeprefixand{after }{#2}{\passexpandedcs\gates@add_split{gate #3:list}{1}{#3}}}
+        \iftrue
+          {\gates@error{Unknown position: `#2'}}}%
+%
+     \ifdefined\gates@add_prefix
+       \gates@add_do{#3}{#1,}%
+       \xdefcs{gate #3:list}{\gates@add_prefix\gates@add_suffix}%
+     \fi}%
+%
+    {\gates@error_nogatelist{#3}}%
+  }
+
+\def\gates@add_setends#1#2{%
+  \def\gates@add_prefix{#1}%
+  \def\gates@add_suffix{#2}%
+  }
+
+\def\gates@add_split#1#2#3#4{%
+  \ifelseif{%
+    {\ifstring{#4}{first}}% "before first" has been dealt with, so this is "after first".
+       {\splitstringat{,}{#1}\gates@add_setends
+        \addright\gates@add_prefix{,}}
+    {\ifstring{#4}{last}}% Same thing, the other way around: "before last". Harder.
+       {\let\gates@add_prefix\emptycs
+        \def\gates@add_suffix{#1}%
+        \dowhile{\expandafter\gates@add_iftwo\gates@add_suffix,,\gates@end}
+          {\passexpanded{\splitstringat{,}}{\gates@add_suffix}\gates@add_setends
+           \addright\gates@add_prefix{,}}}
+     \iftrue
+       {\gates@family_pass{\gates@add_splitat{#1}{#2}{#3}}{#4}}}%
+  }
+\def\gates@add_splitat#1#2#3#4{% 
+  \ifelseif{%
+    {\ifprefix{#4,}{#1}}
+       {\ifcase#2 
+          \gates@add_setends{}{#1}%
+        \or
+          \def\gates@add_prefix{#4,}%
+          \removeprefixin{#4,}{#1}\gates@add_suffix
+        \fi}
+    {\ifcontains{,#4,}{#1}}
+       {\splitstringat{,#4,}{#1}\gates@add_setends
+        \ifcase#2
+          \addright\gates@add_prefix{,}%
+          \addleft\gates@add_suffix{#4,}%
+        \or
+          \addright\gates@add_prefix{,#4,}
+        \fi}
+     \iftrue
+       {\gates@error_nogatein{#4}{#3}}}%
+  }
+
+\def\gates@add_iftwo#1,#2,#3\gates@end{%
+  \ifemptystring{#2}\secondoftwo\firstoftwo
+  }
+
+\newfornoempty\gates@add_do{1}#2,{%
+  \gates@ifexists{#2}{code}
+     {\eaddright\gates@add_prefix{\gates@family_check{#2},}%
+      \gdefcs{gate #1_subgate_\gates@family_check{#2}:status}{\gates@state_open}%
+      \gdefcs{gate #1_subgate_\gates@family_check{#2}:conditional}##1##2##3##4##5##6##7##8##9{\iftrue}}
+     {\gates@error_nogate{\gates@temp}}%
+  }
+
+\gates@action{remove}#1#2{%
+  \gates@family_pass{\gates@remove_launch{#1}}{#2}%
+  }
+\def\gates@remove_launch#1#2{%
+  \ifcs{gate #2:list}
+    {\gates@remove{#2}{#1,}}
+    {\gates@error_nogate{#2}}%
+  }
+\newfornoempty\gates@remove{1}#2,{%
+  \gates@family_pass{\gates@remove_do{#1}}{#2}%
+  }
+\def\gates@remove_do#1#2{%
+  \passexpandedcs\gates@remove_check{gate #1:list}{#2}
+    {\global\letcs{gate #1_subgate_#2:status}\gates@thisisabsolutelyundefined
+     \global\letcs{gate #1_subgate_#2:conditional}\gates@thisisabsolutelyundefined
+     \global\letcs{gate #1_subgate_#2:loop}\gates@thisisabsolutelyundefined
+     \global\letcs{gate #1_subgate_#2:loopuntil}\gates@thisisabsolutelyundefined
+     \passexpandedcs{\gates@remove_loop{}{#1}{#2}}{gate #1:list}}
+    {\gates@error_nogatein{#2}{#1}}%
+  }
+\def\gates@remove_check#1#2{%
+  \ifcontains{,#2,}{#1}% The first comma so it doesn't spot ...,xxx#2,...
+    {\firstoftwo}
+    {\ifprefix{#2,}{#1}\firstoftwo\secondoftwo}%
+  }
+\newfor\gates@remove_loop{3}#4,{%
+  \reverse\iffstring{#3}{#4}{\passarguments{#1#4,}{#2}{#3}}%
+  }[\gdefcs{gate #2:list}{#1}]
+
+%%%
+%%% opening, ajaring (it exists!), skipping and closing.
+%%%
+\chardef\gates@state_open  = 1
+\chardef\gates@state_ajar  = 2
+\chardef\gates@state_skip  = 3
+\chardef\gates@state_close = 4
+
+\gates@action_withfamily{status}#1#2#3{%
+  \ifcs{gate \gates@family_passdo\unbrace{#3}{#1}_subgate_\gates@family_passdo\unbrace{#2}{#1}:status}
+    {\passcs\the{gate \gates@family_passdo\unbrace{#3}{#1}_subgate_\gates@family_passdo\unbrace{#2}{#1}:status}}
+    {0}%
+  }
+
+\gates@action_withfamily{status!}#1#2{%
+  \ifcs{gate \gates@family_passdo\unbrace{#2}{#1}:status}
+    {\passcs\the{gate \gates@family_passdo\unbrace{#2}{#1}:status}}
+    {0}%
+  }
+
+\long\def\gates@status_change#1#2{%
+  \gates@family_pass{\gates@status_changedo{#1}}{#2}%
+  }
+\def\gates@status_changedo#1#2#3#4{%
+  \ifcs{gate #2:list}
+    {\ifelseif{%
+       {\ifprefix{before }{#1}} {\passexpandedcs{\removeprefixand{before }{#1}{\gates@family_pass{\gates@switch_b{#3}{#2}}}{#4}}{gate #2:list}}%
+       {\ifprefix{after }{#1}}  {\passexpandedcs{\removeprefixand{after }{#1}{\gates@family_pass{\gates@switch_a{#3}{#2}}}{#4}}{gate #2:list}}%
+       \iftrue {\gates@switch{#3}{#2}{#4}{#1,}}}}
+    {\gates@error_nogatelist{#2}}%
+  }
+
+\gates@action{open}#1#2{%
+  \gates@status_change{#1}{#2}{status}{\gates@state_open}%
+  }
+\gates@action{open!}#1{%
+  \gates@switch_x{status}{\gates@state_open}{#1,}%
+  }
+
+\gates@action{ajar}#1#2{%
+  \gates@status_change{#1}{#2}{status}{\gates@state_ajar}%
+  }
+\gates@action{ajar!}#1{%
+  \gates@switch_x{status}{\gates@state_ajar}{#1,}%
+  }
+
+\gates@action{skip}#1#2{%
+  \gates@status_change{#1}{#2}{status}{\gates@state_skip}%
+  }
+\gates@action{skip!}#1{%
+  \gates@switch_x{status}{\gates@state_skip}{#1,}%
+  }
+
+\gates@action{close}#1#2{%
+  \gates@status_change{#1}{#2}{status}{\gates@state_close}%
+  }
+\gates@action{close!}#1{%
+  \gates@switch_x{status}{\gates@state_close}{#1,}%
+  }
+
+\gates@action{conditional}#1#2#3{%
+  \gates@status_change{#1}{#2}{conditional}{#3}%
+  }
+\gates@action{conditional!}#1#2{%
+  \gates@switch_x{conditional}{#2}{#1,}%
+  }
+
+\gates@action{loop}#1#2#3{%
+  \gates@status_change{#1}{#2}{loop}{#3}%
+  }
+\gates@action{loop!}#1#2{%
+  \gates@switch_x{loop}{#2}{#1,}%
+  }
+
+\gates@action{noloop}#1#2{%
+  \gates@status_change{#1}{#2}{noloop}{}%
+  }
+\gates@action{noloop!}#1{%
+  \gates@switch_x{noloop}{}{#1,}%
+  }
+
+\gates@action{loopuntil}#1#2#3{%
+  \gates@status_change{#1}{#2}{loopuntil}{#3}%
+  }
+\gates@action{loopuntil!}#1#2{%
+  \gates@switch_x{loopuntil}{#2}{#1,}%
+  }
+
+\gates@action{noloopuntil}#1#2{%
+  \gates@status_change{#1}{#2}{noloopuntil}%
+  }
+\gates@action{noloopuntil!}#1{%
+  \gates@switch_x{noloopuntil}{}{#1,}%
+  }
+
+\newfornoempty\gates@switch{3}#4,{%
+  \gates@family_pass{\gates@switch_do{#1}{#2}{#3}}{#4}%
+  }
+\long\def\gates@switch_do#1#2#3#4{%
+  \ifcs{gate #2_subgate_#4:status}
+    {\gates@switch_evaluate{#2_subgate_#4}{#1}{#3}}
+    {\gates@error_nogatein{#4}{#2}}%
+  }
+\newfornoempty\gates@switch_b{4}#5,{%
+  \ifstring{#3}{#5}
+    {\breakfor{}}%
+    {\gates@switch_evaluate{#2_subgate_#5}{#1}{#4}}%
+  }
+\newfornoempty\gates@switch_a{4}#5,{%
+  \iffstring{#3}{#5}
+    {\retrieverest{\gates@switch{#1}{#2}{#4}}}%
+  }[\gates@error_nogatein{#3}{#2}]
+\newfornoempty\gates@switch_x{2}#3,{%
+  \ifcs{gate \gates@family_check{#3}:status}
+    {\gates@switch_evaluate{\gates@family_check{#3}}{#1}{#2}}
+    {\gates@error_nogate{\gates@family_check{#3}}}%
+  }
+\long\def\gates@switch_evaluate#1#2#3{%
+  \ifelseif{%
+    {\ifexpression{ \ifstring{#2}{conditional} | \ifstring{#2}{loop} | \ifstring{#2}{loopuntil} }}
+       {\gdefcs{gate #1:#2}##1##2##3##4##5##6##7##8##9{#3}}
+    {\ifstring{#2}{noloop}}
+       {\global\letcs{gate #1:loop}\gates@somethingtotallyundefined}
+    {\ifstring{#2}{noloopuntil}}
+       {\global\letcs{gate #1:loopuntil}\gates@somethingtotallyundefined}
+    \iftrue
+       {\gdefcs{gate #1:#2}{#3}}}
+  }
+
+\restorecatcodes
+\endinput
+% There was a time when writing this code I thought
+% I could keep it below 200 lines. Then 300. Then I stopped
+% counting. I'm cursed by loops.

@@ -1,0 +1,69 @@
+-- This patch code is moved from font-pat.lua to this goodies
+-- files as it does not belong in the core code.
+
+-- This is a fix to the font itself i.e. the cached instance will
+-- be patched. When the goodie file is loaded the patch will be
+-- added to the patch list. No goodies setting is needed with
+-- the filename.
+
+local patches = fonts.handlers.otf.enhancers.patches
+
+local function patch(data,filename,threshold)
+    local m = data.metadata.math
+    if m then
+        local d = m.DisplayOperatorMinHeight or 0
+        if d < threshold then
+            patches.report("DisplayOperatorMinHeight(%s -> %s)",d,threshold)
+            m.DisplayOperatorMinHeight = threshold
+        end
+    end
+end
+
+patches.register("after","analyze math","cambria", function(data,filename) patch(data,filename,2800) end)
+patches.register("after","analyze math","cambmath",function(data,filename) patch(data,filename,2800) end)
+
+-- This is a runtime fix, but then we need to explicitly set
+-- the goodies parameter for the font. As a demonstration we
+-- we do both.
+
+local function FixDisplayOperatorMinHeight(value,target,original)
+    local o = original.mathparameters.DisplayOperatorMinHeight
+    if o < 2800 then
+        return 2800 * target.parameters.factor
+    else
+        return value -- already scaled
+    end
+end
+
+return {
+    name = "cambria-math",
+    version = "1.00",
+    comment = "Goodies that complement cambria.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        parameters = {
+            DisplayOperatorMinHeight = FixDisplayOperatorMinHeight,
+        },
+     -- kernpairs = { -- \setupmathematics[kernpairs=yes]
+     --     [0x1D44E] = {
+     --         [0x1D44F] = 1000, -- 𝑎𝑏 demo
+     --     }
+     -- },
+     -- kerns = {
+     --     [0x1D453] = {
+     --         force = true,
+     --         topright = {
+     --             {
+     --                 kern = 1000,
+     --             },
+     --         },
+     --         bottomright = {
+     --             {
+     --                 kern = 1000,
+     --             },
+     --         },
+     --     },
+     -- },
+    },
+}

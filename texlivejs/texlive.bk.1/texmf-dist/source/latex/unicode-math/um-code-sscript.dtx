@@ -1,0 +1,238 @@
+%%^^A%% um-code-sscript.dtx -- part of UNICODE-MATH <wspr.io/unicode-math>
+%%^^A%% Setup for active chars needed to process subscript/superscript input chars.
+
+% \section{Unicode sub- and super-scripts}
+%
+%    \begin{macrocode}
+%<*package>
+%    \end{macrocode}
+%
+% The idea here is to enter a scanning state after a superscript or subscript
+% is encountered.
+% If subsequent superscripts or subscripts (resp.) are found,
+% they are lumped together.
+% Each sub/super has a corresponding regular size
+% glyph which is used by \XeTeX\ to typeset the results; this means that the
+% actual subscript/superscript glyphs are never seen in the output
+% document~--- they are only used as input characters.
+%
+% Open question: should the superscript-like `modifiers' (\unichar{1D2C}
+% {modifier capital letter a} and on) be included here?
+%
+% \paragraph{Superscripts}
+% Populate a property list with superscript characters; themselves as their
+% key, and their replacement as each key's value.
+% Then make the superscript active and bind it to the scanning function.
+%
+% \cs{scantokens} makes this process much simpler since we can activate the
+% char and assign its meaning in one step.
+%    \begin{macrocode}
+\cs_new:Nn \@@_setup_active_superscript:nn
+  {
+    \prop_gput:Nxn \g_@@_supers_prop { \int_eval:n {#1} } {#2}
+    \@@_mathactive_remap:nn {#1}
+       {
+        \tl_set:Nn \l_@@_ss_chain_tl {#2}
+        \cs_set_eq:NN \@@_sub_or_super:n \sp
+        \tl_set:Nn \l_@@_tmpa_tl {supers}
+        \@@_scan_sscript:
+       }
+  }
+%    \end{macrocode}
+%
+% \paragraph{Subscripts}
+%    \begin{macrocode}
+\cs_new:Nn \@@_setup_active_subscript:nn
+  {
+    \prop_gput:Nxn \g_@@_subs_prop { \int_eval:n {#1} } {#2}
+    \@@_mathactive_remap:nn {#1}
+      {
+        \tl_set:Nn \l_@@_ss_chain_tl {#2}
+        \cs_set_eq:NN \@@_sub_or_super:n \sb
+        \tl_set:Nn \l_@@_tmpa_tl {subs}
+        \@@_scan_sscript:
+      }
+  }
+%    \end{macrocode}
+%
+% \paragraph{The scanning command}
+% Collects a chain of subscripts or a chain
+% of superscripts and then typesets what it has collected.
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_scan_sscript:
+  {
+    \@@_scan_sscript:TF
+      { \@@_scan_sscript: }
+      { \@@_sub_or_super:n {\l_@@_ss_chain_tl} }
+  }
+%    \end{macrocode}
+% We do not skip spaces when scanning ahead, and we explicitly wish to
+% bail out on encountering a space or a brace.  These cases are filtered
+% using \cs{peek_N_type:TF}.  Otherwise the token can be taken as an
+% \texttt{N}-type argument.  Then we search for it in the appropriate
+% property list (\cs{l_@@_tmpa_tl} is |subs| or |supers|).
+% If found, add the value to the current chain of sub/superscripts.
+% Remember to put the character back in the input otherwise.
+% The \cs{group_align_safe_begin:} and \cs{group_align_safe_end:} are
+% needed in case |#3| is |&|.
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_scan_sscript:TF
+  {
+    \peek_N_type:TF
+      {
+        \group_align_safe_begin:
+        \@@_scan_sscript_aux:nnN {#1} {#2}
+      }
+      {#2}
+  }
+%    \end{macrocode}
+% The look-ahead for the sscripts doesn't try to peek inside the lookahead.
+%    \begin{macrocode}
+\@@_cs_new:Nn \@@_scan_sscript_aux:nnN
+  {
+    \tl_set:Nx \l_@@_tmpa_key_tl { \tl_to_str:n {#3} }
+    \prop_get:cxNTF {g_@@_\l_@@_tmpa_tl _prop}
+      { \int_eval:n { \exp_after:wN ` \l_@@_tmpa_key_tl } }
+      \l_@@_tmpb_tl
+      {
+        \tl_put_right:NV \l_@@_ss_chain_tl \l_@@_tmpb_tl
+        \group_align_safe_end:
+        #1
+      }
+      { \group_align_safe_end: #2 #3 }
+  }
+%    \end{macrocode}
+%
+% \paragraph{Definitions}
+% Superscripts.
+%    \begin{macrocode}
+\@@_setup_active_superscript:nn {"2070} {0}
+\@@_setup_active_superscript:nn {"00B9} {1}
+\@@_setup_active_superscript:nn {"00B2} {2}
+\@@_setup_active_superscript:nn {"00B3} {3}
+\@@_setup_active_superscript:nn {"2074} {4}
+\@@_setup_active_superscript:nn {"2075} {5}
+\@@_setup_active_superscript:nn {"2076} {6}
+\@@_setup_active_superscript:nn {"2077} {7}
+\@@_setup_active_superscript:nn {"2078} {8}
+\@@_setup_active_superscript:nn {"2079} {9}
+\@@_setup_active_superscript:nn {"207A} {+}
+\@@_setup_active_superscript:nn {"207B} {-}
+\@@_setup_active_superscript:nn {"207C} {=}
+\@@_setup_active_superscript:nn {"207D} {(}
+\@@_setup_active_superscript:nn {"207E} {)}
+\@@_setup_active_superscript:nn {"1D2C} {A}
+\@@_setup_active_superscript:nn {"1D2E} {B}
+\@@_setup_active_superscript:nn {"1D30} {D}
+\@@_setup_active_superscript:nn {"1D31} {E}
+\@@_setup_active_superscript:nn {"1D33} {G}
+\@@_setup_active_superscript:nn {"1D34} {H}
+\@@_setup_active_superscript:nn {"1D35} {I}
+\@@_setup_active_superscript:nn {"1D36} {J}
+\@@_setup_active_superscript:nn {"1D37} {K}
+\@@_setup_active_superscript:nn {"1D38} {L}
+\@@_setup_active_superscript:nn {"1D39} {M}
+\@@_setup_active_superscript:nn {"1D3A} {N}
+\@@_setup_active_superscript:nn {"1D3C} {O}
+\@@_setup_active_superscript:nn {"1D3E} {P}
+\@@_setup_active_superscript:nn {"1D3F} {R}
+\@@_setup_active_superscript:nn {"1D40} {T}
+\@@_setup_active_superscript:nn {"1D41} {U}
+\@@_setup_active_superscript:nn {"2C7D} {V}
+\@@_setup_active_superscript:nn {"1D42} {W}
+\@@_setup_active_superscript:nn {"1D43} {a}
+\@@_setup_active_superscript:nn {"1D47} {b}
+\@@_setup_active_superscript:nn {"1D9C} {c}
+\@@_setup_active_superscript:nn {"1D48} {d}
+\@@_setup_active_superscript:nn {"1D49} {e}
+\@@_setup_active_superscript:nn {"1DA0} {f}
+\@@_setup_active_superscript:nn {"1D4D} {g}
+\@@_setup_active_superscript:nn {"02B0} {h}
+\@@_setup_active_superscript:nn {"2071} {i}
+\@@_setup_active_superscript:nn {"02B2} {j}
+\@@_setup_active_superscript:nn {"1D4F} {k}
+\@@_setup_active_superscript:nn {"02E1} {l}
+\@@_setup_active_superscript:nn {"1D50} {m}
+\@@_setup_active_superscript:nn {"207F} {n}
+\@@_setup_active_superscript:nn {"1D52} {o}
+\@@_setup_active_superscript:nn {"1D56} {p}
+\@@_setup_active_superscript:nn {"02B3} {r}
+\@@_setup_active_superscript:nn {"02E2} {s}
+\@@_setup_active_superscript:nn {"1D57} {t}
+\@@_setup_active_superscript:nn {"1D58} {u}
+\@@_setup_active_superscript:nn {"1D5B} {v}
+\@@_setup_active_superscript:nn {"02B7} {w}
+\@@_setup_active_superscript:nn {"02E3} {x}
+\@@_setup_active_superscript:nn {"02B8} {y}
+\@@_setup_active_superscript:nn {"1DBB} {z}
+\@@_setup_active_superscript:nn {"1D5D} {\beta}
+\@@_setup_active_superscript:nn {"1D5E} {\gamma}
+\@@_setup_active_superscript:nn {"1D5F} {\delta}
+\@@_setup_active_superscript:nn {"1D60} {\phi}
+\@@_setup_active_superscript:nn {"1D61} {\chi}
+\@@_setup_active_superscript:nn {"1DBF} {\theta}
+%    \end{macrocode}
+% A few more subscripts than superscripts:
+%    \begin{macrocode}
+\@@_setup_active_subscript:nn {"2080} {0}
+\@@_setup_active_subscript:nn {"2081} {1}
+\@@_setup_active_subscript:nn {"2082} {2}
+\@@_setup_active_subscript:nn {"2083} {3}
+\@@_setup_active_subscript:nn {"2084} {4}
+\@@_setup_active_subscript:nn {"2085} {5}
+\@@_setup_active_subscript:nn {"2086} {6}
+\@@_setup_active_subscript:nn {"2087} {7}
+\@@_setup_active_subscript:nn {"2088} {8}
+\@@_setup_active_subscript:nn {"2089} {9}
+\@@_setup_active_subscript:nn {"208A} {+}
+\@@_setup_active_subscript:nn {"208B} {-}
+\@@_setup_active_subscript:nn {"208C} {=}
+\@@_setup_active_subscript:nn {"208D} {(}
+\@@_setup_active_subscript:nn {"208E} {)}
+\@@_setup_active_subscript:nn {"2090} {a}
+\@@_setup_active_subscript:nn {"2091} {e}
+\@@_setup_active_subscript:nn {"2095} {h}
+\@@_setup_active_subscript:nn {"1D62} {i}
+\@@_setup_active_subscript:nn {"2C7C} {j}
+\@@_setup_active_subscript:nn {"2096} {k}
+\@@_setup_active_subscript:nn {"2097} {l}
+\@@_setup_active_subscript:nn {"2098} {m}
+\@@_setup_active_subscript:nn {"2099} {n}
+\@@_setup_active_subscript:nn {"2092} {o}
+\@@_setup_active_subscript:nn {"209A} {p}
+\@@_setup_active_subscript:nn {"1D63} {r}
+\@@_setup_active_subscript:nn {"209B} {s}
+\@@_setup_active_subscript:nn {"209C} {t}
+\@@_setup_active_subscript:nn {"1D64} {u}
+\@@_setup_active_subscript:nn {"1D65} {v}
+\@@_setup_active_subscript:nn {"2093} {x}
+\@@_setup_active_subscript:nn {"1D66} {\beta}
+\@@_setup_active_subscript:nn {"1D67} {\gamma}
+\@@_setup_active_subscript:nn {"1D68} {\rho}
+\@@_setup_active_subscript:nn {"1D69} {\phi}
+\@@_setup_active_subscript:nn {"1D6A} {\chi}
+%    \end{macrocode}
+%
+%
+%    \begin{macrocode}
+%</package>
+%    \end{macrocode}
+
+\endinput
+
+% /©
+%
+% ------------------------------------------------
+% The UNICODE-MATH package  <wspr.io/unicode-math>
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% Copyright 2006-2019  Will Robertson, LPPL "maintainer"
+% Copyright 2010-2017  Philipp Stephani
+% Copyright 2011-2017  Joseph Wright
+% Copyright 2012-2015  Khaled Hosny
+% ------------------------------------------------
+%
+% ©/

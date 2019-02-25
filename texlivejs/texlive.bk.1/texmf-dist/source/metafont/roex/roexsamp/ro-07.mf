@@ -1,0 +1,102 @@
+%%%%
+%%%% This file belongs to the ROEX package.
+%%%%
+%%% draw write_preamble write_postamble find_BB set_BB fill_C draw_C
+%%% draw fix_fill_cmyk fix_draw_cmyk
+% RO-07.MF, ``LOGO OF JOURNAL OF ALGORITHMS'':
+%  Another example excerpted from The \MF{}book, pages 137 thru 139;
+%  |penstroke| is redefined in such a way that instead of creating a bitmap
+%  picture, it stores respective curves; two points were moved, |z.a8l| and
+%  |z.a8r| (see comments with a remark ``intrusion''), in order to avoid
+%  partially overlaping paths, as ROEX does not cope with such data.
+% ---
+input mftoeps; eps_mode_setup; input roex; tracingremoving:=1;
+% ---
+def penstroke text t =
+ forsuffixes e = l,r: path_.e:=t; endfor
+ if cycle path_.l: R[incr R.num]:=path_.l.t_; R[incr R.num]:=path_.r.t_;
+ else: R[incr R.num]:=path_.l -- reverse path_.r -- cycle; fi
+ enddef;
+% ---
+beginchar("0",29mm#,25mm#,0);
+ path R[\\]; R.num:=0;
+%
+ thick#:=2mm#; thin#:=5/4mm#;
+ define_whole_blacker_pixels(thick,thin);
+ forsuffixes $=a,b,c: transform $;
+  forsuffixes e=l,r: path $e,$'e; numeric t$[\\]e;
+  endfor
+ endfor
+ penpos1(thick,0); penpos2(thick,90); penpos3(thick,180); penpos4(thick,270);
+ penpos5(thick,0); penpos6(thick,90); penpos7(thick,180); penpos8(thick,270);
+ x2=x4=x6=x8=.5[x5,x7]=.5w; x1r=w; x3r=0;
+ x5-x7=y6-y8;
+ y1=y3=y5=y7=.5[y6,y8]=.5h; y2r=h; y4r=0;
+ y6r=.75h;
+ forsuffixes e=l,r: a.e=b'e=c'e=superellipse (z1e,z2e,z3e,z4e,.75);
+  a'e=b.e=c.e=superellipse (z5e,z6e,z7e,z8e,.72);
+ endfor
+ penpos a1(thin,0); penpos a5(whatever,-90); penpos a9(thin,180);
+ x.a1l-x.a9l=1/3(x5l-x7l); x.a5=.5w; y.a1=y.a9; y.a5r=4/7h;
+ x.a3l=x.a1l; x.a3r=x.a1r; x.a4r=1/6[x.a3r,x1l]; x0=.5w; y0=.52h;
+ x.a6l+x.a4l=x.a6r+x.a4r=x.a7l+x.a3l=
+  x.a7r+x.a3r=x.a9+x.a1=w;
+ y.a3r=y.a4r=y.a6r=y.a7r=.2[y2l,y0]; y.a3l=y.a4l=y.a6l=y.a7l=y.a3r-thin;
+ z.a4l=z.a4r+(thin,0) rotated(angle(z.a4r-z.a5r)+90)+whatever*(z.a4r-z.a5r);
+ z.a4l-z.a5l=whatever*(z.a4r-z.a5r);
+ z=a.r intersectionpoint (z0--(w,0));
+ y.a1-y.a5=length(z-z0);
+ b=identity shifted (0,y0-y.a1) rotatedaround(z0,90-angle(z0-(w,0)));
+ c=b reflectedabout (z2,z4);
+ for n=1,3,4,5,6,7,9: forsuffixes e=l,,r: forsuffixes $=b,c:
+  z$[n]e=z.a[n]e transformed $;
+ endfor endfor endfor
+ forsuffixes e=l,r: forsuffixes $=a,b,c:
+% intrusion: the primed entries are stored for further use (see below)
+  z$2e'=$l intersectionpoint (z$1e--z$3e);
+  z$8e'=$l intersectionpoint (z$9e--z$7e);
+% end of intrusion
+  z$2e=$r intersectionpoint (z$1e--z$3e);
+  z$8e=$r intersectionpoint (z$9e--z$7e);
+  t$1e=xpart($e intersectiontimes (z$1l--z$3l));
+  t$9e=xpart($e intersectiontimes (z$9l--z$7l));
+  t$4e=xpart($'e intersectiontimes (z$5r--z$4l));
+  t$6e=xpart($'e intersectiontimes (z$5r--z$6l));
+ endfor endfor
+ penstroke subpath(t.a9e,t.b6e) of a.e;
+ penstroke subpath(t.b4e,t.c4e) of b'e;
+ penstroke subpath(t.c6e,t.a1e+8) of c'e;
+ penstroke subpath(t.a6e,t.b9e) of a'e;
+ penstroke subpath(t.b1e,t.c1e) of b.e;
+ penstroke subpath(t.c9e,t.a4e+8) of c.e;
+% intrusion: correction of offending nodes, i.e., |z.a8l|, |z.a8r|,
+% |z.a8l|, and |z.a8r|
+ x.a8l:=x.a8l'; x.a8r:=x.a8r'; y.a8l:=y.a8l'; y.a8r:=y.a8r'+(y2r-y2);
+ x.a2l:=x.a2l'; x.a2r:=x.a2r'; y.a2l:=y.a2l'; y.a2r:=y.a2r'+(y2r-y2);
+% end of intrusion
+ forsuffixes $=a,b,c:
+%  |penlabels($1,$2,$3,$4,$5,$6,$7,$8,$9);|
+  penstroke z$2e--z$3e--z$4e--z$5e--z$6e--z$7e--z$8e;
+ endfor
+% |penlabels(range 0 thru 8);|
+ vardef touch_path expr p = pos_turn p enddef;
+ remove_overlap (make_list(1,R.num)R) () R;
+ find_BB make_list(1,R.num)R;
+ write_preamble jobname;
+ fix_fill_cmyk 0,0,0,1/6; 
+ fill_C make_list(1,R.num)R;
+ fix_line_width 1/10pt;
+ for i:=1 upto R.num:
+  fix_draw_cmyk if check_turn R[i]>0: 0,1,1,0 else: 1,1,0,0 fi; 
+  draw_C R[i];
+  if proofing>0:
+   for j:=0 upto length(R[i])-1:
+    makelabel(decimal(j) & "/" & decimal(i),point j of R[i]);
+   endfor
+  fi
+ endfor
+ write_postamble;
+endchar;
+end.
+%%\end
+

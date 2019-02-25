@@ -1,0 +1,43 @@
+%%%%
+%%%% This file belongs to the ROEX package.
+%%%%
+%%% draw write_preamble write_postamble find_BB set_BB fill_C draw_C
+%%% draw fix_fill_cmyk fix_draw_cmyk
+% ES-03.MF, ``COGWHEEL'':
+%  Expanding stroke applied to a somewhat complex object, |miter_size|
+%  set to zero.
+% ---
+input mftoeps; eps_mode_setup; input roex; tracingexpanding:=1;
+% ---
+vardef flex_polyg(expr n,a) =
+ save zz; pair zz[\\];
+ for i:=0 upto n-1:
+  zz[i]:=up rotated (i*(360/n));
+ endfor
+ (zz0
+ for i:=1 upto n:
+  {(zz[i mod n]-zz[i-1]) rotated a}..{(zz[i mod n]-zz[i-1]) rotated -a}
+   if i=n: cycle else: zz[i] fi
+ endfor
+ ) scaled .5
+enddef;
+% ---
+beginchar("0",in#,in#,0);
+  b:=.5mm; path p; p=flex_polyg(17,60) scaled w shifted (1/2w,1/2h);
+ miter_size:=0bp; expand_stroke (p) (b) R;
+% miter_size:=0bp; change_weight(p) (b) R;
+ find_BB R1,R2;
+ write_preamble jobname;
+ draw_C R1,R2;
+ write_postamble;
+ for i:=1,2:
+  if proofing>0:
+   for j:=0 upto length(R[i])-1:
+    makelabel(decimal(j) & "/" & decimal(i),point j of R[i]);
+   endfor
+  fi
+ endfor
+endchar;
+end.
+%%\end
+

@@ -1,0 +1,108 @@
+\newcommand{\inputsound}[3][90]{
+% 20180305 changed
+% 20180317 changed
+\def\soundbuttona{\color{blue}\small\fbox{\strut$\oplus\triangleright$}}
+\def\soundbuttonb{\color{blue}\small\fbox{\strut$\ll$}}
+{\unitlength=1pt
+\ketcalcwidth[0]{\soundbuttona}
+\setcounter{ketpicctrb}{\theketpicctra}
+\ketcalcwidth[0]{\soundbuttonb}
+\addtocounter{ketpicctrb}{\theketpicctra}
+\addtocounter{ketpicctrb}{20}
+ 
+\noindent
+\hspace*{#1mm}\hspace{20pt}%
+\mediabutton[
+mediacommand=#3:playPause,
+overface={\soundbuttona}%,
+%downface={\color{red}\strut Pause/Pause}%
+]{\soundbuttona}%
+\mediabutton[
+mediacommand=#3:rewind,
+overface={\soundbuttonb}
+%downface={\color{red}\strut Pause/Pause}%
+]{\soundbuttonb}%
+\hspace{-\theketpicctrb pt}%
+\includemedia[
+    label=#3,
+    addresource=#2#3.mp3,
+    activate=pageopen,
+    flashvars={
+      source=#2#3.mp3
+     &autoPlay=true
+    }
+%    transparent,
+%    passcontext
+]{\color{blue}\small\fbox{\Ctab{15pt}{\strut}}}{APlayer.swf}
+}}
+
+\newcommand{\inputsoundclick}[3][90]{
+% 20180317 added
+\def\soundbuttona{\color{blue}\small\fbox{\strut$\oplus\triangleright$}}
+\def\soundbuttonb{\color{blue}\small\fbox{\strut$\ll$}}
+{\unitlength=1pt
+\ketcalcwidth[0]{\soundbuttona}
+\setcounter{ketpicctrb}{\theketpicctra}
+\ketcalcwidth[0]{\soundbuttonb}
+\addtocounter{ketpicctrb}{\theketpicctra}
+\addtocounter{ketpicctrb}{20}
+ 
+\noindent
+\hspace*{#1mm}\hspace{20pt}%
+\mediabutton[
+mediacommand=#3:playPause,
+overface={\soundbuttona}%,
+%downface={\color{red}\strut Pause/Pause}%
+]{\soundbuttona}%
+\mediabutton[
+mediacommand=#3:rewind,
+overface={\soundbuttonb}
+%downface={\color{red}\strut Pause/Pause}%
+]{\soundbuttonb}%
+\hspace{-\theketpicctrb pt}%
+\includemedia[
+    label=#3,
+    addresource=#2#3.mp3,
+    activate=onclick,
+    flashvars={
+      source=#2#3.mp3
+     &autoPlay=true
+    }
+%    transparent,
+%    passcontext
+]{\color{blue}\small\fbox{\Ctab{15pt}{\strut}}}{APlayer.swf}
+}}
+
+\newcommand{\inputmovie}[5][90]{
+% 20180306 changed
+% width,height,dir,name
+\def\soundbuttona{\small\fbox{\strut$\oplus\triangleright$}}
+\def\soundbuttonb{\small\fbox{\strut$\ll$}}
+
+\hspace*{#1 mm}\mediabutton[
+  mediacommand=#5:playPause,
+  overface={\color{blue}\soundbuttona},
+  downface={\color{red}\soundbuttona}
+]{\fbox{\soundbuttona}}
+\mediabutton[
+  mediacommand=#5:rewind,
+  overface={\color{blue}\soundbuttonb},
+  downface={\color{red}\soundbuttonb}
+]{\fbox{\soundbuttonb}}
+
+\includemedia[
+  label=#5,
+  width=#2\linewidth,totalheight=#3\linewidth,
+  activate=pageopen,
+  addresource=#4#5.mp4,
+  flashvars={
+        source=#4#5.mp4
+%        &showloading=never
+%        &autoRewind=true
+        &autoplay=true
+%        &loop=1
+%        &buffer=0.2
+  }
+]{}{VPlayer.swf}
+
+}

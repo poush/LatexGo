@@ -1,0 +1,221 @@
+%D \module
+%D   [       file=m-spreadsheet,
+%D        version=2011.02.21,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Spreadsheets,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is an experimental follow up on discussion on the mailing list.
+
+\registerctxluafile{m-spreadsheet}{}
+
+\unprotect
+
+% todo: get(...) set(..) ctx(...)
+
+\installcorenamespace{spreadsheet}
+
+\installcommandhandler \??spreadsheet {spreadsheet} \??spreadsheet
+
+\appendtoks
+   \ctxlua{moduledata.spreadsheets.setup{ % global !
+     period = \!!bs\spreadsheetparameter\c!period\!!es,
+     comma  = \!!bs\spreadsheetparameter\c!comma\!!es,
+     split  = \!!bs\spreadsheetparameter\c!split\!!es,
+   }}%
+\to \everysetupspreadsheet
+
+\setupspreadsheet
+  [%\c!comma=,
+   %\c!period=,
+   \c!split=\v!no]
+
+\unexpanded\def\resetspreadsheet
+  {\dosingleempty\module_spreadsheet_reset}
+
+\unexpanded\def\module_spreadsheet_reset[#1]%
+  {\ctxlua{moduledata.spreadsheets.reset("#1")}}
+
+\unexpanded\def\startspreadsheet
+  {\dosingleempty\module_spreadsheet_start}
+
+\unexpanded\def\module_spreadsheet_start[#1]%
+  {\pushmacro\currentspreadsheet
+   \edef\currentspreadsheet{#1}%
+   \checkspreadsheetparent
+   \edef\m_spreadsheet_period{\spreadsheetparameter\c!period}%
+   \edef\m_spreadsheet_comma {\spreadsheetparameter\c!comma}%
+   \ctxlua{moduledata.spreadsheets.start("#1", {
+     period = \!!bs\detokenize\expandafter{\m_spreadsheet_period}\!!es,
+     comma  = \!!bs\detokenize\expandafter{\m_spreadsheet_comma}\!!es,
+     split  = \!!bs\spreadsheetparameter\c!split\!!es,
+   })}}
+
+\unexpanded\def\stopspreadsheet
+  {\ctxlua{moduledata.spreadsheets.stop()}%
+   \popmacro\currentspreadsheet}
+
+\unexpanded\def\showspreadsheet
+  {\dosingleempty\module_spreadsheet_show}
+
+\unexpanded\def\module_spreadsheet_show[#1]%
+  {\ctxlua{moduledata.spreadsheets.tocontext("#1")}}
+
+\unexpanded\def\inspectspreadsheet
+  {\dosingleempty\module_spreadsheet_inspect}
+
+\unexpanded\def\module_spreadsheet_inspect[#1]%
+  {\ctxlua{moduledata.spreadsheets.inspect("#1")}}
+
+\unexpanded\def\setspreadsheet
+  {\dosingleempty\module_spreadsheet_set}
+
+\unexpanded\def\module_spreadsheet_set[#1]#2#3#4%
+  {\ctxlua{moduledata.spreadsheets.set("#1",\number#2,\number#3,"#4")}}
+
+\unexpanded\def\getspreadsheet
+  {\dosingleempty\module_spreadsheet_get}
+
+\unexpanded\def\module_spreadsheet_get[#1]#2#3#4%
+  {\ctxlua{moduledata.spreadsheets.get("#1",\number#2,\number#3,"#4")}}
+
+\unexpanded\def\doifelsespreadsheetcell
+  {\dosingleempty\module_spreadsheet_doifelse_cell}
+
+\let\doifspreadsheetcellelse\doifelsespreadsheetcell
+
+\unexpanded\def\module_spreadsheet_doifelse_cell[#1]#2#3%
+  {\ctxlua{moduledata.spreadsheets.doifelsecell("#1",\number#2,\number#3)}}
+
+\ifdefined\tblrow
+
+    \def\TABLEsetspreadsheet#1{\ctxlua{moduledata.spreadsheets.set("",\number\tblrow+1,\number\tblcol,\!!bs#1\!!es)}}
+    \def\TABLEgetspreadsheet#1{\ctxlua{moduledata.spreadsheets.get("",\number\tblrow+1,\number\tblcol,\!!bs#1\!!es)}}
+
+\else
+
+    \def\TABLEsetspreadsheet#1{\ctxlua{moduledata.spreadsheets.set("",\number\c_tabl_ntb_row+1,\number\c_tabl_ntb_col,\!!bs#1\!!es)}}
+    \def\TABLEgetspreadsheet#1{\ctxlua{moduledata.spreadsheets.get("",\number\c_tabl_ntb_row+1,\number\c_tabl_ntb_col,\!!bs#1\!!es)}}
+
+\fi
+
+\appendtoks
+    \module_spreadsheet_reset[\currentspreadsheet]%
+    \let\setspr\TABLEsetspreadsheet
+    \let\getspr\TABLEgetspreadsheet
+\to \everyTABLEpass
+
+\unexpanded\def\startspreadsheettable % quick and dirty
+  {\dodoubleempty\module_spreadsheet_start_table}
+
+\unexpanded\def\module_spreadsheet_start_table[#1][#2]%
+  {\bgroup
+   \let\startrow \module_spreadsheet_row_start
+   \let\stoprow  \module_spreadsheet_row_stop
+   \let\startcell\module_spreadsheet_cell_start
+   \let\stopcell \module_spreadsheet_cell_stop
+   \doifelseassignment{#1}
+     {\module_spreadsheet_start
+      \directsetup{spreadsheet:before:\currentspreadsheet}%
+      \bTABLE[\c!align=\v!flushright,#1]}
+     {\module_spreadsheet_start[#1]%
+      \directsetup{spreadsheet:before:\currentspreadsheet}%
+      \bTABLE[\c!align=\v!flushright,#2]}}
+
+\unexpanded\def\stopspreadsheettable
+   {\eTABLE
+    \directsetup{spreadsheet:after:\currentspreadsheet}%
+    \stopspreadsheet
+    \egroup}
+
+\unexpanded\def\module_spreadsheet_row_start{\bTR}
+\unexpanded\def\module_spreadsheet_row_stop {\eTR}
+
+\unexpanded\def\module_spreadsheet_cell_start
+  {\doifelsenextoptional\module_spreadsheet_cell_start_yes\module_spreadsheet_cell_start_nop}
+
+\unexpanded\def\module_spreadsheet_cell_start_yes[#1]#2\stopcell
+  {\bTD[#1]\getspr{#2}\eTD}
+
+\unexpanded\def\module_spreadsheet_cell_start_nop#1\stopcell
+  {\bTD\getspr{#1}\eTD}
+
+\let\module_spreadsheet_cell_stop\relax
+
+\protect
+
+\continueifinputfile{m-spreadsheet.mkiv}
+
+\starttext
+
+\bTABLE[align=middle]
+   \bTR
+     \bTD \getspr{100} \eTD \bTD test \setspr{30} \eTD
+   \eTR
+   \bTR
+     \bTD \getspr{20} \eTD \bTD \getspr{4+3} \eTD
+   \eTR
+   \bTR
+     \bTD \getspr{A[1] + A[2]} \eTD
+     \bTD \getspr{B1 + B2} \eTD
+   \eTR
+   \bTR
+     \bTD[nx=2] \bf \getspr{(A[3] + B[3]) /100} \eTD
+   \eTR
+   \bTR
+     \bTD[nx=2] \bf \getspr{string.format("\letterpercent0.3f",(A[3] + B[3]) /100)} \eTD
+   \eTR
+   \bTR
+     \bTD[nx=2] \bf \getspr{fmt("@0.3f",(sum(A,1,2)) / 10)} \eTD
+   \eTR
+\eTABLE
+
+\setupspreadsheet[mysheet]
+
+\startspreadsheet[mysheet]
+
+\bTABLE[align=middle]
+   \bTR
+     \bTD \getspr{100} \eTD \bTD test \setspr{30} \eTD
+   \eTR
+   \bTR
+     \bTD \getspr{20} \eTD \bTD \getspr{4+3.5} \eTD
+   \eTR
+   \bTR
+     \bTD \getspr{A[1] + A[2]} \eTD
+     \bTD \getspr{B[1] + B[2]} \eTD
+   \eTR
+   \bTR
+     \bTD[nx=2] \bf \getspr{A[3] + B[3]} \eTD
+   \eTR
+\eTABLE
+
+\stopspreadsheet
+
+\blank
+
+\setupspreadsheet[test][period={{\bf\middlered .}},comma={{\bf\middlegreen ,}},split=yes]
+
+\startspreadsheettable[test]
+   \startrow
+     \startcell  123456.78 \stopcell
+     \startcell 1234567.89 \stopcell
+     \startcell A[1] + B[1] \stopcell
+   \stoprow
+\stopspreadsheettable
+
+\blank
+
+% \showspreadsheet
+% \showspreadsheet[mysheet]
+
+\doifelsespreadsheetcell[mysheet]{1}{2}{YES}{NOP}
+\doifelsespreadsheetcell[myshoot]{1}{2}{YES}{NOP}
+
+\stoptext

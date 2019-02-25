@@ -1,0 +1,136 @@
+%%^^A%%  fontspec-code-fontload.dtx -- part of FONTSPEC <wspr.io/fontspec>
+
+% \section{expl3 interface for primitive font loading}
+%
+% \iffalse
+%    \begin{macrocode}
+%<*fontspec>
+%    \end{macrocode}
+% \fi
+%
+% \begin{macro}{\@@_primitive_font_set:Nnn,\@@_primitive_font_gset:Nnn}
+%    \begin{macrocode}
+\cs_set:Npn \@@_primitive_font_set:Nnn #1#2#3
+  {
+    \font #1 = #2 ~at~ \dim_eval:n {#3} \scan_stop:
+  }
+%    \end{macrocode}
+%    \begin{macrocode}
+\cs_set:Npn \@@_primitive_font_gset:Nnn #1#2#3
+  {
+    \global \font #1 = #2 ~at~ \dim_eval:n {#3} \scan_stop:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_font_suppress_not_found_error:}
+%    \begin{macrocode}
+\cs_set:Npn \@@_font_suppress_not_found_error:
+  {
+    \int_set:Nn \suppressfontnotfounderror {1}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[pTF]{\@@_primitive_font_if_null:N}
+%    \begin{macrocode}
+\prg_set_conditional:Nnn \@@_primitive_font_if_null:N {p,TF,T,F}
+  {
+    \ifx #1 \nullfont
+      \prg_return_true:
+    \else
+      \prg_return_false:
+    \fi
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[pTF]{\@@_primitive_font_set:NnnTF,\@@_primitive_font_gset:NnnTF}
+%    \begin{macrocode}
+\prg_set_conditional:Nnn \@@_primitive_font_set:Nnn {TF,T,F}
+  {
+    \@@_primitive_font_set:Nnn #1 {#2} {#3}
+    \@@_primitive_font_if_null:NTF #1 {\prg_return_false:} {\prg_return_true:}
+  }
+\prg_set_conditional:Nnn \@@_primitive_font_gset:Nnn {TF,T,F}
+  {
+    \@@_primitive_font_gset:Nnn #1 {#2} {#3}
+    \@@_primitive_font_if_null:NTF #1 {\prg_return_false:} {\prg_return_true:}
+  }
+\cs_set:Npn \@@_primitive_font_set:Onn   { \exp_last_unbraced:No \@@_primitive_font_set:Nnn }
+\cs_set:Npn \@@_primitive_font_set:OnnF  { \exp_last_unbraced:No \@@_primitive_font_set:NnnF }
+\cs_set:Npn \@@_primitive_font_gset:Onn  { \exp_last_unbraced:No \@@_primitive_font_gset:Nnn }
+\cs_set:Npn \@@_primitive_font_gset:OnnF { \exp_last_unbraced:No \@@_primitive_font_gset:NnnF }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[TF]{\@@_primitive_font_if_exist:n}
+%    \begin{macrocode}
+\prg_set_conditional:Nnn \@@_primitive_font_if_exist:n {TF,T,F}
+  {
+    \group_begin:
+      \@@_font_suppress_not_found_error:
+      \@@_primitive_font_set:Nnn \l_@@_primitive_font {#1} { \f@size pt - 1sp }
+      \@@_primitive_font_if_null:NTF \l_@@_primitive_font
+        { \group_end: \prg_return_false: }
+        { \group_end: \prg_return_true:  }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_primitive_font_glyph_if_exist:NnTF}
+%    \begin{macrocode}
+\prg_new_conditional:Nnn \@@_primitive_font_glyph_if_exist:Nn {p,TF,T,F}
+  {
+    \tex_iffontchar:D #1 #2 \scan_stop:
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_primitive_font_set_hyphenchar:Nn}
+%    \begin{macrocode}
+\cs_new:Nn \@@_primitive_font_set_hyphenchar:Nn
+  {
+     \tex_hyphenchar:D #1 = #2 \scan_stop:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_primitive_font_get_name:N}
+% \begin{macro}{\@@_primitive_font_current_name:}
+%    \begin{macrocode}
+\cs_new_eq:NN \@@_primitive_font_get_name:N \fontname
+\cs_new:Npn \@@_primitive_font_current_name:
+  {
+    \@@_primitive_font_get_name:N \tex_font:D
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \iffalse
+%    \begin{macrocode}
+%</fontspec>
+%    \end{macrocode}
+% \fi
+
+\endinput
+
+% /©
+% ------------------------------------------------
+% The FONTSPEC package  <wspr.io/fontspec>
+% ------------------------------------------------
+% Copyright  2004-2019  Will Robertson, LPPL "maintainer"
+% Copyright  2009-2015  Khaled Hosny
+% Copyright  2013       Philipp Gesang
+% Copyright  2013-2016  Joseph Wright
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% ©/

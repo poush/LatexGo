@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="signalrightpage" level="system" file="spac-pag.mkiv"/>
+
+    <cd:command name="doifelserightpage" level="system" file="spac-pag.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="rightpageorder" level="system" file="spac-pag.mkiv"/>
+
+    <cd:command name="definepagestate" level="system" file="core-dat.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuppagestate"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuppagestate" level="system" file="core-dat.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="delay">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setpagestate" level="system" file="core-dat.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:keywords optional="yes">
+                <cd:constant type="cd:name"/>
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="pagestaterealpage" level="system" file="core-dat.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="cd:name"/>
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setpagestaterealpageno" level="system" file="core-dat.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="cd:name"/>
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="pagestaterealpageorder" level="system" file="core-dat.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="cd:name"/>
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="autopagestaterealpage" level="system" file="core-dat.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setautopagestaterealpageno" level="system" file="core-dat.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="autopagestaterealpageorder" level="system" file="core-dat.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

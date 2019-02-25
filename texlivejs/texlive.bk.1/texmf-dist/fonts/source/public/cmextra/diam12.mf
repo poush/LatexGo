@@ -1,0 +1,18 @@
+% make a solid diamond to use as a calligraphic-style bullet
+if unknown cmbase: input cmbase fi % omit if CMMF can be assumed
+mode_setup;
+
+def generate suffix t= enddef;
+input cmr12; font_setup;
+
+cmchar "Solid diamond"; % cf Diamond operator in sym.mf
+beginchar("d",9u#,v_center(7u#));
+italcorr math_axis#*slant;
+adjust_fit(0,0); pickup rule.nib;
+numeric a; a=(lft 3.5u)*sqrt(3.14159/2); % an attempt to match circle area
+x4=x8=good.x .5w; center_on(x4); x2=w-x6=good.x(x4+a);
+y2=y6=.5[y4,y8]=math_axis; y8=good.y(y2+a);
+fill (rt z2)--(top z8)--(lft z6)--(bot z4)--cycle;  % bowl
+labels(2,4,6,8); endchar;
+
+end

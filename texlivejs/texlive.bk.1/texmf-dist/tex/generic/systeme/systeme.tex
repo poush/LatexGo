@@ -1,0 +1,689 @@
+% !TeX encoding = ISO-8859-1
+% Ce fichier contient le code de l'extension "systeme"
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                    %
+\def\SYSname                   {systeme}                             %
+\def\SYSver                      {0.32}                              %
+%                                                                    %
+\def\SYSdate                  {2019/01/13}                           %
+%                                                                    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                    %
+% Author     : Christian Tellechea                                   %
+% Status     : Maintained                                            %
+% Email      : unbonpetit@netc.fr                                    %
+% Package URL: https://www.ctan.org/pkg/systeme                      %
+% Bug tracker: https://framagit.org/unbonpetit/systeme/issues        %
+% Repository : https://framagit.org/unbonpetit/systeme/tree/master   %
+% Copyright  : Christian Tellechea 2011-2019                         %
+% Licence    : Released under the LaTeX Project Public License v1.3c %
+%              or later, see http://www.latex-project.org/lppl.txt   %
+% Files      : 1) systeme.tex                                        %
+%              2) systeme.sty                                        %
+%              3) systeme-fr.tex                                     %
+%              4) systeme-fr.pdf                                     %
+%              5) README                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\unless\ifdefined\SYSstyfile
+	\immediate\write-1 {Package: \SYSname\space\SYSdate\space\space v\SYSver\space\space Saisie naturelle de systemes d'equations}%
+\fi
+
+\expandafter\edef\csname SYS_restorecatcode\endcsname{\catcode\number`\_=\number\catcode`\_\relax}
+\catcode`\_11
+
+\begingroup
+	\catcode`\_8
+	\gdef\SYSunder{_}
+\endgroup
+
+\unless\ifdefined\xstringversion
+	\def\SYS_nextaction{\input xstring.tex\relax}%
+	\expandafter\SYS_nextaction
+\fi
+
+\newtoks\SYS_systemecode
+\newtoks\SYS_systempreamble
+
+\newif\ifSYS_firstterm
+\newif\ifSYS_sortvariable
+\newif\ifSYS_star
+\newif\ifSYS_extracol
+\newif\ifSYS_autonum
+\newif\ifSYS_followautonum
+\newif\ifSYS_constterm
+
+\newcount\SYSeqnum
+
+\long\def\SYS_execarg#1{#1}
+\long\def\SYS_gobtwoargs#1#2{}
+\def\SYS_addtotok#1#2{#1\expandafter{\the#1#2}}
+\def\SYS_expaddtotok#1#2{\xs_exparg{\SYS_addtotok#1}{#2}}
+\def\SYS_addtotab{\SYS_addtotok\SYS_systemecode}
+\def\SYS_cslet#1{\expandafter\let\csname#1\endcsname}
+\def\SYS_letcs#1#2{\expandafter\let\expandafter#1\csname#2\endcsname}
+\def\SYS_firstinlist#1,#2\_nil{#1}
+\def\SYS_removefirstinlist#1,{}
+\def\SYS_ifinstr#1#2{%
+	\def\SYS_ifinstr_i##1#2##2\_nil{\xs_ifempty{##2}\xs_execsecond\xs_execfirst}%
+	\SYS_ifinstr_i#1\__nil#2\_nil
+}
+
+\ifdefined\usepackage\else% on n'utilise pas LaTeX ?
+	\newskip\normalbaselineskip
+	\normalbaselineskip=12pt
+\fi
+
+% définit ce qu'est le séparateur des équations par défaut
+\def\syseqsep{\def\SYS_defaulteqsep}
+\syseqsep{,}
+
+% définit le coefficient pour l'espacement interligne
+\def\syslineskipcoeff{\def\SYS_lineskipcoeff}
+\syslineskipcoeff{1.25}
+
+% définit le signe qui marquera une colonne supplémentaire à droite du tableau
+\def\sysextracolsign{\def\SYS_extracolsign}
+\xs_exparg\sysextracolsign{\string @}% on définit l'arobas avec le bon catcode.
+
+% définit ce qui sera inséré au début et à la fin de la colonne supplémentaire
+\def\syscodeextracol#1#2{\def\SYS_extracolstart{#1}\def\SYS_extracolend{#2}}
+\syscodeextracol{\kern1.5em$}{$}
+
+\def\sysreseteqnum{\global\SYSeqnum0 }
+
+% définit l'autonumérotation
+\def\sysautonum{%
+	\xs_ifstar
+		{\SYS_followautonumtrue\SYS_autonum}
+		{\SYS_followautonumfalse\SYS_autonum}%
+}
+
+\def\SYS_autonum#1{%
+	\xs_ifempty{#1}
+		{\SYS_extracolfalse
+		\SYS_autonumfalse
+		}
+		{\SYS_extracoltrue
+		\SYS_autonumtrue
+		\def\SYS_autonumarg{#1}%
+		}%
+}
+
+% dimension qui sera ajoutée à la hauteur et à la profondeur du strutup ou strutdown
+% inséré à la première et la dernière équation
+\def\SYS_extrastrutdim{1.5pt}
+
+% liste des signes devant être compris comme signe d'égalité séparant les 2 membres de l'équation
+\def\SYS_equalsignlist{<=,>=,=,<,>,\leq,\geq,\leqslant,\geqslant}
+
+\def\sysaddeqsign#1{%
+	\saveexpandmode\expandarg
+	\IfSubStr{\expandafter,\SYS_equalsignlist,}{,#1,}
+		{}
+		{\xs_exparg{\def\SYS_equalsignlist}{\SYS_equalsignlist,#1}}%
+	\restoreexpandmode
+}
+
+% enlève l'item #2 de la sc #1 qui contient une liste
+\def\SYS_removeiteminlist#1#2{%
+	\saveexpandmode\expandarg
+	\IfSubStr{\expandafter,#1,}{,#2,}
+		{\StrSubstitute{\expandafter\_nil\expandafter,#1,\_nil}{,#2,},[#1]%
+		\StrDel#1{\noexpand\_nil,}[#1]%
+		\StrDel#1{,\_nil}[#1]%
+		}%
+		{}%
+	\restoreexpandmode
+}
+
+\def\sysremoveeqsign#1{%
+	\SYS_removeiteminlist\SYS_equalsignlist{#1}%
+	\SYS_removeiteminlist\SYS_equivsignlist{#1}%
+}
+
+% définit le signe d'égalité #1 comme devant être remplacé par #2 lors de l'affichage
+\def\sysequivsign#1#2{%
+	\IfSubStr\SYS_equivsignlist{\noexpand#1,}
+		{}
+		{\xs_exparg{\def\SYS_equivsignlist}{\SYS_equivsignlist#1,}}%
+	\expandafter\def\csname SYS_equivsign_\string#1\endcsname{#2}%
+}
+
+\def\SYS_equivsignlist{}
+
+\sysequivsign{<=}\leq
+\sysequivsign{>=}\geq
+
+% #1 est l'équation courante. La macro la sépare en 2 membres -> \SYS_leftmember et \SYS_rightmember
+% le signe de séparation entre les 2 membres se trouve dans \SYS_currenteqsign
+\def\SYS_splitinmembers#1{%
+	\def\SYS_leftmember{#1}%
+	\let\SYS_currenteqsign\empty
+	\let\SYS_rightmember\empty
+	\xs_exparg\SYS_splitinmembers_i{\SYS_equalsignlist,}% parcourt \SYS_equalsignlist pour séparer en 2 membres
+	\IfSubStr{\expandafter,\SYS_equivsignlist}{\expandafter,\SYS_currenteqsign,}% si le signe est dans la liste des substitutions
+		{\SYS_letcs\SYS_currenteqsign{SYS_equivsign_\detokenize\expandafter{\SYS_currenteqsign}}}% le remplacer
+		{}%
+}
+
+% #1 est la liste des signes d'égalité
+\def\SYS_splitinmembers_i#1{%
+	\xs_ifempty{#1}
+		{}
+		{\IfSubStr\SYS_leftmember{\SYS_firstinlist#1\_nil}% si l'équation contient un des signes
+			{\xs_exparg{\def\SYS_currenteqsign}{\SYS_firstinlist#1\_nil}% sauvagarde le signe
+			\StrBehind\SYS_leftmember\SYS_currenteqsign[\SYS_rightmember]% procède à la séparation
+			\StrBefore\SYS_leftmember\SYS_currenteqsign[\SYS_leftmember]% en deux membres
+			}%
+			{\xs_exparg\SYS_splitinmembers_i{\SYS_removefirstinlist#1}% sinon, recommencer en enlevant le 1er signe
+			}%
+		}%
+}
+
+% analyse une équation et la découpe en termes et signes
+\def\SYS_spliteqinterms#1{%
+	\IfSubStr{\noexpand#1}\SYS_extracolsign% y a t-il un signe de colonne supplémentaire ?
+		{\StrBefore{\noexpand#1}\SYS_extracolsign[\SYS_leftmember]%
+		\StrBehind{\noexpand#1}\SYS_extracolsign[\SYS_rightmember]%
+		\SYS_cslet{SYS_extracol_\SYS_eqnumber}\SYS_rightmember
+		\SYS_extracoltrue
+		}%
+		{\def\SYS_leftmember{#1}%
+		}%
+	\xs_exparg\SYS_splitinmembers{\SYS_leftmember}% trouver les membres de gauche et droite et le signe qui les sépare
+	\xs_ifx{\SYS_currenteqsign\empty}
+		{}%
+		{\SYS_cslet{SYS_eqsign_\SYS_eqnumber}\SYS_currenteqsign}% stocker ce signe s'il existe
+	\IfBeginWith\SYS_leftmember\space
+		{\StrGobbleLeft\SYS_leftmember1[\SYS_leftmember]}
+		{}% pas d'espace pour commencer le membre de gauche
+	\IfBeginWith\SYS_leftmember+% amputer le membre de gauche du premier signe et le stocker temporairement s'il existe et sinon...
+		{\StrSplit\SYS_leftmember1\SYS_currentsign\SYS_leftmember
+		}%
+		{\IfBeginWith\SYS_leftmember-%
+			{\StrSplit\SYS_leftmember1\SYS_currentsign\SYS_leftmember}%
+			{\def\SYS_currentsign{+}}% ce signe est "+"
+		}%
+	\SYS_spliteqinterms_i1%
+	\SYS_cslet{SYS_right_\SYS_eqnumber}\SYS_rightmember
+}
+
+\def\SYS_spliteqinterms_i#1{%
+	\StrPosition\SYS_leftmember+[\SYS_posplus]%
+	\StrPosition\SYS_leftmember-[\SYS_posminus]%
+	\xs_ifnum{\numexpr\SYS_posplus+\SYS_posminus=0 }% il n'y a ni "+" ni "-"
+		{\let\SYS_currentterm\SYS_leftmember% prendre tout ce qui reste
+		\SYS_assignterm% et assigner ce dernier terme avec le dernier signe trouvé
+		}
+		{\edef\SYS_nextsign{\ifnum\SYS_posplus=0 -\else\ifnum\SYS_posminus=0 +\else\ifnum\SYS_posplus<\SYS_posminus+\else-\fi\fi\fi}% décider de ce qu'est le prochain signe
+		\StrBefore\SYS_leftmember\SYS_nextsign[\SYS_currentterm]% prendre ce qu'il y a avant
+		\StrBehind\SYS_leftmember\SYS_nextsign[\SYS_leftmember]% et stocker ce qu'il y a ensuite pour après
+		\SYS_assignterm% assigner ce qu'il y a avant avec le dernier signe trouvé
+		\let\SYS_currentsign\SYS_nextsign% on continue, le prochain signe devient le signe courant
+		\xs_exparg\SYS_spliteqinterms_i{\number\numexpr#1+1}%
+		}%
+}
+
+\def\SYS_assignterm{%
+	\xs_exparg\SYS_findletter{\SYS_currentterm}% trouver le nom de la variable
+	\xs_ifx{\SYS_letterfound\empty}
+		{\SYS_consttermtrue
+		\ifcsname SYS_term_const_\SYS_eqnumber\endcsname% si terme constant déjà rencontré, l'ajouter à celui qui existe
+			\xs_eaddtomacro\SYS_currentsign\SYS_currentterm
+			\expandafter\xs_eaddtomacro\csname SYS_term_const_\SYS_eqnumber\endcsname{\SYS_currentsign}%
+		\else
+			\SYS_cslet{SYS_sign_const_\SYS_eqnumber}\SYS_currentsign% sinon procéder aux assignations
+			\SYS_cslet{SYS_term_const_\SYS_eqnumber}\SYS_currentterm
+		\fi
+		}
+		{\ifcsname SYS_term_\detokenize\expandafter{\SYS_letterfound}_\SYS_eqnumber\endcsname
+			\errmessage{Package systeme Error: l'inconnue "\detokenize\expandafter{\SYS_letterfound}" a deja ete trouvee dans l'équation !}%
+		\fi
+		\ifSYS_sortvariable
+			\SYS_insletter\SYS_letterfound% l'insérer si besoin dans la liste ordonnée des variables
+		\fi
+		\SYS_cslet{SYS_sign_\detokenize\expandafter{\SYS_letterfound}_\SYS_eqnumber}\SYS_currentsign% procéder aux assignations
+		\SYS_cslet{SYS_term_\detokenize\expandafter{\SYS_letterfound}_\SYS_eqnumber}\SYS_currentterm
+		}%
+}
+
+% cherche la première lettre minuscule dans #1
+\def\SYS_findletter#1{%
+	\saveexploremode\exploregroups
+	\StrRemoveBraces{#1}[\SYS_currentfindletter]%
+	\let\SYS_letterfound\empty
+	\SYS_findletter_i
+	\restoreexploremode
+}
+
+\def\SYS_findletter_i{%
+	\StrSplit\SYS_currentfindletter1\SYS_currentchar\SYS_currentfindletter
+	\ifSYS_sortvariable% si le tri auto est activé
+		\ifcat\relax\expandafter\noexpand\SYS_currentchar
+			\let\SYS_nextaction\xs_execsecond% faux si c'est une sc
+		\else
+			\xs_ifnum{\expandafter`\SYS_currentchar<`a }
+				{\let\SYS_nextaction\xs_execsecond% pas une lettre minuscule
+				}
+				{\xs_ifnum{\expandafter`\SYS_currentchar>`z }
+					{\let\SYS_nextaction\xs_execsecond% pas une lettre minuscule
+					}
+					{\SYS_testsubscript% tester s'il y a un indice
+					\let\SYS_nextaction\xs_execfirst
+					}%
+				}%
+		\fi
+	\else
+		\noexploregroups
+		\IfSubStr\SYS_letterlist\SYS_currentchar% ce qui est trouvé est dans la liste ?
+			{\SYS_testsubscript% tester s'il y a un indice après le caractère courant
+			\let\SYS_nextaction\xs_execfirst
+			}%
+			{\let\SYS_nextaction\xs_execsecond
+			}%
+		\exploregroups
+	\fi
+	\SYS_nextaction
+		{\let\SYS_letterfound\SYS_currentchar
+		\IfSubStr\SYS_letterfound\SYSunder\relax{\xs_eaddtomacro\SYS_letterfound{\SYSunder{-1}}}%
+		}%
+		{\xs_ifx{\SYS_currentfindletter\empty}{}{\SYS_findletter_i}%
+		}%
+}
+
+% teste si \SYS_currentfindletter commence par "_" et si oui, rajoute les 2 caractères à \SYS_currentchar et les enlève à \SYS_currentfindletter
+\def\SYS_testsubscript{%
+	\noexploregroups
+	\IfBeginWith\SYS_currentfindletter\SYSunder
+		{\StrGobbleLeft\SYS_currentfindletter1[\SYS_currentletterafter]%
+		\exploregroups
+		\StrRemoveBraces\SYS_currentletterafter[\SYS_currentletterafter]%
+		\IfInteger\SYS_currentletterafter
+			{\xs_ifnum{\SYS_currentletterafter=-1 }
+				{\errmessage{L'indice ne doit pas etre -1.}}
+				{}%
+			}%
+			{\errmessage{L'indice n'est pas un nombre entier !}%
+			}%
+		\xs_eeaddtomacro\SYS_currentchar{\expandafter\SYSunder\expandafter{\number\SYS_currentletterafter}}% Bug 0.31 -> corrigé 0.32: si espace après l'inbdice : supprimé
+		}
+		{}%
+	\exploregroups
+}
+
+% insère l'inconnue dans la sc #1 à sa place dans \SYS_letterlist
+\def\SYS_insletter#1{%
+	\IfSubStr\SYS_letterlist{#1}%
+		{}
+		{\let\SYS_insunknown#1%
+		\StrChar{#1}3[\SYS_insnum]%
+		\StrRemoveBraces\SYS_insnum[\SYS_insnum]%
+		\StrChar{#1}1[\SYS_currentinsletter]%
+		\let\SYS_letterlist_left\empty
+		\let\SYS_letterlist_right\SYS_letterlist
+		\SYS_insletter_i
+		}%
+}
+
+\def\SYS_insletter_i{%
+	\xs_ifx{\SYS_letterlist_right\empty}% l'inconnue viendra à la fin de \SYS_letterlist
+		{\xs_eaddtomacro\SYS_letterlist_left\SYS_insunknown
+		\let\SYS_letterlist\SYS_letterlist_left
+		}
+		{\StrChar\SYS_letterlist_right1[\SYS_currentletter]% la lettre suivante
+		\xs_ifnum{\expandafter`\SYS_currentinsletter>\expandafter`\SYS_currentletter\relax}% lettre pas bonne ?
+			{\StrSplit\SYS_letterlist_right3\SYS_currentletter\SYS_letterlist_right
+			\xs_eaddtomacro\SYS_letterlist_left\SYS_currentletter
+			\SYS_insletter_i
+			}% sinon
+			{\let\SYS_letterlist_right_right\SYS_letterlist_right
+			\let\SYS_letterlist_right_left\empty
+			\SYS_insletter_ii%
+			}%
+		}%
+}
+
+\def\SYS_insletter_ii{%
+	\xs_ifx{\SYS_letterlist_right_right\empty}
+		{\let\SYS_letterlist\SYS_letterlist_left
+		\xs_eaddtomacro\SYS_letterlist\SYS_letterlist_right_left
+		\xs_eaddtomacro\SYS_letterlist\SYS_insunknown
+		}
+		{\StrChar\SYS_letterlist_right_right1[\SYS_currentletter]% la lettre suivante
+		\xs_ifnum{\expandafter`\SYS_currentinsletter<\expandafter`\SYS_currentletter\relax}% est elle une autre ?
+			{\let\SYS_letterlist\SYS_letterlist_left
+			\xs_eaddtomacro\SYS_letterlist\SYS_letterlist_right_left
+			\xs_eaddtomacro\SYS_letterlist\SYS_insunknown
+			\xs_eaddtomacro\SYS_letterlist\SYS_letterlist_right_right
+			}
+			{\StrChar\SYS_letterlist_right_right3[\SYS_currentsubscript]% le prochain indice
+			\StrRemoveBraces\SYS_currentsubscript[\SYS_currentsubscript]%
+			\xs_ifnum{\SYS_insnum>\SYS_currentsubscript\relax}% est-il le bon, c'est-à-dire trop grand ?
+				{\StrSplit\SYS_letterlist_right_right3\SYS_currentletter\SYS_letterlist_right_right
+				\xs_eaddtomacro\SYS_letterlist_right_left\SYS_currentletter
+				\SYS_insletter_ii
+				}
+				{\let\SYS_letterlist\SYS_letterlist_left
+				\xs_eaddtomacro\SYS_letterlist\SYS_letterlist_right_left
+				\xs_eaddtomacro\SYS_letterlist\SYS_insunknown
+				\xs_eaddtomacro\SYS_letterlist\SYS_letterlist_right_right
+				}%
+			}%
+		}%
+}
+
+% reconstruit le code du tableau qui sera dans le \halign
+\def\SYS_buildsystem#1#2{% #1=no ligne, #2=no inconnue
+	\StrSplit\SYS_letterlist_tmp3\SYS_currentvariable\SYS_letterlist_tmp
+	\ifcsname SYS_sign_\detokenize\expandafter{\SYS_currentvariable}_#1\endcsname
+		\xs_eearg\xs_ifx{\csname SYS_sign_\detokenize\expandafter{\SYS_currentvariable}_#1\endcsname+}% signe + ?
+			{\xs_ifnum{#2=1 }% première variable ?
+				{\xs_gobarg
+				}
+				{\ifSYS_firstterm% premier terme de l'équation ?'
+					\expandafter\xs_gobarg
+				\else
+					\expandafter\SYS_execarg
+				\fi
+				}%
+			}
+			{\xs_ifnum{#2=1 }
+				{\expandafter\def\csname SYS_term_\detokenize\expandafter{\SYS_currentvariable}_#1\expandafter\expandafter\expandafter\endcsname
+					\expandafter\expandafter\expandafter{%
+					\csname SYS_sign_\detokenize\expandafter{\SYS_currentvariable}_#1\expandafter\expandafter\expandafter\endcsname
+					\csname SYS_term_\detokenize\expandafter{\SYS_currentvariable}_#1\endcsname}%
+				\xs_gobarg
+				}
+				{\SYS_execarg
+				}%
+			}%
+			{%
+			\SYS_addtotab{{}}%
+			\xs_eearg\SYS_addtotab{\csname SYS_sign_\detokenize\expandafter{\SYS_currentvariable}_#1\endcsname{}}%
+			}%
+		\SYS_firsttermfalse
+	\fi
+	\unless\ifSYS_star
+		\xs_ifnum{#2=1 }
+			{}
+			{\SYS_addtotab&}%
+	\fi
+	\ifcsname SYS_term_\detokenize\expandafter{\SYS_currentvariable}_#1\endcsname
+		\xs_eearg\SYS_addtotab{\csname SYS_term_\detokenize\expandafter{\SYS_currentvariable}_#1\endcsname}%
+	\fi
+	\unless\ifSYS_star
+		\SYS_addtotab&%
+	\fi
+	\xs_ifnum{#2<\SYS_numberofvariable\relax}
+		{\xs_exparg{\SYS_buildsystem{#1}}{\number\numexpr#2+1}%
+		}
+		{\ifSYS_constterm
+			\ifcsname SYS_sign_const_#1\endcsname% si le terme constant existe dans cette ligne
+				\SYS_addtotab{{}}%
+				\ifSYS_firstterm\else
+					\xs_eearg\SYS_addtotab{\csname SYS_sign_const_#1\endcsname}%
+				\fi
+				\SYS_addtotab{{}}%
+				\unless\ifSYS_star
+					\SYS_addtotab&% Bug 0.31 -> corrigé 0.32
+				\fi
+				\xs_eearg\SYS_addtotab{\csname SYS_term_const_#1\endcsname}%
+			\else
+				\unless\ifSYS_star
+					\SYS_addtotab&% Bug 0.31 -> corrigé 0.32
+				\fi
+			\fi
+			\SYS_addtotab&%
+		\fi
+		\ifcsname SYS_eqsign_#1\endcsname
+			\SYS_addtotab{{}}%
+			\xs_eearg\SYS_addtotab{\csname SYS_eqsign_#1\endcsname{}&}%
+			\xs_eearg\SYS_addtotab{\csname SYS_right_#1\endcsname}%
+		\else
+			\SYS_addtotab&%
+		\fi
+		\saveexploremode\exploregroups
+		\ifcsname SYS_extracol_#1\endcsname
+			\SYS_addtotab&%
+			\expandafter\IfSubStr\csname SYS_extracol_#1\endcsname{**}% le contenu de l'extra col contient-il "**" ?
+				{\SYS_letcs\SYS_autonumarg{SYS_extracol_#1}%
+				\StrSubstitute\SYS_autonumarg{**}{\number\numexpr\SYSeqnum+#1-\SYS_eqnumber}[\SYS_currentautonum]%
+				\SYS_cslet{SYS_extracol_#1}\SYS_currentautonum
+				\SYS_autonumtrue
+				}%
+				{\expandafter\IfSubStr\csname SYS_extracol_#1\endcsname*% le contenu de l'extra col contient-il "*" ?
+					{\SYS_letcs\SYS_autonumarg{SYS_extracol_#1}%
+					\StrSubstitute\SYS_autonumarg*{\noexpand#1}[\SYS_currentautonum]%
+					\SYS_cslet{SYS_extracol_#1}\SYS_currentautonum
+					\SYS_autonumtrue
+					}%
+					{\ifSYS_autonum
+						\IfSubStr\SYS_autonumarg{**}%
+							{\StrSubstitute\SYS_autonumarg{**}{\number\numexpr\SYSeqnum+#1-\SYS_eqnumber}[\SYS_currentautonum]}%
+							{\StrSubstitute\SYS_autonumarg*{\noexpand#1}[\SYS_currentautonum]}%
+						\xs_exparg\SYS_addtotab\SYS_currentautonum
+					\fi
+					}%
+				}%
+			\xs_eearg\SYS_addtotab{\csname SYS_extracol_#1\endcsname}%
+		\else% pas d'extra colonne pour cette ligne ?
+			\ifSYS_autonum% mais si il y un autonum
+				\SYS_addtotab&%
+				\IfSubStr\SYS_autonumarg{**}%
+					{\StrSubstitute\SYS_autonumarg{**}{\number\numexpr\SYSeqnum+#1-\SYS_eqnumber}[\SYS_currentautonum]}%
+					{\StrSubstitute\SYS_autonumarg*{\noexpand#1}[\SYS_currentautonum]}%
+				\xs_exparg\SYS_addtotab\SYS_currentautonum
+			\fi
+		\fi
+		\restoreexploremode
+		\xs_ifnum{#1<\SYS_eqnumber\relax}
+			{\SYS_addtotab\cr
+			\SYS_firsttermtrue
+			\let\SYS_letterlist_tmp\SYS_letterlist
+			\xs_exparg\SYS_buildsystem{\number\numexpr#1+1}{1}%
+			}% fin de l'alignement
+			{\SYS_addtotab{\SYS_strutdown\cr}%
+			}%
+		}%
+}
+
+% ajoute "_{-1}" à tous les tokens de #1 qui n'ont pas un indice
+\def\SYS_scanletterlist#1{%
+	\let\SYS_letterlist\empty
+	\def\SYS_lettersremaining{#1}%
+	\SYS_scanletterlist_i
+}
+
+\def\SYS_scanletterlist_i{%
+	\StrSplit\SYS_lettersremaining1\SYS_currentchar\SYS_lettersremaining
+	\xs_eaddtomacro\SYS_letterlist\SYS_currentchar
+	\IfBeginWith\SYS_lettersremaining\SYSunder
+		{\StrChar\SYS_lettersremaining2[\SYS_currentchar]%
+		\StrRemoveBraces\SYS_currentchar[\SYS_currentchar]%
+		\xs_eeaddtomacro\SYS_letterlist{\expandafter\SYSunder\expandafter{\SYS_currentchar}}%
+		\StrGobbleLeft\SYS_lettersremaining2[\SYS_lettersremaining]%
+		}%
+		{\xs_eaddtomacro\SYS_letterlist{\SYSunder{-1}}%
+		}%
+	\xs_ifx{\SYS_lettersremaining\empty}
+		{}
+		{\SYS_scanletterlist_i}%
+}
+
+\def\sysdelim#1#2{\def\SYS_delim_left{\left#1}\def\SYS_delim_right{\right#2}}
+\sysdelim\{.
+
+\def\systeme{\xs_ifstar{\SYS_startrue\SYS_systeme_i}{\SYS_starfalse\SYS_systeme_i}}
+
+\def\SYS_systeme_i{%
+	\relax\iffalse{\fi\ifnum0=`}\fi
+	\begingroup
+		\mathcode`\,="013B
+		\catcode`\^7
+		\catcode`\_8
+		\expandarg\noexploregroups
+		\setbox0 \hbox{$($}%
+		\edef\SYS_strutup  {\vrule depth0pt width0pt height\dimexpr\ht0 +\SYS_extrastrutdim\relax}%
+		\edef\SYS_strutdown{\vrule height0pt width0pt depth\dimexpr\dp0 +\SYS_extrastrutdim\relax}%
+		\SYS_cslet++\SYS_cslet--%
+		\xs_testopt\SYS_systeme_ii{}%
+}
+
+\def\SYS_systeme_ii[#1]{%
+		\xs_ifempty{#1}
+			{\let\SYS_letterlist\empty
+			\SYS_sortvariabletrue
+			}
+			{\SYS_scanletterlist{#1}% ajoute des _{-1} si besoin
+			\SYS_sortvariablefalse
+			}%
+		\SYS_consttermfalse
+		\xs_exparg{\xs_testopt\SYS_systeme_iii}{\SYS_defaulteqsep}%
+}
+
+\def\SYS_systeme_iii[#1]#2{%
+		\def\SYS_systeme_iv##1#1##2\_nil{%
+			\xs_ifempty{##1}
+				{\SYS_addtotab\cr}% on a une ligne vide
+				{\SYS_spliteqinterms{##1}}% analyser l'éq courante
+			\xs_ifempty{##2}% tant qu'il reste des équations
+				{}
+				{\edef\SYS_eqnumber{\number\numexpr\SYS_eqnumber+1}% augmenter de 1 leur nombre
+				\global\advance\SYSeqnum1
+				\SYS_systeme_iv##2\_nil% recommencer avec ce qu'il reste
+				}%
+		}%
+		\global\advance\SYSeqnum1
+		\def\SYS_eqnumber{1}%
+		\ifdefined\SYS_autonumarg
+			\xs_ifx{\SYS_autonumarg\empty}% on initialise que si \SYS_autonumarg est vide
+				{\SYS_extracolfalse
+				\SYS_autonumfalse
+				}
+				{}%
+		\else
+			\SYS_extracolfalse
+			\SYS_autonumfalse
+		\fi
+		\SYS_systeme_iv#2#1\_nil% analyser toutes les équations et en faire des termes et des signes
+		\StrCount\SYS_letterlist\SYSunder[\SYS_numberofvariable]%
+		\SYS_systemecode{}\SYS_systempreamble{}%
+		\xs_exparg\SYS_makesyspreamble{\number\ifSYS_star1\else\SYS_numberofvariable\fi\space}% fabriquer le préambule du \halign
+		\SYS_firsttermtrue
+		\let\SYS_letterlist_tmp\SYS_letterlist
+		\SYS_buildsystem11% construire le système...
+		\ifdefined\SYS_substlist
+			\xs_ifx{\SYS_substlist\empty}
+				{}
+				{\edef\SYS_systemcs{\the\SYS_systemecode}%
+				\SYS_substlist
+				\SYS_systemecode\expandafter{\SYS_systemcs}%
+				}%
+		\fi
+		\csname SYS_\ifmmode execarg\else entermath\fi\endcsname
+			{\SYS_delim_left
+			\vcenter{%
+				\lineskiplimit=0pt
+				\lineskip=0pt
+				\baselineskip\SYS_lineskipcoeff\normalbaselineskip
+				\halign\expandafter\expandafter\expandafter{\expandafter\the\expandafter\SYS_systempreamble\the\SYS_systemecode}%
+				}%
+			\SYS_delim_right
+			}% ...l'afficher en mode math
+	\endgroup
+	\ifnum0=`{\fi\iffalse}\fi
+	\unless\ifSYS_followautonum
+		\ifdefined\SYS_autonumarg
+			\let\SYS_autonumarg\empty% annule la numérotation auto
+		\fi
+	\fi
+}
+
+% Construire le préambule du \halign
+\def\SYS_makesyspreamble#1{%
+	\def\SYS_preamblenum{#1}%
+	\SYS_makesyspreamble_i1%
+}
+
+\def\SYS_makesyspreamble_i#1{%
+	\xs_ifnum{#1<\SYS_preamblenum\relax}% tant qu'il reste des variables
+		{\SYS_addtotok\SYS_systempreamble{\hfil$##$&\hfil$##$&}% une colonne pour le terme et une pour le signe
+		\xs_exparg\SYS_makesyspreamble_i{\number\numexpr#1+1}%
+		}
+		{\ifSYS_constterm
+			\SYS_addtotok\SYS_systempreamble{\hfil$##$&\hfil$##$&}% une colonne pour le terme constant et son signe
+		\fi
+		\SYS_addtotok\SYS_systempreamble{\hfil$##$&$##$&$##$\hfil\null}% ajouter 1 colonne pour le signe = et une pour le terme de droite
+		\ifSYS_extracol
+			\SYS_addtotok\SYS_systempreamble{&\SYS_extracolstart##\SYS_extracolend\hfil\null}% la colonne supplémentaire (pas de mode math)
+		\fi
+		\SYS_addtotok\SYS_systempreamble{\cr\SYS_strutup}% ajouter la fin du préambule et le strut de première ligne
+		}%
+}
+
+\def\SYS_entermath#1{$\relax#1$}
+
+% définit les substitutions à faire dans le tableau avant l'affichage
+\def\syssubstitute{%
+	\unless\ifdefined\SYS_substlist\let\SYS_substlist\empty\fi
+	\SYS_substitute_i
+}
+
+\def\SYS_substitute_i#1{%
+	\xs_ifempty{#1}
+		{}
+		{\xs_addtomacro\SYS_substlist{\StrSubstitute\SYS_systemcs}%
+		\StrChar{\noexpand#1}1[\SYS_currentchar]\StrRemoveBraces\SYS_currentchar[\SYS_currentchar]%
+		\xs_eaddtomacro\SYS_substlist{\expandafter{\expandafter\noexpand\SYS_currentchar}}%
+		\StrChar{\noexpand#1}2[\SYS_currentchar]\StrRemoveBraces\SYS_currentchar[\SYS_currentchar]%
+		\xs_eaddtomacro\SYS_substlist{\expandafter{\expandafter\noexpand\SYS_currentchar}[\SYS_systemcs]}%
+		\xs_exparg\SYS_substitute_i{\SYS_gobtwoargs#1}%
+		}%
+}
+
+% annule les substitutions
+\def\sysnosubstitute{\let\SYS_substlist\empty}
+
+\SYS_restorecatcode
+
+\endinput
+
+######################################################################
+#                             Historique                             #
+######################################################################
+
+v0.1        27/02/2011
+	- Première version publique sur le CTAN.
+----------------------------------------------------------------------
+v0.2        08/03/2011
+    - Le premier argument optionnel met en place de nouvelles
+      fonctionnalités.
+    - Possibilité d'avoir des inconnues indicées.
+    - Mise en place d'une colonne supplémentaire et d'une
+      numérotation automatique.
+    - La commande étoilée \systeme* dégrade l'alignement pour ne
+      plus prendre en compte que les signes d'égalité.
+    - Une substitution est possible en fin de traitement, juste
+      avant d'afficher le système.
+----------------------------------------------------------------------
+v0.2a       15/05/2011
+    - Bug corrigé lorsque les termes comportent des accolades.
+----------------------------------------------------------------------
+v0.2b       23/06/2011
+    - La commande \setdelim permet de modifier les délimiteurs
+      extensibles placés de part et d'autre du système.
+----------------------------------------------------------------------
+v0.3        21/12/2013
+    - Un terme constant est permis dans le membre de gauche.
+----------------------------------------------------------------------
+v0.31       01/01/2018
+    - Il manquait un "&" après le terme constant, merci à Thomas Soll
+      de l'avoir signalé.
+----------------------------------------------------------------------
+v0.32       13/01/2019
+    - Correction d'un bug : les espaces étaient pris en compte dans
+      les noms des termes.
+    - Correction d'un bug : si version étoilée et terme constant dans
+      membre de gauche, défaut d'alignement.
+    - Nettoyage du code.

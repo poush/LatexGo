@@ -1,0 +1,420 @@
+%%^^A%% um-code-epilogue.dtx -- part of UNICODE-MATH <wspr.io/unicode-math>
+%%^^A%% Assorted definitions to close up.
+
+% \section{Epilogue}
+%
+%    \begin{macrocode}
+%<*package>
+%    \end{macrocode}
+%
+% Lots of little things to tidy up.
+%
+% \subsection{Resolving Greek symbol name control sequences}
+%
+% \begin{macro}{\@@_resolve_greek:}
+% This macro defines \cmd\Alpha\dots\cmd\omega\ as their corresponding
+% Unicode (mathematical italic) character. Remember that the mapping
+% to upright or italic happens with the mathcode definitions, whereas these macros
+% just stand for the literal Unicode characters.
+%    \begin{macrocode}
+\AtBeginDocument { \debug_suspend: \@@_resolve_greek: \debug_resume: }
+%    \end{macrocode}
+%    \begin{macrocode}
+\cs_new:Npn \@@_resolve_greek:
+  {
+    \clist_map_inline:nn
+      {
+        Alpha,Beta,Gamma,Delta,Epsilon,Zeta,Eta,Theta,Iota,Kappa,Lambda,
+        alpha,beta,gamma,delta,epsilon,zeta,eta,theta,iota,kappa,lambda,
+        Mu,Nu,Xi,Omicron,Pi,Rho,Sigma,Tau,Upsilon,Phi,Chi,Psi,Omega,
+        mu,nu,xi,omicron,pi,rho,sigma,tau,upsilon,phi,chi,psi,omega,
+        varTheta,varsigma,vartheta,varkappa,varrho,varpi,varepsilon,varphi
+      }
+      {
+        \tl_set:cx {##1} { \exp_not:c { mit ##1 } }
+        \tl_set:cx {up ##1} { \exp_not:N \symup \exp_not:c { ##1 } }
+        \tl_set:cx {it ##1} { \exp_not:N \symit \exp_not:c { ##1 } }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%
+%
+% \subsection{Unicode radicals}
+%
+% Make sure \cs{Uroot} is defined in the case where the \LaTeX{}
+% kernel doesn't make it available with its native name.
+%
+% \begin{macro}{\@@_redefine_radical:}
+%    \begin{macrocode}
+\AtBeginDocument{ \@ifpackageloaded { amsmath } { } { \@@_redefine_radical: } }
+%    \end{macrocode}
+%
+% \begin{macro}{\r@@t}
+% \darg{A mathstyle (for \cmd\mathpalette)}
+% \darg{Leading superscript for the sqrt sign}
+% A re-implementation of \LaTeX's hard-coded n-root sign using the appropriate \cmd\fontdimen s.
+%    \begin{macrocode}
+%<*XE>
+\cs_new:Nn \@@_redefine_radical:
+  {
+    \cs_set_nopar:Npn \r@@@@t ##1 ##2
+      {
+        \hbox_set:Nn \l_tmpa_box
+          {
+            \c_math_toggle_token \m@th
+            ##1 \sqrtsign { ##2 }
+            \c_math_toggle_token
+          }
+        \@@_mathstyle_scale:NnnN ##1 { \kern } { \fontdimen 63 \g_@@_sqrt_font_cmd_tl } \g_@@_sqrt_font_cmd_tl
+        \box_move_up:nn
+          {
+            (\box_ht:N \l_tmpa_box - \box_dp:N \l_tmpa_box) * \number \fontdimen 65 \g_@@_sqrt_font_cmd_tl / 100
+          }
+          { \box_use:N \rootbox }
+        \@@_mathstyle_scale:NnnN ##1 { \kern } { \fontdimen 64 \g_@@_sqrt_font_cmd_tl } \g_@@_sqrt_font_cmd_tl
+        \box_use_drop:N \l_tmpa_box
+      }
+  }
+%</XE>
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\root}
+% Redefine this macro for \LuaTeX, which provides us a nice primitive to use.
+%    \begin{macrocode}
+%<*LU>
+\cs_new:Nn \@@_redefine_radical:
+  {
+    \cs_set:Npn \root ##1 \of ##2
+      {
+        \Uroot \c_@@_radical_sqrt_tl { ##1 } { ##2 }
+      }
+  }
+%</LU>
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+%
+% \subsubsection{Active fractions}
+%
+% Active fractions can be set up independently of any maths font definition;
+% all it requires is a mapping from the Unicode input chars to the relevant
+% \LaTeX\ fraction declaration.
+%
+%    \begin{macrocode}
+\cs_new:Nn \@@_which_frac:nn
+  {
+    \bool_if:NTF \l_@@_smallfrac_bool {\tfrac} {\frac} {#1} {#2}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_new:Npn \@@_setup_active_frac:
+  {
+    \@@_mathactive_remap:nn {"2189}  { \@@_which_frac:nn {0} {3}  }
+    \@@_mathactive_remap:nn {"2152}  { \@@_which_frac:nn {1} {10} }
+    \@@_mathactive_remap:nn {"2151}  { \@@_which_frac:nn {1} {9}  }
+    \@@_mathactive_remap:nn {"215B}  { \@@_which_frac:nn {1} {8}  }
+    \@@_mathactive_remap:nn {"2150}  { \@@_which_frac:nn {1} {7}  }
+    \@@_mathactive_remap:nn {"2159}  { \@@_which_frac:nn {1} {6}  }
+    \@@_mathactive_remap:nn {"2155}  { \@@_which_frac:nn {1} {5}  }
+    \@@_mathactive_remap:nn {"00BC}  { \@@_which_frac:nn {1} {4}  }
+    \@@_mathactive_remap:nn {"2153}  { \@@_which_frac:nn {1} {3}  }
+    \@@_mathactive_remap:nn {"215C}  { \@@_which_frac:nn {3} {8}  }
+    \@@_mathactive_remap:nn {"2156}  { \@@_which_frac:nn {2} {5}  }
+    \@@_mathactive_remap:nn {"00BD}  { \@@_which_frac:nn {1} {2}  }
+    \@@_mathactive_remap:nn {"2157}  { \@@_which_frac:nn {3} {5}  }
+    \@@_mathactive_remap:nn {"215D}  { \@@_which_frac:nn {5} {8}  }
+    \@@_mathactive_remap:nn {"2154}  { \@@_which_frac:nn {2} {3}  }
+    \@@_mathactive_remap:nn {"00BE}  { \@@_which_frac:nn {3} {4}  }
+    \@@_mathactive_remap:nn {"2158}  { \@@_which_frac:nn {4} {5}  }
+    \@@_mathactive_remap:nn {"215A}  { \@@_which_frac:nn {5} {6}  }
+    \@@_mathactive_remap:nn {"215E}  { \@@_which_frac:nn {7} {8}  }
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\AtBeginDocument { \@@_setup_active_frac: }
+%    \end{macrocode}
+%
+%
+% \subsection{Synonyms and all the rest}
+%
+% These are symbols with multiple names. Eventually to be taken care of
+% automatically by the maths characters database.
+%    \begin{macrocode}
+\protected\def\to{\rightarrow}
+\protected\def\le{\leq}
+\protected\def\ge{\geq}
+\protected\def\neq{\ne}
+\protected\def\triangle{\mathord{\bigtriangleup}}
+\protected\def\bigcirc{\mdlgwhtcircle}
+\protected\def\circ{\vysmwhtcircle}
+\protected\def\bullet{\smblkcircle}
+\protected\def\mathyen{\yen}
+\protected\def\mathsterling{\sterling}
+\protected\def\diamond{\smwhtdiamond}
+\protected\def\emptyset{\varnothing}
+\protected\def\hbar{\hslash}
+\protected\def\land{\wedge}
+\protected\def\lor{\vee}
+\protected\def\owns{\ni}
+\protected\def\gets{\leftarrow}
+\protected\def\mathring{\ocirc}
+\protected\def\lnot{\neg}
+\protected\def\longdivision{\longdivisionsign}
+%    \end{macrocode}
+% These are somewhat odd: (and their usual Unicode uprightness does not match their amssymb glyphs)
+%    \begin{macrocode}
+\protected\def\backepsilon{\upbackepsilon}
+\protected\def\eth{\matheth}
+%    \end{macrocode}
+% These are names that are `frozen' in HTML but have dumb names:
+%    \begin{macrocode}
+\protected\def\dbkarow {\dbkarrow}
+\protected\def\drbkarow{\drbkarrow}
+\protected\def\hksearow{\hksearrow}
+\protected\def\hkswarow{\hkswarrow}
+%    \end{macrocode}
+%
+% Due to the magic of OpenType math, big operators are automatically
+% enlarged when necessary. Since there isn't a separate unicode glyph for
+% `small integral', I'm not sure if there is a better way to do this:
+%    \begin{macrocode}
+\protected\def\smallint{\mathop{\textstyle\int}\limits}
+%    \end{macrocode}
+%
+% \begin{macro}{\underbar}
+%    \begin{macrocode}
+\cs_set_eq:NN \latexe_underbar:n \underbar
+\renewcommand\underbar
+  {
+    \mode_if_math:TF \mathunderbar \latexe_underbar:n
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\colon}
+% Define \cs{colon} as a mathpunct `|:|'.
+% This is wrong: it should be \unichar{003A} {colon} instead!
+% We hope no-one will notice.
+%    \begin{macrocode}
+\@ifpackageloaded{amsmath}
+  {
+    % define their own colon, perhaps I should just steal it. (It does look much better.)
+  }
+  {
+    \cs_set_protected:Npn \colon
+      {
+        \bool_if:NTF \g_@@_literal_colon_bool {:} { \mathpunct{:} }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\digamma}
+% \begin{macro}{\Digamma}
+% I might end up just changing these in the table.
+%    \begin{macrocode}
+\protected\def\digamma{\updigamma}
+\protected\def\Digamma{\upDigamma}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \paragraph{Symbols}
+%
+%    \begin{macrocode}
+\cs_set_protected:Npn \| {\Vert}
+%    \end{macrocode}
+%
+% \cs{mathinner} items:
+%    \begin{macrocode}
+\cs_set_protected:Npn \mathellipsis {\mathinner{\unicodeellipsis}}
+\cs_set_protected:Npn \cdots {\mathinner{\unicodecdots}}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_set_eq:NN \@@_text_slash: \slash
+\cs_set_protected:Npn \slash
+  {
+    \mode_if_math:TF {\mathslash} {\@@_text_slash:}
+  }
+%    \end{macrocode}
+%
+%
+% \subsubsection{\cs{not}}
+% \label{sec:negations}
+%
+% The situation of \cs{not} symbol is currently messy, in Unicode it is defined
+% as a combining mark so naturally it should be treated as a math accent,
+% however \XeTeX\ does not correctly place it as it needs special
+% treatment compared to other accents.
+% Furthermore a math accent changes the
+% spacing of its nucleus, so \cs{not=} will be spaced as an ordinary not
+% relational symbol, which is undesired.
+%
+% Here modify \cs{not} to a macro that tries to use predefined negated symbols,
+% which would give better results in most cases, until there is more robust
+% solution in the engines.
+%
+% This code is based on an answer to a TeX -- Stack Exchange question by Enrico
+% Gregorio\footnote{\url{http://tex.stackexchange.com/a/47260/729}}.
+%
+% \begin{macro}{\not}
+%    \begin{macrocode}
+\DeclareDocumentCommand \not {m}
+  {
+    \tl_set:Nx \l_@@_not_token_name_tl { \cs_to_str:N #1 }
+    \tl_if_empty:NT \l_@@_not_token_name_tl
+      {
+        \tl_set:Nx \l_@@_not_token_name_tl { \token_to_str:N #1 }
+      }
+    \cs_if_exist:cTF { not \l_@@_not_token_name_tl }
+      {
+        \use:c { not \l_@@_not_token_name_tl }
+      }
+      {
+        \cs_if_exist:cTF { n \l_@@_not_token_name_tl }
+          {
+            \use:c { n \l_@@_not_token_name_tl }
+          }
+          {
+            \tl_if_eq:nnTF {#1} {$} { \notaccent{} } { \notaccent } #1
+          }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\NewNegationCommand}
+% \begin{macro}{\RenewNegationCommand}
+%    \begin{macrocode}
+\DeclareDocumentCommand \NewNegationCommand {mm}
+  {
+    \@@_set_negation_command:Nnn \cs_new_protected:cpn {#1} {#2}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\DeclareDocumentCommand \RenewNegationCommand {mm}
+  {
+    \@@_set_negation_command:Nnn \cs_set_protected:cpn {#1} {#2}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\cs_set:Nn \@@_set_negation_command:Nnn
+  {
+    \tl_set:Nx \l_@@_not_token_name_tl { \cs_to_str:N #2 }
+    \tl_if_empty:NT \l_@@_not_token_name_tl
+      {
+        \tl_set:Nx \l_@@_not_token_name_tl { \token_to_str:N #2 }
+      }
+    #1 { not \l_@@_not_token_name_tl } { #3 }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+%    \begin{macrocode}
+\NewNegationCommand { = }    { \neq   }
+\NewNegationCommand { < }    { \nless }
+\NewNegationCommand { > }    { \ngtr  }
+\NewNegationCommand { \gets     } { \nleftarrow }
+\NewNegationCommand { \simeq    } { \nsime      }
+\NewNegationCommand { \equal    } { \ne         }
+\NewNegationCommand { \le       } { \nleq       }
+\NewNegationCommand { \ge       } { \ngeq       }
+\NewNegationCommand { \greater  } { \ngtr       }
+\NewNegationCommand { \forksnot } { \forks      }
+%    \end{macrocode}
+%
+%
+% \subsubsection{Full-width remapping}
+%
+% While this could be done with the full mathcode remapping machinery used
+% for the other purposes, it would be fairly redundant with plain ASCII.
+% Worse, this would slow down what is already an inefficient part of \pkg{unicode-math}.
+%
+% Instead we use mathactive to do a plain old mapping from full-width to ASCII directly.
+%
+% Until I get requests for it, I've not included symbols or punctuation here.
+%
+% \paragraph{Numbers}
+%
+%    \begin{macrocode}
+\int_step_inline:nnnn {0} {1} {9}
+  {
+    \@@_mathactive_remap:nn {"FF10+#1} {\char\int_eval:n{`\0+#1}}
+  }
+%    \end{macrocode}
+%
+% \paragraph{Letters}
+%
+%    \begin{macrocode}
+\int_step_inline:nnnn {0} {1} {26}
+  {
+    \@@_mathactive_remap:nn {"FF21+#1} {\char\int_eval:n{`\A+#1}}
+    \@@_mathactive_remap:nn {"FF41+#1} {\char\int_eval:n{`\a+#1}}
+  }
+%    \end{macrocode}
+%
+%
+% \subsection{Legacy characters}
+%
+% \begin{macro}{\@@_undeclare_symbol:N}
+%    \begin{macrocode}
+\cs_new:Nn \@@_undeclare_symbol:N
+  {
+    \cs_set_protected:Npn #1
+      { \@@_error:nx {legacy-char-not-supported} { \token_to_str:N #1 } }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% If you have better ideas about what to do here, please mention.
+%    \begin{macrocode}
+\@@_undeclare_symbol:N \arrowvert
+\@@_undeclare_symbol:N \Arrowvert
+\@@_undeclare_symbol:N \bracevert
+%    \end{macrocode}
+%
+% \section{A secret hook}
+% This will be executed after most if not all of the standard unicode-math setup.
+%    \begin{macrocode}
+\AtBeginDocument{\g_@@_secret_hook_tl}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%</package>
+%    \end{macrocode}
+%
+% \section*{Fin}
+%
+% The official end of the package:
+%    \begin{macrocode}
+%<package>\endinput
+%    \end{macrocode}
+
+\endinput
+
+% /©
+%
+% ------------------------------------------------
+% The UNICODE-MATH package  <wspr.io/unicode-math>
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% Copyright 2006-2019  Will Robertson, LPPL "maintainer"
+% Copyright 2010-2017  Philipp Stephani
+% Copyright 2011-2017  Joseph Wright
+% Copyright 2012-2015  Khaled Hosny
+% ------------------------------------------------
+%
+% ©/

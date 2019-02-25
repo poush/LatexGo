@@ -1,0 +1,297 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% present.tex
+% Some macros for preparing presentations in TeX, using pdftex
+% Version 2.2.1
+% Copyright 2010-2019 Matthias Meister
+%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+%
+% This work has the LPPL maintenance status 'maintained'.
+% 
+% The Current Maintainer of this work is:
+%
+%	Matthias Meister (tex@flamma-mentis.eu)
+%
+% The work consists of the following files:
+%	present.tex		(the macro collection)
+%	present-transitions.tex (additional macros, providing transition effects)
+%	HowToTalkTeX.tex 	(an example of present.tex in use and a documentation)
+% 	HowToTalkTeX.pdf	(pdf obtained from HowToTalkTex.tex with pdftex) 
+%	Stern.png		(auxiliary file)
+%	Sagnac.pdf		(auxiliary file)
+%	Pfeil1.pdf		(auxiliary file)
+%	Pfeil2.pdf		(auxiliary file)
+%	Pfeil3.pdf		(auxiliary file)
+%	Pfeil4.pdf		(auxiliary file)
+%	background.png		(auxiliary file)
+% 
+%	(The auxiliary files are used in present.tex and HowToTalkTeX.tex, and 
+%	 therefore should remain unchanged, too)
+%	
+% With reference to the definitions in the LaTeX Project Public License, for the
+% purposes of this work a 'Base Interpreter' is a program implementing the TeX 
+% language.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\catcode`\@=11
+			
+
+\parindent0pt		% Indentation probably not good for presentation
+\parskip0pt		% Neither is automatic extra space between paragraphs
+
+\def\StandardAspect{%   % Define "slide format", basically determined
+\pdfpagewidth=120mm	% by aspect ratio of screen
+\pdfpageheight=90mm	% StandardAspect gives 4:3 aspect ratio
+\vsize=67mm		%
+\hsize=110mm		% If you change these values, 
+\hoffset=-20.4mm	% do so with care.
+\voffset=-12.4mm	%
+}
+
+\def\WideAspect{%	% WideAspect gives 144:90 aspect ratio
+\pdfpagewidth=144mm	%
+\pdfpageheight=90mm	%
+\vsize=67mm		% If you change these values,
+\hsize=134mm		% do so with care
+\hoffset=-20.4mm	%	
+\voffset=-12.4mm	%
+}
+
+
+%
+% Set some fonts
+%
+\font\titlefont=cmssbx10 at 20pt % Define fonts for title of presentation 
+\font\normalfont=cmss12		 % ordinary text	
+\font\slidetitlefont=cmssbx10    % title of a slide
+\font\linkbarfont=cmss8		 % the LinkBar (see below)
+\font\it=cmti12
+%
+\baselineskip=15pt
+%			%% Below fonts for math are adapted to 12pt size
+\font\tfont=cmr12
+\font\sfont=cmr9
+\font\ssfont=cmr7
+\font\tifont=cmmi12
+\font\sifont=cmmi9
+\font\ssifont=cmmi7
+\font\tsyfont=cmsy10 at 12pt
+\font\ssyfont=cmsy9
+\font\sssyfont=cmsy7
+\font\texfont=cmex10 at 12 pt
+\font\sexfont=cmex9
+\font\ssexfont=cmex7
+%
+\textfont0=\tfont
+\scriptfont0=\sfont
+\scriptscriptfont0=\ssfont
+\textfont1=\tifont
+\scriptfont1=\sifont
+\scriptscriptfont1=\ssifont
+\textfont2=\tsyfont
+\scriptfont2=\ssyfont
+\scriptscriptfont2=\sssyfont
+\textfont3=\texfont
+\scriptfont3=\sexfont
+\scriptscriptfont3=\ssexfont
+%
+
+%
+% Definitions to allow referencing the last page of a document
+%
+\newwrite\wl@stpage
+\newread\rl@stpage
+\def\bye{%
+\immediate\openout\wl@stpage=\jobname.lp%  The number of the last slide is written in a file
+\write\wl@stpage{\the\pageno}%          %   with extension .lp
+\closeout\wl@stpage
+\par\vfill
+\supereject
+\end
+}
+\def\LP{undef} 
+\openin\rl@stpage=\jobname.lp
+\ifeof\rl@stpage\closein\rl@stpage\message{RUN AGAIN to get correct number of last page!}
+\else\read\rl@stpage to \LP\fi
+
+%
+% Define some colours
+%
+% The commands below handle colour without color.tex, directly with pdftex
+% Added October 3rd, 2010
+
+% Define colours
+\def\backgroundcolour{1.0 1.0 1.0}    % Colour of page background
+\def\textcolour{0.0 0.0 1.0}   	      % Colour of text
+\def\attentioncolour{1 0 0}	      % Colour for "Attention"
+
+\newdimen\vsh@ft % vertical shift for background image, vsh@ft+\voffset=-25.4mm 
+\newdimen\hsh@ft % horizontal shift for background image, hsh@ft+\hoffset=-25.4mm
+\vsh@ft=-13mm
+\hsh@ft=-5mm
+
+\def\bl@nk{ }  % Introduced this
+\newcount\colst@ck
+\colst@ck=\pdfcolorstackinit page {\textcolour\bl@nk rg \textcolour\bl@nk RG} % and modified this on March 20, 2012
+\def\popst@ck{\pdfcolorstack\colst@ck pop}
+\def\setcolour#1{\pdfcolorstack\colst@ck push {#1 rg #1 RG}\aftergroup\popst@ck}
+\long\def\coloured#1#2{{\setcolour#1#2}}
+\long\def\att#1{\coloured\attentioncolour{#1}}
+\def\bgc@lset{\relax}
+\def\setbgcolour#1{\def\bgc@lset{\begingroup\pdfcolorstack\colst@ck push {#1 rg #1 RG}\aftergroup\popst@ck 
+\vbox to 0pt{\kern\vsh@ft\hbox to 0pt{%
+\kern\hsh@ft\vrule depth0pt height\pdfpageheight width\pdfpagewidth\hss}\vss}
+\nointerlineskip
+\endgroup}}
+
+
+\def\NewSlide{\vfill\eject}			 % Begin a new slide; slide number increases
+
+\def\NewFrame{\vfill\eject\advance\pageno by -1} % Begin new frame ("same" slide, with changes)
+						 % slide number does not change	
+
+\def\SlideTitle#1{%				 % Set the slide title, show it as the headline
+\global\headline{%				 % of the slide in slidetitlefont, with a 
+\vbox to 5mm{%			 		 % horizontal line separating the headline from
+\hbox to \hsize{\slidetitlefont #1}%		 % the main body of the slide
+\vskip3pt plus 1fil minus 1fil
+\hrule height 1pt depth 0pt
+}}}
+
+\def\SlideFoot{%				 % Set the footline of the slide, separated by 
+\global\footline{%				 % a horizontal slide from the main body of the
+\vbox to 5mm {%                    		 % slide. This macro takes no argument.
+\hrule height 1pt depth 0pt			 % Several possibilities are provided below.
+\vskip3pt plus 1fil minus 1fil			 % Only one of the following options should be
+\hbox to \hsize{%				 % uncommented.
+\rlap{\LinkBar}\phantom{\PageBar}\hfil{\normalfont\the\pageno/\LP}\hfil\PageBar%  Links to sections, 
+%										  %slide number, page navigation
+%\hfil\the\pageno/\LP\hfil% % Slide number; \LP is number of last slide
+%% 								     % empty
+}}}}
+
+\def\LinkBar{% 		% If you use LinkBar, you have to define it and possibly redefine
+LinkBar}		% it at several places in your talk. The definition given 
+			% just prints "LinkBar", in order to show where it goes. 
+
+\def\PageBar{%		% This provides page navigation: Next page, previous page,
+\hbox{%			% going back and forth in page history
+\pagelink{PrevPage}{\image[width4mm]{Pfeil2.pdf}}\kern2mm
+\pagelink{NextPage}{\image[width4mm]{Pfeil1.pdf}}\kern2mm
+\pagelink{GoBack}{\image[width4mm]{Pfeil3.pdf}}\kern2mm
+\pagelink{GoForward}{\image[width4mm]{Pfeil4.pdf}}
+}}
+
+%
+% Make #2 a link to the destination named #1 in the presentation.
+% A destination is created and named with the \target control word.
+%
+\def\link#1#2{%
+\pdfstartlink attr {/Border [0 0 0]} goto name {#1} 
+#2%
+\pdfendlink}
+
+%
+% Creates named destination at position where it is issued. #1 is name of destination.
+%
+\def\target#1{%
+\pdfdest name {#1} xyz\relax}
+
+%
+% Used in the PageBar. Uses the predefined actions PrevPage etc.
+%
+\def\pagelink#1#2{%
+\pdfstartlink     
+attr {/Border [0 0 0]} user {/Subtype /Link /A <</S /Named /N /#1>>}%
+#2%
+\pdfendlink}
+
+%
+% Sets a rectangular area of the screen to be a link to a destination.
+% #1 is the destination (in the same document); it can be a named or other destination 
+% #2 defines the rectangle which is the active link area, specified by 
+%    four space separated numbers corresponding to lower left and upper right corners 
+% #3 is the border width (in "default user-space units")
+% #4 is the RGB-color, specified as three space separated numbers R G B between 0 and 1 
+%
+\def\linkarea#1#2#3#4{%
+\pdfannot{%
+/Subtype /Link
+/Rect [#2]
+/Border [0 0 #3]
+/C [#4]
+/A << /S /GoTo /D (#1) >>}}
+
+%
+% Make #2 a link to the web destination #1
+%
+\def\weblink#1#2{%
+\pdfstartlink attr {/Border [0 0 0]} user {/Subtype /Link /A << /S /URI /URI (#1) >>}%
+#2\pdfendlink}
+
+%
+% Make #3 a link to destination #2 in file #1 (a pdf-file).  One of several possible forms of a destination 
+% is [page /Fit], where "page" is the page number in the file, counting from 0
+% Named destinations are also possible
+%
+\def\filelink#1#2#3{%
+\pdfstartlink attr {/Border [0 0 0]} user {/Subtype /Link /A << /S /GoToR /F (#1) /D #2 /NewWindow true >>}%
+#3\pdfendlink}
+
+%
+% Includes an image. The image file name is #2, and #1 is a specification of the dimension of the
+% image (will be scaled accordingly) in the usual TeX syntax (width, height, depth).
+%
+\def\image[#1]#2{%
+\pdfximage #1 {#2}\pdfrefximage\pdflastximage}
+
+%\def\movie#1#2#3{%
+%\pdfstartlink attr {/Border [0 0 0]} user {/Subtype /Link /A << /S /Launch /F (mplayer -noborder -ontop -geometry #2 #1) >>}%
+%#3\pdfendlink}
+
+\footline{}	% Set some
+\StandardAspect % default values
+
+%
+% Added 28. August 2010. Not part of version 1.0
+% 
+% Setting / unsetting a background image. If no background image is used, the background shows background colour 
+%
+\def\h@lpr{\relax}
+\def\BIM@G{\relax}
+\def\SetBackground#1{\def\BIM@G{#1}}
+\def\UnsetBackground{\def\BIM@G{\relax}}
+\output{%
+\shipout\vbox{%
+\bgc@lset
+\ifx\BIM@G\h@lpr \else
+{\vbox to 0pt{\kern\vsh@ft\hbox to 0pt{\kern\hsh@ft\image[width\pdfpagewidth height\pdfpageheight]{\BIM@G}\hss}\vss}%
+\nointerlineskip}\fi
+\makeheadline
+\pagebody
+\makefootline}
+\advancepageno
+\ifnum\outputpenalty>-20000\else\dosupereject\fi}
+
+\def\rm{\fam=0} %% Added 14. September 2010. Use roman font in math.
+
+%%%
+%%% Macros for incremental showing of slides (frames).
+%%% Added 29. March 2012
+%%%
+\newcount\ind@x
+\newcount\m@xind
+\long\def\Frames#1#2{\m@xind=#1\long\def\Fr@mes{#2}}
+\def\endFrames{\ind@x=0%
+\loop\advance\ind@x by 1\begingroup\Fr@mes\endgroup\ifnum\ind@x<\m@xind\NewFrame\repeat}
+\def\onframe#1#2{\ifnum\ind@x=#1#2\else\relax\fi}
+\def\afterframe#1#2{\ifnum\ind@x>#1#2\else\relax\fi}
+\def\beforeframe#1#2{\ifnum\ind@x<#1#2\else\relax\fi}
+\def\hide{\setcolour\backgroundcolour}
+\catcode`\@=12

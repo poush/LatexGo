@@ -1,0 +1,517 @@
+\ProvidesFile{adhocfilelist.tex}[2012/11/19 documenting adhocfilelist (UL)] 
+\head \charset{ISO-8859-1} %%% {utf-8} 
+  \texrobots
+  \title{List LaTeX file infos according to command line}
+%   \stylesheet{all}{plain}                     %% tried 2012/05/06
+  \simplebody 
+    \lineanc{top-of-page} %%% \textopofpage
+\EXECUTE{\UseBlogLigs}
+\EXECUTE{\BlogInterceptHash}
+\EXECUTE{\def\bodytitle{\heading1} 
+         % \def\section{\heading2}
+%          \def\labelsection#1{\nextview{#1}\endgraf\lineanc{#1}\heading2} 
+%          \def\labelsection#1{\lineanc{#1}\heading2} 
+         \def\labelsection#1#2{\heading2{\lineanc{#1}#2\ancref{#1}{.}}} 
+         \def\subsection{\heading3} 
+         \def\fakeitem{\bullet\enspace}
+%          \def\strongcs#1{\strong{\cs{#1}}} 
+         \def\strongcode#1{\strong{\code{#1}}}
+         \def\strongmetaopt#1#2{\strong{\code{-#1}~\metacode{#2}}}
+         \def\metamandarg#1{\code\{\metacode{#1}\code\}}
+         \def\metaoptarg#1{\code[\metacode{#1}\code]}
+         \def\optitem#1{\ditem{\code{-#1}}}
+         \def\optmetaitem#1#2{\ditem{\optmeta{#1}{#2}}}
+         \def\optmeta#1#2{\code{-#1}~\metacode{#2}}
+         \def\metacode#1{\code{\metavar{#1}}}
+%          \let\CPR\ctanpkgref 
+%          \def\pkgnamefmt{\spanstyle{font-family:monospace}}
+         \let\pkgnamefmt\textsf
+         \let\pkg\pkgnamefmt
+         \let\file\pkgnamefmt
+         \def\Find{\pkgnamefmt{\Wikienref{find}}}
+         \def\find{\pkgnamefmt{find}}
+         \def\ext#1{\code{.#1}}
+}
+% \EXECUTE{\BlogInterceptHash}        %% upfinfo.sh instead
+% \EXECUTE{\RequirePackage{monofill}} %% upfinfo.sh instead
+% \EXECUTE{\let\pkgnamefmt\code}
+\bodytitle{\code{adhocfilelist} ---\vspace{6} Listing \LaTeX\ Source File Infos\\
+           According to Command Line}
+
+% \small[\,\UseVersionOf{finfinfo.tex}~as~of~\UseDateOf{finfinfo.tex}\,]\endsmall
+%% <- TODO \relax 2012/04/09
+  <p>   %%% \vspace{24}
+\begin{small}
+[\,\ancrefslist{{{abstract}{abstract}}
+                {{over}{overview}}
+                {{required}{requirements}}
+                {{install}{installing}}
+                {{related}{related}}
+                {{back}{background}}
+                {{custom}{customize}}
+                {{idea}{idea/thanks}}}\,]\quad 
+[\,\textit{\fileref{\htmljob}{reload}}\,]
+\end{small}
+
+\labelsection{abstract}{Abstract}
+\file{adhocfilelist.sh} is a shell script with command line options 
+and parameters that displays \metavar{info} for files \metavar{file} 
+on screen that (i)~are indicated on the command line and 
+(ii)~contain \cs{ProvidesFile}\metamandarg{file}\metaoptarg{info}, 
+\cs{ProvidesPackage}\metamandarg{file}\metaoptarg{info}, 
+or \cs{ProvidesClass}\metamandarg{file}\metaoptarg{info}. 
+There is one line for each file, formatted about as with \LaTeX's 
+\cs{listfiles}. This formatting can be varied, and the output may 
+additionally be saved in a plain text file. The files \metavar{file}
+are either (a)~listed explicitly, separated by commas, or 
+(b)~they are gathered by the Unix \Find\ utility. 
+For the latter, \pkg{adhocfilelist} provides a somewhat simplified 
+interface, especially for restricting the list of files 
+to those that have been modified "today" or a few days ago.
+So you/I can check whether version info was updated correctly, 
+and it may allow \ctanpkgref{filedate} \dqtd{consistency checks} 
+even with \CtanPkgRef{xetex}{\XeTeX} (where \cs{pdffilemoddate} 
+is unavailable).
+  <p>
+The package may thus be considered an extension of the 
+\ctanpkgref{latexfileversion} (Harald \ctanpkgauref{harders}{Harders}) 
+and \ctanpkgref{typeoutfileinfo} packages 
+that display \metavar{info} for a \emph{single} file \metavar{file}.
+Moreover, it is a somewhat simplified interface to the packages 
+\ctanpkgref{myfilist}, \ctanpkgref{longnamefilelist}, 
+\ctanpkgref{nicefilelist}, and \ctanpkgref{filedate}.
+
+\labelsection{over}{Overview of command line contents}
+The general structure of a command line using \pkg{adhocfilelist} is 
+\begin{quote}
+  \ancref{call}{\metavar{call}} 
+  \ancref{opts}{\metavar{options}} 
+  \ancref{files}{\metavar{files}}
+\end{quote}
+The three parts are as follows:
+\begin{description}
+  \ditem{\metavar{call}\lineanc{call}}
+    This is either
+    \begin{itemize}                                             %% 2012/10/17
+      \item \metavar{path}\file{adhocfilelist.sh} 
+            where \metavar{path} is "./" or something, 
+            depending on where you place the file \file{adhocfilelist.sh}, 
+            or on your use of \Wikienref{symbolic link}s, 
+            the environment variable \code{\Wikiendisambref{PATH}{variable}}, 
+            or
+      \item an \code{\Wikiendisambref{alias}{command}} for 
+            \metavar{path}\file{adhocfilelist.sh}.   %% was <path> 2012/10/17
+    \end{itemize}
+  \ditem{\metavar{options}\lineanc{opts}}
+    \EXECUTE{\newcommand*{\fmode}{\strong{(f)}}}
+    Some options "switch into \strong{\Find\ mode}", 
+    affecting the interpretation of \strong{\metavar{files}}, marked by "\fmode". 
+    Their description may be inaccurate here, 
+    understanding the details may require some knowledge of \find\ 
+    (see "\ancref{back}{background}" below).
+    Some options have one parameter, some have none.
+    \begin{description}
+      \optitem{0} \fmode\
+        List files modified "\strong{today}" only (unless ...)
+      \optmetaitem{a}{integer} \fmode\
+        List files modified \metavar{integer} days \strong{ago} only 
+        (unless \metavar{integer} starts with "\code{-}" or "\code{+}" ...)
+      \optitem{c} \fmode\ 
+        Compare date according to \cs{Provides...} content with modification 
+        date using \ctanpkgref{filedate} additionally.
+          <p>
+        \TODO: The restriction to \find\ (v0.7) is temporary, removing it is 
+        straightforward, but I may have to postpone this for a while.
+      \optitem{f} \fmode\
+        Add \metavar{files} to other \strong{\find} criteria, 
+        \strong{replacing} internal default settings 
+        (as opposed to \code{-g}). 
+        For allowing certain file name extensions such as \ext{tex}, 
+        the star must be escaped and \metavar{files} best 
+        has outer single quotes, such as
+        \begin{quote}
+         \EXECUTE{\MakeOther\'}
+          \code{'-L ( -name \cs{*}.tex -o -name \cs{*}.sty )'}
+          %% <- follow -> L 2012/11/19
+        \end{quote}
+      \optmetaitem{F}{find-file} \fmode\
+        Add content of the \strong{file} \metavar{find-file} to other \strong{\find} criteria. 
+        As compared with \code{-f}, stars must be escaped, 
+        while other quoting seems not to be needed in \metavar{files}. 
+      \optitem{g} \fmode\
+        Add \metavar{files} to other \strong{\find} criteria, 
+        among which some hopefully "\strong{generally useful}" 
+        are added from within \file{adhocfilelist.sh}.
+        As to quoting/escaping in \metavar{files}, 
+        this is as with \code{-f}.
+      \optitem{h}
+        Display an overview (brief version of present one, "\strong{help}"), 
+        and ignore everything else of the command line.
+      \optmetaitem{i}{tex-file}
+        Prepend ("\strong{input}") contents of the file \metavar{tex-file} 
+        to the temporary \ext{tex} file that \file{adhocfilelist.sh}
+        generates internally\pardash to get more individual settings 
+        than \file{adhocfilelist.sh}'s internal defaults 
+        (which are \strong{replaced} by the content of \metavar{tex-file})
+        and than the options \code{-l} and \code{-n} provide.
+      \optmetaitem{l}{integer}
+        Format list by the \strong{\ctanpkgref{longnamefilelist}} package 
+        where \metavar{integer} is the maximum length of base 
+        \Wikienref{filename}s in the list (about as ...)
+      \optmetaitem{n}{filename}
+        Format list by the \strong{\ctanpkgref{nicefilelist}} package 
+        where \metavar{filename} is the longest base \Wikienref{filename} (or a template).
+        %% 2012/10/15:
+        If base filenames do \emph{not} have more than eight characters, 
+        you can use "\strongcode{-n~.}" as a shorthand for 
+        "\optmeta{n}{filename}" with a \metavar{filename} of eight characters.
+      \optmetaitem{o}{txt-file}
+        Save the displayed file info list ("\strong{output}")
+        as plain text file \metavar{txt-file} also.
+      \optitem{x}
+        Use \code{xelatex} rather than \code{latex} (v0.7).\enpardash The 
+        idea for this has been that the script should provide 
+        "date consistency" checks (\strong{option~\code{-c}}) 
+        \endqtd{even with \CtanPkgRef{xetex}{\XeTeX} where \cs{pdffilemoddate}
+        is not available.} However, the script has used \code{latex}
+        before v0.7 which will run \CtanPkgRef{pdftex}{\pdfTeX} usually, 
+        even when the user prefers \emph{typesetting} with \XeTeX,
+        and anyway it does not rely on \cs{pdffilemoddate}. 
+        The real problem with \ctanpkgref{filedate} and \XeTeX\ is that 
+        a reliable consistency check does not work 
+        \emph{while typesetting with \XeTeX}. But \pkg{filedate} can be 
+        used for "\TeX\ scripts" too, i.e., \emph{without} typesetting, 
+        and that is what the present package does. 
+        The present package does \emph{not} provide consistency checks 
+        \emph{while typesetting with \XeTeX}. 
+        It should not be make a difference whether the "\TeX\ script"
+        that \pkg{adhocfilelist} generates is run with \XeTeX\ or with \pdfTeX.
+        So the only "special \XeTeX\ support" from here probably 
+        will be the present \strongcode{-x} in case \code{latex} 
+        \emph{does not work}, maybe because \pdfTeX\ or anything implementing
+        the \code{latex} command is missing on the user's (unusual) installation.
+    \end{description}
+    Options can \emph{not} be "contracted" like "\code{-0f}" 
+    (too difficult with processing [parts of] \find\ 
+     expressions\pardash\code{-name} ...).
+  \ditem{\metavar{files}\lineanc{files}}
+    Whenever an option "switches into \Find\ mode", 
+    \metavar{files} is interpreted as part of a command line for the 
+    \find\ utility. Otherwise, \metavar{files} is expected to be a 
+    comma-separated list of filenames (for \LaTeX\ source files),
+    whose extension \ext{tex} (if so) may be omitted\pardash unless \code{-h}~...
+\end{description}
+
+\labelsection{required}{Requirements}
+\begin{description}
+  \ditem{System}
+    The package will work on a \Wikienref{Unix-like} system only, 
+    but I am not expert enough to judge what additional restrictions hold. 
+    As I could not make work everything that should work according to 
+    documentation, I expect the other way round that what works on 
+    my installation may not work at other Unix-like installations. 
+    If something doesn't work at your installation, please tell me via 
+    \urlref{contact-ednotes.sty.de.vu}.
+      <p>
+    Actually the package was developed with the \Wikienref{GNU bash}
+    shell and the 
+    \wikienref{GNU Find Utilities}{\acro{GNU} \find\ utility} on 
+    \Wikiendisambref{Ubuntu}{operating system}~10.04. 
+      <p>
+    My impression is in fact 
+    (looking at \Wikienref{The Open Group}'s 
+     \httpref{pubs.opengroup.org/onlinepubs/9699919799/utilities/find.html}{man page} 
+     for \find)
+    that in order to use the \strong{\find} options 
+    \strongcode{-0}, \strongcode{-a}, \strongcode{-f}, \strongcode{-F},
+    and \strongcode{-g}, the \strong{\acro{GNU}} version of \find\ is required, 
+    because action \strong{-printf} is used and essential (difficult without). 
+  \ditem{\LaTeX}
+    The package requires that the \ctanpkgref{fileinfo} bundle is installed. 
+    In order to use the \strong{\code{-l}} option, 
+    \ctanpkgref{longnamefilelist} must be installed additionally. 
+    In order to use the \strong{\code{-n}} option, 
+    \ctanpkgref{nicefilelist} must be installed additionally. 
+    In order to use the \strong{\code{-c}} option, 
+    \ctanpkgref{filedate} must be installed additionally. 
+\end{description}
+
+\labelsection{install}{Installing}
+No more advice than implied by the section on "\ancref{call}{\metavar{call}}"
+can be given right now.
+
+\labelsection{related}{Related packages}
+The file 
+\mirrorctanref{info/latexfileinfo-pkgs/latexfileinfo_pkgs.htm}{%
+               \file{latexfileinfo_pkgs.htm}}
+describes related packages available on 
+% \httpref{tug.ctan.org}{\acro{CTAN}} 
+\acro{\Wikiref{CTAN}}
+in some detail. 
+The most obvious ones have been mentioned above already. 
+% It might be added that Martin \ctanpkgref{scharrer}{Scharrer}'s
+% \ctanpkgref{filemod} probably could be used as an alternative to 
+% \code{\Wikiref{find}} in the future\pardash I have not studied 
+% it sufficiently yet (and may not be able soon).
+  <p>
+The \ancref{back}{next section} indicates details that may be 
+improve understanding the \LaTeX-related command line options 
+\code{-i}, \code{-l}, and \code{-n}. 
+
+\labelsection{back}{Background}
+For understanding the options \strongcode{-0}, \strongcode{-a}, 
+\strongcode{-f}, \strongcode{-F}, and \strongcode{-g}, 
+knowing something about the \Find\ utility              %% was The 2012/10/17
+and the present \ancref{back-find}{interface} to it may be helpful. 
+The options \strongcode{-i}, \strongcode{-l}, \strongcode{-n},
+and \strongcode{-o} refer to the \ctanpkgref{myfilist} package 
+and its enhancements by the packages \ctanpkgref{longnamefilelist} 
+and \ctanpkgref{nicefilelist}, and it may be helpful to know 
+what a "\ancref{my-script}{\pkg{myfilist} script}" is.
+\begin{description}
+  \ditem{\find\lineanc{back-find}}
+    We are describing the \strong{interface} to \Find. 
+    To learn about the contents of a \find\ command line, 
+    the \wikienref{find}{Wikipedia article} may be a good start, 
+    next enter "\code{man find}" in the terminal, finally see the 
+    \httpref{gnu.org/software/findutils/manual/find.html}{\acro{GNU} manual}. 
+      <p>
+    \file{adhocfilelist.sh} forms the following \find\ command line 
+    in order to get a comma-separated list of files:
+    \begin{quote}
+      \code{find} 
+      \ancref{back-f-prefix}{\metacode{prefix}}
+      \ancref{back-f-files} {\metacode{files}}
+      \ancref{back-f-day}   {\metacode{day}} 
+      \code{-printf ,\%f}
+    \end{quote}
+    These parts are as follows:
+    \begin{description}
+      \ditem{\metavar{prefix}\lineanc{back-f-prefix}}
+        is
+        \begin{quote}
+          \code{-L -maxdepth 1 ( -name \cs{*}.tex -o }\metacode{more}\code{ )}
+          %% <- follow -> L 2012/11/19
+        \end{quote}
+        where \metavar{more} in addition to files with extension \ext{tex} allows 
+        those with extensions \ext{sty}, \ext{cfg}, \ext{cls}, \ext{dtx}, 
+        \ext{def}, and \ext{fd}\pardash \strong{unless} with \strong{options}
+        \begin{description}
+          \optitem{f}
+            where \metavar{prefix} is empty
+          \optmetaitem{F}{find-file}
+            where \metavar{prefix} is the content of the file \metavar{find-file}.
+        \end{description}
+        Option \strongcode{-g} is not required with options 
+        \strongcode{-0} and \strong{-a} that switch into "\strong{\find\ mode}"
+        too without deleting \metavar{prefix}, it is just a way to switch 
+        into \find\ mode otherwise without deleting \metavar{prefix}.
+      \ditem{\metavar{files}\lineanc{back-f-files}}
+        is as in the \ancref{files}{overview}.
+      \ditem{\metavar{day}\lineanc{back-f-day}}
+        is empty, unless \strongcode{-0} sets it to 
+        \begin{quote}
+          \code{-daystart~-mtime 0}
+        \end{quote}
+        or \strongmetaopt{a}{integer} sets it to 
+        \begin{quote}
+          \code{-daystart~-mtime~}\metacode{integer}
+        \end{quote}
+        It follows that 
+        \begin{itemize}
+          \item \strongcode{-0} has the same effect as 
+                (is just a shorthand for) \strongcode{-a~0}
+          \item if \metavar{integer} is "\code{-\metavar{digits}}",
+                files modified \emph{since} \metavar{digits} days ago 
+                are allowed
+        \end{itemize}
+        \emdash cf.~\acro{GNU} documentation on 
+        \httpref{gnu.org/software/findutils/manual/html_node/%
+                 find_html/Age-Ranges.html}{age ranges.}
+          <p>
+        A \strong{tricky} little thing here is that \metavar{day}
+        may be \emph{expected} to be a \emph{restriction}, 
+        an \emph{additional} criterion that a \LaTeX\ source file 
+        must meet to be listed. However, if \metavar{files} ends on 
+        \strongcode{-o} for "or", \metavar{day} becomes an 
+        "additional possibility" for being listed ...
+          <p>
+        \TODO: This is different with \strong{option \code{-c}} 
+        (v0.7) whose functionality also may change soon.
+    \end{description}
+  \ditem{\pkg{myfilist}\lineanc{my-script}}
+    The \LaTeX\ package \ctanpkgref{myfilist} provides some commands 
+    to control the input of \LaTeX's \cs{listfiles} so that its 
+    output is not a list of files used for typesetting, 
+    but a list of arbitrary files that is determined by commands 
+    like 
+    \begin{quote}
+      \cs{ReadFileInfos}\metamandarg{comma-separated-list-of-filenames} 
+    \end{quote}
+    Essentially this is the command which the list of filenames that 
+    was \metavar{files} or that is produced by \find\ is passed to.
+    The list is generated by running a \ext{tex} file that contains 
+    these commands. Such a file has been called a 
+    "\strong{\pkg{myfilist} script}" here. 
+    More precisely, such a script is (mostly) structured as follows:
+    \begin{quote}
+      \ancref{back-load-set}{\metavar{loading-settings}}\\
+      \ancref{back-coll-infos}{\metavar{collecting-infos}}\\
+      \ancref{back-write}{\metavar{writing-to-screen+file}}
+    \end{quote}
+    These parts are as follows:
+    \begin{description}
+      \ditem{\metavar{loading-settings}\lineanc{back-load-set}} 
+        at least issues \cs{RequirePackage}\metamandarg{myfilist}. 
+        By default, \pkg{adhocfilelist.sh} produces (roughly)
+        \begin{quote}
+          \cs{RequirePackage}\cb{myfilist}\cs{EmptyFileList}
+          \metacode{adhoc-adjust}
+        \end{quote}
+        for \metavar{loading-settings} where \metavar{adhoc-adjust} 
+        adds technical details needed for use with \pkg{adhocfilelist}.
+        (Final warnings are suppressed by a command \cs{NoBottomLines}, 
+         this might be changed in the future.)
+          <p>
+        It has been a disadvantage of \LaTeX's \cs{listfiles} functionality 
+        that the resulting plain text file list looked good with base filenames 
+        only that had up to eight characters. \ctanpkgref{longnamefilelist}
+        made up for this disadvantage, and \ctanpkgref{nicefilelist}
+        has additional refinements of aligning the list, proposed by 
+        Martin \ctanpkgauref{muench-hm}{MÅnch}. To use them with 
+        \pkg{myfilist}, they are loaded in \metavar{loading-settings}
+        as well, and additional settings for column widths may be added there too. 
+        This is what \strong{options} \strongcode{-l} and \strongcode{-n} do.
+        Besides in their own \acro{PDF} documentation (that you find by following the 
+        links), the packages are also briefly described in that file 
+        \mirrorctanref{info/latexfileinfo-pkgs/latexfileinfo_pkgs.htm}{%
+               \file{latexfileinfo_pkgs.htm}}
+        to be read by a web browser.
+          <p>
+        However, more refined settings may be needed that cannot 
+        be controlled by \pkg{adhocfilelist}'s interface so far. 
+        The \strong{option} \strongmetaopt{i}{tex-file}
+        has the effect that \metavar{loading-settings} becomes
+        \begin{quote}
+          \metavar{tex-file-content}
+          \metavar{adhoc-adjust}
+        \end{quote}
+        where \metavar{tex-file-content} is the content of the 
+        (\ext{tex} file) \metavar{tex-file} (before \cs{endinput}).
+      \ditem{\metavar{collecting-infos}\lineanc{back-coll-infos}}
+        essentially is that 
+        \begin{quote}
+          \cs{ReadFileInfos}\metamandarg{comma-separated-list-of-filenames} 
+        \end{quote}
+        mentioned above.
+      \ditem{\metavar{writing-to-screen+file}\lineanc{back-write}}
+        essentially is \cs{ListFileInfos} or 
+        \begin{quote}
+          \cs{ListFileInfos}\metaoptarg{txt-file}
+        \end{quote}
+        With \pkg{adhocfilelist}, that "\metaoptarg{txt-file}"
+        is inserted on \strong{option} \strongmetaopt{o}{txt-file}.
+    \end{description}
+    However, \pkg{myfilist} has been extended at the occasion 
+    of preparing \pkg{adhocfilelist} so that the sections 
+    \metavar{collecting-infos} and \metavar{writing-to-screen+file}
+    may "collapse" into a single command starting with 
+    \cs{ReadListFileInfos}.
+\end{description}
+
+\labelsection{custom}{General customization}
+In general, options \strongmetaopt{F}{find-file} and 
+\strongmetaopt{i}{tex-file} will be needed
+to deal with certain directories \metavar{dir}. 
+Two ways come to my mind how to simplify this situation. 
+\begin{enumerate}
+  \item \metavar{find-file} and \metavar{tex-file} may be 
+        in the same directory \metavar{dir}, and the latter may es well 
+        contain an executable (\code{\Wikienref{chmod}}) 
+        script file \metavar{script-file} 
+        with the following content:
+        \begin{quote}
+          \ancref{call}{\metacode{call}} 
+          \code{-F~}\metacode{find-file}
+          \code{-i~}\metacode{tex-file}
+          \metacode{more}
+          \code{\string$@}
+        \end{quote}
+        Here \metavar{call} is as in the \ancref{call}{overview}, 
+        and \metavar{more} may be empty or something else that you 
+        want to have fixed, such as \strongmetaopt{o}{txt-file}.
+          <p>
+        \strong{Then} you can \strong{vary} additional options/parameters 
+        \metavar{add} by 
+        \begin{quote}
+          \code{./}\metacode{script-file} \metacode{add}
+        \end{quote}
+  \item If you have \strong{several directories} \metavar{dir} as before 
+        of a certain "type", %%% \metavar{type},           %% rm. 2012/10/17
+        such that they can \strong{share} the settings in 
+        \metavar{find-file} and \metavar{tex-file}, 
+        you can place the latter in some separate ("central") 
+        directory \metavar{center} and define an \code{\Wikienref{alias}}
+        as follows:
+        \begin{quote}
+         \EXECUTE{\MakeOther\'}
+          \code{alias~}\metacode{name}\code{='}\ancref{call}{\metacode{call}}
+                       \code{-F~}\metacode{center}\code/\metacode{find-file}
+                       \code{-i~}\metacode{center}\code/\metacode{tex-file} 
+                       \metacode{more}\code{'}
+        \end{quote}
+        (Note that there is no "\code{\string$@}". 
+         "\metacode{dir}\code/\metacode{tex-file}" could be replaced by 
+         mere "\metacode{tex-file}" if that \metavar{tex-file} 
+         is installed like a \TeX~package.)
+          <p>
+        \strong{Then} you can \strong{vary} additional options/parameters 
+        \metavar{add} by 
+        \begin{quote}
+          \metacode{name} \metacode{add}
+        \end{quote}
+\end{enumerate}
+
+\labelsection{idea}{The idea/motivation; acknowledgements}
+One day (most probably 2012-09-27), 
+I wanted to check the \cs{ProvideFile} contents of \emph{two}
+files I knew I had edited that day. 
+On 2012-09-26, I had thought about simplifying \ctanpkgref{typeoutfileinfo} 
+by using a single command line without any piping. 
+I realized that \LaTeX~s \cs{typeout} could be replaced by 
+\cs{ReadFileInfos} from \ctanpkgref{myfilist}.
+Therefore "\Wikienref{ad hoc}".
+  <p>
+Maybe the same day later, 
+I realized that I could no longer remember which files I changed that day. 
+In July I had discovered \code{\string$(find ...)}. Now I thought that this 
+could be used here. "Ad hoc" is less appropriate here, and first I thought 
+that there will be different script files for explicitly specified files 
+than for applying \find. 
+  <p>
+Only then I learnt real shell programming by googling, kind of chance, 
+and most helpfully from Chapter~3 of JÅrgen Wolfs 
+\httpref{openbook.galileocomputing.de/shell_programmierung}{OpenBook}
+from \Wikideref{Galileo Press} 
+(\code{\Wikienref{getopts}}\pardash bad here, however)
+and Prof. JÅrgen Plates 
+\httpref{netzmafia.de/skripten/unix/unix8.html}{lecture notes}
+("Optionen ermitteln"\pardash "by hand").
+  <p>
+Then quoting/escaping for filename extensions with \Find\ became difficult ...
+Quotation marks and "positional parameters" with the shell are very 
+difficult/\strong{painful}\pardash\TeX\ is more straightforward ...
+On the other hand it is nice that the entire command line with \emph{all} the 
+"parameters" is gobbled.
+
+\hrule
+\rightpar{\textit{%
+    Last~revised~\isotoday\ \copyright~\webdesignref{contact.html}{Uwe LÅck}\\
+%     \vspace{6} 
+    (using \CtanPkgRef{morehype}{blog.sty})\\   %% ) 2012/10/17
+%     \vspace{6}
+    License: \httpref{www.latex-project.org/lppl/}{LPPL~1.3c} or later, author-maintained.}}
+\entotopofpage
+\vspace{240}
+\finish
+

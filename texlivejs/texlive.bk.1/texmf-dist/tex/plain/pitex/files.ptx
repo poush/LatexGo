@@ -1,0 +1,39 @@
+\newread\ptx@temp_read
+\def\iffile{%
+  \ifnext[
+    {\ptx@iffile}
+    {\ptx@iffile[]}%
+  }
+\def\ptx@iffile[#1]#2{%
+  \directlua{
+    local f = kpse.find_file("\luaescapestring{#2}"\reverse\iffemptystring{#1}{, "#1"})
+    local x = f and "firstoftwo" or "secondoftwo"
+    tex.print(\the\texcatcodes, "\noexpand\\" .. x)
+    }%
+  }
+\long\def\ifffile{%
+  \ifnext[
+    {\ptx@ifffile}
+    {\ptx@ifffile[]}%
+  }
+\long\def\ptx@ifffile[#1]#2#3{%
+  \iffile[#1]{#2}{#3}{}%
+  }
+
+\long\def\inputfileor{%
+  \ifnext[
+    {\ptx@inputfileor}
+    {\ptx@inputfileor[]}%
+  }
+\long\def\ptx@inputfileor[#1]#2{%
+  \iffile[#1]{#2}{\input{#2}\relax}%
+  }
+
+\newwrite\ptx@auxfile
+\def\ptx@write_toaux{%
+  \ifnext*
+    {\gobbleoneand{\write\ptx@auxfile}}
+    {\immediate\write\ptx@auxfile}%
+  }
+
+\let\writeout\ptx@write_toaux

@@ -1,0 +1,962 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% This is the `armtex.sty' file (LaTeX package for writing in Armenian).
+%%
+%% This file is a part of the ArmTeX project [2014/04/09 v3.0-beta3]
+%%
+%% ArmTeX is a system for writing in Armenian with plain TeX and/or LaTeX(2e).
+%%
+%% Copyright 1997 - 2013:
+%%   Serguei Dachian (Serguei.Dachian_AT_math.univ-bpclermont.fr),
+%%   Arnak Dalalyan  (arnak.dalalyan_AT_ensae.fr),
+%%   Vardan Akopian  (vakopian_AT_yahoo.com).
+%%
+%% ArmTeX may be distributed and/or modified under the conditions of the LaTeX
+%% Project Public License, either version 1.3 of this license or (at your
+%% option) any later version.
+%%
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX version
+%% 2005/12/01 or later.
+%%
+%% ArmTeX has the LPPL maintenance status `author-maintained'.
+%%
+%% For more details, installation instructions and the complete list of files
+%% see the provided `readme.txt' file.
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%% Double input protection.
+%%
+\expandafter\ifx\csname ArmTeX@ArmTeXLoaded\endcsname\relax
+  \let\ArmTeX@ArmTeXLoaded\null\else\endinput\fi
+
+
+%% Begining of the code.
+%%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{armtex}
+  [2014/04/09 v3.0-beta3 armtex.sty (LaTeX package for writing in Armenian)]
+\RequirePackage{kvoptions}
+
+
+%% Options processing.
+%%
+\newif\ifArmTeX@Main
+\global\ArmTeX@Maintrue
+\DeclareVoidOption{latin}{\global\ArmTeX@Mainfalse}
+\DeclareVoidOption{notstar}{\global\let\ArmTeX@Notstar\null}
+\DeclareVoidOption{notbar}{\global\let\ArmTeX@Notbar\null}
+\DeclareVoidOption{notexclam}{\global\let\ArmTeX@Notexclam\null}
+\DeclareVoidOption{notdots}{\global\let\ArmTeX@Notdots\null}
+\DeclareVoidOption{safe}{\global\let\ArmTeX@Notstar\null
+                         \global\let\ArmTeX@Notbar\null
+                         \global\let\ArmTeX@Notexclam\null
+                         \global\let\ArmTeX@Notdots\null}
+\DeclareStringOption[1]{loosespace}[6]
+\ProcessKeyvalOptions*
+
+
+%% Loading encoding definition file.
+%%
+\InputIfFileExists{ot6enc.def}{}
+  {\PackageError{ArmTeX}
+    {Encoding definition file `ot6enc.def' not found.\MessageBreak
+     Check your installation}
+    {It seems that there is a problem with your installation.\MessageBreak
+     Normally the file `ot6enc.def' should have been present on your system.\MessageBreak
+     But apparently it isn't !!!\MessageBreak
+     It is better to stop at this point and to check your installation.}}
+
+
+%% Some auxilliary macros.
+%%
+\def\ArmTeX@Armencoding{OT6}
+\def\ArmTeX@Armfamily{cmr}
+\def\ArmTeX@Armseries{m}
+\def\ArmTeX@Armshape{n}
+\def\ArmTeX@Armnormalfont{\usefont\ArmTeX@Armencoding
+                                  \ArmTeX@Armfamily
+                                  \ArmTeX@Armseries
+                                  \ArmTeX@Armshape
+                                  \relax}
+\def\ArmTeX@Savednormalfont{\usefont\ArmTeX@Savedencoding
+                                    \ArmTeX@Savedfamily
+                                    \ArmTeX@Savedseries
+                                    \ArmTeX@Savedshape
+                                    \relax}
+\def\ArmTeX@Armdischyph{\discretionary{\char123}{}{}}
+\def\ArmTeX@MathError#1{%
+  \PackageError{ArmTeX}
+    {The command \protect #1 is not available in math mode}
+    {You have used the command \protect #1 in math mode.\MessageBreak
+     But it can only be used in text mode.}}
+\def\ArmTeX@CtError{%
+  \PackageError{ArmTeX}
+    {Bad counter value in \protect\alph\space or in \protect\Alph}
+    {In Armenian mode \protect\alph\space and \protect\Alph\space can\MessageBreak
+     only treat integers between 1 and 36.}}
+\def\@armalph#1{\ifcase#1\ArmTeX@CtError\or
+  \armayb\or
+  \armben\or
+  \armgim\or
+  \armda\or
+  \armyech\or
+  \armza\or
+  \arme\or
+  \armat\or
+  \armto\or
+  \armzhe\or
+  \armini\or
+  \armlyun\or
+  \armkhe\or
+  \armtsa\or
+  \armken\or
+  \armho\or
+  \armdza\or
+  \armghat\or
+  \armtche\or
+  \armmen\or
+  \armhi\or
+  \armnu\or
+  \armsha\or
+  \armvo\or
+  \armcha\or
+  \armpe\or
+  \armje\or
+  \armra\or
+  \armse\or
+  \armvev\or
+  \armtyun\or
+  \armre\or
+  \armtso\or
+  \armvovyun\or
+  \armpyur\or
+  \armke
+  \else
+  \ArmTeX@CtError
+  \fi
+}
+\def\@Armalph#1{\ifcase#1\ArmTeX@CtError\or
+  \Armayb\or
+  \Armben\or
+  \Armgim\or
+  \Armda\or
+  \Armyech\or
+  \Armza\or
+  \Arme\or
+  \Armat\or
+  \Armto\or
+  \Armzhe\or
+  \Armini\or
+  \Armlyun\or
+  \Armkhe\or
+  \Armtsa\or
+  \Armken\or
+  \Armho\or
+  \Armdza\or
+  \Armghat\or
+  \Armtche\or
+  \Armmen\or
+  \Armhi\or
+  \Armnu\or
+  \Armsha\or
+  \Armvo\or
+  \Armcha\or
+  \Armpe\or
+  \Armje\or
+  \Armra\or
+  \Armse\or
+  \Armvev\or
+  \Armtyun\or
+  \Armre\or
+  \Armtso\or
+  \Armvovyun\or
+  \Armpyur\or
+  \Armke
+  \else
+  \ArmTeX@CtError
+  \fi
+}
+\def\ArmTeX@Armrefname{\Armho\armghat\armvo\armvyun\armmen\armnu \armyech
+  \armre}
+\def\ArmTeX@Armabstractname{\Armse\armyech\armghat\armmen\armayb\armgim
+  \armini\armre}
+\def\ArmTeX@Armbibname{\Armgim\armre\armayb\armken\armayb\armnu\armvo\armvyun
+  \armto\armhi\armvo\armvyun\armnu}
+\def\ArmTeX@Armprefacename{\Armnu\armayb\armkhe\armayb\armben\armayb\armnu}
+\def\ArmTeX@Armchaptername{\Armgim\armlyun\armvo\armvyun\armkhe}
+\def\ArmTeX@Armappendixname{\Armho\armayb\armvev\armyech\armlyun\armvev
+  \armayb\armtsa}
+\def\ArmTeX@Armcontentsname{\Armben\armvo\armvev\armayb\armnu\armda\armayb
+  \armken\armvo\armvyun\armto\armhi\armvo\armvyun\armnu}
+\def\ArmTeX@Armlistfigurename{\Armnu\armken\armayb\armre\armnu\armyech\armre
+  \armini\ \armtso\armayb\armnu\armken}
+\def\ArmTeX@Armlisttablename{\Armayb\armghat\armhi\armvo\armvyun\armse\armayb
+  \armken\armnu\armyech\armre\armini\ \armtso\armayb\armnu\armken}
+\def\ArmTeX@Armindexname{\Armayb\armra\armayb\armre\armken\armayb\armhi
+  \armayb\armken\armayb\armnu\ \armtso\armayb\armnu\armken}
+\def\ArmTeX@Armfigurename{\Armnu\armken\armayb\armre}
+\def\ArmTeX@Armtablename{\Armayb\armghat\armhi\armvo\armvyun\armse\armayb
+  \armken}
+\def\ArmTeX@Armpartname{\Armmen\armayb\armse}
+\def\ArmTeX@Armpagename{\arme\armje}
+\def\ArmTeX@Armseename{{\aritshape\armtyun\armyech\armaccent\armse}}
+\def\ArmTeX@Armalsoname{{\aritshape\armtyun\armyech\armaccent\armse\ \armnu
+  \armayb\armew}}
+%
+% False argument gobbles ":", and so we can use "\armsep" instead.
+\def\ArmTeX@Armenclname#1{\Armken\armini\armtso\armsep}
+%
+% False argument gobbles ":", and so we can use "\armsep" instead.
+\def\ArmTeX@Armccname#1{\Armken\armre\armken\armnu\armo\armre\armini\armnu
+  \armayb\armken\armat\armsep}
+%
+% The \headtoname is empty: the typesetter should use the dative (trakan
+% holov) of the recipient's name.
+% False argument gobbles "{}" (or "\ ") and we ignore the following spaces.
+\def\ArmTeX@Armheadtoname#1{\ignorespaces}
+\def\ArmTeX@Armproofname{\Armayb\armpe\armayb\armtso\armvo\armvyun\armhi
+  \armtso}% for AMS-\LaTeX
+\def\ArmTeX@Armglossaryname{\Armtyun\armyech\armre\armmen\armini\armnu\armnu
+  \armyech\armre\armini\ \armtso\armayb\armnu\armken}
+
+
+%% User macros.
+%%
+\def\armtoday{\number\day\armendash\armat\ \ifcase\month\or
+  \armho\armvo\armvyun\armnu\-\armvev\armayb\-\armre\armini\or
+  \armpyur\armyech\armtyun\armre\armvev\armayb\-\armre\armini\or
+  \armmen\armayb\armre\-\armtyun\armini\or
+  \armayb\armpe\-\armre\armini\-\armlyun\armini\or
+  \armmen\armayb\-\armhi\armini\-\armse\armini\or
+  \armho\armvo\armvyun\-\armnu\armini\-\armse\armini\or
+  \armho\armvo\armvyun\-\armlyun\armini\-\armse\armini\or
+  \armo\-\armgim\armvo\armse\-\armtyun\armvo\-\armse\armini\or
+  \armse\armyech\armpe\-\armtyun\armyech\armmen\-\armben\armyech\-\armre
+    \armini\or
+  \armho\armvo\armken\-\armtyun\armyech\armmen\-\armben\armyech\-\armre
+    \armini\or
+  \armnu\armvo\-\armhi\armyech\armmen\-\armben\armyech\-\armre\armini\or
+  \armda\armyech\armken\-\armtyun\armyech\armmen\-\armben\armyech\-\armre
+    \armini
+  \fi\ \number\year~\armto\armdot}
+\def\armdate{\let\today\armtoday}
+\def\armdateoff{\let\today\ArmTeX@Savedtoday}
+\def\armhyph{\let\-\ArmTeX@Armdischyph
+             \let\@dischyph\ArmTeX@Armdischyph}
+\def\armhyphoff{\let\-\ArmTeX@Saveddischyph
+                \let\@dischyph\ArmTeX@Saveddischyph}
+\def\armalph#1{\expandafter\@armalph\csname c@#1\endcsname}
+\def\Armalph#1{\expandafter\@Armalph\csname c@#1\endcsname}
+\def\armalphs{\let\@alph\@armalph
+              \let\@Alph\@Armalph}
+\def\armalphsoff{\let\@alph\ArmTeX@Saved@alph
+                 \let\@Alph\ArmTeX@Saved@Alph}
+\def\armnames{%
+  \let\refname\ArmTeX@Armrefname
+  \let\abstractname\ArmTeX@Armabstractname
+  \let\bibname\ArmTeX@Armbibname
+  \let\prefacename\ArmTeX@Armprefacename
+  \let\chaptername\ArmTeX@Armchaptername
+  \let\appendixname\ArmTeX@Armappendixname
+  \let\contentsname\ArmTeX@Armcontentsname
+  \let\listfigurename\ArmTeX@Armlistfigurename
+  \let\listtablename\ArmTeX@Armlisttablename
+  \let\indexname\ArmTeX@Armindexname
+  \let\figurename\ArmTeX@Armfigurename
+  \let\tablename\ArmTeX@Armtablename
+  \let\partname\ArmTeX@Armpartname
+  \let\pagename\ArmTeX@Armpagename
+  \let\seename\ArmTeX@Armseename
+  \let\alsoname\ArmTeX@Armalsoname
+  \let\enclname\ArmTeX@Armenclname
+  \let\ccname\ArmTeX@Armccname
+  \let\headtoname\ArmTeX@Armheadtoname
+  \let\proofname\ArmTeX@Armproofname
+  \let\glossaryname\ArmTeX@Armglossaryname
+}
+\def\armnamesoff{%
+  \let\refname\ArmTeX@Savedrefname
+  \let\abstractname\ArmTeX@Savedabstractname
+  \let\bibname\ArmTeX@Savedbibname
+  \let\prefacename\ArmTeX@Savedprefacename
+  \let\chaptername\ArmTeX@Savedchaptername
+  \let\appendixname\ArmTeX@Savedappendixname
+  \let\contentsname\ArmTeX@Savedcontentsname
+  \let\listfigurename\ArmTeX@Savedlistfigurename
+  \let\listtablename\ArmTeX@Savedlisttablename
+  \let\indexname\ArmTeX@Savedindexname
+  \let\figurename\ArmTeX@Savedfigurename
+  \let\tablename\ArmTeX@Savedtablename
+  \let\partname\ArmTeX@Savedpartname
+  \let\pagename\ArmTeX@Savedpagename
+  \let\seename\ArmTeX@Savedseename
+  \let\alsoname\ArmTeX@Savedalsoname
+  \let\enclname\ArmTeX@Savedenclname
+  \let\ccname\ArmTeX@Savedccname
+  \let\headtoname\ArmTeX@Savedheadtoname
+  \let\proofname\ArmTeX@Savedproofname
+  \let\glossaryname\ArmTeX@Savedglossaryname
+}
+\def\armfontsdefault{%
+  \let\encodingdefault\ArmTeX@Armencoding
+  \let\familydefault\ArmTeX@Armfamily
+  \let\seriesdefault\ArmTeX@Armseries
+  \let\shapedefault\ArmTeX@Armshape
+}
+\def\armfontsdefaultoff{%
+  \let\encodingdefault\ArmTeX@Savedencoding
+  \let\familydefault\ArmTeX@Savedfamily
+  \let\seriesdefault\ArmTeX@Savedseries
+  \let\shapedefault\ArmTeX@Savedshape
+}
+\DeclareRobustCommand{\?}{\ifmmode\ArmTeX@MathError{\?}\else
+  \textquestion\fi}
+\DeclareRobustCommand{\ArmTeX}{{\artmfamily
+  \def\ArmTeX@testa{it}\ifx\f@shape\ArmTeX@testa\arslshape\fi
+  A\kern -0.08ex\raise 0.63ex\hbox{\smash{r}}\kern -0.22em%
+  \def\ArmTeX@testa{sl}\ifx\f@shape\ArmTeX@testa\kern -0.075em\fi
+  \def\ArmTeX@testa{m}\ifx\f@series\ArmTeX@testa\else\kern -0.015em\fi
+  \lower 0.43ex\hbox{m}\kern -0.16em\fontencoding\ArmTeX@Savedencoding
+  \fontfamily\ArmTeX@Savedfamily
+  \def\ArmTeX@testa{sl}\ifx\f@shape\ArmTeX@testa\slshape\else\upshape\fi
+  \def\ArmTeX@testa{m}\ifx\f@series\ArmTeX@testa\mdseries\else\bfseries\fi
+  \selectfont\TeX}}
+\DeclareRobustCommand{\latArmTeX}{{\aroff
+  \edef\ArmTeX@testa{\itdefault}\ifx\f@shape\ArmTeX@testa\slshape\fi
+  Arm\kern -0.15em\edef\ArmTeX@testa{\mddefault}%
+  \ifx\f@series\ArmTeX@testa\else\kern 0.03em\fi\TeX}}
+
+
+%% At begining of the document.
+%%
+\AtBeginDocument{
+%
+% Cheking if OT6 is not already loaded.
+%
+\ifx\encodingdefault\ArmTeX@Armencoding
+  \PackageError{armtex}
+    {Encoding definition file `ot6enc.def' already loaded.\MessageBreak
+     You should not load it with the help of\MessageBreak
+     `fontenc' package if you use `armtex' package}
+    {You must have put something like \protect\usepackage[T1,T3,OT6]{fontenc}\MessageBreak
+     in the preambule of your document.\MessageBreak
+     Removing `OT6' from the list of options (or removing the whole\MessageBreak
+     `fontenc' package, if you don't need it) will solve the problem.}
+\fi
+%
+% Do some savings.
+%
+\let\ArmTeX@Savedexclam\!%
+\let\ArmTeX@Savedbar\|%
+\let\ArmTeX@Savedstar\*%
+\let\ArmTeX@Saveddischyph\-%
+\let\ArmTeX@Savedtoday\today
+\let\ArmTeX@Savedencoding\encodingdefault
+\let\ArmTeX@Savedfamily\familydefault
+\let\ArmTeX@Savedseries\seriesdefault
+\let\ArmTeX@Savedshape\shapedefault
+\let\ArmTeX@Savedrefname\refname
+\let\ArmTeX@Savedabstractname\abstractname
+\let\ArmTeX@Savedbibname\bibname
+\let\ArmTeX@Savedprefacename\prefacename
+\let\ArmTeX@Savedchaptername\chaptername
+\let\ArmTeX@Savedappendixname\appendixname
+\let\ArmTeX@Savedcontentsname\contentsname
+\let\ArmTeX@Savedlistfigurename\listfigurename
+\let\ArmTeX@Savedlisttablename\listtablename
+\let\ArmTeX@Savedindexname\indexname
+\let\ArmTeX@Savedfigurename\figurename
+\let\ArmTeX@Savedtablename\tablename
+\let\ArmTeX@Savedpartname\partname
+\let\ArmTeX@Savedpagename\pagename
+\let\ArmTeX@Savedseename\seename
+\let\ArmTeX@Savedalsoname\alsoname
+\let\ArmTeX@Savedenclname\enclname
+\let\ArmTeX@Savedccname\ccname
+\let\ArmTeX@Savedheadtoname\headtoname
+\let\ArmTeX@Savedproofname\proofname
+\let\ArmTeX@Savedglossaryname\glossaryname
+\let\ArmTeX@Saved@alph\@alph
+\let\ArmTeX@Saved@Alph\@Alph
+%
+% Processing Options.
+%
+\ifArmTeX@Main
+  \armdate
+  \armhyph
+  \armalphs
+  \armnames
+  \armfontsdefault
+  \ArmTeX@Armnormalfont
+\fi
+%
+\ifx\ArmTeX@Notstar\null\else
+  \DeclareRobustCommand{\*}{\ifmmode\ArmTeX@Savedstar\else
+    \armbl\fi}%
+\fi
+%
+\ifx\ArmTeX@Notexclam\null\else
+  \DeclareRobustCommand{\!}{\ifmmode\ArmTeX@Savedexclam\else
+    \textexclam\fi}%
+\fi
+%
+\ifx\ArmTeX@Notbar\null\else
+  \DeclareRobustCommand{\|}{\ifmmode\ArmTeX@Savedbar\else
+    \armemdash\fi}%
+\fi
+%
+\ifx\ArmTeX@Notdots\null\else
+  \def\vdots{\vbox{\baselineskip4\p@ \lineskiplimit\z@
+    \kern6\p@\hbox{$\ldotp$}\hbox{$\ldotp$}\hbox{$\ldotp$}}}%
+  \def\ddots{\mathinner{\mkern1mu\raise7\p@
+    \vbox{\kern7\p@\hbox{$\ldotp$}}\mkern2mu
+    \raise4\p@\hbox{$\ldotp$}\mkern2mu\raise\p@\hbox{$\ldotp$}\mkern1mu}}%
+\fi
+}
+
+
+%% Encoding/font MATH selection user macros.
+%%
+\DeclareMathAlphabet{\mathartm}{OT6}{cmr}{m}{n}
+\SetMathAlphabet{\mathartm}{bold}{OT6}{cmr}{bx}{n}
+\DeclareMathAlphabet{\mathartmbf}{OT6}{cmr}{bx}{n}
+\DeclareMathAlphabet{\mathartmit}{OT6}{cmr}{m}{it}
+\SetMathAlphabet{\mathartmit}{bold}{OT6}{cmr}{bx}{it}
+\DeclareMathAlphabet{\mathartmbfit}{OT6}{cmr}{bx}{it}
+
+
+%% Encoding/font TEXT selection orthogonal user macros.
+%%
+\DeclareRobustCommand{\aroff}{%
+  \ifx\f@encoding\ArmTeX@Armencoding\ArmTeX@Savednormalfont
+    \armhyphoff\fi}%
+%
+\providecommand{\ArmTeX@OrthoFontDef}[3]{%
+  \DeclareRobustCommand{#1}{%
+    \ifmmode\ArmTeX@MathError{#1}\else
+      \ifx\f@encoding\ArmTeX@Armencoding\else
+        \ArmTeX@Armnormalfont\armhyph
+      \fi
+       #3\selectfont
+    \fi}%
+  \DeclareTextFontCommand{#2}{#1}}
+%
+\ArmTeX@OrthoFontDef{\artmfamily}{\armtm}{\fontfamily{cmr}}
+\ArmTeX@OrthoFontDef{\arssfamily}{\armss}{\fontfamily{cmss}}
+\ArmTeX@OrthoFontDef{\arbfseries}{\armbf}{\fontseries{bx}}
+\ArmTeX@OrthoFontDef{\armdseries}{\armmd}{\fontseries{m}}
+\ArmTeX@OrthoFontDef{\arupshape}{\armup}{\fontshape{n}}
+\ArmTeX@OrthoFontDef{\aritshape}{\armit}{\fontshape{it}}
+\ArmTeX@OrthoFontDef{\arslshape}{\armsl}{\fontshape{sl}}
+
+
+%% Encoding/font TEXT selection NON-orthogonal commands
+%%
+
+% Old-style armenian commands used in plain version.
+%
+\providecommand{\ArmTeX@OldArmFontDef}[3]{%
+  \DeclareOldFontCommand{#1}{%
+    \ifx\f@encoding\ArmTeX@Armencoding\else\armhyph\fi
+    \ArmTeX@Armnormalfont #2\selectfont}{#3}}
+%
+\ArmTeX@OldArmFontDef{\artm}{\fontfamily{cmr}}
+  {\mathartm}
+\ArmTeX@OldArmFontDef{\arss}{\fontfamily{cmss}}
+  {\ArmTeX@MathError{\arss}}
+\ArmTeX@OldArmFontDef{\artmbf}{\fontfamily{cmr}\fontseries{bx}}
+  {\mathartmbf}
+\ArmTeX@OldArmFontDef{\arssbf}{\fontfamily{cmss}\fontseries{bx}}
+  {\ArmTeX@MathError{\arssbf}}
+\ArmTeX@OldArmFontDef{\artmit}{\fontfamily{cmr}\fontshape{it}}
+  {\mathartmit}
+\ArmTeX@OldArmFontDef{\artmsl}{\fontfamily{cmr}\fontshape{sl}}
+  {\ArmTeX@MathError{\artmsl}}
+\ArmTeX@OldArmFontDef{\arsssl}{\fontfamily{cmss}\fontshape{sl}}
+  {\ArmTeX@MathError{\arsssl}}
+\ArmTeX@OldArmFontDef{\artmbfit}{\fontfamily{cmr}\fontshape{it}\fontseries{bx}}
+  {\mathartmbfit}
+\ArmTeX@OldArmFontDef{\artmbfsl}{\fontfamily{cmr}\fontshape{sl}\fontseries{bx}}
+  {\ArmTeX@MathError{\artmbfsl}}
+\ArmTeX@OldArmFontDef{\arssbfsl}{\fontfamily{cmss}\fontshape{sl}\fontseries{bx}}
+  {\ArmTeX@MathError{\arssbfsl}}
+
+% Old-style NON-armenian commands (probably redefining, if
+% already defined in class).
+%
+\providecommand{\ArmTeX@OldNonArmFontDef}[3]{%
+  \DeclareOldFontCommand{#1}{%
+    \ifx\f@encoding\ArmTeX@Armencoding\armhyphoff\fi
+    \ArmTeX@Savednormalfont #2}{#3}}
+%
+\ArmTeX@OldNonArmFontDef{\rm}{\rmfamily}{\mathrm}
+\ArmTeX@OldNonArmFontDef{\sf}{\sffamily}{\mathsf}
+\ArmTeX@OldNonArmFontDef{\tt}{\ttfamily}{\mathtt}
+\ArmTeX@OldNonArmFontDef{\bf}{\bfseries}{\mathbf}
+\ArmTeX@OldNonArmFontDef{\it}{\itshape}{\mathit}
+\ArmTeX@OldNonArmFontDef{\sl}{\slshape}{\ArmTeX@MathError{\sl}}
+\ArmTeX@OldNonArmFontDef{\sc}{\scshape}{\ArmTeX@MathError{\sc}}
+
+
+%% Armenian numerals related macros.
+%%
+\newcount\armnumeralcount
+\newcount\armnu@cta
+\newcount\armnu@ctb
+\newcount\armnu@ctc
+\def\armnu@gobcha{\let\armnu@cha= }
+\def\armnu@gobchb{\let\armnu@chb= }
+\def\armnu@skip#1\armnu@nil{\relax}
+
+% Arabic to Armenian macro (\armnumeral).
+%
+\def\armnu@units{\ifcase\armnu@cta\or
+  \Armayb\or
+  \Armben\or
+  \Armgim\or
+  \Armda\or
+  \Armyech\or
+  \Armza\or
+  \Arme\or
+  \Armat\or
+  \Armto\fi
+}
+
+\def\armnu@tens{\ifcase\armnu@cta\or
+  \Armzhe\or
+  \Armini\or
+  \Armlyun\or
+  \Armkhe\or
+  \Armtsa\or
+  \Armken\or
+  \Armho\or
+  \Armdza\or
+  \Armghat\fi
+}
+
+\def\armnu@hundreds{\ifcase\armnu@cta\or
+  \Armtche\or
+  \Armmen\or
+  \Armhi\or
+  \Armnu\or
+  \Armsha\or
+  \Armvo\or
+  \Armcha\or
+  \Armpe\or
+  \Armje\fi
+}
+
+\def\armnu@thousands{\ifcase\armnu@cta\or
+  \Armra\or
+  \Armse\or
+  \Armvev\or
+  \Armtyun\or
+  \Armre\or
+  \Armtso\or
+  \Armvyun\or
+  \Armpyur\or
+  \Armke\fi
+}
+
+\def\armnumeral@base#1{%
+  \armnu@cta = #1
+  \armnu@ctb = #1
+  \divide\armnu@cta by 1000
+  \armnu@thousands
+  \multiply\armnu@cta by -1000
+  \advance\armnu@ctb by \armnu@cta
+  \armnu@cta=\armnu@ctb
+  \divide\armnu@cta by 100
+  \armnu@hundreds
+  \multiply\armnu@cta by -100
+  \advance\armnu@ctb by \armnu@cta
+  \armnu@cta=\armnu@ctb
+  \divide\armnu@cta by 10
+  \armnu@tens
+  \multiply\armnu@cta by -10
+  \advance\armnu@ctb by \armnu@cta
+  \armnu@cta=\armnu@ctb
+  \armnu@units
+}
+
+\def\armnumeral@aux{\afterassignment\armnumeral@loop\armnu@gobcha}
+
+\def\armnumeral@loop{%
+  \let\armnu@next=\armnumeral@aux
+  \ifx\armnu@cha\armnu@nil
+    \let\armnu@next=\relax
+  \else
+    \advance\armnumeralcount by 1
+    \if 0\armnu@cha
+    \else
+    \let\armnu@tmpb = 1\relax
+    \if 1\armnu@cha
+    \else
+    \if 2\armnu@cha
+    \else
+    \if 3\armnu@cha
+    \else
+    \if 4\armnu@cha
+    \else
+    \if 5\armnu@cha
+    \else
+    \if 6\armnu@cha
+    \else
+    \if 7\armnu@cha
+    \else
+    \if 8\armnu@cha
+    \else
+    \if 9\armnu@cha
+    \else
+    \let\armnu@tmpb = 0\relax
+    \let\armnu@next=\armnu@skip
+    \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi
+  \fi
+  \armnu@next
+}
+
+\def\armnumeral@auxbis#1{%
+  \ifnum\armnumeralcount = 0
+    \hbox{\vphantom{\Armho}\armnumeral@base{#1}\vphantom{\Armnu}}%
+  \else
+    \advance\armnumeralcount by -1
+    \hbox{$\overline{\hbox{\armnumeral@auxbis{#1}}}\m@th$}%
+  \fi
+}
+
+\def\armnumeral@loopbis#1#2#3#4#5\armnu@nil{%
+  \armnumeralcount=\armnu@ctc
+  \ifnum\armnu@ctc > 0
+    \armnumeral@auxbis{#1#2#3#4}%
+    \advance\armnu@ctc by -1
+    \armnumeral@loopbis #5\armnu@nil
+  \else
+    \armnumeral@auxbis{#1#2#3#4}%
+  \fi
+}
+
+\def\armnumeral#1{\edef\armnu@tmpa{#1}\armnumeralcount = 0
+  \let\armnu@tmpb = 0\relax
+  \expandafter\armnumeral@aux\armnu@tmpa\armnu@nil
+  \if 0\armnu@tmpb
+    \PackageError{ArmTeX}
+      {Invalid argument in \protect\armnumeral}
+      {The argument of \protect\armnumeral\space must be\MessageBreak
+       a strictly positive decimal integer.}%
+  \else
+    \leavevmode
+    \armnu@ctc=\armnumeralcount
+    \divide\armnu@ctc by 4
+    \multiply\armnu@ctc by -4
+    \advance\armnumeralcount by \armnu@ctc
+    \divide\armnu@ctc by -4
+    \ifnum\armnumeralcount = 0
+      \advance\armnu@ctc by -1
+    \fi
+    \edef\armnu@tmpa{\ifcase\armnumeralcount\or000\or00\or0\fi #1}%
+    \expandafter\armnumeral@loopbis\armnu@tmpa\armnu@nil
+  \fi
+}
+
+% Armenian to Arabic macro (\unarmnumeral).
+%
+\def\armnu@setchb#1{\edef\armnu@tmpb{#1}\expandafter\armnu@gobchb\armnu@tmpb}
+
+\def\armnu@chaval{%
+  \armnu@setchb{\Armayb}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 0\armnu@ctb = 1
+  \else
+  \armnu@setchb{\Armben}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 0\armnu@ctb = 2
+  \else
+  \armnu@setchb{\Armgim}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 0\armnu@ctb = 3
+  \else
+  \armnu@setchb{\Armda}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 0\armnu@ctb = 4
+  \else
+  \armnu@setchb{\Armyech}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 0\armnu@ctb = 5
+  \else
+  \armnu@setchb{\Armza}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 0\armnu@ctb = 6
+  \else
+  \armnu@setchb{\Arme}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 0\armnu@ctb = 7
+  \else
+  \armnu@setchb{\Armat}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 0\armnu@ctb = 8
+  \else
+  \armnu@setchb{\Armto}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 0\armnu@ctb = 9
+  \else
+  \armnu@setchb{\Armzhe}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 1\armnu@ctb = 10
+  \else
+  \armnu@setchb{\Armini}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 1\armnu@ctb = 20
+  \else
+  \armnu@setchb{\Armlyun}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 1\armnu@ctb = 30
+  \else
+  \armnu@setchb{\Armkhe}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 1\armnu@ctb = 40
+  \else
+  \armnu@setchb{\Armtsa}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 1\armnu@ctb = 50
+  \else
+  \armnu@setchb{\Armken}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 1\armnu@ctb = 60
+  \else
+  \armnu@setchb{\Armho}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 1\armnu@ctb = 70
+  \else
+  \armnu@setchb{\Armdza}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 1\armnu@ctb = 80
+  \else
+  \armnu@setchb{\Armghat}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 1\armnu@ctb = 90
+  \else
+  \armnu@setchb{\Armtche}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 2\armnu@ctb = 100
+  \else
+  \armnu@setchb{\Armmen}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 2\armnu@ctb = 200
+  \else
+  \armnu@setchb{\Armhi}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 2\armnu@ctb = 300
+  \else
+  \armnu@setchb{\Armnu}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 2\armnu@ctb = 400
+  \else
+  \armnu@setchb{\Armsha}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 2\armnu@ctb = 500
+  \else
+  \armnu@setchb{\Armvo}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 2\armnu@ctb = 600
+  \else
+  \armnu@setchb{\Armcha}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 2\armnu@ctb = 700
+  \else
+  \armnu@setchb{\Armpe}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 2\armnu@ctb = 800
+  \else
+  \armnu@setchb{\Armje}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 2\armnu@ctb = 900
+  \else
+  \armnu@setchb{\Armra}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 3\armnu@ctb = 1000
+  \else
+  \armnu@setchb{\Armse}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 3\armnu@ctb = 2000
+  \else
+  \armnu@setchb{\Armvev}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 3\armnu@ctb = 3000
+  \else
+  \armnu@setchb{\Armtyun}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 3\armnu@ctb = 4000
+  \else
+  \armnu@setchb{\Armre}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 3\armnu@ctb = 5000
+  \else
+  \armnu@setchb{\Armtso}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 3\armnu@ctb = 6000
+  \else
+  \armnu@setchb{\Armvyun}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 3\armnu@ctb = 7000
+  \else
+  \armnu@setchb{\Armpyur}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 3\armnu@ctb = 8000
+  \else
+  \armnu@setchb{\Armke}\ifx\armnu@cha\armnu@chb
+  \armnu@cta = 3\armnu@ctb = 9000
+  \else
+  \armnu@cta = 4
+  \fi\fi\fi\fi\fi\fi\fi\fi\fi
+  \fi\fi\fi\fi\fi\fi\fi\fi\fi
+  \fi\fi\fi\fi\fi\fi\fi\fi\fi
+  \fi\fi\fi\fi\fi\fi\fi\fi\fi
+}
+
+\def\unarmnumeral@aux{\afterassignment\unarmnumeral@loop\armnu@gobcha}
+
+\def\unarmnumeral@loop{%
+  \ifx\armnu@cha\armnu@nil
+    \let\armnu@next=\relax
+  \else
+    \armnu@chaval
+    \ifnum\armnu@cta<\armnu@ctc
+      \advance\armnumeralcount by \armnu@ctb
+      \armnu@ctc=\armnu@cta
+      \let\armnu@next=\unarmnumeral@aux
+    \else
+      \PackageError{ArmTeX}
+        {Invalid argument in \protect\unarmnumeral\space or in \protect\unarmnumber}
+        {The argument of \protect\unarmnumeral\space (or of \protect\unarmnumber)
+         must be\MessageBreak
+         a valid (non transliterated) Armenian numeral.}%
+      \armnumeralcount=0\relax
+      \let\armnu@next=\armnu@skip
+    \fi
+  \fi
+  \armnu@next
+}
+
+\def\unarmnumeral@star*#1{\edef\armnu@tmpa{#1}\armnumeralcount = 0
+  \armnu@ctc = 4\armnu@cta = 0\armnu@ctb = 0
+  \expandafter\unarmnumeral@aux\armnu@tmpa\armnu@nil
+}
+
+\def\unarmnumeral@nonstar#1{\unarmnumeral@star*{#1}\the\armnumeralcount}
+
+\let\Arm@optionalstar=*\relax
+\def\unarmnumeral@auxbis{%
+   \ifx\Arm@nextchar\Arm@optionalstar
+     \expandafter\unarmnumeral@star
+   \else
+     \expandafter\unarmnumeral@nonstar
+   \fi
+}
+
+\def\unarmnumeral{\futurelet\Arm@nextchar\unarmnumeral@auxbis}
+
+% LaTeX specific macros (\armnumber and \unarmnumber).
+%
+\def\armnumber#1{\expandafter\@armnumber\csname c@#1\endcsname}
+\def\@armnumber#1{\armnumeral{\number #1}}
+\def\unarmnumber#1#2{%
+  \unarmnumeral*{#1}\csname c@#2\endcsname=\armnumeralcount
+}
+
+
+%% If possible, setting up ToUnicode tables in order to make pdf files
+%% generated by pdf(la)tex "searchable and copyable" in pdf viewers.
+%%
+\expandafter\ifx\csname pdfglyphtounicode\endcsname\relax\else
+\expandafter\ifx\csname pdfgentounicode\endcsname\relax\else
+\pdfgentounicode=1
+
+% Upper-case letters.
+%
+\pdfglyphtounicode{Armayb}{0531}
+\pdfglyphtounicode{Armben}{0532}
+\pdfglyphtounicode{Armgim}{0533}
+\pdfglyphtounicode{Armda}{0534}
+\pdfglyphtounicode{Armyech}{0535}
+\pdfglyphtounicode{Armza}{0536}
+\pdfglyphtounicode{Arme}{0537}
+\pdfglyphtounicode{Armat}{0538}
+\pdfglyphtounicode{Armto}{0539}
+\pdfglyphtounicode{Armzhe}{053A}
+\pdfglyphtounicode{Armini}{053B}
+\pdfglyphtounicode{Armlyun}{053C}
+\pdfglyphtounicode{Armkhe}{053D}
+\pdfglyphtounicode{Armtsa}{053E}
+\pdfglyphtounicode{Armken}{053F}
+\pdfglyphtounicode{Armho}{0540}
+\pdfglyphtounicode{Armdza}{0541}
+\pdfglyphtounicode{Armghat}{0542}
+\pdfglyphtounicode{Armtche}{0543}
+\pdfglyphtounicode{Armmen}{0544}
+\pdfglyphtounicode{Armhi}{0545}
+\pdfglyphtounicode{Armnu}{0546}
+\pdfglyphtounicode{Armsha}{0547}
+\pdfglyphtounicode{Armvo}{0548}
+\pdfglyphtounicode{Armcha}{0549}
+\pdfglyphtounicode{Armpe}{054A}
+\pdfglyphtounicode{Armje}{054B}
+\pdfglyphtounicode{Armra}{054C}
+\pdfglyphtounicode{Armse}{054D}
+\pdfglyphtounicode{Armvev}{054E}
+\pdfglyphtounicode{Armtyun}{054F}
+\pdfglyphtounicode{Armre}{0550}
+\pdfglyphtounicode{Armtso}{0551}
+\pdfglyphtounicode{Armvyun}{0552}
+\pdfglyphtounicode{Armvovyun}{0548 0552}
+\pdfglyphtounicode{Armpyur}{0553}
+\pdfglyphtounicode{Armke}{0554}
+\pdfglyphtounicode{Armo}{0555}
+\pdfglyphtounicode{Armfe}{0556}
+
+% Lower-case letters.
+%
+\pdfglyphtounicode{armayb}{0561}
+\pdfglyphtounicode{armben}{0562}
+\pdfglyphtounicode{armgim}{0563}
+\pdfglyphtounicode{armda}{0564}
+\pdfglyphtounicode{armyech}{0565}
+\pdfglyphtounicode{armza}{0566}
+\pdfglyphtounicode{arme}{0567}
+\pdfglyphtounicode{armat}{0568}
+\pdfglyphtounicode{armto}{0569}
+\pdfglyphtounicode{armzhe}{056A}
+\pdfglyphtounicode{armini}{056B}
+\pdfglyphtounicode{armlyun}{056C}
+\pdfglyphtounicode{armkhe}{056D}
+\pdfglyphtounicode{armtsa}{056E}
+\pdfglyphtounicode{armken}{056F}
+\pdfglyphtounicode{armho}{0570}
+\pdfglyphtounicode{armdza}{0571}
+\pdfglyphtounicode{armghat}{0572}
+\pdfglyphtounicode{armtche}{0573}
+\pdfglyphtounicode{armmen}{0574}
+\pdfglyphtounicode{armhi}{0575}
+\pdfglyphtounicode{armnu}{0576}
+\pdfglyphtounicode{armsha}{0577}
+\pdfglyphtounicode{armvo}{0578}
+\pdfglyphtounicode{armcha}{0579}
+\pdfglyphtounicode{armpe}{057A}
+\pdfglyphtounicode{armje}{057B}
+\pdfglyphtounicode{armra}{057C}
+\pdfglyphtounicode{armse}{057D}
+\pdfglyphtounicode{armvev}{057E}
+\pdfglyphtounicode{armtyun}{057F}
+\pdfglyphtounicode{armre}{0580}
+\pdfglyphtounicode{armtso}{0581}
+\pdfglyphtounicode{armvyun}{0582}
+\pdfglyphtounicode{armvovyun}{0578 0582}
+\pdfglyphtounicode{armpyur}{0583}
+\pdfglyphtounicode{armke}{0584}
+\pdfglyphtounicode{armo}{0585}
+\pdfglyphtounicode{armfe}{0586}
+%
+% Glyphs from Armenian unicode block.
+%
+\pdfglyphtounicode{armfullstop}{0589}
+\pdfglyphtounicode{armsep}{055D}
+\pdfglyphtounicode{armyentamna}{058A}
+\pdfglyphtounicode{armexclam}{055C}
+\pdfglyphtounicode{armaccent}{055B}
+\pdfglyphtounicode{armquestion}{055E}
+\pdfglyphtounicode{armapostrophe}{055A}
+\pdfglyphtounicode{armew}{0587}
+\pdfglyphtounicode{armabbrev}{055F}
+\pdfglyphtounicode{armnum}{0559}
+\pdfglyphtounicode{armdram}{058F}
+
+% Other glyphs not placed in accordance with ASCII.
+%
+\pdfglyphtounicode{quotedblleft}{201C}
+\pdfglyphtounicode{quotedblright}{201D}
+\pdfglyphtounicode{armquotleft}{00AB}
+\pdfglyphtounicode{armquotright}{00BB}
+\pdfglyphtounicode{braceleft}{007B}
+\pdfglyphtounicode{braceright}{007D}
+\pdfglyphtounicode{emdash}{2014}
+\pdfglyphtounicode{exclam}{0021}
+\pdfglyphtounicode{question}{003F}
+
+% Treating the glyph armeternity (not present in unicode) as space.
+%
+\pdfglyphtounicode{armeternity}{0020}
+\fi
+\fi
+
+
+%% That's all, Folks!
+%%
+\endinput

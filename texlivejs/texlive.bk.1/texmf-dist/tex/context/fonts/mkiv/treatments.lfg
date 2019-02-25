@@ -1,0 +1,109 @@
+-- There can be multiple treatments.lfg files in the tree and all are loaded in
+-- the order specified by tree order access. The first treatment of a file
+-- always wins, so one can overload. These files are not (to be) loaded with
+-- font definitions. (Experiment as part of writing the font manual.)
+--
+-- So there are several ways to fix a font: add a patcher to a goodie file and
+-- load that one. Such a patch can end up in the cached file. Treatments are
+-- applied at runtime. An experimental auto-loaded goodie approach is not yet
+-- enabled and will never be if treatments can do the job.
+
+local report = fonts.treatments.report
+
+local fix_unifraktur = {
+    comment = "suspicious x height",
+    fixes   = function(data)
+        local pfminfo = data.metadata.pfminfo
+        if pfminfo then
+            local os2_xheight = pfminfo.os2_xheight
+            if os2_xheight and os2_xheight < 350 then
+                report("suspicious x-height %a, nilling",os2_xheight)
+                pfminfo.os2_xheight_original = os2_xheight
+                pfminfo.os2_xheight = nil
+            end
+        end
+    end,
+}
+
+-- local fix_lmmonoregular = {
+--     --
+--     -- there are now some extra safeguards for idris
+--     --
+--     comment = "wrong widths of some glyphs",
+--     fixes = function(data)
+--         report("fixing some wrong widths")
+--         local unicodes     = data.resources.unicodes
+--         local descriptions = data.descriptions
+--         local function getdescription(name)
+--             local unicode = unicodes[name]
+--             if not unicode then
+--                 report("no valid unicode for %a",name)
+--                 return
+--             end
+--             local description = descriptions[unicode]
+--             if not description then
+--                 report("no glyph names %a in font",name)
+--                 return
+--             end
+--             return description
+--         end
+--         local zero = getdescription("zero")
+--         if not zero then
+--             return
+--         end
+--         local defaultwidth = zero.width
+--         local function setwidth(name)
+--             local data = getdescription(name)
+--             if data then
+--                 data.width = defaultwidth
+--             end
+--         end
+--         setwidth("six")
+--         setwidth("nine")
+--         setwidth("caron")
+--         setwidth("perthousand")
+--         setwidth("numero")
+--         setwidth("caron.cap")
+--         setwidth("six.taboldstyle")
+--         setwidth("nine.taboldstyle")
+--         setwidth("dollar.oldstyle")
+--     end
+-- }
+
+return {
+    name = "treatments",
+    version = "1.00",
+    comment = "Goodies that deals with some general issues.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    treatments = {
+        -- we need to complete this list in order to be able to warn
+        -- users not to include these files unless permitted
+        ["adobeheitistd-regular.otf"] = {
+            comment  = "this font is part of acrobat",
+            ignored  = false,
+         -- included = false, -- not yet
+        },
+        -- just an experiment .. normally no big deal but I ran into
+        -- such case
+        ["crap.ttf"] = {
+            comment = "a text file with suffix ttf", -- used in test file
+            ignored = true,
+        },
+        ["lingoes.ttf"] = {
+            comment = "bugged file",
+            ignored = true,
+        },
+        -- harmless example
+     -- ["copperplatethirtythreebc.ttf"] = {
+     --     comment = "hangs and has no hyphen",
+     --     ignored = true,
+     -- },
+     -- ["latinmodern-math.otf"] = {
+     --     comment = "experimental",
+     -- },
+        ["lmmono12regular.otf"]    = fix_lmmonoregular,
+        ["unifrakturcook.ttf"]     = fix_unifraktur,
+        ["unifrakturmaguntia.ttf"] = fix_unifraktur,
+    },
+}

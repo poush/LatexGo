@@ -1,0 +1,85 @@
+%%
+%% This is file `lwarp-patch-komascript.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `patch-komascript')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+\ProvidesPackage{lwarp-patch-komascript}
+\RequirePackage{lwarp-typearea}
+\RequirePackage{lwarp-tocbasic}
+\RequirePackage{lwarp-scrextend}
+\AtBeginDocument{
+
+\renewcommand*{\idx@heading}{%
+  \idx@@heading{\indexname}%
+}
+
+\renewenvironment{theindex}{%
+  \idx@heading%
+  \index@preamble\par\nobreak
+    \let\item\LWR@indexitem%
+    \let\subitem\LWR@indexsubitem%
+    \let\subsubitem\LWR@indexsubsubitem%
+}
+{}
+
+\renewcommand*\indexspace{}
+
+}% AtBeginDocument
+\renewcommand*{\minisec}[1]{
+\begin{BlockClass}{minisec}
+#1
+\end{BlockClass}
+}
+\@ifundefined{setpartpreamble}{}{
+\RenewDocumentCommand{\setpartpreamble}{o o +m}{%
+\renewcommand{\part@preamble}{#3}%
+}
+}
+
+\@ifundefined{setchapterpreamble}{}{
+\RenewDocumentCommand{\setchapterpreamble}{o o +m}{%
+\renewcommand{\chapter@preamble}{#3}%
+}
+}
+\LetLtxMacro\captionbelow\caption
+\LetLtxMacro\captionabove\caption
+
+\LetLtxMacro\captionofbelow\captionof
+\LetLtxMacro\captionofabove\captionof
+
+\RenewDocumentEnvironment{captionbeside}{o m o o o s}
+{}
+{%
+\IfValueTF{#1}%
+{\caption[#1]{#2}}%
+{\caption{#2}}%
+}
+
+\RenewDocumentEnvironment{captionofbeside}{m o m o o o s}
+{}
+{%
+\IfValueTF{#2}%
+{\captionof{#1}[#2]{#3}}%
+{\captionof{#1}{#3}}%
+}
+
+\RenewDocumentCommand{\setcapindent}{s m}{}
+\renewcommand*{\setcaphanging}{}
+\renewcommand*{\setcapwidth}[2][]{}
+\renewcommand*{\setcapdynwidth}[2][]{}
+\RenewDocumentCommand{\setcapmargin}{s o m}{}
+\endinput
+%%
+%% End of file `lwarp-patch-komascript.sty'.

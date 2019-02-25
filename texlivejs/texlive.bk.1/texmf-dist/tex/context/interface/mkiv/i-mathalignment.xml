@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definemathalignment" level="style" category="mathematics alignment" file="math-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathalignment"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupmathalignment" level="style" category="mathematics alignment" file="math-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="n">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="m">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="number">
+                    <cd:constant type="auto"/>
+                </cd:parameter>
+                <cd:parameter name="separator">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="align">
+                    <cd:constant type="left"/>
+                    <cd:constant type="middle"/>
+                    <cd:constant type="right"/>
+                    <cd:constant type="normal" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="location">
+                    <cd:constant type="top"/>
+                    <cd:constant type="center"/>
+                    <cd:constant type="bottom"/>
+                    <cd:constant type="normal" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="grid">
+                    <cd:constant type="math" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathalignment" type="environment" generated="yes" variant="instance" level="document" category="mathematics alignment" file="math-ali.mkiv">
+        <cd:sequence>
+            <cd:instance value="mathalignment"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathalignment"/>
+            </cd:assignments>
+        </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-mathalignment"/>
+        </cd:instances>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="mathalignment" type="environment" level="document" category="mathematics alignment" file="math-ali.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmathalignment"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="align" type="environment" level="document" category="mathematics alignment" file="math-ali.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmathalignment"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+</cd:interface>

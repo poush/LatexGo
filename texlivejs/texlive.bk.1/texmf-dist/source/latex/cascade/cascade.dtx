@@ -1,0 +1,482 @@
+% \iffalse meta-comment
+%
+% Copyright (C) 2018 by F. Pantigny
+% -----------------------------------
+%
+% This file may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in:
+%
+% http://www.latex-project.org/lppl.txt
+%
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+%
+% \fi
+% \iffalse
+\def\myfileversion{1.01}
+\def\myfiledate{2018/07/12}
+%
+%
+%<*batchfile>
+\begingroup
+\input l3docstrip.tex
+\keepsilent
+\usedir{tex/latex/cascade}
+\preamble
+
+Copyright (C) 2018 by F. Pantigny
+-----------------------------------
+
+This file may be distributed and/or modified under the
+conditions of the LaTeX Project Public License, either version 1.3
+of this license or (at your option) any later version.
+The latest version of this license is in:
+
+http://www.latex-project.org/lppl.txt
+
+and version 1.3 or later is part of all distributions of LaTeX
+version 2005/12/01 or later.
+
+\endpreamble
+\askforoverwritefalse
+\endgroup
+%</batchfile>
+%
+%<@@=cascade>
+%<*driver>
+\documentclass[dvipsnames]{l3doc}% option dvipsnames is for xcolor (loaded by tikz)
+\usepackage{xltxtra}
+\usepackage{geometry}
+\geometry{left=2.8cm,right=2.8cm,top=2.5cm,bottom=2.5cm,papersize={21cm,29.7cm}}
+\setlength{\fboxsep}{0pt}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{cascade}
+\hfuzz=5cm
+\def\interitem{\vskip 7mm plus 2 mm minus 3mm}          
+\def\emphase{\bgroup\color{RoyalPurple}\let\next=}
+\fvset{commandchars=\~\#\@,formatcom={\color{gray}}}
+\parindent 0pt
+\skip\footins = 2\bigskipamount
+\DisableCrossrefs
+\begin{document}
+\DocInput{cascade.dtx}
+\end{document}
+%</driver>
+% \fi
+% \title{The package \pkg{cascade}\thanks{This document corresponds to the version~\myfileversion\space of
+% \pkg{cascade}, at the date of~\myfiledate.}} 
+% \author{F. Pantigny \\ \texttt{fpantigny@wanadoo.fr}}
+%
+% \maketitle
+%
+% \begin{abstract}
+% The LaTeX package \pkg{cascade} provides a command |\Cascade| to do constructions to present mathematical
+% demonstrations with successive braces for the deductions.
+% \end{abstract}
+% 
+%
+%
+% \vspace{1cm}
+% \section{Presentation}
+%
+% The package \pkg{cascade} gives a command |\Cascade| which allows constructions like the following where the size
+% of the right brace is computed on only a part of the LaTeX elements composed on the left.
+% \begin{center}
+% \Cascade{$\det(A) = \begin{vmatrix}3&4\\ -1&7\end{vmatrix}\neq 0$}%
+%         {and, therefore, $A$ is inversible}%
+%         {}%
+%         {yet $AX=Y$} 
+% hence, $X = A^{-1}Y$
+% \end{center}
+%         
+% \medskip
+% \begin{Verbatim}
+% ~emphase#\Cascade@{$\det(A) = \begin{vmatrix}3&4\\ -1&7\end{vmatrix}\neq 0$}%
+%         {and, therefore, $A$ is inversible}%
+%         {}%
+%         {yet $AX=Y$} 
+% hence, $X = A^{-1}Y$
+% \end{Verbatim}
+% 
+%
+% \interitem
+% The command |\Cascade| takes its four arguments as follow :
+% \begin{center}
+% \Cascade{\fbox{\hbox to 2cm{\vrule height 18 pt depth 5 pt width 0pt\hfil \texttt{\#1}\hfil}}}%
+% {\fbox{\hbox to 3cm{\vrule height 10 pt depth 12 pt width 0pt\hfil \texttt{\#2}\hfil}}}%
+% {\fbox{\hbox to 2.5cm{\vrule height 15 pt depth 14 pt width 0pt\hfil \texttt{\#3}\hfil}}}%
+% {\fbox{\hbox to 1.7cm{\vrule height 12 pt depth 5 pt width 0pt\hfil \texttt{\#4}\hfil}}}
+% \end{center}
+% 
+% \interitem
+% The commands |\Cascade| can be nested as in the following example :
+% \begin{center}
+% \Cascade{\ShortCascade{$(BH) \perp (AC)$}{$(OC) \perp (AC)$}}
+%         {hence\enskip $(BH) \parallel (OC)$}
+%         {\ShortCascade{$(CH) \perp (AB)$}{$(OB) \perp (AB)$}}
+%         {hence\enskip $(CH) \parallel (OB)$}
+% hence $(OBHC)$ is a parallelogram
+% \end{center}
+% 
+% \interitem
+% For the lisibility of such constructions, a simplified version of |\Cascade| is available, named |\ShortCascade|. 
+%
+% The code |\ShortCascade{X}{Y}| is merely a shortcut for the code |\Cascade{}{X}{}{Y}|.
+%
+% \medskip
+% The preceding example can be coded with two commands |\ShortCascade| and an encompassing command |\Cascade| :
+% \begin{Verbatim}
+% ~emphase#\Cascade@{~emphase#\ShortCascade@{$(BH) \perp (AC)$}
+%                       {$(OC) \perp (AC)$}}
+%         {hence\enskip $(BH) \parallel (OC)$}
+%         {~emphase#\ShortCascade@{$(CH) \perp (AB)$}
+%                       {$(OB) \perp (AB)$}}
+%         {hence\enskip $(CH) \parallel (OB)$}
+% hence $(OBHC)$ is a parallelogram
+% \end{Verbatim}
+% 
+%
+% \bigskip
+% \section{The options}
+%
+% \begin{itemize}
+% \item The option |space-between| is a TeX dimension described on the following figure. Its default value is
+% $0.5$~em. It applies to the current command |\Cascade| but also to the possible nested commands.
+%
+% \item The option |interline| can be used to \emph{increase} the ``interline'' showed in the following picture.
+% The default value of |interline| is $0$~pt and applies only to the current command |\Cascade|.
+%
+% \item The option |interline-all| changes the default value of |interline| used by the current command |Cascade|
+% and all the possible nested commands |\Cascade|.
+% \end{itemize}
+% 
+% \vspace{1cm}
+%
+% \begin{center}
+% \Cascade{\fbox{\hbox to 2cm{\vrule height 18 pt depth 5 pt width 0pt\hfil \texttt{\#1}\hfil
+%                             \tikz[remember picture] \coordinate (one) at (0,0) ;}}}%
+% {\fbox{\vtop{\hbox to 3cm{\tikz[remember picture] \coordinate (two) at (0,0) ;
+%                           \vrule height 10 pt depth 12 pt width 0pt\hfil \texttt{\#2}\hfil}
+%              \hbox{\tikz[remember picture] \coordinate (three) at (0,0) ;}}}}%
+% {\fbox{\vbox{\hbox{\tikz[remember picture] \coordinate (four) at (0,0) ;}%
+%              \hbox to 2.5cm{\vrule height 15 pt depth 14 pt width 0pt\hfil \texttt{\#3}\hfil}}}}%
+% {\fbox{\hbox to 1.7cm{\vrule height 12 pt depth 5 pt width 0pt\hfil \texttt{\#4}\hfil}}}
+% \end{center}
+%
+% \begin{tikzpicture}[remember picture,overlay,blue]
+% \draw (one) to ++(0,1cm) coordinate (A) to ++(0,2mm) ;
+% \draw (two) to ++(0,1cm) coordinate (B) to ++(0,2mm) ;
+% \draw (A) -- (B) ;
+% \draw[<-] (A) -- ++(-1mm,0) ;
+% \draw[<-] (B) -- ++(1mm,0) ;
+% \path (B) node [right=2mm] {\texttt{space-between}} ;
+% \draw (three) to ++(-3cm,0) coordinate (C) to ++(-2mm,0) ;
+% \draw (four) -| coordinate (D) (C) ; 
+% \draw (D) to ++(-2mm,0) ;
+% \draw[<-] (C) -- ++(0,1mm) ;
+% \draw[<-] (D) -- ++(0,-1mm) ; 
+% \path ($(C)!0.5!(D)$) node [left=2mm] {the ``interline''} ;
+% \end{tikzpicture}
+% 
+% \begin{Verbatim}
+% \Cascade[~emphase#interline=4mm@]{\ShortCascade{A}{B}}{E}{\ShortCascade{C}{D}}{F} G
+% \end{Verbatim}
+% 
+% \begin{center}
+% \Cascade[interline=4mm]{\ShortCascade{A}{B}}{E}{\ShortCascade{C}{D}}{F} G
+% \end{center}
+%
+% \bigskip
+% \begin{Verbatim}
+% \Cascade[~emphase#interline-all=4mm@]{\ShortCascade{A}{B}}{E}{\ShortCascade{C}{D}}{F} G
+% \end{Verbatim}
+% 
+% \begin{center}
+% \Cascade[interline-all=4mm]{\ShortCascade{A}{B}}{E}{\ShortCascade{C}{D}}{F} G
+% \end{center}
+%
+% \interitem
+% The options can also be given at the document level with the command |\CascadeOptions|. In this case, the scope
+% of the declarations is the current TeX group (these declarations are ``semi-global'').
+% 
+% 
+% \bigskip
+% \section{Technical remark}
+% 
+% The package |\Cascade| is designed to give by default results similar to the those given by the environments of
+% \pkg{amsmath} --- and \pkg{mathtools} --- especially |{aligned}|.
+% 
+% \bigskip
+% \begin{BVerbatim}[baseline=c,boxwidth=10cm]
+% \[\left.\begin{aligned}
+% & A = \sqrt{a^2+b^2} \\
+% & B = \frac{ax+b}{cx+d}
+% \end{aligned}\right\}\]
+% \end{BVerbatim}
+% $\left.\begin{aligned}
+% & A = \sqrt{a^2+b^2} \\
+% & B = \frac{ax+b}{cx+d}
+% \end{aligned}\right\}$
+% 
+% \bigskip
+% \begin{BVerbatim}[baseline=c,boxwidth=10cm]
+% \ShortCascade{$\displaystyle A = \sqrt{a^2+b^2}$}
+%              {$B = \dfrac{ax+b}{cx+d}$}
+% \end{BVerbatim}
+% \ShortCascade{$\displaystyle A = \sqrt{a^2+b^2}$}{$B = \dfrac{ax+b}{cx+d}$}
+% 
+% \interitem
+% The package \pkg{cascade} constructs the braces with the classical pair |\left|-|\right| of TeX. However, the
+% extensible delimiters, in TeX, cannot take all sizes. We give, in the following example, the braces obtained when
+% surrounding vertical rules from $6$~mm to $17$~mm (the code is in |expl3|).
+%
+% \begin{Verbatim}
+% \int_step_inline:nnnn 6 1 {17} { $\left.\hbox{\vrule height ~#1 mm}\right\}$\quad }
+% \end{Verbatim}
+%
+% \medskip
+% \begin{center}
+% \ExplSyntaxOn
+% \int_step_inline:nnnn 6 1 {17} { $\left.\hbox{\vrule height #1 mm}\right\}$\quad}
+% \ExplSyntaxOff
+% \end{center}
+% 
+%
+% \newgeometry{left=4cm}
+%
+% \section{Implementation}
+%
+%    \begin{macrocode}
+\RequirePackage{l3keys2e}
+\ProvidesExplPackage
+  {cascade}
+  {\myfiledate}
+  {\myfileversion}
+  {Easy presentation of demonstrations in cascades}
+%    \end{macrocode}
+% 
+% \interitem
+%    \begin{macrocode}
+\RequirePackage{xparse}
+%    \end{macrocode}
+% 
+% \interitem
+% \iffalse
+%%
+%% The following macro is the same as the macro of amsmath
+% \fi
+% \DescribeMacro{\spread@equation}
+% We will use the command |\spread@equation| of \pkg{amsmath} to increase the interline in the commands |\Cascade|.
+% When used, this command becomes no-op (in the current TeX group).
+% 
+% Nevertheless, we want the extension \pkg{cascade} available without \pkg{amsmath}. That's why we give a
+% definition of |\spread@equation| (this definition will be loaded only if \pkg{amsmath} --- or \pkg{mathtools} --- has
+% not been loaded yet).
+%    \begin{macrocode}
+\cs_if_free:NT \spread@equation
+    {\cs_set_protected:Npn \spread@equation
+               {\openup\jot   
+                \cs_set_protected:Npn \spread@equation {}}}
+%    \end{macrocode}
+% Don't put |\cs_set_eq:NN \spread@equation \prog_do_nothing:| in the last line because this would raise errors
+% with nested environments.
+%
+%
+% \iffalse
+%%
+%% The following registers will be used for the options.
+% \fi
+% \interitem
+% The dimension |\l_@@_interline_dim| will be the value of the vertical space added between the two boxes connected
+% by the brace.
+%    \begin{macrocode}
+\dim_new:N \l_@@_interline_dim
+%    \end{macrocode}
+% 
+% \medskip
+% The dimension |\l_@@_interline_all_dim| is the default value of |\l_@@_interline_dim|. This default value can be
+% modified with the option |interline-all|. Therefore, when modified in the options of a command |\Cascade|, this
+% value will affect all the possible nested commands.
+%    \begin{macrocode}
+\dim_new:N \l_@@_interline_all_dim
+%    \end{macrocode}
+% 
+% \medskip
+% The dimension |\l_@@_space_between_dim| is the horizontal space inserted between the two elements of the same row
+% of the construction.
+%    \begin{macrocode}
+\dim_new:N \l_@@_space_between_dim
+\dim_set:Nn \l_@@_space_between_dim {0.5 em}
+%    \end{macrocode}
+%
+% \interitem
+% \iffalse
+%%
+%% This set of options will be used by \Cascade and \ShortCascade
+% \fi
+% The set of keys |cascade/command| will be used for the commands |\Cascade|.
+%    \begin{macrocode}
+\keys_define:nn {cascade/command}
+  {
+%    \end{macrocode}
+% The option |interline| is the vertical space added between the two items connected by a~brace.
+%    \begin{macrocode}
+   interline          .dim_set:N        = \l_@@_interline_dim,
+   interline          .value_required:n = true ,
+%    \end{macrocode}
+% 
+% The option |interline-all| will change the value of |interline| for all the commands |\Cascade|, even the nested
+% commands. 
+%    \begin{macrocode}
+   interline-all      .code:n           = { \dim_set:Nn \l_@@_interline_all_dim {#1}
+                                            \dim_set:Nn \l_@@_interline_dim {#1} },
+   interline-all      .value_required:n = true,
+%    \end{macrocode}
+% 
+% \medskip
+% The option |space-between| is the horizontal space inserted between the two elements of the same row
+% of the construction.
+%    \begin{macrocode}
+   space-between      .dim_set:N        = \l_@@_space_between_dim,
+   space-between      .value_required:n = true}
+%    \end{macrocode}
+% 
+% \iffalse
+%%
+%% This set of options will be used by \CascadeOptions
+% \fi
+% \medskip
+% The set of keys |cascade/global| will be used for the command |\CascadeOptions| (which fixes the options at a
+% ``global'' level).
+% 
+%    \begin{macrocode}
+\keys_define:nn {cascade/global}
+  {interline-all      .dim_set:N        = \l_@@_interline_all_dim,
+   interline-all      .value_required:n = true,
+   space-between      .dim_set:N        = \l_@@_space_between_dim,
+   space-between      .value_required:n = true}
+%    \end{macrocode}
+% 
+% \medskip
+% \DescribeMacro{\CascadeOptions}
+% The command |\CascadeOptions| is the command to set the options of the \pkg{cascade} at the document level (these
+% options are set in a local way in the sense of the TeX groups).
+%    \begin{macrocode}
+\NewDocumentCommand \CascadeOptions {m}
+    {\keys_set:nn {cascade/global} {#1}}
+%    \end{macrocode}
+% 
+% \iffalse
+%%
+%% The command \Cascade is defined with \NewDocumentCommand of xparse
+% \fi
+% \interitem
+% \DescribeMacro{\Cascade}
+% The command |\Cascade| is the main command of this package.
+% 
+%    \begin{macrocode}
+\NewDocumentCommand \Cascade {O{} mmmm}
+   { \if_mode_math:
+        \msg_error:nn {cascade} {Cascade~in~math~mode}
+     \fi:
+     \mode_leave_vertical:
+     \group_begin:
+     \spread@equation
+     \dim_set_eq:NN \l_@@_interline_dim \l_@@_interline_all_dim
+     \keys_set:nn {cascade/command} {#1}
+     \box_clear_new:N \l_@@_box_one
+     \box_clear_new:N \l_@@_box_two
+     \box_clear_new:N \l_@@_box_three
+     \box_clear_new:N \l_@@_box_four
+     \hbox_set:Nn \l_@@_box_one {#2} 
+     \hbox_set:Nn \l_@@_box_two {#3}  
+     \hbox_set:Nn \l_@@_box_three {#4}
+     \hbox_set:Nn \l_@@_box_four {#5}
+%    \end{macrocode}
+%
+% \medskip
+% The dimension |\l_@@_top_dim| is the space that we will have to add before the main construction to make up for the
+% ``|\smash[t]|'' of the box |#1|.
+%    \begin{macrocode}
+     \dim_zero_new:N \l_@@_top_dim
+     \dim_set:Nn \l_@@_top_dim 
+            {\dim_max:nn \c_zero_dim
+                         {\box_ht:N \l_@@_box_one - \box_ht:N \l_@@_box_two}}
+%    \end{macrocode}
+% The dimension |\l_@@_bottom_dim| is the space that we will have to add after the main construction to make up for
+% the ``|\smash[b]|'' of the box |#3|.
+%    \begin{macrocode}
+     \dim_zero_new:N \l_@@_bottom_dim
+     \dim_set:Nn \l_@@_bottom_dim 
+            {\dim_max:nn \c_zero_dim
+                         {\box_dp:N \l_@@_box_three - \box_dp:N \l_@@_box_four}}
+%    \end{macrocode}
+%
+% \medskip
+% We do the ``|\smash[t]|'' of box |#1| and the ``|\smash[b]|'' of box |#3|.
+%    \begin{macrocode}
+     \box_set_ht:Nn \l_@@_box_one \c_zero_dim
+     \box_set_dp:Nn \l_@@_box_three \c_zero_dim
+%    \end{macrocode}
+% 
+% \medskip
+% We can now construct the box.
+%    \begin{macrocode}
+     \vbox:n  
+      {\skip_vertical:N \l_@@_top_dim
+       \vbox_top:n 
+        {\hbox:n 
+          {$\left. 
+              \vcenter {\halign{\hfil##\cr
+                                \hbox:n{\tl_if_empty:nF {#2}
+                                          {\box_use_drop:N \l_@@_box_one 
+                                           \skip_horizontal:n \l_@@_space_between_dim}
+                                        \box_use_drop:N \l_@@_box_two \strut} \cr
+                                \noalign{\skip_vertical:n \l_@@_interline_dim}
+                                \hbox:n{\tl_if_empty:nF {#4}
+                                          {\box_use_drop:N \l_@@_box_three
+                                           \skip_horizontal:n \l_@@_space_between_dim}
+                                        \box_use_drop:N \l_@@_box_four \strut} \cr
+                               }
+                       }  
+            \right\}$
+          }
+         \skip_vertical:N \l_@@_bottom_dim
+        }
+      }
+     \group_end:
+}
+%    \end{macrocode}
+% 
+%
+% \bigskip
+%    \begin{macrocode}
+\msg_new:nnn {cascade}
+             {Cascade~in~math~mode}
+             {The~commands~\token_to_str:N \Cascade\
+              and~\token_to_str:N \ShortCascade\  
+              should~be~used~in~text~mode~only.~However,~you~can~
+              go~on~for~this~time.}
+%    \end{macrocode}
+%
+% \bigskip
+% \DescribeMacro{\ShortCascade}
+% The command |\ShortCascade| is a version simplified of |\Cascade| with only two arguments.
+%    \begin{macrocode}
+\NewDocumentCommand \ShortCascade {O{}mm}
+    {\Cascade[#1]{}{#2}{}{#3}}
+%    \end{macrocode}
+% \endinput
+%
+% Local Variables:
+% TeX-fold-mode: nil
+% End:
+
+
+
+
+
+

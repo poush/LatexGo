@@ -1,0 +1,218 @@
+% fnspe 1.2a
+% This material is subject to the LaTeX Project Public License.
+% See https://www.latex-project.org/lppl/ for the details of that license.
+%
+% Useful commands for FNSPE students 
+%
+% Created by Michal Zeman
+% Updated on September 20, 2017
+% Uploaded on September 20, 2017
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{fnspe}[2017/09/20 Package for FNSPE CTU in Prague made by Michal Zeman]
+
+\RequirePackage{xstring}
+\RequirePackage{bm}
+
+\RequirePackage{amsmath}
+\RequirePackage{amsfonts}
+\RequirePackage{mathrsfs}
+\RequirePackage{amsthm}
+\RequirePackage{amssymb}
+\RequirePackage{xcolor}
+\RequirePackage{listings}
+\RequirePackage{physics}
+\RequirePackage{tikz}         % For arrow and dots in \xvec
+\RequirePackage{substr}
+\RequirePackage{mathtools}
+
+\newif\if@isointerval\@isointervalfalse
+\DeclareOption{isointerval}{
+	\@isointervaltrue
+}
+
+\newif\if@isoointerval\@isoointervalfalse
+\DeclareOption{isoointerval}{
+	\@isoointervaltrue
+}
+
+\newif\if@fnspeinterval\@fnspeintervalfalse
+\DeclareOption{fnspeinterval}{
+	\@fnspeintervaltrue
+}
+
+\newif\if@isotensor\@isotensorfalse
+\DeclareOption{isotensor}{
+	\@isotensortrue
+}
+
+\newif\if@undertensor\@undertensorfalse
+\DeclareOption{undertensor}{
+	\@undertensortrue
+}
+
+\newif\if@arrowtensor\@arrowtensorfalse
+\DeclareOption{arrowtensor}{
+	\@arrowtensortrue
+}
+
+\newif\if@oldcomplex\@oldcomplexfalse
+\DeclareOption{oldcomplex}{
+	\@oldcomplextrue
+}
+
+\newif\if@isocomplex\@isocomplexfalse
+\DeclareOption{isocomplex}{
+	\@isocomplextrue
+}
+
+\newif\if@deftext\@deftextfalse
+\DeclareOption{deftext}{
+	\@deftexttrue
+}
+
+\newif\if@defcolon\@defcolonfalse
+\DeclareOption{defcolon}{
+	\@defcolontrue
+}
+
+\ProcessOptions\relax
+
+\newlength\xvec@height%
+\newlength\xvec@depth%
+\newlength\xvec@width%
+\newcommand{\xvec}[1]{%
+	\ifmmode%
+	\settoheight{\xvec@height}{$#1$}%
+	\settodepth{\xvec@depth}{$#1$}%
+	\settowidth{\xvec@width}{$#1$}%
+	\else%
+	\settoheight{\xvec@height}{#1}%
+	\settodepth{\xvec@depth}{#1}%
+	\settowidth{\xvec@width}{#1}%
+	\fi%
+	\raisebox{.2ex}{\raisebox{\xvec@height}{\rlap{%
+				\kern.05em%  (Because left edge of drawing is at .05em)
+				\begin{tikzpicture}[scale=1]
+				\pgfsetroundcap
+				\draw (.05em,.01)--(\xvec@width-.05em,0.01);
+				\draw (\xvec@width-.05em,0.01)--(\xvec@width-.2em, .155em);
+				\draw (\xvec@width-.05em,0.01)--(\xvec@width-.2em,-.125em);
+				%
+				\end{tikzpicture}%
+	}}}%
+	#1%
+}
+
+\lstset
+{
+	language=[LaTeX]TeX,
+	breaklines=true,
+	basicstyle=\tt\scriptsize,
+	morekeywords = [28]{ci,oi,lci,rci,rest,dif, hlf, degree, hem, htem, oover, realn, inte, ratin, compn, natun, impem, rot, dive, grad, lapl, varun, unit, expv, norm, abs, pder, tder,mat,curl,laplacian, divisionsymbol,
+	floor, ceil, df, allsetzero, allset, cclass, ccinf, ccof},
+	keywordstyle=\color{blue},
+	identifierstyle=\color{magenta},
+}
+
+%\catcode`_=\active
+
+%\newcommand_[1]{\IfSubStr{#1}{!}{\sb{\mathrm{\StrBehind{#1}{!}}}}{\sb{#1}} }
+
+\mathcode`\_=\string"8000
+\catcode`\_=12
+
+\begingroup
+\catcode`\_=\active
+\gdef_#1{\IfCharInString{!}{#1}{\sb{\mathrm{\StrBehind{#1}{!}}}}{\sb{#1}} }
+\endgroup
+\mathcode`\_=\string"8000
+\catcode`\_=12
+
+%\let\stdvec\vec
+\if@arrowtensor
+\renewcommand{\vec}[1]{\xvec{#1}}
+\else
+\renewcommand{\vec}[1]{\ensuremath{\if@undertensor \underline{#1} \else \bm{\mathrm{\MakeLowercase{#1}}} \fi}}
+\fi
+
+\newcommand{\mat}[1]{\ensuremath{\if@undertensor \underline{\underline{#1}} \else \if@arrowtensor \overset{\leftrightarrow}{#1} \else \bm{\mathrm{\MakeUppercase{#1}}} \fi \fi}}
+
+%\newcommand{\pder}[3][]{\ensuremath{\frac{\partial^#1 #2}{\partial #3^#1}}} \pdv
+
+\newcommand*{\tder}[3][]{\dv[#1]{#2}{#3}} %\dv
+
+\newcommand{\oi}[2]{\ensuremath{\if@fnspeinterval \left( #1 , #2 \right) \else \if@isoointerval \left( #1 , #2 \right) \else \left] #1 , #2 \right[ \fi  \fi}}
+
+\newcommand{\ci}[2]{\ensuremath{\if@fnspeinterval \left< #1 , #2 \right> \else \left[ #1 , #2 \right] \fi}}
+
+\newcommand{\rci}[2]{\ensuremath{\if@fnspeinterval \left( #1 , #2 \right> \else \if@isoointerval  \left( #1 , #2 \right] \else \left] #1 , #2 \right] \fi  \fi}}
+
+\newcommand{\lci}[2]{\ensuremath{\if@fnspeinterval \left< #1 , #2 \right) \else \if@isoointerval \left[ #1 , #2 \right) \else \left[ #1 , #2 \right[ \fi  \fi}}
+
+%\newcommand{\rest}[2]{\ensuremath{\left.#1\right|_{#2}}}
+
+\newcommand{\dif}[1]{\mathrm d #1}
+
+\newcommand{\hlf}{\frac{1}{2}}
+
+\newcommand{\degree}{\ensuremath{{}^{\circ}}}
+%\newcommand{\deg}{\degree}
+
+\newcommand{\hem}[1][1]{\hspace{#1em}}
+\newcommand{\htwoem}{\hspace{2em}}
+\newcommand{\htem}{\htwoem}
+
+\newcommand{\oover}[1]{\ensuremath{\frac{1}{#1}}}
+
+\newcommand{\realn}{\ensuremath{\mathbb{R}}}
+\newcommand{\compn}{\ensuremath{\mathbb{C}}}
+\newcommand{\inte}{\ensuremath{\mathbb{Z}}}
+\newcommand{\ratin}{\ensuremath{\mathbb{Q}}}
+\newcommand{\natun}{\ensuremath{\mathbb{N}}}
+\newcommand{\nnzero}{\ensuremath{\mathbb{N}_0}}
+
+\newcommand{\impem}{\hem \Rightarrow \hem}
+
+\newcommand{\rot}{\curl}
+%\newcommand{\dive}{\ensuremath{\nabla \cdot}}
+%\newcommand{\grad}{\ensuremath{\nabla}}
+\newcommand{\lapl}{\Delta} %\laplacian
+
+\newcommand{\varun}[2]{\ensuremath{\left[#1\right]=\mathrm{#2}}}
+\newcommand{\unit}[1]{\;\mathrm{#1}}
+\newcommand{\expv}[1]{\left<#1\right>}
+
+%\newcommand{\norm}[1]{\ensuremath{\left|\left|#1\right|\right|}}
+%\newcommand{\abs}[1]{\ensuremath{\left|#1\right|}}
+
+\if@oldcomplex
+\renewcommand{\Re}{\ensuremath{\mathfrak{Re}}}
+\else
+\renewcommand{\Re}{\ensuremath{\mathrm{Re}\;}}
+\fi
+
+\if@oldcomplex
+\renewcommand{\Im}{\ensuremath{\mathfrak{Im}}}
+\else
+\renewcommand{\Im}{\ensuremath{\mathrm{Im}\;}}
+\fi
+
+%\newcommand{\maxv}[1]{\vec{\mathcal{#1}}}
+%\newcommand{\maxs}[1]{\mathcal{#1}}
+
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+\if@deftext
+\newcommand{\df}{\stackrel{\mathclap{\normalfont{\mbox{\tiny def.}}}}{=}}
+\else
+\newcommand{\df}{\mbox{:=}}
+\fi
+
+\newcommand{\allset}[1]{\{1,2,\ldots,#1\}}
+\newcommand{\allsetzero}[1]{\{0,1,\ldots,#1\}}
+
+\newcommand{\cclass}{\mathscr{C}}
+\newcommand{\ccof}[1]{\cclass^{#1}}
+\newcommand{\ccinf}{\ccof{\infty}}

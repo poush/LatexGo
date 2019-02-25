@@ -1,0 +1,235 @@
+% Bugs (sigh) in Computers \& Typesetting
+
+\input manmac
+\font\sltt=cmsltt10
+\font\niness=cmss9
+\font\ninessi=cmssi9
+\proofmodefalse
+\raggedbottom
+\output{\hsize=29pc \onepageout{\unvbox255\kern-\dimen@ \vfil}}
+
+\def\today{\number\day\
+  \ifcase\month\or
+  Jan\or Feb\or Mar\or Apr\or May\or Jun\or
+  Jul\or Aug\or Sep\or Oct\or Nov\or Dec\fi
+  \ \number\year}
+
+\def\cutpar{{\parfillskip=0pt\par}}
+
+\def\rhead{Bugs in {\tensl Computers \& Typesetting A, 1996}}
+\def\bugonpage#1(#2) \par{\bigbreak\tenpoint
+  \hrule width\hsize
+  \line{\lower3.5pt\vbox to13pt{}Page #1\hfil(#2)}\hrule width\hsize
+  \nobreak\medskip}
+\def\buginvol#1(#2) \par{\bigbreak\penalty-1000\tenpoint
+  \hrule width\hsize
+  \line{\lower3.5pt\vbox to13pt{}Volume #1\hfil(#2)}\hrule width\hsize
+  \nobreak\medskip}
+\def\slMF{{\manual 89:;}\-{\manual <=>:}} % slant the logo
+\def\0{\raise.7ex\hbox{$\scriptstyle\#$}}
+\newcount\nn
+\newdimen\nsize \newdimen\msize \newdimen\ninept \ninept=9pt
+\newbox\eqbox \setbox\eqbox=\hbox{\kern2pt\eightrm=\kern2pt}
+
+\tenpoint
+\noindent This is a list of all corrections made to {\sl Computers \&
+Typesetting}, Volume~A (also known as {\sl The \TeX book}),
+between 1992 and the publication of the final printed
+version of that book in September 1996.
+\looseness=-1
+
+% volume A
+
+\bugonpage A31, line 8 (3/6/95)
+
+\tenpoint\noindent
+\TeX\ begins its error messages with `|!|', and it shows what it was
+reading at the\cutpar
+
+\bugonpage A46, line 8 (1/22/95)
+
+\ninepoint\noindent
+out for
+the occasional times when the adjacent characters |aa|, |ae|, and |o/|
+should not be\cutpar
+
+\bugonpage A49, top (9/1/96)
+
+\eightpoint\noindent
+[The copy on pages 45 and 46 was significantly shortened
+in the seventeenth printing (October 1989 --- see {\tt errata.five}),
+and exercise 8.7 moved back to page 48 as a result. But the printer
+was not asked to change page 49; hence exercise 8.7 appeared twice,
+on pages 48 {\it and\/}~49, during a six-year period.]
+
+\bugonpage A282, lines 11 and 12 (4/18/96)
+
+\ninepoint\noindent
+unadorned \<box> command, except that the new box
+being appended to the vertical list is also shifted left or right by the
+specified amount.
+
+\bugonpage A285, lines 15--17 from the bottom (4/18/96)
+
+\ninepoint
+\textindent{$\bull$}|\raise|\<dimen>\<box>, |\lower|\<dimen>\<box>.\enskip
+This acts just like an unadorned \<box> command, except that the new box
+being appended to the horizontal list is also shifted up or down by the
+specified amount.
+
+\bugonpage A290, lines 4--6 from the bottom (4/18/96)
+
+\ninepoint
+\textindent{$\bull$}|\raise|\<dimen>\<box>, |\lower|\<dimen>\<box>.\enskip
+This acts just like an unadorned \<box> command, except that the new box
+being put into the nucleus is also shifted up or down by the specified amount.
+
+\bugonpage A331, bottom two lines (6/25/93)
+
+\ninepoint\noindent
+if you know that the
+enclosing box is sufficiently small; and |\leaders\vrule\vfill| works fine in
+vertical mode.
+
+\bugonpage A354, lines 19--22 (3/5/95)
+
+\ninepoint\noindent
+|\def\sett@b{\ifx\next\+\def\nxt{\afterassignment\s@tt@b\let\nxt}%|\par
+\noindent
+|  \else\let\nxt=\s@tcols\fi|\par\noindent
+|  \let\next=\relax \nxt} % turn off \outerness|\par\noindent
+|\def\s@tt@b{\let\nxt=\relax \us@false\m@ketabbox}|
+
+\bugonpage A356, lines 13--20 from the bottom (3/5/95)
+
+\ninepoint
+{\parindent=0pt
+|\def\oalign#1{\leavevmode\vtop{\baselineskip0pt \lineskip.25ex|\par
+|  \ialign{##\crcr#1\crcr}}} \def\o@lign{\lineskiplimit=0pt \oalign}|\par
+|\def\ooalign{\lineskiplimit=-\maxdimen \oalign} % chars over each other|\par
+|\def\sh@ft#1{\dimen0=.00#1ex \multiply\dimen0 by\fontdimen1\font|\par
+|  \kern-.0156\dimen0} % compensate for slant in lowered accents|\par
+|\def|^|\d||#1{{\o@lign{\relax#1\crcr\hidewidth\sh@ft{10}.\hidewidth}}}|\par
+|\def|^|\b||#1{{\o@lign{\relax#1\crcr\hidewidth\sh@ft{29}%|\par
+|    \vbox to.2ex{\hbox{\char'26}\vss}\hidewidth}}}|\par
+}
+
+\bugonpage A357, lines 7--12 (8/1/95)
+
+\ninepoint\noindent
+|\def|^|\rightarrowfill||{$\m@th \smash- \mkern-7mu|\par\noindent
+|  \cleaders\hbox{$\mkern-2mu \smash- \mkern-2mu$}\hfill|\par\noindent
+|  \mkern-7mu \mathord\rightarrow$}|\par\noindent
+|\def|^|\leftarrowfill|%
+  |{$\m@th \mathord\leftarrow \mkern-7mu|\par\noindent
+|  \cleaders\hbox{$\mkern-2mu \smash- \mkern-2mu$}\hfill|\par\noindent
+|  \mkern-7mu \smash-$}|
+
+\bugonpage A357, lines 16--20 (6/25/93)
+
+\ninepoint
+{\parindent=0pt
+|  \setbox0=\hbox{$\braceld$}%|\par
+|  \bracelu\leaders\vrule height\ht0 depth0pt\hfill\bracerd|\par
+|  \braceld\leaders\vrule height\ht0 depth0pt\hfill\braceru$}|\par
+|\def|^|\downbracefill||{$\m@th|\par
+|  \setbox0=\hbox{$\braceld$}%|\par
+|  \braceld\leaders\vrule height\ht0 depth0pt\hfill\braceru|\par
+|  \bracelu\leaders\vrule height\ht0 depth0pt\hfill\bracerd$}|\par
+\smallskip[Also delete lines 21 and 22, as the usage is no longer restricted.]
+}
+
+\bugonpage A359, line 25 (3/5/95)
+
+\ninepoint\noindent
+|\def|^|\skew||#1#2#3{{\muskip0=#1mu \mkern.5\muskip0|\par\noindent
+|    #2{\mkern-.5\muskip0{#3}\mkern.5\muskip0}\mkern-.5\muskip0}{}}|
+
+\bugonpage A360, line 5 from the bottom (3/5/95)
+
+\ninepoint\noindent
+|\def\@vereq#1#2{\lower.5pt\vbox{\lineskiplimit\maxdimen \lineskip-.5pt|
+
+\bugonpage A361, lines 19 and 20 (3/5/95)
+
+\ninepoint\noindent
+|\def|^|\bmod||{\nonscript\mskip-\medmuskip \mkern5mu|\par\noindent
+|  |^|\mathbin||{\rm mod} \penalty900 \mkern5mu \nonscript\mskip-\medmuskip}|
+
+\bugonpage A362, lines 14--18 (3/5/95)
+
+\ninepoint\noindent
+|  |^|\everycr||{\noalign{\ifdt@p \global\dt@pfalse|%
+  | \ifdim\prevdepth>-1000pt|\par\noindent
+|      \vskip-\lineskiplimit \vskip\normallineskiplimit \fi|\par\noindent
+|      \else \penalty|^|\interdisplaylinepenalty|| \fi}}}|\par\noindent
+|\def\@lign{\tabskip=0pt\everycr={}} % restore inside \displ@y|\par\noindent
+|\def|^|\displaylines||#1{\displ@y \tabskip=0pt|
+
+\bugonpage A363, lines 8--9 from the bottom (12/8/89)
+
+{\ninepoint\parindent=0pt
+|  \if@mid \dimen@=\ht0 \advance\dimen@ by\dp\z@ |%
+ |\advance\dimen@ by12\p@|\parbreak%
+|    \advance\dimen@ by\pagetotal \advance\dimen@ by-\pageshrink|
+\par}
+
+\bugonpage A364, line 5 from the bottom (4/11/96)
+
+\ninepoint\noindent
+|\def\fmtname{plain}|\par\noindent
+|\def\fmtversion{3.141592} % identifies the current format|
+
+\bugonpage A374, line 3 (3/7/95)
+
+\ninepoint\indent
+|\begingroup\aftergroup\def\aftergroup\asts\aftergroup{|
+
+\bugonpage A410, line 23 (4/18/96)
+
+\ninepoint\noindent
+|  Tema con variazione \(su un tema differente)|
+\smallskip\eightpoint\noindent
+(This implies a corresponding correction to page 411.)
+
+\bugonpage A451, line $16$ (8/8/93)
+
+\ninepoint\noindent
+But when plain \TeX\ is tried on the name of a famous ^{Welsh} village,
+
+\bugonpage A462, right column (3/5/95)
+
+\def\cong{\mathrel{\mathpalette\OvOreq\sim}} % congruence sign, index version
+\def\OvOreq#1#2{\lower.5pt\vbox{\baselineskip0pt\lineskip-.0pt
+    \ialign{$#1\hfil##\hfil$\crcr#2\crcr=\crcr}}}
+\eightpoint
+|\cong| ( $\cong$ ), 151, $\underline{360}$, 436.
+
+\bugonpage A463, right column (6/25/93)
+
+\eightpoint
+direct sum, {\sl see\/} |\oplus|.
+
+\bugonpage A464, left column (6/25/93)
+
+\eightpoint
+|\downbracefill| (\hbox to 4em{\downbracefill}), 225--226, $\underline{357}$.
+
+\bugonpage A483, lines 15--21 (4/29/97)
+
+\tenpoint
+\begintt
+email: {\tt TUG@tug.org}
+internet: {\tt http://www.tug.org/}
+}
+\endtt
+Don't delay, subscribe today! That address again is
+
+\smallskip
+{\obeylines
+\TeX\ Users Group
+email: {\tt TUG\char`\@ tug.org}
+internet: {\tt http://www.tug.org/}
+}
+
+\bye

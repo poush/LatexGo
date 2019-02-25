@@ -1,0 +1,421 @@
+%% poormanlog.tex v0.04, 2019/02/17
+%%
+%% Copyright (C) 2019, Jean-Francois Burnol
+%%
+%% This Work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License version 1.3c.
+%%
+%% This Work has the LPPL maintenance status `author-maintained`.
+%%
+%% The Author of this Work is Jean-Francois Burnol (jfbu AT free DOT fr)
+%%
+%% This Work consists of files poormanlog.tex, poormanlog.sty and the
+%% README
+%% 
+%% ************         BARELY TESTED         ****************
+%% >>>>>>> WARNING FOR LACK OF TIME I HAVE NOT YET VALIDATED FULLY <<<<<
+%% >>>>>>> NOR HAVE I MADE PRECISE ESTIMATES. USE AT YOUR OWN RISK <<<<<
+%% (bug reports welcome)
+%% ************         BARELY TESTED         ****************
+%
+% Package macro private prefix: \PML@
+%
+% SEE README FOR USER DOCUMENTATION
+%
+\ifx\numexpr\JFBUundefined
+   \message{**** poormanlog requires e-TeX **** LOADING ABORTED ****}%
+\endinput\fi
+%
+% CATCODES (AND AUXILIARIES FOR PLAIN TEX)
+%
+\expandafter\edef\csname @tempa\endcsname
+{%
+  \catcode0 \the\catcode0 %
+  \catcode`\noexpand\_ \the\catcode`\_ %
+  \catcode`\noexpand\^ \the\catcode`\^ %
+  \catcode`\noexpand\: \the\catcode`\: %
+  \catcode`\noexpand\* \the\catcode`\* %
+  \catcode`\noexpand\@ \the\catcode`\@ %
+}%
+\catcode`\@ 11 %
+\if1\ifx\@namedef\JFBUundefined1\else\ifx\@namedef\relax1\else0\fi\fi
+  \def\@namedef#1{\expandafter\def\csname #1\endcsname}%
+  \def\@nameuse#1{\csname #1\endcsname}%
+\fi
+\long\def\@gobble#1{}%
+%
+% TABLES
+%
+% The algorithm for \PMLogZ is the reverse engineering of the one I did
+% for \PMPowTen. I had an other approach for log10 initially but it was
+% less accurate than what testings of \PMPowTen showed. The same accuracy, even
+% slightly better, was then obtain with \PMLogZ by imitating the latter
+% algorithm (the original was faster but achieved only about 6ulp max error,
+% although most of the time the result was correct up to +2 or -2,
+% the present one appears to achieve not much worse than 1ulp maximal error).
+%
+% method of CORDIX type combined with usage of \numexpr "scaling" operations
+% 
+\@namedef{PML@1@10}{}%
+\@namedef{PML@1@9}{*1349157701/1071674055}%
+\@namedef{PML@1@8}{*946017331/596896583}%
+\@namedef{PML@1@7}{*495834591/248505967}%
+\@namedef{PML@1@6}{*870020383/346361353}%
+\@namedef{PML@1@5}{*1499219281/474094764}%
+\@namedef{PML@1@4}{*1978893117/497075477}%
+\@namedef{PML@1@3}{*368683859/73562101}%
+\@namedef{PML@1@2}{*1295603161/205339263}%
+\@namedef{PML@1@1}{*1268797901/159732192}%
+\@namedef{PML@1@0}{*10}%
+%
+\@namedef{PML@P1@10}{}%
+\@namedef{PML@P1@9}{*1071674055/1349157701}%
+\@namedef{PML@P1@8}{*596896583/946017331}%
+\@namedef{PML@P1@7}{*248505967/495834591}%
+\@namedef{PML@P1@6}{*346361353/870020383}%
+\@namedef{PML@P1@5}{*474094764/1499219281}%
+\@namedef{PML@P1@4}{*497075477/1978893117}%
+\@namedef{PML@P1@3}{*73562101/368683859}%
+\@namedef{PML@P1@2}{*205339263/1295603161}%
+\@namedef{PML@P1@1}{*159732192/1268797901}%
+\@namedef{PML@P1@0}{/10}%
+%
+\@namedef{PML@2@12}{*1759219355/1983514284}%
+\@namedef{PML@2@11}{*1038555297/1159316503}%
+\@namedef{PML@2@10}{*1446048050/1598130251}%
+\@namedef{PML@2@9}{*200795995/219705814}%
+\@namedef{PML@2@8}{*19701438/21342313}%
+\@namedef{PML@2@7}{*699035545/749721341}%
+\@namedef{PML@2@6}{*342419462/363593499}%
+\@namedef{PML@2@5}{*262151601/275592401}%
+\@namedef{PML@2@4}{*643237001/669488001}%
+\@namedef{PML@2@3}{*909207215/936896697}%
+\@namedef{PML@2@2}{*14850599/15150601}%
+\@namedef{PML@2@1}{*119401199/120601201}%
+\@namedef{PML@2@0}{}%
+\@namedef{PML@2@-1}{*120601201/119401199}%
+\@namedef{PML@2@-2}{*15150601/14850599}%
+\@namedef{PML@2@-3}{*936896697/909207215}%
+\@namedef{PML@2@-4}{*669488001/643237001}%
+\@namedef{PML@2@-5}{*275592401/262151601}%
+\@namedef{PML@2@-6}{*363593499/342419462}%
+\@namedef{PML@2@-7}{*749721341/699035545}%
+\@namedef{PML@2@-8}{*21342313/19701438}%
+\@namedef{PML@2@-9}{*219705814/200795995}%
+\@namedef{PML@2@-10}{*1598130251/1446048050}%
+\@namedef{PML@2@-11}{*1159316503/1038555297}%
+\@namedef{PML@2@-12}{*1983514284/1759219355}%
+%
+%\@namedef{PML@3@9}{*166909427/168418392}%
+%\@namedef{PML@3@8}{*233438999/235314001}%
+%\@namedef{PML@3@7}{*921380630/927852921}%
+\@namedef{PML@3@6}{*92333611/92889278}%
+\@namedef{PML@3@5}{*957602399/962402401}%
+\@namedef{PML@3@4}{*1871252999/1878753001}%
+\@namedef{PML@3@3}{*739112555/741333222}%
+\@namedef{PML@3@2}{*2997001/3003001}%
+\@namedef{PML@3@1}{*11994001/12006001}%
+\@namedef{PML@3@0}{}%
+\@namedef{PML@3@-1}{*12006001/11994001}%
+\@namedef{PML@3@-2}{*3003001/2997001}%
+\@namedef{PML@3@-3}{*741333222/739112555}%
+\@namedef{PML@3@-4}{*1878753001/1871252999}%
+\@namedef{PML@3@-5}{*962402401/957602399}%
+\@namedef{PML@3@-6}{*92889278/92333611}%
+%\@namedef{PML@3@-7}{*927852921/921380630}%
+%\@namedef{PML@3@-8}{*235314001/233438999}%
+%\@namedef{PML@3@-9}{*168418392/166909427}%
+%
+\@namedef{PML@4@5}{*47988001/48012001}%
+\@namedef{PML@4@4}{*74985001/75015001}%
+\@namedef{PML@4@3}{*399940003/400060003}%
+\@namedef{PML@4@2}{*299970001/300030001}%
+\@namedef{PML@4@1}{*1199940001/1200060001}%
+\@namedef{PML@4@0}{}%
+\@namedef{PML@4@-1}{*1200060001/1199940001}%
+\@namedef{PML@4@-2}{*300030001/299970001}%
+\@namedef{PML@4@-3}{*400060003/399940003}%
+\@namedef{PML@4@-4}{*75015001/74985001}%
+\@namedef{PML@4@-5}{*48012001/47988001}%
+%%
+%%
+%% LOG IN BASE 10 : \the\numexpr\PML@ ddddddddd.\relax
+%%
+%% Exactly 9 digits representing d.dddddddd, first one at least 1.
+%% Goal is to compute log10(d.dddddddd) with 9 digits
+%%
+\def\PML@#1.{\expandafter\PML@a\the\numexpr#1/100000.#1.}%
+\def\PML@a#1.{\expandafter\PML@ai
+    \the\numexpr
+    \ifnum#1>2817 %
+        \ifnum#1>5622 %
+            \ifnum#1>7078 \ifnum#1>8912 10\else 9\fi
+            \else         8%
+            \fi
+        \else
+            \ifnum#1>3547 \ifnum#1>4466 7\else 6\fi
+            \else         5%
+            \fi
+        \fi
+    \else
+        \ifnum#1>1412 %
+            \ifnum#1>1777 \ifnum#1>2238 4\else 3\fi
+            \else         2%
+            \fi
+        \else
+            \ifnum#1>1121 1\else 0\fi
+        \fi
+    \fi
+    .%
+}%
+\def\PML@ai #1.#2.%
+   {\expandafter\PML@b\the\numexpr#2\@nameuse{PML@1@#1}.%
+                     )*774923109/1784326399+#100000000}%
+%
+\def\PML@b#1.{\expandafter\PML@bi\the\numexpr#1/1000000.#1.}%
+\def\PML@bi#1.{\expandafter\PML@bii
+    \the\numexpr
+    \ifnum#1>994 %
+        \ifnum#1>1056 %
+            \ifnum#1>1088 %
+                \ifnum#1>1110 \ifnum#1>1121 12\else 11\fi
+                \else         \ifnum#1>1099 10\else 9\fi
+                \fi
+            \else
+                \ifnum#1>1066 \ifnum#1>1077 8\else 7\fi
+                \else         6%
+                \fi
+            \fi
+        \else
+            \ifnum#1>1024 %
+                \ifnum#1>1035 \ifnum#1>1045 5\else 4\fi
+                \else         3%
+                \fi
+            \else
+                \ifnum#1>1004 \ifnum#1>1014 2\else 1\fi
+                \else         0%
+                \fi
+            \fi
+        \fi
+    \else
+        \ifnum#1>936 %
+            \ifnum#1>965 %
+                \ifnum#1>974 \ifnum#1>984 -1\else -2\fi
+                \else        -3%
+                \fi
+            \else
+                \ifnum#1>945 \ifnum#1>955 -4\else -5\fi
+                \else        -6%
+                \fi
+            \fi
+        \else
+            \ifnum#1>908 %
+                \ifnum#1>918 \ifnum#1>927 -7\else -8\fi
+                \else        -9%
+                \fi
+            \else
+                \ifnum#1>890 \ifnum#1>899 -10\else -11\fi
+                \else       -12%
+                \fi
+            \fi
+        \fi
+    \fi
+    .%
+}%
+\def\PML@bii#1.#2.%
+   {\expandafter\PML@c\the\numexpr#2\@nameuse{PML@2@#1}.+#10000000}%
+%
+\def\PML@c#1.%
+   {\expandafter\PML@ci\the\numexpr#1/1000000-1000.#1.}%
+\def\PML@ci#1.#2.%
+   {\expandafter\PML@d\the\numexpr#2\@nameuse{PML@3@#1}.+#1000000}%
+%
+\def\PML@d#1.%
+   {\expandafter\PML@di\the\numexpr#1/100000-10000.#1.}%
+\def\PML@di#1.#2.%
+   {\expandafter\PML@e\the\numexpr#2\@nameuse{PML@4@#1}-1000000000.+#100000}%
+% we have reached
+% x = 1 + t/10^9 represented by t
+% log(x) represented by 10^9 times (t/10^9 (2.10^9 - t)/2.10^9)
+\def\PML@e #1.{(#1*(2000000000-#1)/2000000000+}%
+%%
+%%
+%% POWER OF TEN :  \the\numexpr\PML@Pa ddddddddd.\relax
+%%
+%% Exactly 9 digits in input representing number 0.ddddddddd
+%% Goal is to compute 10^0.ddddddddd with 9 digits.
+%%
+\def\PML@Pa#1#2{\expandafter\PML@Pai\the\numexpr#1#2/10.#1#2}%
+\def\PML@Pai#1.#2.{%
+    \expandafter\PML@Pb\the\numexpr(#2-#100000000)*2079839159/90326267.%
+    \@nameuse{PML@P1@#1}%
+}%
+% problem with minus sign interfering with token count so simply fetch all
+% the -#1 is to re-use constants already defined for log
+\def\PML@Pb#1.{\expandafter\PML@Pbi\the\numexpr-#1/100000000.#1.}%
+\def\PML@Pbi#1.#2.%
+   {\expandafter\PML@Pc\the\numexpr#2+#100000000.\@nameuse{PML@2@#1}}%
+% \pm 0.00d, d at most 5, 8 digits integer N for N/10^10
+\def\PML@Pc#1.{\expandafter\PML@Pci\the\numexpr-#1/10000000.#1.}%
+\def\PML@Pci#1.#2.%
+   {\expandafter\PML@Pd\the\numexpr#2+#10000000.\@nameuse{PML@3@#1}}%
+% \pm 0.000d, d at most 5, 7 digits
+\def\PML@Pd#1.{\expandafter\PML@Pdi\the\numexpr-#1/1000000.#1.}%
+\def\PML@Pdi#1.#2.%
+   {\expandafter\PML@Pe\the\numexpr#2+#1000000.\@nameuse{PML@4@#1}}%
+% \pm 0.0000d, d at most 5, 6 digits integer N for N/10^10
+% exp of that must fit in 10 digits, and there will be leading 1, hence
+% only 9 digits available for fitting x + x^2/2, x = Ne-10
+% so we must compute via numexpr
+% 10^9*x*(1+x/2) = 10^9*N/10^10*(2.10^10+ N)/2.10^10
+% with N in absolute value at most 500000.
+% N*(2.10^9+N/10)/2.10^10 which is about N/10
+\def\PML@Pe#1.{(1000000000+#1*(200000000+#1/100)/2000000000)}%
+%%
+%%
+%% BASIC USER INTERFACE : \PMLogZ, \PMPowTen
+%%
+% Another way of inserting leading zeros is found in xint source code,
+% maybe faster. "Z" is for reminding that output has leading zeros.
+\def\PMLogZ#1%
+{%
+    \romannumeral-`0\expandafter\@gobble
+    % \PML@ never gives something negative, hopefully...
+    \the\numexpr1000000000+\expandafter\PML@\romannumeral-`0#1.\relax
+}%
+\def\PMPowTen#1{\the\numexpr\expandafter\PML@Pa\romannumeral-`0#1.\relax}%
+%%
+%%
+%% ADD-ONS TO XINTFRAC : \PoorManLogBaseTen{#1}, \PoorManPowerOfTen{#1}
+%%                       and \PoorManPower{#1}{#2}
+%% Does not matter if xintfrac loaded before or after.
+%%
+\def\PoorManLogBaseTen{\romannumeral0\poormanlogbaseten}%
+\def\poormanlogbaseten #1%
+   {\expandafter\PML@logbaseten\romannumeral0\XINTinfloat[9]{#1}}%
+\def\PML@logbaseten#1[#2]%
+{%
+    \xintiiadd{\xintDSx{-9}{\the\numexpr#2+8\relax}}{\the\numexpr\PML@#1.}%
+    [-9]%
+}%
+%
+\def\PoorManPowerOfTen{\the\numexpr\poormanpoweroften}%
+\def\poormanpoweroften #1%
+   {\expandafter\PML@powoften\romannumeral0\xintraw{#1}}%
+\catcode`\_ 11 %
+\def\PML@powoften#1{%
+    \xint_UDzerominusfork
+      #1-\PML@powoften@zero
+      0#1\PML@powoften@neg
+       0-\PML@powoften@pos
+    \krof #1%
+}%
+\catcode`\_ 8 %
+\def\PML@powoften@zero 0{1\relax}%/1[0]
+\def\PML@powoften@pos#1[#2]{%
+    \expandafter\PML@powoften@pos@a\romannumeral0\xintround{9}{#1[#2]}.%
+}%
+\def\PML@powoften@pos@a#1.#2.{\PML@Pa#2.\expandafter[\the\numexpr-8+#1]}%
+\def\PML@powoften@neg#1[#2]{%
+    \expandafter\PML@powoften@neg@a\romannumeral0\xintround{9}{#1[#2]}.%
+}%
+\def\PML@powoften@neg@a#1.#2.{\ifnum#2=0 \xint_afterfi{1\relax/1[#1]}\else
+   \expandafter\expandafter\expandafter
+   \PML@Pa\expandafter\@gobble\the\numexpr2000000000-#2.%
+   \expandafter[\the\numexpr-9+#1\expandafter]\fi
+}%
+%
+\def\PoorManPower#1#2% #1**#2
+{%
+    \PoorManPowerOfTen{\xintMul{#2}{\PoorManLogBaseTen{#1}}}%
+}%
+%%
+%% ADD-ONS TO XINTEXPR :
+%%
+%% log10(), pow10()
+%%
+%% Does not matter if xintexpr loaded before or after.
+%%
+\catcode`\_ 11 \catcode`\: 11 %
+\unless\ifcsname XINT_expr_func_log10\endcsname
+\@namedef{XINT_expr_func_log10}#1#2#3%
+{%
+    \expandafter #1\expandafter #2\csname.=%
+    \XINT:NEhook:one\PoorManLogBaseTen{\XINT_expr_unlock #3}\endcsname
+}%
+\fi
+\unless\ifcsname XINT_flexpr_func_log10\endcsname
+\expandafter\let\csname XINT_flexpr_func_log10\expandafter\endcsname
+                \csname XINT_expr_func_log10\endcsname
+\fi
+%
+\unless\ifcsname XINT_expr_func_pow10\endcsname
+\@namedef{XINT_expr_func_pow10}#1#2#3%
+{%
+    \expandafter #1\expandafter #2\csname.=%
+    \XINT:NEhook:one\PoorManPowerOfTen{\XINT_expr_unlock #3}\endcsname
+}%
+\fi
+\unless\ifcsname XINT_flexpr_func_pow10\endcsname
+\expandafter\let\csname XINT_flexpr_func_pow10\expandafter\endcsname
+                \csname XINT_expr_func_pow10\endcsname
+\fi
+%%
+%% On-demand modification of ** or ^ operators in \xintexpr and \xintfloatexpr
+%%
+\catcode`\* 11 \catcode0 12  %
+%
+\def\poormanloghack**{%
+\def\XINT_expr_op_** ##1%
+{%
+    \expandafter \XINT_expr_until_**_a
+    \expandafter ##1\romannumeral`^^@\expandafter\XINT_expr_getnext
+}%
+\def\XINT_expr_until_**_a ##1{%
+\def\XINT_expr_until_**_a ####1####2%
+{%
+    \xint_UDsignfork
+      ####2{\expandafter \XINT_expr_until_**_a \expandafter ##1%
+         \romannumeral`^^@##1}%
+       -{\XINT_expr_until_**_b ####1####2}%
+    \krof
+}}\expandafter\XINT_expr_until_**_a\csname XINT_expr_op_-ix\endcsname
+\def\XINT_expr_until_**_b ##1##2##3##4%
+{%
+    \ifnum ##2>\XINT_expr_precedence_**
+       \xint_afterfi
+       {\expandafter \XINT_expr_until_**_a \expandafter ##1%
+        \romannumeral`^^@\csname XINT_expr_op_##3\endcsname {##4}}%
+    \else
+       \xint_afterfi
+       {\expandafter ##2\expandafter ##3%
+        \csname .=\XINT:NEhook:two
+        \PoorManPower{\XINT_expr_unlock ##1}{\XINT_expr_unlock ##4}\endcsname
+       }%
+     \fi
+}%
+\let\XINT_flexpr_op_** \XINT_expr_op_**
+\let\XINT_flexpr_until_**_a\XINT_expr_until_**_a
+\let\XINT_flexpr_until_**_b\XINT_expr_until_**_b
+}%
+\catcode`\^ 11 \catcode`\* 7  %
+\def\poormanloghack^{%
+\def\XINT_expr_until_^_b ##1##2##3##4%
+{%
+    \ifnum ##2>\XINT_expr_precedence_^
+       \xint_afterfi
+       {\expandafter \XINT_expr_until_^_a \expandafter ##1%
+        \romannumeral`**@\csname XINT_expr_op_##3\endcsname {##4}}%
+    \else
+       \xint_afterfi
+       {\expandafter ##2\expandafter ##3%
+        \csname .=\XINT:NEhook:two
+        \PoorManPower{\XINT_expr_unlock ##1}{\XINT_expr_unlock ##4}\endcsname
+       }%
+     \fi
+}%
+\let\XINT_flexpr_until_^_b\XINT_expr_until_^_b
+}%
+\@tempa
+\def\poormanloghack#1{\csname poormanloghack#1\endcsname}%
+\endinput

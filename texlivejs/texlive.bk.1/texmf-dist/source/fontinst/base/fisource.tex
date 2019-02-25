@@ -1,0 +1,3037 @@
+%
+% Copyright 1998, 1999, 2000 the fontinst maintenance team and any 
+% individual authors listed elsewhere in this file.  All rights reserved.
+% 
+% This file is part of the fontinst system version 1.9.
+% -----------------------------------------------------
+% 
+% It may be distributed under the terms of the LaTeX Project Public
+% License, as described in lppl.txt in the base LaTeX distribution.
+% Either version 1.0 or, at your option, any later version.
+% 
+\documentclass{ltxdoc}
+\usepackage[dolayout,fileispart]{fisource}
+
+\usepackage{longtable}
+
+\RecordChanges
+\EnableCrossrefs
+
+\IndexPrologue{%
+   \section*{Index}%
+   \addcontentsline{toc}{section}{Index}%
+   \markboth{Index}{Index}%
+   Compound numbers (numbers with a hyphen) refer to a code line, and 
+   the letter that is the first part of such a number specifies the 
+   source file the code line is in, as explained by the file key below. 
+   Simple numbers refer to pages. Numbers written in italics refer to
+   places where the corresponding entry is described, the ones 
+   underlined to where it is defined, and the rest to where it is used.
+}
+\GlossaryPrologue{%
+   \section*{Change History}%
+   \addcontentsline{toc}{section}{Change History}%
+   \markboth{Change History}{Change History}%
+}
+   
+
+\makeatletter
+\newcommand{\offindex}{\let\index\@gobble}
+
+\newcommand{\consumption}{%
+   \begingroup
+      \endlinechar=`\&\relax
+   \expandafter\endgroup\consumption@i
+}
+\def\consumption@i#1#2{%
+   \ifhmode{\parskip=\z@\@plus\p@\relax\par}\fi
+   Time elapsed: #1\,s\par
+   \tabskip=\leftmargin \advance \tabskip 1em\relax
+   \halign{&\hfil##\ \tabskip=\z@skip&##\hfil\tabskip=1em\cr
+     \omit\span \textbf{Stacks}&\omit\span \textbf{Others}\cr
+     \consumption@ii#2\@nil
+   }%
+}
+%  #1 = number of strings used
+%  #3 = string characters used
+%  #5 = words of memory used
+%  #7 = number of multiletter control sequences used
+%  Other parameters are garbage.
+\def\consumption@ii#1 #2&#3 #4&#5 #6&#7 #8&#9&{%
+   \consumption@iii{{#1}{#3}}{{#5}{#7}}%
+}
+\def\consumption@iii#1#2#3&#4i,#5n,#6p,#7b,#8s#9\@nil{%
+   #4& input sources& \@secondoftwo#2& multiletter control 
+     sequences\cr
+   #6& parameters& \@firstoftwo#1& strings\cr
+   #7& buffer characters& \@secondoftwo#1& string characters\cr
+   #8& saved values& \@firstoftwo#2& main memory words\cr
+}
+\makeatother
+
+\newenvironment{smalldes}{%
+   \list{}{%
+      \setlength\labelwidth{0pt}%
+      \setlength\itemindent{-\leftmargin}%
+      \setlength\listparindent{1em}%
+      \setlength\parsep{0pt}%
+      \setlength\itemsep{0pt plus 1pt}%
+      \setlength\topsep{\itemsep}%
+      \let\makelabel\descriptionlabel
+   }%
+}{\endlist}
+
+% \includeonly{}
+\iffalse
+\MakeShortVerb{\|}
+\fi
+
+\title{The \package{fontinst} utility}
+\author{Alan Jeffrey\and David Carlisle\and Sebastian Rahtz\and 
+  Ulrik Vieth\and Lars Hellstr\"om}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\clearpage
+
+\part*{About the \package{fontinst} package}
+\addcontentsline{toc}{part}{The \package{fontinst} documentation}
+
+This document implements and describes version~1.9 of 
+\package{fontinst}.
+
+
+
+\section{Files}
+
+\subsection{Source files}
+
+The source for \package{fontinst} is currently split on the seven 
+source files \texttt{fibasics.dtx} (basic \TeX\ initialisation and 
+hackery), \texttt{ficommon.dtx} (commands for variables, integer 
+expressions, and the like), \texttt{fimain.dtx} (actually making 
+fonts), \texttt{fitrig.dtx} (trigonometry), \texttt{ficonv.dtx} 
+(conversions between file formats, font transformations), 
+\texttt{filtfam.dtx} (the \cs{latinfamily} command), and 
+\texttt{fimapgen.dtx} (mapfile generation).
+
+
+\subsection{Generated files}
+
+By running the \package{docstrip} installation script 
+\texttt{fontinst.ins}, the following files are generated:
+\begin{description}
+  \item[\texttt{fontinst.sty}] This is the executable file that 
+    contains all the commands that set up the \package{fontinst} 
+    utility for use.
+  \item[\texttt{xfntinst.sty}] This is a variant of 
+    \texttt{fontinst.sty} in which the |\latin|\-|family| command 
+    behaves differently with respect to from which fonts the digits 
+    are picked (see below).
+  \item[\texttt{cfntinst.sty}] This is a variant of 
+    \texttt{fontinst.sty} which supports the old way of selecting 
+    boundarychar for fonts (i.e., by setting the integer 
+    |boundarychar|). It requires a bit more memory than 
+    \texttt{fontinst.sty} does.
+  \item[\texttt{fontinst.ini}] This file contains some very basic 
+    initialization code. It is used in case \package{fontinst} is used 
+    under ini\TeX\ without a preloaded format.
+  \item[\texttt{finstmsc.sty}] This file contains the routines for 
+    automatic map file generation, which can now generate map files 
+    for the \package{dvips} and \package{dvipdfm} drivers. The system 
+    is extendable, so users interested in generating map files for 
+    other drivers can extend the mapfile writer's capabilities by 
+    adding code to their \texttt{finstmsc.rc} files. \emph{Contributions 
+    of such code is welcome}. This file also contains some seldom-used 
+    code (the ENC to ETX conversion) that has been broken off from 
+    the main \package{fontinst} utility, as it almost always just sat 
+    there and used up space for no good reason.
+  \item[\texttt{fontdoc.sty}] This file contains the \package{fontdoc} 
+    package, which can be used to typeset encoding and metric files.
+  \item[\texttt{csc2x.tex}] This file contains the reglyphing commands 
+    that set up the common caps-and-small-caps to expert names 
+    conversion. See Subsections~\ref{Ssec:Des:Reglyph} 
+    and~\ref{Ssec:Reglyph} for details.
+  \item[\texttt{csckrn2x.tex}] This file is a variant of 
+    \texttt{csc2x.tex}, which doesn't copy the commands that actually 
+    set glyphs.
+  \item[\texttt{osf2x.tex}] This file is a variant of 
+    \texttt{csc2x.tex}, which only changes the names of digits.
+\end{description}
+
+\changes{1.914}{2000/05/14}{Generating \texttt{trig.sty} from 
+   source. (LH)}
+
+
+\subsection{Modules}
+
+The source is split up on the following \package{docstrip} modules:
+\begin{description}
+  \item[\Module{boundaryCompability}, \texttt{fimain}]
+    Guards code that is needed for \package{fontinst} to be compatible 
+    with the old interface for boundary ligatures and kerns.
+  \item[\Module{!boundaryCompability}, \texttt{fimain}]
+    Guards code that is used when \package{fontinst} is not to be 
+    compatible with the old interface for boundary ligatures and kerns.
+  \item[\Module{debug}, \texttt{filtfam}]
+    Guards code in the |\latinfamily| section that writes \texttt{INFO>} 
+    messages.
+  \item[\Module{doc}, \texttt{fibasics}, \texttt{ficommon}, 
+    \texttt{fimain}, and \texttt{fimapgen}]
+    Guards code that is to go into \texttt{fontdoc.sty}.
+  \item[\Module{driver}, all files]
+    Guards the driver code---the short piece of \LaTeX\ code in the 
+    beginning of each file that makes it possible to typeset as a 
+    \LaTeX\ document. \texttt{docstrip.ins} doesn't extract this 
+    code, but it is possible to write a script that makes 
+    \package{docstrip} extract this code if one wants to write a 
+    modified driver. It's not usual, though.
+  \item[\Module{everyjob}, \texttt{fibasics}]
+    Guards the code setting |\everyjob| for fontinst formats (by 
+    default not used).
+  \item[\Module{!glyphs}, \texttt{ficonv}]
+    Guards reglyphing setup code that is relevant when commands that 
+    set glyphs are not to be copied.
+  \item[\Module{glyphs}, \texttt{ficonv}]
+    Guards reglyphing setup code that is relevant when commands that 
+    set glyphs are to be copied.
+  \item[\Module{ini}, \texttt{fibasics}]
+    Guards the code for \texttt{fontinst.ini}.
+  \item[\Module{map}, \texttt{fimapgen}]
+    Guards the code for the automatic map file generation.
+  \item[\Module{misc}, \texttt{fibasics}, \texttt{fimain}, and 
+    \texttt{ficonv}]
+    Guards code that is only to go into \texttt{finstmsc.sty}.
+  \item[\Module{!misc}, \texttt{fibasics}]
+    Guards code that is not to go into \texttt{finstmsc.sty}.
+  \item[\Module{obsolete}, \texttt{ficommon} and \texttt{fimain}]
+    Guards miscellaneous pieces of code that are considered obsolete.
+  \item[\Module{oldstyle}, \texttt{filtfam}]
+    Guards code in the |\latinfamily| section. The purpose of that 
+    code is described in more detail in Section~\ref{Sec:NotesOnUsing}.
+  \item[\Module{oldTeX}, \texttt{fibasics}]
+    Guards code that copes with a bug in \TeX\ versions before 3.141.
+  \item[\Module{!oldTeX}, \texttt{fibasics}]
+    Guards normal code that wouldn't work satisfactory for 
+    \TeX\ versions before 3.141 due to a bug in those \TeX s.
+  \item[\Module{pkg}, all files]
+    Guards code that is to go into \texttt{fontinst.sty} (and its 
+    variants).
+  \item[\Module{pkg2}, \texttt{fibasics}]
+    A special variant of \Module{pkg} that is used for code that is 
+    to end up at the very end of \texttt{fontinst.sty}.
+  \item[\Module{reglyphletters}, \texttt{ficonv}]
+    Guards code that sets up for changing lower case letter names to 
+    corresponding smallcaps names. Used for \texttt{csc2x.tex} and 
+    \texttt{csckrn2x.tex}.
+  \item[\Module{reglyphfigures}, \texttt{ficonv}]
+    Guards code that sets up for changing ordinary figure names to 
+    corresponding \texttt{oldstyle} names. Used for 
+    \texttt{osf2x.tex}, \texttt{csc2x.tex}, and 
+    \texttt{csckrn2x.tex}.
+  \item[\Module{reglyph}, \texttt{ficonv}]
+    Guards code that is to go to the reglyphing setup files 
+    \texttt{csc2x.tex} and \texttt{csckrn2x.tex}.
+  \item[\Module{textcomp}, \texttt{filtfam}]
+    Guards code in the |\latinfamily| section that generates text symbol 
+    (\texttt{TS1}\slash ``text companion'') fonts.
+  \item[\Module{underconstruction}, \texttt{fimain}]
+    Guards some code that is ``under construction''.
+\end{description}
+
+
+
+\section{About previous \package{fontinst} releases}
+
+\subsection{Pre-\package{doc} fontinst releases}
+
+The following is a choice of some \package{fontinst} versions and some 
+comments about them. The complete list of versions in the range 
+v\,0.01--1.7 can be found in the file \texttt{CHANGES}.
+\begin{description}
+\item[v\,0.01]
+  was begun by Alan Jeffrey in February 1993.  This was the
+  very first version recorded in the \texttt{CHANGES} file.
+%
+\item[v\,0.19]
+  was completed in April 1993 and presented at the TUG~'93
+  conference in July 1993.  It is described in the proceedings
+  in \emph{TUGboat}~14\#3 and represents one of the earliest
+  release versions, in which the user interface was still
+  subject to change.
+%
+\item[v\,1.0]
+  was begun in August 1993 right after the conference and
+  represents the beginning of a complete re-write from scratch.
+%
+\item[v\,1.333]
+  was presented one year later at the TUG~'94 conference and
+  is described in the proceedings in \emph{TUGboat}~15\#3.
+  It uses a different user interface, which is largely the same
+  as in the present version, although the internals of the
+  implementation have subsequently changed quite a bit.
+%
+\item[v\,1.335]
+  was released in September 1994 and was the last ``official''
+  release version by Alan Jeffrey. Until the summer of 1998 this was 
+  still the version to be found in the \texttt{fonts}\slash
+  \texttt{utilities}\slash\texttt{fontinst} directory on CTAN.
+  It is considered obsolete and should not be used any longer.
+%
+\item[v\,1.400]
+  was prepared in November 1994 and was the first version which
+  used |8r|-encoded raw fonts as a basis for virtual fonts.
+%
+\item[v\,1.500]
+  appeared on CTAN in \texttt{fonts}\slash\texttt{psfonts}\slash
+  \texttt{tools} in September~1995 together with Sebastian Rahtz's 
+  Unix shell scripts to automate the installation. This version 
+  included a completely revised implementation of |\latinfamily| and 
+  added the |\installrawfont| command to install ligful raw fonts.
+%
+\item[v\,1.504]
+  appeared on CTAN in \texttt{fonts}\slash\texttt{psfonts}\slash
+  \texttt{tools} in January~1996. It added code to install (real or 
+  faked) small caps fonts and to fake narrow fonts, if they don't 
+  exist.
+%
+\item[v\,1.511]
+  was one of the last beta versions by Alan Jeffrey which dates back
+  to June~1996, but for some reason was never released.  It uses
+  the encodings |9o| and~|9d| instead of |9t| and~|9e| to install
+  expertized oldstyle fonts, but this change never found its way
+  into subsequent ``unofficial'' releases until v\,1.8.
+%
+\item[v\,1.6]
+  appeared on CTAN in \texttt{fonts}\slash\texttt{psfonts}\slash
+  \texttt{tools} in February~1997 and was the first ``unofficial'' 
+  version of \package{fontinst} maintained by Sebastian Rahtz. It 
+  contains only minor changes compared to v\,1.504, such as switching 
+  to lowercase file names, searching for |.pl| files before |.afm| 
+  files, and adding the \texttt{textcomp} installation to the 
+  distribution.
+%
+\item[v\,1.6]
+  was re-issued on CTAN in September~1997, when the Unix shell
+  scripts were replaced by Perl scripts.  The \package{fontinst}
+  package itself didn't change apart from minor changes of the
+  debugging messages.
+%
+\item[v\,1.7]
+  is the latest ``unofficial version'', which was released on CTAN
+  in May~1998.  It includes some changes to the mapping between
+  \texttt{fontname} and \LaTeX{} weight codes proposed by Ulrik
+  Vieth, as well as some code to support the use of |8r|-encoded
+  |.afm| files generated by |ttf2afm|.
+%
+\end{description}
+%
+
+\subsection{About fontinst v\,1.8}
+
+Version~1.8 of the \package{fontinst} utility was the first to have 
+been converted to \package{docstrip} format (this was made by Ulrik 
+Vieth) and it was first released in June~1998. It is based on 
+Sebastian Rahtz's ``unofficial'' \package{fontinst} releases v\,1.6 
+and~1.7 as of February~1997 and May~1998, which, in turn, are based 
+on Alan Jeffrey's versions v\,1.500 and~1.504 of September~1995
+and January~1996.  In addition, version v\,1.8 also incorporated 
+some code from Alan Jeffrey's last beta version, v\,1.511,
+which dates back to June~1996, but was never released to the
+general public for some reason.
+
+% It should be noted that all these versions differ significantly
+% from the previous ``official'' version v\,1.335 as of September~1994,
+% which was the only one to be found in the \texttt{fontinst} directory 
+% on CTAN until the summer of 1998. Version v\,1.335 is now obsolete.
+
+Version~1.8 was agreed upon by the \package{fontinst} hacker community, 
+as represented on the \package{fontinst} mailing list, as the new 
+officially endorsed version, on which all further additions and 
+enhancements can be based.
+
+
+\section{About this \package{fontinst} release}
+
+Versions 1.9xx of \package{fontinst} represent a more-or-less 
+continuous evolution from 1999 to the present. Several improvements, 
+the extents of which are perhaps not clearly represented in the version 
+number increments, have been made in this series---sometimes as fixes 
+to old bugs, but more often to introduce new features. The most 
+important are:
+\begin{itemize}
+  \item The old multiple |\setkern| bug, which resulted in pointless 
+    |KRN| instructions being written to (V)PL files have been fixed. 
+    In addition, it is now possible to reset kerns (using 
+    |\resetkern|) and unset kerns (using |\unsetkerns|, 
+    |\noleftkerning|, |\norightkerning|, or |\noleftrightkerning|).
+  \item A bug which resulted in too few kerns being written to a font 
+    if the same glyph is used in more than one slot (this occurs if 
+    you make an all-caps font from an encoding definition file which 
+    sets |\lc|, |\lctop|, and |\lclig| to the same to their 
+    |\uc|\textellipsis\ counterparts) has been fixed. A consequence of 
+    this fix is that you cannot access the number of the slot that 
+    glyph \meta{glyph} has been assigned to as |\int|\marg{glyph} 
+    (unless you are using \texttt{cfntinst.sty}), but there really is 
+    no need for you to do so either.
+  \item There is now a proper interface for using left and right 
+    boundaries which, in contrast to the old setting of the integer 
+    \texttt{boundarychar}, can make use of the full generality of the 
+    PL format. (The old interface is still available if you use 
+    \texttt{cfntinst.sty}.)
+  \item \package{fontinst} can now interpret AFM files which contain 
+    non-integer dimensions. There is also a user-level interface for 
+    changing the formula according to which the italic corrections of 
+    glyphs are computed.
+  \item The PL to MTX converter can now cope with the VPL-unique 
+    property lists |VTITLE|, |MAP|, and |MAPFONT|, which means that it 
+    can now convert VPL files as well. In addition to this, there are 
+    a couple of minor bugfixes and improvements in the PL to MTX 
+    conversion.
+  \item There is now a way of overriding the PL to MTX converter's 
+    automatic choice of encoding definition file made based on the 
+    |CODINGSCHEME| property of a PL file. The command |\generalpltomtx| 
+    lets you select which encoding definition file you want to use, as 
+    does the new |\fromplgivenetx| transformed font command.
+  \item Several \package{fontinst} commands that were previously 
+    missing have been added to the \package{fontdoc} package. The 
+    most significant are probably |\inputmtx| and |\inputetx|.
+  \item There is now a way of automatically changing the names of 
+    glyphs in metric files generated from AFM files. 
+    % See Subsection~\ref{Ssec:Reglyph} for further details.
+  \item The implementation of font metrics transformations, as done by 
+    |\transformfont|, has been rewritten and \package{fontinst} now 
+    handles uniform scaling internally; the driver only needs to do 
+    $x$-scaling and slanting. This can result in different font metrics, 
+    but we think only in that it comes out more like one would expect. 
+    The user interface is the same. 
+  \item There is now a new transformed font command |\fromany| which 
+    searches for a font metric file in any of the four formats MTX, 
+    PL, AFM, and VPL; converting it to MTX format and possibly 
+    generating a PL as well if necessary. This command is also used by 
+    |\installfont|, |\installrawfont|, and |\reglyphfont| to search 
+    for font metric files, so these can now take VPL files as a 
+    source for font metric data.
+  \item There is now a mechanism for generating the necessary map files 
+    automatically. So far it knows how to generate map files for the 
+    \package{dvips} and \package{dvipdfm} drivers, but the system can 
+    easily be extended by adding code in the \texttt{finstmsc.rc} file.
+  \item There are two new commands |\setscaled|\-|rawglyph| and 
+    |\setscaled|\-|notglyph| which generalize the |\setraw|\-|glyph| 
+    and |\setnot|\-|glyph| commands. These commands are described in 
+    Subsection~\ref{Ssec:Glyph-info}.
+  \item The routines for converting metrics to (V)PL format have 
+    changed. As a result of this the metrics of fonts are likely to 
+    change (slightly), but the conversion is now more accurate than it 
+    used to be. A side-effect is that VPL files generated by 
+    \package{fontinst} can now be used directly as a base for other 
+    fonts (it used to be necessary to convert them to binary format and 
+    back to get the metrics right).
+  \item \texttt{finstmsc.sty} now contains a new command which 
+    generates a Postscript encoding (\texttt{.enc}) file from an ETX 
+    file. The syntax of this command is
+    \begin{quote}
+      |\etxtoenc|\marg{etxfile}\marg{encfile}
+    \end{quote}
+    Usually you don't need to use this command, since the routines 
+    which generate map files will call it when the encoding used in a 
+    |\reencodefont| isn't known.
+  \item The new command
+    \begin{isyntax}
+      |\installfontas|\marg{font}\marg{encoding}\marg{family}%
+      \penalty0\marg{series}\penalty0\marg{shape}\penalty0\marg{size}
+    \end{isyntax}
+    adds an entry for \meta{font} with the given NFSS parameters to 
+    the corresponding FD file.
+  \item The |\set|\textellipsis, |\reset|\textellipsis, and 
+    |\unset|\textellipsis\ commands now behaves as one would expect 
+    even when they occur between |\install|\-|fonts| and |\end|\-%
+    |install|\-|fonts|---the assignments they make are no longer 
+    subject to the grouping around the metrics of individual fonts. 
+    Assignments made by these commands when they occur in MTX and ETX 
+    files \emph{are} however still subject to this grouping, so that 
+    behaves as usual.
+  \item There are two control flow commands |\for| and |\foreach| 
+    which repeatedly execute a given sequence of commands---just like 
+    a normal programming language \texttt{for} loop. With |\for| the 
+    loop variable is an integer that is incremented or decremented by 
+    an amount that is specified in the beginning of the loop. With 
+    |\foreach| the loop variable is a string which assumes all the 
+    values given in a comma-separated list.
+  \item The command |\offcommand| turns a command `off', i.e., makes 
+    it gobble its arguments and do nothing. The command |\oncommand| 
+    turns a command back on, i.e., restores the original definition of 
+    a command that had been turned off. Turning a command off or on 
+    when it is already off or on respectively has no effect.
+  \item If you begin an item in the file-list argument (\#2) of 
+    |\install|\-|font| or |\install|\-|raw|\-|font| with the command 
+    |\metrics|, then that item (everything up till the next comma 
+    that is not inside a group) will be interpreted as explicit metric 
+    commands that are executed after the previous font was loaded and 
+    before the next is. Thus you can do e.g.
+    \begin{quote}
+      |\installfont{|\textellipsis|}{a,\metrics\unsetint{xheight},b,|%
+      \textellipsis
+    \end{quote}
+    if you want font \texttt{a} to be loaded before font \texttt{b}, 
+    but want to use the \texttt{xheight} value of font \texttt{b}, 
+    and you don't want to bother writing an MTX file that simply 
+    contains the command |\unsetint{xheight}|.
+  \item There is now a command |\fontinstcc| which switches to the 
+    catcodes that are in force for most of the time that 
+    \texttt{fontinst.sty} is read (|@| and |_| are letters, |~| is a 
+    space, and spaces and newlines are ignored). This makes it simpler 
+    to redefine internal control sequences. To switch back to the 
+    normal catcodes, there is the |\normalcc| command. Neither 
+    command has any arguments.
+  \item The |\Unicode| command may be used to specify what 
+    ISO\,10646\slash Unicode character a slot corresponds to. See 
+    page~\pageref{Unicode} for details.
+  \item The third arguments of the |\installfont| and 
+    |\install|\-|raw|\-|font| commands can now be a comma-separated 
+    list of ETX files.
+  \item File names in the second and third arguments of 
+    |\install|\-|font| and |\install|\-|raw|\-|font| may now be 
+    suffixed by zero or more \emph{modifier clauses} that can change 
+    the interpretation of a file by e.g.~assigning special values to 
+    some variables while the file is read in. This is described in 
+    Subsection~\ref{Ssec:FontInstCmds} below.
+  \item The |\setfontdimen| command allows an ETX file to declare 
+    which integer variables correspond to font dimensions in a (V)PL 
+    file. This correspondence is used both when generating a ligful 
+    (V)PL file and when a (V)PL file is converted to an MTX file.
+  \item \texttt{finstmsc.sty} now contains a new command which 
+    generates a ToUnicode CMap file from an ETX file. The syntax of 
+    this command is
+    \begin{quote}
+      |\etxtocmap|\marg{etxfile}\marg{cmapfile}
+    \end{quote}
+  \item Unicode equivalents of slots need no longer be single 
+    characters. To specify a multiple-character equivalent of a 
+    slot, use the |\charseq| command and place the individual 
+    characters as |\Unicode| commands in its arguments. For a 
+    \texttt{fi} slot, one would say
+    \begin{quote}
+      |\charseq{|\\
+      |   \Unicode{0066}{LATIN SMALL LETTER F}|\\
+      |   \Unicode{0069}{LATIN SMALL LETTER I}|\\
+      |}|
+    \end{quote}
+  \item
+    There are now three `actions' for files needed for a font: 
+    |\download|, |\fulldownload|, and |\encodingdownload|; 
+    corresponding to the prefixes |<|, |<<|, and |<[| respectively 
+    in a \package{dvips} map file.
+  \item
+    There is a documented way of turning off default substitutions: 
+    Make a |\substitutesilent| or |\substitutenoisy| with the 
+    \meta{from} argument also as \meta{to}.
+  \item
+    When ETX files are generated using |\enctoetx| then the original 
+    encoding names (as PS object and as file) are recorded and this 
+    information is made available to the map file writer when 
+    necessary.
+\end{itemize}
+
+
+\subsection{Metric packages}
+
+\package{fontinst} has traditionally come with a collection of MTX 
+files that complement the MTX files generated from base font metrics, 
+in that they build glyphs that may be missing from the base fonts or 
+in some other way needs to be improved. The most well-known of these 
+is the \texttt{latin.mtx} file; other examples include 
+\texttt{textcomp.mtx}, \texttt{mathit.mtx}, and \texttt{latinsc.mtx}. 
+A problem with these is however that they cannot produce optimal 
+results for all fonts simply because there are irregular differences 
+in how fonts are set up by the foundries. Most glyphs come out alright, 
+but there are usually a few for which the parameters used are more or 
+less wrong. Therefore most high quality font installations are made 
+with modified versions of these files, where the parameters have been 
+tuned to the specific font design.
+
+Modifying in particular \texttt{latin.mtx} is however not an entirely 
+easy task, because this is a rather large file (with plenty of 
+archaic pieces of code in curious places). Doing it once is no big 
+problem, but if one has to do it several times (maybe because some 
+errors are discovered in the original \texttt{latin.mtx}) then it is 
+probably no fun anymore. Furthermore, if one has two or three 
+modified copies of this file because one has made high quality 
+installations of that many different fonts then even a trivial bugfix 
+might start to feel like entirely too much work.
+
+If one has to make modifications then it is usually easier to deal 
+with several small files (many of which can be used unchanged) than 
+one big file. Thus it would be better if these big files were split up 
+into several smaller ones.
+The main problem with splitting up something like \texttt{latin.mtx}
+is that there are some commands which are defined at the top and 
+which are then used in almost all sections of the file. One must make 
+certain that these commands are always loaded, which makes the metric 
+files somewhat harder to use (especially if the one who tries to use 
+them is not the one who wrote them).
+
+One strategy is to include all definitions needed for a metric file in 
+it. This has the slight disadvantage that the commands will have to be 
+defined several times. What is worse however, is that the command 
+definitions will appear in several files, so if one finds a bug in one 
+of them, one cannot simply correct this bug in one place. As the number 
+of files can soon become quite large, correcting such bugs can become 
+a boring procedure indeed.
+
+Another strategy is to put all the command definitions in one file 
+and then explicitly include it in the \meta{file-list} argument of 
+|\installfont|. This eliminates the repeated bug fixing problem, but 
+requires the user to do something that the computer can actually do 
+just as well.
+
+A third strategy is to put the command definitions in one or several 
+files and then in each metric file the user explicitly mentions load 
+the command definitions needed for that particular file. Metric 
+packages uses an improved version of this strategy, since they also 
+make it possible for fontinst to remember which packages (i.e., sets 
+of command definitions) that have already been loaded, so that they 
+are not unnecessarily loaded again. The \texttt{newlatin.mtx} file is 
+an alternative to \texttt{latin.mtx} that implements this strategy. 
+Most of the actual code is located in the following metric packages:
+\begin{longtable}{l p{0.7\linewidth}}
+  \texttt{ltcmds.mtx}& Defines some common commands used by the other 
+    files.\\
+  \texttt{llbuild.mtx}& Builds the latin lower case alphabet 
+    (unaccented letters are `unfakable', the rest are constructed if 
+    not present in the base fonts).\\
+  \texttt{lubuild.mtx}& Builds the latin upper case alphabet.\\
+  \texttt{lsbuild.mtx}& Builds accented letters in the latin 
+    smallcaps alphabet, but only if there are unaccented letters to 
+    build them from in the base fonts.\\
+  \texttt{lsfake.mtx}& Fakes a latin smallcaps alphabet by shrinking 
+    the upper case alphabet, but only if the glyph had not already 
+    been manufactured.\\
+  \texttt{lsmisc.mtx}& Make some miscellaneous smallcaps glyphs 
+    (mostly ``smallcaps f-ligatures'').\\
+  \texttt{ltpunct.mtx}& Makes digits, punctuation marks, and other 
+    symbols (mostly by marking as ``unfakable'').
+\end{longtable}
+\noindent All of these are easy to use as components of equivalents 
+of a modified \texttt{latin.mtx} files, and all dependencies of one 
+package upon another are handled via explicit |\usemtxpackage| 
+commands.
+
+For information on the syntax etcetera of commands related to metric 
+packages, see Section~\ref{Sec:Metric files}.
+
+
+\subsection{Word boundary ligatures and kerns}
+
+One of the new features added in \TeX~3 was that of ligatures and 
+kerns with word boundaries.\footnote{For purposes of ligatures and 
+kerning, a `word' is a consecutive string of characters from a 
+single font. These words thus typically include punctuation marks, 
+unlike the `words' considered in hyphenation.}
+\package{fontinst} has had an interface 
+for making such ligatures and kerns, but it has been completely 
+redesigned in v\,1.9 and the old interface (setting the integer 
+|boundarychar|) is no longer recognized by \package{fontinst}. Files 
+which use the old interface can still be processed with 
+\texttt{cfntinst.sty}, though.
+
+Before considering the new commands, it is suitable to define the 
+concepts of proper glyph and pseudoglyph. A \emph{proper glyph} has 
+been set using one of the commands |\setrawglyph|, 
+|\set|\-|scaled|\-|raw|\-|glyph|, |\setglyph|, and 
+|\reset|\-|glyph|. A pseudoglyph is any name used in the context of a 
+glyph name which does not denote a proper glyph. If a pseudoglyph 
+|g-not| was set using the |\setnotglyph| command, then 
+|\ifisglyph{g-not}\then| will evaluate to true, but something can be 
+a pseudoglyph even if an |\ifisglyph| test evaluates to false. The 
+interesting point about pseudoglyphs when considering word boundaries 
+however, is that a pseudoglyph can have ligatures and kerns.
+
+Kerns and ligatures at the left word boundary (beginning of word) are 
+specified using the commands |\setleftboundary| and 
+|\endsetleftboundary|, which are syntactically identical to 
+|\setslot| and |\endsetslot| respectively. One important difference is 
+however that the argument to |\setslot| must be a proper glyph, while 
+the argument to |\setleftboundary| may be any glyph, hence a 
+pseudoglyph will do just fine.
+
+|\ligature| commands between |\setleftboundary| and 
+|\endsetleftboundary| will generate beginning of word ligatures. Kerns 
+on the right of the glyph specified in |\setleftboundary| will become 
+beginning of word kerns.
+
+Kerns and ligatures at the right word boundary (end of word) are 
+trickier, due to the asymmetrical nature of the ligkern table in a PL 
+file. What a font can do is to specify that the right word boundary, 
+for purposes of kerning and ligatures, should be interpreted as 
+character $n$. By including a kern or ligature with character $n$ on 
+the right, that kern or ligature will be used at the end of a word, 
+but it will also be used each time the next character is character 
+$n$. Because of this, one usually wants the slot $n$, which the right 
+word boundary is interpreted as being, to be empty whenever the 
+encoding allows this.
+
+The command
+\begin{quote}
+  |\setrightboundary|\marg{glyph}
+\end{quote}
+will mark the current slot as used to denote the right word boundary, 
+and leave the slot empty, increasing the current slot number by one 
+just like a |\setslot| \textellipsis\ |\endsetslot| block does. Kerns on 
+the left of \meta{glyph} will be end of word kerns and |\ligature| 
+commands with \meta{glyph} as the second argument will be for the end 
+of a word.
+
+The command
+\begin{quote}
+  |\makerightboundary|\marg{glyph}
+\end{quote}
+is similar to |\setrightboundary|, but it is a slot command which may 
+only be used between a |\setslot| and the matching |\endsetslot|. Like 
+|\setrightboundary|, it marks the current slot as used to denote the 
+right word boundary, but the glyph specified in the enclosing |\setslot| 
+will be written to that slot. Ligatures for the glyph specified by the 
+|\setslot| and ligatures for the glyph specified by the 
+|\makerightboundary| will both be for this single slot. Kerns on the 
+right of the |\setslot| glyph and the |\makerightboundary| glyph will 
+similarly both be for this single slot. The idea is that the |\setslot| 
+glyph should be used when making a kern or ligature for that glyph, 
+while the |\makerightboundary| glyph should be used when making a kern 
+or ligature for the end of a word. \package{fontinst} will warn you if 
+these two uses of the slot directly contradict each other.
+
+
+\subsection{Changing the names of glyphs}
+\label{Ssec:Des:Reglyph}
+
+Sometimes, primarily when making a virtual font from more than one raw 
+font and two of the raw fonts contain different glyphs with the same 
+name, it becomes necessary to change the names of some glyphs to make 
+some sense out of it. The main source of this kind of trouble is the 
+``caps and small caps'' (SC) and ``oldstyle figures'' (OsF) fonts 
+within many commercial font families. The typical problem is that what 
+is typographically different glyphs---such as the lowercase `a' 
+(\texttt{a}, for \package{fontinst}) and the smallcaps `\textsc{a}' 
+(\texttt{Asmall}, for \package{fontinst})---are given the same name by 
+the foundry. 
+
+One way to get round this is to say for example
+\begin{quote}
+  |\setglyph{Asmall} \glyph{a}{1000} \endsetglyph|\\
+  |\setleftrightkerning{Asmall}{a}{1000}|\\
+  |\unsetglyph{a}|\\
+  |\noleftrightkerning{a}|
+\end{quote}
+and continuing like that for all the duplicate glyph names. This is 
+however a rather prolix method and if the number of glyphs is large 
+then it is usually simpler to use the |\reglyphfont| command.
+
+To reglyph one or several fonts, one writes
+\begin{quote}
+  |\reglyphfonts|\\
+  \vadjust{}\quad \meta{reglyphing commands}\\
+  |\endreglyphfonts|
+\end{quote}
+There are two types of reglyphing commands: the |\reglyphfont| 
+command, and the commands that modify what |\reglyphfont| will do to 
+the fonts it operates on. The syntax of |\reglyphfont| is
+\begin{quote}
+  |\reglyphfont|\marg{destination font}\marg{source font}
+\end{quote}
+The \meta{source font} font here is the name (suffix not included, of 
+course) of the font metric file one wants to change the glyph names in. 
+This font metric file can be in any of the formats MTX, PL, AFM, and 
+VPL, and it will be converted to MTX format if it isn't already in 
+that format (this happens just as for files listed in the second 
+argument of |\installfont|). \meta{destination font} (which must be 
+different from \meta{source font}) will be taken as the name for a 
+new \texttt{.mtx} file that will be generated. The destination font 
+can differ from the source font only in two ways: the names of some 
+glyphs in the source font might be changed, and some of the commands 
+from the source font might not have been copied to the destination 
+font. To what extent the fonts are different is determined by what 
+modifying commands have been executed; when no modifying commands 
+have been executed, the source and destination font are equal.
+
+The modifying reglyphing commands are
+\begin{quote}
+  |\renameglyph|\marg{to}\marg{from}\\
+  |\renameglyphweighted|\marg{to}\marg{from}\marg{weight}\\
+  |\killglyph|\marg{glyph}\\
+  |\killglyphweighted|\marg{glyph}\marg{weight}\\
+  |\offmtxcommand|\marg{command}\\
+  |\onmtxcommand|\marg{command}
+\end{quote}
+|\renameglyph| simply declares that occurrences of the glyph name 
+\meta{from} should be replaced by the glyph name \meta{to}. To each 
+glyph name is also assigned a \emph{weight}, which is used by a 
+mechanism which conditions copying of commands from the source font to 
+the destination font by the set of glyphs that command mentions. The 
+details of this mechanism are however somewhat tricky, so those 
+interested in the full generality should go to Subsection~\ref
+{Ssec:Reglyph}. Here it needs only be noted that if one applies 
+|\killglyph| to a glyph name, then (under most circumstances) commands 
+that refer to that glyph name will not be copied to the destination 
+font.
+
+|\offmtxcommand| and |\onmtxcommand| also control whether commands are 
+copied to the destination font, but they look at the actual command 
+rather than the glyphs it refers to. For example, after the command
+\begin{quote}
+  |\offmtxcommand{\setkern}|
+\end{quote}
+no |\setkern| commands will be copied. By using |\offmtxcommand|, it 
+is possible to achieve effects similar to those of the files 
+\texttt{kernoff.mtx} and \texttt{glyphoff.mtx}---the difference is 
+that with |\offmtxcommand|, it happens at an earlier stage of the font 
+generation. As expected, |\onmtxcommand| undoes the effect of 
+|\offmtxcommand|.
+
+A special rule pertains to the |\set|\-|raw|\-|glyph|, 
+|\set|\-|not|\-|glyph|, |\set|\-|scaled|\-|raw|\-|glyph|, and 
+|\set|\-|scaled|\-|not|\-|glyph| commands, since |\transformfont| 
+doesn't care what something was in the source font when it generates 
+the transformed font. To turn these commands off while reglyphing, 
+you use |\offmtx|\-|command| on |\set|\-|scaled|\-|raw|\-|glyph|.
+
+The effects of modifying reglyphing commands are delimited by 
+|\reglyphfonts| and |\endreglyphfonts|, which starts and ends a group 
+respectively.
+
+As we expect the most common reglyphing operation will be to go from SC 
+glyph names to expert glyph names, there is a file \texttt{csc2x.tex} 
+in the \package{fontinst} distribution which contains the modifying 
+reglyphing commands needed for setting up that conversion. Thus you 
+can write for example
+\begin{quote}
+  |\reglyphfonts|\\
+  |  \input csc2x|\\
+  |  \reglyphfont{padrcx8r}{padrc8r}|\\
+  |  \reglyphfont{padscx8r}{padsc8r}|\\
+  |\endreglyphfonts|
+\end{quote}
+to alter the glyph names in the SC fonts in the Adobe Garamond 
+(\texttt{pad}) family. 
+Note that the names of the destination fonts here really are rather 
+arbitrary, since they will only exist as \texttt{.mtx} files, and 
+thus only need to work within your local file system. In particular, 
+all the |\setrawglyph| commands in the destination font files still 
+refer to the source font, so it is that font which the drivers need 
+to know about.
+
+
+\subsection{Making map file fragments}
+
+A \emph{map file fragment} is the lines\footnote{Not in general an 
+entire map file, hence the word \emph{fragment}.} of a map file that 
+the corresponding driver would need for handling some set of fonts. 
+When told to, \package{fontinst} can (in a fairly automatic way) create 
+the map file fragment which is needed for the set of raw fonts 
+\package{fontinst} has (i) installed directly (using |\installrawfont|) 
+or (ii) used as a base font for some installed virtual font (generated 
+by |\installfont|). \package{fontinst} does not support the map file 
+syntaxes of every existing driver, but the system is designed to be 
+extendable and contributions that extend its capabilities are welcome. 
+Nor can \package{fontinst} examine your \TeX\ system and 
+determine every piece of information needed to make the correct map 
+file fragments, but you can tell it roughly how your installation 
+looks, it can make guesses which work most of the time, and you can 
+specify most things explicitly if the guesses turn out to be wrong. 
+Should the available options for configuring the process turn out to 
+be inadequate for your needs, then please write to the 
+\package{fontinst} mailing list about this---there is probably a way 
+to improve the system so that your needs can be met.
+
+Now what does one have to do to use this map file fragment writer, 
+then? First you need to tell \package{fontinst} to record the 
+information the map file fragment writer needs. You do this by giving 
+the command
+\begin{quote}
+  |\recordtransforms{whatever.tex}|
+\end{quote}
+at the beginning of the run. Here \texttt{whatever.tex} is the name of 
+a file that will be created, so you can use some other name if you 
+like. After that you do all the calls to |\transform|\-|font|, 
+|\install|\-|font|, |\install|\-|raw|\-|font|, |\latin|\-|family|, 
+etc.\ you need to make the fonts you want. When you're done, you give 
+the command
+\begin{quote}
+  |\endrecordtransforms|
+\end{quote}
+and end the run (say |\bye|). The file \texttt{whatever.tex} will now 
+contain the information about which fonts were used and what needs to 
+be done with them.
+
+The second step is to actually run the map file fragment writer. 
+Observe that it is located in the file \texttt{finstmsc.sty}, not 
+\texttt{fontinst.sty}! The commands you need to give it can be so few 
+that you can type them in at \TeX's \texttt{*} prompt, but if you are 
+writing a command file then it should typically have the following 
+structure (comments not necessary, of course):
+\begin{quote}
+  \begin{tabular}{ll}
+    |\input finstmsc.sty|& |%| Input command definitions\\
+    \meta{general settings} & |%| See below\\
+    |\adddriver|\marg{driver name}\marg{output file}& 
+      |%| Open output file\\
+    |\input whatever.tex|& |%| Write to output file\\
+    |\donedrivers|& |%| Close output file(s), tidy up\\
+    |\bye|& |%| Quit
+  \end{tabular}
+\end{quote}
+The |\adddriver| command gives the order ``write map file entries for 
+the \meta{driver name} DVI driver to the file \meta{output file}.'' The 
+plan is that it should be possible to use the name of just about any 
+major driver (\texttt{dvips}, \texttt{xdvi}, 
+\texttt{pdftex},\footnote{pdf\TeX\ can read 
+the map files generated for \texttt{dvips}, but a separate driver is 
+desirable because the formats are not completely identical.} 
+\texttt{OzTeX}, etc.) here and get suitable map file entries for that 
+driver as output, but for the moment only the \texttt{dvips} and 
+\texttt{dvipdfm}\footnote{Whose support I made very much to illustrate 
+that you \emph{don't} have to be a big and ancient driver like 
+\texttt{dvips} to have supporting code put into \package{fontinst}. 
+(The fact that I just happened to have printed out the documentation and 
+that is was easy to read also helped, of course.) Note, however, that 
+there won't be any support for a driver unless someone sits down and 
+writes the code for it! Don't assume I will. /LH} drivers are supported. 
+You may also use \texttt{debug} for \meta{driver name}; the entries in 
+the file for that ``DVI driver'' simply contain all the available 
+information about each font (hence it should come handy for debugging 
+code writing entries for real drivers) in a format that should be easy 
+to interpret for a human. It could be the right choice if you're going 
+to write the map file manually.
+
+The file \texttt{whatever.tex} in the above example contains the 
+commands (|\makemapentry| commands) that actually cause entries to be 
+written to the output file. It also contains a number of |\storemapdata| 
+commands---these describe how some given font was made. If some 
+metric file you have used contains |\setrawglyph| commands that were 
+not automatically generated by \package{fontinst}, then there might 
+not be a |\storemapdata| for the font they refer to in 
+\texttt{whatever.tex}, so you will have to include such a command 
+yourself somewhere. This can for example be done in the \meta{general 
+settings} part of the above example file. The syntax of the 
+|\storemapdata| command is described in Subsection~\ref{Ssec:interface}.
+
+Another class of things that will typically appear in the 
+\meta{general settings} part above is commands that will inform the 
+routines actually writing output about your \TeX\ system, about the set 
+of fonts you are using on this run, or about something else that might 
+be useful. Some such commands are of a general nature and affect what 
+assumptions \package{fontinst} will make in certain conditions when no 
+specific information is available. For the moment there commands are:
+\begin{description}
+  \item[\cs{AssumeMetafont}] Assume all fonts with PL metrics are 
+    bitmaps generated by Metafont, and therefore make no entries for 
+    them.
+  \item[\cs{AssumeAMSBSYY}] Assume all fonts with PL metrics have their 
+    \TeX\ names in all upper case as postscript names---just like the 
+    Computer Modern fonts in the AMS\slash Blue~Sky\slash Y\&Y 
+    distribution.
+  \item[\cs{AssumeBaKoMa}] Assume all fonts with PL metrics have their 
+    \TeX\ names in all lower case as postscript names---just like the 
+    Computer Modern fonts in the BaKoMa distribution.
+\end{description}
+Otherwise the default action of the routine for finding out the 
+postscript name of a font simply is to observe that it hasn't got a clue 
+about what the right value is when the metrics were taken from a PL 
+file, and therefore it writes `\texttt{??????}' for the postscript name.
+\begin{description}
+  \item[\cs{AssumeLWFN}] Assume postscript fonts for which nothing 
+    else has been specified are stored in files which are named 
+    according to the \mbox{MacOS} scheme for 
+    \texttt{LWFN}s.%\footnote{LaserWriter FoNt}
+\end{description}
+Otherwise the default action is to use the name of the AFM or PL from 
+which the metrics was originally taken, and add the file suffix stored 
+in the string \texttt{PSfontsuffix}. The default value of this string 
+is \texttt{.pfa}, but it can be changed using |\resetstr|.
+
+If neither the default nor the LWFN scheme produce correct results 
+then you may use the more specific \DescribeMacro\specifypsfont
+|\specifypsfont| command, which describes exactly which file (or files, 
+if any) a given font is stored in. For syntax and examples of usage, 
+see Subsubsection~\ref{Sssec:Config-interface}. (I consider the 
+semantics of this command to still be under development, but in order 
+to know how to develop it further I need to know in which cases it is 
+insufficient.)
+
+Finally, there is the |\declarepsencoding| command which is used to 
+link ETX files to postscript encodings. If no postscript encoding has 
+been linked to a given ETX file then \package{fontinst} will 
+automatically create a postscript encoding (\texttt{.enc}) file for 
+that encoding, and use this file for all reencoding commands. Again, 
+see Subsubsection~\ref{Sssec:Config-interface} for syntax and examples 
+of usage. The \texttt{8r} encoding is predeclared, and it doesn't 
+matter if an encoding is undeclared if you never use it to reencode 
+fonts, but there is potentially a problem with not having declared 
+encodings you have installed and use for reencoding, as you may then 
+find yourself having two files with identical names that define 
+encodings that do not have the same name (as far as postscript is 
+concerned).
+
+
+\subsection{On verbatim, typewriter, and monowidth fonts}
+
+The verbatim, typewriter, and monowidth concepts are common sources 
+of confusion for those who use \package{fontinst} to install fonts 
+with \AllTeX;\footnote{Myself \emph{not} excepted. /LH} in particular 
+there are many misconceptions about the relation between them. The 
+official view (of which not much has actually been brought forward) 
+is that these concepts are really about three quite different things. 
+
+A font is a \emph{monowidth} (monospaced, fixed-pitch) font if all 
+glyphs in it have exactly the same width. Some font formats make 
+special provisions for such fonts; the most notable example is the 
+AFM format, where a single \texttt{CharWidth} keyword specifies the 
+width for all glyphs in the font. \package{fontinst} responds to this 
+by including the command
+\begin{quote}
+  |\setint{monowidth}{1}|
+\end{quote}
+in the MTX file generated from an AFM, but that is everything that is 
+hard-wired into the program. That a font is monowidth is however 
+something that one should take note of when installing it for \TeX, 
+as it means many of the glyphs in it have such a strange appearance 
+that they are (pretty much) useless. The \texttt{endash} is for 
+example usually only half as long as the \texttt{hyphen} and the 
+letters in ligature glyphs are only half as wide as normal letters. 
+Many of the ETX and MTX files that come with \package{fontinst} 
+contain special commands to avoid making use of such degenerate 
+glyphs.
+
+That a font is a \emph{typewriter} font really only means that it has 
+a typewriterish look about it. The two most familiar typewriter fonts 
+are probably Computer Modern Typewriter (\texttt{cmtt}) and Courier. 
+Both of these fonts are monowidth, but there is no absolute rule about 
+this. One of the standard \TeX\ fonts is for example Computer Modern 
+Variable-width Typewriter (\texttt{cmvtt}), which is not a monowidth 
+font, as Figure~\ref{Fig:TTvsVTT} shows.
+\begin{figure}
+  \begin{tabular}{ll}
+    \texttt{cmtt}:& \fontfamily{cmtt}\selectfont
+      The quick brown fox jumps over the lazy dog.\\
+    \texttt{cmvtt}:& \fontfamily{cmvtt}\selectfont
+      The quick brown fox jumps over the lazy dog.
+  \end{tabular}
+  \caption{Two typewriter fonts}
+  \label{Fig:TTvsVTT}
+\end{figure}
+
+The verbatim concept has very little to do with fonts at all; in 
+\LaTeX\ it is considered to be a property of the environment 
+(\texttt{verbatim}, \texttt{macrocode}, etc.) rather than a property 
+of the font. The connection there is with fonts is that the encoding 
+of the font must contain visible ASCII (as defined in Appendix~C 
+of \emph{The \TeX book}~\cite{TeXbook}) as a subset for the text to 
+be rendered correctly. The \texttt{cmtt} family is the only one amongst 
+the original Computer Modern fonts which meets this criterium and 
+that is the primary grounds for the idea that these three concepts 
+should be connected. Today that reason is at best a very weak one, as 
+all \texttt{T1}-encoded fonts also meet the criterium of containing 
+visible ASCII as a subset.
+
+A circumstance which has probably added to the confusion is that 
+\texttt{OT1} is usually claimed to be an encoding. In reality the 
+Computer Modern fonts that are declared in \LaTeX\ as being 
+\texttt{OT1} display as many as five different encodings, as shown in 
+Table~\ref{Tab:OT1-fonts}.
+\begin{table}
+  \begin{tabular}{lccc}
+    & \texttt{TEX TEXT}& 
+      \begin{tabular}[b]{c}\texttt{TEX TEXT WITHOUT}\\
+        \texttt{F-LIGATURES}\end{tabular}&
+      \texttt{TEX TYPEWRITER TEXT}\\
+      \noalign{\medskip}
+    non-italic&
+      \begin{tabular}{l}
+        \texttt{cmb10}\\
+        \texttt{cmbx5}--\texttt{12}\\
+        \texttt{cmbxsl10}\\
+        \texttt{cmdunh10}\\
+        \texttt{cmff10}\\
+        \texttt{cmfib8}\\
+        \texttt{cmr6}--\texttt{17}\\
+        \texttt{cmsl8}--\texttt{12}\\
+        \texttt{cmss8}--\texttt{17}\\
+        \texttt{cmssbx10}\\
+        \texttt{cmssdc10}\\
+        \texttt{cmssi8}--\texttt{17}\\
+        \texttt{cmssq8}\\
+        \texttt{cmssqi8}\\
+        \texttt{cmvtt10}
+      \end{tabular}&
+      \begin{tabular}{l}
+        \texttt{cmcsc8}--\texttt{10}\\
+        \texttt{cmr5}
+      \end{tabular}&
+      \begin{tabular}{l}
+        \texttt{cmsltt10}\\
+        \texttt{cmtcsc10}\\
+        \texttt{cmtt8}--\texttt{12}
+      \end{tabular}\\
+      \noalign{\medskip}
+    italic&
+      \begin{tabular}{l}
+        \texttt{cmbxti10}\\
+        \texttt{cmfi10}\\
+        \texttt{cmti7}--\texttt{12}\\
+        \texttt{cmu10}
+      \end{tabular}&&
+      \begin{tabular}{l}
+        \texttt{cmitt10}
+      \end{tabular}
+  \end{tabular}
+  \caption{``\texttt{OT1}-encoded'' Computer Modern fonts, collected 
+    according to the actual font encoding}
+  \label{Tab:OT1-fonts}
+\end{table}
+Since most monowidth fonts are only used for setting verbatim text, 
+there is some code in \texttt{ot1.etx} which automatically chooses a 
+\texttt{TEX TYPEWRITER TEXT} encoding for the font when the 
+\texttt{monowidth} integer is set. The only reason for this is the 
+guess that this is what the user wanted.
+
+
+\subsection{Tuning accent positions---an application of loops}
+
+The accent placements made by \texttt{latin.mtx} certainly aren't 
+perfect for all fonts, and the only way to find out where they should 
+be put is through trying in text the accented letters you get for a 
+couple of values for the position parameter and deciding which one 
+works best. Since to try one parameter value you need to (i) edit it 
+into an MTX file, (ii) run \package{fontinst}, (iii) run 
+\package{VPtoVF}, (iv) run \TeX\ on some test text, and (v) print that 
+text, trying one parameter value can take annoyingly much time. 
+Repeating the same procedure ten times to test ten values is not 
+something one does without being bored (unless one scripts it, of 
+course), but it is possible to try ten parameter values in a single 
+virtual font, and without doing very much typing.
+
+Say you're not too happy with how \texttt{latin.mtx} positions the 
+accent in the \texttt{ohungarumlaut} glyph:
+\begin{quote}
+  |\setglyph{ohungarumlaut}|\\
+  |   \topaccent{o}{hungarumlaut}{500}|\\
+  |\endsetglyph|
+\end{quote}
+The |500| is the horizontal position (in thousandths of the width of 
+the \texttt{o}) that the center of \texttt{hungarumlaut} in the glyph 
+constructed will have, so that is the position parameter value that 
+you want to change. Create an MTX file containing the code
+\begin{quote}
+  |\for(pos){250}{750}{50}|\\
+  |   \setglyph{ohungarumlaut\strint{pos}}|\\
+  |      \topaccent{o}{hungarumlaut}{\int{pos}}|\\
+  |   \endsetglyph|\\
+  |   \setleftrightkerning{ohungarumlaut\strint{pos}}|\\
+  |      {ohungarumlaut}{1000}|\\
+  |\endfor(pos)|
+\end{quote}
+This will set eleven glyphs \texttt{ohungarumlaut250}, 
+\texttt{ohungarumlaut300}, \texttt{ohungarumlaut350}, \textellipsis\,, 
+\texttt{ohungarumlaut750}, each being an Hungarianly umlauted `o' 
+(i.e., an `\H{o}') but all having that umlaut in slightly different 
+positions. In order to put them in a font, you also need to make an 
+encoding that contains them. Therefore create an ETX file which 
+contains the code
+\begin{quote}
+  |\relax\encoding|\\
+  |\nextslot{"C0}|\\
+  |\for(pos){250}{750}{50}|\\
+  |   \setslot{ohungarumlaut\strint{pos}}|\\
+  |   \endsetslot|\\
+  |\endfor(pos)|\\
+  |\endencoding|
+\end{quote}
+The command for installing this experiment font would be something like
+\begin{isyntax}
+  |\installfont|\marg{some name}|{|\meta{the normal list of metrics}%
+    |,|\penalty0\meta{the new MTX}|}|\penalty0
+    |{ot1,|\meta{the new ETX}|}|\penalty0|{OT1}|\textellipsis
+\end{isyntax}
+The reason for including \texttt{ot1} in the third argument above is 
+that you'll need letters other than `\H{o}' against which you can 
+compare the experimental glyphs. It would not have been possible to 
+use \texttt{t1} instead of \texttt{ot1} (even though that has more 
+Hungarian letters) since that would set all slots in the font and 
+leave none for these experimental \texttt{ohungarumlaut}s. 
+
+It is even possible to use a loop for making the test text. The 
+\LaTeX\ macros
+\begin{verbatim}
+\newcount\slotcount
+\newcommand\testtext[3]{%
+  \slotcount=#1\relax
+  \begin{description}%
+  \loop\item[\the\slotcount]#3%
+  \ifnum #2>\slotcount \advance \slotcount 1 \repeat
+  \end{description}%
+}
+\DeclareTextCompositeCommand{\H}{OT1}{o}{\char\slotcount}
+\end{verbatim}
+will let you write
+\begin{quote}
+  |\testtext|\marg{first}\marg{last}\marg{text}
+\end{quote}
+to get the text \meta{text} typeset once for each slot from 
+\meta{first} to \meta{last} inclusive, with |\H{o}| ranging through the 
+glyphs in this interval. Thus in this case 
+|\testtext|\penalty\hyphenpenalty|{"C0}|\penalty\hyphenpenalty|{"CA}|%
+\penalty\hyphenpenalty|{Erd\H{o}s}| would be a trivial test.
+
+
+\subsection{Font installation commands}
+\label{Ssec:FontInstCmds}
+
+The |\installfont|, |\installrawfont|, and |\installfontas| commands 
+have the respective syntaxes
+\begin{isyntax}
+  |\installfont|\marg{font-name}\marg{metrics}\marg{etx-list}\penalty0
+    \marg{encoding}\marg{family}\marg{series}\marg{shape}\marg{size}\\
+  |\installrawfont|\marg{font-name}\marg{metrics}\marg{etx-list}^^A
+    \penalty0
+    \marg{encoding}\marg{family}\marg{series}\marg{shape}\marg{size}\\
+  |\installfontas|\marg{font-name}\penalty0\marg{encoding}^^A
+     \marg{family}\marg{series}\marg{shape}\marg{size}
+\end{isyntax}
+The \meta{font-name} argument and the last five arguments are common 
+to all these commands. The first argument is the name of a \TeX\ font 
+to install. The last five arguments are the NFSS attributes under which 
+that font will be declared to \LaTeX---encoding, family, series, shape, 
+and size. It is worth observing that encoding names are usually in 
+upper case, whereas the family, series, and shape are usually in lower 
+case. The size argument is either a shorthand (declared using 
+\DescribeMacro{\declaresize}|\declaresize|) for a particular font 
+size (or range of font sizes), or an explicit list of font sizes or 
+ranges of sizes, which is copied directly to the font declaration. 
+The most common case is to let the size argument be empty, as that is 
+declared as a shorthand for ``any size''.
+
+The |\installfontas| command does not itself create the font, it just 
+makes a note that the specified font declaration should be written to 
+the proper FD file at |\end|\-|install|\-|fonts|. The 
+|\install|\-|font| and |\install|\-|raw|\-|font| commands do however 
+produce the font, in the sense that they write a VPL and PL 
+respectively file for the font. It depends solely on the \meta{metrics} 
+and \meta{etx-list} arguments what this font will contain. Many 
+features of these arguments are new with \package{fontinst} v\,1.9; 
+therefore the complete syntaxes are described below.
+
+Both arguments are comma-separated lists of basically file names (not 
+including an extension). The files listed in the \meta{metrics} are 
+font metric files which together build up a \emph{glyph base} 
+(definitions of glyphs and metrics related to one or several glyphs), 
+whereas the files listed in the \meta{etx-list} are encoding definition 
+files that select a subset of the glyph base for turning into a 
+\TeX\ font. The font metrics can be in either of the four formats 
+MTX, PL, AFM, and VPL, which are considered in that order. If the 
+metrics are not originally in MTX format then they will be converted 
+to this format (a new file will be created) before they are used. 
+The encoding definitions must be in ETX format. The files actually 
+read will have a suffix \texttt{.mtx}, \texttt{.pl}, \texttt{.afm}, 
+\texttt{.vpl}, or \texttt{.etx} appended to the name given, depending 
+on which format is expected.
+
+Within each element of the comma-separated list, the actual file name 
+is followed by zero or more \emph{modifier clause}s. A \meta{modifier 
+clause} consists of a \emph{keyword} followed by some number (usually 
+one) of \emph{arguments}, separated by spaces. The whole thing looks 
+a lot like the \meta{rule specifications} of e.g.\ the |\vrule| 
+command, but here the spaces are mandatory. The currently defined 
+\meta{modifier clause}s are
+\begin{description}
+  \item[\mdseries\textvisiblespace\texttt{option}\textvisiblespace
+    \meta{string}]
+    Available for metric and encoding files. This adds \meta{string} 
+    to the list of options for this file, which may affect what code 
+    the file executes. The file can then test, using the |\ifoption| 
+    command, whether a specific string is one of the options it was 
+    given.
+  \item[\mdseries\textvisiblespace\texttt{scaled}\textvisiblespace
+    \meta{factor}]
+    Available for metric files. Causes the \texttt{rawscale} integer 
+    variable to be set to the \meta{factor} (an integer expression) 
+    while the file is being read. This scales glyphs and kerns that 
+    are added to the glyph base by the \meta{factor}.
+  \item[\mdseries\textvisiblespace\texttt{suffix}\textvisiblespace
+    \meta{suffix}]
+    Available for metric files. Causes \meta{suffix} to be appended 
+    to every glyph name appearing in a glyph or kern that file adds 
+    to the glyph base. Thus ``\texttt{suffix /2}'' effectively 
+    changes a
+    \begin{quote}
+      |\setrawglyph{a}|\dots
+    \end{quote}
+    to a
+    \begin{quote}
+      |\setrawglyph{a/2}|\dots
+    \end{quote}
+  \item[\mdseries\textvisiblespace\texttt{encoding}\textvisiblespace
+    \meta{etx-name}]
+    Available for metric files, and forces \package{fontinst} to 
+    only consider the PL and VPL formats for this font. 
+    As these file formats do not contain glyph names, an ETX file 
+    is used to assign glyph names to the slots in the font. 
+    This ETX file is usually selected according to the 
+    \texttt{CODINGSCHEME} property of the PL or VPL (using the 
+    correspondances set up via the |\declare|\-|encoding| command), 
+    but that information is not always as one would want it (there 
+    are even fonts for which it is quite wrong). An \texttt{encoding} 
+    clause bypasses this automatic mechanism, so that the file 
+    \meta{etx-name}\texttt{.etx} is used instead.
+    
+%     % The following is no longer true as of v1.926:
+%     \textbf{Note:} The first time that a file in PL or VPL format is 
+%     used in a \meta{metrics} argument, a corresponding MTX file is 
+%     generated. This means that if the same file reference is used 
+%     another time then the reference will be to the MTX file, not to 
+%     the original PL or VPL, and thus \texttt{encoding} clauses on 
+%     subsequent uses will have no effect. Each font only has one 
+%     encoding, so it usually makes no sense to switch the ETX file 
+%     used to interpret a font, but since MTX files are not 
+%     automatically deleted between runs there is a risk that this 
+%     takes away the intended effect of an \texttt{encoding} clause.
+    
+  \item[\mdseries\textvisiblespace\texttt{mtxasetx}]
+    This is available for files in the \meta{etx-list}. The actual 
+    function of a
+    \begin{quote}
+      \meta{file-name} \texttt{mtxasetx}
+    \end{quote}
+    item in the \meta{etx-list} is that the file 
+    \meta{file-name}\texttt{.mtx} is inputted (\emph{not} 
+    \meta{file-name}\texttt{.etx}) and that the correspondance 
+    between glyph names and slot numbers set up in 
+    |\set|\-|raw|\-|glyph| or |\set|\-|scaled|\-|raw|\-|glyph| 
+    commands in this file is treated as if it had been set up by 
+    |\setslot| commands in an ETX file. Provided the MTX file is 
+    transformable, the glyph base will be unaffected.
+    
+    The purpose of this feature is to simplify quick and dirty 
+    installations of odd fonts for which no suitable ETX file is 
+    available. This can be useful in early stages of the design of 
+    a new font, but is inferior to installation using proper ETX 
+    files since one for example cannot specify any ligatures in 
+    MTX files.
+\end{description}
+Furthermore there is a special exception for the \meta{metrics}: if 
+the first token in one of the list items is the control sequence 
+|\metrics|, then the rest of that item is interpreted as explicit 
+metric commands to execute.
+
+If the \meta{metrics} of two subsequent |\install|\-|font| 
+or |\install|\-|raw|\-|font| commands are identical then the glyph 
+bases will be identical as well. This creates an opportunity for 
+optimization, which \package{fontinst} makes use of by caching glyph 
+bases from one installation command to the next so that the glyph 
+base does not have to be rebuilt in these cases. A side-effect of 
+this caching is that local assignments made between two font 
+installation commands are cleared out with the glyph base, but 
+|\setint| and similar \package{fontinst} commands make global 
+assignments when used in such positions.
+
+Some examples might be in order. The first is an adaptation of an 
+installation command from \texttt{mfnt-0.59}~\cite{mfnt} by 
+Matthias Clasen and Ulrik Vieth: the installation command for the 
+8-bit math font \texttt{xma1000} (which can be thought of as being 
+to \texttt{cmmi10} sort of as \texttt{ecrm1000} is to \texttt{cmr10}). 
+The first three \texttt{encoding} clauses are more fine-tuning---without 
+them, a few glyphs would get incorrect names---but the last two are 
+quite essential, as the \texttt{msam10} and \texttt{msbm10} fonts 
+incorrectly claim to have the coding scheme \texttt{TEX MATH 
+SYMBOLS}.
+\begin{verbatim}
+  \installfont{xma1000}{%
+     yma1000 encoding mcin,%
+     cmr10 encoding ot1upright,%
+     cmmi10,%
+     cmsy10 encoding omscal,%
+     msam10 encoding msam,%
+     msbm10 encoding msbm,%
+     mccmhax,mccmkern,mcmissing,%
+     cmsy10-base,cmsy10-extra%
+  }{mc}{MC}{cm}{m}{n}{<10->}
+\end{verbatim}
+Also note the explicit \LaTeX\ size specification for the range 
+``10\,pt and up''.
+
+The second example makes use of a \texttt{suffix} clause to combine 
+the letters from one font with the digits from another.
+\begin{verbatim}
+  \installfont{msbrj8t}{msbr8r,msbrc8r suffix /2,latin}{digit2,t1}
+    {T1}{msbj}{m}{n}{}
+\end{verbatim}
+In this case, the glyph base contains the glyphs of Monotype Sabon 
+(SabonMT)---under names such as \texttt{A} for `A', \texttt{a} for 
+`a', and \texttt{one} for a lining digit one---as well as the 
+glyphs of Monotype Sabon Small Caps and Oldstyle Figures 
+(SabonMT-SCOSF)---under names such as \texttt{A/2} for `A', 
+\texttt{a/2} for `\textsc{a}', and \texttt{one/2} for a hanging 
+digit one. The \texttt{digit2.etx} file simply makes the definition
+\begin{verbatim}
+  \setcommand\digit#1{#1/2}
+\end{verbatim}
+which causes \texttt{t1.etx} to put \texttt{zero/2} in slot 48 (digit 
+zero), \texttt{one/2} in slot 49 etc., instead of as it normally 
+would \texttt{zero} in slot 48, \texttt{one} in slot 49 and so on. 
+The net effect is that the digits in the generated \texttt{msbrj8t} 
+is from \texttt{msbrc8r} (SabonMT-SCOSF) but everything else is from 
+\texttt{msbr8r} (SabonMT).
+
+The third example makes use of an \texttt{mtxasetx} clause to install 
+(with its default encoding) a font for which creating an appropriate 
+ETX file seems not worth the trouble.
+\begin{verbatim}
+  \installrawfont{psyr}{psyr,\metrics 
+     \setint{xheight}{\height{alpha}}
+  }{txtfdmns,psyr mtxasetx}{U}{psy}{m}{n}{}
+\end{verbatim}
+The effect of the second \texttt{psyr} is that \texttt{psyr.mtx} is 
+read (in case there was no \texttt{psyr.mtx} then it is created from 
+(hopefully) \texttt{psyr.afm}) and the information in it will form 
+the glyph base. Because of the |\metrics| control sequence, the rest 
+of that item will be interpreted as explicit metric commands 
+modifying the glyph base, and thus the |\setint| command can provide 
+a value for the \texttt{xheight} variable (there doesn't seem to be 
+such a value in the AFM). Once the glyph base is completed, the 
+|\install|\-|raw|\-|font| starts writing the file \texttt{psyr.pl} 
+(that's for the first \texttt{psyr}). The encoding of that font will, 
+because of the \texttt{psyr mtxasetx}, be the same as that used in 
+\texttt{psyr.mtx}. Finally, the \texttt{txtfdmns} is for 
+\texttt{txtfdmns.etx}, an ETX file which sets fontdimens 1--16 as for 
+a \texttt{T1} encoded font but does not set any slots. Since 
+\texttt{psyr.mtx} reinterpreted as an ETX file sets slots but no 
+fontdimens, these complement each other nicely.
+
+
+
+\begingroup
+\renewcommand\thesubsection{\thesection.\ensuremath{\infty}}
+
+\subsection{Coming attractions}
+
+We\footnote{Well, perhaps it's just me. /LH} have some new features 
+which we have pretty much sorted out how they should work and how they 
+should be implemented, but didn't want to introduce in this version as 
+the large modifications in core systems would require another 
+pre-release version before the proper release. Instead these features 
+will probably appear in the first pre-release of \package{fontinst} 
+v\,2.0.
+
+
+\subsubsection{Bounding boxes}
+
+Han The Thanh has created an implementation of bounding box support 
+for \package{fontinst}, and it is a modified form of that support 
+that will make it into \package{fontinst} v\,2.0. One important 
+characteristic of this implementation is that the dimensions of the 
+bounding box are not bundled into the same data structure (the 
+|\g-|\meta{glyph} macros) as the glyph's width, height, depth, and 
+italic correction are, but stored in a separate data structure (the 
+|\gb-|\meta{glyph} macros). A glyph doesn't need to have its bounding 
+box set, it is simply a piece of information that \package{fontinst} 
+will store if you tell it to and which you can later retrieve.
+
+The bounding box will be stored as coordinates of the sides in the 
+normal AFM coordinate system. The commands for retrieving these 
+coordinates will probably be
+\begin{center}
+  \begin{tabular}{ll}
+    \textbf{Command}& \textbf{Side}\\
+    |\bbtop|\marg{glyph}& top ($y$-coordinate)\\
+    |\bbbottom|\marg{glyph}& bottom ($y$-coordinate)\\
+    |\bbleft|\marg{glyph}& left ($x$-coordinate)\\
+    |\bbright|\marg{glyph}& right ($x$-coordinate)
+  \end{tabular}
+\end{center}
+In Thanh's implementation the command names are |\ury|, |\lly|, 
+|\llx|, and |\urx| respectively instead, but I think the former are 
+easier to remember. If no bounding box has been set for a glyph then 
+the above commands will instead report the corresponding coordinate of 
+the glyph's \TeX\ box (i.e.\ |\height|\marg{glyph}, 
+|\neg{\depth|\marg{glyph}|}|, |0|, and |\width|\marg{glyph} 
+respectively).
+
+The command for setting the bounding box of a glyph will be
+\begin{quote}
+  |\setglyphbb|\marg{glyph}\marg{left}\marg{bottom}\marg{right}^^A
+  \marg{top}
+\end{quote}
+
+
+
+\endgroup
+
+
+\section{Notes on using \package{fontinst}}
+\label{Sec:NotesOnUsing}
+
+The primary purpose of \package{fontinst} is to simplify the
+installation of PostScript or TrueType text fonts.
+
+
+\subsection{General notes}
+
+Leaving aside unusual variants which require special attention such 
+as alternate or swash fonts, almost all standard font families can 
+be installed automatically using the |\latinfamily| command, 
+optionally making use of the corresponding expert fonts as well.
+
+Depending on what kind of fonts you have and want to install,
+|\latinfamily| supports three different modes of operation:
+
+|\latinfamily|\marg{fam}|{}| installs a normal font family using
+|8a|-encoded standard fonts (reencoded to |8r|) and nothing else.
+It installs |.fd| files for the \LaTeX{} families \texttt{8r}\meta{fam},
+\texttt{OT1}/\meta{fam}, \texttt{T1}/\meta{fam} and 
+\texttt{TS1}/\meta{fam}, and generates virtual fonts for the |7t|, 
+|8t|, and |8c| encodings.  This is the only option available for most 
+typefaces which do not have an expert set.
+
+|\latinfamily{|\meta{fam}|x}{}| installs an expertized font family using
+|8a|-encoded standard fonts (reencoded to |8r|) and |8x|-encoded
+expert fonts.  It installs |.fd| files for the \LaTeX{} families,
+\texttt{OT1}/\meta{fam}\texttt{x}, \texttt{T1}/\meta{fam}\texttt{x} and 
+\texttt{TS1}/\meta{fam}\texttt{x}, and generates virtual fonts for the 
+|9t|, |9e| and |9c| encodings.
+
+|\latinfamily{|\meta{fam}|j}{}| installs an expertized font family with
+oldstyle digits using |8a|-encoded standard fonts (reencoded to
+|8r|) and |8x|-encoded expert fonts.  It installs |.fd| files for
+the \LaTeX{} families, |OT1|/\meta{fam}|j|, |T1|/\meta{fam}|j| and 
+|TS1|/\meta{fam}|j|, and generates virtual fonts for the |9o|, |9d| and 
+|9c| encodings. Since \texttt{TS1} has oldstyle digits by default, the 
+|9c|-encoded fonts should be the same as in the previous case.  Finally,
+|\latinfamily{|\meta{fam}|9}{}| is also supported as an alternative to
+|\latinfamily{|\meta{fam}|j}{}| for backwards compatibility.
+
+The whole installation process relies on certain assumptions about
+the symbol complement of Adobe's expert fonts.  In particular, it is
+assumed that the expert fonts include the oldstyle digits and a
+complete set of small caps glyphs, which is an assumption that's not
+always satisfied for expert fonts by other suppliers.  If these
+glyphs are not included in the expert fonts, the only way to get
+them is from real small caps fonts, but this requires some
+reshuffling of glyph names.
+
+To support such unusual cases, this source file contains some
+optional code embedded between \Module{*oldstyle} \dots\ 
+\Module{/oldstyle},
+which extends the behaviour of |\latinfamily| for expertized
+encodings with oldstyle digits.  Instead of relying only on the
+glyphs of the |8r|-reencoded raw font and the |8x|-encoded expert
+font, this version also looks for corresponding OsF or SC\&OsF fonts
+and uses the default digits from those fonts as oldstyle digits.
+
+
+\subsection{Notes on small caps and oldstyle fonts}
+
+The |\latinfamily| command is supposed to do a reasonably good job
+of installing a complete font family based on all the |.afm| files
+it can find.  If it doesn't find a suitable font shape, it is
+sometimes possible to fake it by default substitutions.  However, in
+the case of small caps fonts, there are several options which may
+require some clarification.
+
+For the majority of typefaces, a font family typically consists only
+of of roman and italic fonts in several weights.  Since real small
+caps fonts are not included, they have to be faked from the roman
+fonts, which is implemented by setting |\encoding_shape| to `|c|',
+so that different encoding files |OT1c.etx| or |T1c.etx| are used.
+Since these files call for glyph names such as `|Asmall|' which are
+not found in the roman font, the default substitutions in
+|latin.mtx| are eventually used to approximate fake small caps
+glyphs by scaling and letterspacing.  The outcome is just an
+approximation for a small caps font, but it is better than nothing.
+
+For a small number of typefaces, the standard fonts are complemented
+by an expert collection, which usually includes two sets of fonts.
+First, for each standard font there is a corresponding expert font
+containing additional glyphs such as extra ligatures and symbols,
+oldstyle digits and small capital letters.  For Adobe expert fonts
+this set is sufficient to build a complete small caps font from the
+standard and expert glyphs. Furthermore, the expert collection
+usually also contains a number of real small caps font corresponding
+to the roman fonts and some OsF fonts corresponding to the italic
+fonts.  If these fonts are available, there are several options how
+to install small caps fonts.
+
+By default, |\latinfamily| first tries to find a real small caps
+font.  If it is found, it is installed using the default encoding
+files and metric files, just like any roman or slanted font.
+However, once |\latinfamily| has taken this choice, it will fail to
+find a corresponding expert font, since it is actually looking for
+an expert font in small caps shape which doesn't exist.  (In fact,
+it would be an error to substitute an expert font in normal shape.)
+The outcome will be a virtual font based only on glyphs from the
+real small caps raw font, which implies ending up with oldstyle
+digits as the default set of digits, but allows to inherit the
+kerning information of the real small caps font.
+
+Another option for an expertized installation would be to make the
+real small caps fonts unavailable, so that |\latinfamily| will
+attempt to fake a small caps font using glyphs from the standard and
+expert fonts in normal shape.  This means that |\encoding_shape| is
+again set to `|c|', so that |OT1c.etx| and |T1c.etx| are used, but
+this time a glyph named `|Asmall|' does exist in the expert font and
+will be used instead of faked one generated by scaling.  The outcome
+will be a font based on normal and small caps glyphs from the
+standard and expert fonts.  The oldstyle digits will only be used if
+they are called for, otherwise the default digits from the roman
+font are used.  The only drawback of this approach is that the
+kerning around small capital letters will be based on the scaled
+kern amounts of the capital letters rather than on the kern pairs
+from the real small caps font.
+
+Finally, the most promising approach of all these options would be
+to combine the glyphs from standard and expert fonts with kern pairs
+from the real small caps fonts. The current version of |\latinfamily| 
+does not implement this, but it would be a worthwhile approach, and 
+advanced \package{fontinst} users are encouraged to attempt it. The 
+file \texttt{csckrn2x.tex} (a variant of \texttt{csc2x.tex}, which is 
+mentioned in Subsection~\ref{Ssec:Des:Reglyph}) should come in handy 
+for this.
+
+
+\subsection{\package{fontinst} variables}
+
+The following is a list of the \package{fontinst} variables that are 
+accessible for the user through the |\set|\textellipsis, 
+|\reset|\textellipsis, |\unset|\textellipsis, etc.\ commands. You may 
+of course set or use other variables in the MTX and ETX files you 
+write yourself, as does for example the standard MTX file 
+\texttt{latin.mtx}, but all variables that \package{fontinst} commands 
+implicitly use or set are listed below.
+
+\begin{list}{}{%
+   \setlength\labelwidth{0pt}%
+   \setlength\itemindent{-\leftmargin}%
+   \setlength\parsep{0pt}
+   \def\makelabel#1{\hspace\labelsep \normalfont\ttfamily #1}%
+}
+  \item[acccapheight] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] The height of accented full capitals.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[address] (string)
+    \begin{smalldes}
+      \item[Description] Snailmail address put in \BibTeX-style file 
+        header of automatically generated ENC files. No 
+        \texttt{address} field is written unless the \texttt{address} 
+        string is set. Quotes are not automatically inserted around 
+        the \texttt{address} string.
+      \item[Set by] ETX files.
+      \item[Used by] The ETX-to-ENC converter.
+    \end{smalldes}
+  \item[afm-name] (string)
+    \begin{smalldes}
+      \item[Description] Name of source font. Internal variable.
+      \item[Set by] |\from|\dots\ commands.
+      \item[Used by] The |\transform|\-|font|, |\install|\-|font|, 
+        |\install|\-|raw|\-|font|, and |\reglyph|\-|font| commands.
+    \end{smalldes}
+  \item[ascender] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] The ascender height of the font.
+      \item[Set by] MTX files. The AFM-to-MTX converter usually writes 
+        |\setint| commands for this integer.
+      \item[Used by] Some MTX and ETX files.
+    \end{smalldes}
+  \item[author] (string)
+    \begin{smalldes}
+      \item[Description] Author name(s) put in \BibTeX-style file 
+        header of automatically generated ENC files. See the macro 
+        |\ref_to_sourcefile| for more details.
+      \item[Set by] ETX files.
+      \item[Used by] The ETX-to-ENC converter. When not set, the 
+        value \texttt{"See file }\meta{etx name}\texttt{"} is used 
+        instead.
+    \end{smalldes}
+  \item[\cs{autoinstallfamily}] (command)
+    \begin{smalldes}
+      \item[Description] Command called by the font installation 
+        commands, as
+        \begin{quote}
+          |\autoinstallfamily|\marg{encoding}\marg{family}
+        \end{quote}
+        when they are asked to install a font with a combination of 
+        \meta{encoding} and \meta{family} that has not been seen 
+        before (there was no explicit |\installfamily|).
+      \item[Set by] Explicit commands. Defaults to calling 
+        |\installfamily|.
+      \item[Used by] Font installation commands.
+    \end{smalldes}
+  \item[axisheight] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\sigma\sb{22}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[baselineskip] (integer denoting length)
+    \begin{smalldes}
+      \item[Description]
+        The font designer's recommendation for natural length of the 
+        \TeX\ parameter |\baselineskip|.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[bigopspacing1] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\xi\sb{9}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[bigopspacing2] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\xi\sb{10}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[bigopspacing3] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\xi\sb{11}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[bigopspacing4] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\xi\sb{12}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[bigopspacing5] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\xi\sb{13}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[capheight] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] The height of the font's full capitals.
+      \item[Set by] MTX files. The AFM-to-MTX converter usually writes 
+        |\setint| commands for this variable.
+      \item[Used by] Some MTX and ETX files.
+    \end{smalldes}
+  \item[cmapname] (string)
+    \begin{smalldes}
+      \item[Description] The name given to the CMap generated from 
+        an ETX file.
+      \item[Set by] ETX files.
+      \item[Used by] The ETX-to-CMap converter. When not set, the 
+        value |fontinst-|\nolinebreak[1]\meta{cmap file name} is 
+        used instead.
+    \end{smalldes}
+  \item[codingscheme] (string)
+    \begin{smalldes}
+      \item[Description] The codingscheme name.
+      \item[Set by] ETX files.
+      \item[Used by] The (V)PL writer. When not set, the 
+        value \texttt{UNKNOWN} is used instead.
+    \end{smalldes}
+  \item[defaultrulethickness] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\xi\sb{8}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[delim1] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\sigma\sb{20}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[delim2] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\sigma\sb{21}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[denom1] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\sigma\sb{11}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[denom2] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\sigma\sb{12}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[descender] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] The depth of lower case letters with descenders.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[descender_neg] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] The vertical position of the descender line 
+        of the font, i.e., the negative of the font's descender depth.
+      \item[Set by] MTX files. The AFM-to-MTX converter usually writes 
+        |\setint| commands for this variable.
+      \item[Used by] Some MTX and ETX files.
+    \end{smalldes}
+  \item[designsize] (dimension)
+    \begin{smalldes}
+      \item[Description] The design size of the font.
+      \item[Set by] MTX files. The (V)PL-to-MTX converter usually writes 
+        |\setdim| commands for this variable.
+      \item[Used by] The (V)PL writer. The design size defaults to 
+        $10\,\mathrm{pt}$ if this variable is not set.
+      \item[Note] The value of this variable has no effect on how 
+        the font is declared to \LaTeX.
+    \end{smalldes}
+  \item[designunits] (dimension denoting a real number)
+    \begin{smalldes}
+      \item[Description] The design size of a font expressed in the 
+        design unit used in a (V)PL file. 
+      \item[Set by] MTX files. The (V)PL-to-MTX converter usually writes 
+        |\setdim| commands for this variable.
+      \item[Used by] Nothing. If this variable is set, but to any 
+        value other than $1\,\mathrm{pt}$, then some metrics are most 
+        likely wrong.
+    \end{smalldes}
+  \item[digitwidth] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] The median width of the digits in the font.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[email] (string)
+    \begin{smalldes}
+      \item[Description] Email address put in \BibTeX-style file 
+        header of automatically generated ENC files. See the macro 
+        |\ref_to_sourcefile| for more details.
+      \item[Set by] ETX files.
+      \item[Used by] The ETX-to-ENC converter. When not set, the 
+        value \texttt{"See file }\meta{etx name}\texttt{"} is used 
+        instead.
+    \end{smalldes}
+  \item[encodingname] (string)
+    \begin{smalldes}
+      \item[Description] The name by which the encoding in question is 
+        made known to a Postscript interpreter.
+      \item[Set by] ETX files.
+      \item[Used by] The ETX-to-ENC converter. When not set, the 
+        value |fontinst-|\nolinebreak[1]|autoenc-|\nolinebreak[1]%
+        \meta{etx name} is used instead.
+    \end{smalldes}
+  \item[etx-name] (string)
+    \begin{smalldes}
+      \item[Description] Name of ETX file. Internal variable in 
+        |\transform|\-|font|.
+      \item[Set by] The |\reencodefont| command.
+      \item[Used by] The |\mtxtomtx| command.
+    \end{smalldes}
+  \item[extraspace] (integer denoting length)
+    \begin{smalldes}
+      \item[Description]
+        The natural width of extra interword glue at the end of a 
+        sentence.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[fontdimen($n$)] (integer)
+    \begin{smalldes}
+      \item[Description] Family of semi-internal variables that store 
+         the values to use for font dimension $n$. It is preferred 
+         that the newer |\set|\-|font|\-|dimen| interface is used for 
+         setting these values.
+      \item[Set by] ETX files.
+      \item[Used by] The (V)PL writer.
+    \end{smalldes}
+  \item[\cs{iftokeep}] (macro)
+    \begin{smalldes}
+      \item[Description] |\iftokeep|\,\#1\,|\then|, where \#1 will 
+        be a \meta{number}, behaves like a switch and decides whether 
+        a glyph is kept or not while reglyphing.
+      \item[Set by] Explicit commands. Defaults to
+        $$
+          \mbox{\cs{iftokeep}\,\#1\,\cs{then}} \mapsto
+          \mbox{\cs{ifnum}\,\texttt{-1<}\#1}
+        $$
+      \item[Used by] The |\reglyphfont| command.
+    \end{smalldes}
+  \item[interword] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] The natural width of interword glue (spaces).
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[italicslant] (integer denoting factor)
+    \begin{smalldes}
+      \item[Description] The italic slant of a font.
+      \item[Set by] MTX files generated from AFM or (V)PL files. MTX 
+        files generated by |\transformfont|. Locally in the AFM-to-MTX 
+        converter for possible use in |\uprightitalcorr| or 
+        |\slanteditalcorr|.
+      \item[Used by] MTX files (\texttt{latin.mtx} and the like). ETX 
+        files (for determining \texttt{fontdimen(1)}).
+    \end{smalldes}
+  \item[killweight] (integer)
+    \begin{smalldes}
+      \item[Description] Weight for glyphs that are killed.
+      \item[Set by] Explicit commands. Defaults to $-10$ if not set.
+      \item[Used by] The |\kill|\-|glyph| command; indirectly 
+        the |\reglyphfont| command.
+    \end{smalldes}
+  \item[letterspacing] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Extra width added to all glyphs of a font.
+      \item[Set by] ETX or MTX files.
+      \item[Used by] The (V)PL writer. Defaults to $0$ if not set.
+    \end{smalldes}
+  \item[maxdepth] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] The maximal depth over all slots in the font.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[maxdepth_neg] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] The negative of the maximal depth of a glyph in 
+        the font.
+      \item[Set by] MTX files. The AFM-to-MTX converter usually writes 
+        |\setint| commands for this variable.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[maxheight] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] The maximal height of a glyph in the font.
+      \item[Set by] MTX files. The AFM-to-MTX converter usually writes 
+        |\setint| commands for this variable.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[minimumkern] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Kerns whose size in absolute value is less 
+        than or equal to this variable are ignored.
+      \item[Set by] \package{fontinst} command files or MTX files.
+      \item[Used by] The AFM-to-MTX converter and the (V)PL file 
+        generator. When not set, the value $0$ is used instead.
+    \end{smalldes}
+  \item[monowidth] (flag integer)
+    \begin{smalldes}
+      \item[Description] Set if this font is monowidth, unset otherwise.
+      \item[Set by] MTX files. The AFM-to-MTX converter writes a 
+        |\setint| command for this variable if the AFM specifies 
+        \texttt{IsFixedPitch true}.
+      \item[Used by] Some MTX files (\texttt{latin.mtx} and the like), 
+         ETX files.
+    \end{smalldes}
+  \item[num1] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\sigma\sb{8}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[num2] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\sigma\sb{9}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[num3] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\sigma\sb{10}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[quad] (integer denoting length)
+    \begin{smalldes}
+      \item[Description]
+        The quad width of the font, normally approximately equal to 
+        the font size and\slash or the width of an `M'.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[PSfontsuffix] (string)
+    \begin{smalldes}
+      \item[Description] Suffix added to font names to form name of 
+        file to download to include font.
+      \item[Set by] Explicit commands in \textsf{finstmsc} command 
+        files. Defaults to `\texttt{.pfa}'.
+      \item[Used by] The map file fragments writer.
+    \end{smalldes}
+  \item[rawscale] (integer denoting factor)
+    \begin{smalldes}
+      \item[Description] Scaling factor applied to raw glyphs.
+      \item[Set by] The |\installfont| command (\texttt{scaled} 
+        clauses in argument \#2). Unset for metric files listed 
+        without a \texttt{scaled} clause.
+      \item[Used by] The |\set|\-|raw|\-|glyph|, 
+        |\set|\-|not|\-|glyph|, |\set|\-|scaled|\-|raw|\-|glyph|, 
+        |\set|\-|scaled|\-|not|\-|glyph|, |\set|\-|kern|, and 
+        |\reset|\-|kern| commands.
+    \end{smalldes}
+  \item[renameweight] (integer)
+    \begin{smalldes}
+      \item[Description] Weight for glyphs that are renamed.
+      \item[Set by] Explicit commands. Defaults to $1$ if not set.
+      \item[Used by] The |\rename|\-|glyph| command; indirectly 
+        the |\reglyphfont| command.
+    \end{smalldes}
+  \item[requireglyphs] (flag integer)
+    \begin{smalldes}
+      \item[Description] Set if warnings are to be generated for 
+        glyphs listed in ETX files but not present in the glyph 
+        base.
+      \item[Set by] Explicit commands. By defaults not set.
+      \item[Used by] The (V)PL file generator.
+    \end{smalldes}
+  \item[rightboundary] (string)
+    \begin{smalldes}
+      \item[Description] The name of a glyph with the property that 
+        kerns on the left may be intended as right word boundary kerns.
+      \item[Set by] MTX files. The (V)PL-to-MTX converter can write 
+        |\setstr| commands for this variable.
+      \item[Used by] Some MTX files.
+    \end{smalldes}
+  \item[shrinkword] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] 
+        The (finite) shrink component of interword glue.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[slant-scale] (integer denoting factor)
+    \begin{smalldes}
+      \item[Description] Factor to slant by. 
+        Internal variable in |\transform|\-|font|.
+      \item[Set by] The |\slant|\-|font|, |\xscale|\-|font|, and
+        |\scale|\-|font| commands.
+      \item[Used by] The |\mtxtomtx| command.
+    \end{smalldes}
+  \item[\cs{SlantAmount}] (macro expanding to an integer expression)
+    \begin{smalldes}
+      \item[Description] Slant factor used for faking oblique shape.
+      \item[Set by] Explicit commands. Defaults to \texttt{167}.
+      \item[Used by] The |\latinfamily| command.
+    \end{smalldes}
+  \item[\cs{slanteditalcorr}]
+    (macro expanding to an integer expression)
+    \begin{smalldes}
+      \item[Description] The integer expression used to calculate a 
+        guess for the italic correction of glyphs in a font with 
+        positive slant. It has the syntax
+        \begin{quote}
+          \cs{slanteditalcorr}\marg{width}\marg{left}\marg{right}^^A
+          \marg{bottom}\marg{top}
+        \end{quote}
+        where \meta{width} is the glyph's advance width, and the 
+        remaining arguments are coordinates of sides of the glyph's 
+        bounding box. The \texttt{italicslant} integer provides the 
+        italic slant of the font.
+      \item[Set by] Explicit commands in \textsf{fontinst} command 
+        files. Defaults to
+        $$
+          \max\{0, \mathit{right}-\mathit{width}\}.
+        $$
+      \item[Used by] The AFM-to-MTX converter.
+    \end{smalldes}
+  \item[stretchword] (integer denoting length)
+    \begin{smalldes}
+      \item[Description]
+        The (finite) stretch component of interword glue.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[sub1] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\sigma\sb{16}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[sub2] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\sigma\sb{17}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[subdrop] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\sigma\sb{19}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[sup1] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\sigma\sb{13}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[sup2] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\sigma\sb{14}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[sup3] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\sigma\sb{15}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[supdrop] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Math formula parameter $\sigma\sb{18}$.
+      \item[Set by] MTX files.
+      \item[Used by] Some ETX and MTX files.
+    \end{smalldes}
+  \item[TFMfileprefix] (string)
+    \begin{smalldes}
+      \item[Description] Prefix (typically a path) added to names of 
+        TFM files.
+      \item[Set by] Explicit commands in \textsf{finstmsc} command 
+        files. By default not set, which is equivalent to being empty.
+      \item[Used by] The \textsf{PLtoTF} ``map file fragments writer''.
+    \end{smalldes}
+  \item[underlinethickness] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] The recommended thickness of an underlining 
+        rule.
+      \item[Set by] MTX files. The AFM-to-MTX converter usually writes 
+        |\setint| commands for this variable.
+      \item[Used by] Some MTX files (\texttt{latin.mtx} and the like).
+    \end{smalldes}
+  \item[\cs{uprightitalcorr}]
+    (macro expanding to an integer expression)
+    \begin{smalldes}
+      \item[Description] The integer expression used to calculate a 
+        guess for the italic correction of glyphs in a font with 
+        non-positive slant. It has the syntax
+        \begin{quote}
+          \cs{uprightitalcorr}\marg{width}\marg{left}\marg{right}^^A
+          \marg{bottom}\marg{top}
+        \end{quote}
+        where \meta{width} is the glyph's advance width, and the 
+        remaining arguments are coordinates of sides of the glyph's 
+        bounding box. The \texttt{italicslant} integer provides the 
+        italic slant of the font.
+      \item[Set by] Explicit commands in \textsf{fontinst} command 
+        files. Defaults to $0$.
+      \item[Used by] The AFM-to-MTX converter.
+    \end{smalldes}
+  \item[version] (string)
+    \begin{smalldes}
+      \item[Description] Version number put in \BibTeX-style file 
+        header of automatically generated ENC files. See the macro 
+        |\ref_to_sourcefile| for more details.
+      \item[Set by] ETX files.
+      \item[Used by] The ETX-to-ENC converter. When not set, the 
+        value \texttt{"See file }\meta{etx name}\texttt{"} is used 
+        instead.
+    \end{smalldes}
+  \item[verticalstem] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] The dominant width of vertical stems 
+        (usually the width of stems of lower case letters).
+      \item[Set by] MTX files. The AFM-to-MTX converter writes 
+        |\setint| commands for this variable if the AFM file specifies 
+        \texttt{StdVW}.
+      \item[Used by] Currently nothing.
+    \end{smalldes}
+  \item[\texttt{warningspecials}] (switch)
+    \begin{smalldes}
+      \item[Description] Controls whether |\glyphwarning| commands 
+        will generate VPL \texttt{SPECIAL}s. Defaults to `true'.
+      \item[Set by] Explicit commands (|\warningspecialstrue| and 
+        |\warningspecialsfalse|).
+      \item[Used by] The (V)PL file generator.
+    \end{smalldes}
+  \item[x-scale] (integer denoting factor)
+    \begin{smalldes}
+      \item[Description] Horizontal scaling factor. 
+        Internal variable in |\transform|\-|font|.
+      \item[Set by] The |\xscale|\-|font| and |\scale|\-|font| commands.
+      \item[Used by] The |\mtxtomtx| command.
+    \end{smalldes}
+  \item[xheight] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] The x-height of the font.
+      \item[Set by] MTX files. The AFM-to-MTX and (V)PL-to-MTX 
+        converters usually write |\setint| commands for this variable.
+      \item[Used by] MTX files, and ETX files (for determining 
+        \texttt{fontdimen(5)}).
+    \end{smalldes}
+  \item[y-scale] (integer denoting factor)
+    \begin{smalldes}
+      \item[Description] Vertical scaling factor. 
+        Internal variable in |\transform|\-|font|.
+      \item[Set by] The |\yscale|\-|font| and |\scale|\-|font| commands.
+      \item[Used by] The |\mtxtomtx| command.
+    \end{smalldes}
+  \item[\meta{\rmfamily glyph}-spacing] (integer denoting length)
+    \begin{smalldes}
+      \item[Description] Glyph-specific override for 
+        \texttt{letterspacing}; extra width added to the glyph 
+        \meta{glyph} as part of the process of writing a VPL 
+        file.
+      \item[Set by] ETX or MTX files.
+      \item[Used by] The (V)PL writer. Defaults to $0$ if not set.
+    \end{smalldes}
+\end{list}
+Besides these, the |\latinfamily| command provides a whole range of 
+parameters that are often used somewhat like variables. That subject 
+does however deserve to be treated separately.
+
+
+\section{\package{fontdoc} package overview}
+
+The purpose of the \package{fontdoc} package is to support
+typesetting of \texttt{.etx} and \texttt{.mtx} files intended
+for use with \package{fontinst}.
+The typical format of these files looks something like this:
+\begin{quote}
+   |\relax|\\
+   |\documentclass[twocolumn]{article}|\\
+   |\usepackage{fontdoc}|\\[0.5\baselineskip]
+   |\begin{document}|\\
+   {}~~\textit{\LaTeX\ commands}\\
+   |\encoding| or |\metrics| \\
+   {}~~\textit{\package{fontinst} commands}\\
+   |\endencoding| or |\endmetrics|\\
+   {}~~\textit{\LaTeX\ commands}\\
+   |\end{document}|
+\end{quote}
+To make it work, \package{fontdoc} has to define all the user-level
+\package{fontinst} commands in terms of typesetting instructions. This 
+goal is currently only partially achieved, but the percentage of 
+\package{fontinst} commands covered by \package{fontdoc} is still 
+fairly large, so it is our impression that problems with commands not 
+covered occur only very rarely.
+
+
+\subsection{Some \package{fontdoc} commands that \package{fontinst} 
+  doesn't know}
+
+Some of the commands defined by \package{fontdoc} are not defined by 
+\package{fontinst} because they have no meaning in that context. 
+Most of these commands are lower-level commands that are used in the 
+implementations of commands common to \package{fontinst} and 
+\package{fontdoc}, but a few are simply only meant to be used in the 
+parts of ETX and MTX files that \package{fontinst} never executes.
+
+With v\,1.916 the mechanism for formatting integer expressions changed 
+dramatically. The new base command to use is 
+\DescribeMacro{\TypesetIntegerExpression}|\Typeset|\-|Integer|\-%
+|Expression|, which takes as its only argument the integer expression 
+to format and typesets it. |\Typeset|\-|Integer|\-|Expression| expects 
+to be used in math mode only. A similar command is 
+\DescribeMacro{\TypesetStringExpression}|\Typeset|\-|String|\-%
+|Expression|, which takes a string expression as argument, formats, 
+and typesets it. |\Typeset|\-|String|\-|Expression| can be used in any 
+mode.
+
+The \DescribeMacro{\macroparameter}|\macroparameter| command is (in 
+integer and string expressions) understood as a ``placeholder for a 
+macro parameter''. This is primarily useful in comments that describe 
+a user-defined macro; see \texttt{ltcmds.mtx} for examples.
+
+
+
+% \part*{Implementation}
+% \addcontentsline{toc}{part}{Implementation}
+
+\changes{1.800}{1998/06/22}{\texttt{fontinst.sty} and 
+   \texttt{fontdoc.sty} now generated from \texttt{fontinst.dtx}. (UV)}
+\changes{1.900}{1999/02/05}{\texttt{fontinst.dtx} split into several 
+   source files. (LH)}
+\changes{1.902}{1999/04/18}{Fixed some silly markup. (LH)}
+
+\DocInclude{fibasics}
+\DocInclude{ficommon}
+\DocInclude{fimain}
+\DocInclude{fitrig}
+\DocInclude{ficonv}
+\DocInclude{filtfam}
+\DocInclude{fimapgen}
+
+\PrintIndex
+\pagestyle{plain}\tracingmacros=2\tracingcommands=2
+\PrintChanges
+\tracingcommands=0\tracingmacros=0
+
+\clearpage
+\appendix
+\part*{Internal notes}
+\addcontentsline{toc}{part}{Internal notes}
+
+
+\section{Typographic treatment}
+
+\begin{itemize}
+  \item
+    I have been following \emph{The \LaTeX\ Companion} in that I have 
+    set all names of packages and the like---\package{fontinst}, 
+    \package{fontdoc}, \package{trig}, \package{doc}, and 
+    \package{docstrip} (I might have forgotten some)---in sans serif 
+    type. Actually, I have defined a command |\package| in 
+    \texttt{fisource.sty} (or is that \package{fisource}?) which does 
+    this, so if we decide on some other formatting, we can just change 
+    that. /LH
+  \item
+    It seems to me that there should indeed be some space between the 
+    `v' and the digits in a version number when it is typeset, but I 
+    also think a full space is too much, so I have been using thin 
+    spaces. These are unbreakable and under \LaTeX\ you can simply use 
+    |\,| to get one (while you are not in math mode, that is). /LH
+  \item
+    While I went through (some of) the code, I came across a few 
+    inconsistencies. \ambiguity{I have marked them out like this%
+    \offindex}---some boldfaced text in a paragraph and a large A 
+    in the margin. I defined a command |\ambiguity| for doing this. /LH
+  \item
+    There is also a similar command |\question| which is intended for 
+    situations where there isn't really an error, but something seems 
+    like it should be taken care of in some other way. \question{The 
+    \cs{question} command puts a question mark in the margin.%
+    \offindex}
+  \item
+    I also noticed that there are several \package{fontinst} commands, 
+    not all of which are new, which are not defined in \package{fontdoc}. 
+    {\offindex\missing{doc}{\foo}}To mark out such things, I have 
+    written things like the one shown in the margin by this paragraph. 
+    I defined a command |\missing| for doing this. /LH
+\end{itemize}
+
+
+\section{Planning topics}
+
+This section lists items in the larger design of \package{fontinst} 
+which need to be resolved in one way or another. Debates about these 
+items on the fontinst mailing list are welcome.
+
+
+\subsection{Reorganisation of the source}
+
+At the moment, all the ideas suggested have been realized.
+% \begin{itemize}
+%   \item
+%     How about moving the first section of \texttt{fimain.dtx} to 
+%     \texttt{fibasics.dtx}? /LH
+%   \item
+%     How about extracting the code which has to do with file 
+%     conversions (Sections~\ref{Sec:Conv. input}, 
+%     \ref{Sec:Font.trans}, and Subsection~\ref{Ssec:MTX->PL}) from 
+%     \texttt{fimain.dtx} and put it in a file of its own 
+%     (\texttt{ficonv.dtx}, say)? /LH
+% \end{itemize}
+
+
+\subsection{Files}
+
+Which files should be considered temporary and placed in the location 
+specified with |\tempfileprefix|? Should files be explicitly be looked 
+for at this location or should it be assumed that fontinst users 
+include that location in their \TeX\ input file search path? In the 
+former case, \emph{which} files should be looked for in that 
+location? Should files be looked for in the temporary location before 
+they are looked for without a specified location, or should it be the 
+other way round?
+
+
+
+
+
+\section{Contributors}
+
+[The \package{fontinst} source has been pretty inconsistent in how 
+people are credited for what they have done---some appear only as 
+acronyms while others appear as rather striking e-mail addresses---so 
+I thought it best that this is shaped up a bit. My suggestion is that 
+we use names or acronyms in the source and move everything else here. 
+I also thought it could be interesting with a short description of 
+what each person has done and is doing, so I have started ever so 
+slightly on something along those lines. Feel free to add things! /LH]
+
+\medskip
+
+The following people have contributed substantial amounts of code or 
+documentation to \package{fontinst}. They are listed in strict 
+alphabetical order.
+
+\begin{description}
+  \item[Thierry Bouche]
+    Thierry saw to that the \texttt{T1} encoded fonts got font 
+    dimensions comparable to the \texttt{ec} fonts. Thierry is also 
+    the author of several papers (published in the \textit{Cahiers 
+    GUTenberg} and \textit{TUGboat}) which deal with non-trivial 
+    applications of \package{fontinst}, such as creating metrics for 
+    Adobe Minion Multiple Master fonts and developing a corresponding 
+    math font setup.
+    
+    E-mail: \texttt{Thierry.Bouche@ujf-grenoble.fr}
+    
+  \item[Lars Hellstr\"om (LH)]
+    Lars is responsible for most of the things in v\,1.9 that were 
+    not there in v\,1.8.
+    
+    Lars is currently a member of the \package{fontinst} 
+    maintenance team. He is also a Ph.D.\ in mathematics looking for 
+    employment.
+    
+  \item[Alan Jeffrey (ASAJ)]
+    Alan is the original author of \package{fontinst}. He is not 
+    currently on the development team, but he is still managing the 
+    \package{fontinst} mailing list.
+    
+    E-mail (\package{fontinst} mailing list subscriptions):%
+    \nobreak\hfill\penalty0\hskip -2em plus -1fill\ \relax
+    \vadjust{}\nobreak\hskip 2em\relax
+    \texttt{fontinst-request@cogs.susx.ac.uk}.
+    
+  \item[Constantin Kahn (CK)]
+    Constantin is one (Sebastian is the other) of the original coauthors 
+    of the current |\latinfamily| command.
+    % \footnote{Am I right about this? It's a bit before my time, 
+    % I've just read \texttt{CHANGES}. /LH}
+    
+  \item[Rowland McDonnell]
+    Rowland rewrote Alan's old v\,1.5 documentation for 
+    \package{fontinst} and updated it for v\,1.8. 
+  
+  \item[Sebastian Rahtz (SPQR)]
+    Sebastian is one (Constantin is the other) of the original coauthors 
+    of the current |\latinfamily| command. He has also contributed 
+    numerous ETX files and made the ``unofficial'' v\,1.6 and v\,1.7, 
+    which included the first \package{fontinst} support for making 
+    \texttt{TS1} encoded files.
+    
+  \item[Ulrik Vieth (UV)]
+    Ulrik converted \texttt{fontinst.sty} to \package{doc}\slash
+    \package{docstrip} format, reunited Alan's v\,1.511 and 
+    Sebastian's v\,1.7, and made the first official release of 
+    \package{fontinst} (v\,1.8) for more than two years.
+    
+    Ulrik is currently a member of the \package{fontinst} 
+    maintenance team. He is also involved in the Joint TUG\slash 
+    \LaTeX~3 Project Working Group on extended math font encodings.
+    
+  \item[\textellipsis]
+\end{description}
+Anyone else?
+
+
+\section{To do}
+
+This section is based on the \texttt{TODO} file from \package{fontinst} 
+v\,1.504, but a couple of new entries have been added and some have 
+been equipped with comments.
+
+\subsection{Things to do in the ``near'' future}
+
+\begin{itemize}
+  \item
+    Update documentation. (Lars, knowing he isn't saying anything new)
+  
+  \item
+    Rewrite the entire substitution mechanism from scratch! The main 
+    problem with the current mechanism is that it only allows one 
+    substitution per shape and one per series. One cannot substitute 
+    the |it| shape for both the |sl| and the |ui| shapes since each 
+    new |\substitute|(|noisy|\textbar|silent|) with |it| in the 
+    \meta{from} argument will overwrite the setting made by the 
+    previous; 
+    \begin{quote}
+      |\substitutenoisy{ui}{it}|\\
+      |\substitutesilent{sl}{it}|
+    \end{quote}
+    is effectively the same as
+    \begin{quote}
+      |\substitutesilent{sl}{it}|
+    \end{quote}
+    Another big problem is that it isn't well defined what the 
+    substitution mechanism should do. (Lars)
+    
+    I've got a sketch for a new substitution mechanism, but I'm not 
+    at all sure it will make it into any v\,1.9xx. /LH 
+    (The code that was written is now in \texttt{fimain.dtx}, but 
+    it's not included in any of the generated files.)
+    
+    An alternative to substitutions is to use explicit 
+    |\installfontas| commands. This provides complete control. /LH
+  
+  \item
+    Consider removing the following unreliable fakes from 
+    \texttt{textcomp.mtx}:
+    \begin{quote}
+      \texttt{asciiacutedbl}, \texttt{asciigravedbl}, 
+      \texttt{bardbl}, \texttt{openbracketleft}, and
+      \texttt{openbracketright}
+    \end{quote}
+    and consider adding fakes for the following unavailable glyphs:
+    \begin{quote}
+      \texttt{dollaroldstyle} (use \texttt{dollar}), 
+      \texttt{centoldstyle} (use \texttt{cent}), \texttt{lira} (use 
+      \texttt{sterling}), and \texttt{pilcrow} (use 
+      \texttt{paragraph})
+    \end{quote}
+    These suggestions are of course open for debate. (Ulrik)
+  
+  \item
+    One thing I miss in [the typeset form of an encoding 
+    specification] is a simple hex/octal/decimal chart showing all 
+    the character names in their positions (and ideally even an 
+    example of the printed character, although I know that would be 
+    harder). (Karl Berry)
+    
+\end{itemize}
+
+
+\subsection{Things that probably won't be done in the near future}
+
+\begin{itemize}
+  \item
+    Find a way to automatically generate math fonts. (Alan)
+    
+    I doubt that this will ever be possible to do automatically.
+    \package{mathptm} and \package{mathptmx} are already hackish enough, 
+    not to mention the prototype implementations for new math font 
+    encodings. /UV
+    
+  \item
+    Investigate using Alternate sets. (Alan)
+    
+    AFAIK, Thierry Bouche has done some work with alternate sets 
+    for AGaramond, ACaslon and Minion, but this implies a lot of
+    manual work to compose the proper calls to \package{fontinst}. /UV
+    
+  \item
+    Create \LaTeX\ packages?  In fact, rethink the whole package
+    interface \textellipsis\ (Alan) 
+    
+    Sebastian's Perl front-end to \package{fontinst} does create trivial
+    \LaTeX\ packages automatically for the CTAN fonts. /UV
+    
+  \item
+    Worry about excessive kern tables in \texttt{T1} fonts. (Alan)
+    
+    I think the best way to get at this would be to write a program 
+    that can optimize (for size) kern tables by making use of the |SKIP| 
+    instruction. There's often room for quite a lot of compression. 
+    Such a program would however have to be written in some compiling 
+    language, otherwise it wouldn't be fast enough. /LH
+  
+  \item
+    Consider making |\set|(|left|\textbar|right|)|kerning| parameterized 
+    by the size of the other glyph, eg so that faking |<Asmall><T>| can 
+    be different from |<Aacutesmall><T>|.  Suggested by Hilmar Schlegel.
+
+\end{itemize}
+
+
+\subsection{Things that have been done}
+
+\begin{itemize}
+  \item
+    Update documentation (comments from Karl and Damian).
+    
+    Rowland has meritoriously done the update requested here. On the 
+    other hand, it needs to be updated again, since many new features 
+    have been added. /LH
+  
+  \item
+    Investigate using raw SC fonts. (Alan)
+    
+    This problem comes up on the mailing list from time to time.
+    The problem is that \package{fontinst}'s |\latinfamily| command 
+    is geared towards fonts that come with standard and expert font 
+    sets (as with Adobe and Monotype fonts) rather than fonts that 
+    come with standard and small caps (as with Linotype fonts). 
+    I'm afraid it would be to complicated to handle both cases
+    in the same |\latinfamily| procedure. /UV
+  
+  \item
+    Investigate problems with duplicate kerns appearing in VPL files
+    (Hilmar Schlegel).
+    
+    The problem has been investigated and is solved with v\,1.9. /LH
+  
+  \item
+    Find out why, if you have a font with both medium and light variants
+    but no italic, you get |m|/|it| $\mapsto$ |l|/|it| $\mapsto$ 
+    |l|/|sl| rather than |m|/|it| $\mapsto$ |m|/|sl|.
+    (Sebastian).
+    
+    Because for every shape that \package{fontinst} is allowed to use 
+    a given font for, it will perform all possible series substitutions. 
+    If the |\installfont| for |l|/|sl| came before the |\installfont| for 
+    |m|/|sl|, then substitutions will be as described above. See also 
+    item about the substitution mechanism. /LH
+  
+  \item
+    AFM files can contain real units, not just integers.  (Gintautas
+    Grigelionis).
+    
+    This is fixed with v\,1.9. /LH
+  
+  \item
+    Make \texttt{fontdoc.sty} and co.\ use PS fonts. (Alan)
+    
+    I think |\useexamplefont| and friends (introduced with v\,1.8) 
+    pretty much do what was intended here. /LH
+  
+  \item
+    \texttt{latin.mtx} uses \package{fontinst} rather than 
+    \package{fontdoc}!  (Rob Hutchings).
+  
+  \item
+    Allow |.vpl| files to be read as |.pl| files.  (Constantin)
+  
+  \item
+    Richard Walker reports that if you say
+    \begin{quote}
+      |\latinfamily{mbvx}{}|\\
+      |\latinfamily{mbv9}{}|
+    \end{quote}
+    then the 2nd run doesn't use old-style digits, because the 1st run 
+    has already defined |\digit|. If so, this is because |\latinfamily| 
+    is missing a bracing level. I should investigate.
+    
+    I think it is best to do oldstyle and non-oldstyle variants in two
+    separate fontinst runs, i.e. don't use |\latinfamily| more than once 
+    in a single run.  (IIRC, grouping doesn't work properly since 
+    every single font closes and reopens a |\begingroup|-|\endgroup| 
+    pair to encapsulate the kerning info\footnote{And glyph metrics 
+    info, and glyph mapcommands info \textellipsis /LH} or something 
+    like that.) /UV
+
+  \item
+    Consider writing an |\installfontas| command which doesn't 
+    generate a (V)PL but makes an entry in the FD file. 
+    Typical usage: Install an \texttt{sc} shape of a \texttt{TS1} 
+    font family by using the font made for the \texttt{n} shape. 
+    (Lars)
+    
+    Done. The described installation for the \texttt{m} series of the 
+    \texttt{ptm} font family can be done through
+    \begin{quote}
+      |\installfontas{ptmr8c}{TS1}{ptm}{m}{sc}{}|
+    \end{quote}
+    Note however that you need to do it in each series explicitly. /LH
+  
+  \item
+    Use the \texttt{StdVW} property from AFM 4.0 files instead of the 
+    width of \textit{I} for standard stem fontdimen. Pointed out by 
+    Hilmar Schlegel.
+    
+    Partially done. |\afmtomtx| writes a 
+    |\setint{verticalstem}|\marg{value} when it encounters a 
+    \texttt{StdVW} property. The ETX files have not yet (2000/05/30) 
+    been changed to use this value. /LH
+  
+  \item
+    \package{fontdoc} has a problem with glyph, integer, string, 
+    etc.\ names that contains underscores, since these will cause 
+    \TeX\ to jump to math mode when one tries to typeset these things. 
+    Unfortunately \package{fontinst} itself writes two such integers: 
+    \texttt{descender_neg} and \texttt{maxdepth_neg}. There are at 
+    least three solutions to this. The first is to make underscore an 
+    `other' character throughout, but this might break some comments in 
+    MTX and ETX files. The second is to temporarily change the catcode 
+    in the arguments of the commands, but that will complicate the 
+    definitions of almost all \package{fontdoc} commands dramatically. 
+    The third is to declare this as unsupported by \package{fontdoc} and 
+    change \package{fontinst} so that the troublesome integers are 
+    renamed, e.g.\ \texttt{descender-neg} and \texttt{maxdepth-neg}, but 
+    this can break people's code. (Lars)
+    
+    After thinking about it for a couple of months, I realized that 
+    none of the above is the right solution. That is instead to use 
+    something similar to the harmless character strings of the 
+    \package{xdoc} package when typesetting names of variables etc.\ 
+    in \package{fontdoc}. This got implemented in v\,1.916. /LH
+  
+  \item
+    Modify the (V)PL-to-MTX converter so that |\setint|\discretionary
+    {}{}{}|{fontdimen(|\meta{n}|)}|\discretionary{}{}{}|{\int|%
+    \marg{name}|}| commands in the ETX file declare that 
+    \texttt{PARAMETER} (or equivalent) properties for fontdimen 
+    \meta{n} should be converted to |\setint| commands for the integer 
+    \meta{name}. This ought to be particularly useful for math fonts. 
+    (Lars)
+    
+    Done with v\,1.917, but only for the new \cs{setfontdimen} 
+    command. /LH
+  
+  \item
+    Update \texttt{fontdoc.sty} and co.\ for \LaTeXe. (Alan)
+    
+    \texttt{fontdoc.sty} underwent a major overhaul from v\,1.916 on, 
+    so I suspect this can be said to have been done now. The basic 
+    vertical spacing put in by \cs{Aheading} and \cs{Bheading} may 
+    however need more work; sometimes it doesn't come out as one 
+    would want it to. /LH
+  
+  \item
+    \texttt{latin.mtx} fakes composite SC glyphs [kerning?] from the 
+    composite glyph, eg.
+    \begin{quote}
+      |\setleftrightkerning{Aacutesmall}{Aacute}{900}|,
+    \end{quote}
+    rather than from the SC non-composite, eg.
+    \begin{quote}
+      |\setleftrightkerning{Aacutesmall}{Asmall}{1000}|
+    \end{quote}
+    This may cause problems with SC fonts with explicit SC--C kerns, 
+    eg.
+    \begin{quote}
+      |\setkern{V}{Asmall}{100}|
+    \end{quote}
+    This needs to be thought about. Pointed out by Hilmar Schlegel.
+    
+    \texttt{newlatin.mtx} does this right; shrunk glyphs get shrunk 
+    kerning, whereas constructed glyphs get kerning from the base 
+    letter. /LH
+  
+\end{itemize}
+
+
+\subsection{Other notes}
+
+Alan's \texttt{TODO} file also contains some items regarding 
+\package{mathptm}, but that seems to have migrated out of 
+\package{fontinst} (if it ever really was a part). The problem is that 
+\package{mathptm} cannot be changed any more for the sake of checksum 
+consistency and backwards compatibility. A new variant called 
+\package{mathptmx} tries to do a little better, but there may still be 
+room for improvements.
+
+
+
+\section{Efficiency}
+
+This section records the results of some (rather simple) test runs 
+that have been made to test the efficiency of \package{fontinst}, 
+primarily to see how changes in the implementation affect efficiency 
+by comparing the time and space used by different \package{fontinst} 
+versions to complete the same task.
+
+
+\subsection{Alan Jeffrey's tests}
+\label{Ssec: ASAJ tests}
+
+I compared the version where you try to keep ints as |\mathchardef|s 
+with the version where you don't bother, and for a sample font without 
+|\mathchardef|s I got:
+\begin{quote}
+  114673 words of memory out of 150001\\
+  Time elapsed: 135.0 seconds
+\end{quote}
+and with, I got:
+\begin{quote}
+  114050 words of memory out of 150001\\
+  Time elapsed: 134.5 seconds
+\end{quote}
+so I've saved a little memory and time.  Not brilliant, but I may as
+well keep it in.
+
+Where possible, we avoid re-scaling kerns, which saves a bit of time 
+and memory.  With a sample font, the version where we didn't avoid
+re-scaling used:
+\begin{quote}
+  114050 words of memory out of 150001\\
+  Time elapsed: 134.5 seconds
+\end{quote}
+whereas the version where we do avoid it used:
+\begin{quote}
+  113786 words of memory out of 150001\\
+  Time elapsed: 124.9 seconds
+\end{quote}
+
+We keep the names of the glyphs to kern with as |\l-|\meta{name} and 
+|\r-|\meta{name} to save on token space, and this got the resources 
+used down to:
+\begin{quote}
+  88574 words of memory out of 150001\\
+  Time elapsed: 106.1 seconds
+\end{quote}
+Keeping track of the kern amounts as |\|\meta{amount} got the resources
+used down to:
+\begin{quote}
+  75424 words of memory out of 150001\\
+  Time elapsed: 97.2 seconds
+\end{quote}
+Mind you, I then added all the |\transformfont| stuff, and it went
+back to:
+\begin{quote}
+  77079 words of memory out of 150001\\
+  Time elapsed: 97.7 seconds
+\end{quote}
+
+
+
+\subsection{Current tests}
+
+The setup for this test is that \TeX\ is run on a \texttt{.tex} file 
+consisting of the following commands.
+\begin{quote}
+  |\batchmode|\\
+  |\input fontinst.sty|\\
+  |\latinfamily{pad}{}|\\
+  |\tracingstats=1\bye|
+\end{quote}
+All the font metrics are generated from the AFM files; temporary MTX, 
+PL, and VPL files are deleted between test runs. The format used was 
+generated by typing |\dump| at ini\TeX's |**| prompt; thus there is no 
+overhead from a typesetting format in the space requirements.
+
+[It appears the exact data from these tests will have to wait, since 
+I haven't been able to get access to any computer with reliable 
+process timing. For the next release perhaps \textellipsis\ /LH]
+
+% The \TeX\ version used is \TeX~3.14159. The \TeX\ implementation used 
+% is te\TeX~0.9 (Web2C~7.2), running on a 
+% 
+% The \emph{input sources} figure lists how many items are used on 
+% \TeX's stack for simultaneous input sources. As an input source in 
+% this context is considered not only input files, but also (and mainly) 
+% various token lists. Most of these token lists are replacement texts 
+% and parameters of macros, but token list items on this stack also come 
+% from expansions of |\the| (not only when applied to a |\toks| register) 
+% and the like. The input source stack sizes of normal \TeX\ 
+% implementations are usually several times larger than what 
+% \package{fontinst} uses, so this particular resource shouldn't cause 
+% any trouble.
+% 
+% The \emph{parameter} figure is the maximal number of macro parameters that 
+% \TeX\ has to remember at any one time. The reason this number is 
+% greater than 9 is that it counts parameters in \emph{all} macros that 
+% are on the input sources stack, not just those in the top one. The 
+% same remark about the likelyhood of \TeX\ running out of this resource 
+% during a \package{fontinst} run as for input sources applies for 
+% parameters.
+% 
+% The \emph{buffer characters} stack holds lines read from input files that 
+% are partially tokenized (if several files are on the input sources 
+% stack then \TeX\ must remember the last line read from each of them) and 
+% characters for |\csname| \textellipsis |\endcsname| constructions that 
+% are being expanded. This shouldn't cause any trouble either.
+% 
+% The \emph{save values} figure is the maximum number of items on \TeX's 
+% save stack at any time. \package{fontinst} uses massive amounts of 
+% space here (compared to normal \TeX\ documents), but there isn't much 
+% that can be done about this since \package{fontinst} uses \TeX's 
+% grouping mechanism to clear data for one font from memory before 
+% processing begins with the next.
+% 
+% The \emph{multiletter control sequences} figure is exactly 
+% that---the number of control sequences whose names consist of more than 
+% one character. When these become too many, \TeX\ complains that its 
+% hash table is full. Some of these control sequences are macros that 
+% \package{fontinst} uses in a procedure-like manner, but many of them are 
+% rather used as data tables. As a comparision of the figure I might 
+% mension that my \LaTeX\ used 3748 multiletter control sequences for 
+% typesetting this document, so \package{fontinst} rather average in 
+% this respect (perhaps a bit above, but not much).
+% 
+% The \emph{strings} figure tells how many items \TeX\ put in its string 
+% pool and the \emph{string characters} figure tells how many characters 
+% these contain altogether. There are two main categories of things that 
+% occur here: names of multiletter control sequences and \TeX's builtin 
+% error messages. One thing which certainly doesn't occur here is the 
+% texts you save using \package{fontinst}'s |\setstr| command; these will 
+% instead become token lists and occupy main memory space (the \emph{names} 
+% of string variables will however become part of a control sequence name, 
+% so that will be stored as a string). Unlike some other \TeX\ 
+% implementations however, the Web2C \TeX\ seems to only report new 
+% entries in the string pool, so the \emph{strings} and \emph{string 
+% characters} figures below do not include the builtin error messages. 
+% On the other hand, they don't include the names of the 322 primitive 
+% multiletter control sequences either, which is why the figures below 
+% report more control sequences than strings.
+% 
+% The \emph{main memory}, finally, is where \TeX\ stores almost 
+% everything else (I've skipped some of the memory categories \TeX\ 
+% reports since they are ``only'' used for typesetting), most notably 
+% tokens. Each token occupies one word of memory. I don't think 
+% \package{fontinst}'s consumption of main memory is that high (in 
+% comparision with normal \LaTeX\ jobs) since \package{fontinst} doesn't 
+% have to store any boxes here and thus frees space for more tokens.
+% 
+% \begin{description}
+%   \item[v\,1.801]
+%     \consumption{126.68}{%954.9
+% %  5261 strings out of 8681
+% %  54607 string characters out of 136047
+% %  112422 words of memory out of 200001
+% %  3814 multiletter control sequences out of 10000
+% %  8 words of font info for 0 fonts, out of 180000 for 256
+% %  0 hyphenation exceptions out of 2551
+% %  30i,0n,42p,220b,1696s stack positions out of 600i,150n,200p,3000b,4094s
+%  3903 strings out of 13688
+%  42612 string characters out of 101822
+%  112422 words of memory out of 263001
+%  3961 multiletter control sequences out of 10000+0
+%  7 words of font info for 0 fonts, out of 200000 for 1000
+%  0 hyphenation exceptions out of 1000
+%  30i,0n,42p,220b,1770s stack positions out of 300i,100n,500p,30000b,4000s
+%     }% Compulsory comment; TeX inserts a & at the end of this line
+%     % as a side-effect of the implementation of \consumption.
+%   \item[v\,1.902]
+%     \consumption{139.59}{%997.4
+% %  6196 strings out of 8681
+% %  69530 string characters out of 136047
+% %  112617 words of memory out of 200001
+% %  4749 multiletter control sequences out of 10000
+% %  8 words of font info for 0 fonts, out of 180000 for 256
+% %  0 hyphenation exceptions out of 2551
+% %  28i,0n,42p,220b,2004s stack positions out of 600i,150n,200p,3000b,4094s
+%  4690 strings out of 13688
+%  52734 string characters out of 101822
+%  112613 words of memory out of 263001
+%  4748 multiletter control sequences out of 10000+0
+%  7 words of font info for 0 fonts, out of 200000 for 1000
+%  0 hyphenation exceptions out of 1000
+%  28i,0n,42p,220b,2000s stack positions out of 300i,100n,500p,30000b,4000s
+%     }%
+%     Comparing the figures for v\,1.902 with those of v\,1.801, there 
+%     are mainly three things which are of interest. The first is that 
+%     the number of items on the save stack have increased quite a lot. 
+%     Most of this is due to the mechanism by which \package{fontinst} 
+%     avoids writing multiple kerns to (V)PL files. The second thing to 
+%     notice is that the number of control sequences has increased quite 
+%     dramatically (over 20\%). This is to be expected, as a number of 
+%     new features have been added and the implementation of these 
+%     features requires many new macros.
+%     
+%     Some 200 of these new control sequences are however not there 
+%     because of new features, but because of a silly implementation of 
+%     how slot numbers for glyphs are stored. In an attempt to save 
+%     tokens, I (LH) stored these numbers as control sequence names 
+%     rather than token sequences, just like kern amounts have been 
+%     stored for some time now. One notable feature of kern 
+%     amounts is however that although these may assume just about any 
+%     value you can think of, within any given font family they tend to 
+%     assume only a handful of values. This means that the number of 
+%     hash positions occupied by such control sequences is never very 
+%     large and the storage is efficient. On the other hand, the set of 
+%     slot numbers that occur usually consists of all integers in the 
+%     range 0--255, with each slot number occuring in at most one 
+%     position. This means that the storage method, although efficient 
+%     in the number of tokens, really squanders space in the hash table.
+%     A much better method (which should be implemented, once I get round 
+%     to it) is to store slot numbers in the character codes of `ordinary' 
+%     tokens.
+%     
+%     The third noticable thing is that although the number of macros 
+%     has grown quite a lot, the amount of main memory used has hardly 
+%     increased at all! Some of this is probably due to that the ENC to 
+%     ETX converter was moved to \texttt{finstmsc.sty}, since this 
+%     consists of only two macros but lots of tokens. Another factor 
+%     that has probably helped is that |\glyph| now avoids rescaling a 
+%     glyph by one thousand; this saves 9 tokens for each time 
+%     |\glyph|\marg{name}|{1000}| gets executed.
+%   \item[v\,1.907]
+%     \consumption{138.88}{%1019.9
+% %  6226 strings out of 8681
+% %  69918 string characters out of 136047
+% %  113820 words of memory out of 200001
+% %  4779 multiletter control sequences out of 10000
+% %  8 words of font info for 0 fonts, out of 180000 for 256
+% %  0 hyphenation exceptions out of 2551
+% %  28i,0n,42p,220b,2006s stack positions out of 600i,150n,200p,3000b,4094s
+% %  6225 strings out of 8681
+%  4719 strings out of 13688
+%  53105 string characters out of 101822
+%  113814 words of memory out of 263001
+%  4777 multiletter control sequences out of 10000+0
+%  7 words of font info for 0 fonts, out of 200000 for 1000
+%  0 hyphenation exceptions out of 1000
+%  28i,0n,42p,220b,2002s stack positions out of 300i,100n,500p,30000b,4000s
+%     }%
+%     This is pretty much what could be expected. A couple of new 
+%     features have been added, so naturally some of the numbers have 
+%     grown a little.
+%   \item[v\,1.908]
+%     This version is devoted to optimizing \package{fontinst}.
+%     
+%     The first idea was to avoid moving the contents of 
+%     |\glyph_map_commands| and |\glyph_map_fonts| to a macro and back 
+%     again each time these are updated. This changed the numbers to
+%     \consumption{135.64}{%
+%  4719 strings out of 13688
+%  53105 string characters out of 101822
+%  113810 words of memory out of 263001
+%  4777 multiletter control sequences out of 10000+0
+%  7 words of font info for 0 fonts, out of 200000 for 1000
+%  0 hyphenation exceptions out of 1000
+%  28i,0n,42p,220b,2002s stack positions out of 300i,100n,500p,30000b,4000s
+%     }%
+%     Hence I've earned a few seconds.
+%     
+%     The next idea is to expand the |\space|s in |\out_lline| and 
+%     friends when these are defined, instead of expanding them anew 
+%     each time an output line is written.
+%   \item[v\,1.909]
+%     \consumption{}{%1159.8 % Ow! It's getting worse.
+% %  6155 strings out of 8681
+% %  68824 string characters out of 136047
+% %  113918 words of memory out of 200001
+% %  4708 multiletter control sequences out of 10000
+% %  8 words of font info for 0 fonts, out of 180000 for 256
+% %  0 hyphenation exceptions out of 2551
+% %  28i,0n,42p,220b,1982s stack positions out of 600i,150n,200p,3000b,4094s
+%     }
+%   \item[v\,1.910]
+%     \consumption{}{%1031.6 % Perhaps not ...
+% %  5949 strings out of 8681
+% %  68261 string characters out of 136047
+% %  113840 words of memory out of 200001
+% %  4502 multiletter control sequences out of 10000
+% %  8 words of font info for 0 fonts, out of 180000 for 256
+% %  0 hyphenation exceptions out of 2551
+% %  28i,0n,42p,220b,1756s stack positions out of 600i,150n,200p,3000b,4094s
+%     }
+% \end{description}
+% 
+
+
+\begin{thebibliography}{99}
+\bibitem{Fontname}
+  Karl Berry: \textit{Fontname}, CTAN:\discretionary{}{}{}%
+  \texttt{info}\slash \texttt{fontname}\slash \texttt{fontname.texi} 
+  (and most of the other files in that directory as well).
+\bibitem{mfnt}
+  Matthias Clasen and Ulrik Vieth: 
+  \texttt{mfnt} (their ``work with math fonts''), 1997--8,
+  see \textsc{http}:/\slash \texttt{www.tug.org}\slash 
+  \texttt{twg}\slash \texttt{mfg}\slash\texttt{archives}/.
+\bibitem{LaTeX-companion}
+  Michel Goossens, Frank Mittelbach, Alexander Samarin:
+  \textit{The \LaTeX\ Companion}, 
+  Ad\-di\-son-Wes\-ley, Reading, MA, USA, 1994.
+  % Addison and Wesley are names of two persons, but they 
+  % should be joined by a hyphen since Addison-Wesley is
+  % a company name. Tricky that.
+\bibitem{LaTeX-graph-comp}
+  Michel Goossens, Sebastian Rahtz, Frank Mittelbach:
+  \textit{The \LaTeX\ Graphics Companion: Illustrating Documents with 
+  \TeX\ and PostScript},
+  Ad\-di\-son-Wes\-ley, Reading, MA, USA, 1997; 
+  ISBN~0-201-85469-4.
+\bibitem{TAOCP2}
+  Donald E.\ Knuth: \textit{The art of computer programming},
+  vol.~2 (\textit{Seminumerical algorithms}), 3rd ed., 
+  Ad\-di\-son-Wes\-ley, 1997.
+\bibitem{TeXbook}
+  Donald E.\ Knuth, Duane Bibby (illustrations): 
+  \textit{The \TeX book}, 
+  Ad\-di\-son-Wes\-ley, 1991, ISBN~0-201-13448-9; 
+  also volume A of \textit{Computers and typesetting},
+  ISBN~0-201-13447-0.
+\bibitem{fntguide}
+  \LaTeX3 Project Team: \textit{\LaTeXe{} font selection}, 
+  CTAN: \texttt{macros}\slash
+  \texttt{latex}\slash\texttt{base}\slash\texttt{fntguide.tex}.
+\end{thebibliography}
+
+
+\end{document}

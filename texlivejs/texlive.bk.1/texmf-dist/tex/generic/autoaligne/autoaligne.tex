@@ -1,0 +1,328 @@
+% !TeX encoding = ISO-8859-1
+% Ce fichier contient le code TeX de l'extension "autoaligne"
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                    %
+\def\aanom                   {autoaligne}                            %
+\def\aaversion                   {1.4}                               %
+%                                                                    %
+\def\aadate                  {2018/11/05}                            %
+%                                                                    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% --------------------------------------------------------------------
+% Cet ensemble peut être distribué et/ou modifié selon les
+% conditions de la licence « LaTeX Project Public License », en version
+% 1.3c ou toute autre version ultérieure.
+% La dernière version de cette licence est disponible à
+%
+%              http://www.latex-project.org/lppl.txt
+%
+% --------------------------------------------------------------------
+% Cet ensemble a le statut de maintenance LPPL « maintenu ».
+%
+% Le mainteneur actuel de cet ensemble est Christian Tellechea
+% email      : unbonpetit@netc.fr
+% Copyright  : Christian Tellechea 2016-2018
+% Suivi bugs : https://framagit.org/unbonpetit/autoaligne/issues
+% Dépôt      : https://framagit.org/unbonpetit/autoaligne/tree/master
+% CTAN URL   : https://ctan.org/pkg/autoaligne
+% --------------------------------------------------------------------
+% L'extension autoaligne est composée des 5 fichiers suivants :
+%   - code               : autoaligne            (.tex et .sty)
+%   - manuel en francais : autoaligne-fr         (.tex et .pdf)
+%   - fichier lisezmoi   : README
+% --------------------------------------------------------------------
+
+\expandafter\edef\csname aa_restaure_catcode\endcsname{\catcode\number`\_=\number\catcode`\_\relax}
+\catcode`\_11
+\def\aa_listofitems_version_mini{1.1}
+
+\begingroup
+	\edef\__tempa{\meaning\eTeXversion}\edef\__tempb{\string\eTeXversion}%
+	\ifx\__tempa\__tempb\endgroup
+	\else\endgroup
+		\aa_erreur{Vous n'utilisez pas un moteur eTeX, \aanom\space ne peut donc pas fonctionner}%
+		\expandafter\aa_restaure_catcode\expandafter\endinput
+	\fi
+
+\begingroup
+\unless\ifdefined\loiname
+	\def\__tempa{\endgroup\input listofitems.tex\relax}%
+	\expandafter\__tempa
+\fi
+
+\ifdim\loiver pt<\aa_listofitems_version_mini pt
+	\aa_erreur{\loiname\space est en version v\loiver\space et \aanom\space requiert la v\aa_listofitems_version_mini\space ou plus}%
+	\expandafter\aa_restaure_catcode\expandafter\endinput
+\fi
+
+\def\aa_erreur#1{\errmessage{Package \aanom\space Error: #1^^J}}
+\let\aa_sep_terme_vide\relax
+\let\aa_sep_membre_vide\relax
+\def\aa_compose_en_mode_math#1{$\relax#1$}
+\def\aa_devdev_arg#1{\loi_exparg{\loi_exparg{#1}}}
+\def\aavcoeff#{\def\aa_v_coeff}
+\newtoks\aa_liste_tokens
+\def\aa_ajoute_au_toks#1{\aa_liste_tokens\expandafter{\the\aa_liste_tokens#1}}
+\def\aa_developpe_et_ajoute_au_toks#1{\loi_exparg\aa_ajoute_au_toks{#1}}
+\def\egaldevantmembrevide{\chardef\aa_egal_devant_membre_vide}
+\egaldevantmembrevide=0% pas de signe = devant un membre vide
+\def\aa_def_tok#1#2{\let#1= #2\empty}\aa_def_tok\aa_tok_espace{ }
+\def\aa_si_prochain_tok_est#1#2#3{%
+	\aa_def_tok\aa_test_tok{#1}\def\aa_code_vrai{#2}\def\aa_code_faux{#3}%
+	\aa_si_prochain_tok_est_i
+}
+\def\aa_si_prochain_tok_est_i{\futurelet\aa_prochain_token\aa_si_prochain_tok_est_ii}
+\def\aa_si_prochain_tok_est_ii{%
+	\loi_ifx{\aa_prochain_token\aa_tok_espace}
+		{\afterassignment\aa_si_prochain_tok_est_i\let\aa_prochain_token= }
+		{\loi_ifx{\aa_prochain_token\aa_test_tok}\aa_code_vrai\aa_code_faux}%
+}
+\def\aa_si_commence_par#1#2{%
+	\def\aa_si_commence_par_i##1#2##2\_nil{\loi_exparg\loi_ifempty{\loi_gobarg##1}}%
+	\aa_si_commence_par_i\relax#1#2\_nil
+}
+\def\definirseparateurs#1#2#3{%
+	\loi_ifempty{#1}
+		{\aa_erreur{Separateur <vide> entre lignes non permis, "\string\\" retenu}%
+		\definirseparateurs{\\}{#2}{#3}%
+		}
+		{\loi_ifempty{#2#3}
+			{\aa_erreur{Separateurs de membre <vide> et de terme <vide> : "=" et "+||-" retenus}%
+			\definirseparateurs{#1}{=}{+||-}%
+			}
+			{\loi_ifempty{#2}
+				{\definirseparateurs{#1}{\aa_sep_membre_vide}{#3}%
+				}
+				{\loi_ifempty{#3}
+					{\def\aa_liste_separateurs{#1_#2_\aa_sep_terme_vide}}
+					{\def\aa_liste_separateurs{#1_#2_#3}}%
+				}%
+			}%
+		}%
+}
+\definirseparateurs{\\}{=}{+||-}% séparateurs par défaut
+\def\definirespacements{\aa_si_prochain_tok_est[\definirespacements_i{\definirespacements_i[,]}}
+\def\definirespacements_i[#1,#2]#3#4{% #3=espace avant & après séparateurs 2   #4=espace avant & après séparateurs 3
+	\edef\aa_insere_espacement_avant{\aa_devdev_arg\loi_ifempty{\loi_removeextremespaces{#1}}{}{\hskip\glueexpr#1\relax}}%
+	\edef\aa_insere_espacement_apres{\aa_devdev_arg\loi_ifempty{\loi_removeextremespaces{#2}}{}{\hskip\glueexpr#2\relax}}%
+	\edef\aa_espacement_signe{\dimexpr\loi_ifempty{#3}{0pt}{#3}\relax}%
+	\edef\aa_espacement_terme{\dimexpr\loi_ifempty{#4}{0pt}{#4}\relax}%
+}
+\definirespacements[,]{0pt}{0pt}% espacements par défaut
+\def\aa_si_contient_moins#1{\aa_si_contient_moins_i||#1||||-||\_nil}% "||-||" est-il dans #1 ?
+\def\aa_si_contient_moins_i#1||-||#2\_nil{\loi_ifempty{#2}\loi_second\loi_first}
+\def\aa_trouver_moins_dans_separateur_de_termes{\expandafter\aa_trouver_moins_dans_separateur_de_termes_i\aa_liste_separateurs\_nil}
+\def\aa_trouver_moins_dans_separateur_de_termes_i#1_#2_#3\_nil{%
+	\aa_si_contient_moins{#2}
+		{2}
+		{\aa_si_contient_moins{#3}{3}{-1}}%
+}
+\def\aa_ajoute_si_existe#1{\ifcsname#1\endcsname\loi_argcsname\aa_developpe_et_ajoute_au_toks{#1}\fi}
+\def\aa_alignement_signe{\hfil\kern\aa_espacement_signe${}##{}$\kern\aa_espacement_signe\hfil}% pour "=", "+" ou "-"
+\def\aa_alignement_terme_c{\hfil\kern\aa_espacement_terme$##$\kern\aa_espacement_terme\hfil}
+\def\aa_alignement_terme_d{\hfil\kern\aa_espacement_terme$##$\kern\aa_espacement_terme}
+\def\aa_alignement_terme_g{\kern\aa_espacement_terme$##$\kern\aa_espacement_terme\hfil}
+\def\autoaligne{%
+	\relax\iffalse{\fi\ifnum0=`}\fi
+	\begingroup
+	\aa_si_prochain_tok_est[
+		{\autoaligne_crochet}
+		{\aa_si_prochain_tok_est({\autoaligne_paren}{\autoaligne_i[*d](c)}}%
+}
+\def\autoaligne_crochet[#1]{\aa_si_prochain_tok_est({\autoaligne_i[#1]}{\autoaligne_i[#1](c)}}
+\def\autoaligne_paren(#1){\aa_si_prochain_tok_est[{\autoaligne_permute_argopt(#1)}{\autoaligne_i[*d](#1)}}
+\def\autoaligne_permute_argopt(#1)[#2]{\autoaligne_i[#2](#1)}
+\def\autoaligne_i[#1]{%
+	\loi_ifempty{#1}
+		{\aa_erreur{Consigne d'alignement vide, "*d" est retenue}%
+		\autoaligne_i[*d]%
+		}
+		{\def\aa_consigne_alignement_general{}%
+		\aa_si_commence_par{#1}*
+			{\aa_trouve_consigne_alignement_general#1d\_nil}
+			{\aa_trouve_consigne_alignement_par_membre{#1}}%
+		\autoaligne_ii
+		}%
+}
+\def\autoaligne_ii(#1){%
+	\loi_ifempty{#1}
+		{\aa_erreur{Consigne de position vide, "c" est retenue}
+		\autoaligne_ii(c)%
+		}
+		{\edef\aa_consigne_alignement_vertical{\aa_verifie_consigne_alignement chb{#1}}%
+		\loi_ifnum{\aa_consigne_alignement_vertical=0 }
+			{\aa_erreur{Consigne d'alignement vertical "\detokenize{#1}" non reconnue, "c" est retenue}%
+			\def\aa_consigne_alignement_general{1}%
+			}%
+			{}%
+		\edef\aa_numero_separateur_contenant_signe_moins{\aa_trouver_moins_dans_separateur_de_termes}%
+		\def\readlist_d##1||##2\_nil##3{% redéfinir \readlist_e pour que
+			\loi_ifnum{\loi_nestcnt=\aa_numero_separateur_contenant_signe_moins\relax}% si la profondeur est celle où il a y a un "-"
+			{\aa_si_commence_par{##30}{-}% et que la liste restant à examiner commence par "-" alors
+				{\loi_exparg{\readlist_e1}{\expandafter\-\loi_gobarg##3##1}}% remplacer ce "-" par \-
+				{\readlist_e1{##3##1}}%
+			}
+			{\readlist_e1{##3##1}}%
+		}%
+		\expandafter\def\csname+\endcsname{+}\expandafter\def\csname-\endcsname{-}% redéfinir \+ et \-
+		\loi_exparg{\setsepchar[_]}{\aa_liste_separateurs}%
+		\autoaligne_iii
+		}%
+}
+\def\aa_trouve_consigne_alignement_general*#1#2\_nil{%
+	\loi_ifnum{\aa_verifie_consigne_alignement cdg{#1}=0 }
+		{\aa_erreur{Consigne d'alignement "\detokenize{#1}" non reconnue, "d" est retenue}%
+		\def\aa_consigne_alignement_general{d}%
+		}
+		{\def\aa_consigne_alignement_general{#1}}%
+}
+\def\aa_trouve_consigne_alignement_par_membre#1{\aa_trouve_consigne_alignement_par_membre_i1#1\loi_quark}
+\def\aa_trouve_consigne_alignement_par_membre_i#1#2{%
+	\loi_ifx{#2\loi_quark}
+		{}
+		{\loi_ifnum{\aa_verifie_consigne_alignement cdg{#2}=0 }
+			{\aa_erreur{Consigne d'alignement "\detokenize{#2}" non reconnue, "d" est retenue}%
+			\loi_argcsname\def{aa_alignement_membre[#1]}{d}%
+			}
+			{\loi_argcsname\def{aa_alignement_membre[#1]}{#2}}%
+		\loi_exparg\aa_trouve_consigne_alignement_par_membre_i{\number\numexpr#1+1}%
+		}%
+}
+\def\aa_verifie_consigne_alignement#1#2#3#4{% #1,#2,#3=lettres admises  #4=consigne c, d ou g --> renvoie un nombre (1,2 ou 3=ok, 0=erreur)
+	0\if\string #1\expandafter\loi_firsttonil\detokenize{#4x}\_nil1\else
+	\if\string #2\expandafter\loi_firsttonil\detokenize{#4x}\_nil2\else
+	\if\string #3\expandafter\loi_firsttonil\detokenize{#4x}\_nil3\fi\fi\fi
+}
+\let\aa_corrige_baselineskip\relax
+\def\autoaligne_iii#1{% #1=tableau
+	\reademptyitems
+	\readlist\aa_termes{#1}%
+	\let\aa_nombre_de_lignes\aa_termeslen% nombre de lignes
+	\def\aa_nombre_de_membres{0}%
+	\loi_fornum\aa_ligne_index=1to\aa_termeslen\do{% pour chaque ligne
+		\ifnum\csname aa_termeslen[\aa_ligne_index,0]\endcsname>\aa_nombre_de_membres
+			\loi_argcsname\let\aa_nombre_de_membres{aa_termeslen[\aa_ligne_index,0]}% mettre à jour le nombre max de membres
+		\fi
+		\loi_fornum\aa_membre_index=1to\csname aa_termeslen[\aa_ligne_index,0]\endcsname\do{% pour chaque membre
+			\loi_argcsname\let\aa_nombre_de_termes_courant{aa_termeslen[\aa_ligne_index,\aa_membre_index,0]}%
+			\ifcsname aa_nbtermes_\aa_membre_index\endcsname% mettre à jour le nombre max de termes dans ce membre
+				\ifnum\aa_nombre_de_termes_courant>\csname aa_nbtermes_\aa_membre_index\endcsname\relax
+					\loi_argcsname\let{aa_nbtermes_\aa_membre_index}\aa_nombre_de_termes_courant
+				\fi
+			\else
+				\loi_argcsname\let{aa_nbtermes_\aa_membre_index}\aa_nombre_de_termes_courant
+			\fi
+		}%
+	}%
+	\aa_liste_tokens{}%
+	% construction du préambule de l'alignement
+	\loi_fornum\aa_membre_index=1to\aa_nombre_de_membres\do{%
+		\loi_fornum\aa_terme_index=1to\csname aa_nbtermes_\aa_membre_index\endcsname\do{%
+			\ifx\aa_consigne_alignement_general\empty
+				\ifcsname aa_alignement_membre[\aa_membre_index]\endcsname
+					\loi_argcsname\aa_developpe_et_ajoute_au_toks{aa_alignement_terme_\csname aa_alignement_membre[\aa_membre_index]\endcsname}% terme
+				\else
+					\aa_erreur{Pas assez de consignes d'alignement, "d" est retenue}%
+					\aa_developpe_et_ajoute_au_toks{\aa_alignement_terme_d}%
+				\fi
+			\else
+				\loi_argcsname\aa_developpe_et_ajoute_au_toks{aa_alignement_terme_\aa_consigne_alignement_general}%
+			\fi
+			\ifnum\aa_terme_index<\csname aa_nbtermes_\aa_membre_index\endcsname\relax
+				\aa_developpe_et_ajoute_au_toks{\expandafter&\aa_alignement_signe&}% signe
+			\fi
+		}%
+		\ifnum\aa_membre_index<\aa_nombre_de_membres\relax
+			\aa_developpe_et_ajoute_au_toks{\expandafter&\aa_alignement_signe&}% égalité
+		\fi
+	}%
+	\aa_ajoute_au_toks\cr
+	% fin du préambule, construction du corps de l'alignement
+	\loi_fornum\aa_ligne_index=1to\aa_termeslen\do{% pour chaque ligne,
+		\loi_fornum\aa_membre_index=1to\aa_nombre_de_membres\do{% chaque membre
+			\def\aa_terme_non_vide_vu{0}%
+			\loi_fornum\aa_terme_index=1to\csname aa_nbtermes_\aa_membre_index\endcsname\do{% et chaque terme
+				\aa_ajoute_si_existe{aa_termes[\aa_ligne_index,\aa_membre_index,\aa_terme_index]}% ajouter le terme
+				\ifcsname aa_termes[\aa_ligne_index,\aa_membre_index,\aa_terme_index]\endcsname% si le terme existe
+					\loi_argcsname\loi_exparg\loi_ifempty{aa_termes[\aa_ligne_index,\aa_membre_index,\aa_terme_index]}
+						{}
+						{\def\aa_terme_non_vide_vu{1}}% et qu'il est non vide, s'en souvenir
+				\fi
+				\ifnum\aa_terme_index<\csname aa_nbtermes_\aa_membre_index\endcsname\relax% passer à l'ajout éventuel du signe + ou -
+					\aa_ajoute_au_toks&%
+					\loi_ifnum{% insérer signe si index correct ET terme suivant non vide ET (un terme non vide a été rencontré OU signe="-"
+						\numexpr1\loi_ifnum{\aa_terme_index<\csname aa_termeslen[\aa_ligne_index,\aa_membre_index,0]\endcsname\space}10%
+						\loi_exparg{\loi_exparg\loi_ifempty}{\csname aa_termes[\aa_ligne_index,\aa_membre_index,\number\numexpr\aa_terme_index+1]\endcsname}01%
+						+\aa_terme_non_vide_vu
+						+\if\string-\expandafter\loi_firsttonil\detokenize\expandafter\expandafter\expandafter{\csname aa_termessep[\aa_ligne_index,\aa_membre_index,\aa_terme_index]\endcsname+}\_nil1\else0\fi>111 }
+						{\aa_ajoute_si_existe{aa_termessep[\aa_ligne_index,\aa_membre_index,\aa_terme_index]}}%
+						{\aa_ajoute_au_toks{\hphantom{\hbox{${}+{}$}}}}% sinon, encombrement horizontal
+					\aa_ajoute_au_toks&%
+				\fi
+			}%
+		\ifnum\aa_membre_index<\aa_nombre_de_membres\relax
+			\aa_ajoute_au_toks&% puis, ajouter le signe "=" si...
+			\ifcsname aa_termes[\aa_ligne_index,\number\numexpr\aa_membre_index+1]\endcsname% le terme suivant existe
+				\ifnum\aa_egal_devant_membre_vide=0 % et si on ne tient compte des = devant les membres vides
+						\loi_argcsname\loi_exparg\loi_ifempty{aa_termes[\aa_ligne_index,\number\numexpr\aa_membre_index+1]}
+						{}% et si'il n'est pas vide
+						{\aa_ajoute_si_existe{aa_termessep[\aa_ligne_index,\aa_membre_index]}}%
+				\else
+					\aa_ajoute_si_existe{aa_termessep[\aa_ligne_index,\aa_membre_index]}%
+				\fi
+			\fi
+			\aa_ajoute_au_toks&%
+		\fi
+		}%
+		\aa_ajoute_au_toks\cr
+	}%
+	\aa_ajoute_au_toks\crcr
+	\aa_insere_espacement_avant
+	\ifcase\aa_consigne_alignement_vertical\relax
+	\or
+		\let\aa_boite_externe\vcenter
+		\csname\ifmmode loi_identity\else aa_compose_en_mode_math\fi\expandafter\endcsname
+	\or
+		\let\aa_boite_externe\vtop
+		\expandafter\loi_identity
+	\or
+		\let\aa_boite_externe\vbox
+		\expandafter\loi_identity
+	\fi
+		{\aa_boite_externe{%
+				\aa_corrige_baselineskip
+				\baselineskip\aa_v_coeff\baselineskip
+				\halign\expandafter{\the\aa_liste_tokens}%
+				}%
+		}%
+	\aa_insere_espacement_apres
+	\endgroup
+	\ifnum`{=0\fi\iffalse}\fi
+}
+\aavcoeff{1}% par défaut
+\aa_restaure_catcode
+\endinput
+
+v1.0  01/09/2016
+  - première version publique
+v1.1  06/10/2016
+  - correction d'un bug dans \autoaligne_iii qui mangeait le
+    \endgroup final
+v1.2  22/10/2016
+  - possibilité de définir les séparateurs
+  - possibilité de définir les espaces additionnelles
+    autour des séparateurs
+  - possibilité de définir les espaces insérées avant et
+    après l'alignement
+v1.3  11/02/2017
+  - le \iffalse{\fi\ifnum0=`}\fi n'est pas équilibré par
+    \ifnum`{=0\fi\iffalse}\fi ce qui provoque un bug lorsque
+    \autoaligne est appelé dans un alignement
+v1.4  05/11/2018
+  - \+ et \- sont \outer pour plain-TeX et les redéfinir
+    provoquait un bug
+  - pour LaTeX seulement, lorsque \baselineskip est nul, on
+    prend \normalbaselineskip
+  - nouveaux noms des macros privées de listofitems pris en compte

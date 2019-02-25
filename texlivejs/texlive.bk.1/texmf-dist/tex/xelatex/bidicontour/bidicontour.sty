@@ -1,0 +1,141 @@
+%%
+%% This is file `bidicontour.sty'.
+%% 
+%%   __________________________________________________
+%%   Copyright © 2014  Vafa Khalighi <persian-tex@tug.org>
+%% 
+%%   It may be distributed and/or modified under the LaTeX Project Public License,
+%%   version 1.3c or higher (your choice). The latest version of
+%%   this license is at: http://www.latex-project.org/lppl.txt
+%% 
+%%   This work is “author-maintained” (as per LPPL maintenance status)
+%%   by Vafa Khalighi.
+%% 
+%%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{bidicontour}
+  [2014/07/14  v0.1 Bidi-aware contoured text]
+\RequirePackage{color}
+\RequirePackage{trig}
+\def\bidicon@coloroff{%
+  \def\@undeclaredcolor[##1]##2{}%
+  \def\@declaredcolor##1{}%
+}
+\newcommand*\bidicon@put[3]{%
+  \if@RTL%
+      \llap{\raisebox{#2}[0pt]{#3}\hskip-#1}%
+  \else%
+      \rlap{\hskip#1\raisebox{#2}[0pt]{#3}}%
+  \fi}
+\newcommand*\bidicontourlength[1]{\def\bidicon@base@length{#1}}
+\bidicontourlength{0.03em}
+\newcommand*\bidicontournumber[1]{\def\bidicon@default@copies{#1}}
+\bidicontournumber{16}
+\newlength{\bidicon@length}
+\newcommand*\bidicon@define@copyangles[1]{%
+  \edef\bidicon@tempa{auto}%
+  \edef\bidicon@tempb{#1}%
+  \ifx\bidicon@tempa\bidicon@tempb
+    \expandafter\ifdim\f@size pt<15pt\relax
+      \edef\bidicon@tempb{16}%
+    \else
+      \expandafter\ifdim\f@size pt<25pt\relax
+        \edef\bidicon@tempb{32}%
+      \else
+        \expandafter\ifdim\f@size pt<50pt\relax
+          \edef\bidicon@tempb{60}%
+        \else
+          \edef\bidicon@tempb{120}%
+        \fi
+      \fi
+    \fi
+  \fi
+  \@tempcnta=\bidicon@tempb\relax
+  \@ifundefined{bidicon@\number\@tempcnta @copies}{%
+    \global\@namedef{bidicon@\number\@tempcnta @copies}{}%
+    \@tempdima=360\p@
+    \divide\@tempdima by \@tempcnta
+    \@tempdimb=\z@
+    \@tempcntb=\z@
+    \loop
+      \ifnum\@tempcntb<\@tempcnta
+        \edef\bidicon@temp@fdim{\strip@pt\@tempdimb}%
+        \CalculateSin{\bidicon@temp@fdim}%
+        \CalculateCos{\bidicon@temp@fdim}%
+        \advance\@tempcntb \@ne
+        \advance\@tempdimb \@tempdima\relax
+    \repeat
+  }{}%
+  \let\bidicon@tempa\@undefined
+  \let\bidicon@tempb\@undefined
+}
+\newcommand*\bidicontour{\@ifstar{\@bidicontour[32]}{\@bidicontour}}
+\newcommand*\@bidicontour[3][\bidicon@default@copies]{%
+  \ifvmode
+    \leavevmode
+  \fi
+  \setlength\bidicon@length{\bidicon@base@length}%
+  \ifbidicon@outline
+    \typeout{bidicontour: Using real outline for `#3'\on@line.}%
+    \@bidicontour@outline{#2}{#3}%
+  \else
+   \if@RTL\mbox{#3}\fi%
+    \begingroup
+      \bidicon@define@copyangles{#1}%
+      \typeout{bidicontour: Using \the\@tempcnta\space copies for `#3'\on@line.}%
+      \@tempdima=360\p@
+      \divide\@tempdima by \@tempcnta\relax
+      \@tempdimb=\z@
+      \@tempcntb=\z@
+      \color{#2}%
+      \bidicon@coloroff
+      \loop
+        \ifnum\@tempcntb<\@tempcnta\relax
+          \edef\bidicon@temp@fdim{\strip@pt\@tempdimb}%
+          \bidicon@put
+            {\UseSin{\bidicon@temp@fdim}\bidicon@length}%
+            {\UseCos{\bidicon@temp@fdim}\bidicon@length}%
+            {#3}%
+          \advance\@tempcntb \@ne\relax
+          \advance\@tempdimb\@tempdima\relax
+      \repeat
+    \endgroup
+    \if@RTL\else\mbox{#3}\fi%
+  \fi
+}
+\newcommand*\@bidicontour@outline[2]{%
+ \if@RTL\mbox{#2}\fi%
+  \begingroup
+    \setlength\bidicon@length{2\bidicon@length}%
+    \setlength\bidicon@length{0.99626400996\bidicon@length}%
+    \color{#1}%
+    \bidicon@coloroff
+    \beginL\special{%
+    pdf:code
+      q
+      1 j
+      1 J
+      1 Tr
+      \strip@pt\bidicon@length\space w
+    }%
+    \rlap{\if@RTL\beginR\fi #2\if@RTL\endR\fi}%
+    \special{%
+    pdf:code
+      Q
+    }\endL%
+  \endgroup
+  \if@RTL\else\mbox{#2}\fi%
+}
+\newif\ifbidicon@outline
+\DeclareOption{auto}{\bidicontournumber{auto}}
+\DeclareOption{outline}{\bidicon@outlinetrue}
+\DeclareOption{copies}{\bidicon@outlinefalse}
+\InputIfFileExists{bidicontour.cfg}{%
+  \typeout{Loading configuration file `bidicontour.cfg'.}%
+}{%
+  \typeout{No configuration file `bidicontour.cfg' found.}%
+}
+\ProcessOptions\relax
+\endinput
+%%
+%% End of file `bidicontour.sty'.

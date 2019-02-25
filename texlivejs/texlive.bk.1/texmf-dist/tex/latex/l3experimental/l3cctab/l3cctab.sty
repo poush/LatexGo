@@ -1,0 +1,178 @@
+%%
+%% This is file `l3cctab.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% l3cctab.dtx  (with options: `package')
+%% 
+%% Copyright (C) 2018,2019 The LaTeX3 Project
+%% 
+%% It may be distributed and/or modified under the conditions of
+%% the LaTeX Project Public License (LPPL), either version 1.3c of
+%% this license or (at your option) any later version.  The latest
+%% version of this license is in the file:
+%% 
+%%    http://www.latex-project.org/lppl.txt
+%% 
+%% This file is part of the "l3experimental bundle" (The Work in LPPL)
+%% and all files in that bundle must be distributed together.
+%% 
+%% File: l3cctab.dtx
+\RequirePackage{expl3}
+\ProvidesExplPackage{l3cctab}{2019-01-28}{}
+  {L3 Experimental category code tables}
+\int_new:N  \g__cctab_allocate_int
+\int_gset:Nn \g__cctab_allocate_int { -1 }
+\int_new:N \g__cctab_stack_int
+\seq_new:N \g__cctab_stack_seq
+\tl_new:N \l__cctab_tmp_tl
+\sys_if_engine_luatex:TF
+  {
+    \cs_new_protected:Npn \cctab_new:N #1
+      {
+        \__kernel_chk_if_free_cs:N #1
+        \newcatcodetable #1
+      }
+    \cs_new_protected:Npn \cctab_begin:N #1
+      {
+        \seq_gpush:Nx \g__cctab_stack_seq { \tex_the:D \tex_catcodetable:D }
+        \tex_catcodetable:D #1
+        \int_gadd:Nn \g__cctab_stack_int { 2 }
+        \int_compare:nNnT \g__cctab_stack_int > \c_max_register_int
+          { \__kernel_msg_fatal:nn { kernel } { cctab-stack-full } }
+        \tex_savecatcodetable:D \g__cctab_stack_int
+        \tex_catcodetable:D \g__cctab_stack_int
+      }
+    \cs_new_protected:Npn \cctab_end:
+      {
+        \int_gsub:Nn \g__cctab_stack_int { 2 }
+        \seq_if_empty:NTF \g__cctab_stack_seq
+          { \tl_set:Nn \l__cctab_tmp_tl { 0 } }
+          { \seq_gpop:NN \g__cctab_stack_seq \l__cctab_tmp_tl }
+        \tex_catcodetable:D \l__cctab_tmp_tl \scan_stop:
+      }
+    \cs_new_protected:Npn \cctab_gset:Nn #1#2
+      {
+        \group_begin:
+          #2
+          \tex_savecatcodetable:D #1
+        \group_end:
+      }
+  }
+  {
+    \cs_new_protected:Npn \__cctab_gstore:Nnn #1#2#3
+      {
+        \intarray_gset:cnn
+          { g__cctab_ \int_use:N #1 _cctab } { #2 + 1 } {#3}
+      }
+    \cs_new_protected:Npn \cctab_new:N #1
+      {
+        \int_gadd:Nn \g__cctab_allocate_int { 1 }
+        \int_const:Nn #1 { \g__cctab_allocate_int }
+        \intarray_new:cn { g__cctab_ \int_use:N #1 _cctab } { 256 }
+        \int_step_inline:nn { 256 }
+          {
+            \intarray_gset:cnn
+              { g__cctab_ \int_use:N #1 _cctab } {##1} { 12 }
+          }
+        \__cctab_gstore:Nnn #1 { 0 } { 9 }
+        \__cctab_gstore:Nnn #1 { 13 } { 5 }
+        \__cctab_gstore:Nnn #1 { 32 } { 10 }
+        \__cctab_gstore:Nnn #1 { 37 } { 14 }
+        \int_step_inline:nnn { 64 } { 89 }
+          { \__cctab_gstore:Nnn #1 {##1} { 11 } }
+        \__cctab_gstore:Nnn #1 { 92 } { 0 }
+        \int_step_inline:nnn { 97 } { 122 }
+          { \__cctab_gstore:Nnn #1 {##1} { 11 } }
+        \__cctab_gstore:Nnn #1 { 127 } { 15 }
+      }
+    \cs_new_protected:Npn \cctab_begin:N #1
+      {
+        \int_gadd:Nn \g__cctab_stack_int { 1 }
+        \int_compare:nNnT \g__cctab_stack_int > \c_max_register_int
+          { \__kernel_msg_fatal:nn { kernel } { cctab-stack-full } }
+        \cs_if_exist:cF { g__cctab_ \int_use:N \g__cctab_stack_int _cctab }
+          {
+            \intarray_new:cn
+              { g__cctab_ \int_use:N \g__cctab_stack_int _cctab }
+              { 256 }
+          }
+        \int_step_inline:nn { 256 }
+          {
+            \intarray_gset:cnn
+              { g__cctab_ \int_use:N \g__cctab_stack_int _cctab }
+              {##1}
+              { \char_value_catcode:n { ##1 - 1 } }
+          }
+        \int_step_inline:nn { 256 }
+          {
+            \char_set_catcode:nn { ##1 - 1 }
+              {
+                \intarray_item:cn
+                  { g__cctab_ \int_use:N #1 _cctab } {##1}
+              }
+          }
+      }
+    \cs_generate_variant:Nn \intarray_new:Nn { c }
+    \cs_generate_variant:Nn \intarray_gset:Nnn { c }
+    \cs_new_protected:Npn \cctab_end:
+      {
+        \int_step_inline:nn { 256 }
+          {
+            \char_set_catcode:nn { ##1 - 1 }
+              {
+                \intarray_item:cn
+                  { g__cctab_ \int_use:N \g__cctab_stack_int _cctab }
+                  {##1}
+              }
+          }
+        \int_gsub:Nn \g__cctab_stack_int { 1 }
+      }
+    \cs_generate_variant:Nn \intarray_item:Nn { c }
+    \cs_new_protected:Npn \cctab_gset:Nn #1#2
+      {
+        \group_begin:
+          #2
+          \int_step_inline:nn { 256 }
+            {
+              \intarray_gset:cnn { g__cctab_ \int_use:N #1 _cctab } {##1}
+                { \char_value_catcode:n { ##1 - 1 } }
+            }
+        \group_end:
+      }
+  }
+\cs_new_protected:Npn \cctab_const:Nn #1#2
+  {
+    \cctab_new:N #1
+    \cctab_gset:Nn #1 {#2}
+  }
+\cctab_const:Nn \c_code_cctab { }
+\cctab_const:Nn \c_document_cctab
+  {
+    \char_set_catcode_space:n          { 9 }
+    \char_set_catcode_space:n          { 32 }
+    \char_set_catcode_other:n          { 58 }
+    \char_set_catcode_math_subscript:n { 95 }
+    \char_set_catcode_active:n         { 126 }
+  }
+\cctab_const:Nn \c_other_cctab
+  {
+    \int_step_inline:nnn { 0 } { 127 }
+      { \char_set_catcode_other:n {#1} }
+  }
+\cctab_const:Nn \c_str_cctab
+  {
+    \int_step_inline:nnn { 0 } { 127 }
+      { \char_set_catcode_other:n {#1} }
+    \char_set_catcode_space:n { 32 }
+  }
+\__kernel_msg_new:nnnn { kernel } { cctab-stack-full }
+  { The~category~code~table~stack~is~exhausted. }
+  {
+    LaTeX~has~been~asked~to~switch~to~a~new~category~code~table,~
+    but~there~is~no~more~space~to~do~this!
+  }
+%% 
+%%
+%% End of file `l3cctab.sty'.

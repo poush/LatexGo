@@ -1,0 +1,1187 @@
+% \CheckSum{1041}
+% \iffalse meta-comment
+%
+% Copyright 1993, 1994, 1995, 1996 Alan Jeffrey,
+% hacked and maintained 1997, 1998 Sebastian Rahtz,
+% copyright 1998, 1999 the fontinst maintenance team and any individual 
+% authors listed elsewhere in this file.  All rights reserved.
+% 
+% This file is part of the fontinst system version 1.9.
+% -----------------------------------------------------
+% 
+% It may be distributed under the terms of the LaTeX Project Public
+% License, as described in lppl.txt in the base LaTeX distribution.
+% Either version 1.0 or, at your option, any later version.
+% 
+%%% From file: filtfam.dtx
+%
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage{fisource}
+\GetFileInfo{filtfam.dtx}
+\title{The \package{fontinst} utility}
+\author{Alan Jeffrey, Sebastian Rahtz, Ulrik Vieth}
+\begin{document}
+\maketitle
+\DocInput{filtfam.dtx}
+\end{document}
+%</driver>
+% \fi
+% 
+% \section{Installing Latin families}
+%
+% \changes{1.800}{1998/06/22}{\cs{textcompfamily} integrated into 
+%    \cs{latinfamily}. (UV)}
+% 
+% \begin{macro}{\latinfamily}
+% The macro:
+% \begin{quote}
+%    |\latinfamily|\marg{family}\marg{commands}
+% \end{quote}
+% installs a Latin font family.
+%
+% \StopEventually{}
+% 
+%    \begin{macrocode}
+%<*pkg>
+\def\latinfamily#1#2{{
+   \edef\a_macro{#1}
+   \expandafter\parse_family\a_macro
+      \empty_command\empty_command\end_parse_family
+   \installfonts
+      \if_file_exists{\raw_encoding.mtx}\then
+         \installfamily{\raw_encoding}{\latex_family}{#2}
+      \fi
+      \installfamily{OT1}{\latex_family}{#2}
+      \installfamily{T1}{\latex_family}{#2}
+%<*textcomp>
+      \installfamily{TS1}{\latex_family}{#2}
+%</textcomp>
+      \latin_weights
+   \endinstallfonts
+}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\parse_family}
+% \begin{macro}{\font_family}
+% \begin{macro}{\font_variant}
+% \begin{macro}{\raw_variant}
+% \begin{macro}{\latex_variant}
+% |\parse_family FAMILY\end_parse_family|
+%
+% Intializes |\latex_family| to |FAMILY|, |\font_family| to first
+% three characters of |FAMILY|, |\font_variant| and |\raw_variant|
+% to fourth and fifth character (if present).
+%
+% SPQR 02/95: If the fourth parameter is |x| or |9|, then its an expert
+% indication, not a variant.  So initialy set |\raw_variant| to |#4|,
+% but unset it if the expert test succeeds.  When |#4| is used for a
+% real variant, it passes through.
+%
+% SPQR 05/95: If it \emph{is} an expert font, then the variantness
+% is expressed by the encoding, not a variant letter, so unset
+% |\font_variant|.
+%
+% UV 06/98:  Added |\if_oldstyle_| code from Alan's v~1.511 beta.
+% If the fourth parameter  is |9|, treat it as if |j| was given.
+%
+% Note that instead of using |\setcommand\digit|, we now use separate
+% encoding files for |T1j.etx|, etc.
+%
+%    \begin{macrocode}
+\def\parse_family #1#2#3#4#5\end_parse_family{
+   \gdef\font_family{#1#2#3}
+   \gdef\font_variant{#4#5}
+   \gdef\raw_variant{#4#5}
+   \gdef\latex_family{#1#2#3#4#5}
+   \_expert_false
+   \_oldstyle_false
+   \ifx#4x
+      \_expert_true
+      \gdef\raw_variant{#5}
+      \gdef\font_variant{#5}
+      %\setcommand\digit##1{##1}
+   \else\ifx#4j
+      \_expert_true
+      \_oldstyle_true
+      \gdef\raw_variant{#5}
+      \gdef\font_variant{#5}
+      %\setcommand\digit##1{##1oldstyle}
+   \else\ifx#49
+      \gdef\latex_family{#1#2#3j#5}
+      \_expert_true
+      \_oldstyle_true
+      \gdef\raw_variant{#5}
+      \gdef\font_variant{#5}
+      %\setcommand\digit##1{##1oldstyle}
+   \else
+      \_expert_false
+      \_oldstyle_false
+      %\setcommand\digit##1{##1}
+   \fi\fi\fi
+%<*debug>
+   \if_oldstyle_
+   \immediate\write16{INFO>~parse~family~<#1#2#3><#5>~(oldstyle)}
+   \else\if_expert_
+   \immediate\write16{INFO>~parse~family~<#1#2#3><#5>~(expert)}
+   \else
+   \immediate\write16{INFO>~parse~family~<#1#2#3><#4#5>}
+   \fi\fi
+%</debug>
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\if_expert_}
+% \begin{macro}{\if_oldstyle_}
+%    \begin{macrocode}
+\newif\if_expert_
+\newif\if_oldstyle_
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+%
+% \subsection{Processing a list of weights, widths and shapes}
+%
+% \begin{macro}{\latin_weight}
+% \begin{macro}{\font_weight}
+% \begin{macro}{\latex_weight}
+% |\latin_weight{FONTWEIGHT}{LATEXWEIGHT}|
+%
+%    \begin{macrocode}
+\def\latin_weight#1#2{
+   \gdef\font_weight{#1}%
+   \gdef\latex_weight{#2}%
+   \latin_widths
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\latin_width}
+% \begin{macro}{\font_width}
+% \begin{macro}{\latex_width}
+% |\latin_width{FONTWIDTH}{LATEXWIDTH}|
+%
+%    \begin{macrocode}
+\def\latin_width#1#2{
+   \gdef\font_width{#1}
+   \gdef\latex_width{#2}
+   \latin_shapes
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\latin_shape}
+% \begin{macro}{\font_shape}
+% \begin{macro}{\raw_shape}
+% \begin{macro}{\encoding_shape}
+% \begin{macro}{\latex_shape}
+% \begin{macro}{\encoding_switches}
+% |\latin_shape{FONTSHAPE}{RAWSHAPE}{ENCODINGSHAPE}{LATEXSHAPE}{SWITCHES}|
+%
+% Calls |\fake_width_WIDTH| and |\fake_shape_SHAPE| to generate an
+% |8r|-reencoded |.mtx| file.  If successful, calls |\latin_encodings|.
+%
+% UV 06/98: Added a fifth argument |SWITCHES|, which may be used
+% to set |\if_textcomp_| before it is evaluated in |\latin_encodings|.
+%
+%    \begin{macrocode}
+\def\latin_shape#1#2#3#4#5{
+   \gdef\font_shape{#1}
+   \gdef\raw_shape{#2}
+   \gdef\encoding_shape{#3}
+   \if_oldstyle_
+      \gdef\encoding_shape{#3\oldstyle_shape}
+   \fi
+   \gdef\latex_shape{#4}
+   \gdef\encoding_switches{#5}
+%<*debug>
+   \immediate\write16{
+      INFO>~to~make~LaTeX~font~shape~<\latex_family,
+      \latex_weight,\latex_shape,\latex_width>~seek~
+      \font_family\font_weight\raw_shape
+         \raw_variant\raw_encoding\font_width.mtx}
+%</debug>
+   \csname fake_width_\font_width\endcsname
+   \csname fake_shape_\raw_shape\endcsname
+   \if_file_exists{
+      \font_family\font_weight\raw_shape
+         \raw_variant\raw_encoding\font_width.mtx
+   }\then
+      \latin_encodings
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+%
+% \subsection{Faking font shapes}
+%
+% (CK) changed font faking code; based on SPQR's code (still in this
+% file).  I am not sure that know what I am doing here; let's hope
+% I won't be caught.  Also changed: Order of |\font_width| and
+% |\font_encoding| in MANY places.  Also added tests which prevent
+% multiple calls to the same font faking routine. (Seems to be
+% necessary in some cases and can't hurt.) --- (ASAJ) I think CK
+% knows more about what he's doing than he's letting on.
+%
+% \begin{macro}{\fake_shape_}
+% Check if an |8a|-encoded |.afm| file exists for current combination
+% of font attributes, and, if so, call |\fake_shape_raw_encoding|.
+% For expert fonts, also check if an |8x|-encoded |.afm| file exists,
+% and call |\fake_shape_expert_encoding|, if approporiate.
+%
+% UV, 06/98: Cut down lengthy |\fake_shape_| routine into several
+% subroutines |\fake_shape_raw_encoding| and optionally
+% |\fake_shape_expert_encoding| and |\fake_shape_oldstyle_encoding|.
+%
+% UV, 06/98: Added experimental code to install OsF or SC\&OsF fonts.
+%
+%    \begin{macrocode}
+\def\fake_shape_{
+   \if_file_exists{
+      \font_family\font_weight\raw_shape\raw_variant
+         \adobe_encoding\font_width.afm
+   }\then
+      \fake_shape_raw_encoding
+   \fi
+   \if_expert_
+      \if_file_exists{
+         \font_family\font_weight\raw_shape\raw_variant
+            \expert_encoding\font_width.afm
+      }\then
+         \fake_shape_expert_encoding
+      \fi
+   \fi
+%<*oldstyle>
+   \if_oldstyle_
+      \gdef\oldstyle_variant{\oldstyle_shape}
+      \if_file_exists{
+         \font_family\font_weight\raw_shape\oldstyle_variant
+            \adobe_encoding\font_width.afm
+      }\then
+         \fake_shape_oldstyle_encoding
+      \else
+         \gdef\oldstyle_variant{\caps_shape}
+         \if_file_exists{
+            \font_family\font_weight\raw_shape\oldstyle_variant
+               \adobe_encoding\font_width.afm
+         }\then
+            \fake_shape_oldstyle_encoding
+         \fi
+      \fi
+   \fi
+%</oldstyle>
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\fake_shape_raw_encoding}
+% Called from |\fake_shape_| if an |8a|-encoded |.afm| file was found.
+% Invokes
+% \begin{quote}
+%    |\transformfont{<FONT>8r}|\\
+%    |  {\reencodefont{8r}{\fromafm{<FONT>8a}}}|
+% \end{quote}
+% to generate an |8r|-reencoded |.mtx| file (and a raw |.pl| file),
+% followed by
+% \begin{quote}
+%    |\installrawfont{<FONT>8r}{<FONT>8r,8r}{8r}...|
+% \end{quote}
+% to install a ligfull |.pl| file.
+%
+%    \begin{macrocode}
+\def\fake_shape_raw_encoding{
+   \if_file_exists{
+      \font_family\font_weight\raw_shape\raw_variant
+         \raw_encoding\font_width.mtx
+   }\then % no action required
+   \else
+%<*debug>
+      \immediate\write16{
+         INFO>~run~\string\transformfont\space\space
+         <\font_family\font_weight\raw_shape\raw_variant
+            \raw_encoding\font_width>~from~
+         <\font_family\font_weight\raw_shape\raw_variant
+            \adobe_encoding\font_width>
+      }
+%</debug>
+      \transformfont{
+         \font_family\font_weight\raw_shape\raw_variant
+            \raw_encoding\font_width
+      }{
+         \reencodefont{\raw_encoding}{
+            \fromafm{
+               \font_family\font_weight\raw_shape\raw_variant
+                  \adobe_encoding\font_width
+            }
+         }
+      }
+      \if_file_exists{ \raw_encoding.mtx }\then
+%<*debug>
+         \immediate\write16{
+            INFO>~run~\string\installrawfont\space
+            <\font_family\font_weight\font_shape\raw_variant
+               \raw_encoding\font_width>
+            <\font_family\font_weight\raw_shape\raw_variant
+               \raw_encoding\font_width,
+             \raw_encoding>
+            <\raw_encoding>
+            <\raw_encoding>
+            <\latex_family>
+            <\latex_weight\latex_width>
+            <\latex_shape>}
+%</debug>
+         \installrawfont{
+            \font_family\font_weight\raw_shape\raw_variant
+               \raw_encoding\font_width
+         }{ \font_family\font_weight\raw_shape\raw_variant
+               \raw_encoding\font_width,
+            \raw_encoding
+         }{ \raw_encoding
+         }{ \raw_encoding
+         }{ \latex_family
+         }{ \latex_weight\latex_width
+         }{ \latex_shape
+         }{}
+      \fi
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\fake_shape_expert_encoding}
+% Called from |\fake_shape_| if an |8x|-encoded |.afm| file was found.
+% Invokes
+% \begin{quote}
+%    |\fromafm{<FONT>8x}|
+% \end{quote}
+% to generate an |8x|-encoded |.mtx| file (and a raw |.pl| file).
+%
+%    \begin{macrocode}
+\def\fake_shape_expert_encoding{
+   \if_file_exists{
+      \font_family\font_weight\raw_shape\raw_variant
+         \expert_encoding\font_width.mtx
+   }\then % no action required
+   \else
+      \fromafm{
+         \font_family\font_weight\raw_shape\raw_variant
+            \expert_encoding\font_width
+      }
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\fake_shape_oldstyle_encoding}
+% Called from |\fake_shape_| if an OsF or SC\&OsF variant of an
+% |8a|-encoded |.afm| file was found. Invokes
+% \begin{quote}
+%    |\transformfont{<FONT>j8r}|\\
+%    |  {\reencodefont{8r}{\fromafm{<FONT>j8a}}}|
+% \end{quote}
+% to generate an |8r|-reencoded |.mtx| file (and a raw |.pl| file).
+%
+%    \begin{macrocode}
+%<*oldstyle>
+\def\fake_shape_oldstyle_encoding{
+   \if_file_exists{
+      \font_family\font_weight\raw_shape\oldstyle_variant
+         \adobe_encoding\font_width.mtx
+   }\then % no action required
+   \else
+%<*debug>
+      \immediate\write16{
+         INFO>~run~\string\transformfont\space\space
+         <\font_family\font_weight\raw_shape\oldstyle_variant
+            \raw_encoding\font_width>~from~
+         <\font_family\font_weight\raw_shape\oldstyle_variant
+            \adobe_encoding\font_width>
+      }
+%</debug>
+      \transformfont{
+         \font_family\font_weight\raw_shape\oldstyle_variant
+            \raw_encoding\font_width
+      }{
+         \reencodefont{\raw_encoding}{
+            \fromafm{
+               \font_family\font_weight\raw_shape\oldstyle_variant
+                  \adobe_encoding\font_width
+            }
+         }
+      }
+   \fi
+}
+%</oldstyle>
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\fake_shape_c}
+% Check if an |8a|-encoded |.afm| file exists for the small caps shape.
+% If so, call |\fake_shape_| to generate an |8r|-reencoded MTX
+% file and to install a ligfull |.pl| file.  If not, reset |\raw_shape|
+% to the default shape and |\encoding_shape| to small caps before
+% calling |\fake_shape_| to install a faked small caps font.
+%
+%    \begin{macrocode}
+\def\fake_shape_c{
+   \if_file_exists{
+      \font_family\font_weight\raw_shape\raw_variant
+         \adobe_encoding\font_width.afm
+   }\then
+      \fake_shape_
+   \else
+      % If real smallcaps font doesn't exist, fake it from the roman.
+      \gdef\raw_shape{}
+      \if_oldstyle_
+         \gdef\encoding_shape{cj}
+      \else
+         \gdef\encoding_shape{c}
+      \fi
+      \fake_shape_
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\fake_shape_o}
+% Check if an |8a|-encoded |.afm| file exists for the oblique shape.
+% If so, call |\fake_shape_| to generate an |8r|-reencoded MTX
+% file and to install a ligfull |.pl| file. If not, call macros
+% to fake a oblique fonts.
+%
+%    \begin{macrocode}
+\def\fake_shape_o{
+   \if_file_exists{
+      \font_family\font_weight\raw_shape\raw_variant
+         \adobe_encoding\font_width.afm
+   }\then
+      \fake_shape_
+   \else
+      \fake_shape_o_raw_encoding
+     \if_expert_
+      \fake_shape_o_expert_encoding
+     \fi
+%<*oldstyle>
+     \if_oldstyle_
+      \fake_shape_o_oldstyle_encoding
+     \fi
+%</oldstyle>
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\fake_shape_o_raw_encoding}
+% Called from |\fake_shape_o| if the oblique shape needs to be faked.
+% Invokes
+% \begin{quote}
+%    |\transformfont{<FONT>o8r}|\\
+%    |  {\slantfont{SLANT}{\frommtx{<FONT>8r}}}|
+% \end{quote}
+% to generate an |8r|-reencoded |.mtx| file (and a raw |.pl| file),
+% followed by
+% \begin{quote}
+%    |\installrawfont{<FONT>o8r}{<FONT>o8r,8r}{8r}...|
+% \end{quote}
+% to install a ligfull |.pl| file.
+%
+%    \begin{macrocode}
+\def\fake_shape_o_raw_encoding{
+   \if_file_exists{
+      \font_family\font_weight\raw_variant
+         \raw_encoding\font_width.mtx
+   }\then
+      \if_file_exists{
+         \font_family\font_weight\font_shape\raw_variant
+            \raw_encoding\font_width.mtx
+      }\then % no action required
+      \else
+%<*debug>
+         \immediate\write16{
+            INFO>~run~\string\transformfont\space\space
+            <\font_family\font_weight\font_shape\raw_variant
+               \raw_encoding\font_width>~from~
+            <\font_family\font_weight\raw_variant
+               \raw_encoding\font_width>~(faking~oblique)
+         }
+%</debug>
+         %%% WARNING: famtool.pl relies on this message format!!!
+         \immediate\write16{
+            Faking~oblique~font~
+            \font_family\font_weight\font_shape\raw_variant
+               \raw_encoding\font_width
+            \space from~
+            \font_family\font_weight\raw_variant
+               \raw_encoding\font_width
+         }
+         \transformfont{
+            \font_family\font_weight\font_shape\raw_variant
+               \raw_encoding\font_width
+         }{
+            \slantfont{\SlantAmount}{
+               \frommtx{
+                  \font_family\font_weight\raw_variant
+                     \raw_encoding\font_width
+               }
+            }
+         }
+         \if_file_exists{ \raw_encoding.mtx }\then
+%<*debug>
+            \immediate\write16{
+               INFO>~run~\string\installrawfont\space
+               <\font_family\font_weight\font_shape\raw_variant
+                  \raw_encoding\font_width>
+               <\font_family\font_weight\font_shape\raw_variant
+                  \raw_encoding\font_width,
+                \raw_encoding>
+               <\raw_encoding>
+               <\raw_encoding>
+               <\latex_family>
+               <\latex_weight\latex_width>
+               <\latex_shape>}
+%</debug>
+            \installrawfont{
+               \font_family\font_weight\font_shape\raw_variant
+                  \raw_encoding\font_width
+            }{ \font_family\font_weight\font_shape\raw_variant
+                  \raw_encoding\font_width,
+               \raw_encoding
+            }{ \raw_encoding
+            }{ \raw_encoding
+            }{ \latex_family
+            }{ \latex_weight\latex_width
+            }{ \latex_shape
+            }{}
+         \fi
+      \fi
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\fake_shape_o_expert_encoding}
+% Called from |\fake_shape_o| if the oblique shape needs to be faked.
+% Invokes
+% \begin{quote}
+%    |\transformfont{<FONT>o8x}|\\
+%    |  {\slantfont{SLANT}{\frommtx{<FONT>8x}}}|
+% \end{quote}
+% to generate an |8x|-reencoded |.mtx| file (and a raw |.pl| file).
+%
+%    \begin{macrocode}
+\def\fake_shape_o_expert_encoding{
+   \if_file_exists{
+      \font_family\font_weight\raw_variant
+         \expert_encoding\font_width.mtx
+   }\then
+      \if_file_exists{
+         \font_family\font_weight\font_shape\raw_variant
+            \expert_encoding\font_width.mtx
+      }\then % no action required
+      \else
+%<*debug>
+         \immediate\write16{
+            INFO>~run~\string\transformfont\space\space
+            <\font_family\font_weight\font_shape\raw_variant
+               \expert_encoding\font_width>~from~
+            <\font_family\font_weight\raw_variant
+               \expert_encoding\font_width>~(faking~oblique)
+         }
+%</debug>
+         %%% WARNING: famtool.pl relies on this message format!!!
+         \immediate\write16{
+            Faking~oblique~font~
+            \font_family\font_weight\font_shape\raw_variant
+               \expert_encoding\font_width
+            \space from~
+            \font_family\font_weight\raw_variant
+               \expert_encoding\font_width
+         }
+         \transformfont{
+            \font_family\font_weight\font_shape\raw_variant
+               \expert_encoding\font_width
+         }{
+            \slantfont{\SlantAmount}{
+               \frommtx{
+                  \font_family\font_weight\raw_variant
+                     \expert_encoding\font_width
+               }
+            }
+         }
+      \fi
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\fake_shape_o_oldstyle_encoding}
+% Called from |\fake_shape_o| if the oblique shape needs to be faked.
+% Invokes
+% \begin{quote}
+%    |\transformfont{<FONT>oj8r}|\\
+%    |  {\slantfont{SLANT}{\frommtx{<FONT>j8r}}}|
+% \end{quote}
+% to generate an |8r|-reencoded |.mtx| file (and a raw |.pl| file).
+%
+%    \begin{macrocode}
+%<*oldstyle>
+\def\fake_shape_o_oldstyle_encoding{
+   \if_file_exists{
+      \font_family\font_weight\oldstyle_variant
+         \raw_encoding\font_width.mtx
+   }\then
+      \if_file_exists{
+         \font_family\font_weight\font_shape\oldstyle_variant
+            \raw_encoding\font_width.mtx
+      }\then % no action required
+      \else
+%<*debug>
+         \immediate\write16{
+            INFO>~run~\string\transformfont\space\space
+            <\font_family\font_weight\font_shape\oldstyle_variant
+               \raw_encoding\font_width>~from~
+            <\font_family\font_weight\oldstyle_variant
+               \raw_encoding\font_width>~(faking~oblique)
+         }
+%</debug>
+         %%% WARNING: famtool.pl relies on this message format!!!
+         \immediate\write16{
+            Faking~oblique~font~
+            \font_family\font_weight\font_shape\oldstyle_variant
+               \raw_encoding\font_width
+            \space from~
+            \font_family\font_weight\oldstyle_variant
+               \raw_encoding\font_width
+         }
+         \transformfont{
+            \font_family\font_weight\font_shape\oldstyle_variant
+               \raw_encoding\font_width
+         }{
+            \slantfont{\SlantAmount}{
+               \frommtx{
+                  \font_family\font_weight\oldstyle_variant
+                     \raw_encoding\font_width
+               }
+            }
+         }
+      \fi
+   \fi
+}
+%</oldstyle>
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\fake_shape_i}
+% Call |\fake_shape_| to generate an |8r|-reencoded |.mtx| file and a
+% ligfull |.pl| file, if a corresponding |8a|-encoded |.afm| file exists.
+% Otherwise, do nothing, since an italic shape can't be faked.
+%
+%    \begin{macrocode}
+\let\fake_shape_i\fake_shape_  % We must do this again!
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \subsection{Faking font widths}
+%
+% \begin{macro}{\if_fake_narrow_}
+%    \begin{macrocode}
+\newif\if_fake_narrow_
+\_fake_narrow_false
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\fakenarrow}
+% |\fakenarrow{WIDTH}|
+%
+% Sets the expansion factor used to generate faked narrow fonts.
+% If it isn't set, do not attempt to install faked narrow fonts.
+%    \begin{macrocode}
+\def\fakenarrow#1{
+   \_fake_narrow_true
+   \gdef\fake_narrow_width{#1}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\fake_width_}
+% Do nothing for the default width or the condensed width.
+%    \begin{macrocode}
+\def\fake_width_{}
+\def\fake_width_c{}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\fake_width_n}
+% If we are faking narrow fonts, check if an |8a|-encoded |.afm| file
+% exists for the current shape in narrow width, and if not call
+% |\fake_shape_n_raw_encoding| and |\fake_shape_n_expert_encoding|.
+%
+%    \begin{macrocode}
+\def\fake_width_n{
+   \if_fake_narrow_
+      \if_file_exists{
+         \font_family\font_weight\raw_shape\raw_variant
+            \adobe_encoding\font_width.afm
+      }\then % no action required
+      \else
+         \fake_width_n_raw_encoding
+        \if_expert_
+         \fake_width_n_expert_encoding
+        \fi
+      \fi
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\fake_width_n_raw_encoding}
+% Called from |\fake_width_n| if the narrow width needs to be faked.
+% Invokes
+% \begin{quote}
+%    |\transformfont{<FONT>8rn}|\\
+%    |  {\xscalefont{WIDTH}{\frommtx{<FONT>8r}}}|
+% \end{quote}
+% to generate an |8r|-encoded |.mtx| file for a faked narrow font,
+% followed by
+% \begin{quote}
+%    |\installrawfont{<FONT>8rn}{<FONT>8rn,8r}{8r}...|
+% \end{quote}
+% to install a ligfull |.pl| file.
+%
+%    \begin{macrocode}
+\def\fake_width_n_raw_encoding{
+   \if_file_exists{
+      \font_family\font_weight\font_shape\raw_variant
+         \raw_encoding.mtx
+   }\then
+      \if_file_exists{
+         \font_family\font_weight\font_shape\raw_variant
+            \raw_encoding\font_width.mtx
+      }\then % no action required
+      \else
+%<*debug>
+         \immediate\write16{
+            INFO>~run~\string\transformfont\space\space
+            <\font_family\font_weight\font_shape\raw_variant
+               \raw_encoding\font_width>~from~
+            <\font_family\font_weight\font_shape\raw_variant
+               \raw_encoding>~(faking~narrow)
+         }
+%</debug>
+         %%% WARNING: famtool.pl relies on this message format!!!
+         \immediate\write16{
+            Faking~narrow~font~
+            \font_family\font_weight\font_shape\raw_variant
+               \raw_encoding\font_width
+            \space from~
+            \font_family\font_weight\font_shape\raw_variant
+               \raw_encoding
+         }
+         \transformfont{
+            \font_family\font_weight\font_shape\raw_variant
+               \raw_encoding\font_width
+         }{
+            \xscalefont{\fake_narrow_width}{
+               \frommtx{
+                  \font_family\font_weight\font_shape\raw_variant
+                     \raw_encoding
+               }
+            }
+         }
+         \if_file_exists{ \raw_encoding.mtx }\then
+%<*debug>
+            \immediate\write16{
+               INFO>~run~\string\installrawfont\space
+               <\font_family\font_weight\font_shape\raw_variant
+                  \raw_encoding\font_width>
+               <\font_family\font_weight\font_shape\raw_variant
+                  \raw_encoding\font_width,
+                \raw_encoding>
+               <\raw_encoding>
+               <\raw_encoding>
+               <\latex_family>
+               <\latex_weight\latex_width>
+               <\latex_shape>}
+%</debug>
+            \installrawfont{
+               \font_family\font_weight\font_shape\raw_variant
+                  \raw_encoding\font_width
+            }{ \font_family\font_weight\font_shape\raw_variant
+                  \raw_encoding\font_width,
+               \raw_encoding
+            }{ \raw_encoding
+            }{ \raw_encoding
+            }{ \latex_family
+            }{ \latex_weight\latex_width
+            }{ \latex_shape
+            }{}
+         \fi
+      \fi
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\fake_width_n_expert_encoding}
+% Called from |\fake_width_n| if the narrow width needs to be faked.
+% Invokes
+% \begin{quote}
+%    |\transformfont{<FONT>8xn}|\\
+%    |  {\xscalefont{WIDTH}{\frommtx{<FONT>8x}}}|
+% \end{quote}
+% to generate an |8x|-encoded |.mtx| file for a faked narrow font.
+%
+%    \begin{macrocode}
+\def\fake_width_n_expert_encoding{
+   \if_file_exists{
+      \font_family\font_weight\font_shape\raw_variant
+         \expert_encoding.mtx
+   }\then
+      \if_file_exists{
+         \font_family\font_weight\font_shape\raw_variant
+            \expert_encoding\font_width.mtx
+      }\then % no action required
+      \else
+%<*debug>
+         \immediate\write16{
+            INFO>~run~\string\transformfont\space\space
+            <\font_family\font_weight\font_shape\raw_variant
+               \expert_encoding\font_width>~from~
+            <\font_family\font_weight\font_shape\raw_variant
+               \expert_encoding>~(faking~narrow)
+         }
+%</debug>
+         %%% WARNING: famtool.pl relies on this message format!!!
+         \immediate\write16{
+            Faking~narrow~font~
+            \font_family\font_weight\font_shape\raw_variant
+               \expert_encoding\font_width
+            \space from~
+            \font_family\font_weight\font_shape\raw_variant
+               \expert_encoding
+         }
+         \transformfont{
+            \font_family\font_weight\font_shape\raw_variant
+               \expert_encoding\font_width
+         }{
+            \xscalefont{\fake_narrow_width}{
+               \frommtx{
+                  \font_family\font_weight\font_shape\raw_variant
+                     \expert_encoding
+               }
+            }
+         }
+      \fi
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \subsection{Installing reencoded fonts}
+%
+% \begin{macro}{\latin_encoding}
+% \begin{macro}{\font_encoding}
+% \begin{macro}{\latex_encoding}
+% \begin{macro}{\latex_mtx}
+%
+% |\latin_encoding{FONTENC}{EXPERTISED-ENC}{OLDSTYLE-ENC}|
+% |{LATEXENC}{LATEXMTX}|
+%
+% If this is an expertised family |EXPERTISED-ENC| is used instead
+% of |FONTENC|.  If this is an expertised family with oldstyle
+% digits |OLDSTYLE-ENC| is used instead of |EXPERTISED-ENC|.
+%
+% UV 06/98: Added code for oldstyle encodings from Alan's v~1.511.
+% The |\font_encoding| is changed when |\if_oldstyle_| is true.
+%
+% UV 06/98: Added anonther parameter for the default metrics file
+% (which is usually either |latin.mtx| or |textcomp.mtx|).
+%
+% UV 06/98: Added experimental code for OsF or SC\&OsF fonts.
+%
+%    \begin{macrocode}
+\def\latin_encoding#1#2#3#4#5{
+   \gdef\latex_encoding{#4}
+   \gdef\latex_mtx{#5}
+   \if_oldstyle_
+      \gdef\font_encoding{#3}
+   \else\if_expert_
+      \gdef\font_encoding{#2}
+   \else
+      \gdef\font_encoding{#1}
+   \fi\fi
+   \gdef\expert_font{}
+   \gdef\oldstyle_font{}
+   \if_expert_
+      \if_file_exists{
+         \font_family\font_weight\raw_shape\raw_variant
+            \expert_encoding\font_width.mtx
+      }\then
+         \gdef\expert_font{
+            \font_family\font_weight\raw_shape\raw_variant
+               \expert_encoding\font_width,
+         }
+      \fi
+   \fi
+%<*oldstyle>
+   \if_oldstyle_
+      \if_file_exists{
+         \font_family\font_weight\raw_shape\oldstyle_variant
+            \raw_variant\raw_encoding\font_width.mtx
+      }\then
+         \gdef\oldstyle_font{
+            unsetnum,
+            \font_family\font_weight\raw_shape\oldstyle_variant
+               \raw_variant\raw_encoding\font_width,
+            resetosf,
+         }
+      \fi
+   \fi
+%</oldstyle>
+%<*debug>
+   \immediate\write16{
+      INFO>~run~\string\installfont\space
+      <\font_family\font_weight\font_shape\font_variant
+         \font_encoding\font_width>
+      <\font_family\font_weight\raw_shape\raw_variant
+         \raw_encoding\font_width,
+      \if_oldstyle_
+       \ifx\raw_shape\caps_shape
+         resetosf,
+       \fi
+      \fi
+      \expert_font
+      \oldstyle_font
+      \latex_mtx>
+      <\latex_encoding\encoding_shape>
+      <\latex_encoding>
+      <\latex_family>
+      <\latex_weight\latex_width>
+      <\latex_shape>}
+%</debug>
+   \installfont{
+      \font_family\font_weight\font_shape\font_variant
+         \font_encoding\font_width
+   }{
+      \font_family\font_weight\raw_shape\raw_variant
+         \raw_encoding\font_width,
+      \if_oldstyle_
+       \ifx\raw_shape\caps_shape
+         resetosf,
+       \fi
+      \fi
+      \expert_font
+      \oldstyle_font
+      \latex_mtx
+   }{
+      \latex_encoding\encoding_shape
+   }{
+      \latex_encoding
+   }{
+      \latex_family
+   }{
+      \latex_weight\latex_width
+   }{
+      \latex_shape
+   }{}
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Default weights, widths and shapes}
+%
+% \begin{center}
+% \begin{tabular}{llll}
+%   \hline
+%   \multicolumn{2}{l}{Fontname: \texttt{weight.map}} &
+%   \multicolumn{2}{l}{NFSS: \emph{\LaTeX\ Companion}, p.~190} \\
+%   \hline
+%   |a| & Thin Hairline         & |ul| & Ultra Light     \\
+%   |j| & ExtraLight            & |el| & Extra Light     \\
+%   |l| & Light                 & |l|  & Light           \\
+%   |r| & Regular Roman         & |m|  & Medium          \\
+%   |k| & Book                  & |m|  & Medium          \\
+%   |m| & Medium                & |mb| & (was: |m|)      \\
+%   |d| & Demi                  & |db| & (was: |sb|)     \\
+%   |s| & Semibold              & |sb| & Semibold        \\
+%   |b| & Bold                  & |b|  & Bold            \\
+%   |h| & Heavy Heavyface       & |eb| & (was missing)   \\
+%   |c| & Black                 & |eb| & (was missing)   \\
+%   |x| & ExtraBold ExtraBlack  & |eb| & Extra Bold      \\
+%   |u| & Ultra UltraBlack      & |ub| & Ultra Bold      \\
+%   |p| & Poster                &      & (still missing) \\
+%   \hline
+% \end{tabular}
+% \end{center}
+%
+% \begin{macro}{\latin_weights}
+% Each call to |\latin_weight| maps a Fontname weight code
+% (|\font_weight|) to a \LaTeX{} weight code (|\latex_weight|).
+% Non-existing weights are ignored (or substituted when the
+% |.fd| files are written out by |\endinstallfont|).
+%
+% The standard values are given in the table.  They may be changed,
+% but you'd better know what you're doing.
+%
+% UV, 04/98: Changed the processing order: Do the most common
+% shapes first.  Added new mappings for |c| and |h|, changed
+% mapping for |m| to newly invented \LaTeX{} weight |mb|.
+%
+%    \begin{macrocode}
+\def\latin_weights{
+   \latin_weight{r}{m}
+   \latin_weight{k}{m}
+   \latin_weight{b}{b}
+   \latin_weight{s}{sb}
+   \latin_weight{d}{db} % was {d}{sb}, SPQR changed
+   \latin_weight{m}{mb} % was {m}{m},  UV changed
+   \latin_weight{c}{eb} % UV added
+   \latin_weight{h}{eb} % UV added
+   \latin_weight{x}{eb}
+   \latin_weight{u}{ub}
+   \latin_weight{l}{l}
+   %\latin_weight{j}{el}
+   %\latin_weight{a}{ul} % UV added
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{center}
+% \begin{tabular}{llll}
+%   \hline
+%   \multicolumn{2}{l}{Fontname: \texttt{width.map}} &
+%   \multicolumn{2}{l}{NFSS: \emph{\LaTeX\ Companion}, p.~190} \\
+%   \hline
+%   |t| & Thin                    &  --  & --              \\
+%   |o| & Ultra Condensed         & |uc| & Ultra Condensed \\
+%   |u| & Ultra Compressed        & |uc| & . .             \\
+%   |q| & Extra Compressed        & |ec| & Extra Condensed \\
+%   |c| & Condensed               & |c|  & Condensed       \\
+%   |p| & Compressed              & |c|  & . .             \\
+%   |n| & Narrow                  & |c|  & . .             \\
+%   --  & --                      & |sc| & Semi Condensed  \\
+%   |r| & Normal, Medium, Regular & |m|  & Medium          \\
+%   --  & --                      & |sx| & Semi Expanded   \\
+%   |e| & Expanded                & |x|  & Expanded        \\
+%   |x| & Extended                & |x|  & . .             \\
+%   |v| & Extra Expanded          & |ex| & Extra Expanded  \\
+%   --  & --                      & |ux| & Ultra Expanded  \\
+%   |w| & Wide                    &  --  & --              \\
+%   \hline
+% \end{tabular}
+% \end{center}
+%
+% \begin{macro}{\latin_widths}
+% Each call to |\latin_width| maps a Fontname width code
+% (|\font_width|) to a \LaTeX{} width code (|\latex_width|).
+% Non-existing narrow fonts are faked only if |\fakenarrow|
+% is specifically called for.
+%
+%    \begin{macrocode}
+\def\latin_widths{
+   \latin_width{}{}
+   \latin_width{n}{c}
+   %latin_width{c}{c}
+   %latin_width{x}{x}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\latin_shapes}
+% The fifth argument of |\latin_shape| is stored in the variable
+% |\encoding_switches|.
+%    \begin{macrocode}
+\def\latin_shapes{
+   \latin_shape{} {} {} {n} {\_textcomp_true }
+   \latin_shape{c}{c}{} {sc}{\_textcomp_false}
+   \latin_shape{o}{o}{} {sl}{\_textcomp_true }
+   \latin_shape{i}{i}{i}{it}{\_textcomp_true }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\latin_encodings}
+%   |\encoding_switches| is evaluated immediatley before the
+%   |\if_textcomp_| test to set it as appropriate for the curent shape.
+%   \changes{1.925}{2003/03/31}{Changed from using \texttt{latin.mtx} to 
+%      \texttt{newlatin.mtx}. (LH)}
+%    \begin{macrocode}
+\def\latin_encodings{
+   \latin_encoding{7t}{9t}{9o}{OT1}{newlatin}
+   \latin_encoding{8t}{9e}{9d}{T1} {newlatin}
+%<*textcomp>
+   \encoding_switches
+   \if_textcomp_
+      \latin_encoding{8c}{9c}{9c}{TS1}{textcomp}
+   \fi
+%</textcomp>
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\if_textcomp_}
+% Switch to control whether or not to install a text companion
+% encoding.  It is set or unset for each shape by |\latin_shapes|
+% and evaluated in |\latin_encodings|.
+%
+%    \begin{macrocode}
+\newif\if_textcomp_
+%    \end{macrocode}
+% \end{macro}
+
+%
+% \begin{macro}{\raw_encoding}
+% \begin{macro}{\adobe_encoding}
+% \begin{macro}{\expert_encoding}
+%    \begin{macrocode}
+\def\raw_encoding{8r}
+\def\adobe_encoding{8a}
+\def\expert_encoding{8x}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+
+% \begin{macro}{\caps_shape}
+% \begin{macro}{\oldstyle_shape}
+%    \begin{macrocode}
+\def\caps_shape{c}
+\def\oldstyle_shape{j}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\SlantAmount}
+%    \begin{macrocode}
+\def\SlantAmount{167}
+%</pkg>
+%    \end{macrocode}
+% \end{macro}
+%
+% \Finale
+\endinput

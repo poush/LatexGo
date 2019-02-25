@@ -1,0 +1,182 @@
+% Copyright (c) 2017 by Jonathan Gleason <jgleason@math.berkeley.edu>
+%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% This work consists of the file eqnnumwarn.sty.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{eqnnumwarn}[2017/10/09 v1.0 Warnings for displaced equation numbers]
+
+\RequirePackage{etoolbox}
+\RequirePackage{xparse}
+\RequirePackage{calc}
+\RequirePackage{environ}
+\RequirePackage{mathtools}
+\RequirePackage{tikz}
+\usetikzlibrary{cd}
+\tikzcdset{ampersand replacement=\&} % This makes it so that "\&", not "&", is treated as the column separator in tikzcd environments.  (We do this so that it these environments can be passed as arguments (via "\BODY") to our redefinition of the equation environment.)  (See https://tex.stackexchange.com/questions/15093/.)
+\let\old@tikzcd\tikzcd % So that we don't have to manually write "\&", we update the "tikzcd" environment so that it automatically replaces the "&"s with "\&"s.
+\let\old@endtikzcd\endtikzcd
+\RenewEnviron{tikzcd}[1][]{%
+	\xpatchcmd*{\BODY}{&}{\&}{}{}% For compatibility with tikz.  (Also see \tikzcdset{ampersand replacement=\&} above.)
+	\old@tikzcd[#1]%
+	\BODY%
+	\old@endtikzcd%
+}
+
+\NewDocumentCommand\intomargin{}{\def\enw@intomargin{1}}% Use this command if you would like to possibly shift the equation into the margin in order to avoid displacing the equation number.  Should place *before* environment.
+\NewDocumentCommand\noeqnnumwarn{}{\def\enw@noeqnnumwarm{1}}% Use this command if you want to suppress the warning for a particular equation.  Should place *before* environment.
+
+\newbox\temp@box
+\newdimen\stest
+\newdimen\smin
+\newdimen\smax
+\def\enw@find#1#2#3{% Used for \enw@getstretch and \enw@getshrink below.  (From https://tex.stackexchange.com/questions/191140/measure-total-glue-in-a-box)
+	\let\old@hbadness\hbadness% Need to temporarily redefine \hbadness and \hfuzz so don't get a ridiculously number of warnings as we test for stretchability/shrinkability.
+	\hbadness=1000000%
+	\let\old@hfuzz\hfuzz%
+	\hfuzz=\maxdimen%
+	\smin = -\maxdimen
+	\smax = \maxdimen
+	\loop
+	\stest = \smin
+	\advance \stest by \smax
+	\divide \stest by 2 % now \stest=(\smin+\smax)/2 truncated to 0
+	\ifdim \stest = \smax
+	\advance \stest by -1sp % ensure that \smin<=\stest<\smax.
+	\fi
+	\setbox 0 = \hbox spread #2 1sp {%
+		\unhcopy\temp@box
+		\hskip 0pt #3-\stest
+	}%
+	\ifnum \badness > 100 % (shrink/stretch in \temp@box) <= \stest
+	\smax = \stest
+	\else
+	\smin = \stest
+	\advance \smin by 1sp
+	% since ">\stest" implies ">=\stest+1sp"
+	\fi
+	% In both cases, the interval [\smin,\smax] becomes smaller.
+	\ifdim\smin<\smax
+	\repeat
+	\ifdim\smin>\smax\BOOM\fi% cannot happen, I think
+	\hfuzz=\old@hfuzz%
+	\hbadness=\old@hbadness%
+}
+\def\enw@getstretch#1{% Returns the amount of stretchable glue in the \smin register.
+	\setbox\temp@box\hbox{#1}%
+	\enw@find{stretch}{}{plus}%
+}
+\def\enw@getshrink#1{% Returns the amount of shrinkable glue in the \smin register.
+	\setbox\temp@box\hbox{#1}%
+	\enw@find{shrink}{-}{minus}%	
+}
+
+\ifdef{\mathindent}{}{\newlength{\mathindent}}% In case \mathindent hasn't been defined, define it. (Will be used in redefinition of equation environment.)
+% Modifies "equation" environment to test if equation number has been displaced.
+\newlength{\enw@widthofequation}
+\newlength{\enw@widthofnumber}
+\newlength{\enw@shrinkability}
+\newlength{\enw@tagsep}
+\def\enw@initializelengthsdisplaced{%
+	\setlength{\enw@tagsep}{\mintagsep}% See the definition of \calc@shift@gather in amsmath.sty.  Note the line "\multiply\dimen@\tw@" (previously \dimen@ is defined to be \mintagsep), which is only done if fleqn is *not* activated.
+	\if@fleqn\else\setlength{\enw@tagsep}{2\enw@tagsep}\fi% Thus, we have to multiply \enw@tagsep by 2 in this case.
+	\enw@getshrink{\ensuremath{\BODY}}% Stores shrink in \smin.
+	\setlength{\enw@shrinkability}{\smin}%
+	\setlength{\enw@widthofequation}{\widthof{\ensuremath{\displaystyle\BODY}}}%
+	\setlength{\enw@widthofnumber}{\widthof{\normalfont\normalcolor \tagform@\theequation}}% See definition of \@eqnum in amsmath.sty.
+}
+
+\newlength{\enw@tagdisplaced}
+\def\enw@settagdisplaced{%
+	\enw@initializelengthsdisplaced%
+	\setlength{\enw@tagdisplaced}{%
+		\enw@widthofequation -\enw@shrinkability +\enw@widthofnumber +\enw@tagsep -\displaywidth}% Should be displaced if this is greater than 0.
+	\ifdimcomp{\enw@tagdisplaced}{<}{0pt}{%
+		\setlength{\enw@tagdisplaced}{0pt}}{}%
+	\ifx\print@eqnum\@empty% Don't actually issue the warning if an equation number was not to be displayed.
+	\def\enw@tagdisplaced{0}%
+	\fi%
+}
+
+\let\old@equation\equation
+\let\old@endequation\endequation
+\RenewEnviron{equation}{%
+	\old@equation% Start equation environment.
+	\gdef\enw@isequation{1}% Used as a flag so we know if other commands need to be redefined accordingly.
+	%
+	\ifdef{\enw@noeqnnumwarm}{}{\def\enw@noeqnnumwarm{0}}%
+	\if1\enw@noeqnnumwarm%
+	\BODY%
+	\else%
+	% Don't want to "label" twice, so we disable labeling here (will be "label"ed below when defining \@tempequationlength, and need the label to appear there because we want it to be measured when it comes to the legnth).
+	\let\old@label\label%
+	\renewcommand{\label}[1]{}%
+	\let\old@footnote\footnote% Similarly for footnotes.
+	\renewcommand{\footnote}[1]{}%
+	% Actually test if the equation number has been displaced, and if so, give a warning.
+	\enw@settagdisplaced%
+	% Restore \footnote and \label commands.
+	\let\footnote\old@footnote%
+	\let\label\old@label%
+	\ifdef{\enw@intomargin}{%
+		\iftagsleft@%
+		\setlength{\enw@tagdisplaced}{\enw@tagdisplaced+1sp}%
+		\appto{\BODY}{\hspace*{-\enw@tagdisplaced}}% This allows the equation to shift to the right before displacing the equation number.
+		\else%
+		\setlength{\enw@tagdisplaced}{\enw@tagdisplaced+1sp}%
+		\preto{\BODY}{\hspace*{-\enw@tagdisplaced}}%
+		%\preto{\BODY}{\hspace{0pt minus \temp@smin}}% This allows the equation to shift to the left before displacing the equation number.
+		\fi%
+	}{}%
+	\BODY% Display actual equation.
+	\ifdef{\enw@intomargin}{\setlength{\enw@tagdisplaced}{0pt}}{}% So don't throw warning.
+	\global\undef{\enw@intomargin}%
+	\ifdimcomp{\enw@tagdisplaced}{>}{0pt}{%
+		\PackageWarning{eqnnumwarn}{Equation number (\theequation ) has been displaced}}{}%
+	\fi%
+	\global\undef\enw@noeqnnumwarm%
+	%
+	\global\undef\enw@isequation%
+	\old@endequation% Close equation environment.
+}
+
+% Credit goes to David Carlisle for these ideas.
+\pretocmd{\place@tag@gather}{%`
+	\ifshifttag@%
+	\ifdef{\enw@noeqnnumwarm}{}{\def\enw@noeqnnumwarm{0}}%
+	\if1\enw@noeqnnumwarm%
+	\else%
+	\PackageWarning{eqnnumwarn}{Equation number (\theequation ) has been displaced}%
+	\fi%
+	\fi%
+}{}{}
+
+\apptocmd{\place@tag}{%`
+	\if1\shift@tag\row@%
+	\ifdef{\enw@noeqnnumwarm}{}{\def\enw@noeqnnumwarm{0}}%
+	\if1\enw@noeqnnumwarm%
+	\else%
+	\PackageWarning{eqnnumwarn}{Equation number (\theequation ) has been displaced}%
+	\fi%
+	\fi%
+}{}{}
+
+\AfterEndEnvironment{multline}{%
+	\ifshifttag@%
+	\ifdef{\enw@noeqnnumwarm}{}{\def\enw@noeqnnumwarm{0}}%
+	\if1\enw@noeqnnumwarm%
+	\else%
+	\PackageWarning{eqnnumwarn}{Equation number (\theequation ) has been displaced}%
+	\fi%
+	\fi%
+}
+
+\endinput

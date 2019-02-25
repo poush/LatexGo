@@ -1,0 +1,80 @@
+\ProvidesFile{langcode.tex}[2012/09/20 documenting langcode.sty]
+\title{\pkgtitle{langcode.sty}{%
+       Simple Language-Dependent Settings\\
+       Based on Language Codes}} 
+{ \RequirePackage{makedoc} \ProcessLineMessage{}
+  \MakeJobDoc{17}%% 2011/11/23
+  {\SectionLevelThreeParseInput}  }             %% 2012/09/17
+\documentclass[fleqn]{article}
+% \usepackage{inputtrc} \dotracinginputs
+\input{makedoc.cfg} %% shared formatting settings
+% \ReadPackageInfos{langcode}
+% \usepackage{langcode,catchdq,ngerman} \originalTeX
+\usepackage{catchdq,langcode,ngerman} \originalTeX
+%  \show\endqtd
+\MDkeywords{languages other than English; German, macro programming 
+            (programming structures), hypertext}
+\sloppy
+% \listfiles
+\begin{document}
+\maketitle
+\begin{MDabstract}
+'langcode.sty' in the first instance provides a command 
+$$|\uselangcode{<chars>}|$$ to adjust language-dependent settings, 
+such as key words, typographical conventions, and language codes 
+(\acro{\Wikiref{ISO-639-1}}).
+% it is intended to be a kind of ``leight-weight" \ctanpkgref{babel}. 
+% It uses \ctanpkgref{dowith} for adjustments and 
+% \ctanpkgref{plainpkg} for use with both \LaTeX\ and Plain \TeX.
+An author frequently writing documents in two or more languages 
+can use the same commands independently of the language, 
+provided they are gathered in a list macro to be 
+used by the \ctanpkgref{dowith} package.
+If `\<cmd>' is in the list, it is set to work like 
+`\<chars><cmd>', and a macro `\langcode' will expand to 
+<chars> (the respective tokens), usable in \acro{URL}s.---The 
+package is ``generic," based on \ctanpkgref{plainpkg}.
+The code has been used with \ctanpkgref{morehype} and 
+'catchdq' (\ctanpkgref{catcodes}), but may be useful more generally.
+\MDaddtoabstract{Related packages} \ctanpkgref{babel}, \ctanpkgref{polyglossia}
+% \ctanpkgref{morehype}, 'catchdq' (\ctanpkgref{catcodes}), 
+% \ctanpkgref{dowith} 
+\end{MDabstract}
+\newpage
+\tableofcontents
+% \newpage
+% \section{Features and Usage}
+\section{Installing and Calling}
+The file 'langcode.sty' is provided ready, installation only requires
+putting it somewhere where \TeX\ finds it
+(which may need updating the filename data
+ base).\urlfoot{ukfaqref}{inst-wlcf}           %% corr. 2011/02/08
+The packages \ctanpkgref{dowith}, \ctanpkgref{plainpkg}, 
+and 'stacklet' (\ctanpkgref{catcodes}) must be installed as well.
+
+As to calling (loading): 'langcode' is a ``\pkg{plainpkg} package" 
+in the sense of the 
+\ctanpkgref{plainpkg}\,\foothttpurlref{ctan.org/pkg/plainpkg} 
+documentation that you may consult for details.
+So roughly, 
+\begin{itemize}
+  \item load it by \ |\usepackage{langcode}| \ if you can, 
+  \item otherwise by \ |\RequirePackage{langcode}| \\
+        (perhaps from within another ``\pkg{plainpkg} package"), 
+  \item or by \ |\input langcode.sty| 
+  \item or even by \ |\input{langcode.sty}|~\dots
+\end{itemize}
+
+%   \pagebreak
+% \section{The Package File}
+\section{Header---\pkg{plainpkg} and Legalese}
+On the right hand side, that `plainpkg.tex' is loaded, 
+before the package version is declared, for ``generic" function:
+\input{langcode.doc}
+
+\end{document}
+
+VERSION HISTORY
+
+2012/09/17  for v0.1    very first 
+2012/09/20              extended ...

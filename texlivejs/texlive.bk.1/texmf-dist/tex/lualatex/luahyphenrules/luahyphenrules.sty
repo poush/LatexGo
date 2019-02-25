@@ -1,0 +1,161 @@
+% +--------------------------------------------------------+
+% | Typeset luahyphenrules.tex to get the documentation.   |
+% +--------------------------------------------------------+
+%
+%% Copyright (C) 2016 Javier Bezos
+%% All Rights Reserved
+%% http://www.texnia.com
+%%
+%% This work may be distributed and/or modified under the conditions
+%% of the LaTeX Project Public License, either version 1.3 of this
+%% license or (at your option) any later version.  The latest version
+%% of this license is in
+%%     http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2003/12/01 or later.
+%%
+%% This work has the LPPL maintenance status "maintained".
+%%
+%% This Current Maintainer of this work is Javier Bezos.
+%%
+%% This work consists of the files luahyphenrules.tex and
+%% luahyphenrules.sty.
+\ProvidesPackage{luahyphenrules}
+          [2016/12/07 v1.0 language.dat reader lualatex]
+
+% The code below is essentially the same as in babel.dtx, with a few
+% minor changes. See the latter for further info.
+
+\begingroup
+  \toks@{}
+  \count@\z@ % 0=start, 1=0th, 2=normal
+  \def\bbl@process@line#1#2 #3 #4 {%
+    \ifx=#1%
+      \bbl@process@synonym{#2}%
+    \else
+      \bbl@process@language{#1#2}{#3}{#4}%
+    \fi
+    \ignorespaces}
+  \def\bbl@manylang{%
+    \ifnum\bbl@last>\@ne
+      \bbl@info{Non-standard hyphenation setup}%
+    \fi
+    \let\bbl@manylang\relax}
+  \def\bbl@process@language#1#2#3{%
+    \ifcase\count@
+      \@ifundefined{zth@#1}{\count@\tw@}{\count@\@ne}%
+    \or
+      \count@\tw@
+    \fi
+    \ifnum\count@=\tw@
+      \expandafter\addlanguage\csname l@#1\endcsname
+      \language\allocationnumber
+      \chardef\bbl@last\allocationnumber
+      \bbl@manylang
+      \let\bbl@elt\relax
+      \xdef\bbl@languages{%
+        \bbl@languages\bbl@elt{#1}{\the\language}{#2}{#3}}%
+    \fi
+    \the\toks@
+    \toks@{}}
+  \def\bbl@process@synonym@aux#1#2{%
+    \global\expandafter\chardef\csname l@#1\endcsname#2\relax
+    \let\bbl@elt\relax
+    \xdef\bbl@languages{%
+      \bbl@languages\bbl@elt{#1}{#2}{}{}}}%
+  \def\bbl@process@synonym#1{%
+    \ifcase\count@
+      \toks@\expandafter{\the\toks@\relax\bbl@process@synonym{#1}}%
+    \or
+      \@ifundefined{zth@#1}{\bbl@process@synonym@aux{#1}{0}}{}%
+    \else
+      \bbl@process@synonym@aux{#1}{\the\bbl@last}%
+    \fi}
+  \ifx\bbl@languages\@undefined % Just a (sensible?) guess
+    \chardef\l@english\z@
+    \chardef\l@USenglish\z@
+    \chardef\bbl@last\z@
+    \global\@namedef{bbl@hyphendata@0}{{hyphen.tex}{}}
+    \gdef\bbl@languages{%
+      \bbl@elt{english}{0}{hyphen.tex}{}%
+      \bbl@elt{USenglish}{0}{}{}}
+  \else
+    \def\bbl@elt#1#2#3#4{% Remove all except language 0
+      \ifnum#2>\z@\else
+        \noexpand\bbl@elt{#1}{#2}{#3}{#4}%
+      \fi}%
+    \xdef\bbl@languages{\bbl@languages}%
+  \fi
+  \def\bbl@elt#1#2#3#4{\@namedef{zth@#1}{}} % Define flags
+  \bbl@languages
+  \openin1=language.dat
+  \ifeof1
+    \PackageWarning{luahyphenrules}%
+      {I couldn't find language.dat. No additional\MessageBreak
+       patterns loaded. Reported}%
+  \else
+    \loop
+      \endlinechar\m@ne
+      \read1 to \bbl@line
+      \endlinechar`\^^M
+      \if T\ifeof1F\fi T\relax
+        \ifx\bbl@line\@empty\else
+          \edef\bbl@line{\bbl@line\space\space\space}%
+          \expandafter\bbl@process@line\bbl@line\relax
+        \fi
+    \repeat
+  \fi
+\endgroup
+
+\def\bbl@get@enc#1:#2:#3\@@@{\def\bbl@hyph@enc{#2}}
+
+\newcatcodetable\bbl@tempcattbl
+
+\def\bbl@luapatterns#1#2{%
+  \bbl@get@enc#1::\@@@
+  \setbox\z@\hbox\bgroup
+    \begingroup
+      \savecatcodetable\bbl@tempcattbl
+      \catcodetable\catcodetable@latex
+      \input #1\relax
+      \catcodetable\bbl@tempcattbl
+    \endgroup
+    \def\bbl@tempa{#2}%
+    \ifx\bbl@tempa\@empty\else
+      \input #2\relax
+    \fi
+  \egroup}%
+
+\newcommand\HyphenRules[1]{%
+  \language=\expandafter\ifx\csname l@#1:\f@encoding\endcsname\relax
+    \@ifundefined{l@#1}%
+      {\z@
+       \PackageError{luahyphenrules}%
+        {Unknown language `#1'. Either you have\MessageBreak
+         misspelled its name or language.dat doesn't define\MessageBreak
+          it. Words in this language won't be hyphenated.}%
+        {You may proceed, but expect wrong results}}%
+      {\csname l@#1\endcsname 
+       \edef\bbl@tempa{#1}}%
+  \else
+    \csname l@#1:\f@encoding\endcsname
+    \edef\bbl@tempa{#1:\f@encoding}%
+  \fi\relax
+  \@ifundefined{bbl@hyphendata@\the\language}%
+    {\def\bbl@elt##1##2##3##4{% 1:name, 2:num, 3:pat-file, 4:exc-file
+       \ifnum##2=\csname l@\bbl@tempa\endcsname % tempa=spanish,dutch:OT1...
+         \def\bbl@tempb{##3}%
+         \ifx\bbl@tempb\@empty\else % if not a synonymous (if pat-file)
+           \def\bbl@tempc{{##3}{##4}}%
+         \fi
+         \expandafter\xdef\csname bbl@hyphendata@##2\endcsname{\bbl@tempc}%
+       \fi}%
+     \bbl@languages
+     \@ifundefined{bbl@hyphendata@\the\language}%
+       {\PackageInfo{luahyphenrules}%
+          {No hyphenation patterns were set for\MessageBreak
+           language ‘\bbl@tempa’. Reported}}%
+       {\expandafter\expandafter\expandafter\bbl@luapatterns
+          \csname bbl@hyphendata@\the\language\endcsname}}{}}
+
+\endinput

@@ -1,0 +1,748 @@
+% \iffalse meta-comment
+%
+%% Copyright (C) Andrey Vihrov <andrey.vihrov@gmail.com>, 2010-2011
+%%
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%
+%%   http://www.latex-project.org/lppl.txt
+%%
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+%%
+%% This work has the LPPL maintenance status `maintained'.
+%%
+%% See the README for a list of files that constitute this work.
+%%
+% \fi
+%
+% \iffalse
+%<package>\NeedsTeXFormat{LaTeX2e}
+%<*driver|package>
+\RequirePackage{svn-prov}
+%</driver|package>
+%<*driver>
+\ProvidesFileSVN
+%</driver>
+%<package>\ProvidesPackageSVN
+%<*driver|package>
+  {$Id: fixlatvian.dtx 163 2011-02-05 18:51:11Z andrey.vihrov $}
+  [v1a Improved Latvian support]
+%</driver|package>
+%<package>\DefineFileInfoSVN\relax
+%
+%<*driver>
+\documentclass[a4paper]{ltxdoc}
+
+\usepackage{booktabs}
+\usepackage{fancyvrb}
+\usepackage[toc]{multitoc}
+\usepackage{paralist}
+\usepackage{polyglossia}
+\usepackage{xltxtra}
+\usepackage[hyperindex=false]{hyperref}
+\usepackage{fixlatvian}
+
+\DisableCrossrefs
+\CodelineIndex
+\RecordChanges
+
+\setotherlanguage{english}
+\makeatother % TODO https://github.com/fc7/polyglossia/issues/#issue/13
+\setcounter{tocdepth}{2}
+\let\oldusage\usage
+\renewcommand{\usage}[1]{\oldusage{\hyperpage{#1}}}
+\let\oldglossary\glossary
+\renewcommand{\glossary}[1]{\oldglossary{#1|hyperpage}}
+\hypersetup{%
+  bookmarksdepth=3,%
+  colorlinks=true,%
+  linktocpage=true%
+}
+\VerbatimFootnotes
+
+\renewcommand{\filesep}{\thesection}
+\makeatletter
+\@addtoreset{CodelineNo}{section}
+\makeatother
+\newcommand{\BeginFileSections}{\appendix}
+
+\providecommand{\email}[1]{\href{mailto:#1}{\nolinkurl{<#1>}}}
+\newenvironment{example}{\begin{quote}}{\end{quote}}
+\newcommand{\optstar}{\meta{\textnormal{\texttt{*}}}}
+\newcommand{\pack}[1]{\mbox{\textsf{#1}}}
+\newcommand{\sys}[1]{\texttt{#1}}
+\providecommand{\MakeIndex}{\textit{Make\-Index}}
+
+\begin{document}
+  \DocInput{fixlatvian.dtx}
+  \PrintChanges
+  \PrintIndex
+\end{document}
+%</driver>
+% \fi
+%
+% \CheckSum{369}
+%
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%   Dollar        \$     Percent       \%     Ampersand     \&
+%   Acute accent  \'     Left paren    \(     Right paren   \)
+%   Asterisk      \*     Plus          \+     Comma         \,
+%   Minus         \-     Point         \.     Solidus       \/
+%   Colon         \:     Semicolon     \;     Less than     \<
+%   Equals        \=     Greater than  \>     Question mark \?
+%   Commercial at \@     Left bracket  \[     Backslash     \\
+%   Right bracket \]     Circumflex    \^     Underscore    \_
+%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%   Right brace   \}     Tilde         \~}
+%
+% \changes{v1}{2011/01/30}{Sākuma versija}
+% \changes{v1a}{2011/01/31}{Pievienots \sys{README}}
+%
+% \GetFileInfoSVN{fixlatvian}
+%
+% \title{\pack{FixLatvian} pakotne\texorpdfstring{^^A
+%   \thanks{Versija~\fileversion{} (\filedate).}}{}}
+% \author{Andrejs Vihrovs\texorpdfstring{ \email{andrey.vihrov@gmail.com}}{}}
+% \makeatletter
+% \hypersetup{pdftitle={\@title},pdfauthor={\@author},^^A
+%   pdfkeywords={latex latviešu valodā, latex latviski, latex latviskošana}}
+% \makeatother
+%
+% \maketitle
+%
+% \renewcommand{\abstractname}{Pateicības}
+% \begin{abstract}
+%   Pateicība pienākas Madaram Virzam par sniegtajiem padomiem.
+%
+%   Šī pakotne savā darbā izmanto \pack{caption}, \pack{etoolbox},
+%   \pack{perpage}, \pack{polyglossia}, \pack{xstring}, \pack{indentfirst} un
+%   \pack{icomma} pakotnes.
+% \end{abstract}
+%
+% \tableofcontents
+%
+% \section{Ievads}
+% \LaTeX{} sistēma sākumā bija domāta darbam ar dokumentiem angļu valodā, citu
+% valodu atbalstu ierobežojot galvenokārt ar iespēju ievadīt burtus ar
+% diakritiskajām zīmēm. Laika gaitā parādījās pilnīgāki risinājumi dokumentu
+% izveidei citās valodās; daudzi no tiem tika apkopoti \pack{babel} pakotnē~^^A
+% \cite{babel}. Šādi mēģinājumi tika veikti arī latviešu valodai~\cite{drikis},
+% tomēr netika iekļauti \textsc{ctan} arhīvā un \TeX{} distributīvos.
+%
+% Pēdējos gados ir parādījušies rīki, kas ievērojami atvieglo dažādu valodu
+% lietošanu \LaTeX{} sistēmā. Pirmkārt, tas ir \XeTeX{} dzinis~\cite{xetex},
+% kas strādā ar \textenglish{Unicode} tekstu un liek aizmirst par ievada un
+% fontu kodējumiem. Otrkārt, \TeX{} pasaulei kļuvuši pieejami daudzi fonti, kas
+% satur plašu \textenglish{Unicode} simbolu klāstu. Tādi ir, piemēram,
+% \textenglish{Latin Modern}~\cite{lm} un \textenglish{Computer Modern
+% Unicode}~\cite{cmu}. Šie jauninājumi atrisināja daudzas tehniskas problēmas,
+% ar kurām saskarās valodu atbalsta pakotņu autori pirms tam~--- dažreiz pat
+% labākā veidā.
+%
+% Valodas atbalstu var iedalīt sekojošajās galvenajās kategorijās:
+% \begin{inparaenum}[(a)]
+%   \item valodas alfabēta burtu ievada iespējamība;\label{cat:in}
+%   \item attiecīgo simbolu atbalsts fontos;\label{cat:fnt}
+%   \item vārdu pārnesumu likšana;\label{cat:hyp}
+%   \item nosaukumu tulkojumi;\label{cat:trans}
+%   \item valodas punktuācija un noformējums.\label{cat:sty}
+% \end{inparaenum}
+% Izmantojot \XeTeX{} kopā ar \pack{polyglossia} pakotni, kas ir mūsdienu
+% \pack{babel} aizvietojums~\cite{poly}, latviešu valodas gadījumā ir iespējams
+% tikt galā ar \nref{cat:in}--\nref{cat:trans}~punktiem. Tomēr dažas lietas,
+% tādas kā automātiska numerācija ar punktiem un pareiza virsrakstu forma, vēl
+% joprojām prasa manuālas izmaiņas.
+%
+% \pack{FixLatvian} pakotne apkopo dažādus šāda veida uzlabojumus, kā arī
+% pielāgo vairākas pakotnes darbam ar latviešu valodu. Tās mērķis ir ļaut
+% izveidot dokumentus, kas atbilstu latviešu valodā pieņemtajam noformējumam
+% gan dokumenta struktūras, gan teksta līmenī. Lai lietotu šo pakotni,
+% dokuments ir jāapstrādā ar \sys{xelatex} komandu.
+%
+% Patlaban lielā mērā tiek atbalstītas standarta \LaTeX{} dokumentu klases un
+% dažas pakotnes. Tiek laipni lūgtas idejas un ierosinājumi par citu dokumentu
+% klašu un pakotņu atbalsta pievienošanu.
+%
+% \section{Lietošana}
+% \subsection{Pakotnes pieslēgšana}
+% Pakotni pieslēdz ar |\usepackage{fixlatvian}| komandu. Tās ielādes laikā tiek
+% pieslēgta arī \pack{polyglossia} pakotne, kā arī dokumenta valoda tiek
+% uzstādīta uz |latvian|. \pack{FixLatvian} pakotne būtu jāpieslēdz pēc
+% \pack{hyperref} vai \pack{amsthm} pakotnēm, ja tādas tiek izmantotas.
+%
+% \subsection{Numerācija ar punktiem}
+% \label{sec:numbering}
+% \DescribeMacro{\ref}
+% \DescribeMacro{\pageref}
+% Pēc automātiski izveidotajiem numuriem (nodaļas, sekcijas, attēli, utt.)\
+% tiek likti punkti (piem., <<\ref{sec:numbering} apakšnodaļa>>). Tie parādās
+% virsrakstu numerācijā, saturā un citos sarakstos, kā arī lietojot ierastās
+% |\ref| un |\pageref| komandas. Saturā punkts netiek likts, ja numurs beidzas
+% ne ar ciparu vai burtu (piem., <<\mbox{(a)\quad Kāda attēla apakšattēls}>>).
+%
+% \DescribeMacro{\nref}
+% \DescribeMacro{\npageref}
+% Dažreiz ir nepieciešams izmantot numuru bez tam sekojošā punkta, piem.,
+% <<apakšnodaļa~\nref{sec:numbering}>>. Šim gadījumam ir paredzētas |\nref| un
+% |\npageref| komandas, kuru lietošanas sintakse ir līdzīga |\ref| un
+% |\pageref| komandām:
+% \begin{example}
+%   |\nref|\optstar\marg{iezīme}\\
+%   |\npageref|\optstar\marg{iezīme}
+% \end{example}
+%
+% \subsection{Nosaukumu tulkojumi}
+% \pack{FixLatvian} pakotne satur vairāku nosaukumu un tekstu tulkojumus
+% papildus tam, ko jau piedāvā \pack{polyglossia} pakotne. Tulkojamo tekstu
+% saraksts satur gan dažas \LaTeX{} komandas, gan vairāku citu pakotņu komandas
+% (sk.~\ref{sec:packsupport} nodaļu).
+%
+% \DescribeMacro{\alph}
+% \DescribeMacro{\Alph}
+% |\alph| un |\Alph| komandas, kas pārvērš \LaTeX{} skaitītāju vērtības burtos,
+% tagad izvada tikai latviešu alfabētā esošos, izņemot burtus ar diakritiskajām
+% zīmēm.
+%
+% \subsection{Virsrakstu pielāgojumi}
+% \DescribeMacro{\part}
+% \DescribeMacro{\chapter}
+% Standarta \LaTeX{} dokumentu klašu daļu un nodaļu virsrakstos numurs tagad ir
+% pirms vārda, nevis pēc (piem., <<1.~nodaļa>>). Izņēmums ir pielikumu
+% virsraksts, kas saglabā veco kārtību (<<Pielikums~A>>). Daļas tiek numurētas
+% ar arābu cipariem.
+%
+% \DescribeMacro{\caption}
+% \DescribeMacro{\newtheorem}
+% Tiek mainīti attēlu un tabulu (<<1.~att.~Nosaukums>>), teorēmu tipa un arī
+% citu <<peldošo>> bloku virsraksti.
+%
+% \subsection{Noformējuma īpatnības}
+% Tiek uzstādīts vienāds atstarpju garums pēc visiem simboliem. Lai atgrieztu
+% \LaTeX{} noklusēto variantu, kurā pēc pieturzīmēm liek lielākas atstarpes, kā
+% tradicionāli pieņemts angļu valodā, pēc pakotnes ielādes jālieto komanda
+% |\nonfrenchspacing|.
+%
+% \DescribeMacro{\footnote}
+% Zemteksta piezīmju numerācija tagad sākas no jauna katru lappusi.
+%
+% Komatu tagad var izmantot kā skaitļu decimāldaļas atdalītāju.
+%
+% \subsection{Rādītāja lietošana}
+% Daži \MakeIndex{} stili pirms vārdu grupām rādītājā liek grupu nosaukumus.
+% Ir pieejama \sys{lv.ist} stila datne ar šiem nosaukumiem latviešu valodā.
+% Lai to lietotu, tā ir jāapvieno kopā ar pamata stilu vienā datnē.
+%
+% \section{Padomi darbā}
+% \subsection{Pēdiņu ievads}
+% \XeTeX{} dzinis piedāvā kombinācijas dažādu pēdiņu ievadam, tāpat kā ar
+% simboliem |---| var ievadīt domuzīmi~\cite{xetex-ligs}. Šīs kombinācijas ir
+% dotas \ref{tab:quot} tabulā. Protams, visus šos simbolus var ievadīt arī
+% tiešā veidā kā \textenglish{Unicode} tekstu.
+%
+% \begin{table}[hb]
+%   \caption{Pēdiņu ievads}\label{tab:quot}
+%   \centering
+%   \begin{tabular}{cc}
+%     Ievads        & Rezultāts   \\\midrule
+%     |<<Piemērs>>| & <<Piemērs>> \\
+%     |,,Piemērs``| & ,,Piemērs``
+%   \end{tabular}
+% \end{table}
+%
+% \subsection{Nepareizs teksts virsrakstos}
+% Lietojot pakotnes, kuras \pack{FixLatvian} vēl nepazīst, var saskarties ar
+% nepārtulkotiem vai nepilnīgiem virsrakstiem «peldošajos» blokos. Šajā
+% gadījumā autoram pašam ir jāmaina virsraksta nosaukums. Ieteicams vērsties
+% pie attiecīgās pakotnes dokumentācijas.
+%
+% Piemēram, ja bloka nosaukums ir |something|, tad, iespējams, tā virsraksta
+% tekstu var pielāgot ar komandu
+% \begin{example}
+%   |\renewcommand{\somethingname}{tulkojums}|
+% \end{example}
+% vai arī, ja šis bloks tiek veidots ar \pack{float} pakotnes palīdzību, ar
+% komandu
+% \begin{example}
+%   |\floatname{something}{tulkojums}|
+% \end{example}
+%
+% \section{Citu pakotņu atbalsts}
+% \label{sec:packsupport}
+% Šī pakotne ir savietojama ar
+%   \pack{algorithms},
+%   \pack{amsthm},
+%   \pack{appendix},
+%   \pack{caption},
+%   \pack{doc},
+%   \pack{float},
+%   \pack{hyperref},
+%   \pack{listings}
+% pakotnēm.
+%
+% \section{Kļūdu ziņošana}
+% Kļūdu ziņošanai un uzlabojumu ieteikšanai var lietot autora e-pasta adresi,
+% kā arī izmantot tiešsaistē pieejamo problēmu izsekošanas sistēmu:
+% \url{http://code.google.com/p/fixlatvian/issues}.
+%
+% \renewcommand{\refname}{Atsauces}
+% \StopEventually{
+%   \begin{thebibliography}{9}
+%     \bibitem{babel} \url{http://ctan.org/pkg/babel}
+%     \bibitem{drikis}
+%       \url{http://home.lu.lv/~drikis/LaTeX-Latviski/latex-latviski.html}
+%     \bibitem{xetex} \url{http://scripts.sil.org/xetex}
+%     \bibitem{lm} \url{http://gust.org.pl/projects/e-foundry/latin-modern}
+%     \bibitem{cmu} \url{http://canopus.iacp.dvo.ru/~panov/cm-unicode/}
+%     \bibitem{poly} \url{http://ctan.org/pkg/polyglossia}
+%     \bibitem{xetex-ligs} \url{http://scripts.sil.org/xetex_faq\#ligs}
+%     \bibitem{deccomma}
+%       \url{http://www.tex.ac.uk/cgi-bin/texfaq2html?label=dec_comma}
+%     \bibitem{fnpp}
+%       \url{http://www.tex.ac.uk/cgi-bin/texfaq2html?label=footnpp}
+%   \end{thebibliography}
+% }
+%
+% \BeginFileSections
+%
+% \section{Realizācija}
+% \subsection{Sagatavošanās darbam}
+% Sākumā ielādē citas pakotnes, kas nepieciešamas darbam.
+%    \begin{macrocode}
+%<*package>
+\RequirePackage{caption}
+\RequirePackage{etoolbox}
+\RequirePackage{perpage}
+\RequirePackage{polyglossia}
+\RequirePackage{xstring}
+%    \end{macrocode}
+%
+% Pieņem, ka pirmajām rindkopām ir atkāpes.
+%    \begin{macrocode}
+\RequirePackage{indentfirst}
+%    \end{macrocode}
+%
+% Atļauj lietot komatu kā decimāldaļas atdalītāju~\cite{deccomma}.
+%    \begin{macrocode}
+\RequirePackage{icomma}
+%    \end{macrocode}
+%
+% Definē un apstrādā pakotnes parametrus.
+%    \begin{macrocode}
+\ProcessOptions\relax
+%    \end{macrocode}
+%
+% Uzstāda latviešu valodu kā dokumenta valodu.
+%    \begin{macrocode}
+\@ifundefined{latvian@loaded}{\setdefaultlanguage{latvian}}{}
+%    \end{macrocode}
+%
+% \changes{v1a}{2011/02/03}{Izņemti \string\verb+frenchspacing+ un
+%   \string\verb+nonfrenchspacing+ pa\-ra\-met\-ri} ^^A FIXME
+% Uzstāda vienādas atstarpes pēc visiem simboliem.
+%    \begin{macrocode}
+\frenchspacing
+%    \end{macrocode}
+%
+% \begin{macro}{\FixL@warning}
+% \begin{macro}{\FixL@warning@noline}
+% \begin{macro}{\FixL@info}
+% Definē brīdinājumu un paziņojumu izvada komandas.
+%    \begin{macrocode}
+\newcommand{\FixL@warning}[1]{\PackageWarning{fixlatvian}{#1}}
+\newcommand{\FixL@warning@noline}[1]{%
+  \PackageWarningNoLine{fixlatvian}{#1}}
+\newcommand{\FixL@info}[1]{\PackageInfo{fixlatvian}{#1}}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\FixL@alnum}
+% \begin{macro}{\FixL@patchfailed}
+% \begin{macro}{\FixL@checkbefore}
+% Definē arī palīgkomandas.
+%    \begin{macrocode}
+\newcommand{\FixL@alnum}{%
+  ABCDEFGHIJKLMNOPQRSTUVWXYZ%
+  abcdefghijklmnopqrstuvwxyz%
+  0123456789%
+}
+\newcommand{\FixL@patchfailed}[1]{%
+  \FixL@info{Could not change the definition of the \protect #1 command}}
+\newcommand{\FixL@checkbefore}[1]{%
+  \expandafter\newif\csname ifFixL@#1@before\endcsname
+  \@ifpackageloaded{#1}{\csname FixL@#1@beforetrue\endcsname}{}%
+  \AtBeginDocument{%
+    \@ifpackageloaded{#1}{%
+      \csname ifFixL@#1@before\endcsname\else
+        \FixL@warning@noline{This package should be loaded after #1}%
+      \fi
+    }{}}}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% Pārbauda, ka \pack{hyperref} un \pack{amsthm} pakotnes nav tikušas ielādētas
+% \emph{pēc} šīs.
+%    \begin{macrocode}
+\FixL@checkbefore{hyperref}
+\FixL@checkbefore{amsthm}
+%    \end{macrocode}
+%
+% \subsection{Numerācija ar punktiem}
+% \begin{macro}{\FixL@p}
+% Definē punkta pievienošanas komandu. Pēc punkta neatļauj teikuma beigas
+% (svarīgs tikai ar |\nonfrenchspacing|) un rindas beigas.
+%    \begin{macrocode}
+\newcommand{\FixL@p}{.\@\nobreak}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\FixL@bigspace}
+% Vietās, kur pēc numura oriģināli tiek lietots |\quad|, izmanto mazāku
+% atstarpi, lai kompensētu punkta radīto tukšumu.
+%    \begin{macrocode}
+\newcommand{\FixL@bigspace}{\hspace{.66667em}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@seccntformat}
+% Pievieno punktu sekciju u.\,c.\ numuriem virsrakstos. |\@seccntformat|
+% komandas oriģinālā definīcija atrodas \sys{tex/latex/base/latex.ltx} datnē.
+%    \begin{macrocode}
+\CheckCommand*{\@seccntformat}[1]{\csname the#1\endcsname\quad}
+\renewcommand{\@seccntformat}[1]{%
+  \csname the#1\endcsname\FixL@p\FixL@bigspace}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\numberline}
+% Pievieno punktu ierakstiem saturā un citos sarakstos. Ja ieraksta numurs
+% beidzas ne ar ciparu vai latīņu alfabēta burtu, tad punktu neliek.
+% |\numberline| sākuma definīcija atrodas tajā pašā datnē kā |\@seccntformat|.
+%    \begin{macrocode}
+\let\FixL@old@numberline\numberline
+\renewcommand{\numberline}[1]{%
+  \StrRight{#1}{1}[\FixL@tempa]%
+  \FixL@old@numberline{#1%
+    \IfSubStr{\FixL@alnum}{\FixL@tempa}{\FixL@p}{}%
+  }}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\nref}
+% \begin{macro}{\npageref}
+% Saglabā vecas |\ref| un |\pageref| versijas |\nref| un |\npageref| komandās.
+% \pack{hyperref} pakotne pārdefinē šīs komandas |\begin{document}| izpildes
+% laikā, tāpēc \pack{FixLatvian} pakotnes definīcijas jāievieš pēc tam.
+%    \begin{macrocode}
+\AtBeginDocument{%
+  \let\nref\ref
+  \let\npageref\pageref
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\ref}
+% \begin{macro}{\pageref}
+% Izveido |\ref| un |\pageref| jaunās versijas~--- ar punktiem. Sākumā definē
+% komandu, kas būs pamats visām lietotāja līmeņa komandām.
+%    \begin{macrocode}
+\newcommand{\FixL@ref@base}[4]{%
+  \begingroup
+    \newcommand{\FixL@tempb}{\csname n#1\endcsname #2{#4}\FixL@p}%
+    \IfStrEq{#3}{hyper}{\hyperref[#4]{\FixL@tempb}}{\FixL@tempb}%
+  \endgroup
+  \nobreak % Extra \nobreak
+}
+%    \end{macrocode}
+%
+% Pēc tam definē pašas komandas, izmantojot iepriekš izveidoto. Padara
+% iespējamu šo komandu izmantošanu <<kustīgajos parametros>>.\footnote{^^A
+% |\DeclareRobustCommand| nevar izmantot ar \pack{hyperref} versijām, jo
+% \Verb[showspaces=true]|ref | un \Verb[showspaces=true]|pageref |
+% identifikatorus joprojām izmanto |\nref| un |\npageref| komandas. Toties
+% |\robustify| no \pack{etoolbox} pakotnes neprasa papildu komandu definēšanu.}
+%    \begin{macrocode}
+\AtBeginDocument{%
+  \@ifpackageloaded{hyperref}{%
+    \newcommand{\FixL@ref}[1]{\FixL@ref@base{ref}{*}{hyper}{#1}}%
+    \newcommand{\FixL@ref@star}[1]{\FixL@ref@base{ref}{*}{}{#1}}%
+    \renewcommand{\ref}{\@ifstar\FixL@ref@star\FixL@ref}%
+    \newcommand{\FixL@pageref}[1]{\FixL@ref@base{pageref}{*}{hyper}{#1}}%
+    \newcommand{\FixL@pageref@star}[1]{\FixL@ref@base{pageref}{*}{}{#1}}%
+    \renewcommand{\pageref}{\@ifstar\FixL@pageref@star\FixL@pageref}%
+  }{%
+    \renewcommand{\ref}[1]{\FixL@ref@base{ref}{}{}{#1}}%
+    \renewcommand{\pageref}[1]{\FixL@ref@base{pageref}{}{}{#1}}%
+  }%
+  \robustify{\ref}%
+  \robustify{\pageref}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Nosaukumu tulkojumi}
+% \begin{macro}{\alsoname}
+% \begin{macro}{\chaptername}
+% \begin{macro}{\figurename}
+% \begin{macro}{\indexname}
+% \begin{macro}{\partname}
+% \begin{macro}{\tablename}
+% \begin{macro}{\seename}
+% Pielāgo dažus \LaTeX{} nosaukumus.
+%    \begin{macrocode}
+\gappto\captionslatvian{%
+  \renewcommand{\alsoname}{sk.~arī}%
+  \renewcommand{\chaptername}{nodaļa}%
+  \renewcommand{\figurename}{att}%
+  \renewcommand{\indexname}{Rādītājs}%
+  \renewcommand{\partname}{daļa}%
+  \renewcommand{\tablename}{tabula}%
+  \renewcommand{\seename}{sk.\@}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \subsubsection{Numerācija ar latviešu burtiem}
+% \begin{macro}{\@alph}
+% \begin{macro}{\@Alph}
+% Izmaina |\@alph| un |\@Alph| komandu definīcijas, lai tās saturētu tikai
+% latviešu alfabēta burtus bez diakritiskajām zīmēm.
+%    \begin{macrocode}
+\renewcommand{\@alph}[1]{%
+  \ifcase #1\or a\or b\or c\or d\or e\or f\or g\or h\or i\or j\or k\or l%
+  \or m\or n\or o\or p\or r\or s\or t\or u\or v\or z\else\@ctrerr\fi}
+\renewcommand{\@Alph}[1]{%
+  \ifcase #1\or A\or B\or C\or D\or E\or F\or G\or H\or I\or J\or K\or L%
+  \or M\or N\or O\or P\or R\or S\or T\or U\or V\or Z\else\@ctrerr\fi}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Virsrakstu pielāgojumi}
+% \subsubsection{Daļu un nodaļu virsraksti}
+% \begin{macro}{\@makechapterhead}
+% Izmaina nodaļu virsrakstu vārdu secību no <<Nodaļa~1>> uz <<1.~nodaļa>> (bet
+% atstāj <<Pielikums~A>>). Ja <<|\@chapapp\space \thechapter|>> virkne nav
+% atrodama |\@makechapterhead| komandā, pieņem, ka lietotājs izveidojis savu
+% variantu, un neko nedara.
+%    \begin{macrocode}
+\@ifundefined{@makechapterhead}{}{%
+  \patchcmd{\@makechapterhead}{\@chapapp\space \thechapter}{%
+    \IfStrEq{\@chapapp}{\appendixname}{\@chapapp\space\thechapter}{%
+      \thechapter\FixL@p\space\@chapapp}%
+  }{}{\FixL@patchfailed{\chapter}}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@part}
+% To pašu dara arī ar daļu virsrakstiem. \pack{hyperref} pakotne izveido savu
+% |\part| definīciju, tāpēc šis gadījums arī jāņem vērā.
+%    \begin{macrocode}
+\newcommand{\FixL@fix@part}[1]{%
+  \@ifundefined{#1}{}{%
+    \renewcommand{\thepart}{\arabic{part}}%
+    \expandafter\patchcmd\csname #1\endcsname{%
+      \partname\nobreakspace\thepart}{\thepart\FixL@p\space\partname}{}{%
+      \FixL@patchfailed{\part}}%
+  }}
+\AtBeginDocument{\FixL@fix@part{%
+  \@ifpackageloaded{hyperref}{H@old@part}{@part}}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsubsection{Virsraksti galvenē un kājenē}
+% \begin{macro}{\chaptermark}
+% \begin{macro}{\sectionmark}
+% \begin{macro}{\subsectionmark}
+% Pielāgo noklusēto nodaļu un apakšnodaļu ierakstu noformējumu.
+%    \begin{macrocode}
+\patchcmd{\ps@headings}{\@chapapp\ \thechapter}{%
+  \thechapter\FixL@p\space\@chapapp}{}{\FixL@patchfailed{\chaptermark}}
+\patchcmd{\ps@headings}{\thesection\quad}{%
+  \thesection\FixL@p\FixL@bigspace}{}{\FixL@patchfailed{\sectionmark}}
+\patchcmd{\ps@headings}{\thesubsection\quad}{%
+  \thesubsection\FixL@p\FixL@bigspace}{}{%
+  \FixL@patchfailed{\subsectionmark}}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \subsubsection{«Peldošo» bloku virsraksti}
+% Izmaina virsraksta pirmās daļas atdalītāju.
+%    \begin{macrocode}
+\DeclareCaptionLabelSeparator{period@}{.\@\space}
+\captionsetup{labelsep=period@}
+%    \end{macrocode}
+%
+% Izmaina virsraksta pirmās daļas noformējumu.
+%    \begin{macrocode}
+\DeclareCaptionLabelFormat{latvian}{#2\FixL@p\space #1}
+\captionsetup{labelformat=latvian}
+%    \end{macrocode}
+%
+% \subsubsection{Teorēmu virsraksti}
+% \begin{macro}{\swappedhead}
+% \begin{macro}{\@begintheorem}
+% \begin{macro}{\@opargbegintheorem}
+% Pielāgojot teorēmu virsrakstus, ņem vērā, vai ir ielādēta \pack{amsthm}
+% pakotne.
+% ^^A Can't easily use \patchcmd and # inside a macro argument
+%    \begin{macrocode}
+\newif\ifFixL@amsthm@loaded
+\@ifpackageloaded{amsthm}{\FixL@amsthm@loadedtrue}{}
+\ifFixL@amsthm@loaded
+  \swapnumbers
+  \newcommand{\FixL@thmnumber}[1]{\@ifempty{#1}{}{#1\FixL@p}}
+  \patchcmd{\swappedhead}{\thmnumber}{\FixL@thmnumber}{}{%
+    \FixL@patchfailed{\swappedhead}}
+\else
+  \patchcmd{\@begintheorem}{#1\ #2}{#2\FixL@p\space #1}{}{%
+    \FixL@patchfailed{\@begintheorem}}
+  \patchcmd{\@opargbegintheorem}{#1\ #2}{#2\FixL@p\space #1}{}{%
+    \FixL@patchfailed{\@opargbegintheorem}}
+\fi
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Zemteksta piezīmes}
+% Sāk zemteksta piezīmju numerāciju no jauna katru lappusi~\cite{fnpp}.
+%    \begin{macrocode}
+\MakePerPage{footnote}
+%    \end{macrocode}
+%
+% \subsection{Citu pakotņu atbalsts}
+% \begin{macro}{\FixL@inpackage}
+% \begin{macro}{\FixL@translate}
+% Sākumā izveido palīgkomandas nosaukumu utt.\ maiņai citās pakotnēs.
+%    \begin{macrocode}
+\newcommand{\FixL@inpackage}[2]{%
+  \AtBeginDocument{\@ifpackageloaded{#1}{#2}{}}}
+\newcommand{\FixL@translate}[3]{%
+  \FixL@inpackage{#1}{%
+    \expandafter\renewcommand\csname #2\endcsname{#3}%
+  }}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsubsection{Pakotnes \pack{float} atbalsts}
+% Izmaina |ruled| virsrakstu stilu. Atdalītājpunktu nepievieno, jo |ruled|
+% virsraksta pirmā daļa jau tāpat ir treknrakstā.
+%    \begin{macrocode}
+\FixL@inpackage{float}{\captionsetup[ruled]{labelformat=latvian}}
+%    \end{macrocode}
+%
+% \begin{macro}{\floatname}
+% Pielāgo |\floatname| darbam ar \pack{caption}.
+%    \begin{macrocode}
+\FixL@inpackage{float}{\renewcommand{\floatname}[2]{%
+  \expandafter\def\csname #1name\endcsname{#2}}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsubsection{Pakotnes \pack{algorithms} atbalsts}
+% \begin{macro}{\listalgorithmname}
+% Izmaina algoritmu saraksta nosaukumu.
+%    \begin{macrocode}
+\FixL@translate{algorithm}{listalgorithmname}{Algoritmu saraksts}
+%    \end{macrocode}
+% \end{macro}
+%
+% Izmaina algoritmu tekstu nosaukumu.
+%    \begin{macrocode}
+\FixL@inpackage{algorithm}{\floatname{algorithm}{algoritms}}
+%    \end{macrocode}
+%
+% \subsubsection{Pakotnes \pack{amsthm} atbalsts}
+% \begin{macro}{\proofname}
+% Izmaina pierādījumu noklusēto nosaukumu.
+%    \begin{macrocode}
+\FixL@translate{amsthm}{proofname}{Pierādījums}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsubsection{Pakotnes \pack{appendix} atbalsts}
+% \begin{macro}{\appendixtocname}
+% Izmaina pielikumu sadaļas virsrakstu saturā.
+%    \begin{macrocode}
+\FixL@translate{appendix}{appendixtocname}{Pielikumi}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsubsection{Pakotnes \pack{doc} atbalsts}
+% \begin{macro}{\GlossaryPrologue}
+% \begin{macro}{\IndexPrologue}
+% \begin{macro}{\generalname}
+% Veic dažas izmaiņas, kas nepieciešamas šī paša dokumenta izveidei.
+%    \begin{macrocode}
+\newcommand{\FixL@doc@glossaryname}{Izmaiņu saraksts}
+\FixL@inpackage{doc}{\GlossaryPrologue{%
+  \section*{\FixL@doc@glossaryname}%
+  \markboth{\FixL@doc@glossaryname}{\FixL@doc@glossaryname}%
+}}
+\FixL@inpackage{doc}{\IndexPrologue{%
+  \section*{\indexname}%
+  \markboth{\indexname}{\indexname}%
+  Numuri kursīvā apzīmē lappusi, kurā aprakstīta attiecīgā komanda;
+  pasvītrotie numuri norāda uz komandas \ifcodeline@index definīcijas
+  pirmkoda rindu\else definīciju\fi; numuri parastajā rakstā apzīmē
+  \ifcodeline@index pirmkoda rindu\else lappusi\fi, kurā komanda tiek
+  izmantota.%
+}}
+\FixL@translate{doc}{generalname}{Vispārīgi}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \subsubsection{Pakotnes \pack{listings} atbalsts}
+% \begin{macro}{\lstlistlistingname}
+% Izmaina pirmkoda tekstu saraksta nosaukumu.
+%    \begin{macrocode}
+\FixL@translate{listings}{lstlistlistingname}{Pirmkoda tekstu saraksts}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\lstlistingname}
+% Izmaina pirmkoda tekstu bloku nosaukumu.
+%    \begin{macrocode}
+\FixL@translate{listings}{lstlistingname}{%
+  \ifx\lst@@caption\@empty P\else p\fi irmkods}
+%</package>
+%    \end{macrocode}
+% \end{macro}
+%
+% \section{\MakeIndex{} stila datne}
+% Definē latviešu virsrakstus rādītāja ailēm.
+%    \begin{macrocode}
+%<*ist>
+symhead_positive "Simboli"
+symhead_negative "simboli"
+numhead_positive "Skaitļi"
+numhead_negative "skaitļi"
+%</ist>
+%    \end{macrocode}
+%
+% \Finale

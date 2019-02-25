@@ -1,0 +1,98 @@
+\RequirePackage{xparse}
+\ProvidesExplPackage {combofont} {2017/07/03} {0.2}
+  {An EXPERIMENTAL package to add nfss-declaration of combo fonts to a luaLaTeX document}
+% highly experimental! Comments to Ulrike Fischer. fischer@troubleshooting-tex.de
+
+\msg_new:nnn {combo} {need-luatex}
+ {
+  The~ combofont~package~requires~LuaLaTeX.~Quitting.
+ }
+
+\msg_new:nnn {combo} {combofont-already-exists}
+ {
+  The~combofont~#1~has~already~been~set~up.~I~won't~overwrite~it
+ }
+
+\sys_if_engine_luatex:F
+ {
+   \msg_fatal:nn {combo} {need-luatex}
+   \endinput
+ }
+
+\RequirePackage{xfp}
+
+\cs_generate_variant:Nn \seq_set_split:Nnn {cnV}
+
+\NewDocumentCommand\setupcombofont { m m m } %name, basefonts, combofont declaration
+ {
+   \tl_set:Nn\l_tmpa_tl { #2 }
+   \regex_replace_all:nnN {\#1} {\c{f@size}} \l_tmpa_tl
+   % \tl_show:N\l_tmpa_tl
+   \seq_if_exist:cTF { l__combo_#1_basefonts_seq }
+   {
+    \msg_warning:nnn { combo} {combofont-already-exists} { #1 }
+   }
+   {
+    \seq_new:c               { l__combo_#1_basefonts_seq }
+    \seq_set_split:cnV       { l__combo_#1_basefonts_seq }  { , }\l_tmpa_tl
+    %%\seq_show:c {l__combo_#1_basefonts_seq }
+    \seq_new:c               { l__combo_#1_combodesc_seq }
+    \seq_set_from_clist:cn   { l__combo_#1_combodesc_seq } { #3 }
+    %%\seq_show:c              { l__combo_#1_combodesc_seq }
+    \__combo_build_combodesc:n { #1 }
+   }
+ }
+
+
+\cs_new:Nn \__combo_call_basefonts:n
+ {
+  \int_zero:N \l_tmpa_int
+  \seq_map_inline:cn {l__combo_#1_basefonts_seq}
+   {
+    \int_incr:N \l_tmpa_int
+    \exp_args:Nc \font { l_combo_tmpfont_\int_to_roman:n{\l_tmpa_int}_tl } = ##1
+   }
+ }
+
+
+
+
+
+
+\cs_new:Nn \__combo_build_combodesc:n
+ {
+   \tl_new:c { l__combo_#1_combodesc_tl }
+   \tl_set:cx { l__combo_#1_combodesc_tl } { \tl_to_str:n { " } combo \tl_to_str:n { : }~ }
+   \int_step_inline:nnnn { 1 } { 1 } { \seq_count:c { l__combo_#1_basefonts_seq } }
+   {
+    \tl_put_right:cn { l__combo_#1_combodesc_tl } { ##1~->~\fontid }
+    \exp_args:Nnc \tl_put_right:cn { l__combo_#1_combodesc_tl }
+     {
+      l_combo_tmpfont_\int_to_roman:n{##1}_tl
+     }
+    \tl_set:Nx\l_tmpa_tl { \seq_item:cn {l__combo_#1_combodesc_seq } {##1} }
+    \tl_if_empty:NF \l_tmpa_tl
+    {
+     \tl_put_right:cx { l__combo_#1_combodesc_tl}
+      {
+       ,~ \seq_item:cn {l__combo_#1_combodesc_seq } {##1}
+      }
+    }
+    \tl_put_right:cx { l__combo_#1_combodesc_tl} {\tl_to_str:n{;}}
+   }
+   \tl_put_right:cx { l__combo_#1_combodesc_tl } { \tl_to_str:n { " } }
+   %% \tl_show:c { l__combo_#1_combodesc_tl }
+ }
+
+\DeclareSizeFunction{combo}{\__combo_sfcnt:}
+
+\cs_new:Nn\__combo_sfcnt:
+ {
+  % \tl_show:c {l__combo_\use:c{mandatory@arg}_combodesc_tl}
+   \__combo_call_basefonts:n { \mandatory@arg }
+   \tl_set_eq:Nc \external@font { l__combo_\use:c{mandatory@arg}_combodesc_tl}
+ }%
+
+\tl_new:N\combodefaultfeat
+\tl_set:Nn\combodefaultfeat{mode=node;script=latn;language=DFLT;+tlig;}
+\endinput

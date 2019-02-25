@@ -1,0 +1,78 @@
+% crude approximation to Time Magazine font of 1980
+% based on cmr8 scaled 1050 but then twiddled
+
+if unknown cmbase: input cmbase fi
+
+font_identifier:="CMTIM"; font_size 9pt#;
+
+bpt#:=1.05pt#;
+u#:=1.02*17/36bpt#;      % unit width
+width_adj#:=0bpt#;    % width adjustment for certain characters
+serif_fit#:=0bpt#;    % extra sidebar near lowercase serifs
+cap_serif_fit#:=4.1/36bpt#;  % extra sidebar near uppercase serifs
+letter_fit#:=-1/36bpt#;    % extra space added to all sidebars
+
+body_height#:=9/8*216/36bpt#;  % height of tallest characters
+asc_height#:=9/8*200/36bpt#;    % height of lowercase ascenders
+cap_height#:=9/8*196.8/36bpt#;  % height of caps
+fig_height#:=9/8*185.6/36bpt#;  % height of numerals
+x_height#:=8/7*124/36bpt#;    % height of lowercase without ascenders
+math_axis#:=9/8*72/36bpt#;    % axis of symmetry for math symbols
+bar_height#:=8/7*69.6/36bpt#;  % height of crossbar in lowercase e
+comma_depth#:=7/8*56/36bpt#;    % depth of comma below baseline
+desc_depth#:=7/8*56/36bpt#;    % depth of lowercase descenders
+
+crisp#:=0bpt#;      % diameter of serif corners
+tiny#:=8/36bpt#;      % diameter of rounded corners
+fine#:=7/36bpt#;      % diameter of sharply rounded corners
+thin_join#:=7/36bpt#;    % width of extrafine details
+hair#:=9/36bpt#;      % lowercase hairline breadth
+stem#:=22/36bpt#;    % lowercase stem breadth
+curve#:=25.5/36bpt#;    % lowercase curve breadth
+ess#:=23/36bpt#;      % breadth in middle of lowercase s
+flare#:=27/36bpt#;    % diameter of bulbs or breadth of terminals
+dot_size#:=32/36bpt#;    % diameter of dots
+cap_hair#:=9.5/36bpt#;    % uppercase hairline breadth
+cap_stem#:=26.5/36bpt#;    % uppercase stem breadth
+cap_curve#:=30/36bpt#;    % uppercase curve breadth
+cap_ess#:=27/36bpt#;    % breadth in middle of uppercase s
+rule_thickness#:=.36bpt#;  % thickness of lines in math symbols
+
+dish#:=1/36bpt#;      % amount erased at top or bottom of serifs
+bracket#:=16/36bpt#;    % vertical distance from serif base to tangent
+jut#:=22/36bpt#;      % protrusion of lowercase serifs
+cap_jut#:=29/36bpt#;    % protrusion of uppercase serifs
+beak_jut#:=8.4/36bpt#;    % horizontal protrusion of beak serifs
+beak#:=56/36bpt#;    % vertical protrusion of beak serifs
+vair#:=8/36bpt#;      % vertical diameter of hairlines
+notch_cut#:=8bpt#;    % maximum breadth above or below notches
+bar#:=9.5/36bpt#;    % lowercase bar thickness
+slab#:=9.5/36bpt#;    % serif and arm thickness
+cap_bar#:=9.5/36bpt#;    % uppercase bar thickness
+cap_band#:=9.5/36bpt#;    % uppercase thickness above/below lobes
+cap_notch_cut#:=8bpt#;    % max breadth above/below uppercase notches
+serif_drop#:=3.2/36bpt#;    % vertical drop of sloped serifs
+stem_corr#:=1/36bpt#;    % for small refinements of stem breadth
+vair_corr#:=1/36bpt#;    % for small refinements of hairline height
+apex_corr#:=0bpt#;    % extra width at diagonal junctions
+
+o#:=6/36bpt#;      % amount of overshoot for curves
+apex_o#:=6/36bpt#;    % amount of overshoot for diagonal junctions
+
+slant:=0;      % tilt ratio $(\Delta x/\Delta y)$
+fudge:=1;      % factor applied to weights of heavy characters
+math_spread:=.4;    % extra openness of math symbols
+superness:=1/sqrt2;    % parameter for superellipses
+superpull:=1/6;      % extra openness inside bowls
+beak_darkness:=11/30;    % fraction of triangle inside beak serifs
+ligs:=2;      % level of ligatures to be included
+
+square_dots:=false;    % should dots be square?
+hefty:=false;      % should we try hard not to be overweight?
+serifs:=true;      % should serifs and bulbs be attached?
+monospace:=false;    % should all characters have the same width?
+variant_g:=false;    % should an italic-style g be used?
+low_asterisk:=false;    % should the asterisk be centered at the axis?
+math_fitting:=false;    % should math-mode spacing be used?
+
+generate roman      % switch to the driver file

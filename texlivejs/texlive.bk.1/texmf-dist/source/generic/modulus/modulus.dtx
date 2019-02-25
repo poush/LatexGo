@@ -1,0 +1,212 @@
+% \iffalse
+% +AMDG  This document was begun on 1 May 1202, the
+% feast of St. Joseph the Worker, and it
+% is humbly dedicated to him and to the Immaculate Heart of
+% Mary for their prayers, and to the Sacred Heart of Jesus 
+% for His mercy.
+%
+% This document is copyright 2018 by Donald P. Goodman, and is
+% released publicly under the LaTeX Project Public License.  The
+% distribution and modification of this work is constrained by the
+% conditions of that license.  See
+% 	http://www.latex-project.org/lppl.txt
+% for the text of the license.  This document is released
+% under version 1.3c of that license, and this work may be distributed
+% or modified under the terms of that license or, at your option, any
+% later version.
+% 
+% This work has the LPPL maintenance status 'maintained'.
+% 
+% The Current Maintainer of this work is Donald P. Goodman
+% (dgoodmaniii@gmail.com).
+% 
+% This work consists of modulus.dtx, modulus.ins, and
+% derived files modulus.sty and modulus.pdf.
+% \fi
+
+% \iffalse
+%<package>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+%<package>\ProvidesPackage{modulus}[2018/05/07 v1.0 Modulus/modulo operator in plain TeX]
+%<*driver>
+\documentclass{ltxdoc}
+
+\usepackage{doc}
+\usepackage{modulus}
+\usepackage{booktabs}
+
+\begin{document}
+\DocInput{modulus.dtx}
+\end{document}
+%</driver> \fi
+%
+% \title{The |modulus| Package, v1.0}
+% \author{Donald P.\ Goodman III}
+% \date{\today}
+%
+% \maketitle
+%
+% \begin{abstract}
+% \noindent
+% \TeX\ (traditional \TeX, not even $\epsilon$-\TeX) has the four
+% basic functions with |\advance|, |\multiply|, and
+% |\divide|, though these are all integer operations.  This
+% tiny package makes a modulus operator usable with \TeX\
+% (or \LaTeX, and probably most flavors).  It also provides a
+% non-destructive way of
+% getting at the integer quotient of two numbers.
+% \end{abstract}
+%
+% \tableofcontents
+%
+% \section{The Operators}
+%
+% One question immediately occurs to me:  why bother with
+% such a package, when $\epsilon$-\TeX\ already has
+% |\numexpr|, and there are so many advanced packages
+% providing real math, and even floating-point operations
+% and bignums?  The answer is twofold:  (1) an interesting
+% project, and (2) \TeX\ is the archival format, as Knuth
+% has always emphasized, and so doing things in ordinary
+% \TeX, where possible, should be preferred, to keep it
+% such.
+%
+% The core of the package is \DescribeMacro{\modulo}|\modulo|:
+%
+% \begin{center}
+% \cmd{\modulo} \marg{dividend} \marg{divisor}
+% \end{center}
+%
+% Running this will assign the remainder of the integer
+% division of \textit{dividend} and \textit{divisor} to the
+% counter \DescribeMacro{\remainder}|\remainder|.  The
+% values of \textit{dividend} and \textit{divisor} will not
+% be changed, if they are changeable (e.g., if they are
+% counters).
+%
+% Note that the package works with plain \TeX\ counters,
+% \emph{not} \LaTeX-style counters created and set with
+% |\newcounter{counter}| and friends.  If you try to
+% use it with |\thecounter| or |\value{counter}| in the 
+% \LaTeX\ style, it will not work.  Fortunately, plain-\TeX\
+% counters are perfectly usable within \LaTeX.
+%
+% We can use the macro as such:
+%
+% \begin{quote}
+% |\modulo{\the\dividend}{\the\divisor}\the\remainder|
+% \end{quote}
+%
+% This will execute the macro and print the resulting
+% remainder.  We can also use simple number tokens in the
+% same way:
+%
+% \begin{quote}
+% |\modulo{8}{3}\the\remainder|: \modulo{8}{3}\the\remainder
+% \end{quote}
+%
+% In the table above, the divisor is always the
+% value of a counter |\testdivisor|, which is 4; the
+% dividend is the value of a counter |\testdividend|, which
+% is reset as indicated in each line.  We then do the
+% modulus operation and print the value of |\remainder| in
+% the ``Modulus'' column.  We then reprint the values of
+% |\testdividend| and |\testdivisor|, to show that we have
+% not altered them by taking the remainder.
+%
+% \newcount\testdivisor\testdivisor=4
+% \newcount\testdividend
+%
+% \begin{table}[t]
+% \centering
+% \begin{tabular}{ccccc}
+% \toprule
+% Dividend & Divisor & Modulus & Dividend & Divisor \\
+% \midrule
+% \global\testdividend=1\leavevmode\the\testdividend & \the\testdivisor &
+%		\modulo{\the\testdividend}{\the\testdivisor}\the\remainder &
+%		\the\testdividend & \the\testdivisor \\
+% \global\testdividend=2\leavevmode\the\testdividend & \the\testdivisor &
+%		\modulo{\the\testdividend}{\the\testdivisor}\the\remainder &
+%		\the\testdividend & \the\testdivisor \\
+% \global\testdividend=3\leavevmode\the\testdividend & \the\testdivisor &
+%		\modulo{\the\testdividend}{\the\testdivisor}\the\remainder &
+%		\the\testdividend & \the\testdivisor \\
+% \global\testdividend=4\leavevmode\the\testdividend & \the\testdivisor &
+%		\modulo{\the\testdividend}{\the\testdivisor}\the\remainder &
+%		\the\testdividend & \the\testdivisor \\
+% \global\testdividend=5\leavevmode\the\testdividend & \the\testdivisor &
+%		\modulo{\the\testdividend}{\the\testdivisor}\the\remainder &
+%		\the\testdividend & \the\testdivisor \\
+% \global\testdividend=6\leavevmode\the\testdividend & \the\testdivisor &
+%		\modulo{\the\testdividend}{\the\testdivisor}\the\remainder &
+%		\the\testdividend & \the\testdivisor \\
+% \global\testdividend=7\leavevmode\the\testdividend & \the\testdivisor &
+%		\modulo{\the\testdividend}{\the\testdivisor}\the\remainder &
+%		\the\testdividend & \the\testdivisor \\
+% \global\testdividend=8\leavevmode\the\testdividend & \the\testdivisor &
+%		\modulo{\the\testdividend}{\the\testdivisor}\the\remainder &
+%		\the\testdividend & \the\testdivisor \\
+% \global\testdividend=9\leavevmode\the\testdividend & \the\testdivisor &
+%		\modulo{\the\testdividend}{\the\testdivisor}\the\remainder &
+%		\the\testdividend & \the\testdivisor \\
+% \bottomrule
+% \end{tabular}
+% \caption{A few example modulos, dividend and divisor both
+% before and after the operation.}
+% \label{tab:ex}
+% \end{table}
+%
+% Plain \TeX\ can also very simply take the integer quotient
+% of a counter, with the |\divide| operator, like so:
+%
+% \begin{quote}
+% |\divide\thiscounter by4|
+% \end{quote}
+%
+% However, this destroys the original value of
+% |\thiscounter| (or whatever else one is dividing).  The
+% |modulus| package therefore also provides another macro,
+% \DescribeMacro{\quotient}|\quotient|, which
+% non-destructively takes the integer quotient of two
+% numbers and stores it in the counter
+% \DescribeMacro{\intquotient}|\intquotient|:
+%
+% \begin{quote}
+% |\quotient{365}{4}\leavevmode\the\intquotient|: \quotient{365}{4}\leavevmode\the\intquotient\\
+% |\modulo{365}{4}\leavevmode\the\remainder|: \modulo{365}{4}\leavevmode\the\remainder
+% \end{quote}
+%
+% Note that if |\the\thecounter| doesn't print as expected,
+% it may be because you're still in vertical mode (the
+% |\the| operator only works in horizontal mode), so try
+% |\leavevmode| before printing the counter.
+%
+% \section{Implementation}
+%
+% Not much to this one.  We define our counter to hold the
+% eventual modulus:
+%    \begin{macrocode}
+\newcount\remainder%
+%    \end{macrocode}
+% Then we define the macro which will assign the modulus to
+% that counter:
+%    \begin{macrocode}
+\def\modulo#1#2{%
+	\remainder=#1%
+	\divide\remainder by#2%
+	\multiply\remainder by#2%
+	\multiply\remainder by-1%
+	\advance\remainder by#1\relax%
+}%
+%    \end{macrocode}
+% Then, for good measure, we also have a macro which will
+% non-destructively take the integer quotient of a division, and
+% store it in the counter |\intquotient|:
+%    \begin{macrocode}
+\newcount\intquotient%
+\def\quotient#1#2{%
+	\intquotient=#1%
+	\divide\intquotient by#2%
+}%
+%    \end{macrocode}
+% Happy \TeX{}ing!

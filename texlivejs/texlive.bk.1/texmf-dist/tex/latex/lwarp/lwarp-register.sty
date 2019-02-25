@@ -1,0 +1,54 @@
+%%
+%% This is file `lwarp-register.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `register')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+\LWR@ProvidesPackagePass{register}[2019/01/01]
+
+\xpatchcmd{\register}
+    {\centering}
+    {\begin{center}\begin{lateximage}[(-register-~\packagediagramname)]}
+    {}
+    {\LWR@patcherror{register}{register}}
+
+\xpatchcmd{\endregister}
+    {\leftskip}
+    {%
+        \end{lateximage}\end{center}%
+        \leftskip%
+    }%
+    {}
+    {\LWR@patcherror{register}{endregister}}
+
+\expandafter\xapptocmd\csname register*\endcsname
+    {\begin{center}\begin{lateximage}[(-register-~\packagediagramname)]}
+    {}
+    {\LWR@patcherror{register}{register*}}
+
+\expandafter\xpatchcmd\csname endregister*\endcsname
+    {\leftskip}
+    {%
+        \end{lateximage}\end{center}%
+        \leftskip%
+    }%
+    {}
+    {\LWR@patcherror{register}{endregister*}}
+
+\setlength{\regWidth}{5in}
+
+\endinput
+%%
+%% End of file `lwarp-register.sty'.

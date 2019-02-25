@@ -1,0 +1,26 @@
+\def\inputluafile#1 {\directlua{dofile(kpse.find_file("#1"))}}
+
+\inputluafile base.ptxlua
+
+\def\ptx@lua{\directlua name {Internal PiTeX chunk}}
+
+\newcatcodetable\luacatcodes{\#\%\^^M\~=12}
+\newtoks\ptx@luacode_list
+\newif\ifptx@luacode_store
+% Mimicks a block (\newblock isn't defined yet
+% and anyway it wouldn't be very useful).
+\def\luacode{%
+  \begingroup
+  \catcodetable\luacatcodes
+  \ifnext[
+    {\ptx@luacode_store}
+    {\ptx@luacode_store[]}}
+\bgroup
+\setcatcodes{\^^M=12}%
+\long\gdef\ptx@luacode_store[#1]^^M#2\luacode/{% So line count is right.
+  \endgroup%
+  \ifemptystring{#1}%
+    {\ptx@lua{#2}}%
+    {\def#1{#2}}%
+  }%
+\egroup

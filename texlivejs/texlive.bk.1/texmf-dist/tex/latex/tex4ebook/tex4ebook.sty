@@ -1,0 +1,146 @@
+% Package odsfile. Author Michal Hoftich <michal.h21@gmail.com>
+% This package is subject of LPPL license, version 1.3 
+\ProvidesPackage{tex4ebook}[2016/03/31 version 0.1d]
+\RequirePackage{etoolbox}
+\RequirePackage{kvoptions}
+\RequirePackage{graphicx}
+% Command for generating NCX file. Hard work is odne in the file
+% tex4ebook.4ht
+\def\ncxtable{}
+% Command for generating OPF file 
+\def\opftable{}
+
+%Declare RFC3066 language code for babel language name
+\def\DeclareLanguage#1#2{%
+\csgdef{rfclang#1}{#2}%
+}
+\def\GetLanguage{%
+\ifx\bbl@main@language\@undefined en-US%  
+\else%
+\ifcsdef{rfclang\bbl@main@language}{\csuse{rfclang\bbl@main@language}}{}%
+\fi%
+}
+
+\DeclareLanguage{UKenglish}{en-GB}
+\DeclareLanguage{USenglish}{en-US}
+\DeclareLanguage{acadian}{fr}
+\DeclareLanguage{albanian}{sq}
+\DeclareLanguage{american}{en-US}
+\DeclareLanguage{amharic}{am}
+\DeclareLanguage{arabic}{ar}
+\DeclareLanguage{armenian}{hy}
+\DeclareLanguage{australian}{en-US}
+\DeclareLanguage{austrian}{de}
+\DeclareLanguage{basque}{eu}
+\DeclareLanguage{bengali}{bn}
+\DeclareLanguage{brazilian}{pt}
+\DeclareLanguage{brazil}{pt}
+\DeclareLanguage{breton}{br}
+\DeclareLanguage{british}{en-GB}
+\DeclareLanguage{bulgarian}{bg}
+\DeclareLanguage{canadian}{en-US}
+\DeclareLanguage{canadien}{fr}
+\DeclareLanguage{catalan}{ca}
+\DeclareLanguage{croatian}{hr}
+\DeclareLanguage{czech}{cs-CZ}
+\DeclareLanguage{danish}{da}
+\DeclareLanguage{divehi}{dv}
+\DeclareLanguage{dutch}{nl}
+\DeclareLanguage{english}{en}
+\DeclareLanguage{esperanto}{eo}
+\DeclareLanguage{estonian}{et}
+\DeclareLanguage{finnish}{f\/i}
+\DeclareLanguage{francais}{fr}
+\DeclareLanguage{french}{fr}
+\DeclareLanguage{galician}{gl}
+\DeclareLanguage{germanb}{de}
+\DeclareLanguage{german}{de}
+\DeclareLanguage{greek}{el}
+\DeclareLanguage{hebrew}{he}
+\DeclareLanguage{hindi}{hi}
+\DeclareLanguage{hungarian}{hu}
+\DeclareLanguage{icelandic}{is}
+\DeclareLanguage{interlingua}{ia}
+\DeclareLanguage{irish}{ga}
+\DeclareLanguage{italian}{it}
+\DeclareLanguage{kannada}{kn}
+\DeclareLanguage{khmer}{km}
+\DeclareLanguage{korean}{ko}
+\DeclareLanguage{lao}{lo}
+\DeclareLanguage{latin}{la}
+\DeclareLanguage{latvian}{lv}
+\DeclareLanguage{lithuanian}{lt}
+\DeclareLanguage{lowersorbian}{dsb}
+\DeclareLanguage{magyar}{hu}
+\DeclareLanguage{malayalam}{ml}
+\DeclareLanguage{marathi}{mr}
+\DeclareLanguage{naustrian}{de}
+\DeclareLanguage{newzealand}{en}
+\DeclareLanguage{ngerman}{de}
+\DeclareLanguage{norsk}{no}
+\DeclareLanguage{norwegiannynorsk}{nn}
+\DeclareLanguage{nynorsk}{no}
+\DeclareLanguage{occitan}{oc}
+\DeclareLanguage{oldchurchslavonic}{cu}
+\DeclareLanguage{persian}{fa}
+\DeclareLanguage{polish}{pl-PL}
+\DeclareLanguage{polutonikogreek}{el}
+\DeclareLanguage{portuges}{pt}
+\DeclareLanguage{portuguese}{pt}
+\DeclareLanguage{romanian}{ro}
+\DeclareLanguage{romansh}{rm}
+\DeclareLanguage{russian}{ru}
+\DeclareLanguage{samin}{se}
+\DeclareLanguage{sanskrit}{sa}
+\DeclareLanguage{scottish}{gd}
+\DeclareLanguage{serbian}{sr}
+\DeclareLanguage{serbo-croatian}{sh}
+\DeclareLanguage{slovak}{sk}
+\DeclareLanguage{slovene}{sl}
+\DeclareLanguage{slovenian}{sl}
+\DeclareLanguage{spanish}{es}
+\DeclareLanguage{swedish}{sv}
+\DeclareLanguage{tamil}{ta}
+\DeclareLanguage{telugu}{te}
+\DeclareLanguage{thai}{th}
+\DeclareLanguage{tibetan}{bo}
+\DeclareLanguage{turkish}{tr}
+\DeclareLanguage{turkmen}{tk}
+\DeclareLanguage{ukrainian}{uk}
+\DeclareLanguage{uppersorbian}{hsb}
+\DeclareLanguage{urdu}{ur}
+\DeclareLanguage{vietnamese}{vi}
+\DeclareLanguage{welsh}{cy}
+
+\AtEndDocument{%
+\ncxtable
+\opftable
+}
+
+% Default empty values
+\def\Title{Unnamed}
+\def\Author{Anonymous}
+
+% We need to save values of title, author etc.
+%\AtBeginDocument{
+\let\origtitle\title
+\renewcommand\title[1]{%
+  \origtitle{#1}
+  \let\Title\@title
+}
+
+\let\origauthor\author
+\renewcommand\author[1]{%
+  \origauthor{#1}%
+  \let\Author\@author
+}
+%\let\Author\@author
+\let\Date\today
+\let\origdate\date
+\renewcommand\date[1]{%
+  \origdate{#1}%
+  \let\Date\@date%
+}
+%}
+
+\newcommand\coverimage[2][]{\includegraphics[#1]{#2}}

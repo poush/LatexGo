@@ -1,0 +1,3280 @@
+% \iffalse meta-comment
+%
+%% File: l3tl.dtx
+%
+% Copyright (C) 1990-2019 The LaTeX3 Project
+%
+% It may be distributed and/or modified under the conditions of the
+% LaTeX Project Public License (LPPL), either version 1.3c of this
+% license or (at your option) any later version.  The latest version
+% of this license is in the file
+%
+%    https://www.latex-project.org/lppl.txt
+%
+% This file is part of the "l3kernel bundle" (The Work in LPPL)
+% and all files in that bundle must be distributed together.
+%
+% -----------------------------------------------------------------------
+%
+% The development version of the bundle can be found at
+%
+%    https://github.com/latex3/latex3
+%
+% for those people who are interested.
+%
+%<*driver>
+\documentclass[full,kernel]{l3doc}
+\begin{document}
+  \DocInput{\jobname.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \title{^^A
+%   The \pkg{l3tl} package\\ Token lists^^A
+% }
+%
+% \author{^^A
+%  The \LaTeX3 Project\thanks
+%    {^^A
+%      E-mail:
+%        \href{mailto:latex-team@latex-project.org}
+%          {latex-team@latex-project.org}^^A
+%    }^^A
+% }
+%
+% \date{Released 2019-02-15}
+%
+% \maketitle
+%
+% \begin{documentation}
+%
+% \TeX{} works with tokens, and \LaTeX3 therefore provides a number of
+% functions to deal with lists of tokens.  Token lists may be present
+% directly in the argument to a function:
+% \begin{verbatim}
+%   \foo:n { a collection of \tokens }
+% \end{verbatim}
+% or may be stored in a so-called \enquote{token list variable}, which
+% have the suffix \texttt{tl}: a token list variable can also be used as
+% the argument to a function, for example
+% \begin{verbatim}
+%   \foo:N \l_some_tl
+% \end{verbatim}
+% In both cases, functions are available to test and manipulate the lists
+% of tokens, and these have the module prefix \texttt{tl}.
+% In many cases, functions which can be applied to token list variables
+% are paired with similar functions for application to explicit lists
+% of tokens: the two \enquote{views} of a token list are therefore collected
+% together here.
+%
+% A token list (explicit, or stored in a variable) can be seen either
+% as a list of \enquote{items},
+% or a list of \enquote{tokens}. An item is whatever \cs{use:n} would
+% grab as its argument: a single non-space token or a brace group,
+% with optional leading explicit space characters (each item is thus
+% itself a token list). A token is either a normal \texttt{N} argument,
+% or \verb*| |, |{|, or |}| (assuming normal \TeX{} category codes).
+% Thus for example
+% \begin{verbatim}
+%   { Hello } ~ world
+% \end{verbatim}
+% contains six items (\texttt{Hello}, \texttt{w}, \texttt{o}, \texttt{r},
+% \texttt{l} and \texttt{d}), but thirteen tokens (|{|, \texttt{H}, \texttt{e},
+% \texttt{l}, \texttt{l}, \texttt{o}, |}|, \verb*| |, \texttt{w}, \texttt{o},
+% \texttt{r}, \texttt{l} and \texttt{d}).
+% Functions which act on items are often faster than their analogue acting
+% directly on tokens.
+%
+% \section{Creating and initialising token list variables}
+%
+% \begin{function}{\tl_new:N, \tl_new:c}
+%   \begin{syntax}
+%     \cs{tl_new:N} \meta{tl~var}
+%   \end{syntax}
+%   Creates a new \meta{tl~var} or raises an error if the
+%   name is already taken. The declaration is global. The
+%   \meta{tl~var} is initially empty.
+% \end{function}
+%
+% \begin{function}{\tl_const:Nn, \tl_const:Nx, \tl_const:cn, \tl_const:cx}
+%   \begin{syntax}
+%     \cs{tl_const:Nn} \meta{tl~var} \Arg{token list}
+%   \end{syntax}
+%   Creates a new constant \meta{tl~var} or raises an error
+%   if the name is already taken. The value of the
+%   \meta{tl~var} is set globally to the \meta{token list}.
+% \end{function}
+%
+% \begin{function}{\tl_clear:N, \tl_clear:c, \tl_gclear:N, \tl_gclear:c}
+%   \begin{syntax}
+%     \cs{tl_clear:N} \meta{tl~var}
+%   \end{syntax}
+%   Clears all entries from the \meta{tl~var}.
+% \end{function}
+%
+% \begin{function}
+%   {\tl_clear_new:N, \tl_clear_new:c, \tl_gclear_new:N, \tl_gclear_new:c}
+%   \begin{syntax}
+%     \cs{tl_clear_new:N} \meta{tl~var}
+%   \end{syntax}
+%   Ensures that the \meta{tl~var} exists globally by applying
+%   \cs{tl_new:N} if necessary, then applies \cs[index=tl_clear:N]{tl_(g)clear:N} to leave
+%   the \meta{tl~var} empty.
+% \end{function}
+%
+% \begin{function}
+%   {
+%     \tl_set_eq:NN,  \tl_set_eq:cN,  \tl_set_eq:Nc,  \tl_set_eq:cc,
+%     \tl_gset_eq:NN, \tl_gset_eq:cN, \tl_gset_eq:Nc, \tl_gset_eq:cc
+%   }
+%   \begin{syntax}
+%     \cs{tl_set_eq:NN} \meta{tl~var_1} \meta{tl~var_2}
+%   \end{syntax}
+%   Sets the content of \meta{tl~var_1} equal to that of
+%   \meta{tl~var_2}.
+% \end{function}
+%
+% \begin{function}[added = 2012-05-18]
+%   {
+%     \tl_concat:NNN,  \tl_concat:ccc,
+%     \tl_gconcat:NNN, \tl_gconcat:ccc
+%   }
+%   \begin{syntax}
+%     \cs{tl_concat:NNN} \meta{tl~var_1} \meta{tl~var_2} \meta{tl~var_3}
+%   \end{syntax}
+%   Concatenates the content of \meta{tl~var_2} and \meta{tl~var_3}
+%   together and saves the result in \meta{tl~var_1}. The \meta{tl~var_2}
+%   is placed at the left side of the new token list.
+% \end{function}
+%
+% \begin{function}[EXP, pTF, added=2012-03-03]{\tl_if_exist:N, \tl_if_exist:c}
+%   \begin{syntax}
+%     \cs{tl_if_exist_p:N} \meta{tl~var}
+%     \cs{tl_if_exist:NTF} \meta{tl~var} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests whether the \meta{tl~var} is currently defined.  This does not
+%   check that the \meta{tl~var} really is a token list variable.
+% \end{function}
+%
+% \section{Adding data to token list variables}
+%
+% \begin{function}
+%   {
+%     \tl_set:Nn, \tl_set:NV, \tl_set:Nv, \tl_set:No, \tl_set:Nf, \tl_set:Nx,
+%     \tl_set:cn, \tl_set:cV, \tl_set:cv, \tl_set:co, \tl_set:cf, \tl_set:cx,
+%     \tl_gset:Nn, \tl_gset:NV, \tl_gset:Nv,
+%     \tl_gset:No, \tl_gset:Nf, \tl_gset:Nx,
+%     \tl_gset:cn, \tl_gset:cV, \tl_gset:cv,
+%     \tl_gset:co, \tl_gset:cf, \tl_gset:cx
+%   }
+%   \begin{syntax}
+%     \cs{tl_set:Nn} \meta{tl~var} \Arg{tokens}
+%   \end{syntax}
+%   Sets \meta{tl~var} to contain \meta{tokens},
+%   removing any previous content from the variable.
+% \end{function}
+%
+% \begin{function}
+%   {
+%     \tl_put_left:Nn,  \tl_put_left:NV,  \tl_put_left:No,  \tl_put_left:Nx,
+%     \tl_put_left:cn,  \tl_put_left:cV,  \tl_put_left:co,  \tl_put_left:cx,
+%     \tl_gput_left:Nn, \tl_gput_left:NV, \tl_gput_left:No, \tl_gput_left:Nx,
+%     \tl_gput_left:cn, \tl_gput_left:cV, \tl_gput_left:co, \tl_gput_left:cx
+%   }
+%   \begin{syntax}
+%     \cs{tl_put_left:Nn} \meta{tl~var} \Arg{tokens}
+%   \end{syntax}
+%   Appends \meta{tokens} to the left side of the current content of
+%   \meta{tl~var}.
+% \end{function}
+%
+% \begin{function}
+%   {
+%     \tl_put_right:Nn, \tl_put_right:NV, \tl_put_right:No, \tl_put_right:Nx,
+%     \tl_put_right:cn, \tl_put_right:cV, \tl_put_right:co, \tl_put_right:cx,
+%     \tl_gput_right:Nn, \tl_gput_right:NV, \tl_gput_right:No,
+%     \tl_gput_right:Nx,
+%     \tl_gput_right:cn, \tl_gput_right:cV, \tl_gput_right:co,
+%     \tl_gput_right:cx
+%   }
+%   \begin{syntax}
+%     \cs{tl_put_right:Nn} \meta{tl~var} \Arg{tokens}
+%   \end{syntax}
+%   Appends \meta{tokens} to the right side of the current content of
+%   \meta{tl~var}.
+% \end{function}
+%
+% \section{Modifying token list variables}
+%
+% \begin{function}[updated = 2011-08-11]
+%   {
+%     \tl_replace_once:Nnn,  \tl_replace_once:cnn,
+%     \tl_greplace_once:Nnn, \tl_greplace_once:cnn
+%   }
+%   \begin{syntax}
+%     \cs{tl_replace_once:Nnn} \meta{tl~var} \Arg{old tokens} \Arg{new tokens}
+%   \end{syntax}
+%   Replaces the first (leftmost) occurrence of \meta{old tokens} in the
+%   \meta{tl~var} with \meta{new tokens}. \meta{Old tokens}
+%   cannot contain |{|, |}| or |#|
+%   (more precisely, explicit character tokens with category code $1$
+%   (begin-group) or $2$ (end-group), and tokens with category code $6$).
+% \end{function}
+%
+% \begin{function}[updated = 2011-08-11]
+%   {
+%     \tl_replace_all:Nnn, \tl_replace_all:cnn,
+%     \tl_greplace_all:Nnn, \tl_greplace_all:cnn
+%   }
+%   \begin{syntax}
+%     \cs{tl_replace_all:Nnn} \meta{tl~var} \Arg{old tokens} \Arg{new tokens}
+%   \end{syntax}
+%   Replaces all occurrences of \meta{old tokens} in the
+%   \meta{tl~var} with \meta{new tokens}. \meta{Old tokens}
+%   cannot contain |{|, |}| or |#|
+%   (more precisely, explicit character tokens with category code $1$
+%   (begin-group) or $2$ (end-group), and tokens with category code $6$).
+%   As this function
+%   operates from left to right, the pattern \meta{old tokens}
+%   may remain after the replacement (see \cs{tl_remove_all:Nn}
+%   for an example).
+% \end{function}
+%
+% \begin{function}[updated = 2011-08-11]
+%   {
+%     \tl_remove_once:Nn,  \tl_remove_once:cn,
+%     \tl_gremove_once:Nn, \tl_gremove_once:cn
+%   }
+%   \begin{syntax}
+%     \cs{tl_remove_once:Nn} \meta{tl~var} \Arg{tokens}
+%   \end{syntax}
+%   Removes the first (leftmost) occurrence of \meta{tokens} from the
+%   \meta{tl~var}. \meta{Tokens} cannot contain |{|, |}| or |#|
+%   (more precisely, explicit character tokens with category code $1$
+%   (begin-group) or $2$ (end-group), and tokens with category code $6$).
+% \end{function}
+%
+% \begin{function}[updated = 2011-08-11]
+%   {
+%     \tl_remove_all:Nn,  \tl_remove_all:cn,
+%     \tl_gremove_all:Nn, \tl_gremove_all:cn
+%   }
+%   \begin{syntax}
+%     \cs{tl_remove_all:Nn} \meta{tl~var} \Arg{tokens}
+%   \end{syntax}
+%   Removes all occurrences of \meta{tokens} from the
+%   \meta{tl~var}. \meta{Tokens} cannot contain |{|, |}| or |#|
+%   (more precisely, explicit character tokens with category code $1$
+%   (begin-group) or $2$ (end-group), and tokens with category code $6$).
+%   As this function
+%   operates from left to right, the pattern \meta{tokens}
+%   may remain after the removal, for instance,
+%   \begin{quote}
+%     \cs{tl_set:Nn} \cs{l_tmpa_tl} |{abbccd}|
+%     \cs{tl_remove_all:Nn} \cs{l_tmpa_tl} |{bc}|
+%   \end{quote}
+%   results in \cs{l_tmpa_tl} containing \texttt{abcd}.
+% \end{function}
+%
+% \section{Reassigning token list category codes}
+%
+% These functions allow the rescanning of tokens: re-apply \TeX{}'s
+% tokenization process to apply category codes different from those
+% in force when the tokens were absorbed. Whilst this functionality is
+% supported, it is often preferable to find alternative approaches
+% to achieving outcomes rather than rescanning tokens (for example
+% construction of token lists token-by-token with intervening category
+% code changes or using \cs{char_generate:nn}).
+%
+% \begin{function}[updated = 2015-08-11]
+%   {
+%     \tl_set_rescan:Nnn,  \tl_set_rescan:Nno,  \tl_set_rescan:Nnx,
+%     \tl_set_rescan:cnn,  \tl_set_rescan:cno,  \tl_set_rescan:cnx,
+%     \tl_gset_rescan:Nnn, \tl_gset_rescan:Nno, \tl_gset_rescan:Nnx,
+%     \tl_gset_rescan:cnn, \tl_gset_rescan:cno, \tl_gset_rescan:cnx
+%   }
+%   \begin{syntax}
+%     \cs{tl_set_rescan:Nnn} \meta{tl~var} \Arg{setup} \Arg{tokens}
+%   \end{syntax}
+%   Sets \meta{tl~var} to contain \meta{tokens}, applying the category
+%   code r\'{e}gime specified in the \meta{setup} before carrying out
+%   the assignment. (Category codes applied to tokens not explicitly covered
+%   by the \meta{setup} are those in force at the point of use of
+%   \cs{tl_set_rescan:Nnn}.)
+%   This allows the \meta{tl~var} to contain material
+%   with category codes other than those that apply when \meta{tokens}
+%   are absorbed.  The \meta{setup} is run within a group and may
+%   contain any valid input, although only changes in category codes
+%   are relevant. See also \cs{tl_rescan:nn}.
+%   \begin{texnote}
+%     The \meta{tokens} are first turned into a string (using
+%     \cs{tl_to_str:n}).  If the string contains one or more characters
+%     with character code \tn{newlinechar} (set equal to
+%     \tn{endlinechar} unless that is equal to $32$, before the user
+%     \meta{setup}), then it is split into lines at these characters,
+%     then read as if reading multiple lines from a file, ignoring
+%     spaces (catcode $10$) at the beginning and spaces and tabs
+%     (character code $32$ or $9$) at the end of every line.
+%     Otherwise, spaces (and tabs) are retained at both ends of the
+%     single-line string, as if it appeared in the middle of a line
+%     read from a file.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[updated = 2015-08-11]{\tl_rescan:nn}
+%   \begin{syntax}
+%     \cs{tl_rescan:nn} \Arg{setup} \Arg{tokens}
+%   \end{syntax}
+%   Rescans \meta{tokens} applying the category code r\'{e}gime
+%   specified in the \meta{setup}, and leaves the resulting tokens in
+%   the input stream. (Category codes applied to tokens not explicitly covered
+%   by the \meta{setup} are those in force at the point of use of
+%   \cs{tl_rescan:nn}.)
+%   The \meta{setup} is run within a group and may
+%   contain any valid input, although only changes in category codes
+%   are relevant.  See also \cs{tl_set_rescan:Nnn}, which is more
+%   robust than using \cs{tl_set:Nn} in the \meta{tokens} argument of
+%   \cs{tl_rescan:nn}.
+%   \begin{texnote}
+%     The \meta{tokens} are first turned into a string (using
+%     \cs{tl_to_str:n}).  If the string contains one or more characters
+%     with character code \tn{newlinechar} (set equal to
+%     \tn{endlinechar} unless that is equal to $32$, before the user
+%     \meta{setup}), then it is split into lines at these characters,
+%     then read as if reading multiple lines from a file, ignoring
+%     spaces (catcode $10$) at the beginning and spaces and tabs
+%     (character code $32$ or $9$) at the end of every line.
+%     Otherwise, spaces (and tabs) are retained at both ends of the
+%     single-line string, as if it appeared in the middle of a line
+%     read from a file.
+%   \end{texnote}
+% \end{function}
+%
+% \section{Token list conditionals}
+%
+% \begin{function}[EXP,pTF]{\tl_if_blank:n, \tl_if_blank:V, \tl_if_blank:o}
+%   \begin{syntax}
+%     \cs{tl_if_blank_p:n} \Arg{token list}
+%     \cs{tl_if_blank:nTF} \Arg{token list} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the \meta{token list} consists only of blank spaces
+%   (\emph{i.e.}~contains no item). The test is \texttt{true} if
+%   \meta{token list} is zero or more explicit space characters
+%   (explicit tokens with character code~$32$ and category code~$10$),
+%   and is \texttt{false} otherwise.
+% \end{function}
+%
+% \begin{function}[EXP,pTF]{\tl_if_empty:N, \tl_if_empty:c}
+%   \begin{syntax}
+%     \cs{tl_if_empty_p:N} \meta{tl~var}
+%     \cs{tl_if_empty:NTF} \meta{tl~var} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the \meta{token list variable} is entirely empty
+%   (\emph{i.e.}~contains no tokens at all).
+% \end{function}
+%
+% \begin{function}[added = 2012-05-24, updated = 2012-06-05, EXP,pTF]
+%   {\tl_if_empty:n, \tl_if_empty:V, \tl_if_empty:o}
+%   \begin{syntax}
+%     \cs{tl_if_empty_p:n} \Arg{token list}
+%     \cs{tl_if_empty:nTF} \Arg{token list} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the \meta{token list} is entirely empty
+%   (\emph{i.e.}~contains no tokens at all).
+% \end{function}
+%
+% \begin{function}[EXP,pTF]
+%   {\tl_if_eq:NN, \tl_if_eq:Nc, \tl_if_eq:cN, \tl_if_eq:cc}
+%   \begin{syntax}
+%     \cs{tl_if_eq_p:NN} \meta{tl~var_1} \meta{tl~var_2}
+%     \cs{tl_if_eq:NNTF} \meta{tl~var_1} \meta{tl~var_2} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Compares the content of two \meta{token list variables} and
+%   is logically \texttt{true} if the two contain the same list of
+%   tokens (\emph{i.e.}~identical in both the list of characters they
+%   contain and the category codes of those characters). Thus for example
+%   \begin{verbatim}
+%     \tl_set:Nn \l_tmpa_tl { abc }
+%     \tl_set:Nx \l_tmpb_tl { \tl_to_str:n { abc } }
+%     \tl_if_eq:NNTF \l_tmpa_tl \l_tmpb_tl { true } { false }
+%   \end{verbatim}
+%   yields \texttt{false}.
+% \end{function}
+%
+% \begin{function}[TF]{\tl_if_eq:nn}
+%   \begin{syntax}
+%     \cs{tl_if_eq:nnTF} \Arg{token list_1} \Arg{token list_2} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if \meta{token list_1} and \meta{token list_2} contain the
+%   same list of tokens, both in respect of character codes and category
+%   codes.
+% \end{function}
+%
+% \begin{function}[TF]{\tl_if_in:Nn, \tl_if_in:cn}
+%   \begin{syntax}
+%     \cs{tl_if_in:NnTF} \meta{tl~var} \Arg{token list} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the \meta{token list} is found in the content of the
+%   \meta{tl~var}. The \meta{token list} cannot contain
+%   the tokens |{|, |}| or |#|
+%   (more precisely, explicit character tokens with category code $1$
+%   (begin-group) or $2$ (end-group), and tokens with category code $6$).
+% \end{function}
+%
+% \begin{function}[TF]
+%   {\tl_if_in:nn, \tl_if_in:Vn, \tl_if_in:on, \tl_if_in:no}
+%   \begin{syntax}
+%     \cs{tl_if_in:nnTF} \Arg{token list_1} \Arg{token list_2} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if \meta{token list_2} is found inside \meta{token list_1}.
+%   The \meta{token list_2} cannot contain the tokens |{|, |}| or |#|
+%   (more precisely, explicit character tokens with category code $1$
+%   (begin-group) or $2$ (end-group), and tokens with category code $6$).
+% \end{function}
+%
+% \begin{function}[added = 2017-11-14, EXP,pTF]{\tl_if_novalue:n}
+%   \begin{syntax}
+%     \cs{tl_if_novalue_p:n} \Arg{token list}
+%     \cs{tl_if_novalue:nTF} \Arg{token list} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the \meta{token list} is exactly equal to the special
+%   \cs{c_novalue_tl} marker. This function is intended to allow construction
+%   of flexible document interface structures in which missing optional
+%   arguments are detected.
+% \end{function}
+%
+% \begin{function}[updated = 2011-08-13, EXP,pTF]
+%   {\tl_if_single:N, \tl_if_single:c}
+%   \begin{syntax}
+%     \cs{tl_if_single_p:N} \meta{tl~var}
+%     \cs{tl_if_single:NTF} \meta{tl~var} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the content of the \meta{tl~var} consists of a single item,
+%   \emph{i.e.}~is a single normal token (neither an explicit space
+%   character nor a begin-group character) or a single brace group,
+%   surrounded by optional spaces on both sides. In other words, such a
+%   token list has token count $1$ according to \cs{tl_count:N}.
+% \end{function}
+%
+% \begin{function}[updated = 2011-08-13, EXP,pTF]{\tl_if_single:n}
+%   \begin{syntax}
+%     \cs{tl_if_single_p:n} \Arg{token list}
+%     \cs{tl_if_single:nTF} \Arg{token list} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the \meta{token list} has exactly one item, \emph{i.e.}~is
+%   a single normal token (neither an explicit space character nor a
+%   begin-group character) or a single brace group, surrounded by
+%   optional spaces on both sides. In other words, such a token list has
+%   token count $1$ according to \cs{tl_count:n}.
+% \end{function}
+%
+% \begin{function}[added = 2013-07-24, EXP, noTF]{\tl_case:Nn, \tl_case:cn}
+%   \begin{syntax}
+%     \cs{tl_case:NnTF} \meta{test token list variable} \\
+%     ~~"{" \\
+%     ~~~~\meta{token list variable case_1} \Arg{code case_1} \\
+%     ~~~~\meta{token list variable case_2} \Arg{code case_2} \\
+%     ~~~~\ldots \\
+%     ~~~~\meta{token list variable case_n} \Arg{code case_n} \\
+%     ~~"}" \\
+%     ~~\Arg{true code}
+%     ~~\Arg{false code}
+%   \end{syntax}
+%   This function compares the \meta{test token list variable} in turn
+%   with each of the \meta{token list variable cases}. If the two
+%   are equal (as described for \cs{tl_if_eq:NNTF})
+%   then the associated \meta{code} is left in the input
+%   stream and other cases are discarded. If any of the
+%   cases are matched, the \meta{true code} is also inserted into the
+%   input stream (after the code for the appropriate case), while if none
+%   match then the \meta{false code} is inserted. The function
+%   \cs{tl_case:Nn}, which does nothing if there is no match, is also
+%   available.
+% \end{function}
+%
+% \section{Mapping to token lists}
+%
+% \begin{function}[updated = 2012-06-29, rEXP]
+%   {\tl_map_function:NN, \tl_map_function:cN}
+%   \begin{syntax}
+%     \cs{tl_map_function:NN} \meta{tl~var} \meta{function}
+%   \end{syntax}
+%   Applies \meta{function} to every \meta{item} in the \meta{tl~var}.
+%   The \meta{function} receives one argument for each iteration.
+%   This may be a number of tokens if the \meta{item} was stored within
+%   braces. Hence the \meta{function} should anticipate receiving
+%   \texttt{n}-type arguments. See also \cs{tl_map_function:nN}.
+% \end{function}
+%
+% \begin{function}[updated = 2012-06-29, rEXP]{\tl_map_function:nN}
+%   \begin{syntax}
+%     \cs{tl_map_function:nN} \Arg{token list} \meta{function}
+%   \end{syntax}
+%   Applies \meta{function} to every \meta{item} in the \meta{token list},
+%   The \meta{function} receives one argument for each iteration.
+%   This may be a number of tokens if the \meta{item} was stored within
+%   braces. Hence the \meta{function} should anticipate receiving
+%   \texttt{n}-type arguments. See also \cs{tl_map_function:NN}.
+% \end{function}
+%
+% \begin{function}[updated = 2012-06-29]
+%   {\tl_map_inline:Nn, \tl_map_inline:cn}
+%   \begin{syntax}
+%     \cs{tl_map_inline:Nn} \meta{tl~var} \Arg{inline function}
+%   \end{syntax}
+%   Applies the \meta{inline function} to every \meta{item} stored within the
+%   \meta{tl~var}. The \meta{inline function} should consist of code which
+%   receives the \meta{item} as |#1|. See also \cs{tl_map_function:NN}.
+% \end{function}
+%
+% \begin{function}[updated = 2012-06-29]{\tl_map_inline:nn}
+%   \begin{syntax}
+%     \cs{tl_map_inline:nn} \Arg{token list} \Arg{inline function}
+%   \end{syntax}
+%   Applies the \meta{inline function} to every \meta{item} stored within the
+%   \meta{token list}. The \meta{inline function}  should consist of code which
+%   receives the \meta{item} as |#1|. See also \cs{tl_map_function:nN}.
+% \end{function}
+%
+% \begin{function}[updated = 2012-06-29]
+%   {\tl_map_variable:NNn, \tl_map_variable:cNn}
+%   \begin{syntax}
+%     \cs{tl_map_variable:NNn} \meta{tl~var} \meta{variable} \Arg{code}
+%   \end{syntax}
+%   Stores each \meta{item} of the \meta{tl~var} in turn in the (token
+%   list) \meta{variable} and applies the \meta{code}.  The \meta{code}
+%   will usually make use of the \meta{variable}, but this is not
+%   enforced.  The assignments to the \meta{variable} are local.  See
+%   also \cs{tl_map_inline:Nn}.
+% \end{function}
+%
+% \begin{function}[updated = 2012-06-29]{\tl_map_variable:nNn}
+%   \begin{syntax}
+%     \cs{tl_map_variable:nNn} \Arg{token list} \meta{variable} \Arg{code}
+%   \end{syntax}
+%   Stores each \meta{item} of the \meta{token list} in turn in the
+%   (token list) \meta{variable} and applies the \meta{code}.  The
+%   \meta{code} will usually make use of the \meta{variable}, but this
+%   is not enforced.  The assignments to the \meta{variable} are local.
+%   See also \cs{tl_map_inline:nn}.
+% \end{function}
+%
+% \begin{function}[updated = 2012-06-29, rEXP]{\tl_map_break:}
+%   \begin{syntax}
+%     \cs{tl_map_break:}
+%   \end{syntax}
+%   Used to terminate a \cs[no-index]{tl_map_\ldots} function before all
+%   entries in the \meta{token list variable} have been processed. This
+%   normally takes place within a conditional statement, for example
+%   \begin{verbatim}
+%     \tl_map_inline:Nn \l_my_tl
+%       {
+%         \str_if_eq:nnT { #1 } { bingo } { \tl_map_break: }
+%         % Do something useful
+%       }
+%   \end{verbatim}
+%   See also \cs{tl_map_break:n}.
+%   Use outside of a \cs[no-index]{tl_map_\ldots} scenario leads to low
+%   level \TeX{} errors.
+%   \begin{texnote}
+%     When the mapping is broken, additional tokens may be inserted
+%     before the \meta{tokens} are
+%     inserted into the input stream.
+%     This depends on the design of the mapping function.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[updated = 2012-06-29, rEXP]{\tl_map_break:n}
+%   \begin{syntax}
+%     \cs{tl_map_break:n} \Arg{code}
+%   \end{syntax}
+%   Used to terminate a \cs[no-index]{tl_map_\ldots} function before all
+%   entries in the \meta{token list variable} have been processed, inserting
+%   the \meta{code} after the mapping has ended. This
+%   normally takes place within a conditional statement, for example
+%   \begin{verbatim}
+%     \tl_map_inline:Nn \l_my_tl
+%       {
+%         \str_if_eq:nnT { #1 } { bingo }
+%           { \tl_map_break:n { <code> } }
+%         % Do something useful
+%       }
+%   \end{verbatim}
+%   Use outside of a \cs[no-index]{tl_map_\ldots} scenario leads to low
+%   level \TeX{} errors.
+%   \begin{texnote}
+%     When the mapping is broken, additional tokens may be inserted
+%     before the \meta{code} is
+%     inserted into the input stream.
+%     This depends on the design of the mapping function.
+%   \end{texnote}
+% \end{function}
+%
+% \section{Using token lists}
+%
+% \begin{function}[EXP]{\tl_to_str:n, \tl_to_str:V}
+%   \begin{syntax}
+%     \cs{tl_to_str:n} \Arg{token list}
+%   \end{syntax}
+%   Converts the \meta{token list} to a \meta{string}, leaving the
+%   resulting character tokens in the input stream. A \meta{string}
+%   is a series of tokens with category code $12$ (other) with the exception
+%   of spaces, which retain category code $10$ (space).
+%   This function requires only a single expansion.
+%   Its argument \emph{must} be braced.
+%   \begin{texnote}
+%     This is the \eTeX{} primitive \tn{detokenize}.
+%     Converting a \meta{token list} to a \meta{string} yields a
+%     concatenation of the string representations of every token in the
+%     \meta{token list}.
+%     The string representation of a control sequence is
+%     \begin{itemize}
+%       \item an escape character, whose character code is given by the
+%         internal parameter \tn{escapechar}, absent if the
+%         \tn{escapechar} is negative or greater than the largest
+%         character code;
+%       \item the control sequence name, as defined by \cs{cs_to_str:N};
+%       \item a space, unless the control sequence name is a single
+%         character whose category at the time of expansion of
+%         \cs{tl_to_str:n} is not \enquote{letter}.
+%     \end{itemize}
+%     The string representation of an explicit character token is that
+%     character, doubled in the case of (explicit) macro parameter
+%     characters (normally |#|).
+%     In particular, the string representation of a token list may
+%     depend on the category codes in effect when it is evaluated, and
+%     the value of the \tn{escapechar}: for instance |\tl_to_str:n {\a}|
+%     normally produces the three character \enquote{backslash},
+%     \enquote{lower-case a}, \enquote{space}, but it may also produce a
+%     single \enquote{lower-case a} if the escape character is negative
+%     and \texttt{a} is currently not a letter.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[EXP]{\tl_to_str:N, \tl_to_str:c}
+%   \begin{syntax}
+%     \cs{tl_to_str:N} \meta{tl~var}
+%   \end{syntax}
+%   Converts the content of the  \meta{tl~var} into a series of characters
+%   with category code $12$ (other) with the exception of spaces, which
+%   retain category code $10$ (space). This \meta{string} is then left
+%   in the input stream. For low-level details, see the notes given for
+%   \cs{tl_to_str:n}.
+% \end{function}
+%
+% \begin{function}[EXP]{\tl_use:N, \tl_use:c}
+%   \begin{syntax}
+%     \cs{tl_use:N} \meta{tl~var}
+%   \end{syntax}
+%   Recovers the content of a \meta{tl~var} and places it
+%   directly in the input stream. An error is raised if the variable
+%   does not exist or if it is invalid. Note that it is possible to use
+%   a \meta{tl~var} directly without an accessor function.
+% \end{function}
+%
+% \section{Working with the content of token lists}
+%
+% \begin{function}[added = 2012-05-13, EXP]
+%   {\tl_count:n, \tl_count:V, \tl_count:o}
+%   \begin{syntax}
+%     \cs{tl_count:n} \Arg{tokens}
+%   \end{syntax}
+%   Counts the number of \meta{items} in \meta{tokens} and leaves this
+%   information in the input stream. Unbraced tokens count as one
+%   element as do each token group (|{|\ldots|}|). This process
+%   ignores any unprotected spaces within \meta{tokens}. See also
+%   \cs{tl_count:N}. This function requires three expansions,
+%   giving an \meta{integer denotation}.
+% \end{function}
+%
+% \begin{function}[added = 2012-05-13, EXP]{\tl_count:N, \tl_count:c}
+%   \begin{syntax}
+%     \cs{tl_count:N} \meta{tl~var}
+%   \end{syntax}
+%   Counts the number of token groups in the \meta{tl~var}
+%   and leaves this information in the input stream. Unbraced tokens
+%   count as one element as do each token group (|{|\ldots|}|). This
+%   process ignores any unprotected spaces within the \meta{tl~var}.
+%   See also \cs{tl_count:n}. This function requires three expansions,
+%   giving an \meta{integer denotation}.
+% \end{function}
+%
+% \begin{function}[updated = 2012-01-08, EXP]
+%   {\tl_reverse:n, \tl_reverse:V, \tl_reverse:o}
+%   \begin{syntax}
+%     \cs{tl_reverse:n} \Arg{token list}
+%   \end{syntax}
+%   Reverses the order of the \meta{items} in the \meta{token list},
+%   so that \meta{item_1}\meta{item_2}\meta{item_3} \ldots \meta{item_n}
+%   becomes \meta{item_n}\ldots \meta{item_3}\meta{item_2}\meta{item_1}.
+%   This process preserves unprotected space within the
+%   \meta{token list}. Tokens are not reversed within braced token
+%   groups, which keep their outer set of braces.
+%   In situations where performance is important,
+%   consider \cs{tl_reverse_items:n}.
+%   See also \cs{tl_reverse:N}.
+%   \begin{texnote}
+%     The result is returned within \tn{unexpanded}, which means that the token
+%     list does not expand further when appearing in an \texttt{x}-type
+%     argument expansion.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[updated = 2012-01-08]
+%   {\tl_reverse:N, \tl_reverse:c, \tl_greverse:N, \tl_greverse:c}
+%   \begin{syntax}
+%     \cs{tl_reverse:N} \meta{tl~var}
+%   \end{syntax}
+%   Reverses the order of the \meta{items} stored in \meta{tl~var}, so
+%   that \meta{item_1}\meta{item_2}\meta{item_3} \ldots \meta{item_n}
+%   becomes \meta{item_n}\ldots \meta{item_3}\meta{item_2}\meta{item_1}.
+%   This process preserves unprotected spaces within the
+%   \meta{token list variable}. Braced token groups are copied without
+%   reversing the order of tokens, but keep the outer set of braces.
+%   See also \cs{tl_reverse:n}, and, for improved performance,
+%   \cs{tl_reverse_items:n}.
+% \end{function}
+%
+% \begin{function}[added = 2012-01-08, EXP]{\tl_reverse_items:n}
+%   \begin{syntax}
+%     \cs{tl_reverse_items:n} \Arg{token list}
+%   \end{syntax}
+%   Reverses the order of the \meta{items} stored in \meta{tl~var},
+%   so that \Arg{item_1}\Arg{item_2}\Arg{item_3} \ldots \Arg{item_n}
+%   becomes \Arg{item_n} \ldots{} \Arg{item_3}\Arg{item_2}\Arg{item_1}.
+%   This process removes any unprotected space within the
+%   \meta{token list}. Braced token groups are copied without
+%   reversing the order of tokens, and keep the outer set of braces.
+%   Items which are initially not braced are copied with braces in
+%   the result. In cases where preserving spaces is important,
+%   consider the slower function \cs{tl_reverse:n}.
+%   \begin{texnote}
+%     The result is returned within \tn{unexpanded}, which means that the token
+%     list does not expand further when appearing in an \texttt{x}-type
+%     argument expansion.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[added = 2011-07-09, updated = 2012-06-25, EXP]
+%   {\tl_trim_spaces:n, \tl_trim_spaces:o}
+%   \begin{syntax}
+%     \cs{tl_trim_spaces:n} \Arg{token list}
+%   \end{syntax}
+%   Removes any leading and trailing explicit space characters
+%   (explicit tokens with character code~$32$ and category code~$10$)
+%   from the \meta{token list} and leaves the result in the input
+%   stream.
+%   \begin{texnote}
+%     The result is returned within \tn{unexpanded}, which means that the token
+%     list does not expand further when appearing in an \texttt{x}-type
+%     argument expansion.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[added = 2018-04-12, EXP]
+%   {\tl_trim_spaces_apply:nN, \tl_trim_spaces_apply:oN}
+%   \begin{syntax}
+%     \cs{tl_trim_spaces_apply:nN} \Arg{token list} \meta{function}
+%   \end{syntax}
+%   Removes any leading and trailing explicit space characters (explicit
+%   tokens with character code~$32$ and category code~$10$) from the
+%   \meta{token list} and passes the result to the \meta{function} as an
+%   \texttt{n}-type argument.
+% \end{function}
+%
+% \begin{function}[added = 2011-07-09]
+%   {
+%     \tl_trim_spaces:N,  \tl_trim_spaces:c,
+%     \tl_gtrim_spaces:N, \tl_gtrim_spaces:c
+%   }
+%   \begin{syntax}
+%     \cs{tl_trim_spaces:N} \meta{tl~var}
+%   \end{syntax}
+%   Removes any leading and trailing explicit space characters
+%   (explicit tokens with character code~$32$ and category code~$10$)
+%   from the content of the \meta{tl~var}. Note that this therefore
+%   \emph{resets} the content of the variable.
+% \end{function}
+%
+% \begin{function}[added = 2017-02-06]
+%   {\tl_sort:Nn, \tl_sort:cn, \tl_gsort:Nn, \tl_gsort:cn}
+%   \begin{syntax}
+%     \cs{tl_sort:Nn} \meta{tl var} \Arg{comparison code}
+%   \end{syntax}
+%   Sorts the items in the \meta{tl var} according to the
+%   \meta{comparison code}, and assigns the result to
+%   \meta{tl var}. The details of sorting comparison are
+%   described in Section~\ref{sec:l3sort:mech}.
+% \end{function}
+%
+% \begin{function}[added = 2017-02-06, EXP]{\tl_sort:nN}
+%   \begin{syntax}
+%     \cs{tl_sort:nN} \Arg{token list} \meta{conditional}
+%   \end{syntax}
+%   Sorts the items in the \meta{token list}, using the
+%   \meta{conditional} to compare items, and leaves the result in the
+%   input stream.  The \meta{conditional} should have signature |:nnTF|,
+%   and return \texttt{true} if the two items being compared should be
+%   left in the same order, and \texttt{false} if the items should be
+%   swapped. The details of sorting comparison are
+%   described in Section~\ref{sec:l3sort:mech}.
+%   \begin{texnote}
+%     The result is returned within \cs{exp_not:n}, which means that the
+%     token list does not expand further when appearing in an
+%     \texttt{x}-type argument expansion.
+%   \end{texnote}
+% \end{function}
+%
+% \section{The first token from a token list}
+%
+% Functions which deal with either only the very first item (balanced
+% text or single normal token) in a token list, or the remaining tokens.
+%
+% \begin{function}[updated = 2012-09-09, EXP]
+%   {\tl_head:N, \tl_head:n, \tl_head:V, \tl_head:v, \tl_head:f}
+%   \begin{syntax}
+%     \cs{tl_head:n} \Arg{token list}
+%   \end{syntax}
+%   Leaves in the input stream the first \meta{item} in the
+%   \meta{token list}, discarding the rest of the \meta{token list}.
+%   All leading explicit space characters
+%   (explicit tokens with character code~$32$ and category code~$10$)
+%   are discarded; for example
+%   \begin{verbatim}
+%     \tl_head:n { abc }
+%   \end{verbatim}
+%   and
+%   \begin{verbatim}
+%     \tl_head:n { ~ abc }
+%   \end{verbatim}
+%   both leave |a| in the input stream. If the \enquote{head} is a
+%   brace group, rather than a single token, the braces are removed, and
+%   so
+%   \begin{verbatim}
+%     \tl_head:n { ~ { ~ ab } c }
+%   \end{verbatim}
+%   yields \verb*| ab|.
+%   A blank \meta{token list} (see \cs{tl_if_blank:nTF}) results in
+%   \cs{tl_head:n} leaving nothing in the input stream.
+%   \begin{texnote}
+%     The result is returned within \cs{exp_not:n}, which means that the token
+%     list does not expand further when appearing in an \texttt{x}-type
+%     argument expansion.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[EXP]{\tl_head:w}
+%   \begin{syntax}
+%     \cs{tl_head:w} \meta{token list} | { } | \cs{q_stop}
+%   \end{syntax}
+%   Leaves in the input stream the first \meta{item} in the
+%   \meta{token list}, discarding the rest of the \meta{token list}.
+%   All leading explicit space characters
+%   (explicit tokens with character code~$32$ and category code~$10$)
+%   are discarded.
+%   A blank \meta{token list} (which consists only of space characters)
+%   results in a low-level \TeX{} error, which may be avoided by the
+%   inclusion of an empty group in the input (as shown), without the need
+%   for an explicit test. Alternatively, \cs{tl_if_blank:nF} may be used to
+%   avoid using the function with a \enquote{blank} argument.
+%   This function requires only a single expansion, and thus is suitable for
+%   use within an \texttt{o}-type expansion. In general, \cs{tl_head:n} should
+%   be preferred if the number of expansions is not critical.
+% \end{function}
+%
+% \begin{function}[updated = 2012-09-01, EXP]
+%   {\tl_tail:N, \tl_tail:n, \tl_tail:V, \tl_tail:v, \tl_tail:f}
+%   \begin{syntax}
+%     \cs{tl_tail:n} \Arg{token list}
+%   \end{syntax}
+%   Discards all leading explicit space characters
+%   (explicit tokens with character code~$32$ and category code~$10$)
+%   and the first \meta{item} in the \meta{token list}, and leaves the
+%   remaining tokens in the input stream.  Thus for example
+%   \begin{verbatim}
+%     \tl_tail:n { a ~ {bc} d }
+%   \end{verbatim}
+%   and
+%   \begin{verbatim}
+%     \tl_tail:n { ~ a ~ {bc} d }
+%   \end{verbatim}
+%   both leave \verb*| {bc}d| in the input stream.  A blank
+%   \meta{token list} (see \cs{tl_if_blank:nTF}) results
+%   in \cs{tl_tail:n} leaving nothing in the input stream.
+%   \begin{texnote}
+%     The result is returned within \cs{exp_not:n}, which means that the
+%     token list does not expand further when appearing in an \texttt{x}-type
+%     argument expansion.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[updated = 2012-07-09, EXP, pTF]{\tl_if_head_eq_catcode:nN}
+%   \begin{syntax}
+%     \cs{tl_if_head_eq_catcode_p:nN} \Arg{token list} \meta{test token}
+%     \cs{tl_if_head_eq_catcode:nNTF} \Arg{token list} \meta{test token}
+%     ~~\Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the first \meta{token} in the \meta{token list} has the
+%   same category code as the \meta{test token}.  In the case where the
+%   \meta{token list} is empty, the test is always \texttt{false}.
+% \end{function}
+%
+% \begin{function}[updated = 2012-07-09, EXP, pTF]
+%   {\tl_if_head_eq_charcode:nN, \tl_if_head_eq_charcode:fN}
+%   \begin{syntax}
+%     \cs{tl_if_head_eq_charcode_p:nN} \Arg{token list} \meta{test token}
+%     \cs{tl_if_head_eq_charcode:nNTF} \Arg{token list} \meta{test token}
+%     ~~\Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the first \meta{token} in the \meta{token list} has the
+%   same character code as the \meta{test token}.  In the case where the
+%   \meta{token list} is empty, the test is always \texttt{false}.
+% \end{function}
+%
+% \begin{function}[updated = 2012-07-09, EXP, pTF]{\tl_if_head_eq_meaning:nN}
+%   \begin{syntax}
+%     \cs{tl_if_head_eq_meaning_p:nN} \Arg{token list} \meta{test token}
+%     \cs{tl_if_head_eq_meaning:nNTF} \Arg{token list} \meta{test token}
+%     ~~\Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the first \meta{token} in the \meta{token list} has the
+%   same meaning as the \meta{test token}.  In the case where
+%   \meta{token list} is empty, the test is always \texttt{false}.
+% \end{function}
+%
+% \begin{function}[added = 2012-07-08, EXP, pTF]{\tl_if_head_is_group:n}
+%   \begin{syntax}
+%     \cs{tl_if_head_is_group_p:n} \Arg{token list}
+%     \cs{tl_if_head_is_group:nTF} \Arg{token list} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the first \meta{token} in the \meta{token list}
+%   is an explicit begin-group character (with category code~$1$
+%   and any character code), in other words, if the \meta{token list}
+%   starts with a brace group. In particular, the test is \texttt{false}
+%   if the \meta{token list} starts with an implicit token such as
+%   \cs{c_group_begin_token}, or if it is empty.
+%   This function is useful to implement actions on token lists on
+%   a token by token basis.
+% \end{function}
+%
+% \begin{function}[added = 2012-07-08, EXP, pTF]{\tl_if_head_is_N_type:n}
+%   \begin{syntax}
+%     \cs{tl_if_head_is_N_type_p:n} \Arg{token list}
+%     \cs{tl_if_head_is_N_type:nTF} \Arg{token list} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the first \meta{token} in the \meta{token list}
+%   is a normal \texttt{N}-type argument. In other words,
+%   it is neither an explicit space character
+%   (explicit token with character code~$32$ and category code~$10$)
+%   nor an explicit begin-group character
+%   (with category code~1 and any character code). An empty
+%   argument yields \texttt{false}, as it does not have a \enquote{normal}
+%   first token.
+%   This function is useful to implement actions on token lists on
+%   a token by token basis.
+% \end{function}
+%
+% \begin{function}[updated = 2012-07-08, EXP, pTF]{\tl_if_head_is_space:n}
+%   \begin{syntax}
+%     \cs{tl_if_head_is_space_p:n} \Arg{token list}
+%     \cs{tl_if_head_is_space:nTF} \Arg{token list} \Arg{true code} \Arg{false code}
+%   \end{syntax}
+%   Tests if the first \meta{token} in the \meta{token list}
+%   is an explicit space character
+%   (explicit token with character code~$12$ and category code~$10$).
+%   In particular, the test is \texttt{false} if the \meta{token list}
+%   starts with an implicit token such as \cs{c_space_token}, or if it
+%   is empty.
+%   This function is useful to implement actions on token lists on
+%   a token by token basis.
+% \end{function}
+%
+% \section{Using a single item}
+%
+% \begin{function}[added = 2014-07-17, EXP]
+%   {\tl_item:nn, \tl_item:Nn, \tl_item:cn}
+%   \begin{syntax}
+%     \cs{tl_item:nn} \Arg{token list} \Arg{integer expression}
+%   \end{syntax}
+%   Indexing items in the \meta{token list} from~$1$ on the left, this
+%   function evaluates the \meta{integer expression} and leaves the
+%   appropriate item from the \meta{token list} in the input stream.
+%   If the \meta{integer expression} is negative, indexing occurs from
+%   the right of the token list, starting at $-1$ for the right-most item.
+%   If the index is out of bounds, then the function expands to nothing.
+%   \begin{texnote}
+%     The result is returned within the \tn{unexpanded}
+%     primitive (\cs{exp_not:n}), which means that the \meta{item}
+%     does not expand further when appearing in an \texttt{x}-type
+%     argument expansion.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[EXP, added = 2016-12-06]
+%   {\tl_rand_item:N, \tl_rand_item:c, \tl_rand_item:n}
+%   \begin{syntax}
+%     \cs{tl_rand_item:N} \meta{tl~var}
+%     \cs{tl_rand_item:n} \Arg{token list}
+%   \end{syntax}
+%   Selects a pseudo-random item of the \meta{token list}.  If the
+%   \meta{token list} is blank, the result is empty.
+%   This is not available in older versions of \XeTeX{}.
+%   \begin{texnote}
+%     The result is returned within the \tn{unexpanded}
+%     primitive (\cs{exp_not:n}), which means that the \meta{item}
+%     does not expand further when appearing in an \texttt{x}-type
+%     argument expansion.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[EXP, added = 2017-02-17, updated = 2017-07-15]
+%   {\tl_range:Nnn, \tl_range:nnn}
+%   \begin{syntax}
+%     \cs{tl_range:Nnn} \meta{tl~var} \Arg{start index} \Arg{end index}
+%     \cs{tl_range:nnn} \Arg{token list} \Arg{start index} \Arg{end index}
+%   \end{syntax}
+%   Leaves in the input stream the items from the \meta{start index} to the
+%   \meta{end index} inclusive.  Spaces and braces are preserved between
+%   the items returned (but never at either end of the list).
+%
+%   Here \meta{start index} and \meta{end index} should be integer denotations.
+%   For describing in detail the functions' behavior, let $m$ and $n$ be the start
+%   and end index respectively. If either is $0$, the result is empty. A positive
+%   index means `start counting from the left end', a negative index means
+%   `start counting from the right end'. Let $l$ be the count of the token list.
+%
+%   The \emph{actual start point} is determined as $M=m$ if~$m>0$ and as $M=l+m+1$
+%   if~$m<0$. Similarly the \emph{actual end point} is $N=n$ if~$n>0$ and $N=l+n+1$
+%   if~$n<0$. If $M>N$, the result is empty. Otherwise it consists of all items from
+%   position $M$ to position $N$ inclusive; for the purpose of this rule, we can
+%   imagine that the token list extends at infinity on either side, with void items
+%   at positions $s$ for $s\le0$ or $s>l$.
+%
+%   Spaces in between items in the actual range are preserved. Spaces at either end
+%   of the token list will be removed anyway (think to the token list being passed to
+%   |\tl_trim_spaces:n| to begin with.
+%
+%   Thus, with $l=7$ as in the examples below, all of the following are equivalent
+%   and result in the whole token list
+%   \begin{verbatim}
+%     \tl_range:nnn { abcd~{e{}}fg } { 1 } { 7 }
+%     \tl_range:nnn { abcd~{e{}}fg } { 1 } { 12 }
+%     \tl_range:nnn { abcd~{e{}}fg } { -7 } { 7 }
+%     \tl_range:nnn { abcd~{e{}}fg } { -12 } { 7 }
+%   \end{verbatim}
+%   Here are some more interesting examples. The calls
+%   \begin{verbatim}
+%     \iow_term:x { \tl_range:nnn { abcd{e{}}fg } { 2 } { 5 } }
+%     \iow_term:x { \tl_range:nnn { abcd{e{}}fg } { 2 } { -3 } }
+%     \iow_term:x { \tl_range:nnn { abcd{e{}}fg } { -6 } { 5 } }
+%     \iow_term:x { \tl_range:nnn { abcd{e{}}fg } { -6 } { -3 } }
+%   \end{verbatim}
+%   are all equivalent and will print |bcd{e{}}| on the terminal; similarly
+%   \begin{verbatim}
+%     \iow_term:x { \tl_range:nnn { abcd~{e{}}fg } { 2 } { 5 } }
+%     \iow_term:x { \tl_range:nnn { abcd~{e{}}fg } { 2 } { -3 } }
+%     \iow_term:x { \tl_range:nnn { abcd~{e{}}fg } { -6 } { 5 } }
+%     \iow_term:x { \tl_range:nnn { abcd~{e{}}fg } { -6 } { -3 } }
+%   \end{verbatim}
+%   are all equivalent and will print |bcd {e{}}| on the
+%   terminal (note the space in the middle). To the contrary,
+%   \begin{verbatim}
+%     \tl_range:nnn { abcd~{e{}}f } { 2 } { 4 }
+%   \end{verbatim}
+%   will discard the space after `d`.
+%
+%   If we want to get the items from the third to the last, the call
+%   is |\tl_range:nnn { <tl> } { 3 } { -1 }|. Similarly, for discarding
+%   the last item, we can do |\tl_range:nnn { <tl> } { 1 } { -2 }|.
+%
+%   The behavior of \cs{tl_range:Nnn} is exactly the same, acting on the
+%   contents of the tl variable.
+%
+%   For improved performance, see  \cs{tl_range_braced:nnn} and
+%   \cs{tl_range_unbraced:nnn}.
+%   \begin{texnote}
+%     The result is returned within the \tn{unexpanded}
+%     primitive (\cs{exp_not:n}), which means that the \meta{item}
+%     does not expand further when appearing in an \texttt{x}-type
+%     argument expansion.
+%   \end{texnote}
+% \end{function}
+%
+% \section{Viewing token lists}
+%
+% \begin{function}[updated = 2015-08-01]{\tl_show:N, \tl_show:c}
+%   \begin{syntax}
+%     \cs{tl_show:N} \meta{tl~var}
+%   \end{syntax}
+%   Displays the content of the \meta{tl~var} on the terminal.
+%   \begin{texnote}
+%     This is similar to the \TeX{} primitive \tn{show}, wrapped to a
+%     fixed number of characters per line.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[updated = 2015-08-07]{\tl_show:n}
+%   \begin{syntax}
+%     \cs{tl_show:n} \Arg{token list}
+%   \end{syntax}
+%   Displays the \meta{token list} on the terminal.
+%   \begin{texnote}
+%     This is similar to the \eTeX{} primitive \tn{showtokens}, wrapped
+%     to a fixed number of characters per line.
+%   \end{texnote}
+% \end{function}
+%
+% \begin{function}[added = 2014-08-22, updated = 2015-08-01]{\tl_log:N, \tl_log:c}
+%   \begin{syntax}
+%     \cs{tl_log:N} \meta{tl~var}
+%   \end{syntax}
+%   Writes the content of the \meta{tl~var} in the log file.  See also
+%   \cs{tl_show:N} which displays the result in the terminal.
+% \end{function}
+%
+% \begin{function}[added = 2014-08-22, updated = 2015-08-07]{\tl_log:n}
+%   \begin{syntax}
+%     \cs{tl_log:n} \Arg{token list}
+%   \end{syntax}
+%   Writes the \meta{token list} in the log file.  See also
+%   \cs{tl_show:n} which displays the result in the terminal.
+% \end{function}
+%
+% \section{Constant token lists}
+%
+% \begin{variable}{\c_empty_tl}
+%   Constant that is always empty.
+% \end{variable}
+%
+% \begin{variable}[added = 2017-11-14]{\c_novalue_tl}
+%   A marker for the absence of an argument. This constant |tl| can safely
+%   be typeset (\emph{cf.}~|\q_nil|), with the result being |-NoValue-|.
+%   It is important to note that \cs{c_novalue_tl} is constructed such that it
+%   will \emph{not} match the simple text input |-NoValue-|, \emph{i.e.}
+%   that
+%   \begin{verbatim}
+%     \tl_if_eq:VnTF \c_novalue_tl { -NoValue- }
+%   \end{verbatim}
+%   is logically \texttt{false}. The \cs{c_novalue_tl} marker is intended for
+%   use in creating document-level interfaces, where it serves as an indicator
+%   that an (optional) argument was omitted. In particular, it is distinct
+%   from a simple empty |tl|.
+% \end{variable}
+%
+% \begin{variable}{\c_space_tl}
+%   An explicit space character contained in a token list (compare this with
+%   \cs{c_space_token}). For use where an explicit space is required.
+% \end{variable}
+%
+% \section{Scratch token lists}
+%
+% \begin{variable}{\l_tmpa_tl, \l_tmpb_tl}
+%   Scratch token lists for local assignment. These are never used by
+%   the kernel code, and so are safe for use with any \LaTeX3-defined
+%   function. However, they may be overwritten by other non-kernel
+%   code and so should only be used for short-term storage.
+% \end{variable}
+%
+% \begin{variable}{\g_tmpa_tl, \g_tmpb_tl}
+%   Scratch token lists for global assignment. These are never used by
+%   the kernel code, and so are safe for use with any \LaTeX3-defined
+%   function. However, they may be overwritten by other non-kernel
+%   code and so should only be used for short-term storage.
+% \end{variable}
+%
+% \end{documentation}
+%
+% \begin{implementation}
+%
+% \section{\pkg{l3tl} implementation}
+%
+%    \begin{macrocode}
+%<*initex|package>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%<@@=tl>
+%    \end{macrocode}
+%
+% A token list variable is a \TeX{} macro that holds tokens. By using the
+% \eTeX{} primitive \tn{unexpanded} inside a \TeX{} \tn{edef} it is
+% possible to store any tokens, including |#|, in this way.
+%
+% \subsection{Functions}
+%
+% \begin{macro}{\tl_new:N, \tl_new:c}
+%   Creating new token list variables is a case of checking for an
+%   existing definition and doing the definition.
+%    \begin{macrocode}
+\cs_new_protected:Npn \tl_new:N #1
+  {
+    \__kernel_chk_if_free_cs:N #1
+    \cs_gset_eq:NN #1 \c_empty_tl
+  }
+\cs_generate_variant:Nn \tl_new:N { c }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\tl_const:Nn, \tl_const:Nx, \tl_const:cn, \tl_const:cx}
+%   Constants are also easy to generate.
+%    \begin{macrocode}
+\__kernel_patch:nnNNpn { \__kernel_chk_var_scope:NN c #1 } { }
+\cs_new_protected:Npn \tl_const:Nn #1#2
+  {
+    \__kernel_chk_if_free_cs:N #1
+    \cs_gset_nopar:Npx #1 { \exp_not:n {#2} }
+  }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_scope:NN c #1 } { }
+\cs_new_protected:Npn \tl_const:Nx #1#2
+  {
+    \__kernel_chk_if_free_cs:N #1
+    \cs_gset_nopar:Npx #1 {#2}
+  }
+\cs_generate_variant:Nn \tl_const:Nn { c }
+\cs_generate_variant:Nn \tl_const:Nx { c }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\tl_clear:N, \tl_clear:c}
+% \begin{macro}{\tl_gclear:N, \tl_gclear:c}
+%   Clearing a token list variable means setting it to an empty value.
+%   Error checking is sorted out by the parent function.
+%    \begin{macrocode}
+\cs_new_protected:Npn \tl_clear:N  #1
+  { \tl_set_eq:NN #1 \c_empty_tl }
+\cs_new_protected:Npn \tl_gclear:N #1
+  { \tl_gset_eq:NN #1 \c_empty_tl }
+\cs_generate_variant:Nn \tl_clear:N  { c }
+\cs_generate_variant:Nn \tl_gclear:N { c }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\tl_clear_new:N, \tl_clear_new:c}
+% \begin{macro}{\tl_gclear_new:N, \tl_gclear_new:c}
+%   Clearing a token list variable means setting it to an empty value.
+%   Error checking is sorted out by the parent function.
+%    \begin{macrocode}
+\cs_new_protected:Npn \tl_clear_new:N  #1
+  { \tl_if_exist:NTF #1 { \tl_clear:N #1 } { \tl_new:N #1 } }
+\cs_new_protected:Npn \tl_gclear_new:N #1
+  { \tl_if_exist:NTF #1 { \tl_gclear:N #1 } { \tl_new:N #1 } }
+\cs_generate_variant:Nn \tl_clear_new:N  { c }
+\cs_generate_variant:Nn \tl_gclear_new:N { c }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\tl_set_eq:NN, \tl_set_eq:Nc, \tl_set_eq:cN, \tl_set_eq:cc}
+% \begin{macro}{\tl_gset_eq:NN, \tl_gset_eq:Nc, \tl_gset_eq:cN, \tl_gset_eq:cc}
+%   For setting token list variables equal to each other.  When checking
+%   is turned on, make sure both variables exist.
+%    \begin{macrocode}
+\__kernel_if_debug:TF
+  {
+    \cs_new_protected:Npn \tl_set_eq:NN #1#2
+      {
+        \__kernel_chk_var_local:N #1
+        \__kernel_chk_var_exist:N #2
+        \cs_set_eq:NN #1 #2
+      }
+    \cs_new_protected:Npn \tl_gset_eq:NN #1#2
+      {
+        \__kernel_chk_var_global:N #1
+        \__kernel_chk_var_exist:N #2
+        \cs_gset_eq:NN #1 #2
+      }
+  }
+  {
+    \cs_new_eq:NN \tl_set_eq:NN  \cs_set_eq:NN
+    \cs_new_eq:NN \tl_gset_eq:NN \cs_gset_eq:NN
+  }
+\cs_generate_variant:Nn \tl_set_eq:NN { cN, Nc, cc }
+\cs_generate_variant:Nn \tl_gset_eq:NN { cN, Nc, cc }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\tl_concat:NNN, \tl_concat:ccc}
+% \begin{macro}{\tl_gconcat:NNN, \tl_gconcat:ccc}
+%   Concatenating token lists is easy.  When checking is turned on, all
+%   three arguments must be checked: a token list |#2| or |#3| equal to
+%   \cs{scan_stop:} would lead to problems later on.
+%    \begin{macrocode}
+\__kernel_patch:nnNNpn
+  {
+    \__kernel_chk_var_exist:N #2
+    \__kernel_chk_var_exist:N #3
+  }
+  { }
+\cs_new_protected:Npn \tl_concat:NNN #1#2#3
+  { \tl_set:Nx #1 { \exp_not:o {#2} \exp_not:o {#3} } }
+\__kernel_patch:nnNNpn
+  {
+    \__kernel_chk_var_exist:N #2
+    \__kernel_chk_var_exist:N #3
+  }
+  { }
+\cs_new_protected:Npn \tl_gconcat:NNN #1#2#3
+  { \tl_gset:Nx #1 { \exp_not:o {#2} \exp_not:o {#3} } }
+\cs_generate_variant:Nn \tl_concat:NNN  { ccc }
+\cs_generate_variant:Nn \tl_gconcat:NNN { ccc }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[pTF]{\tl_if_exist:N, \tl_if_exist:c}
+%   Copies of the \texttt{cs} functions defined in \pkg{l3basics}.
+%    \begin{macrocode}
+\prg_new_eq_conditional:NNn \tl_if_exist:N \cs_if_exist:N { TF , T , F , p }
+\prg_new_eq_conditional:NNn \tl_if_exist:c \cs_if_exist:c { TF , T , F , p }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Constant token lists}
+%
+% \begin{variable}{\c_empty_tl}
+%   Never full. We need to define that constant before using \cs{tl_new:N}.
+%    \begin{macrocode}
+\tl_const:Nn \c_empty_tl { }
+%    \end{macrocode}
+% \end{variable}
+%
+% \begin{variable}{\c_novalue_tl}
+%   A special marker: as we don't have |\char_generate:nn| yet, has to be
+%   created the old-fashioned way.
+%    \begin{macrocode}
+\group_begin:
+\tex_lccode:D `A = `-
+\tex_lccode:D `N = `N
+\tex_lccode:D `V = `V
+\tex_lowercase:D
+  {
+    \group_end:
+    \tl_const:Nn \c_novalue_tl { ANoValue- }
+  }
+%    \end{macrocode}
+% \end{variable}
+%
+% \begin{variable}{\c_space_tl}
+%   A space as a token list (as opposed to as a character).
+%    \begin{macrocode}
+\tl_const:Nn \c_space_tl { ~ }
+%    \end{macrocode}
+% \end{variable}
+%
+% \subsection{Adding to token list variables}
+%
+% \begin{macro}
+%   {
+%     \tl_set:Nn, \tl_set:NV, \tl_set:Nv, \tl_set:No, \tl_set:Nf, \tl_set:Nx,
+%     \tl_set:cn, \tl_set:cV, \tl_set:cv, \tl_set:co, \tl_set:cf, \tl_set:cx
+%   }
+% \begin{macro}
+%   {
+%     \tl_gset:Nn, \tl_gset:NV, \tl_gset:Nv,
+%     \tl_gset:No, \tl_gset:Nf, \tl_gset:Nx,
+%     \tl_gset:cn, \tl_gset:cV, \tl_gset:cv,
+%     \tl_gset:co, \tl_gset:cf, \tl_gset:cx
+%   }
+%   By using \cs{exp_not:n} token list variables can contain |#| tokens,
+%   which makes the token list registers provided by \TeX{}
+%   more or less redundant. The \cs{tl_set:No} version is done
+%   \enquote{by hand} as it is used quite a lot.  Each definition is
+%   prefixed by a call to \cs{__kernel_patch:nnNNpn} which adds an
+%   existence check to the definition.
+%    \begin{macrocode}
+\__kernel_patch:nnNNpn { \__kernel_chk_var_local:N #1 } { }
+\cs_new_protected:Npn \tl_set:Nn #1#2
+  { \cs_set_nopar:Npx #1 { \exp_not:n {#2} } }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_local:N #1 } { }
+\cs_new_protected:Npn \tl_set:No #1#2
+  { \cs_set_nopar:Npx #1 { \exp_not:o {#2} } }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_local:N #1 } { }
+\cs_new_protected:Npn \tl_set:Nx #1#2
+  { \cs_set_nopar:Npx #1 {#2} }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_global:N #1 } { }
+\cs_new_protected:Npn \tl_gset:Nn #1#2
+  { \cs_gset_nopar:Npx #1 { \exp_not:n {#2} } }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_global:N #1 } { }
+\cs_new_protected:Npn \tl_gset:No #1#2
+  { \cs_gset_nopar:Npx #1 { \exp_not:o {#2} } }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_global:N #1 } { }
+\cs_new_protected:Npn \tl_gset:Nx #1#2
+  { \cs_gset_nopar:Npx #1 {#2} }
+\cs_generate_variant:Nn \tl_set:Nn  {         NV , Nv , Nf }
+\cs_generate_variant:Nn \tl_set:Nx  { c }
+\cs_generate_variant:Nn \tl_set:Nn  { c, co , cV , cv , cf }
+\cs_generate_variant:Nn \tl_gset:Nn {         NV , Nv , Nf }
+\cs_generate_variant:Nn \tl_gset:Nx { c }
+\cs_generate_variant:Nn \tl_gset:Nn { c, co , cV , cv , cf }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}
+%   {
+%     \tl_put_left:Nn, \tl_put_left:NV, \tl_put_left:No, \tl_put_left:Nx,
+%     \tl_put_left:cn, \tl_put_left:cV, \tl_put_left:co, \tl_put_left:cx
+%   }
+% \begin{macro}
+%   {
+%     \tl_gput_left:Nn, \tl_gput_left:NV, \tl_gput_left:No, \tl_gput_left:Nx,
+%     \tl_gput_left:cn, \tl_gput_left:cV, \tl_gput_left:co, \tl_gput_left:cx
+%   }
+% Adding to the left is done directly to gain a little performance.
+%    \begin{macrocode}
+\__kernel_patch:nnNNpn { \__kernel_chk_var_local:N #1 } { }
+\cs_new_protected:Npn \tl_put_left:Nn #1#2
+  { \cs_set_nopar:Npx #1 { \exp_not:n {#2} \exp_not:o #1 } }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_local:N #1 } { }
+\cs_new_protected:Npn \tl_put_left:NV #1#2
+  { \cs_set_nopar:Npx #1 { \exp_not:V #2 \exp_not:o #1 } }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_local:N #1 } { }
+\cs_new_protected:Npn \tl_put_left:No #1#2
+  { \cs_set_nopar:Npx #1 { \exp_not:o {#2} \exp_not:o #1 } }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_local:N #1 } { }
+\cs_new_protected:Npn \tl_put_left:Nx #1#2
+  { \cs_set_nopar:Npx #1 { #2 \exp_not:o #1 } }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_global:N #1 } { }
+\cs_new_protected:Npn \tl_gput_left:Nn #1#2
+  { \cs_gset_nopar:Npx #1 { \exp_not:n {#2} \exp_not:o #1 } }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_global:N #1 } { }
+\cs_new_protected:Npn \tl_gput_left:NV #1#2
+  { \cs_gset_nopar:Npx #1 { \exp_not:V #2 \exp_not:o #1 } }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_global:N #1 } { }
+\cs_new_protected:Npn \tl_gput_left:No #1#2
+  { \cs_gset_nopar:Npx #1 { \exp_not:o {#2} \exp_not:o #1 } }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_global:N #1 } { }
+\cs_new_protected:Npn \tl_gput_left:Nx #1#2
+  { \cs_gset_nopar:Npx #1 { #2 \exp_not:o {#1} } }
+\cs_generate_variant:Nn \tl_put_left:Nn  { c }
+\cs_generate_variant:Nn \tl_put_left:NV  { c }
+\cs_generate_variant:Nn \tl_put_left:No  { c }
+\cs_generate_variant:Nn \tl_put_left:Nx  { c }
+\cs_generate_variant:Nn \tl_gput_left:Nn { c }
+\cs_generate_variant:Nn \tl_gput_left:NV { c }
+\cs_generate_variant:Nn \tl_gput_left:No { c }
+\cs_generate_variant:Nn \tl_gput_left:Nx { c }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}
+%   {
+%     \tl_put_right:Nn, \tl_put_right:NV, \tl_put_right:No, \tl_put_right:Nx,
+%     \tl_put_right:cn, \tl_put_right:cV, \tl_put_right:co, \tl_put_right:cx
+%   }
+% \begin{macro}
+%   {
+%     \tl_gput_right:Nn, \tl_gput_right:NV, \tl_gput_right:No,
+%     \tl_gput_right:Nx,
+%     \tl_gput_right:cn, \tl_gput_right:cV, \tl_gput_right:co,
+%     \tl_gput_right:cx
+%   }
+% The same on the right.
+%    \begin{macrocode}
+\__kernel_patch:nnNNpn { \__kernel_chk_var_local:N #1 } { }
+\cs_new_protected:Npn \tl_put_right:Nn #1#2
+  { \cs_set_nopar:Npx #1 { \exp_not:o #1 \exp_not:n {#2} } }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_local:N #1 } { }
+\cs_new_protected:Npn \tl_put_right:NV #1#2
+  { \cs_set_nopar:Npx #1 { \exp_not:o #1 \exp_not:V #2 } }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_local:N #1 } { }
+\cs_new_protected:Npn \tl_put_right:No #1#2
+  { \cs_set_nopar:Npx #1 { \exp_not:o #1 \exp_not:o {#2} } }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_local:N #1 } { }
+\cs_new_protected:Npn \tl_put_right:Nx #1#2
+  { \cs_set_nopar:Npx #1 { \exp_not:o #1 #2 } }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_global:N #1 } { }
+\cs_new_protected:Npn \tl_gput_right:Nn #1#2
+  { \cs_gset_nopar:Npx #1 { \exp_not:o #1 \exp_not:n {#2} } }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_global:N #1 } { }
+\cs_new_protected:Npn \tl_gput_right:NV #1#2
+  { \cs_gset_nopar:Npx #1 { \exp_not:o #1 \exp_not:V #2 } }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_global:N #1 } { }
+\cs_new_protected:Npn \tl_gput_right:No #1#2
+  { \cs_gset_nopar:Npx #1 { \exp_not:o #1 \exp_not:o {#2} } }
+\__kernel_patch:nnNNpn { \__kernel_chk_var_global:N #1 } { }
+\cs_new_protected:Npn \tl_gput_right:Nx #1#2
+  { \cs_gset_nopar:Npx #1 { \exp_not:o {#1} #2 } }
+\cs_generate_variant:Nn \tl_put_right:Nn  { c }
+\cs_generate_variant:Nn \tl_put_right:NV  { c }
+\cs_generate_variant:Nn \tl_put_right:No  { c }
+\cs_generate_variant:Nn \tl_put_right:Nx  { c }
+\cs_generate_variant:Nn \tl_gput_right:Nn { c }
+\cs_generate_variant:Nn \tl_gput_right:NV { c }
+\cs_generate_variant:Nn \tl_gput_right:No { c }
+\cs_generate_variant:Nn \tl_gput_right:Nx { c }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Reassigning token list category codes}
+%
+% \begin{variable}{\c_@@_rescan_marker_tl}
+%   The rescanning code needs a special token list containing the same
+%   character (chosen here to be a colon) with two different category
+%   codes: it cannot appear in the tokens being rescanned since all
+%   colons have the same category code.
+%    \begin{macrocode}
+\tl_const:Nx \c_@@_rescan_marker_tl { : \token_to_str:N : }
+%    \end{macrocode}
+% \end{variable}
+%
+% \begin{macro}
+%   {
+%     \tl_set_rescan:Nnn, \tl_set_rescan:Nno, \tl_set_rescan:Nnx,
+%     \tl_set_rescan:cnn, \tl_set_rescan:cno, \tl_set_rescan:cnx
+%   }
+% \begin{macro}
+%   {
+%     \tl_gset_rescan:Nnn, \tl_gset_rescan:Nno, \tl_gset_rescan:Nnx,
+%     \tl_gset_rescan:cnn, \tl_gset_rescan:cno, \tl_gset_rescan:cnx
+%   }
+% \begin{macro}{\tl_rescan:nn}
+% \begin{macro}{\@@_set_rescan:NNnn, \@@_set_rescan_multi:nNN}
+% \begin{macro}[EXP]{\@@_rescan:NNw}
+%   In a group, after some initial setup explained below and the user
+%   setup~|#3| (followed by \cs{scan_stop:} to be safe), there is a call
+%   to \cs{@@_set_rescan:nNN}.  This shared auxiliary distinguishes
+%   single-line and multi-line files as explained below.  In the
+%   simplest case of multi-line files it calls (with the same arguments)
+%   \cs{@@_set_rescan_multi:nNN}, whose code is included here to help
+%   understand the approach: it rescans its argument |#1|, closes the
+%   group, and performs the assignment.
+%
+%   One difficulty when rescanning is that \tn{scantokens} treats the
+%   argument as a file, and without the correct settings a \TeX{} error
+%   occurs:
+%   \begin{verbatim}
+%    ! File ended while scanning definition of ...
+%   \end{verbatim}
+%   A related minor issue is a warning due to opening a group before the
+%   \tn{scantokens} and closing it inside that temporary file; we avoid
+%   that by setting \tn{tracingnesting}.  The standard solution to the
+%   ``File ended'' error is to grab the rescanned tokens as a delimited
+%   argument of an auxiliary, here \cs{@@_set_rescan:NNw}, that performs
+%   the assignment, then let \TeX{} ``execute'' the end of file marker.
+%   As usual in delimited arguments we use \cs{prg_do_nothing:} to avoid
+%   stripping an outer set braces: this is removed by using
+%   \texttt{o}-expanding assignments.  The delimiter cannot appear
+%   within the rescanned token list because it contains twice the same
+%   character, with different catcodes.
+%
+%   For \cs{tl_rescan:nn} we cannot simply call \cs{@@_set_rescan:NNnn}
+%   \cs{prg_do_nothing:} \cs{use:n} because that would leave the
+%   end-of-file marker \emph{after} the result of rescanning.  If that
+%   rescanned result is code that looks further in the input stream for
+%   arguments, it would break.
+%
+%   The two \cs{if_false:} \ldots{} \cs{fi:} are there to prevent
+%   alignment tabs to cause a change of tabular cell while rescanning.
+%    \begin{macrocode}
+\cs_new_protected:Npn \tl_set_rescan:Nnn
+  { \@@_set_rescan:NNnn \tl_set:No }
+\cs_new_protected:Npn \tl_gset_rescan:Nnn
+  { \@@_set_rescan:NNnn \tl_gset:No }
+\cs_new_protected:Npn \tl_rescan:nn #1#2
+  {
+    \tl_set_rescan:Nnn \l_@@_internal_a_tl {#1} {#2}
+    \exp_after:wN \tl_clear:N \exp_after:wN \l_@@_internal_a_tl
+    \l_@@_internal_a_tl
+  }
+\cs_new_protected:Npn \@@_set_rescan:NNnn #1#2#3#4
+  {
+    \if_false: { \fi:
+    \group_begin:
+      \int_set_eq:NN \tex_tracingnesting:D \c_zero_int
+      \exp_args:No \tex_everyeof:D { \c_@@_rescan_marker_tl }
+      \int_compare:nNnT \tex_endlinechar:D = { 32 }
+        { \int_set:Nn \tex_endlinechar:D { -1 } }
+      \int_set_eq:NN \tex_newlinechar:D \tex_endlinechar:D
+      #3 \scan_stop:
+      \exp_args:No \@@_set_rescan:nNN { \tl_to_str:n {#4} } #1 #2
+    \if_false: } \fi:
+  }
+\cs_new_protected:Npn \@@_set_rescan_multi:nNN #1#2#3
+  {
+    \exp_after:wN \@@_rescan:NNw
+    \exp_after:wN #2
+    \exp_after:wN #3
+    \exp_after:wN \prg_do_nothing:
+    \tex_scantokens:D {#1}
+  }
+\exp_args:Nno \use:nn
+  { \cs_new:Npn \@@_rescan:NNw #1#2#3 } \c_@@_rescan_marker_tl
+  {
+    \group_end:
+    #1 #2 {#3}
+  }
+\cs_generate_variant:Nn \tl_set_rescan:Nnn  {     Nno , Nnx }
+\cs_generate_variant:Nn \tl_set_rescan:Nnn  { c , cno , cnx }
+\cs_generate_variant:Nn \tl_gset_rescan:Nnn {     Nno , Nnx }
+\cs_generate_variant:Nn \tl_gset_rescan:Nnn { c , cno }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\@@_set_rescan:nNN}
+% \begin{macro}{\@@_set_rescan_single:nnNN, \@@_set_rescan_single_aux:nnNN}
+%   This function calls \cs{@@_set_rescan_multi:nNN} or
+%   \cs{@@_set_rescan_single:nnNN} |{ ' }| depending on whether its
+%   argument is a single-line fragment of code/data or is made of
+%   multiple lines by testing for the presence of a \tn{newlinechar}
+%   character.  If \tn{newlinechar} is out of range, the argument is
+%   assumed to be a single line.
+%
+%   The case of multiple lines is a straightforward application of
+%   \tn{scantokens} as described above.  The only subtlety is that
+%   \tn{newlinechar} should be equal to \tn{endlinechar} because
+%   \tn{newlinechar} characters become new lines and then become
+%   \tn{endlinechar} characters when writing to an abstract file and
+%   reading back.  This equality is ensured by setting \tn{newlinechar}
+%   equal to \tn{endlinechar}.  Prior to this, \tn{endlinechar} is set
+%   to $-1$ if it was $32$ (in particular true after \cs{ExplSyntaxOn})
+%   to avoid unreasonable line-breaks at every space for instance in
+%   error messages triggered by the user setup.  Another side effect of
+%   reading back from the file is that spaces (catcode $10$) are
+%   ignored at the beginning of lines, and spaces and tabs (character
+%   code $32$ and $9$) are ignored at the end of lines.
+%
+%   For a single line, no \tn{endlinechar} should be added, so it is
+%   set to $-1$, and spaces should not be removed.
+%   Trailing spaces and tabs are a difficult matter, as \TeX{} removes
+%   these at a very low level.  The only way to preserve them is to
+%   rescan not the argument but the argument followed by a character
+%   with a reasonable category code.  Here, $11$ (letter) and $12$ (other)
+%   are accepted, as these are convenient, suitable for
+%   delimiting an argument, and it is very unlikely that none of the
+%   ASCII characters are in one of these categories.  To avoid
+%   selecting one particular character to put at the end, whose
+%   category code may have been modified, there is a loop through
+%   characters from |'| (ASCII $39$) to |~| (ASCII $127$).  The choice
+%   of starting point was made because this is the start of a very long
+%   range of characters whose standard category is letter or other,
+%   thus minimizing the number of steps needed by the loop (most often
+%   just a single one).  Once a valid character is found, run some code
+%   very similar to \cs{@@_set_rescan_multi:nNN} but with that character
+%   put at the start and end.  The auxiliary \cs{@@_rescan:NNw} must be
+%   redefined to also remove the additional character (with the
+%   appropriate catcode thanks to \cs{char_generate:nn}).  If no valid
+%   character is found (very rare), fall-back on
+%   \cs{@@_set_rescan_multi:nNN}.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_set_rescan:nNN #1
+  {
+    \int_compare:nNnTF \tex_newlinechar:D < 0
+      { \use_ii:nn }
+      {
+        \exp_args:Nnf \tl_if_in:nnTF {#1}
+          { \char_generate:nn { \tex_newlinechar:D } { 12 } }
+      }
+        { \@@_set_rescan_multi:nNN }
+        {
+          \int_set:Nn \tex_endlinechar:D { -1 }
+          \@@_set_rescan_single:nnNN { `' }
+        }
+    {#1}
+  }
+\cs_new_protected:Npn \@@_set_rescan_single:nnNN #1
+  {
+    \int_compare:nNnTF
+      { \char_value_catcode:n {#1} / 2 } = 6
+      {
+        \exp_args:Nf \@@_set_rescan_single_aux:nnNN
+          { \char_generate:nn {#1} { \char_value_catcode:n {#1} } }
+      }
+      {
+        \int_compare:nNnTF {#1} < { `\~ }
+          {
+            \exp_args:Nf \@@_set_rescan_single:nnNN
+              { \int_eval:n { #1 + 1 } }
+          }
+          { \@@_set_rescan_multi:nNN }
+      }
+  }
+\cs_new_protected:Npn \@@_set_rescan_single_aux:nnNN #1#2#3#4
+  {
+    \exp_args:Nno \use:nn
+      { \cs_set:Npn \@@_rescan:NNw ##1##2##3 #1 }
+      \c_@@_rescan_marker_tl
+      {
+        \group_end:
+        ##1 ##2 { \use_none:n ##3 }
+      }
+    \exp_after:wN \@@_rescan:NNw
+    \exp_after:wN #3
+    \exp_after:wN #4
+    \tex_scantokens:D { #1 #2 #1 }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Modifying token list variables}
+%
+% \begin{macro}{\tl_replace_all:Nnn, \tl_replace_all:cnn}
+% \begin{macro}{\tl_greplace_all:Nnn, \tl_greplace_all:cnn}
+% \begin{macro}{\tl_replace_once:Nnn, \tl_replace_once:cnn}
+% \begin{macro}{\tl_greplace_once:Nnn, \tl_greplace_once:cnn}
+%   All of the \texttt{replace} functions call \cs{@@_replace:NnNNNnn}
+%   with appropriate arguments.  The first two arguments are explained
+%   later.  The next controls whether the replacement function calls
+%   itself (\cs{@@_replace_next:w}) or stops (\cs{@@_replace_wrap:w})
+%   after the first replacement.  Next comes an \texttt{x}-type
+%   assignment function \cs{tl_set:Nx} or \cs{tl_gset:Nx} for local or
+%   global replacements.  Finally, the three arguments \meta{tl~var}
+%   \Arg{pattern} \Arg{replacement} provided by the user.  When
+%   describing the auxiliary functions below, we denote the contents of
+%   the \meta{tl~var} by \meta{token list}.
+%    \begin{macrocode}
+\cs_new_protected:Npn \tl_replace_once:Nnn
+  { \@@_replace:NnNNNnn \q_mark ? \@@_replace_wrap:w \tl_set:Nx  }
+\cs_new_protected:Npn \tl_greplace_once:Nnn
+  { \@@_replace:NnNNNnn \q_mark ? \@@_replace_wrap:w \tl_gset:Nx }
+\cs_new_protected:Npn \tl_replace_all:Nnn
+  { \@@_replace:NnNNNnn \q_mark ? \@@_replace_next:w \tl_set:Nx  }
+\cs_new_protected:Npn \tl_greplace_all:Nnn
+  { \@@_replace:NnNNNnn \q_mark ? \@@_replace_next:w \tl_gset:Nx }
+\cs_generate_variant:Nn \tl_replace_once:Nnn  { c }
+\cs_generate_variant:Nn \tl_greplace_once:Nnn { c }
+\cs_generate_variant:Nn \tl_replace_all:Nnn   { c }
+\cs_generate_variant:Nn \tl_greplace_all:Nnn  { c }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}
+%   {
+%     \@@_replace:NnNNNnn,
+%     \@@_replace_auxi:NnnNNNnn,
+%     \@@_replace_auxii:nNNNnn,
+%     \@@_replace_next:w,
+%     \@@_replace_wrap:w,
+%   }
+%   To implement the actual replacement auxiliary
+%   \cs{@@_replace_auxii:nNNNnn} we need a \meta{delimiter} with
+%   the following properties:
+%   \begin{itemize}
+%     \item all occurrences of the \meta{pattern}~|#6| in
+%       \enquote{\meta{token list} \meta{delimiter}} belong to the
+%       \meta{token list} and have no overlap with the \meta{delimiter},
+%     \item the first occurrence of the \meta{delimiter} in
+%       \enquote{\meta{token list} \meta{delimiter}} is the trailing
+%       \meta{delimiter}.
+%   \end{itemize}
+%   We first find the building blocks for the \meta{delimiter}, namely
+%   two tokens \meta{A} and~\meta{B} such that \meta{A} does not appear
+%   in~|#6| and |#6| is not~\meta{B} (this condition is trivial if |#6|
+%   has more than one token).  Then we consider the delimiters
+%   \enquote{\meta{A}} and \enquote{\meta{A} \meta{A}$^n$ \meta{B}
+%     \meta{A}$^n$ \meta{B}}, for $n\geq 1$, where $\meta{A}^n$ denotes
+%   $n$~copies of \meta{A}, and we choose as our \meta{delimiter} the
+%   first one which is not in the \meta{token list}.
+%
+%   Every delimiter in the set obeys the first condition: |#6|~does not
+%   contain~\meta{A} hence cannot be overlapping with the \meta{token
+%     list} and the \meta{delimiter}, and it cannot be within the
+%   \meta{delimiter} since it would have to be in one of the two
+%   \meta{B} hence be equal to this single token (or empty, but this is
+%   an error case filtered separately).  Given the particular form of
+%   these delimiters, for which no prefix is also a suffix, the second
+%   condition is actually a consequence of the weaker condition that the
+%   \meta{delimiter} we choose does not appear in the \meta{token list}.
+%   Additionally, the set of delimiters is such that a \meta{token list}
+%   of $n$~tokens can contain at most $O(n^{1/2})$ of them, hence we
+%   find a \meta{delimiter} with at most $O(n^{1/2})$ tokens in a time
+%   at most $O(n^{3/2})$.  Bear in mind that these upper bounds are
+%   reached only in very contrived scenarios: we include the case
+%   \enquote{\meta{A}} in the list of delimiters to try, so that the
+%   \meta{delimiter} is simply \cs{q_mark} in the most common
+%   situation where neither the \meta{token list} nor the \meta{pattern}
+%   contains \cs{q_mark}.
+%
+%   Let us now ahead, optimizing for this most common case.  First, two
+%   special cases: an empty \meta{pattern}~|#6| is an error, and if
+%   |#1|~is absent from both the \meta{token list}~|#5| and the
+%   \meta{pattern}~|#6| then we can use it as the \meta{delimiter}
+%   through \cs{@@_replace_auxii:nNNNnn} |{#1}|.  Otherwise, we end up
+%   calling \cs{@@_replace:NnNNNnn} repeatedly with the first two
+%   arguments |\q_mark| |{?}|, |\?| |{??}|, |\??| |{???}|, and so on,
+%   until |#6|~does not contain the control sequence~|#1|, which we take
+%   as our~\meta{A}.  The argument~|#2| only serves to collect~|?|
+%   characters for~|#1|.  Note that the order of the tests means that
+%   the first two are done every time, which is wasteful (for instance,
+%   we repeatedly test for the emptyness of~|#6|).  However, this is
+%   rare enough not to matter.  Finally, choose~\meta{B} to be
+%   \cs{q_nil} or~\cs{q_stop} such that it is not equal to~|#6|.
+%
+%   The \cs{@@_replace_auxi:NnnNNNnn} auxiliary receives \Arg{A} and
+%   |{|\meta{A}$^n$\meta{B}|}| as its arguments, initially with $n=1$.
+%   If \enquote{\meta{A} \meta{A}$^n$\meta{B} \meta{A}$^n$\meta{B}} is
+%   in the \meta{token list} then increase~$n$ and try again.  Once it
+%   is not anymore in the \meta{token list} we take it as our
+%   \meta{delimiter} and pass this to the \texttt{auxii} auxiliary.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_replace:NnNNNnn #1#2#3#4#5#6#7
+  {
+    \tl_if_empty:nTF {#6}
+      {
+        \__kernel_msg_error:nnx { kernel } { empty-search-pattern }
+          { \tl_to_str:n {#7} }
+      }
+      {
+        \tl_if_in:onTF { #5 #6 } {#1}
+          {
+            \tl_if_in:nnTF {#6} {#1}
+              { \exp_args:Nc \@@_replace:NnNNNnn {#2} {#2?} }
+              {
+                \quark_if_nil:nTF {#6}
+                  { \@@_replace_auxi:NnnNNNnn #5 {#1} { #1 \q_stop } }
+                  { \@@_replace_auxi:NnnNNNnn #5 {#1} { #1 \q_nil  } }
+              }
+          }
+          { \@@_replace_auxii:nNNNnn {#1} }
+          #3#4#5 {#6} {#7}
+      }
+  }
+\cs_new_protected:Npn \@@_replace_auxi:NnnNNNnn #1#2#3
+  {
+    \tl_if_in:NnTF #1 { #2 #3 #3 }
+      { \@@_replace_auxi:NnnNNNnn #1 { #2 #3 } {#2} }
+      { \@@_replace_auxii:nNNNnn { #2 #3 #3 } }
+  }
+%    \end{macrocode}
+%   The auxiliary \cs{@@_replace_auxii:nNNNnn} receives the following
+%   arguments:
+%   \begin{quote}
+%     \Arg{delimiter} \meta{function} \meta{assignment} \\
+%       \meta{tl~var} \Arg{pattern} \Arg{replacement}
+%   \end{quote}
+%   All of its work is done between
+%   \cs{group_align_safe_begin:} and \cs{group_align_safe_end:} to avoid
+%   issues in alignments.  It does the actual replacement within
+%   |#3|~|#4|~|{...}|, an \texttt{x}-expanding \meta{assignment}~|#3| to
+%   the \meta{tl~var}~|#4|.  The auxiliary \cs{@@_replace_next:w} is
+%   called, followed by the \meta{token list}, some tokens including the
+%   \meta{delimiter}~|#1|, followed by the \meta{pattern}~|#5|.
+%   This auxiliary finds an argument delimited by~|#5| (the presence of
+%   a trailing~|#5| avoids runaway arguments) and calls
+%   \cs{@@_replace_wrap:w} to test whether this |#5| is found within the
+%   \meta{token list} or is the trailing one.
+%
+%   If on the one hand it is found within the \meta{token list}, then
+%   |##1| cannot contain the \meta{delimiter}~|#1| that we worked so
+%   hard to obtain, thus \cs{@@_replace_wrap:w} gets~|##1| as its own
+%   argument~|##1|, and protects it against
+%   the \texttt{x}-expanding assignment.  It also finds \cs{exp_not:n}
+%   as~|##2| and does nothing to it, thus letting through \cs{exp_not:n}
+%   \Arg{replacement} into the assignment.  Note that
+%   \cs{@@_replace_next:w} and \cs{@@_replace_wrap:w} are always called
+%   followed by two empty brace groups.  These are safe because no
+%   delimiter can match them.  They prevent losing braces when grabbing
+%   delimited arguments, but require the use of \cs{exp_not:o} and
+%   \cs{use_none:nn}, rather than simply \cs{exp_not:n}.
+%   Afterwards, \cs{@@_replace_next:w} is called
+%   to repeat the replacement, or \cs{@@_replace_wrap:w} if we only want
+%   a single replacement.  In this second case, |##1| is the
+%   \meta{remaining tokens} in the \meta{token list} and |##2| is some
+%   \meta{ending code} which ends the assignment and removes the
+%   trailing tokens |#5| using some \cs{if_false:} |{| \cs{fi:} |}|
+%   trickery because~|#5| may contain any delimiter.
+%
+%   If on the other hand the argument~|##1| of \cs{@@_replace_next:w} is
+%   delimited by the trailing \meta{pattern}~|#5|, then |##1| is
+%   \enquote{\{ \} \{ \} \meta{token list} \meta{delimiter}
+%     \Arg{ending code}}, hence \cs{@@_replace_wrap:w} finds
+%   \enquote{\{ \} \{ \} \meta{token list}} as |##1| and the
+%   \meta{ending code} as~|##2|.  It leaves the \meta{token list} into
+%   the assignment and unbraces the \meta{ending code} which removes
+%   what remains (essentially the \meta{delimiter} and
+%   \meta{replacement}).
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_replace_auxii:nNNNnn #1#2#3#4#5#6
+  {
+    \group_align_safe_begin:
+    \cs_set:Npn \@@_replace_wrap:w ##1 #1 ##2
+      { \exp_not:o { \use_none:nn ##1 } ##2 }
+    \cs_set:Npx \@@_replace_next:w ##1 #5
+      {
+        \exp_not:N \@@_replace_wrap:w ##1
+        \exp_not:n { #1 }
+        \exp_not:n { \exp_not:n {#6} }
+        \exp_not:n { #2 { } { } }
+      }
+    #3 #4
+      {
+        \exp_after:wN \@@_replace_next:w
+        \exp_after:wN { \exp_after:wN }
+        \exp_after:wN { \exp_after:wN }
+        #4
+        #1
+        {
+          \if_false: { \fi: }
+          \exp_after:wN \use_none:n \exp_after:wN { \if_false: } \fi:
+        }
+        #5
+      }
+    \group_align_safe_end:
+  }
+\cs_new_eq:NN \@@_replace_wrap:w ?
+\cs_new_eq:NN \@@_replace_next:w ?
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\tl_remove_once:Nn, \tl_remove_once:cn}
+% \begin{macro}{\tl_gremove_once:Nn, \tl_gremove_once:cn}
+%   Removal is just a special case of replacement.
+%    \begin{macrocode}
+\cs_new_protected:Npn \tl_remove_once:Nn #1#2
+  { \tl_replace_once:Nnn #1 {#2} { } }
+\cs_new_protected:Npn \tl_gremove_once:Nn #1#2
+  { \tl_greplace_once:Nnn #1 {#2} { } }
+\cs_generate_variant:Nn \tl_remove_once:Nn  { c }
+\cs_generate_variant:Nn \tl_gremove_once:Nn { c }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\tl_remove_all:Nn, \tl_remove_all:cn}
+% \begin{macro}{\tl_gremove_all:Nn, \tl_gremove_all:cn}
+%   Removal is just a special case of replacement.
+%    \begin{macrocode}
+\cs_new_protected:Npn \tl_remove_all:Nn #1#2
+  { \tl_replace_all:Nnn #1 {#2} { } }
+\cs_new_protected:Npn \tl_gremove_all:Nn #1#2
+  { \tl_greplace_all:Nnn #1 {#2} { } }
+\cs_generate_variant:Nn \tl_remove_all:Nn  { c }
+\cs_generate_variant:Nn \tl_gremove_all:Nn { c }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Token list conditionals}
+%
+% \begin{macro}[pTF]{\tl_if_blank:n, \tl_if_blank:V, \tl_if_blank:o}
+% \begin{macro}{\@@_if_blank_p:NNw}
+%   \TeX{} skips spaces when reading a non-delimited arguments. Thus,
+%   a \meta{token list} is blank if and only if \cs{use_none:n}
+%   \meta{token list} |?| is empty after one expansion.  The auxiliary
+%   \cs{@@_if_empty_if:o} is a fast emptyness test, converting its
+%   argument to a string (after one expansion) and using the test
+%   \cs{if_meaning:w} \cs{q_nil} |...| \cs{q_nil}.
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \tl_if_blank:n #1 { p , T , F , TF }
+  {
+    \@@_if_empty_if:o { \use_none:n #1 ? }
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+\prg_generate_conditional_variant:Nnn \tl_if_blank:n
+  { V , o } { p , T , F , TF }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[pTF]{\tl_if_empty:N, \tl_if_empty:c}
+%    These functions check whether the token list in the argument is
+%    empty and execute the proper code from their argument(s).
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \tl_if_empty:N #1 { p , T , F , TF }
+  {
+    \if_meaning:w #1 \c_empty_tl
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+\prg_generate_conditional_variant:Nnn \tl_if_empty:N
+  { c } { p , T , F , TF }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[pTF]{\tl_if_empty:n, \tl_if_empty:V}
+%   Convert the argument to a string: this is empty if and only if
+%   the argument is.  Then |\if_meaning:w \q_nil ... \q_nil| is
+%   \texttt{true} if and only if the string |...| is empty.
+%   It could be tempting to use |\if_meaning:w \q_nil #1 \q_nil| directly.
+%   This fails on a token
+%   list starting with \cs{q_nil} of course but more troubling is the
+%   case where argument is a complete conditional such as \cs{if_true:}
+%   a \cs{else:} b \cs{fi:} because then \cs{if_true:} is used by
+%   \cs{if_meaning:w}, the test turns out \texttt{false}, the \cs{else:}
+%   executes the \texttt{false} branch, the \cs{fi:} ends it and the
+%   \cs{q_nil} at the end
+%   starts executing\dots{}
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \tl_if_empty:n #1 { p , TF , T , F }
+  {
+    \exp_after:wN \if_meaning:w \exp_after:wN \q_nil
+        \tl_to_str:n {#1} \q_nil
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+\prg_generate_conditional_variant:Nnn \tl_if_empty:n
+  { V } { p , TF , T , F }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[pTF,documented-as=\tl_if_empty:nTF]{\tl_if_empty:o}
+% \begin{macro}[EXP]{\@@_if_empty_if:o}
+%   The auxiliary function \cs{@@_if_empty_if:o} is for use
+%   in various token list conditionals which reduce to testing
+%   if a given token list is empty after applying a simple function
+%   to it.
+%   The test for emptiness is based on \cs{tl_if_empty:nTF}, but
+%   the expansion is hard-coded for efficiency, as this auxiliary
+%   function is used in several places.
+%   We don't put \cs{prg_return_true:} and so on in the definition of
+%   the auxiliary, because that would prevent an optimization applied to
+%   conditionals that end with this code.
+%    \begin{macrocode}
+\cs_new:Npn \@@_if_empty_if:o #1
+  {
+    \exp_after:wN \if_meaning:w \exp_after:wN \q_nil
+      \__kernel_tl_to_str:w \exp_after:wN {#1} \q_nil
+  }
+\prg_new_conditional:Npnn \tl_if_empty:o #1 { p , TF , T , F }
+  {
+    \@@_if_empty_if:o {#1}
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+ }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[pTF]{\tl_if_eq:NN, \tl_if_eq:Nc, \tl_if_eq:cN, \tl_if_eq:cc}
+%   Returns \cs{c_true_bool} if and only if the two token list variables are
+%   equal.
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \tl_if_eq:NN #1#2 { p , T , F , TF }
+  {
+    \if_meaning:w #1 #2
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+\prg_generate_conditional_variant:Nnn \tl_if_eq:NN
+  { Nc , c , cc } { p , TF , T , F }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[TF]{\tl_if_eq:nn}
+% \begin{variable}{\l_@@_internal_a_tl, \l_@@_internal_b_tl}
+%   A simple store and compare routine.
+%    \begin{macrocode}
+\prg_new_protected_conditional:Npnn \tl_if_eq:nn #1#2 { T , F ,  TF }
+  {
+    \group_begin:
+      \tl_set:Nn \l_@@_internal_a_tl {#1}
+      \tl_set:Nn \l_@@_internal_b_tl {#2}
+      \exp_after:wN
+    \group_end:
+    \if_meaning:w \l_@@_internal_a_tl \l_@@_internal_b_tl
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+\tl_new:N \l_@@_internal_a_tl
+\tl_new:N \l_@@_internal_b_tl
+%    \end{macrocode}
+% \end{variable}
+% \end{macro}
+%
+% \begin{macro}[TF]{\tl_if_in:Nn, \tl_if_in:cn}
+%   See \cs{tl_if_in:nnTF} for further comments. Here we simply
+%   expand the token list variable and pass it to \cs{tl_if_in:nnTF}.
+%    \begin{macrocode}
+\cs_new_protected:Npn \tl_if_in:NnT  { \exp_args:No \tl_if_in:nnT  }
+\cs_new_protected:Npn \tl_if_in:NnF  { \exp_args:No \tl_if_in:nnF  }
+\cs_new_protected:Npn \tl_if_in:NnTF { \exp_args:No \tl_if_in:nnTF }
+\prg_generate_conditional_variant:Nnn \tl_if_in:Nn
+  { c } { T , F , TF }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[TF]{\tl_if_in:nn, \tl_if_in:Vn, \tl_if_in:on, \tl_if_in:no}
+%   Once more, the test relies on the emptiness test for robustness.
+%   The function \cs{@@_tmp:w} removes tokens until the first occurrence
+%   of |#2|. If this does not appear in |#1|, then the final |#2| is removed,
+%   leaving an empty token list. Otherwise some tokens remain, and the
+%   test is \texttt{false}. See \cs{tl_if_empty:nTF} for details on
+%   the emptiness test.
+%
+%   Treating correctly cases like
+%   |\tl_if_in:nnTF {a state}{states}|, where |#1#2| contains |#2| before
+%   the end, requires special care.
+%   To cater for this case, we insert |{}{}| between the two token
+%   lists. This marker may not appear in |#2| because of \TeX{} limitations
+%   on what can delimit a parameter, hence we are safe. Using two brace
+%   groups makes the test work also for empty arguments.
+%   The \cs{if_false:} constructions are a faster way to do
+%   \cs{group_align_safe_begin:} and \cs{group_align_safe_end:}.
+%    \begin{macrocode}
+\prg_new_protected_conditional:Npnn \tl_if_in:nn #1#2 { T  , F , TF }
+  {
+    \if_false: { \fi:
+    \cs_set:Npn \@@_tmp:w ##1 #2 { }
+    \tl_if_empty:oTF { \@@_tmp:w #1 {} {} #2 }
+      { \prg_return_false: } { \prg_return_true: }
+    \if_false: } \fi:
+  }
+\prg_generate_conditional_variant:Nnn \tl_if_in:nn
+  { V , o , no } { T , F , TF }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[pTF, EXP]{\tl_if_novalue:n}
+% \begin{macro}[EXP]{\@@_if_novalue:w}
+%   Tests for |-NoValue-|: this is similar to \cs{tl_if_in:nn} but set
+%   up to be expandable and to check the value exactly.  The question
+%   mark prevents the auxiliary from losing braces.
+%    \begin{macrocode}
+\cs_set_protected:Npn \@@_tmp:w #1
+  {
+    \prg_new_conditional:Npnn \tl_if_novalue:n ##1
+      { p , T ,  F , TF }
+      {
+        \str_if_eq:onTF
+          { \@@_if_novalue:w ? ##1 { } #1 }
+          { ? { } #1 }
+          { \prg_return_true: }
+          { \prg_return_false: }
+      }
+    \cs_new:Npn \@@_if_novalue:w ##1 #1 {##1}
+  }
+\exp_args:No \@@_tmp:w { \c_novalue_tl }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP,pTF]{\tl_if_single:N}
+%   Expand the token list and feed it to \cs{tl_if_single:n}.
+%    \begin{macrocode}
+\cs_new:Npn \tl_if_single_p:N { \exp_args:No \tl_if_single_p:n }
+\cs_new:Npn \tl_if_single:NT  { \exp_args:No \tl_if_single:nT  }
+\cs_new:Npn \tl_if_single:NF  { \exp_args:No \tl_if_single:nF  }
+\cs_new:Npn \tl_if_single:NTF { \exp_args:No \tl_if_single:nTF }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP,pTF]{\tl_if_single:n}
+% \begin{macro}[EXP,pTF]{\@@_if_single:n}
+%   This test is similar to \cs{tl_if_empty:nTF}.  Expanding
+%   \cs{use_none:nn} |#1| |??| once yields an empty result if |#1| is
+%   blank, a single~|?| if |#1| has a single item, and otherwise yields
+%   some tokens ending with |??|.  Then, \cs{tl_to_str:n} makes sure
+%   there are no odd category codes.  An earlier version would compare
+%   the result to a single~|?| using string comparison, but the Lua call
+%   is slow in \LuaTeX{}.  Instead, \cs{@@_if_single:nnw} picks the
+%   second token in front of it.  If |#1| is empty, this token is
+%   the trailing~|?| and the catcode test yields \texttt{false}.  If
+%   |#1| has a single item, the token is~|^| and the catcode test
+%   yields \texttt{true}.  Otherwise, it is one of the characters
+%   resulting from \cs{tl_to_str:n}, and the catcode test yields
+%   \texttt{false}.  Note that \cs{if_catcode:w} and
+%   \cs{__kernel_tl_to_str:w} are primitives that take care of
+%   expansion.
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \tl_if_single:n #1 { p , T , F , TF }
+  {
+    \if_catcode:w ^ \exp_after:wN \@@_if_single:nnw
+        \__kernel_tl_to_str:w
+          \exp_after:wN { \use_none:nn #1 ?? } ^ ? \q_stop
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+\cs_new:Npn \@@_if_single:nnw #1#2#3 \q_stop {#2}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP, noTF]{\tl_case:Nn, \tl_case:cn}
+% \begin{macro}[EXP]{\@@_case:nnTF}
+% \begin{macro}[EXP]{\@@_case:Nw}
+% \begin{macro}[EXP]{\@@_case_end:nw}
+%   The aim here is to allow the case statement to be evaluated
+%   using a known number of expansion steps (two), and without
+%   needing to use an explicit \enquote{end of recursion} marker.
+%   That is achieved by using the test input as the final case,
+%   as this is always true. The trick is then to tidy up
+%   the output such that the appropriate case code plus either
+%   the \texttt{true} or \texttt{false} branch code is inserted.
+%    \begin{macrocode}
+\cs_new:Npn \tl_case:Nn #1#2
+  {
+    \exp:w
+    \@@_case:NnTF #1 {#2} { } { }
+  }
+\cs_new:Npn \tl_case:NnT #1#2#3
+  {
+    \exp:w
+    \@@_case:NnTF #1 {#2} {#3} { }
+  }
+\cs_new:Npn \tl_case:NnF #1#2#3
+  {
+    \exp:w
+    \@@_case:NnTF #1 {#2} { } {#3}
+  }
+\cs_new:Npn \tl_case:NnTF #1#2
+  {
+    \exp:w
+    \@@_case:NnTF #1 {#2}
+  }
+\cs_new:Npn \@@_case:NnTF #1#2#3#4
+  { \@@_case:Nw #1 #2 #1 { } \q_mark {#3} \q_mark {#4} \q_stop }
+\cs_new:Npn \@@_case:Nw #1#2#3
+  {
+    \tl_if_eq:NNTF #1 #2
+      { \@@_case_end:nw {#3} }
+      { \@@_case:Nw #1 }
+  }
+\cs_generate_variant:Nn \tl_case:Nn   { c }
+\prg_generate_conditional_variant:Nnn \tl_case:Nn
+  { c } { T , F , TF }
+%    \end{macrocode}
+%   To tidy up the recursion, there are two outcomes. If there was a hit to
+%   one of the cases searched for, then |#1| is the code to insert,
+%   |#2| is the \emph{next} case to check on and |#3| is all of
+%   the rest of the cases code. That means that |#4| is the \texttt{true}
+%   branch code, and |#5| tidies up the spare \cs{q_mark} and the
+%   \texttt{false} branch. On the other hand, if none of the cases matched
+%   then we arrive here using the \enquote{termination} case of comparing
+%   the search with itself. That means that |#1| is empty, |#2| is
+%   the first \cs{q_mark} and so |#4| is the \texttt{false} code (the
+%   \texttt{true} code is mopped up by |#3|).
+%    \begin{macrocode}
+\cs_new:Npn \@@_case_end:nw #1#2#3 \q_mark #4#5 \q_stop
+  { \exp_end: #1 #4 }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Mapping to token lists}
+%
+% \begin{macro}{\tl_map_function:nN}
+% \begin{macro}{\tl_map_function:NN, \tl_map_function:cN}
+% \begin{macro}{\@@_map_function:Nn}
+%   Expandable loop macro for token lists. These have the advantage of not
+%   needing to test if the argument is empty, because if it is, the stop
+%   marker is read immediately and the loop terminated.
+%    \begin{macrocode}
+\cs_new:Npn \tl_map_function:nN #1#2
+  {
+    \@@_map_function:Nn #2 #1
+      \q_recursion_tail
+    \prg_break_point:Nn \tl_map_break: { }
+  }
+\cs_new:Npn \tl_map_function:NN
+  { \exp_args:No \tl_map_function:nN }
+\cs_new:Npn \@@_map_function:Nn #1#2
+  {
+    \quark_if_recursion_tail_break:nN {#2} \tl_map_break:
+    #1 {#2} \@@_map_function:Nn #1
+  }
+\cs_generate_variant:Nn \tl_map_function:NN { c }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\tl_map_inline:nn}
+% \begin{macro}{\tl_map_inline:Nn, \tl_map_inline:cn}
+%   The inline functions are straight forward by now. We use a little
+%   trick with the counter \cs{g__kernel_prg_map_int} to make
+%   them nestable. We can also make use of \cs{@@_map_function:Nn}
+%   from before.
+%    \begin{macrocode}
+\cs_new_protected:Npn \tl_map_inline:nn #1#2
+  {
+    \int_gincr:N \g__kernel_prg_map_int
+    \cs_gset_protected:cpn
+      { @@_map_ \int_use:N \g__kernel_prg_map_int :w } ##1 {#2}
+    \exp_args:Nc \@@_map_function:Nn
+      { @@_map_ \int_use:N \g__kernel_prg_map_int :w }
+      #1 \q_recursion_tail
+    \prg_break_point:Nn \tl_map_break:
+      { \int_gdecr:N \g__kernel_prg_map_int }
+  }
+\cs_new_protected:Npn \tl_map_inline:Nn
+  { \exp_args:No \tl_map_inline:nn }
+\cs_generate_variant:Nn \tl_map_inline:Nn { c }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\tl_map_variable:nNn}
+% \begin{macro}{\tl_map_variable:NNn, \tl_map_variable:cNn}
+% \begin{macro}{\@@_map_variable:Nnn}
+%   \cs{tl_map_variable:nNn} \meta{token list} \meta{temp} \meta{action}
+%   assigns
+%   \meta{temp} to each element and executes \meta{action}.
+%    \begin{macrocode}
+\cs_new_protected:Npn \tl_map_variable:nNn #1#2#3
+  {
+    \@@_map_variable:Nnn #2 {#3} #1
+      \q_recursion_tail
+    \prg_break_point:Nn \tl_map_break: { }
+  }
+\cs_new_protected:Npn \tl_map_variable:NNn
+  { \exp_args:No \tl_map_variable:nNn }
+\cs_new_protected:Npn \@@_map_variable:Nnn #1#2#3
+  {
+    \tl_set:Nn #1 {#3}
+    \quark_if_recursion_tail_break:NN #1 \tl_map_break:
+    \use:n {#2}
+    \@@_map_variable:Nnn #1 {#2}
+  }
+\cs_generate_variant:Nn \tl_map_variable:NNn { c }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\tl_map_break:}
+% \begin{macro}{\tl_map_break:n}
+%   The break statements use the general \cs{prg_map_break:Nn}.
+%    \begin{macrocode}
+\cs_new:Npn \tl_map_break:
+  { \prg_map_break:Nn \tl_map_break: { } }
+\cs_new:Npn \tl_map_break:n
+  { \prg_map_break:Nn \tl_map_break: }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Using token lists}
+%
+% \begin{macro}{\tl_to_str:n, \tl_to_str:V}
+%   Another name for a primitive: defined in \pkg{l3basics}.
+%    \begin{macrocode}
+\cs_generate_variant:Nn \tl_to_str:n { V }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\tl_to_str:N, \tl_to_str:c}
+%    These functions return the replacement text of a token list as a
+%    string.
+%    \begin{macrocode}
+\cs_new:Npn \tl_to_str:N #1 { \__kernel_tl_to_str:w \exp_after:wN {#1} }
+\cs_generate_variant:Nn \tl_to_str:N { c }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\tl_use:N, \tl_use:c}
+% Token lists which are simply not defined give a clear \TeX{}
+% error here. No such luck for ones equal to \cs{scan_stop:} so
+% instead a test is made and if there is an issue an error is forced.
+%    \begin{macrocode}
+\cs_new:Npn \tl_use:N #1
+  {
+    \tl_if_exist:NTF #1 {#1}
+      {
+        \__kernel_msg_expandable_error:nnn
+          { kernel } { bad-variable } {#1}
+      }
+  }
+\cs_generate_variant:Nn \tl_use:N { c }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Working with the contents of token lists}
+%
+% \begin{macro}{\tl_count:n, \tl_count:V, \tl_count:o}
+% \begin{macro}{\tl_count:N, \tl_count:c}
+% \begin{macro}{\@@_count:n}
+%   Count number of elements within a token list or token list
+%   variable. Brace groups within the list are read as a single
+%   element. Spaces are ignored.
+%   \cs{@@_count:n} grabs the element and replaces it by |+1|.
+%   The |0| ensures that it works on an empty list.
+%    \begin{macrocode}
+\cs_new:Npn \tl_count:n #1
+  {
+    \int_eval:n
+      { 0 \tl_map_function:nN {#1} \@@_count:n }
+  }
+\cs_new:Npn \tl_count:N #1
+  {
+    \int_eval:n
+      { 0 \tl_map_function:NN #1 \@@_count:n }
+  }
+\cs_new:Npn \@@_count:n #1 { + 1 }
+\cs_generate_variant:Nn \tl_count:n { V , o }
+\cs_generate_variant:Nn \tl_count:N { c }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\tl_reverse_items:n}
+% \begin{macro}{\@@_reverse_items:nwNwn}
+% \begin{macro}{\@@_reverse_items:wn}
+%    Reversal of a token list is done by taking one item at a time
+%    and putting it after \cs{q_stop}.
+%    \begin{macrocode}
+\cs_new:Npn \tl_reverse_items:n #1
+  {
+    \@@_reverse_items:nwNwn #1 ?
+      \q_mark \@@_reverse_items:nwNwn
+      \q_mark \@@_reverse_items:wn
+      \q_stop { }
+  }
+\cs_new:Npn \@@_reverse_items:nwNwn #1 #2 \q_mark #3 #4 \q_stop #5
+  {
+    #3 #2
+      \q_mark \@@_reverse_items:nwNwn
+      \q_mark \@@_reverse_items:wn
+      \q_stop { {#1} #5 }
+  }
+\cs_new:Npn \@@_reverse_items:wn #1 \q_stop #2
+  { \exp_not:o { \use_none:nn #2 } }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\tl_trim_spaces:n, \tl_trim_spaces:o}
+% \begin{macro}{\tl_trim_spaces_apply:nN, \tl_trim_spaces_apply:oN}
+% \begin{macro}
+%   {
+%     \tl_trim_spaces:N, \tl_trim_spaces:c,
+%     \tl_gtrim_spaces:N, \tl_gtrim_spaces:c
+%   }
+%   Trimming spaces from around the input is deferred to an internal
+%   function whose first argument is the token list to trim, augmented
+%   by an initial \cs{q_mark}, and whose second argument is a
+%   \meta{continuation}, which receives as a braced argument
+%   \cs{use_none:n} \cs{q_mark} \meta{trimmed token list}.  In the case
+%   at hand, we take \cs{exp_not:o} as our continuation, so that space
+%   trimming behaves correctly within an \texttt{x}-type expansion.
+%    \begin{macrocode}
+\cs_new:Npn \tl_trim_spaces:n #1
+  { \@@_trim_spaces:nn { \q_mark #1 } \exp_not:o }
+\cs_generate_variant:Nn \tl_trim_spaces:n { o }
+\cs_new:Npn \tl_trim_spaces_apply:nN #1#2
+  { \@@_trim_spaces:nn { \q_mark #1 } { \exp_args:No #2 } }
+\cs_generate_variant:Nn \tl_trim_spaces_apply:nN { o }
+\cs_new_protected:Npn \tl_trim_spaces:N #1
+  { \tl_set:Nx #1 { \exp_args:No \tl_trim_spaces:n {#1} } }
+\cs_new_protected:Npn \tl_gtrim_spaces:N #1
+  { \tl_gset:Nx #1 { \exp_args:No \tl_trim_spaces:n {#1} } }
+\cs_generate_variant:Nn \tl_trim_spaces:N  { c }
+\cs_generate_variant:Nn \tl_gtrim_spaces:N { c }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\@@_trim_spaces:nn}
+% \begin{macro}
+%   {
+%     \@@_trim_spaces_auxi:w, \@@_trim_spaces_auxii:w,
+%     \@@_trim_spaces_auxiii:w, \@@_trim_spaces_auxiv:w
+%   }
+%   Trimming spaces from around the input is done using delimited
+%   arguments and quarks, and to get spaces at odd places in the
+%   definitions, we nest those in \cs{@@_tmp:w}, which then receives
+%   a single space as its argument: |#1| is \verb*+ +.
+%   Removing leading spaces is done with \cs{@@_trim_spaces_auxi:w},
+%   which loops until \cs{q_mark}\verb*+ + matches the end of the token
+%   list: then |##1| is the token list and |##3| is
+%   \cs{@@_trim_spaces_auxii:w}. This hands the relevant tokens to the
+%   loop \cs{@@_trim_spaces_auxiii:w}, responsible for trimming
+%   trailing spaces. The end is reached when \verb*+ + \cs{q_nil}
+%   matches the one present in the definition of \cs{tl_trim_spacs:n}.
+%   Then \cs{@@_trim_spaces_auxiv:w} puts the token list into a group,
+%   with \cs{use_none:n} placed there to gobble a lingering \cs{q_mark},
+%   and feeds this to the \meta{continuation}.
+%    \begin{macrocode}
+\cs_set:Npn \@@_tmp:w #1
+  {
+    \cs_new:Npn \@@_trim_spaces:nn ##1
+      {
+        \@@_trim_spaces_auxi:w
+          ##1
+          \q_nil
+          \q_mark #1 { }
+          \q_mark \@@_trim_spaces_auxii:w
+          \@@_trim_spaces_auxiii:w
+          #1 \q_nil
+          \@@_trim_spaces_auxiv:w
+        \q_stop
+      }
+    \cs_new:Npn \@@_trim_spaces_auxi:w ##1 \q_mark #1 ##2 \q_mark ##3
+      {
+        ##3
+        \@@_trim_spaces_auxi:w
+        \q_mark
+        ##2
+        \q_mark #1 {##1}
+      }
+    \cs_new:Npn \@@_trim_spaces_auxii:w
+        \@@_trim_spaces_auxi:w \q_mark \q_mark ##1
+      {
+        \@@_trim_spaces_auxiii:w
+        ##1
+      }
+    \cs_new:Npn \@@_trim_spaces_auxiii:w ##1 #1 \q_nil ##2
+      {
+        ##2
+        ##1 \q_nil
+        \@@_trim_spaces_auxiii:w
+      }
+    \cs_new:Npn \@@_trim_spaces_auxiv:w ##1 \q_nil ##2 \q_stop ##3
+      { ##3 { \use_none:n ##1 } }
+  }
+\@@_tmp:w { ~ }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}
+%   {\tl_sort:Nn, \tl_sort:cn, \tl_gsort:Nn, \tl_gsort:cn, \tl_sort:nN}
+%   Implemented in \pkg{l3sort}.
+% \end{macro}
+%
+% \subsection{Token by token changes}
+%
+% \begin{variable}{\q_@@_act_mark, \q_@@_act_stop}
+%   The \cs[no-index]{@@_act_\ldots{}} functions may be applied to any token list.
+%   Hence, we use two private quarks, to allow any token, even quarks,
+%   in the token list.
+%   Only \cs{q_@@_act_mark} and \cs{q_@@_act_stop} may not appear
+%   in the token lists manipulated by \cs{@@_act:NNNnn} functions.
+%   No quark module yet, so do things by hand.
+%    \begin{macrocode}
+\cs_new_nopar:Npn \q_@@_act_mark { \q_@@_act_mark }
+\cs_new_nopar:Npn \q_@@_act_stop { \q_@@_act_stop }
+%    \end{macrocode}
+% \end{variable}
+%
+% \begin{macro}[EXP]{\@@_act:NNNnn}
+% \begin{macro}[EXP]{\@@_act_output:n, \@@_act_reverse_output:n}
+% \begin{macro}[EXP]{\@@_act_loop:w}
+% \begin{macro}[EXP]{\@@_act_normal:NwnNNN}
+% \begin{macro}[EXP]{\@@_act_group:nwnNNN}
+% \begin{macro}[EXP]{\@@_act_space:wwnNNN}
+% \begin{macro}[EXP]{\@@_act_end:w}
+%   To help control the expansion, \cs{@@_act:NNNnn} should always
+%   be proceeded by \cs{exp:w} and ends by producing \cs{exp_end:}
+%   once the result has been obtained. Then loop over tokens,
+%   groups, and spaces in |#5|. The marker \cs{q_@@_act_mark}
+%   is used both to avoid losing outer braces and to detect the
+%   end of the token list more easily. The result is stored
+%   as an argument for the dummy function \cs{@@_act_result:n}.
+%    \begin{macrocode}
+\cs_new:Npn \@@_act:NNNnn #1#2#3#4#5
+  {
+    \group_align_safe_begin:
+    \@@_act_loop:w #5 \q_@@_act_mark \q_@@_act_stop
+    {#4} #1 #2 #3
+    \@@_act_result:n { }
+  }
+%    \end{macrocode}
+%   In the loop, we check how the token list begins and act
+%   accordingly. In the \enquote{normal} case, we may have
+%   reached \cs{q_@@_act_mark}, the end of the list. Then
+%   leave \cs{exp_end:} and the result in the input stream,
+%   to terminate the expansion of \cs{exp:w}.
+%   Otherwise, apply the relevant function to the
+%   \enquote{arguments}, |#3|
+%   and to the head of the token list. Then repeat the loop.
+%   The scheme is the same if the token list starts with a
+%   group or with a space. Some extra work is needed to
+%   make \cs{@@_act_space:wwnNNN} gobble the space.
+%    \begin{macrocode}
+\cs_new:Npn \@@_act_loop:w #1 \q_@@_act_stop
+  {
+    \tl_if_head_is_N_type:nTF {#1}
+      { \@@_act_normal:NwnNNN }
+      {
+        \tl_if_head_is_group:nTF {#1}
+          { \@@_act_group:nwnNNN }
+          { \@@_act_space:wwnNNN }
+      }
+    #1 \q_@@_act_stop
+  }
+\cs_new:Npn \@@_act_normal:NwnNNN #1 #2 \q_@@_act_stop #3#4
+  {
+    \if_meaning:w \q_@@_act_mark #1
+      \exp_after:wN \@@_act_end:wn
+    \fi:
+    #4 {#3} #1
+    \@@_act_loop:w #2 \q_@@_act_stop
+    {#3} #4
+  }
+\cs_new:Npn \@@_act_end:wn #1 \@@_act_result:n #2
+  { \group_align_safe_end: \exp_end: #2 }
+\cs_new:Npn \@@_act_group:nwnNNN #1 #2 \q_@@_act_stop #3#4#5
+  {
+    #5 {#3} {#1}
+    \@@_act_loop:w #2 \q_@@_act_stop
+    {#3} #4 #5
+  }
+\exp_last_unbraced:NNo
+  \cs_new:Npn \@@_act_space:wwnNNN \c_space_tl #1 \q_@@_act_stop #2#3#4#5
+  {
+    #5 {#2}
+    \@@_act_loop:w #1 \q_@@_act_stop
+    {#2} #3 #4 #5
+  }
+%    \end{macrocode}
+%   Typically, the output is done to the right of what was already output,
+%   using \cs{@@_act_output:n}, but for the \cs{@@_act_reverse} functions,
+%   it should be done to the left.
+%    \begin{macrocode}
+\cs_new:Npn \@@_act_output:n #1 #2 \@@_act_result:n #3
+  { #2 \@@_act_result:n { #3 #1 } }
+\cs_new:Npn \@@_act_reverse_output:n #1 #2 \@@_act_result:n #3
+  { #2 \@@_act_result:n { #1 #3 } }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\tl_reverse:n, \tl_reverse:o, \tl_reverse:V}
+% \begin{macro}[EXP]{\@@_reverse_normal:nN}
+% \begin{macro}[EXP]{\@@_reverse_group_preserve:nn}
+% \begin{macro}[EXP]{\@@_reverse_space:n}
+%   The goal here is to reverse without losing spaces nor braces.
+%   This is done using the general internal function \cs{@@_act:NNNnn}.
+%   Spaces and \enquote{normal} tokens are output on the left of the current
+%   output. Grouped tokens are output to the left but without any reversal
+%   within the group. All of the internal functions here drop one argument:
+%   this is needed by \cs{@@_act:NNNnn} when changing case (to record
+%   which direction the change is in), but not when reversing the tokens.
+%    \begin{macrocode}
+\cs_new:Npn \tl_reverse:n #1
+  {
+    \__kernel_exp_not:w \exp_after:wN
+      {
+        \exp:w
+        \@@_act:NNNnn
+          \@@_reverse_normal:nN
+          \@@_reverse_group_preserve:nn
+          \@@_reverse_space:n
+          { }
+          {#1}
+      }
+  }
+\cs_generate_variant:Nn \tl_reverse:n { o , V }
+\cs_new:Npn \@@_reverse_normal:nN #1#2
+  { \@@_act_reverse_output:n {#2} }
+\cs_new:Npn \@@_reverse_group_preserve:nn #1#2
+  { \@@_act_reverse_output:n { {#2} } }
+\cs_new:Npn \@@_reverse_space:n #1
+  { \@@_act_reverse_output:n { ~ } }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\tl_reverse:N, \tl_reverse:c, \tl_greverse:N, \tl_greverse:c}
+%   This reverses the list, leaving \cs{exp_stop_f:} in front,
+%   which stops the \texttt{f}-expansion.
+%    \begin{macrocode}
+\cs_new_protected:Npn \tl_reverse:N #1
+  { \tl_set:Nx #1 { \exp_args:No \tl_reverse:n { #1 } } }
+\cs_new_protected:Npn \tl_greverse:N #1
+  { \tl_gset:Nx #1 { \exp_args:No \tl_reverse:n { #1 } } }
+\cs_generate_variant:Nn \tl_reverse:N  { c }
+\cs_generate_variant:Nn \tl_greverse:N { c }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{The first token from a token list}
+%
+% \begin{macro}{\tl_head:N, \tl_head:n, \tl_head:V, \tl_head:v, \tl_head:f}
+% \begin{macro}{\@@_head_auxi:nw, \@@_head_auxii:n}
+% \begin{macro}{\tl_head:w}
+% \begin{macro}{\tl_tail:N, \tl_tail:n, \tl_tail:V, \tl_tail:v, \tl_tail:f}
+%   Finding the head of a token list expandably always strips braces, which
+%   is fine as this is consistent with for example mapping to a list. The
+%   empty brace groups in \cs{tl_head:n} ensure that a blank argument gives an
+%   empty result. The result is returned within the \tn{unexpanded} primitive.
+%   The approach here is to use \cs{if_false:} to allow us to use |}| as
+%   the closing delimiter: this is the only safe choice, as any other token
+%   would not be able to parse it's own code. Using a marker, we can see if
+%   what we are grabbing is exactly the marker, or there is anything else to
+%   deal with. Is there is, there is a loop. If not, tidy up and leave the
+%   item in the output stream. More detail in
+%   \url{http://tex.stackexchange.com/a/70168}.
+%    \begin{macrocode}
+\cs_new:Npn \tl_head:n #1
+  {
+    \__kernel_exp_not:w
+      \if_false: { \fi: \@@_head_auxi:nw #1 { } \q_stop }
+  }
+\cs_new:Npn \@@_head_auxi:nw #1#2 \q_stop
+  {
+    \exp_after:wN \@@_head_auxii:n \exp_after:wN {
+      \if_false: } \fi: {#1}
+  }
+\cs_new:Npn \@@_head_auxii:n #1
+  {
+    \exp_after:wN \if_meaning:w \exp_after:wN \q_nil
+      \__kernel_tl_to_str:w \exp_after:wN { \use_none:n #1 } \q_nil
+      \exp_after:wN \use_i:nn
+    \else:
+      \exp_after:wN \use_ii:nn
+    \fi:
+      {#1}
+      { \if_false: { \fi: \@@_head_auxi:nw #1 } }
+  }
+\cs_generate_variant:Nn \tl_head:n { V , v , f }
+\cs_new:Npn \tl_head:w #1#2 \q_stop {#1}
+\cs_new:Npn \tl_head:N { \exp_args:No \tl_head:n }
+%    \end{macrocode}
+%   To correctly leave the tail of a token list, it's important \emph{not} to
+%   absorb any of the tail part as an argument. For example, the simple
+%   definition
+%   \begin{verbatim}
+%     \cs_new:Npn \tl_tail:n #1 { \tl_tail:w #1 \q_stop }
+%     \cs_new:Npn \tl_tail:w #1#2 \q_stop
+%   \end{verbatim}
+%   would give the wrong result for |\tl_tail:n { a { bc } }| (the braces would
+%   be stripped). Thus the only safe way to proceed is to first check that
+%   there is an item to grab (\emph{i.e.}~that the argument is not blank) and
+%   assuming there is to dispose of the first item.  As with \cs{tl_head:n},
+%   the result is protected from further expansion by \tn{unexpanded}.
+%   While we could optimise the test here, this would leave some tokens
+%   \enquote{banned} in the input, which we do not have with this definition.
+%    \begin{macrocode}
+\cs_new:Npn \tl_tail:n #1
+  {
+    \__kernel_exp_not:w
+      \tl_if_blank:nTF {#1}
+        { { } }
+        { \exp_after:wN { \use_none:n #1 } }
+  }
+\cs_generate_variant:Nn \tl_tail:n { V , v , f }
+\cs_new:Npn \tl_tail:N { \exp_args:No \tl_tail:n }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[pTF]{\tl_if_head_eq_meaning:nN}
+% \begin{macro}[pTF]{\tl_if_head_eq_charcode:nN}
+% \begin{macro}[pTF]{\tl_if_head_eq_charcode:fN}
+% \begin{macro}[pTF]{\tl_if_head_eq_catcode:nN}
+%   Accessing the first token of a token list is tricky in three cases:
+%   when it has category code $1$ (begin-group token), when it is an
+%   explicit space, with category code $10$ and character code $32$, or
+%   when the token list is empty (obviously).
+%
+%   Forgetting temporarily about this issue we would use the following
+%   test in \cs{tl_if_head_eq_charcode:nN}.  Here, \cs{tl_head:w} yields
+%   the first token of the token list, then passed to \cs{exp_not:N}.
+% \begin{verbatim}
+% \if_charcode:w
+%     \exp_after:wN \exp_not:N \tl_head:w #1 \q_nil \q_stop
+%     \exp_not:N #2
+% \end{verbatim}
+%   The two first special cases are detected by testing if the token
+%   list starts with an \texttt{N}-type token (the extra |?| sends empty
+%   token lists to the \texttt{true} branch of this test).  In those
+%   cases, the first token is a character, and since we only care about
+%   its character code, we can use \cs{str_head:n} to access it (this
+%   works even if it is a space character).  An empty argument
+%   results in \cs{tl_head:w} leaving two tokens: |?| which is taken in
+%   the \cs{if_charcode:w} test, and \cs{use_none:nn}, which ensures
+%   that \cs{prg_return_false:} is returned regardless of whether the
+%   charcode test was \texttt{true} or \texttt{false}.
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \tl_if_head_eq_charcode:nN #1#2 { p , T , F , TF }
+  {
+    \if_charcode:w
+        \exp_not:N #2
+        \tl_if_head_is_N_type:nTF { #1 ? }
+          {
+            \exp_after:wN \exp_not:N
+            \tl_head:w #1 { ? \use_none:nn } \q_stop
+          }
+          { \str_head:n {#1} }
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+\prg_generate_conditional_variant:Nnn \tl_if_head_eq_charcode:nN
+  { f } { p , TF , T , F }
+%    \end{macrocode}
+%   For \cs{tl_if_head_eq_catcode:nN}, again we detect special cases
+%   with a \cs{tl_if_head_is_N_type:n}.  Then we need to test if the
+%   first token is a begin-group token or an explicit space token, and
+%   produce the relevant token, either \cs{c_group_begin_token} or
+%   \cs{c_space_token}.  Again, for an empty argument, a hack is used,
+%   removing \cs{prg_return_true:} and \cs{else:} with \cs{use_none:nn}
+%   in case the catcode test with the (arbitrarily chosen) |?| is
+%   \texttt{true}.
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \tl_if_head_eq_catcode:nN #1 #2 { p , T , F , TF }
+  {
+    \if_catcode:w
+        \exp_not:N #2
+        \tl_if_head_is_N_type:nTF { #1 ? }
+          {
+            \exp_after:wN \exp_not:N
+            \tl_head:w #1 { ? \use_none:nn } \q_stop
+          }
+          {
+            \tl_if_head_is_group:nTF {#1}
+              { \c_group_begin_token }
+              { \c_space_token }
+          }
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+%    \end{macrocode}
+%   For \cs{tl_if_head_eq_meaning:nN}, again, detect special cases.  In
+%   the normal case, use \cs{tl_head:w}, with no \cs{exp_not:N} this
+%   time, since \cs{if_meaning:w} causes no expansion.  With an empty
+%   argument, the test is \texttt{true}, and \cs{use_none:nnn} removes
+%   |#2| and the usual \cs{prg_return_true:} and \cs{else:}.
+%   In the special cases, we know that the first token is a character,
+%   hence \cs{if_charcode:w} and \cs{if_catcode:w} together are enough.
+%   We combine them in some order, hopefully faster than the reverse.
+%   Tests are not nested because the arguments may contain unmatched
+%   primitive conditionals.
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \tl_if_head_eq_meaning:nN #1#2 { p , T , F , TF }
+  {
+    \tl_if_head_is_N_type:nTF { #1 ? }
+      { \@@_if_head_eq_meaning_normal:nN }
+      { \@@_if_head_eq_meaning_special:nN }
+    {#1} #2
+  }
+\cs_new:Npn \@@_if_head_eq_meaning_normal:nN #1 #2
+  {
+    \exp_after:wN \if_meaning:w
+        \tl_head:w #1 { ?? \use_none:nnn } \q_stop #2
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+\cs_new:Npn \@@_if_head_eq_meaning_special:nN #1 #2
+  {
+    \if_charcode:w \str_head:n {#1} \exp_not:N #2
+      \exp_after:wN \use:n
+    \else:
+      \prg_return_false:
+      \exp_after:wN \use_none:n
+    \fi:
+    {
+      \if_catcode:w \exp_not:N #2
+                    \tl_if_head_is_group:nTF {#1}
+                      { \c_group_begin_token }
+                      { \c_space_token }
+        \prg_return_true:
+      \else:
+        \prg_return_false:
+      \fi:
+    }
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[pTF]{\tl_if_head_is_N_type:n}
+% \begin{macro}[EXP]{\@@_if_head_is_N_type:w}
+%   A token list can be empty, can start with an explicit space
+%   character (catcode 10 and charcode 32), can start with a begin-group
+%   token (catcode 1), or start with an \texttt{N}-type argument.  In
+%   the first two cases, the line involving \cs{@@_if_head_is_N_type:w}
+%   produces~|^| (and otherwise nothing).  In the third case
+%   (begin-group token), the lines involving \cs{exp_after:wN} produce a
+%   single closing brace.  The category code test is thus true exactly
+%   in the fourth case, which is what we want.  One cannot optimize by
+%   moving one of the |*| to the beginning: if |#1| contains primitive
+%   conditionals, all of its occurrences must be dealt with before the
+%   \cs{if_catcode:w} tries to skip the \texttt{true} branch of the
+%   conditional.
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \tl_if_head_is_N_type:n #1 { p , T , F , TF }
+  {
+    \if_catcode:w
+        \if_false: { \fi: \@@_if_head_is_N_type:w ? #1 ~ }
+        \exp_after:wN \use_none:n
+          \exp_after:wN { \exp_after:wN { \token_to_str:N #1 ? } }
+        * *
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+\cs_new:Npn \@@_if_head_is_N_type:w #1 ~
+  {
+    \tl_if_empty:oTF { \use_none:n #1 } { ^ } { }
+    \exp_after:wN \use_none:n \exp_after:wN { \if_false: } \fi:
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP,pTF]{\tl_if_head_is_group:n}
+%   Pass the first token of |#1| through \cs{token_to_str:N},
+%   then check for the brace balance. The extra \texttt{?}
+%   caters for an empty argument.\footnote{Bruno: this could
+%     be made faster, but we don't: if we hope to ever have
+%     an e-type argument, we need all brace \enquote{tricks}
+%     to happen in one step of expansion, keeping the token
+%     list brace balanced at all times.}
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \tl_if_head_is_group:n #1 { p , T , F , TF }
+  {
+    \if_catcode:w
+        \exp_after:wN \use_none:n
+          \exp_after:wN { \exp_after:wN { \token_to_str:N #1 ? } }
+        * *
+      \prg_return_false:
+    \else:
+      \prg_return_true:
+    \fi:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[EXP,pTF]{\tl_if_head_is_space:n}
+% \begin{macro}[EXP]{\@@_if_head_is_space:w}
+%   The auxiliary's argument is all that is before the first explicit
+%   space in |?#1?~|.  If that is a single~|?| the test yields
+%   \texttt{true}.  Otherwise, that is more than one token, and the test
+%   yields \texttt{false}.  The work is done within braces (with an
+%   |\if_false: { \fi: ... }| construction) both to hide potential
+%   alignment tab characters from \TeX{} in a table, and to allow for
+%   removing what remains of the token list after its first space.  The
+%   \cs{exp:w} and \cs{exp_end:} ensure that the result of a
+%   single step of expansion directly yields a balanced token list (no
+%   trailing closing brace).
+%    \begin{macrocode}
+\prg_new_conditional:Npnn \tl_if_head_is_space:n #1 { p , T , F , TF }
+  {
+    \exp:w \if_false: { \fi:
+      \@@_if_head_is_space:w ? #1 ? ~ }
+  }
+\cs_new:Npn \@@_if_head_is_space:w #1 ~
+  {
+    \tl_if_empty:oTF { \use_none:n #1 }
+      { \exp_after:wN \exp_end: \exp_after:wN \prg_return_true: }
+      { \exp_after:wN \exp_end: \exp_after:wN \prg_return_false: }
+    \exp_after:wN \use_none:n \exp_after:wN { \if_false: } \fi:
+  }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Using a single item}
+%
+% \begin{macro}{\tl_item:nn, \tl_item:Nn, \tl_item:cn}
+% \begin{macro}{\@@_item_aux:nn, \@@_item:nn}
+%   The idea here is to find the offset of the item from the left, then use
+%   a loop to grab the correct item. If the resulting offset is too large,
+%   then \cs{quark_if_recursion_tail_stop:n} terminates the loop, and returns
+%   nothing at all.
+%    \begin{macrocode}
+\cs_new:Npn \tl_item:nn #1#2
+  {
+    \exp_args:Nf \@@_item:nn
+      { \exp_args:Nf \@@_item_aux:nn { \int_eval:n {#2} } {#1} }
+    #1
+    \q_recursion_tail
+    \prg_break_point:
+  }
+\cs_new:Npn \@@_item_aux:nn #1#2
+  {
+    \int_compare:nNnTF {#1} < 0
+      { \int_eval:n { \tl_count:n {#2} + 1 + #1 } }
+      {#1}
+  }
+\cs_new:Npn \@@_item:nn #1#2
+  {
+    \quark_if_recursion_tail_break:nN {#2} \prg_break:
+    \int_compare:nNnTF {#1} = 1
+      { \prg_break:n { \exp_not:n {#2} } }
+      { \exp_args:Nf \@@_item:nn { \int_eval:n { #1 - 1 } } }
+  }
+\cs_new:Npn \tl_item:Nn { \exp_args:No \tl_item:nn }
+\cs_generate_variant:Nn \tl_item:Nn { c }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\tl_rand_item:n, \tl_rand_item:N, \tl_rand_item:c}
+%   Importantly \cs{tl_item:nn} only evaluates its argument once.
+%    \begin{macrocode}
+\cs_new:Npn \tl_rand_item:n #1
+  {
+    \tl_if_blank:nF {#1}
+      { \tl_item:nn {#1} { \int_rand:nn { 1 } { \tl_count:n {#1} } } }
+  }
+\cs_new:Npn \tl_rand_item:N { \exp_args:No \tl_rand_item:n }
+\cs_generate_variant:Nn \tl_rand_item:N { c }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\tl_range:Nnn, \tl_range:cnn, \tl_range:nnn}
+% \begin{macro}
+%   {
+%     \@@_range:Nnnn, \@@_range:nnnNn, \@@_range:nnNn, \@@_range_skip:w,
+%     \@@_range:w, \@@_range_skip_spaces:n, \@@_range_collect:nn,
+%     \@@_range_collect:ff, \@@_range_collect_space:nw,
+%     \@@_range_collect_N:nN, \@@_range_collect_group:nN,
+%   }
+%   To avoid checking for the end of the token list at every step, start
+%   by counting the number $l$ of items and \enquote{normalizing} the
+%   bounds, namely clamping them to the interval $[0,l]$ and dealing
+%   with negative indices.  More precisely, \cs{@@_range_items:nnNn}
+%   receives the number of items to skip at the beginning of the token
+%   list, the index of the last item to keep, a function which is either
+%   \cs{@@_range:w} or the token list itself.  If nothing should be kept,
+%   leave |{}|: this stops the \texttt{f}-expansion of \cs{tl_head:f} and that
+%   function produces an empty result.  Otherwise, repeatedly call
+%   \cs{@@_range_skip:w} to delete |#1| items from the input stream (the
+%   extra brace group avoids an off-by-one shift).  For the braced
+%   version \cs{@@_range_braced:w} sets up
+%   \cs{@@_range_collect_braced:w} which stores items one by one in an
+%   argument after the semicolon. Depending on the first token of the tail,
+%   either just move  it (if it is a space) or also decrement the number of
+%   items left to find.  Eventually, the result is a brace group followed by
+%   the rest of the token list, and \cs{tl_head:f} cleans up and gives the
+%   result in \cs{exp_not:n}.
+%    \begin{macrocode}
+\cs_new:Npn \tl_range:Nnn { \exp_args:No \tl_range:nnn }
+\cs_generate_variant:Nn \tl_range:Nnn { c }
+\cs_new:Npn \tl_range:nnn { \@@_range:Nnnn \@@_range:w }
+\cs_new:Npn \@@_range:Nnnn #1#2#3#4
+  {
+    \tl_head:f
+      {
+        \exp_args:Nf \@@_range:nnnNn
+          { \tl_count:n {#2} } {#3} {#4} #1 {#2}
+      }
+  }
+\cs_new:Npn \@@_range:nnnNn #1#2#3
+  {
+    \exp_args:Nff \@@_range:nnNn
+      {
+        \exp_args:Nf \@@_range_normalize:nn
+          { \int_eval:n { #2 - 1 } } {#1}
+      }
+      {
+        \exp_args:Nf \@@_range_normalize:nn
+          { \int_eval:n {#3} } {#1}
+      }
+  }
+\cs_new:Npn \@@_range:nnNn #1#2#3#4
+  {
+    \if_int_compare:w #2 > #1 \exp_stop_f: \else:
+      \exp_after:wN { \exp_after:wN }
+    \fi:
+    \exp_after:wN #3
+    \int_value:w \int_eval:n { #2 - #1 } \exp_after:wN ;
+    \exp_after:wN { \exp:w \@@_range_skip:w #1 ; { } #4 }
+  }
+\cs_new:Npn \@@_range_skip:w #1 ; #2
+  {
+    \if_int_compare:w #1 > 0 \exp_stop_f:
+      \exp_after:wN \@@_range_skip:w
+      \int_value:w \int_eval:n { #1 - 1 } \exp_after:wN ;
+    \else:
+      \exp_after:wN \exp_end:
+    \fi:
+  }
+\cs_new:Npn \@@_range:w #1 ; #2
+  {
+    \exp_args:Nf \@@_range_collect:nn
+      { \@@_range_skip_spaces:n {#2} } {#1}
+  }
+\cs_new:Npn \@@_range_skip_spaces:n #1
+  {
+    \tl_if_head_is_space:nTF {#1}
+      { \exp_args:Nf \@@_range_skip_spaces:n {#1} }
+      { { } #1 }
+  }
+\cs_new:Npn \@@_range_collect:nn #1#2
+  {
+    \int_compare:nNnTF {#2} = 0
+      {#1}
+      {
+        \exp_args:No \tl_if_head_is_space:nTF { \use_none:n #1 }
+          {
+            \exp_args:Nf \@@_range_collect:nn
+              { \@@_range_collect_space:nw #1 }
+              {#2}
+          }
+          {
+            \@@_range_collect:ff
+              {
+                \exp_args:No \tl_if_head_is_N_type:nTF { \use_none:n #1 }
+                  { \@@_range_collect_N:nN }
+                  { \@@_range_collect_group:nn }
+                #1
+              }
+              { \int_eval:n { #2 - 1 } }
+          }
+      }
+  }
+\cs_new:Npn \@@_range_collect_space:nw #1 ~ { { #1 ~ } }
+\cs_new:Npn \@@_range_collect_N:nN #1#2 { { #1 #2 } }
+\cs_new:Npn \@@_range_collect_group:nn #1#2 { { #1 {#2} } }
+\cs_generate_variant:Nn \@@_range_collect:nn { ff }
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}[EXP]{\@@_range_normalize:nn}
+%   This function converts an \meta{index} argument into an explicit
+%   position in the token list (a result of $0$ denoting \enquote{out of
+%   bounds}).  Expects two explicit integer arguments: the \meta{index}
+%   |#1| and the string count~|#2|.  If |#1| is negative, replace it by
+%   $|#1| + |#2| + 1$, then limit to the range $[0, |#2|]$.
+%    \begin{macrocode}
+\cs_new:Npn \@@_range_normalize:nn #1#2
+  {
+    \int_eval:n
+      {
+        \if_int_compare:w #1 < 0 \exp_stop_f:
+          \if_int_compare:w #1 < -#2 \exp_stop_f:
+            0
+          \else:
+            #1 + #2 + 1
+          \fi:
+        \else:
+          \if_int_compare:w #1 < #2 \exp_stop_f:
+            #1
+          \else:
+            #2
+          \fi:
+        \fi:
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Viewing token lists}
+%
+% \begin{macro}{\tl_show:N, \tl_show:c, \tl_log:N, \tl_log:c, \@@_show:NN}
+%   Showing token list variables is done after checking that the
+%   variable is defined (see \cs{__kernel_register_show:N}).
+%    \begin{macrocode}
+\cs_new_protected:Npn \tl_show:N { \@@_show:NN \tl_show:n }
+\cs_generate_variant:Nn \tl_show:N { c }
+\cs_new_protected:Npn \tl_log:N { \@@_show:NN \tl_log:n }
+\cs_generate_variant:Nn \tl_log:N { c }
+\cs_new_protected:Npn \@@_show:NN #1#2
+  {
+    \__kernel_chk_defined:NT #2
+      { \exp_args:Nx #1 { \token_to_str:N #2 = \exp_not:o {#2} } }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\tl_show:n, \@@_show:n}
+% \begin{macro}[EXP]{\@@_show:w}
+%   Many |show| functions are based on \cs{tl_show:n}.
+%   The argument of \cs{tl_show:n} is line-wrapped using
+%   \cs{iow_wrap:nnnN} but with a leading |>~| and trailing period, both
+%   removed before passing the wrapped text to the \tn{showtokens}
+%   primitive.  This primitive shows the result with a leading |>~| and
+%   trailing period.
+%
+%   The token list \cs{l_@@_internal_a_tl} containing the result
+%   of all these manipulations is displayed to the terminal using
+%   \cs{tex_showtokens:D} and an odd \cs{exp_after:wN} which expand the
+%   closing brace to improve the output slightly.  The calls to
+%   \cs{__kernel_iow_with:Nnn} ensure that the \tn{newlinechar} is set to~$10$
+%   so that the \cs{iow_newline:} inserted by the line-wrapping code
+%   are correctly recognized by \TeX{}, and that \tn{errorcontextlines}
+%   is $-1$ to avoid printing irrelevant context.
+%    \begin{macrocode}
+\cs_new_protected:Npn \tl_show:n #1
+  { \iow_wrap:nnnN { >~ \tl_to_str:n {#1} . } { } { } \@@_show:n }
+\cs_new_protected:Npn \@@_show:n #1
+  {
+    \tl_set:Nf \l_@@_internal_a_tl { \@@_show:w #1 \q_stop }
+    \__kernel_iow_with:Nnn \tex_newlinechar:D { 10 }
+      {
+        \__kernel_iow_with:Nnn \tex_errorcontextlines:D { -1 }
+          {
+            \tex_showtokens:D \exp_after:wN \exp_after:wN \exp_after:wN
+              { \exp_after:wN \l_@@_internal_a_tl }
+          }
+      }
+  }
+\cs_new:Npn \@@_show:w #1 > #2 . \q_stop {#2}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\tl_log:n}
+%   Logging is much easier, simply line-wrap.  The |>~| and trailing
+%   period is there to match the output of \cs{tl_show:n}.
+%    \begin{macrocode}
+\cs_new_protected:Npn \tl_log:n #1
+  { \iow_wrap:nnnN { > ~ \tl_to_str:n {#1} . } { } { } \iow_log:n }
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Scratch token lists}
+%
+% \begin{variable}{\g_tmpa_tl, \g_tmpb_tl}
+%    Global temporary token list variables.
+%    They are supposed to be set and used immediately,
+%    with no delay between the definition and the use because you
+%    can't count on other macros not to redefine them from under you.
+%    \begin{macrocode}
+\tl_new:N \g_tmpa_tl
+\tl_new:N \g_tmpb_tl
+%    \end{macrocode}
+% \end{variable}
+%
+% \begin{variable}{\l_tmpa_tl, \l_tmpb_tl}
+%    These are local temporary token list variables. Be sure not to assume
+%    that the value you put into them will survive for
+%    long---see discussion above.
+%    \begin{macrocode}
+\tl_new:N \l_tmpa_tl
+\tl_new:N \l_tmpb_tl
+%    \end{macrocode}
+% \end{variable}
+%
+%    \begin{macrocode}
+%</initex|package>
+%    \end{macrocode}
+%
+% \end{implementation}
+%
+% \PrintIndex

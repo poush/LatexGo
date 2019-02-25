@@ -1,0 +1,52 @@
+%%% This file is public domain.
+%%% Originally written 1992, Don Hosek.
+%%% This declaration added by Clea F. Rees 2008/11/16 with the permission of Dan Hosek.
+%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This file sets up a twenty point environment for TeX. It can be initialized
+% with the '\twentypoint' macro.
+% It also sets up a '\tenpoint' macro in case you want to go back down.
+% By Don Hosek (modified to 20 point by J. Leon)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+\ifx\tenpoint\undefined\let\loadedfrommacro=Y
+         \input 10point
+         \let\loadedfrommacro=N\fi
+ 
+\ifx\fourteenpoint\undefined
+         \input 14point
+         \fi
+ 
+%%%
+%%% Load in the fonts
+%%%
+\font\twentyrm=cmr17 scaled \magstep1
+\font\twentyi=cmmi12 scaled \magstep3
+\font\twentysy=cmsy10 scaled \magstep4
+\font\twentyex=cmex10 scaled \magstep4
+\font\twentybf=cmbx12 scaled \magstep3
+\font\twentysl=cmsl12 scaled \magstep3
+\font\twentytt=cmtt12 scaled \magstep3
+\font\twentyit=cmti12 scaled \magstep3
+\font\twentycsc=cmcsc10 scaled \magstep4
+ 
+%%%
+%%% Set up the twentypoint macros
+%%%
+\ifx\twentypoint\undefined
+   \def\twentypoint{\def\rm{\fam0\twentyrm}% switch to 20-point type
+       \textfont0=\twentyrm \scriptfont0=\fourteenrm \scriptscriptfont0=\tenrm
+       \textfont1=\twentyi  \scriptfont1=\fourteeni  \scriptscriptfont1=\teni
+       \textfont2=\twentysy \scriptfont2=\fourteensy \scriptscriptfont2=\tensy
+       \textfont3=\twentyex \scriptfont3=\twentyex
+                              \scriptscriptfont3=\twentyex
+       \textfont\itfam=\twentyit  \def\it{\fam\itfam\twentyit}%
+       \textfont\slfam=\twentysl  \def\sl{\fam\slfam\twentysl}%
+       \textfont\ttfam=\twentytt  \def\tt{\fam\ttfam\twentytt}%
+       \textfont\bffam=\twentybf  \scriptfont\bffam=\fourteenbf
+        \scriptscriptfont\bffam=\tenbf  \def\bf{\fam\bffam\twentybf}%
+       \textfont\scfam=\twentycsc \def\sc{\fam\scfam\twentycsc}%
+       \normalbaselineskip=25pt
+       \setbox\strutbox=\hbox{\vrule height20pt depth5pt width0pt}%
+       \normalbaselines\rm}
+   \fi

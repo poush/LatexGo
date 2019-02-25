@@ -1,0 +1,931 @@
+% ^^A -*- latex -*-
+% \iffalse meta-comment
+% 
+% This is file `gotoh.dtx'.
+% 
+% Copyright (c) 2017 Takuto ASAKURA (wtsnjp)
+%   GitHub:   https://github.com/wtsnjp
+%   Twitter:  @wtsnjp
+% 
+% This package is distributed under the MIT License.
+% 
+% \fi
+%
+% \CheckSum{984}
+%
+% \changes{v1.0}{2017/05/05}{The first version}
+% 
+% \iffalse
+%<*package>
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{gotoh}[2017/07/07 v1.1 Sequence alignment algorithm]
+%</package>
+%<*driver>
+\documentclass[draft]{ltxdoc}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{gotoh}
+\EnableCrossrefs
+\CodelineIndex
+\RecordChanges
+\setlength\hfuzz{15pt}
+\hbadness=7000
+\newcommand{\pkgName}[1]{\textsf{#1}}
+\newcommand{\pkgGotoh}{\pkgName{Gotoh}}
+\newcommand{\synKey}[1]{\texttt{#1}}
+\newcommand{\synOr}{\quad or\quad}
+\newcommand{\synBool}{\meta{\normalfont\texttt{true\textbar false}}}
+\newcommand{\defeq}{\equiv}
+\newcommand{\eqsep}{\;}
+\setlist[description]{font={\normalfont}}
+\begin{document}
+\DocInput{gotoh.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%   Dollar        \$     Percent       \%     Ampersand     \&
+%   Acute accent  \'     Left paren    \(     Right paren   \)
+%   Asterisk      \*     Plus          \+     Comma         \,
+%   Minus         \-     Point         \.     Solidus       \/
+%   Colon         \:     Semicolon     \;     Less than     \<
+%   Equals        \=     Greater than  \>     Question mark \?
+%   Commercial at \@     Left bracket  \[     Backslash     \\
+%   Right bracket \]     Circumflex    \^     Underscore    \_
+%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%   Right brace   \}     Tilde         \~}
+%
+% \GetFileInfo{gotoh.sty}
+%
+% \DoNotIndex{%
+%   \@empty,\@ne,\\,\advance,\bgroup,\csname,\def,\do,\edef,\egroup,\else,%
+%   \endcsname,\expandafter,\fi,\global,\hbox,\hss,\ht,\let,\m@ne,\mbox,%
+%   \multiply,\newcommand,\newcount,\newdimen,\newif,\number,\PackageError,%
+%   \PackageWarningNoLine,\relax,\RequirePackage,\sbox,\texttt,\the,\xdef,\z@}
+%
+% \title{The {\pkgGotoh} package}
+% \author{Takuto ASAKURA (wtsnjp)}
+% \date{{\fileversion} [\filedate]}
+% \maketitle
+%
+% \MakeShortVerb{\|}
+%
+% \begin{abstract}
+% This package is an implementation in {\TeX} of the Gotoh algorithm, which
+% calculates biological sequence alignments. The package provides only two user
+% commands: |\Gotoh| for executing the algorithm and |\GotohConfig| for setting
+% various parameters with a key-value list.
+% \end{abstract}
+%
+% ^^A\tableofcontents
+%
+% \section{System Requirements}
+%
+% System requirements of {\pkgGotoh} are shown bellow.
+% \begin{itemize}
+% \item {\TeX} engine: any engine
+% \item {\TeX} format: {\LaTeXe}
+% \item Document class: any class
+% \item Required package: \pkgName{xkeyval}
+% \end{itemize}
+%
+% \section{Loading the {\pkgGotoh} Package}
+%
+% To use the {\pkgGotoh} package, load |gotoh.sty| with |\usepackage| command
+% in preamble. No package option is available.
+% \begin{quote}
+% |\usepackage{gotoh}|
+% \end{quote}
+%
+% \section{Calculating the Alignment}
+%
+% \DescribeMacro{\Gotoh}
+% The syntax of |\Gotoh| is shown below.
+% \begin{quote}
+% |\Gotoh|\oarg{key-value list}\marg{sequence A}\marg{sequence B}
+% \end{quote}
+% The command puts the optimal score of the alignment to specified control
+% sequence (default: |\GotohScore|) after executing the Gotoh algorithm, and
+% returns the alignment results to other control sequences (default:
+% |\GotohResultA| and |\GotohResultB|). Note that these assignments are done
+% globally. Using the optional argument, you can change the configuration
+% temporary with the same keys in |\GotohConfig| (see the next section).
+%
+% \section{Configuration}
+%
+% \DescribeMacro{\GotohConfig}
+% You can change various settings and parameters related to this package with
+% |\GotohConfig| command. The command takes a key-value list of the settings as
+% its argument and changes the values locally.
+% \begin{quote}
+% |\GotohConfig|\marg{key-value list}
+% \end{quote}
+%
+% \subsection{Control Sequences to Store Results}
+%
+% \DescribeMacro{\GotohScore}
+% \DescribeMacro{\GotohResultA}
+% \DescribeMacro{\GotohResultB}
+% Control sequences which |\Gotoh| command return results can be specified with
+% following keys:
+%
+% \begin{description}
+% \item[\synKey{score} |=| \meta{control sequence}]\hfill |\GotohScore| \\
+%   sets the control sequence to store optimal score of the last alignment
+%   which calculated by |\Gotoh| command.
+% \item[\synKey{result A} |=| \meta{control sequence}]\hfill |\GotohResultA|
+% \item[\synKey{result B} |=| \meta{control sequence}]\hfill |\GotohResultB| \\
+%   specify the control sequences to store alignment results respectively
+%   corresponding to \meta{sequence A} and \meta{sequence B} of the arguments
+%   of |\Gotoh|.
+% \end{description}
+%
+% \subsection{Algorithm Parameters}
+%
+% The default value of algorithm parameters which define the scoring are
+% \begin{equation}
+% \mathrm{match} = 1,\eqsep \mathrm{mismatch} = -1,\eqsep d = 7,\eqsep e= 1.
+% \label{eq:parameters}
+% \end{equation}
+% Parameters $\mathrm{match}, \mathrm{mismatch}$ define the penalties of a
+% \emph{match} and \emph{mismatch} respectively, and $d, e$ are used in a gap
+% penalty (see section \ref{sect:calc}). The parameters appeared in the above
+% equations are able to be changed with following keys:
+%
+% \begin{description}
+% \item[\synKey{match} |=| \meta{number}]\hfill |1|
+% \item[\synKey{mismatch} |=| \meta{number}]\hfill |-1|
+% \item[\synKey{d} |=| \meta{number}]\hfill |7|
+% \item[\synKey{e} |=| \meta{number}]\hfill |1| \\
+%   set the parameters appear in the above equations.
+% \end{description}
+%
+% Though the |\Gotoh| command calculates sequence alignment with standard
+% dynamic programming as default, you can use memoization functions instead.
+% Note that both of the methods produce exactly the same results.
+%
+% \begin{description}
+% \item[\synKey{memoization} |=| \synBool \synOr \synKey{memoization}]\hfill |false| \\
+%   If true, use memoization functions to execute the Gotoh algorithm. 
+% \end{description}
+%
+% \subsection{Others}
+%
+% \begin{description}
+% \item[\synKey{gap char} |=| \meta{character}]\hfill |.| (period) \\
+%   is inserted to the alignment results where gaps appear. Note that you have
+%   to be careful if using |-| (hyphen) as gap characters because successive
+%   hyphens automatically converted to dashes by {\TeX}. In this case, you can
+%   specify |\mbox{-}| instead.
+% \item[\synKey{uppercase} |=| \synBool \synOr \synKey{uppercase}]\hfill |false| \\
+%   If true, uppercase both \meta{sequence A} and \meta{sequence B} before
+%   executing the algorithm.
+% \end{description}
+%
+% \StopEventually{\PrintIndex\PrintChanges}
+%
+% \section{Algorithm and Implementation}
+%
+% \subsection{Required package}
+%
+% Package \pkgName{xkeyval} is required to process key-value lists.
+%    \begin{macrocode}
+\RequirePackage{xkeyval}
+%    \end{macrocode}
+%
+% \subsection{Messages}
+%
+% \begin{macro}{\gth@warn}
+% \begin{macro}{\gth@error}
+% Commands for warning and error messages.
+%    \begin{macrocode}
+\def\gth@pkgname{gotoh}
+\def\gth@warn{\PackageWarningNoLine\gth@pkgname}
+\def\gth@error{\PackageError\gth@pkgname}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Switches, Registers and Constants}
+%
+% All boolean switches, count registers and dimen registers used by this
+% package are declared here.
+%
+% \begin{macro}{\if@gth@first@}
+% \begin{macro}{\if@gth@renain@}
+% \begin{macro}{\if@gth@gap@}
+% \begin{macro}{\if@gth@gapx@}
+% \begin{macro}{\if@gth@gapy@}
+% A switch |\if@gth@first@| is for a calculation command |\gth@max|, and the
+% other switches are for trace back (in macro |\gth@gotoh|).
+%    \begin{macrocode}
+\newif\if@gth@first@
+\newif\if@gth@remain@
+\newif\if@gth@gap@
+\newif\if@gth@gapx@
+\newif\if@gth@gapy@
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\gth@tempcnta}
+% \begin{macro}{\gth@tempcntb}
+% \begin{macro}{\gth@tempcntc}
+% \begin{macro}{\gth@tempcntd}
+% \begin{macro}{\gth@calc}
+% Scratch four count registers for general use and one for some calculation
+% routines.
+%    \begin{macrocode}
+\newcount\gth@tempcnta
+\newcount\gth@tempcntb
+\newcount\gth@tempcntc
+\newcount\gth@tempcntd
+\newcount\gth@calc
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\gth@sn}
+% This is \emph{not} a counter register but a macro to store \meta{number}
+% which is used as `serial number'.
+%    \begin{macrocode}
+\edef\gth@sn{\number\z@}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\gth@min}
+% This macro stores a large negative \meta{number} which is used instead of
+% $-\infty$. Here |\gth@M| is a largest constant which can be defined by
+% |\mathchardef| primitive (in traditional {\TeX} engine).
+%    \begin{macrocode}
+\mathchardef\gth@M="7FFF
+\edef\gth@min{-\number\gth@M}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\gth@tempdima}
+% Scratch a dimen register for general use.
+%    \begin{macrocode}
+\newdimen\gth@tempdima
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Defining and Setting Keys}
+%
+% \begin{macro}{\gth@match}
+% \begin{macro}{\gth@mismatch}
+% \begin{macro}{\gth@d}
+% \begin{macro}{\gth@e}
+% These are keys for setting the parameters of the algorithm. The default
+% values which are shown in Equations~(\ref{eq:parameters}) are set here, and
+% stored in the macros (\emph{not} count registers) respectively.
+%    \begin{macrocode}
+\define@cmdkeys[gth]{config}[gth@]{match, mismatch, d, e}
+\setkeys[gth]{config}{match=1, mismatch=-1, d=7, e=1}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\gth@score}
+% \begin{macro}{\gth@resulta}
+% \begin{macro}{\gth@resultb}
+% The macros to store the result of the algorithms are also stored in internal
+% macros.
+%    \begin{macrocode}
+\define@key[gth]{config}{score}{\def\gth@score{#1}}
+\define@key[gth]{config}{result A}{\def\gth@resulta{#1}}
+\define@key[gth]{config}{result B}{\def\gth@resultb{#1}}
+\setkeys[gth]{config}{
+  score=\GotohScore, result A=\GotohResultA, result B=\GotohResultB}  
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\if@gth@memoization}
+% \begin{macro}{\if@gth@uppercase}
+% \begin{macro}{\gth@gap@char}
+% Both boolean keys |\if@gth@memoization| and |\if@gth@uppercase| are set false
+% as default. The gap char is stored in |\gth@gap@char|.
+%    \begin{macrocode}
+\define@boolkeys[gth]{config}[@gth@]{memoization, uppercase}[true]
+\define@key[gth]{config}{gap char}{\def\gth@gap@char{#1}}
+\setkeys[gth]{config}{memoization=false, uppercase=false, gap char={.}}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Utility Commands}
+%
+% \begin{macro}{\gth@nameuse}
+% \begin{macro}{\gth@name@edef}
+% \begin{macro}{\gth@name@xdef}
+% \begin{macro}{\gth@glet}
+% Some primitives to use, define or copy control sequences are wrapped.
+%    \begin{macrocode}
+\def\gth@nameuse#1{\csname gth@#1\endcsname}
+\def\gth@name@edef#1{\expandafter\edef\csname gth@#1\endcsname}
+\def\gth@name@xdef#1{\expandafter\xdef\csname gth@#1\endcsname}
+\def\gth@glet{\global\let}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\gth@advance}
+% \begin{macro}{\gth@increment}
+% \begin{macro}{\gth@decrement}
+% Commands to treate macros which store \meta{number} like count registers.
+%    \begin{macrocode}
+\def\gth@advance#1#2{%
+  \gth@calc#1\advance\gth@calc#2\edef#1{\the\gth@calc}}
+\def\gth@increment#1{\gth@advance#1\@ne}
+\def\gth@decrement#1{\gth@advance#1\m@ne}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Calculation Routines}\label{sect:calc}
+%
+% Since these calculation routines (macros) are \emph{not} full expandable, all
+% commands defined here return the results by storing the value in the counter
+% register |\gth@calc|. This assignments are done locally.
+%
+% \begin{macro}{\gth@max}
+% This command take comma-separated list of \meta{number} and returns the max
+% value of them.
+%    \begin{macrocode}
+\def\gth@max#1{%
+  \@gth@first@true
+  \@for\gth@member:=#1\do{%
+    \if@gth@first@
+      \gth@calc\gth@member
+      \@gth@first@false
+    \else
+      \ifnum\gth@member>\gth@calc
+        \gth@calc\gth@member
+      \fi
+    \fi}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\gth@gap@penalty}
+% This command takes $l$, the length of a \emph{gap}, as its argument and
+% calculates its penalty which defined by following function\footnote{This form
+% of gap penalty is called `Affine gaps'.}:
+% \begin{equation}
+% g(l) = -d - (l-1)e. \label{eq:gap}
+% \end{equation}
+% In this equation, $d$ and $e$ are parameters of the algorithm, which have
+% default values shown in Equations~(\ref{eq:parameters}).
+%    \begin{macrocode}
+\def\gth@gap@penalty#1{%
+  \gth@calc#1\relax
+  \advance\gth@calc\m@ne
+  \multiply\gth@calc-\gth@e
+  \advance\gth@calc-\gth@d}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Printing Matrices}
+%
+% \begin{macro}{\gth@print@matrix}
+% This command shows the matrices $M$, $I^x$ or $I^y$ (See
+% section~\ref{sect:algorithm}). The argument of this macro specifies which
+% matrix to show, so you can detect |m|, |ix|, or |iy|. However, this macro is
+% currently only for the author of this package to debug.
+%    \begin{macrocode}
+\def\gth@tab#1{%
+  \bgroup
+    \sbox\z@ 0%
+    \expandafter\gth@tempdima\ht\z@
+    \multiply\gth@tempdima 8%
+    \mbox{\hbox to\gth@tempdima{\hss #1}}%
+  \egroup}
+\def\gth@print@matrix#1{%
+  \bgroup\ttfamily
+    #1:\\
+    \gth@tempcnta\z@
+    \@whilenum\gth@tempcnta<\gth@m\do{%
+      \gth@tempcntb\z@
+      \@whilenum\gth@tempcntb<\gth@n\do{%
+        \gth@tab{%
+          \gth@nameuse{\gth@sn @#1@\the\gth@tempcnta
+                       @\the\gth@tempcntb}}%
+      \advance\gth@tempcntb\@ne}\\
+    \advance\gth@tempcnta\@ne}%
+  \egroup}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Executing the Gotoh Algorithm}\label{sect:algorithm}
+%
+% \begin{macro}{\Gotoh}
+% \changes{v1.1}{2017/07/07}{Add a new optional argument for changing
+% config temporary}
+% This is the user interface to execute the Gotoh algorithm.  First, the
+% `serial number' is incremented. The whole other process executed by this
+% macro contained in a group because a number of temporary macros are defined
+% during processing.
+%    \begin{macrocode}
+\newcommand{\Gotoh}{%
+  \gth@increment\gth@sn
+  \bgroup  % \egroup is in \gth@gotoh@pre
+  \@ifnextchar[{\gth@gotoh@setkeys}{\gth@gotoh@pre}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\gth@gotoh@setkeys}
+% \begin{macro}{\gth@gotoh@pre}
+% These inner macros are for preparing: |\gth@gotoh@setkeys| process temporary
+% configuration specified with the optional argument of |\Gotoh|. In
+% |\gth@gotoh@pre|, if the boolean switch |\if@gth@uppercase| is true, the
+% arguments are processed by |\uppercase| preamble before passing them to
+% |\gth@gotoh| macro.
+%    \begin{macrocode}
+\def\gth@gotoh@setkeys[#1]{\setkeys[gth]{config}{#1}\gth@gotoh@pre}
+\def\gth@gotoh@pre#1#2{%
+  \edef\gth@tmpa{\noexpand\gth@gotoh{#1}{#2}}%
+  \if@gth@uppercase
+    \uppercase\expandafter{\gth@tmpa}%
+  \else
+    \gth@tmpa
+  \fi\egroup}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\gth@gotoh}
+% This macro actually executes the Gotoh algorithm~\cite{gotoh1982}. The input
+% of the algorithm is two biological sequences
+% \[
+% A \defeq a_1a_2a_3\dots a_m,\eqsep B \defeq b_1b_2b_3\dots b_n
+% \]
+% where $a_i$ and $b_j$ are chosen from a finite alphabet, e.g.~$\{\mathrm{A},
+% \mathrm{T}, \mathrm{G}, \mathrm{C}\}$. The command takes these sequences as
+% its arguments, and calculate following recurrence formula\footnote{This
+% calculation is done in $O(mn)$ time.} to get optimal score of the algorithm:
+% \begin{equation}
+% M_{i+1, j+1}
+%   = \max\left\{M_{ij}, I^x_{ij}, I^y_{ij}\right\} + c_{ij}
+% \label{eq:m}
+% \end{equation}
+% where
+% \begin{align}
+% I^x_{i+1, j} &= \max\left\{ M_{ij}-d, I^x_{ij}-e, I^y_{ij}-d \right\},
+% \label{eq:ix} \\
+% I^y_{i, j+1} &= \max\left\{ M_{ij}-d, I^y_{ij}-e \right\},
+% \label{eq:iy}
+% \end{align}
+% and $c_{ij}$ is a score for a pair $(a_i, b_j)$, namely
+% \[
+% c_{ij} = \left\{
+%   \begin{array}{rll}
+%   1  & \text{if\enspace} a_i = b_j & \text{(match)} \\
+%   -1 & \text{otherwise} & \text{(mismatch)}. \\
+%   \end{array}
+% \right.
+% \]
+% Note that the Equations (\ref{eq:ix}) and (\ref{eq:iy}) have asymmetric form
+% because the order of inserting \emph{gaps} when alternating $A$ and $B$ does
+% not affect the optimal score.
+%
+% \subsubsection{Getting sequences}
+%
+% \begin{macro}{\gth@m}
+% \begin{macro}{\gth@n}
+% Here each calacters $a_i, b_j$ in the input sequences are stored in
+% |\gth@seqa@|$a_i$ and |\gth@seqa@|$b_j$, and the lengthes of the sequences
+% $m, n$ are stored in |\gth@m| and |\gth@n| respectively.
+%    \begin{macrocode}
+\def\gth@gotoh#1#2{%
+  \gth@tempcnta\z@
+  \@tfor\gth@member:=#1\do{%
+    \gth@name@edef{seqa@\the\gth@tempcnta}{\gth@member}%
+    \advance\gth@tempcnta\@ne}%
+  \advance\gth@tempcnta\@ne
+  \edef\gth@m{\the\gth@tempcnta}%
+  \gth@tempcntb\z@
+  \@tfor\gth@member:=#2\do{%
+    \gth@name@edef{seqb@\the\gth@tempcntb}{\gth@member}%
+    \advance\gth@tempcntb\@ne}%
+  \advance\gth@tempcntb\@ne
+  \edef\gth@n{\the\gth@tempcntb}%
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsubsection{Initialization}
+%
+% We have to be careful with initialization because many implementations of the
+% Gotoh algorithm have problems here~\cite{flouri2015}. Specifically, the
+% package initialzes the matrxes with following equations:
+% \begin{align*}
+% M_{i0} &= -\infty, M_{0j} = -\infty, M_{00} = 0, \\
+% I^x_{i0} &= -g(i), I^x_{0j} = -\infty, \\
+% I^y_{i0} &= -\infty, I^y_{0j} = -g(j).
+% \end{align*}
+% Note that function $g(l)$ is a gap penalty (shown in Equation~(\ref{eq:gap}))
+% and can be calculated with the macro |\gth@gap@penalty|.
+%
+%    \begin{macrocode}
+  \gth@tempcnta\z@
+  \@whilenum\gth@tempcnta<\gth@m\do{%
+    \gth@gap@penalty{\gth@tempcnta}%
+    \gth@name@xdef{\gth@sn @m@\the\gth@tempcnta @0}{\gth@min}%
+    \gth@name@xdef{\gth@sn @ix@\the\gth@tempcnta @0}{\the\gth@calc}%
+    \gth@name@xdef{\gth@sn @iy@\the\gth@tempcnta @0}{\gth@min}%
+    \advance\gth@tempcnta\@ne}%
+  \gth@tempcntb\z@
+  \@whilenum\gth@tempcntb<\gth@n\do{%
+    \gth@gap@penalty{\gth@tempcntb}%
+    \gth@name@xdef{\gth@sn @m@0@\the\gth@tempcntb}{\gth@min}%
+    \gth@name@xdef{\gth@sn @ix@0@\the\gth@tempcntb}{\gth@min}%
+    \gth@name@xdef{\gth@sn @iy@0@\the\gth@tempcntb}{\the\gth@calc}%
+    \advance\gth@tempcntb\@ne}%
+  \gth@name@xdef{\gth@sn @m@0@0}{\number\z@}%
+%    \end{macrocode}
+%
+% \subsubsection{Memoization}
+%
+% If the switch |\if@gth@memoization| is true, memoization functions (See
+% section~\ref{sect:memofunc}) are called recursively. 
+%    \begin{macrocode}
+  \if@gth@memoization
+    \gth@decrement\gth@m \gth@decrement\gth@n
+      \gth@memo@ix{\gth@m}{\gth@n}%
+      \gth@memo@iy{\gth@m}{\gth@n}%
+      \gth@memo@m{\gth@m}{\gth@n}%
+    \gth@increment\gth@m \gth@increment\gth@n
+%    \end{macrocode}
+%
+% \subsubsection{Dynamic Programming}
+%
+% To fill matrxes $M$, $I^x$, and $I^y$ the package use the recurrence formula
+%
+%    \begin{macrocode}
+  \else
+    \gth@tempcnta\@ne
+    \@whilenum\gth@tempcnta<\gth@m\do{%
+      \gth@tempcntb\@ne
+      \@whilenum\gth@tempcntb<\gth@n\do{%
+%    \end{macrocode}
+% First, $I^x$ is calculated with Equation (\ref{eq:ix}).
+%    \begin{macrocode}
+        \advance\gth@tempcnta\m@ne
+          \gth@max{%
+            \gth@nameuse{\gth@sn @m@\the\gth@tempcnta
+                         @\the\gth@tempcntb},%
+            \gth@nameuse{\gth@sn @iy@\the\gth@tempcnta
+                         @\the\gth@tempcntb}}%
+          \gth@tempcntc\gth@calc
+          \gth@tempcntd
+            \gth@nameuse{\gth@sn @ix@\the\gth@tempcnta
+                         @\the\gth@tempcntb}%
+          \advance\gth@tempcntc-\gth@d\advance\gth@tempcntd-\gth@e
+        \advance\gth@tempcnta\@ne
+        \gth@max{\gth@tempcntc,\gth@tempcntd}%
+        \gth@name@xdef{\gth@sn @ix@\the\gth@tempcnta
+                       @\the\gth@tempcntb}{%
+          \the\gth@calc}%
+%    \end{macrocode}
+% Secondly, $I^y$ is calculated with Equation (\ref{eq:iy}).
+%    \begin{macrocode}
+        \advance\gth@tempcntb\m@ne
+          \gth@tempcntc
+            \gth@nameuse{\gth@sn @m@\the\gth@tempcnta
+                         @\the\gth@tempcntb}%
+          \gth@tempcntd
+            \gth@nameuse{\gth@sn @iy@\the\gth@tempcnta
+                         @\the\gth@tempcntb}%
+          \advance\gth@tempcntc-\gth@d\advance\gth@tempcntd-\gth@e
+        \advance\gth@tempcntb\@ne
+        \gth@max{\gth@tempcntc,\gth@tempcntd}%
+        \gth@name@xdef{\gth@sn @iy@\the\gth@tempcnta
+                       @\the\gth@tempcntb}{%
+          \the\gth@calc}%
+%    \end{macrocode}
+% Finally, $M$ is calculated with Equation (\ref{eq:m}) and a loop is completed.
+%    \begin{macrocode}
+        \advance\gth@tempcnta\m@ne\advance\gth@tempcntb\m@ne
+          \gth@max{%
+            \gth@nameuse{\gth@sn @m@\the\gth@tempcnta
+                         @\the\gth@tempcntb},%
+            \gth@nameuse{\gth@sn @ix@\the\gth@tempcnta
+                         @\the\gth@tempcntb},%
+            \gth@nameuse{\gth@sn @iy@\the\gth@tempcnta
+                         @\the\gth@tempcntb}}%
+          \edef\gth@tmpa{\gth@nameuse{seqa@\the\gth@tempcnta}}%
+          \edef\gth@tmpb{\gth@nameuse{seqb@\the\gth@tempcntb}}%
+        \advance\gth@tempcnta\@ne\advance\gth@tempcntb\@ne
+        \ifx\gth@tmpa\gth@tmpb
+          \advance\gth@calc\gth@match
+        \else
+          \advance\gth@calc\gth@mismatch
+        \fi
+        \gth@name@xdef{\gth@sn @m@\the\gth@tempcnta
+                       @\the\gth@tempcntb}{%
+          \the\gth@calc}%
+        \advance\gth@tempcntb\@ne}%
+      \advance\gth@tempcnta\@ne}%
+  \fi
+%    \end{macrocode}
+%
+% \subsubsection{Printing Matrices}
+%
+% This is piece of code for debugging the package (so usually commented out).
+%
+%    \begin{macrocode}
+  %\gth@print@matrix{m}%
+  %\gth@print@matrix{ix}%
+  %\gth@print@matrix{iy}%
+%    \end{macrocode}
+%
+% \subsubsection{Returning the Optimal Score}
+%
+% The calculated optimal score of the alignment stored here to the control
+% sequences which stored in |\gth@score|.
+%    \begin{macrocode}
+  \bgroup
+    \gth@decrement\gth@m \gth@decrement\gth@n
+    \expandafter\xdef\gth@score{%
+      \gth@nameuse{\gth@sn @m@\gth@m @\gth@n}}%
+  \egroup
+%    \end{macrocode}
+%
+% \subsubsection{Trace Back}
+%
+% After processing dynamic programming (or memoization functions), matrices
+% $M$, $I^x$, and $I^y$ are all filled. Using these matrices, we can determine
+% the `trace' from the optimal score $M_{m,n}$ to the start $M_{0,0}$ and get
+% the result of alignment $(x, y)$.
+%
+% Considering the form of Equation (\ref{eq:m})--(\ref{eq:iy}), the calculation
+% formulae of the former values depend on which matrix the `current position'
+% exists. In order to take into account these differences, trace back process
+% is calculated while switching three modes: default, gap x, and gap y.
+%
+% First, make sure to empty |\gth@rseq@x| and |\gth@rseq@y| which is going to
+% store result alignment sequences $x$ and $y$ respectively. Note that this is
+% the trace \emph{back} process, so new characters are prepended to the
+% existing sequences in each loop. In the next line, the switches
+% |\if@gth@gapx@| and |\if@gth@gapy@| are both turned off (which means
+% processing starts from the default mode).
+%    \begin{macrocode}
+  \let\gth@rseq@x\@empty\let\gth@rseq@y\@empty
+  \@gth@remain@true\@gth@gapx@false\@gth@gapy@false
+%    \end{macrocode}
+% In the main loop of trace back, process the condition either $x$ or $y$ is
+% already completed first. In this situation, the other sequence should be
+% filled all the remaining with \emph{gaps}.
+%    \begin{macrocode}
+  \@whilesw\if@gth@remain@\fi{%
+    \ifnum\gth@m=\z@
+      \gth@decrement\gth@n
+      \expandafter\expandafter\expandafter
+      \ifx\gth@nameuse{seqb@\gth@n}\relax\else
+        \edef\gth@rseq@x{\gth@gap@char\gth@rseq@x}%
+        \edef\gth@rseq@y{\gth@nameuse{seqb@\gth@n}%
+                         \gth@rseq@y}%
+      \fi
+    \else\ifnum\gth@n=\z@
+      \gth@decrement\gth@m
+      \expandafter\expandafter\expandafter
+      \ifx\gth@nameuse{seqa@\gth@m}\relax\else
+        \edef\gth@rseq@x{\gth@nameuse{seqa@\gth@m}%
+                         \gth@rseq@x}%
+        \edef\gth@rseq@y{\gth@gap@char\gth@rseq@y}%
+      \fi
+    \else
+%    \end{macrocode}
+% \paragraph{mode: gap x}
+% Prepend former base to $x$ and a \emph{gap} to $y$. If
+% $M_{m-1,n}-d>I^x_{m-1,n}-e$ back to default mode. Else if
+% $I^x_{m-1,n}-e<I^y_{m-1,n}-d$ switch to mode gap y and otherwise stay in mode
+% gap x.
+%    \begin{macrocode}
+      \if@gth@gapx@
+        \gth@decrement\gth@m
+        \expandafter\expandafter\expandafter
+        \ifx\gth@nameuse{seqa@\gth@m}\relax\else
+          \edef\gth@rseq@x{\gth@nameuse{seqa@\gth@m}%
+                           \gth@rseq@x}%
+          \edef\gth@rseq@y{\gth@gap@char\gth@rseq@y}%
+        \fi
+        \gth@tempcnta\gth@nameuse{\gth@sn @m@\gth@m @\gth@n}%
+        \gth@tempcntb\gth@nameuse{\gth@sn @ix@\gth@m @\gth@n}%
+        \gth@tempcntc\gth@nameuse{\gth@sn @iy@\gth@m @\gth@n}%
+        \advance\gth@tempcnta-\gth@d
+        \advance\gth@tempcntb-\gth@e
+        \advance\gth@tempcntc-\gth@d
+        \ifnum\gth@tempcnta>\gth@tempcntb
+          \@gth@gapx@false
+        \else\ifnum\gth@tempcntb<\gth@tempcntc
+          \@gth@gapx@false\@gth@gapy@true
+        \fi\fi
+%    \end{macrocode}
+% \paragraph{mode: gap y}
+% Prepend a \emph{gap} to $x$ and former base to $y$. If
+% $M_{m,n-1}-d>I^y_{m,n-1}-e$ back to default mode and otherwise stay in mode
+% gap y.
+%    \begin{macrocode}
+      \else\if@gth@gapy@
+        \gth@decrement\gth@n
+        \expandafter\expandafter\expandafter
+        \ifx\gth@nameuse{seqb@\gth@n}\relax\else
+          \edef\gth@rseq@x{\gth@gap@char\gth@rseq@x}%
+          \edef\gth@rseq@y{\gth@nameuse{seqb@\gth@n}%
+                           \gth@rseq@y}%
+        \fi
+        \gth@tempcnta\gth@nameuse{\gth@sn @m@\gth@m @\gth@n}%
+        \gth@tempcntb\gth@nameuse{\gth@sn @iy@\gth@m @\gth@n}%
+        \advance\gth@tempcnta-\gth@d\advance\gth@tempcntb-\gth@e
+        \ifnum\gth@tempcnta>\gth@tempcntb
+          \@gth@gapy@false
+        \fi
+%    \end{macrocode}
+% \paragraph{mode: default}
+% Prepend former base to $x$ and $y$ respectively. Only if
+% $M_{m-1,n-1}>I^x_{m-1,n-1}$ and $M_{m-1,n-1}>I^y_{m-1,n-1}$ stay on default
+% mode, and else if $I^x_{m-1,n-1}>I^y_{n-1,m-1}$ go to gap x otherwise go to
+% gap y.
+%    \begin{macrocode}
+      \else
+        \gth@decrement\gth@m
+        \gth@decrement\gth@n
+        \expandafter\expandafter\expandafter
+        \ifx\gth@nameuse{seqa@\gth@m}\relax\else
+          \expandafter\expandafter\expandafter
+          \ifx\gth@nameuse{seqb@\gth@n}\relax\else
+            \edef\gth@rseq@x{\gth@nameuse{seqa@\gth@m}%
+                             \gth@rseq@x}%
+            \edef\gth@rseq@y{\gth@nameuse{seqb@\gth@n}%
+                             \gth@rseq@y}%
+          \fi
+        \fi
+        \gth@tempcnta\gth@nameuse{\gth@sn @m@\gth@m @\gth@n}%
+        \gth@tempcntb\gth@nameuse{\gth@sn @ix@\gth@m @\gth@n}%
+        \gth@tempcntc\gth@nameuse{\gth@sn @iy@\gth@m @\gth@n}%
+        \@gth@gap@false
+        \ifnum\gth@tempcnta<\gth@tempcntb\@gth@gap@true\fi
+        \ifnum\gth@tempcnta<\gth@tempcntc\@gth@gap@true\fi
+        \if@gth@gap@
+          \ifnum\gth@tempcntb>\gth@tempcntc
+            \@gth@gapx@true
+          \else
+            \@gth@gapy@true
+          \fi
+        \fi
+      \fi\fi
+    \fi\fi
+%    \end{macrocode}
+% Finally, if we achieve to $M_{0,0}$, exit from the main loop.
+%    \begin{macrocode}
+    \ifnum\gth@m<\@ne\ifnum\gth@n<\@ne
+      \@gth@remain@false
+    \fi\fi}%
+%    \end{macrocode}
+%
+% \subsubsection{Returning Results}
+%
+% Finally, the results of alignments which stored in |\gth@resq@x| and
+% |\gth@resq@y| are copied globally to the control sequences which stored in
+% |\gth@resulta| and |\gth@resultb|.
+%    \begin{macrocode}
+  \expandafter\gth@glet\gth@resulta\gth@rseq@x
+  \expandafter\gth@glet\gth@resultb\gth@rseq@y}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Memoization Functions}\label{sect:memofunc}
+%
+% \begin{macro}{\gth@memo@ix}
+% \begin{macro}{\gth@memo@iy}
+% \begin{macro}{\gth@memo@m}
+% These are memoization functions for calculating $I^x, I^y, M$ respectively.
+% Since these functions change many `temporary' values, all of the processes
+% are wrapped in a group and only the return values and components of matrices
+% are assigned globally.
+%    \begin{macrocode}
+\def\gth@memo@ix#1#2{%
+  \bgroup
+    \gth@tempcnta#1\gth@tempcntb#2\relax
+    \expandafter\expandafter\expandafter
+    \ifx\gth@nameuse{\gth@sn @ix@\the\gth@tempcnta
+                     @\the\gth@tempcntb}\relax
+      \advance\gth@tempcnta\m@ne
+        \gth@memo@ix{\gth@tempcnta}{\gth@tempcntb}%
+        \edef\gth@tmp@ix@return{\gth@ix@return}%
+        \gth@memo@iy{\gth@tempcnta}{\gth@tempcntb}%
+        \edef\gth@tmp@iy@return{\gth@iy@return}%
+        \gth@memo@m{\gth@tempcnta}{\gth@tempcntb}%
+      \advance\gth@tempcnta\@ne
+      \gth@advance{\gth@m@return}{-\gth@d}%
+      \gth@advance{\gth@tmp@ix@return}{-\gth@e}%
+      \gth@advance{\gth@tmp@iy@return}{-\gth@d}%
+      \gth@max{\gth@m@return,\gth@tmp@ix@return,\gth@tmp@iy@return}%
+      \gth@name@xdef{\gth@sn @ix@\the\gth@tempcnta
+                     @\the\gth@tempcntb}{%
+        \the\gth@calc}%
+      \xdef\gth@ix@return{\the\gth@calc}
+    \else
+      \xdef\gth@ix@return{%
+        \gth@nameuse{\gth@sn @ix@\the\gth@tempcnta @\the\gth@tempcntb}}
+    \fi
+  \egroup}
+\def\gth@memo@iy#1#2{%
+  \bgroup
+    \gth@tempcnta#1\gth@tempcntb#2\relax
+    \expandafter\expandafter\expandafter
+    \ifx\gth@nameuse{\gth@sn @iy@\the\gth@tempcnta
+                     @\the\gth@tempcntb}\relax
+      \advance\gth@tempcntb\m@ne
+        \gth@memo@iy{\gth@tempcnta}{\gth@tempcntb}%
+        \edef\gth@tmp@iy@return{\gth@iy@return}%
+        \gth@memo@m{\gth@tempcnta}{\gth@tempcntb}%
+      \advance\gth@tempcntb\@ne
+      \gth@advance{\gth@m@return}{-\gth@d}%
+      \gth@advance{\gth@tmp@iy@return}{-\gth@e}%
+      \gth@max{\gth@m@return,\gth@tmp@iy@return}%
+      \gth@name@xdef{\gth@sn @iy@\the\gth@tempcnta
+                     @\the\gth@tempcntb}{%
+        \the\gth@calc}%
+      \xdef\gth@iy@return{\the\gth@calc}%
+    \else
+      \xdef\gth@iy@return{%
+        \gth@nameuse{\gth@sn @iy@\the\gth@tempcnta @\the\gth@tempcntb}}
+    \fi
+  \egroup}
+\def\gth@memo@m#1#2{%
+  \bgroup
+    \gth@tempcnta#1\gth@tempcntb#2\relax
+    \expandafter\expandafter\expandafter
+    \ifx\gth@nameuse{\gth@sn @m@\the\gth@tempcnta
+                     @\the\gth@tempcntb}\relax
+      \advance\gth@tempcnta\m@ne\advance\gth@tempcntb\m@ne
+        \gth@memo@ix{\gth@tempcnta}{\gth@tempcntb}%
+        \edef\gth@tmp@ix@return{\gth@ix@return}%
+        \gth@memo@iy{\gth@tempcnta}{\gth@tempcntb}%
+        \edef\gth@tmp@iy@return{\gth@iy@return}%
+        \gth@memo@m{\gth@tempcnta}{\gth@tempcntb}%
+        \edef\gth@tmpa{\gth@nameuse{seqa@\the\gth@tempcnta}}%
+        \edef\gth@tmpb{\gth@nameuse{seqb@\the\gth@tempcntb}}%
+      \advance\gth@tempcnta\@ne\advance\gth@tempcntb\@ne
+      \gth@max{\gth@m@return,\gth@tmp@ix@return,\gth@tmp@iy@return}%
+      \ifx\gth@tmpa\gth@tmpb
+        \advance\gth@calc\gth@match
+      \else
+        \advance\gth@calc\gth@mismatch
+      \fi
+      \gth@name@xdef{\gth@sn @m@\the\gth@tempcnta
+                     @\the\gth@tempcntb}{%
+        \the\gth@calc}%
+      \xdef\gth@m@return{\the\gth@calc}%
+    \else
+      \xdef\gth@m@return{%
+        \gth@nameuse{\gth@sn @m@\the\gth@tempcnta @\the\gth@tempcntb}}%
+    \fi
+  \egroup}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Configuration Command}
+%
+% \begin{macro}{\GotohConfig}
+% This is just a wrap command of |\setkeys|.
+%    \begin{macrocode}
+\newcommand{\GotohConfig}[1]{\setkeys[gth]{config}{#1}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{thebibliography}{9}
+% \bibitem{flouri2015}
+%   Flouri, Tom\'a\v s \textit{et al}., ``Are all global alignment
+%   algorithms and implementations correct?''. \textit{bioRxiv}, 031500, 2015.
+% \bibitem{gotoh1982}
+%   Gotoh, Osamu, ``An improved algorithm for matching biological sequences''.
+%   \textit{Journal of Molecular Biology} \textbf{162}(3), 705-708, 1982.
+% \end{thebibliography}
+%
+% \Finale
+%
+\endinput
+% EOF

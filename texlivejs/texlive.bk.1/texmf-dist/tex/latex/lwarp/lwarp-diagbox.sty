@@ -1,0 +1,80 @@
+%%
+%% This is file `lwarp-diagbox.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `diagbox')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+\LWR@ProvidesPackagePass{diagbox}[2016/12/28]
+\LetLtxMacro\LWR@origdiagbox@double\diagbox@double
+\LetLtxMacro\LWR@origdiagbox@triple\diagbox@triple
+
+\appto\LWR@restoreorigformatting{%
+\LetLtxMacro\diagbox@double\LWR@origdiagbox@double%
+\LetLtxMacro\diagbox@triple\LWR@origdiagbox@triple%
+}
+
+\newcommand{\LWR@diagbox@AB}[4]{
+\begingroup%
+\LetLtxMacro\\\newline%
+\BlockClassSingle{diagbox#1}{#2}%
+\BlockClassSingle{diagbox#3}{#4}%
+\endgroup%
+\LWR@stoppars%
+}
+
+\newcommand{\LWR@diagboxNW}[2]{%
+\LWR@diagbox@AB{E}{#2}{W}{#1}%
+}
+
+\newcommand{\LWR@diagboxNE}[2]{%
+\LWR@diagbox@AB{W}{#1}{E}{#2}%
+}
+
+\let\LWR@diagboxSW\LWR@diagboxNE
+\let\LWR@diagboxSE\LWR@diagboxNW
+
+\def\diagbox@double#1#2#3{%
+\setkeys{diagbox}{dir=NW,#1}%
+\@nameuse{LWR@diagbox\diagbox@dir}{#2}{#3}%
+}
+
+\newcommand{\LWR@diagboxTNW}[3]{%
+\BlockClassSingle{diagboxtitleN}{#1}
+\LWR@diagboxNW{#2}{#3}
+}
+
+\newcommand{\LWR@diagboxTNE}[3]{%
+\BlockClassSingle{diagboxtitleN}{#1}
+\LWR@diagboxNE{#2}{#3}
+}
+
+\newcommand{\LWR@diagboxTSW}[3]{%
+\LWR@diagboxSW{#2}{#3}
+\BlockClassSingle{diagboxtitleS}{#1}
+\LWR@stoppars%
+}
+
+\newcommand{\LWR@diagboxTSE}[3]{%
+\LWR@diagboxSE{#2}{#3}
+\BlockClassSingle{diagboxtitleS}{#1}
+\LWR@stoppars%
+}
+\def\diagbox@triple#1#2#3#4{%
+\setkeys{diagbox}{dir=NW,#1}%
+\@nameuse{LWR@diagboxT\diagbox@dir}{#3}{#2}{#4}%
+}
+\endinput
+%%
+%% End of file `lwarp-diagbox.sty'.

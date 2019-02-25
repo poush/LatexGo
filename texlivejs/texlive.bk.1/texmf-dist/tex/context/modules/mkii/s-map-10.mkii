@@ -1,0 +1,491 @@
+%\module [
+%  file=s-map-10.mkii,
+%  version=2012.06.06,
+%  title=\CONTEXT\ Style File,
+%  subtitle=\MAPS\ journal style,
+%  author={Hans Hagen, Taco Hoekwater and Siep Kroonenberg},
+%  date=\currentdate,
+%  copyright={NTG / MAPS}%
+%]
+
+% NOTE: this (MkII) version is not guaranteed to give exactly the 
+% same output as the MkIV one, and exists mostly for compatibility 
+% with old-fashioned authors. All final typesetting for the MAPS 
+% is done with MkIV. If you are reading this: please consider
+% switching!
+
+% This module implements the MAPS style for use with the Context
+% macro package. The original MAPS layout was designed and
+% implemented in LaTeX by Taco Hoekwater and Siep Kroonenberg.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newif\ifMapsInColumns
+\doifmode{asym}{\enablemode[onecolumn]} % implies onecolumn
+\doifnotmode{onecolumn}{\MapsInColumnstrue}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% fonts
+
+%%%%%%%%% first, font sizes
+\definebodyfontenvironment [7pt][% LaTeX: scriptsize
+   interlinespace=8pt,
+   big=8pt,
+   small=6pt%
+]
+
+\definebodyfontenvironment [8pt][% LaTeX: footnotesize
+   interlinespace=9pt,
+   big=9pt,
+   small=7pt,
+   x=6pt%
+]
+
+\definebodyfontenvironment [9pt][% LaTeX: small
+   interlinespace=10pt,
+   big=10pt,
+   small=8pt,%
+   x=7pt,%
+   script=6pt%
+]
+
+\definebodyfontenvironment [10pt][% LaTeX: normalsize
+   interlinespace=11pt,
+   big=11pt,
+   a=11pt,
+   small=9pt,%
+   x=8pt,%
+   script=7pt%
+]
+
+\definebodyfontenvironment [11pt][% LaTeX: large
+   interlinespace=11pt,
+   big=11pt,
+   small=10pt,%
+   x=9pt,%
+   script=8pt%
+]
+
+\definebodyfontenvironment [14pt][%
+   interlinespace=14pt,
+   big=18pt,
+   small=11pt,
+   x=10pt%
+]
+
+\definebodyfontenvironment [18pt][%
+   interlinespace=18pt,
+   big=24pt,
+   small=14pt,
+   x=10pt%
+]
+
+\definebodyfontenvironment [24pt][%
+   interlinespace=24pt,
+   big=24pt,
+   small=18pt,
+   x=11pt%
+]
+
+%%% font families (no realfonts, no protruding)
+
+\starttypescript [maps][ec]
+\definetypeface [maps] [rm] [serif] [modern]      [default] [encoding=ec,rscale=0.95]
+\definetypeface [maps] [mm] [math]  [modern]      [computer-modern]
+\definetypeface [maps] [tt] [mono]  [modern]      [default] [encoding=ec,rscale=0.90]
+\definetypeface [maps] [ss] [sans]  [modern]      [default] [encoding=ec,rscale=0.95]
+\stoptypescript
+
+\writestatus{maps\space warning}{This, the MkII style, is OUTDATED and UNSUPPORTED!}
+\writestatus{maps\space warning}{Please consider using ConTeXt MkIV instead.}
+
+\startmode[realfonts]
+\writestatus{maps\space error}{The MkII version of the module does not support 'realfonts'!}
+\wait
+\stopmode
+
+\setupbodyfont[maps,10pt,rm]
+
+\setupinterlinespace[line=11pt]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% additional general typographic details
+
+\setupindenting [yes,next,11pt] % indenting after enumerations etc.
+
+\definepapersize 
+  [maps]
+  [width=21cm,height=26.5cm]
+
+\setuppapersize [maps][maps]
+
+% parameters:
+% margin -> latex marginparwith
+
+\setuplayout[%
+   topspace=40pt,
+   height=688pt,
+   header=33pt,
+   margin=106pt,
+   leftmargindistance=11pt,
+   rightmargindistance=11pt%
+]
+
+
+\setupblank[5.5pt]
+
+\setuppagenumbering [location=]
+
+\definetyping [widetyping]
+
+\setupheader [style=\ss]
+\setupfooter [style=\ss]
+
+\def\AuHead{%
+  %\ifnum\pageno=\MapsPage \hbox{}\else
+  \MapsRunningAuthor%\fi
+}
+\def\TiHead{%
+  \ifnum\pageno=\MapsPage \relax \MapsRunningAuthor %\hbox{}
+  \else \MapsRunningTitle\fi}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% sectioning
+
+\setupheads[sectionnumber=no, align=right]
+
+\def\hfonti{\ssbfa}
+\def\hfontii{\ssbf}
+\def\hfontiii{\rm\it}
+\def\runin#1#2{#2.}
+
+\doifmodeelse{nosubsub}{%
+\setuphead [section][%
+  style=\hfontii,
+  before={\blank[line]},
+  after={}%
+]
+\setuphead [subsection][%
+  style=\hfontiii,
+  command=\runin,
+  alternative=text,
+  distance=6pt,
+  before={\blank[halfline]}%
+]}{%
+\setuphead [section][%
+  style=\hfonti,
+  before={\blank[line]},
+  after={\blank[halfline]}%
+]
+\setuphead [subsection][%
+  style=\hfontii,
+  before={\blank[halfline]},
+  after={}%
+]
+\setuphead [subsubsection][%
+  style=\hfontiii,
+  command=\runin,
+  distance=6pt,
+  alternative=text,
+  before={\blank[halfline]}%
+]}
+
+\doifmodeelse{nosubsub}{%
+\setuphead [subject][%
+  style=\hfontii,
+  before={\blank[halfline]},
+  after={}%
+]
+\setuphead [subsubject][%
+  style=\hfontiii,
+  command=\runin,
+  alternative=text,
+  before={\blank[halfline]}%
+]}{%
+\setuphead [subject][%
+  style=\hfonti,
+  before={\blank},
+  after={\blank[halfline]}%
+]
+\setuphead [subsubject][%
+  style=\hfontii,
+  before={\blank[halfline]},
+  after={}%
+]
+\setuphead [subsubsubject][%
+  style=\hfontiii,
+  command=\runin,
+  alternative=text,
+  before={\blank[halfline]}%
+]}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% floats
+
+\setupfloats [location=center, before={\ss}]
+\setupcaptions [headstyle={\ssbf},style={\ssx},
+   suffix=,distance=6pt,
+   inbetween={\blank[halfline]}]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% various document elements
+
+\def\ChkBox{%
+  \hbox {\boxrulewidth=.4pt \raise.2ex\ruledvbox
+        {\phantom{\vrule width .85ex height .85ex%
+}}}}
+\definesymbol [1][\ChkBox]
+
+\setupitemize[1][packed]
+
+\setupitemize [each][%
+  indentnext=no,
+  align=right,
+  width=1em,
+  distance=0pt%
+]
+
+% an outer form of itemize that does not indent
+% the paragraph.
+
+\definecomplexorsimpleempty\startouteritemize
+\def\complexstartouteritemize[#1]{\begingroup
+  \startitemize[width=1sp,#1]
+  \let\doitem\item
+  \def\item{\doitem[]\hbox{}\kern12pt\rightskip=0pt}%
+}
+
+\def\stopouteritemize{\stopitemize\endgroup}
+
+
+\setupenumerations [indentnext=no]
+
+\setupdescriptions [indentnext=no]
+
+\unexpanded\def\smalltyping{%
+  \switchtobodyfont[tt]%
+  \parindent=0pt
+}
+
+% typing:
+% - prettyverbatim is NOT the default
+% - smaller size
+
+\unexpanded\def
+  \XeTeX{X\lower.5ex\hbox{\kern-.1em\mirror{E}}\kern-.1667em\TeX}
+
+\setuptyping [%
+  style={\smalltyping},
+  option=none,
+  indentnext=no%
+]
+
+\def\footnum#1{#1.} 
+
+\setupfootnotes
+   [location=none,
+    width=\textwidth,
+    before={\blank},
+    numbercommand=,
+    command=\footnum]
+
+\setupfootnotedefinition
+   [location=serried,
+    before=,
+    after=,
+    distance=0.5em]
+
+\setuptabulate
+   [before=\blank,
+    inner=\ss,
+    after=\blank]
+
+\def\startIntroEntry#1%
+ {\startlinecorrection
+  \bgroup
+  \setupalign[right]
+  \setuptolerance[verytolerant]
+  \setupindenting[no]
+  \noindent
+  \switchtobodyfont[9pt]%
+  \setuplocalinterlinespace[line=10pt]%
+  %\hyphenpenalty10000
+  \parfillskip 0pt plus 1fill
+  \rightskip6pt plus 1fill
+  \ss
+  \bgroup\bf #1\par\egroup
+  \ignorespaces }
+
+\def\stopIntroEntry
+  {\par\egroup \stoplinecorrection
+   \blank[line] }
+
+\def\defineIntroEntry[#1][#2][#3]%
+  {\setvalue{start#1}{\startIntroEntry{#2}}%
+   \setvalue {stop#1}{\stopIntroEntry#3}}
+
+\defineIntroEntry[Keywords][Keywords][]
+\defineIntroEntry[Abstract][Abstract][]
+
+% article parameters (other fields and defaults)
+\def\MapsBibData[#1]%
+  {\getparameters [Maps]
+	[SubTitle=,
+     RunningAuthor=,
+     RunningTitle=,
+     Email=,
+     Address=,
+     Page=1,
+     Title=,
+     Author=, 
+     Period=,
+     Number=,
+     Year=,
+     #1]%
+  \doifnothing{\MapsPeriod}{%
+    \ifnum \normalmonth<6 \gdef\MapsPeriod{VOORJAAR}\else \gdef\MapsPeriod{NAJAAR}\fi}
+  \doifinstringelse{oorjaar}{\MapsPeriod}{\gdef\MapsPeriod{VOORJAAR}}{}%
+  \doifinstringelse{pring}{\MapsPeriod}{\gdef\MapsPeriod{VOORJAAR}}{}%
+  \doifinstringelse{ajaar}{\MapsPeriod}{\gdef\MapsPeriod{NAJAAR}}{}%
+  \doifinstringelse{utumn}{\MapsPeriod}{\gdef\MapsPeriod{NAJAAR}}{}%
+  \doifnothing{\MapsYear}{\gdef\MapsYear{\the\year}}%
+  \doifnothing{\MapsNumber}{%
+    \ifnum \normalmonth<6 
+      \xdef\MapsNumber{\the\numexpr (\the\year-1990)*2\relax}%
+    \else 
+      \xdef\MapsNumber{\the\numexpr (\the\year-1990)*2+1\relax}%
+    \fi }%
+  \doifnothing\MapsRunningAuthor
+    {\global\let\MapsRunningAuthor\MapsAuthor}%
+  \doifnothing\MapsRunningTitle
+    {\global\let\MapsRunningTitle\MapsTitle}}%
+
+\def\dostartArticle[#1]{%
+  \MapsBibData[#1]
+  \pageno=\MapsPage
+  \setuppagenumber[start=\MapsPage]
+  \startbaselinecorrection
+  \bgroup
+    \hsize = 457pt
+    \let\\\crlf
+    \blank[35pt,force]
+    \switchtobodyfont[24pt]
+    \setupalign[right]
+    {\noindent\bf\MapsTitle\par}
+    \ifx\MapsSubTitle\empty 
+      \blank[30pt]
+    \else
+      \bgroup
+      \blank[12pt]
+      \switchtobodyfont[18pt]\noindent \it
+      \advance \rightskip 0pt plus 2em
+      \MapsSubTitle\par
+      \egroup
+      \blank[30pt]
+    \fi
+  \egroup
+  \setupalign[width]
+  \switchtobodyfont[rm,10pt]
+  \stopbaselinecorrection
+  \ifMapsInColumns
+    \startcolumns\hyphenpenalty1000
+  \else
+    \clubpenalty10000
+    \widowpenalty10000
+  \fi
+}
+
+\def\startArticle{\dosingleempty\dostartArticle}
+
+\def\signArticle{%
+  \blank\let\\\crlf
+  \noindent\switchtobodyfont[ss,9pt]%
+  \MapsAuthor
+  \doifsomething{\MapsAddress}{\\\MapsAddress}%
+  \doifsomething{\MapsEmail}{\\\MapsEmail}%
+  \switchtobodyfont[10pt]%
+  \def\signArticle{}%
+}
+
+\def\stopArticle{%
+  \par\signArticle
+  \ifMapsInColumns \stopcolumns \fi
+  \page
+}
+
+\installpagebreakhandler{last}{}
+
+%%% `logos' %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\unexpanded\def\LaTeX % requested by erik frambach
+  {{\setbox\scratchbox\hbox{L}%
+    \scratchdimen\ht\scratchbox
+    \setbox\scratchbox\hbox{\switchtobodyfont[script]A}%
+    L\kern-.55\wd\scratchbox
+    \raise\scratchdimen\hbox{\lower\ht\scratchbox\copy\scratchbox}%
+    \kern-.2\wd\scratchbox\TeX}}
+
+
+\def\CONTEXT{Con{\TeX}t}
+\def\ConTeXt{Con{\TeX}t}
+\def\METAFONT{Metafont}
+\def\METAPOST{MetaPost}
+\def\POSTSCRIPT{PostScript}
+
+\def\acro#1{{\switchtobodyfont[9pt]#1}}
+
+
+%%%%%%%%%%%
+
+\doifmodeelse{onecolumn}{%
+  \setuplayout[width=340pt]
+  \doifmodeelse{asym}{% one col, asymmetric
+    \setuplayout[backspace=187.3pt]%
+    \setuptyping [widetyping][oddmargin=-117pt]
+    \setuppagenumbering [alternative={singlesided,doublesided}]
+    \setupheadertexts
+      [{\hbox{}\hskip-117pt\TiHead}]
+      [{\cap{\MapsPeriod\ \MapsYear}\quad\bf \pagenumber\hskip-30pt\hbox{}}]
+      [{\hbox{}\hskip-147pt{\bf \pagenumber}\quad \cap {maps\ \MapsNumber}}]
+      [\AuHead]
+    \setupfootertexts
+  }{% one col, symmetric
+    \setuplayout[backspace=70.3pt]
+    \setuppagenumbering [alternative=doublesided]
+    \setuptyping[blank=halfline]
+    \setupheadertexts
+      [\TiHead]
+      [{\cap{\MapsPeriod\ \MapsYear}\quad\bf \pagenumber\hskip-147pt\hbox{}}]
+      [{\hbox{}\hskip-147pt{\bf \pagenumber}\quad \cap {maps\ \MapsNumber}}]
+      [\AuHead]
+    \setupfootertexts
+}}{% two col
+  \setuplayout[width=457pt]
+  \setupcolumns[n=2,tolerance=verytolerant,distance=11pt]
+  \setuplayout[backspace=70.3pt,grid=yes]
+  \setuppagenumbering [alternative=doublesided]
+   \setuptyping[blank=halfline]
+   \setupheadertexts
+    [\TiHead]
+    [{\cap{\MapsPeriod\ \MapsYear}\quad\bf \pagenumber\hskip-30pt\hbox{}}]
+    [{\hbox{}\hskip-30pt{\bf \pagenumber}\quad \cap {maps\ \MapsNumber}}]
+    [\AuHead]
+  \setupfootertexts
+}
+
+\def\fulltextwidth{457pt}
+
+\def\startdescription
+  {\blank
+   \bgroup
+   \def\sym##1{\par\noindent\hbox{\bf\kern -16pt ##1}\hskip 12pt}
+   \startnarrower[left]
+   }
+\def\stopdescription
+  {\par \stopnarrower \egroup \blank \noindentation }
+
+\frenchspacing
+\setuptolerance[tolerant]
+
+\endinput

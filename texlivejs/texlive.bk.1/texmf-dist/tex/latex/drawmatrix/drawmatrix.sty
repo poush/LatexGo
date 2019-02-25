@@ -1,0 +1,270 @@
+%%
+%% This is file `drawmatrix.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% drawmatrix.dtx  (with options: `package')
+%% 
+%% This is a generated file.
+%% 
+%% Copyright (C) 2017 by Elmar Peise
+%% 
+%% This package is distributed under the MIT license.
+%% 
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesPackage{drawmatrix}[2017/06/05 v1.5.0 drawmatrix package]
+\RequirePackage{tikz}
+\newif\ifdrawmatrix@externalize
+\pgfkeys{
+    drawmatrix/.is family,
+    drawmatrix/.cd,
+    picture/.style={},
+    path/.style={},
+    baseline/.style={picture/.append style={baseline=(drawmatrix #1)}},
+    scale/.style={path/.append style={scale=#1}},
+    x/.style={path/.append style={x=#1}},
+    y/.style={path/.append style={y=#1}},
+    baseline=label.base,
+    bbox/.style={},
+    bbox style/.style={bbox/.append style={#1}},
+    bbox height/.initial,
+    bbox width/.initial,
+    bbox size/.style={bbox height=#1, bbox width=#1},
+    offset height/.initial=0,
+    offset width/.initial=0,
+    offset/.style={offset height=#1, offset width=#1},
+    height/.initial=1,
+    width/.initial=1,
+    size/.style={height=#1, width=#1},
+    lower bandwidth/.initial,
+    upper bandwidth/.initial,
+    bandwidth/.style={lower bandwidth=#1, upper bandwidth=#1},
+    lower banded/.style={lower bandwidth=.3},
+    upper banded/.style={upper bandwidth=.3},
+    banded/.style={lower banded, upper banded},
+    lower/.style={upper bandwidth=0},
+    upper/.style={lower bandwidth=0},
+    diag/.style={bandwidth=0},
+    label text/.initial,
+    label/.style={},
+    label pos/.style={label/.append style={at=(drawmatrix #1)}},
+    label pos=bbox.center,
+    label anchor/.style={label/.append style={anchor=#1}},
+    label anchor=mid,
+    label base/.initial,
+    label outer/.style={},
+    label base anchor/.style={label outer/.append style={
+        anchor=#1, at=(drawmatrix label.#1)
+    }},
+    label base anchor=base west,
+    exponent/.style={
+        label base/.expanded=\pgfkeysvalueof{/drawmatrix/label text},
+        label text/.append=^{#1}
+    },
+    drawmatrix/.style={},
+    .unknown/.code={%
+        \let\dm@currname\pgfkeyscurrentname%
+        \let\dm@currval\pgfkeyscurrentvalue%
+        \ifx#1\pgfkeysnovalue\pgfkeysalso{
+            drawmatrix/.append style/.expand once={\dm@currname}
+        }\else\pgfkeysalso{
+            drawmatrix/.append style/.expand twice={%
+                \expandafter\dm@currname\expandafter=\dm@currval%
+            }
+        }\fi%
+    },
+    every picture/.style={},
+    every bbox/.style={
+        name=drawmatrix bbox,
+        inner sep=0
+    },
+    every drawmatrix/.style={
+        fill=white,
+        draw=gray
+    },
+    every label/.style={
+        name=drawmatrix label,
+        outer sep=0,
+        inner sep=0
+    },
+    every node/.style={
+        name=drawmatrix matrix,
+        outer sep=0,
+        inner sep=0,
+        anchor=north west,
+        at=(drawmatrix north west)
+    },
+    externalize/.is if=drawmatrix@externalize,
+    externalize=true,
+    pre code/.code={},
+    post setup code/.code={},
+    pre coordinate code/.code={},
+    post coordinate code/.code={},
+    pre draw code/.code={},
+    post draw code/.code={},
+    pre label code/.code={},
+    post label code/.code={},
+    post code/.code={},
+    setup label code/.code={
+    \ifmmode\edef\dm@labeltext{$\dm@labeltext$}\fi%
+    \expandafter\ifx\dm@labelbase\pgfkeysnovalue\else%
+        \let\dm@labeltextouter\dm@labeltext%
+        \edef\dm@labelbase{%
+            \ifmmode$\dm@labelbase$\else\dm@labelbase\fi%
+        }%
+        \def\dm@labeltext{\phantom{\dm@labelbase}}%
+    \fi%
+    },
+    externalization code/.code={
+        \ifdrawmatrix@externalize\else%
+            \ifx\tikz@library@external@loaded\undefined\else%
+                \tikzset{external/export=false}%
+            \fi%
+        \fi%
+    },
+    setup sizes code/.code={
+        \path[/drawmatrix/path] (\dm@width, \dm@height);
+        \pgfgetlastxy\dm@width\dm@height
+        \path[/drawmatrix/path] (\dm@offsetwidth, \dm@offsetheight);
+        \pgfgetlastxy\dm@offsetwidth\dm@offsetheight
+        \pgfmathsetlengthmacro\dm@minsize{min(\dm@width, \dm@height)}
+        \pgfmathsetlengthmacro\dm@zero{0.0}
+        \expandafter\ifx\dm@lowerbandwidth\pgfkeysnovalue
+            \def\dm@lowerbandwidth{\dm@minsize}
+        \else
+            \path[/drawmatrix/path] (\dm@lowerbandwidth, 0);
+            \pgfgetlastxy\dm@lowerbandwidth\dm@zero
+        \fi
+        \expandafter\ifx\dm@upperbandwidth\pgfkeysnovalue
+            \def\dm@upperbandwidth{\dm@minsize}
+        \else
+            \path[/drawmatrix/path] (0, \dm@upperbandwidth);
+            \pgfgetlastxy\dm@zero\dm@upperbandwidth
+        \fi
+        \pgfmathsetlengthmacro\dm@lowerbandwidth{
+            min(\dm@minsize, \dm@lowerbandwidth)
+        }
+        \pgfmathsetlengthmacro\dm@upperbandwidth{
+            min(\dm@minsize, \dm@upperbandwidth)
+        }
+        \expandafter\ifx\dm@bboxheight\pgfkeysnovalue
+            \pgfmathsetlengthmacro\dm@bboxheight{
+                \dm@height + \dm@offsetheight
+            }
+        \else
+            \path[/drawmatrix/path] (0, \dm@bboxheight);
+            \pgfgetlastxy\dm@zero\dm@bboxheight
+        \fi
+        \expandafter\ifx\dm@bboxwidth\pgfkeysnovalue
+            \pgfmathsetlengthmacro\dm@bboxwidth{
+                \dm@width + \dm@offsetwidth
+            }
+        \else
+            \path[/drawmatrix/path] (\dm@bboxwidth, 0);
+            \pgfgetlastxy\dm@bboxwidth\dm@zero
+        \fi
+    },
+    bbox code/.code={
+        \pgfresetboundingbox
+        \node[/drawmatrix/every bbox, /drawmatrix/bbox,
+            minimum height=\dm@bboxheight,
+            minimum width=\dm@bboxwidth] {};
+    },
+    coordinate code/.code={
+        \path (drawmatrix bbox.north west)
+            ++(\dm@offsetwidth, -\dm@offsetheight)
+            ++(.5\pgflinewidth, -.5\pgflinewidth)
+            coordinate (drawmatrix north west)
+            ++(\dm@width, 0)
+            +(-\dm@minsize + \dm@upperbandwidth, 0)
+            coordinate (drawmatrix north)
+            +(0, -\dm@minsize + \dm@upperbandwidth)
+            coordinate (drawmatrix east)
+            ++(0, -\dm@height)
+            coordinate (drawmatrix south east)
+            ++(-\dm@width, 0)
+            +(\dm@minsize - \dm@lowerbandwidth, 0)
+            coordinate (drawmatrix south)
+            +(0, \dm@minsize - \dm@lowerbandwidth)
+            coordinate (drawmatrix west);
+    },
+    node code/.code={
+        \node[/drawmatrix/every node,
+            minimum height=\dm@height,
+            minimum width=\dm@width] {};
+    },
+    draw code/.code={
+        \filldraw[/drawmatrix/every drawmatrix, /drawmatrix/drawmatrix]
+            (drawmatrix north west)
+            \ifx\dm@upperbandwidth\dm@zero
+                \ifx\dm@width\dm@minsize\else -- (drawmatrix north) \fi
+                \ifx\dm@height\dm@minsize\else -- (drawmatrix east) \fi
+            \else
+                -- (drawmatrix north)
+                \ifx\dm@upperbandwidth\dm@minsize\else
+                    -- (drawmatrix east)
+                \fi
+            \fi
+            -- (drawmatrix south east)
+            \ifx\dm@lowerbandwidth\dm@zero
+                \ifx\dm@width\dm@minsize\else -- (drawmatrix south) \fi
+                \ifx\dm@height\dm@minsize\else -- (drawmatrix west) \fi
+            \else
+                -- (drawmatrix south)
+                \ifx\dm@lowerbandwidth\dm@minsize\else
+                    -- (drawmatrix west)
+                \fi
+            \fi
+            -- cycle;
+    },
+    label code/.code={
+        \node[/drawmatrix/every label, /drawmatrix/label]
+            {\dm@labeltext};
+        \expandafter\ifx\dm@labelbase\pgfkeysnovalue\else
+            \node[/drawmatrix/every label, /drawmatrix/label,
+                  /drawmatrix/label outer] {\dm@labeltextouter};
+        \fi
+    }
+}
+\newcommand\drawmatrixset[1]{\pgfqkeys{/drawmatrix}{#1}}
+\newcommand\drawmatrix[2][]{{%
+    \drawmatrixset{
+        label text={#2},
+        #1,
+        label text/.get=\dm@labeltext,
+        height/.get=\dm@height,
+        width/.get=\dm@width,
+        lower bandwidth/.get=\dm@lowerbandwidth,
+        upper bandwidth/.get=\dm@upperbandwidth,
+        offset height/.get=\dm@offsetheight,
+        offset width/.get=\dm@offsetwidth,
+        bbox height/.get=\dm@bboxheight,
+        bbox width/.get=\dm@bboxwidth,
+        label base/.get=\dm@labelbase,
+        pre code,
+        setup label code,
+        externalization code
+    }%
+    \begin{tikzpicture}[/drawmatrix/every picture, /drawmatrix/picture]
+        \drawmatrixset{
+            setup sizes code,
+            post setup code,
+            bbox code,
+            pre coordinate code,
+            coordinate code,
+            post coordinate code,
+            node code,
+            pre draw code,
+            draw code,
+            post draw code,
+            pre label code,
+            label code,
+            post label code
+        }
+    \end{tikzpicture}%
+    \drawmatrixset{post code}%
+}}
+\endinput
+%%
+%% End of file `drawmatrix.sty'.

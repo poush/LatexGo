@@ -1,0 +1,167 @@
+%% memorygraphs.tex
+%% Copyright 2018-2019 C. Staps
+%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status “maintained”.
+%
+% The Current Maintainer of this work is C. Staps.
+%
+% This work consists of the files memorygraphs.sty and the documentation in
+% memorygraphs.tex and example-fibonacci.tex.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{memorygraphs}[2019/01/06 v0.1.1 Draw memory graphs using TikZ]
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,positioning,shapes}
+
+\def\pgfaddtoshape#1#2{%
+	\begingroup
+	\def\pgf@sm@shape@name{#1}%
+	#2%
+	\endgroup
+}
+
+\pgfaddtoshape{rectangle split}{%
+	\pgfmathsetcount\c@pgf@counta{\pgfkeysvalueof{/pgf/rectangle split parts}}%
+	\edef\parts{\the\c@pgf@counta}%
+	\expandafter\xdef\csname pgf@anchor@rectangle split@head north east\endcsname{%
+		\expandafter\noexpand\csname pgf@anchor@rectangle split@one split north\endcsname}%
+	\expandafter\xdef\csname pgf@anchor@rectangle split@head south east\endcsname{%
+		\expandafter\noexpand\csname pgf@anchor@rectangle split@one split south\endcsname}%
+	\expandafter\xdef\csname pgf@anchor@rectangle split@head north west\endcsname{%
+		\expandafter\noexpand\csname pgf@anchor@rectangle split@north west\endcsname}%
+	\expandafter\xdef\csname pgf@anchor@rectangle split@head south west\endcsname{%
+		\expandafter\noexpand\csname pgf@anchor@rectangle split@south west\endcsname}%
+	\pgfmathloop%
+		\ifnum\pgfmathcounter>\parts%
+		\else%
+			\pgf@lib@sh@getalpha\pgf@lib@sh@rs@number{\pgfmathcounter}%
+			\expandafter\xdef\csname pgf@anchor@rectangle split@\pgf@lib@sh@rs@number\space center\endcsname{%
+				\expandafter\noexpand\csname pgf@anchor@rectangle split@\pgf@lib@sh@rs@number\space north\endcsname%
+				\pgf@ya=\pgf@y%
+				\expandafter\noexpand\csname pgf@anchor@rectangle split@\pgf@lib@sh@rs@number\space south\endcsname%
+				\advance\pgf@ya by-\pgf@y%
+				\advance\pgf@y by.5\pgf@ya}%
+			\c@pgf@counta=\pgfmathcounter%
+			\advance\c@pgf@counta by-1\relax%
+			\edef\name{\ifnum\c@pgf@counta=0 head\else arg \the\c@pgf@counta\fi}%
+			\expandafter\xdef\csname pgf@anchor@rectangle split@\name\endcsname{%
+				\expandafter\noexpand\csname pgf@anchor@rectangle split@\pgf@lib@sh@rs@number\endcsname}%
+			\pgfutil@for\pgf@lib@sh@rs@temp:={center,north,east,south,west}\do{%
+				\expandafter\xdef\csname pgf@anchor@rectangle split@\name\space\pgf@lib@sh@rs@temp\endcsname{%
+					\expandafter\noexpand\csname pgf@anchor@rectangle split@\pgf@lib@sh@rs@number\space\pgf@lib@sh@rs@temp\endcsname}}%
+	\repeatpgfmathloop%
+}
+\pgfaddtoshape{rectangle}{%
+	\expandafter\xdef\csname pgf@anchor@rectangle@head north east\endcsname{%
+		\expandafter\noexpand\csname pgf@anchor@rectangle@north east\endcsname}%
+	\expandafter\xdef\csname pgf@anchor@rectangle@head south east\endcsname{%
+		\expandafter\noexpand\csname pgf@anchor@rectangle@south east\endcsname}%
+	\expandafter\xdef\csname pgf@anchor@rectangle@head north west\endcsname{%
+		\expandafter\noexpand\csname pgf@anchor@rectangle@north west\endcsname}%
+	\expandafter\xdef\csname pgf@anchor@rectangle@head south west\endcsname{%
+		\expandafter\noexpand\csname pgf@anchor@rectangle@south west\endcsname}%
+}
+
+\newcommand{\memorygraphs@arg}[1]{%
+	\pgfmathsetcount\c@pgf@counta{#1}%
+	\advance\c@pgf@counta by1\relax%
+	\expandafter\nodepart\expandafter{\expandafter\pgf@lib@sh@toalpha\expandafter{\the\c@pgf@counta}}}
+
+\newdimen\memorygraphs@marklength
+\memorygraphs@marklength=4pt
+
+\tikzset{
+	memory graph/.style={
+		node distance=1.5em,
+	},
+	every block/.style={},
+	block/.style={
+		draw,
+		text height=height("I"),
+		text depth=depth("I"),
+		anchor=mid,
+		every block,
+	},
+	block/.append code={%
+		\let\arg\memorygraphs@arg%
+		\gdef\memorygraphs@arity{0}%
+	},
+	block mark north east/.style={
+		append after command={
+			\pgfextra
+				\pgfinterruptpath
+				\draw[#1]
+					($(\tikzlastnode.head north east)-(\ifnum\memorygraphs@arity=0 .5\pgflinewidth\else0\fi,.5\pgflinewidth)$)
+					-- +(0,-\memorygraphs@marklength)
+					-- ($(\tikzlastnode.head north east)-(\ifnum\memorygraphs@arity=0 .5\pgflinewidth\else0\fi+\memorygraphs@marklength,.5\pgflinewidth)$)
+					-- cycle;
+				\endpgfinterruptpath
+			\endpgfextra
+		},
+	},
+	block mark south east/.style={
+		append after command={
+			\pgfextra
+				\pgfinterruptpath
+				\draw[#1]
+					($(\tikzlastnode.head south east)+(\ifnum\memorygraphs@arity=0 -.5\pgflinewidth\else0\fi,.5\pgflinewidth)$)
+					-- +(0,\memorygraphs@marklength)
+					-- ($(\tikzlastnode.head south east)+(\ifnum\memorygraphs@arity=0 -.5\pgflinewidth\else0\fi-\memorygraphs@marklength,.5\pgflinewidth)$)
+					-- cycle;
+				\endpgfinterruptpath
+			\endpgfextra
+		},
+	},
+	block mark north west/.style={
+		append after command={
+			\pgfextra
+				\pgfinterruptpath
+				\draw[#1]
+					($(\tikzlastnode.head north west)+(.5\pgflinewidth,-.5\pgflinewidth)$)
+					-- +(0,-\memorygraphs@marklength)
+					-- ($(\tikzlastnode.head north west)-(-.5\pgflinewidth-\memorygraphs@marklength,.5\pgflinewidth)$)
+					-- cycle;
+				\endpgfinterruptpath
+			\endpgfextra
+		},
+	},
+	block mark south west/.style={
+		append after command={
+			\pgfextra
+				\pgfinterruptpath
+				\draw[#1]
+					($(\tikzlastnode.head south west)+(.5\pgflinewidth,.5\pgflinewidth)$)
+					-- +(0,\memorygraphs@marklength)
+					-- ($(\tikzlastnode.head south west)+(.5\pgflinewidth+\memorygraphs@marklength,.5\pgflinewidth)$)
+					-- cycle;
+				\endpgfinterruptpath
+			\endpgfextra
+		},
+	},
+	arity/.style={
+		block,
+		rectangle split,
+		rectangle split parts=#1+1,
+		rectangle split horizontal,
+		rectangle split every empty part={},
+		rectangle split empty part width=.2em,
+	},
+	arity/.append code={%
+		\pgfmathsetcount\c@pgf@counta{\pgfkeysvalueof{/pgf/rectangle split parts}}%
+		\ifnum\c@pgf@counta=0\else\advance\c@pgf@counta by-1 \fi
+		\xdef\memorygraphs@arity{\the\c@pgf@counta}%
+	},
+  ref/.style={
+		{Circle[length=3pt]}-Latex,
+		shorten <=-1.5pt,
+		rounded corners=.2em,
+	},
+}

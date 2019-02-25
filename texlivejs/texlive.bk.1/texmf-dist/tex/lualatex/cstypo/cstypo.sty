@@ -1,0 +1,45 @@
+% LaTeX package to enforce some basic Czech language typography
+% rules. Requires LuaLaTeX.
+%
+% (c) 2016 Václav Haisman
+%
+%% This program can be redistributed and/or modified under the terms of the
+%% MIT license. See LICENSE file.
+%
+\NeedsTeXFormat{LaTeX2e}[1994/06/01]
+\ProvidesPackage{cstypo}
+  [2016/08/31 v0.03 LaTeX package to enforce some basic Czech language
+  typography rules. Requires Lua(La)TeX.]
+
+\RequirePackage{ifluatex}
+
+\ifluatex
+
+\makeatletter
+\ifcsname l@czech\endcsname
+\PackageInfo{cstypo}{%
+  Czech language ID is \the\l@czech
+}
+\else
+\PackageError{cstypo}{%
+  \protect\l@czech\space is not defined
+}{%
+  Include cstypo package after polyglossia or babel.
+}
+\fi
+\makeatother
+
+\input{cstypo-tex}
+\else
+\PackageError{cstypo}{%
+  This requires LuaTeX or LuaLaTeX
+}{%
+  Compile this with LuaTeX or LuaLaTeX.
+}
+
+\fi
+
+\endinput
+
+%%
+%% End of file `cstypo.sty'.

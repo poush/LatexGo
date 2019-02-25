@@ -1,0 +1,266 @@
+% Ceci est la documentation du package "autoaligne"
+%
+% Fichier compilé avec pdflatex
+\documentclass[french,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{libertine}\usepackage[italic]{mathastext}
+\usepackage[scaled=0.8]{luximono}
+\usepackage{autoaligne,babel}
+\usepackage[bottom]{footmisc}
+\usepackage[margin=3cm]{geometry}
+\usepackage{fancybox,xcolor,hyperref}
+\def\eTeX{\hbox{$\varepsilon$-\TeX}}
+\makeatletter
+\long\def\defactive#1#2{\catcode`#1=13 \begingroup\lccode`\~`#1 \lowercase{\endgroup\long\def~{#2}}}
+\newcommand\disable@lig[1]{\defactive#1{\leavevmode\kern\z@\string#1}}
+\def\code{\expandafter\code@i\string}
+\def\code@i#1{%
+	\begingroup
+	\par\nobreak\medskip\parindent0pt
+	\leftskip.1\linewidth
+	\defactive\^^I{\leavevmode\space\space\space\space}%
+	\defactive\<{\begingroup$\langle$\itshape}%
+	\defactive\>{$\rangle$\endgroup}%
+	\let\do\@makeother \dospecials
+	\ttfamily\small
+	\obeylines\obeyspaces
+	\def\code@ii##1#1{##1\par\medbreak\endgroup}%
+	\code@ii
+}
+\long\def\grab@toks#1\relax{\gdef\right@content{#1}}
+
+\newcommand\exemple[1][60]{%
+	\par\nobreak\vskip5pt \noindent
+	\def\part@coeff{#1}%
+	\relax\leavevmode\null
+	\begingroup
+	\let\do\@makeother\dospecials
+	\defactive\ {\space}%
+	\defactive\^^M{\par\leavevmode}%
+	\defactive\^^I{\leavevmode\space\space\space\space}%
+	\@makeother:\disable@lig,\disable@lig-%
+	\exemple@@
+}
+
+\newcommand\exemple@@[1]{%
+	\def\@tempa##1#1{%
+		\xdef\left@content{##1}%
+		\endgroup
+		\begingroup
+			\fboxsep1pt \fboxrule 0.5pt
+			\fbox{%
+				\parbox[c]{\dimexpr0.\part@coeff\linewidth-\fboxsep-\fboxrule}{%
+					\vskip5pt
+					\ttfamily\footnotesize\left@content
+					\vskip5pt
+				}%
+				\parbox[c]{\dimexpr\linewidth-0.\part@coeff\linewidth-\fboxsep-\fboxrule}{%
+					\vskip5pt
+					\normalfont\footnotesize\noindent\newlinechar`\^^M \everyeof{\noexpand}%
+					\scantokens{##1}%
+					\vskip5pt
+				}%
+			}%
+			\vskip7.5pt\relax
+		\endgroup
+	}%
+	\@tempa
+}
+
+\def\exemple@@@{%
+
+}
+
+\begingroup
+\catcode`\<13 \catcode`\>13
+\gdef\verb{\relax\ifmmode\hbox\else\leavevmode\null\fi
+	\bgroup
+	\verb@eol@error \let\do\@makeother \dospecials
+	\verbatim@font\@noligs
+	\catcode`\<13 \catcode`\>13 \def<{\begingroup$\langle$\itshape}\def>{$\rangle$\endgroup}%
+	\@ifstar\@sverb\@verb}
+\endgroup
+\def\longfraadate@i#1/#2/#3\@nil{\number#3\relax\space\ifcase #2 \or janvier\or février\or mars\or avril\or mai\or juin\or juillet\or aout\or septembre\or octobre\or novembre\or décembre\fi\space#1}
+\edef\longfraadate{\expandafter\longfraadate@i\aadate\@nil}
+\makeatother
+\begin{document}
+\parindent=0pt
+\thispagestyle{empty}
+\begin{titlepage}
+	\renewcommand\thefootnote{\fnsymbol{footnote}}
+	\begingroup
+	\centering
+	\null\vskip.25\vsize
+	{\large\bfseries L'extension\par \Huge \aanom\par}
+	\bigbreak
+	v\aaversion
+	\smallbreak
+	\longfraadate
+	\vskip1.5cm
+	{Christian \bsc{Tellechea}\footnote{\href{mailto:unbonpetit@netc.fr}{unbonpetit@netc.fr}}}
+	\par
+	\endgroup
+	\vskip2cm
+	\leftskip=.2\linewidth \rightskip=.2\linewidth \small
+	Cette petite extension permet d'aligner les uns au-dessous des autres les termes et les signes d'égalité dans des expressions mathématiques s'étendant sur plusieurs lignes.
+\end{titlepage}
+\parskip=5ptplus0.5ptminus0.5pt\relax
+\def\listofitems{\textsf\loiname}
+\def\aa{\textsf\aanom}
+\section{Avant propos}
+C'est à force de voir, aussi bien sur \href{http://tex.stackexchange.com/}{\texttt{tex.stackexchange}} que dans ma boite \href{mailto:unbonpetit@netc.fr}{email}, des questions concernant l'extension \href{https://www.ctan.org/pkg/systeme}{\texttt{systeme}} que j'ai décidé d'écrire une extension à la fois plus générale et plus simple que ne l'est \texttt{systeme}. En effet trop de ces questions ont pour but de faire réaliser à \texttt{systeme} des choses pour lesquelles elle n'est pas conçue !
+
+À l'aide de l'extension \href{https://www.ctan.org/pkg/listofitems}{\listofitems}, coder \aa{} deviendrait (presque) une formalité tant les choses tendent à devenir plus simples.
+
+Ayant constaté que beaucoup de non francophones ne semblent en rien gênés que le manuel de \texttt{systeme} soit rédigé uniquement en français, détestant pour ma part traduire le français vers l'anglais ce qui s'apparente à un calvaire et enfin, voulant à tout prix défendre l'existence du français face au globbish dans la sphère \TeX/\LaTeX{} et ailleurs, j'ai voulu que cette extension soit 100\% en français et qu'elle le reste ! Même dans le code, les noms des macros sont en français ce qui, une fois l'habitude prise, est fort agréable.
+\bigbreak
+
+Cette extension requiert l'extension \listofitems{} dans sa version 1.1 ou supérieur, doit être utilisée avec un moteur \eTeX, et doit être appelée sous (pdf)(Xe)(lua)\LaTeX{} par
+\code|\usepackage{autoaligne}|
+
+et sous (pdf)(Xe)(lua)\TeX{} par
+\code|\input autoaligne.tex|
+
+\section{Mode d'emploi}
+\paragraph{La macro \texttt{\char`\\autoaligne}}
+Cette macro attend un argument obligatoire entre accolades contenant les lignes qui sont des expressions où l'alignement automatique doit entrer en vigueur.
+
+Chaque ligne est séparée de sa voisine par \og\verb|\\|\fg. Dans chaque ligne, on peut trouver autant de membres que l'on souhaite, séparés les uns des autres par \og\verb|=|\fg. Dans ces membres peuvent se trouver autant de termes que nécessaire, chacun séparé de son voisin par \og\verb|+|\fg{} ou \og\verb|-|\fg. Pour choisir d'autres séparateurs, voir page~\pageref{choix.separateurs}.
+
+La macro \verb|\autoaligne| va bâtir un alignement de type \verb|\halign| dans lequel chaque terme et chaque signe est contenu dans une colonne. Toutes les colonnes sont composées en mode mathématique. Visuellement, le résultat se traduit par des termes et des signes alignés les uns au-dessous des autres comme on peut le constater dans cet exemple simple :
+\exemple|\autoaligne{x-3y+z=2-i\\5x+y-6z=1+5i\\-x+y-z=-3+i}|
+
+Lorsqu'un membre commence par \og\verb/-/\fg, le signe fait partie prenante du terme et n'est pas compris comme un séparateur entre termes. On peut le constater dans les deux membre de la dernière ligne.
+
+\paragraph{Termes vides}
+Les signes \og\verb|+|\fg{} doivent être utilisés pour insérer des termes vides. Il est déconseillé de se servir du signe \og\verb|-|\fg{}.
+
+\exemple/\autoaligne{x=a++c\\+y=+b-c\\++z=+-4c}/
+
+On peut noter deux choses :
+\begin{enumerate}
+	\item les signes \og\verb|+|\fg{} devant les termes vides ou devant le premier terme non vide ne sont pas affichés ;
+	\item lorsqu'une colonne ne contient que des signes non affichés comme c'est le cas dans le membre de gauche, l'encombrement horizontal de ces signes est pris en compte.
+\end{enumerate}
+
+Lorsqu'un terme négatif doit apparaitre en deuxième position après un terme vide, il \emph{faut} meubler ce terme vide avec un contenu non affichable comme \og\verb|{}|\fg, \og\verb|\relax|\fg{} ou \og\verb|\null|\fg{}. C'est, je pense, la seule situation où \aa{} conserve une ambiguïté qui demande, pour être levée, un petit effort de la part de l'utilisateur :
+
+\exemple/\autoaligne{a-b={}-2i\\a+2b=1+i}/
+
+\paragraph{Composition des termes}
+Par défaut, chaque terme est composé au fer à droite comme on le constate sur cet exemple :
+
+\exemple/\autoaligne{a+\sqrt2b=0\\a+b=10\sqrt2}/
+
+L'argument optionnel de \verb|\autoaligne| permet de changer ce paramètre de composition. Si l'on souhaite spéficier ce paramètre globalement pour \emph{tous} les membres, il faut écrire \verb|*<lettre>| où la \verb|<lettre>| est \og\texttt c\fg{} pour centré, \og\texttt d\fg{} pour droite et \og\texttt g\fg{} pour gauche. Toute autre lettre provoquera un message d'erreur et \og\texttt d\fg{} sera alors prise par défaut.
+
+Voici l'exemple ci-dessus repris avec un paramètre optionnel global \og\verb|*g|\fg{} :
+
+\exemple/\autoaligne[*g]{a+\sqrt2b=0\\a+b=10\sqrt2}/
+
+Pour spécifier le paramètre pour chaque membre, il faut écrire dans l'argument optionnel autant de \verb|<lettres>| qu'il y a de membres dans l'alignement. Si l'on écrit plus de lettres qu'il y a de membres, les lettres en trop seront ignorées. S'il manque des lettres, un message d'erreur sera émis et la lettre \og\verb|d|\fg{} sera prise par défaut.
+
+Voici l'exemple avec, semble-t-il, le meilleur compromis ici, c'est-à-dire \og\verb|d|\fg{} pour le 1\ier{} membre et \og\verb|g|\fg{} pour le second :
+
+\exemple/\autoaligne[dg]{a+\sqrt2b=0\\a+b=10\sqrt2}/
+
+Pour contrarier l'alignement pour un seul terme dans une seule ligne, il est toujours possible de placer convenablement un (ou plusieurs) \verb|\hfill| dans ce terme.
+
+\paragraph{Échappement de \texttt+ et \texttt-}
+Pour écrire un signe \og\texttt+\fg{} ou \og\texttt-\fg{} sans qu'il ne soit interprété comme un délimiteur de terme, il faut employer les macros \verb|\+| ou  \verb|\-| :
+
+\exemple/\autoaligne{(1\+a)x+a^2y=a\\-2ax+(1\-a)y=2-a}/
+
+\paragraph{Combien de membres ?}
+Autant que l'on veut !
+
+\exemple/\autoaligne{a+b=1+2+3+4=++z=\alpha\\+x=++10==3\\=1=i+j-z}/
+
+Si un membre est vide (comme celui précédant le 3), le signe d'égalité qui le précède n'est pas affiché par défaut. Pour changer ce comportement, il faut écrire \verb|\egaldevantmembrevide=<nombre>|. Si le \verb|<nombre>| (entier sur 8 bits positif ou nul) vaut autre chose que 0, le signe \verb|=| sera affiché devant un membre vide.
+
+\paragraph{Augmenter l'espacement vertical}
+Le coefficient défini par \verb|\aavcoeff{<coeff>}| permet de modifier l'espacement vertical entre les lignes en multipliant la valeur de \verb|\baselineskip| par le \verb|<coeff>|.
+
+\exemple/Normal \autoaligne{a+2b=1\\a-b=2} \qquad
+\aavcoeff{1.75}étendu \autoaligne{a+2b=1\\a-b=2}/
+
+\paragraph{Position verticale de l'alignement}
+La macro \verb|\autoaligne| admet un autre argument optionnel entre parenthèses qui spécifie quelle sera la position verticale de l'alignement créé par rapport à la ligne de base. Cet argument est une \verb|<lettre>| qui vaut \og\verb|c|\fg, \og\verb|h|\fg{} ou \og\verb|b|\fg{} pour que la ligne de base de l'alignement soit au centre de celui-ci, sur la ligne du haut ou sur celle du bas. La position centrée est celle par défaut. Lorsque les deux arguments optionnels sont présents (celui entre crochets et celui entre parenthèses), l'ordre des arguments optionnels \emph{est sans importance}, \verb|[<consigne>](<lettre>)| est accepté tout comme \verb|(<lettre>)[<consigne>]|.
+
+\exemple/Alignement c :
+\autoaligne(c){4=1+1+1+1\\=1+1+2\\=2+2\\=3+1}\medbreak
+
+Alignement h :
+\autoaligne(h){4=1+1+1+1\\=1+1+2\\=2+2\\=3+1}\medbreak
+
+Alignement b :
+\autoaligne(b){4=1+1+1+1\\=1+1+2\\=2+2\\=3+1}/
+
+\paragraph{Choix des séparateurs}\label{choix.separateurs}
+Depuis la version 1.2, il est possible de choisir les séparateurs qui sont par défaut \og\verb|\\|\fg{} pour le changement de ligne, \og\verb|=|\fg{} pour le séparateur entre membres et \og\verb/+||-/\fg{} pour le séparateur entre termes.
+
+La macro
+
+\code|\definirseparateurs{<sep ligne>}{<sep membres>}{<sep termes>}|
+
+permet de les définir à sa convenance selon les contraintes suivantes:
+
+\begin{enumerate}
+	\item le \verb|<sep ligne>| doit être défini, c'est-à-dire qu'il ne peut pas être vide;
+	\item \verb|<sep membres>| et \verb|<sep termes>| ne peuvent pas être vides tous les deux, auquel cas, \og\verb|=|\fg{} et \og\verb/+||-/\fg{} sont pris par défaut;
+	\item un des deux séparateurs \verb|<sep membres>| ou \verb|<sep termes>| peut être vide, ce qui signifie que l'alignement ne tiendra compte que de deux séparateurs.
+\end{enumerate}
+
+Voici un exemple où seulement deux séparateurs sont définis :
+
+\exemple/Un calcul :
+\definirseparateurs{\\}{+||-}{}
+\autoaligne[*c](h){15+2\times3-4\times5\\
+15+6-20\\
+21+-20\\
+1}/
+
+\paragraph{Choix des espaces additionnels}
+Si l'on tente de créer une macro \verb|\determinant| qui affiche un déterminant de matrice dont les éléments sont séparés par \og\verb|\\|\fg{} et \og\verb*/ /\fg{}, on constate que le séparateur \og\verb*/ /\fg{}, composé en mode mathématique dans une colonne, est ignoré ce qui se traduit une colonne de largeur nulle conduisant à des espacement incorrects.
+
+\exemple/\def\determinant#1{\begingroup
+	\definirseparateurs{\\}{ }{}%
+	\hbox{$\left|\autoaligne[*c]{#1}\right|$}%
+	\endgroup
+}
+Un déterminant \determinant{a -b 0\\b 0 a\\0 -a -b}/
+
+La macro
+
+\code|\definirespacements{<espace membres>}{<espace termes>}|
+
+définit les espaces placées \emph{de part et d'autre} de chaque séparateur de membres ou de termes. Ces deux espaces sont nulles par défaut, mais deviennent nécessaires dans l'exemple ci-dessus :
+
+\exemple/\def\determinant#1{\begingroup
+	\definirseparateurs{\\}{ }{}%
+	\definirespacements{.75em}{}%
+	\hbox{$\left|\autoaligne[*c]{#1}\right|$}%
+	\endgroup
+}
+Un déterminant \determinant{a -b 0\\b 0 a\\0 -a -b}/
+
+\paragraph{Choix des espacements autour de l'alignement}
+L'espacement autour de l'alignement lui-même est nul par défaut, ce qui se traduit par des traits verticaux un peu trop proches de la matrice dans l'exemple ci-dessus.
+
+La macro \verb/\definirespacements/ admet un argument optionnel entre crochets de la forme
+
+\code|[<ressort 1>,<ressort 2>]|
+
+où \verb|<ressort 1>| est le ressort inséré avant l'alignement et \verb|<ressort 2>| celui inséré après.
+
+\exemple/\def\determinant#1{\begingroup
+	\definirseparateurs{\\}{ }{}%
+	\definirespacements[3pt,3pt]{.75em}{}%
+	\hbox{$\left|\autoaligne[*c]{#1}\right|$}%
+	\endgroup
+}
+Un déterminant \determinant{a -b 0\\b 0 a\\0 -a -b}/
+
+Si \verb|<ressort 1>| est vide, aucun ressort n'est inséré via \verb|\hskip|. Il en est de même avec \verb|<ressort 2>|. Les valeurs de ces ressorts sont vides par défaut, ce qui signifie qu'aucun ressort n'est inséré avant ou après les alignements créés.
+\end{document}

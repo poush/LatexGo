@@ -1,0 +1,56 @@
+% epsf-dvipdfmx.tex - \input after epsf.tex when using dvipdfmx
+% Originally written by Akira Kakuto, 2014.  Public domain.
+%
+% (x)dvipdfmx patch for epsf.tex - translate bounding box to have (0,0) LL.
+%
+\newdimen\epsfdpxtexdimen
+%
+% from latex.ltx
+%
+\begingroup
+  \catcode`P=12
+  \catcode`T=12
+  \lowercase{\def\x{\def\rempt##1.##2PT{##1\ifnum##2>0pt.##2\fi}}}
+  \expandafter\endgroup\x
+\def\strippt{\expandafter\rempt\the}
+%
+\def \epsfspecial #1{%
+     \epsftmp=10\epsfxsize
+     \divide \epsftmp by \pspoints
+     \ifnum \epsfrsize = 0%
+       \relax
+       \epsfdpxtexdimen=\epsfurx pt
+       \advance\epsfdpxtexdimen -\epsfllx pt
+       \edef\epsfurxx{\strippt\epsfdpxtexdimen}%
+       \epsfdpxtexdimen=\epsfury pt
+       \advance\epsfdpxtexdimen -\epsflly pt
+       \edef\epsfuryy{\strippt\epsfdpxtexdimen}%
+       \special{PSfile=\ifepsfdraft psdraft.ps\else#1\fi\space
+		llx=0\space
+		lly=0\space
+		urx=\epsfurxx\space
+		ury=\epsfuryy\space
+		rwi=\number\epsftmp
+		\epsfclipstring
+               }%
+     \else
+       \epsfrsize=10\epsfysize
+       \divide \epsfrsize by \pspoints
+       \epsfdpxtexdimen=\epsfurx pt
+       \advance\epsfdpxtexdimen -\epsfllx pt
+       \edef\epsfurxx{\strippt\epsfdpxtexdimen}%
+       \epsfdpxtexdimen=\epsfury pt
+       \advance\epsfdpxtexdimen -\epsflly pt
+       \edef\epsfuryy{\strippt\epsfdpxtexdimen}%
+       \special{PSfile=\ifepsfdraft psdraft.ps\else#1\fi\space
+		llx=0\space
+		lly=0\space
+		urx=\epsfurxx\space
+		ury=\epsfuryy\space
+		rwi=\number\epsftmp
+		rhi=\number\epsfrsize
+		\epsfclipstring
+               }%
+     \fi
+}%
+\endinput

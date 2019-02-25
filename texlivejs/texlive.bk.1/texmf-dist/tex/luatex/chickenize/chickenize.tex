@@ -1,0 +1,441 @@
+%%
+%% This is file `chickenize.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% chickenize.dtx  (with options: `tex')
+%% 
+%% EXPERIMENTAL CODE
+%% 
+%% This package is copyright © 2017 Arno L. Trautmann. It may be distributed and/or
+%% modified under the conditions of the LaTeX Project Public License, either version 1.3c
+%% of this license or (at your option) any later version. This work has the LPPL mainten-
+%% ance status ‘maintained’.
+\directlua{dofile(kpse.find_file("chickenize.lua"))}
+
+\def\ALT{%
+  \bgroup%
+  \fontspec{Latin Modern Sans}%
+  A%
+  \kern-.4em \raisebox{.65ex}{\scalebox{0.3}{L}}%
+  \kern-.0em \raisebox{-0.98ex}{T}%
+  \egroup%
+}
+
+\def\allownumberincommands{
+  \catcode`\0=11
+  \catcode`\1=11
+  \catcode`\2=11
+  \catcode`\3=11
+  \catcode`\4=11
+  \catcode`\5=11
+  \catcode`\6=11
+  \catcode`\7=11
+  \catcode`\8=11
+  \catcode`\9=11
+}
+
+\def\BEClerize{
+  \chickenize
+  \directlua{
+    chickenstring[1]  = "noise noise"
+    chickenstring[2]  = "atom noise"
+    chickenstring[3]  = "shot noise"
+    chickenstring[4]  = "photon noise"
+    chickenstring[5]  = "camera noise"
+    chickenstring[6]  = "noising noise"
+    chickenstring[7]  = "thermal noise"
+    chickenstring[8]  = "electronic noise"
+    chickenstring[9]  = "spin noise"
+    chickenstring[10] = "electron noise"
+    chickenstring[11] = "Bogoliubov noise"
+    chickenstring[12] = "white noise"
+    chickenstring[13] = "brown noise"
+    chickenstring[14] = "pink noise"
+    chickenstring[15] = "bloch sphere"
+    chickenstring[16] = "atom shot noise"
+    chickenstring[17] = "nature physics"
+  }
+}
+
+\def\boustrophedon{
+  \directlua{luatexbase.add_to_callback("post_linebreak_filter",boustrophedon,"boustrophedon")}}
+\def\unboustrophedon{
+  \directlua{luatexbase.remove_from_callback("post_linebreak_filter","boustrophedon")}}
+
+\def\boustrophedonglyphs{
+  \directlua{luatexbase.add_to_callback("post_linebreak_filter",boustrophedon_glyphs,"boustrophedon_glyphs")}}
+\def\unboustrophedonglyphs{
+  \directlua{luatexbase.remove_from_callback("post_linebreak_filter","boustrophedon_glyphs")}}
+
+\def\boustrophedoninverse{
+  \directlua{luatexbase.add_to_callback("post_linebreak_filter",boustrophedon_inverse,"boustrophedon_inverse")}}
+\def\unboustrophedoninverse{
+  \directlua{luatexbase.remove_from_callback("post_linebreak_filter","boustrophedon_inverse")}}
+
+\def\bubblesort{
+  \directlua{luatexbase.add_to_callback("post_linebreak_filter",bubblesort,"bubblesort")}}
+\def\unbubblesort{
+  \directlua{luatexbase.remove_from_callback("bubblesort","bubblesort")}}
+
+\def\chickenize{
+  \directlua{luatexbase.add_to_callback("pre_linebreak_filter",chickenize,"chickenize")
+    luatexbase.add_to_callback("start_page_number",
+    function() texio.write("["..status.total_pages) end ,"cstartpage")
+    luatexbase.add_to_callback("stop_page_number",
+    function() texio.write(" chickens]") end,"cstoppage")
+    luatexbase.add_to_callback("stop_run",nicetext,"a nice text")
+  }
+}
+\def\unchickenize{
+  \directlua{luatexbase.remove_from_callback("pre_linebreak_filter","chickenize")
+    luatexbase.remove_from_callback("start_page_number","cstartpage")
+    luatexbase.remove_from_callback("stop_page_number","cstoppage")}}
+
+\def\coffeestainize{  %% to be implemented.
+  \directlua{}}
+\def\uncoffeestainize{
+  \directlua{}}
+
+\def\colorstretch{
+  \directlua{luatexbase.add_to_callback("post_linebreak_filter",colorstretch,"stretch_expansion")}}
+\def\uncolorstretch{
+  \directlua{luatexbase.remove_from_callback("post_linebreak_filter","stretch_expansion")}}
+
+\def\countglyphs{
+  \directlua{
+             counted_glyphs_by_code = {}
+             for i = 1,10000 do
+               counted_glyphs_by_code[i] = 0
+             end
+             glyphnumber = 0 spacenumber = 0
+             luatexbase.add_to_callback("post_linebreak_filter",countglyphs,"countglyphs")
+             luatexbase.add_to_callback("stop_run",printglyphnumber,"printglyphnumber")
+  }
+}
+
+\def\countwords{
+  \directlua{wordnumber = 0
+             luatexbase.add_to_callback("pre_linebreak_filter",countwords,"countwords")
+             luatexbase.add_to_callback("stop_run",printwordnumber,"printwordnumber")
+  }
+}
+
+\def\detectdoublewords{
+  \directlua{
+             luatexbase.add_to_callback("post_linebreak_filter",detectdoublewords,"detectdoublewords")
+             luatexbase.add_to_callback("stop_run",printdoublewords,"printdoublewords")
+  }
+}
+
+\def\dosomethingfunny{
+    %% should execute one of the “funny” commands, but randomly. So every compilation is completely different. Maybe a list of commands could be specified to exclude total nonesense-functions. Maybe also on a per-paragraph-basis?
+}
+
+\def\dubstepenize{
+  \chickenize
+  \directlua{
+    chickenstring[1] = "WOB"
+    chickenstring[2] = "WOB"
+    chickenstring[3] = "WOB"
+    chickenstring[4] = "BROOOAR"
+    chickenstring[5] = "WHEE"
+    chickenstring[6] = "WOB WOB WOB"
+    chickenstring[7] = "WAAAAAAAAH"
+    chickenstring[8] = "duhduh duhduh duh"
+    chickenstring[9] = "BEEEEEEEEEW"
+    chickenstring[10] = "DDEEEEEEEW"
+    chickenstring[11] = "EEEEEW"
+    chickenstring[12] = "boop"
+    chickenstring[13] = "buhdee"
+    chickenstring[14] = "bee bee"
+    chickenstring[15] = "BZZZRRRRRRROOOOOOAAAAA"
+
+    chickenizefraction = 1
+  }
+}
+\let\dubstepize\dubstepenize
+
+\def\explainbackslashes{ %% inspired by xkcd #1638
+  {\tt\noindent
+\textbackslash escape character\\
+\textbackslash\textbackslash line end or escaped escape character in tex.print("")\\
+\textbackslash\textbackslash\textbackslash real, real backslash\\
+\textbackslash\textbackslash\textbackslash\textbackslash line end in tex.print("")\\
+\textbackslash\textbackslash\textbackslash\textbackslash\textbackslash elder backslash \\
+\textbackslash\textbackslash\textbackslash\textbackslash\textbackslash\textbackslash backslash which escapes the screen and enters your brain\\
+\textbackslash\textbackslash\textbackslash\textbackslash\textbackslash\textbackslash\textbackslash backslash so real it transcends time and space \\
+\textbackslash\textbackslash\textbackslash\textbackslash\textbackslash\textbackslash\textbackslash\textbackslash backslash to end all other text\\
+\textbackslash\textbackslash\textbackslash\textbackslash\textbackslash\textbackslash\textbackslash\textbackslash\textbackslash\textbackslash... the true name of Ba'al, the soul-eater}
+}
+
+\def\gameoflife{
+  Your Life Is Tetris. Stop Playing It Like Chess.
+}
+
+\def\guttenbergenize{ %% makes only sense when using LaTeX
+  \AtBeginDocument{
+    \let\grqq\relax\let\glqq\relax
+    \let\frqq\relax\let\flqq\relax
+    \let\grq\relax\let\glq\relax
+    \let\frq\relax\let\flq\relax
+    \gdef\footnote##1{}
+    \gdef\cite##1{}\gdef\parencite##1{}
+    \gdef\Cite##1{}\gdef\Parencite##1{}
+    \gdef\cites##1{}\gdef\parencites##1{}
+    \gdef\Cites##1{}\gdef\Parencites##1{}
+    \gdef\footcite##1{}\gdef\footcitetext##1{}
+    \gdef\footcites##1{}\gdef\footcitetexts##1{}
+    \gdef\textcite##1{}\gdef\Textcite##1{}
+    \gdef\textcites##1{}\gdef\Textcites##1{}
+    \gdef\smartcites##1{}\gdef\Smartcites##1{}
+    \gdef\supercite##1{}\gdef\supercites##1{}
+    \gdef\autocite##1{}\gdef\Autocite##1{}
+    \gdef\autocites##1{}\gdef\Autocites##1{}
+    %% many, many missing … maybe we need to tackle the underlying mechanism?
+  }
+  \directlua{luatexbase.add_to_callback("pre_linebreak_filter",guttenbergenize_rq,"guttenbergenize_rq")}
+}
+
+\def\hammertime{
+  \global\let\n\relax
+  \directlua{hammerfirst = true
+             luatexbase.add_to_callback("pre_linebreak_filter",hammertime,"hammertime")}}
+\def\unhammertime{
+  \directlua{luatexbase.remove_from_callback("pre_linebreak_filter","hammertime")}}
+
+\let\hendlnize\chickenize     % homage to Hendl/Chicken
+\let\unhendlnize\unchickenize % may the soldering strength always be with him
+
+
+\def\kernmanipulate{
+  \directlua{luatexbase.add_to_callback("pre_linebreak_filter",kernmanipulate,"kernmanipulate")}}
+\def\unkernmanipulate{
+  \directlua{lutaexbase.remove_from_callback("pre_linebreak_filter",kernmanipulate)}}
+
+\def\leetspeak{
+  \directlua{luatexbase.add_to_callback("post_linebreak_filter",leet,"1337")}}
+\def\unleetspeak{
+  \directlua{luatexbase.remove_from_callback("post_linebreak_filter","1337")}}
+
+\def\leftsideright#1{
+  \directlua{luatexbase.add_to_callback("pre_linebreak_filter",leftsideright,"leftsideright")}
+  \directlua{
+    leftsiderightindex = {#1}
+    leftsiderightarray = {}
+    for _,i in pairs(leftsiderightindex) do
+      leftsiderightarray[i] = true
+    end
+  }
+}
+\def\unleftsideright{
+  \directlua{luatexbase.remove_from_callback("pre_linebreak_filter","leftsideright")}}
+
+\def\letterspaceadjust{
+  \directlua{luatexbase.add_to_callback("pre_linebreak_filter",letterspaceadjust,"letterspaceadjust")}}
+\def\unletterspaceadjust{
+  \directlua{luatexbase.remove_from_callback("pre_linebreak_filter","letterspaceadjust")}}
+
+\def\listallcommands{
+  \directlua{
+ for name in pairs(tex.hashtokens()) do
+     print(name)
+ end}
+}
+
+\let\stealsheep\letterspaceadjust     %% synonym in honor of Paul
+\let\unstealsheep\unletterspaceadjust
+\let\returnsheep\unletterspaceadjust
+
+\def\matrixize{
+  \directlua{luatexbase.add_to_callback("pre_linebreak_filter",matrixize,"matrixize")}}
+\def\unmatrixize{
+  \directlua{luatexbase.remove_from_callback("pre_linebreak_filter","matrixize")}}
+
+\def\milkcow{     %% FIXME %% to be implemented
+  \directlua{}}
+\def\unmilkcow{
+  \directlua{}}
+
+\def\medievalumlaut{
+  \directlua{luatexbase.add_to_callback("post_linebreak_filter",medievalumlaut,"medievalumlaut")}}
+\def\unmedievalumlaut{
+  \directlua{luatexbase.remove_from_callback("post_linebreak_filter","medievalumlaut")}}
+
+\def\pancakenize{
+  \directlua{luatexbase.add_to_callback("stop_run",pancaketext,"pancaketext")}}
+
+\def\rainbowcolor{
+  \directlua{luatexbase.add_to_callback("post_linebreak_filter",randomcolor,"rainbowcolor")
+             rainbowcolor = true}}
+\def\unrainbowcolor{
+  \directlua{luatexbase.remove_from_callback("post_linebreak_filter","rainbowcolor")
+             rainbowcolor = false}}
+\let\nyanize\rainbowcolor
+\let\unnyanize\unrainbowcolor
+
+\def\randomchars{
+  \directlua{luatexbase.add_to_callback("post_linebreak_filter",randomchars,"randomchars")}}
+\def\unrandomchars{
+  \directlua{luatexbase.remove_from_callback("post_linebreak_filter","randomchars")}}
+
+\def\randomcolor{
+  \directlua{luatexbase.add_to_callback("post_linebreak_filter",randomcolor,"randomcolor")}}
+\def\unrandomcolor{
+  \directlua{luatexbase.remove_from_callback("post_linebreak_filter","randomcolor")}}
+
+\def\randomerror{ %% FIXME
+  \directlua{luatexbase.add_to_callback("post_linebreak_filter",randomerror,"randomerror")}}
+\def\unrandomerror{ %% FIXME
+  \directlua{luatexbase.remove_from_callback("post_linebreak_filter","randomerror")}}
+
+\def\randomfonts{
+  \directlua{luatexbase.add_to_callback("post_linebreak_filter",randomfonts,"randomfonts")}}
+\def\unrandomfonts{
+  \directlua{luatexbase.remove_from_callback("post_linebreak_filter","randomfonts")}}
+
+\def\randomuclc{
+  \directlua{luatexbase.add_to_callback("pre_linebreak_filter",randomuclc,"randomuclc")}}
+\def\unrandomuclc{
+  \directlua{luatexbase.remove_from_callback("pre_linebreak_filter","randomuclc")}}
+
+\let\rongorongonize\boustrophedoninverse
+\let\unrongorongonize\unboustrophedoninverse
+
+\def\scorpionize{
+  \directlua{luatexbase.add_to_callback("pre_linebreak_filter",scorpionize_color,"scorpionize_color")}}
+\def\unscorpionize{
+  \directlua{luatexbase.remove_from_callback("pre_linebreak_filter","scorpionize_color")}}
+
+\def\spankmonkey{    %% to be implemented
+  \directlua{}}
+\def\unspankmonkey{
+  \directlua{}}
+
+\def\substitutewords{
+  \directlua{luatexbase.add_to_callback("process_input_buffer",substitutewords,"substitutewords")}}
+\def\unsubstitutewords{
+  \directlua{luatexbase.remove_from_callback("process_input_buffer","substitutewords")}}
+
+\def\addtosubstitutions#1#2{
+  \directlua{addtosubstitutions("#1","#2")}
+}
+
+\def\suppressonecharbreak{
+  \directlua{luatexbase.add_to_callback("pre_linebreak_filter",suppressonecharbreak,"suppressonecharbreak")}}
+\def\unsuppressonecharbreak{
+  \directlua{luatexbase.remove_from_callback("pre_linebreak_filter","suppressonecharbreak")}}
+
+\def\tabularasa{
+  \directlua{luatexbase.add_to_callback("post_linebreak_filter",tabularasa,"tabularasa")}}
+\def\untabularasa{
+  \directlua{luatexbase.remove_from_callback("post_linebreak_filter","tabularasa")}}
+
+\def\tanjanize{
+  \directlua{luatexbase.add_to_callback("post_linebreak_filter",tanjanize,"tanjanize")}}
+\def\untanjanize{
+  \directlua{luatexbase.remove_from_callback("post_linebreak_filter","tanjanize")}}
+
+\def\uppercasecolor{
+  \directlua{luatexbase.add_to_callback("post_linebreak_filter",uppercasecolor,"uppercasecolor")}}
+\def\unuppercasecolor{
+  \directlua{luatexbase.remove_from_callback("post_linebreak_filter","uppercasecolor")}}
+
+\def\upsidedown#1{
+  \directlua{luatexbase.add_to_callback("post_linebreak_filter",upsidedown,"upsidedown")}
+  \directlua{
+    upsidedownindex = {#1}
+    upsidedownarray = {}
+    for _,i in pairs(upsidedownindex) do
+      upsidedownarray[i] = true
+    end
+  }
+}
+\def\unupsidedown{
+  \directlua{luatexbase.remove_from_callback("post_linebreak_filter","upsidedown")}}
+
+\def\variantjustification{
+  \directlua{luatexbase.add_to_callback("post_linebreak_filter",variantjustification,"variantjustification")}}
+\def\unvariantjustification{
+  \directlua{luatexbase.remove_from_callback("post_linebreak_filter","variantjustification")}}
+
+\def\zebranize{
+  \directlua{luatexbase.add_to_callback("post_linebreak_filter",zebranize,"zebranize")}}
+\def\unzebranize{
+  \directlua{luatexbase.remove_from_callback("post_linebreak_filter","zebranize")}}
+\newattribute\leetattr
+\newattribute\letterspaceadjustattr
+\newattribute\randcolorattr
+\newattribute\randfontsattr
+\newattribute\randuclcattr
+\newattribute\tabularasaattr
+\newattribute\uppercasecolorattr
+
+\long\def\textleetspeak#1%
+  {\setluatexattribute\leetattr{42}#1\unsetluatexattribute\leetattr}
+
+\long\def\textletterspaceadjust#1{
+  \setluatexattribute\letterspaceadjustattr{42}#1\unsetluatexattribute\letterspaceadjustattr
+  \directlua{
+    if (textletterspaceadjustactive) then else % -- if already active, do nothing
+      luatexbase.add_to_callback("pre_linebreak_filter",textletterspaceadjust,"textletterspaceadjust")
+    end
+    textletterspaceadjustactive = true         % -- set to active
+  }
+}
+\let\textlsa\textletterspaceadjust
+
+\long\def\textrandomcolor#1%
+  {\setluatexattribute\randcolorattr{42}#1\unsetluatexattribute\randcolorattr}
+\long\def\textrandomfonts#1%
+  {\setluatexattribute\randfontsattr{42}#1\unsetluatexattribute\randfontsattr}
+\long\def\textrandomfonts#1%
+  {\setluatexattribute\randfontsattr{42}#1\unsetluatexattribute\randfontsattr}
+\long\def\textrandomuclc#1%
+  {\setluatexattribute\randuclcattr{42}#1\unsetluatexattribute\randuclcattr}
+\long\def\texttabularasa#1%
+  {\setluatexattribute\tabularasaattr{42}#1\unsetluatexattribute\tabularasaattr}
+\long\def\textuppercasecolor#1%
+  {\setluatexattribute\uppercasecolorattr{42}#1\unsetluatexattribute\uppercasecolorattr}
+\def\chickenizesetup#1{\directlua{#1}}
+\long\def\luadraw#1#2{%
+  \vbox to #1bp{%
+    \vfil
+    \latelua{pdf_print("q") #2 pdf_print("Q")}%
+  }%
+}
+\long\def\drawchicken{
+  \luadraw{90}{
+    chickenhead     = {200,50} % chicken head center
+    chickenhead_rad = 20
+
+    neckstart = {215,35} % neck
+    neckstop  = {230,10} %
+
+    chickenbody     = {260,-10}
+    chickenbody_rad = 40
+    chickenleg = {
+      {{260,-50},{250,-70},{235,-70}},
+      {{270,-50},{260,-75},{245,-75}}
+    }
+
+    beak_top = {185,55}
+    beak_front = {165,45}
+    beak_bottom = {185,35}
+
+    wing_front = {260,-10}
+    wing_bottom = {280,-40}
+    wing_back = {275,-15}
+
+    sloppycircle(chickenhead,chickenhead_rad) sloppyline(neckstart,neckstop)
+    sloppycircle(chickenbody,chickenbody_rad)
+    sloppyline(chickenleg[1][1],chickenleg[1][2]) sloppyline(chickenleg[1][2],chickenleg[1][3])
+    sloppyline(chickenleg[2][1],chickenleg[2][2]) sloppyline(chickenleg[2][2],chickenleg[2][3])
+    sloppyline(beak_front,beak_top) sloppyline(beak_front,beak_bottom)
+    sloppyline(wing_front,wing_bottom) sloppyline(wing_back,wing_bottom)
+  }
+}
+%% 
+%%
+%% End of file `chickenize.tex'.

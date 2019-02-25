@@ -1,0 +1,691 @@
+% \iffalse
+%
+% Copyright 1999, 2000 the fontinst maintenance team and any individual 
+% authors listed elsewhere in this file.  All rights reserved.
+% 
+% This file is part of the fontinst system version 1.9.
+% -----------------------------------------------------
+% 
+% It may be distributed under the terms of the LaTeX Project Public
+% License, as described in lppl.txt in the base LaTeX distribution.
+% Either version 1.1 or, at your option, any later version.
+% 
+% \fi
+% 
+% \title{The \package{fisource} package}
+% \author{Lars Hellstr\"om}
+% \maketitle
+% 
+%    \begin{macrocode}
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{fisource}%
+   [2003/03/29 v2.16 Fontinst source documentation commands]
+%    \end{macrocode}
+% 
+% \section{Option processing}
+% 
+% \begin{option}{warnfinale}
+%   \changes{2.01}{2000/07/06}{Option added. (LH)}
+%   Under development I find it quite a nuisance that |\Finale| raises 
+%   an error if the checksum isn't correct; a warning feels more 
+%   appropriate. Therefore the \texttt{warnfinale} option redefines 
+%   |\check@checksum| to emit a warning instead.
+%    \begin{macrocode}
+\DeclareOption{warnfinale}{%
+   \@ifpackageloaded{doc}\@firstofone\AtEndOfPackage {%
+      \def\check@checksum{\relax
+         \ifnum\check@sum=\z@
+            \typeout{**********************************}%
+            \typeout{* This macro file has no checksum!}%
+            \typeout{* The checksum should be \the\bslash@cnt!}%
+            \typeout{**********************************}%
+         \else\ifnum \check@sum=\bslash@cnt
+            \typeout{*******************}%
+            \typeout{* Checksum passed *}%
+            \typeout{*******************}%
+         \else
+             \PackageWarning{doc}{Checksum not passed 
+                        (\the\check@sum<>\the\bslash@cnt)}%
+         \fi\fi
+         \global\check@sum\z@
+      }%
+   }%
+}
+%    \end{macrocode}
+% \end{option}
+% 
+% All other options are passed on to \package{xdoc}.
+%    \begin{macrocode}
+\DeclareOption*{\PassOptionsToPackage{\CurrentOption}{xdoc2}}
+\ProcessOptions\relax
+%    \end{macrocode}
+% 
+% \changes{2.00}{2000/07/06}{Use \package{xdoc1}. (LH)}
+% \changes{2.02}{2000/07/15}{Use \package{xdoc2}. (LH)}
+% \changes{2.10}{2001/02/27}{Use \package{docidx2e}. (LH)}
+%    \begin{macrocode}
+\RequirePackage{xdoc2,docidx2e}
+%    \end{macrocode}
+% 
+% \section{Miscellanea}
+% 
+%    \begin{macrocode}
+\CodelineIndex
+\setcounter{IndexColumns}{2}
+\setcounter{tocdepth}{2}
+\DeclareRobustCommand\package[1]{\textsf{#1}}
+\DeclareRobustCommand\eTeX{\(\varepsilon\)-\kern-.125em\TeX}
+%    \end{macrocode}
+% 
+% \begin{macro}{\AllTeX}
+%   \changes{2.13}{2001/08/26}{Command added. (LH)}
+% \begin{macro}{\La}
+%   The |\AllTeX| command is for writing `(La)TeX' (but nicer). The 
+%   definition is taken from \texttt{tugboat.dtx}.
+%    \begin{macrocode}
+\newcommand{\La}{%
+   L\kern-.36em
+   {%
+      \setbox0\hbox{T}%
+      \vbox to\ht0{\hbox{%
+         $\m@th$\csname S@\f@size\endcsname
+         \fontsize\sf@size\z@\math@fontsfalse\selectfont
+         A%
+      }\vss}%
+   }%
+}
+\DeclareRobustCommand\AllTeX{(\La\kern-.075em)\kern-.075em\TeX}
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% \begin{macro}{\missing}
+%   \changes{2.10}{2001/02/27}{Redefined using 
+%      \cs{NewDescribeCommand}. (LH)}
+%    \begin{macrocode}
+\NewDescribeCommand\missing{%
+   \XD@grab@marg\XD@grab@harmless@cs
+}{2}{%
+   \GenericDescribePrint{\small Not in \texttt{#1}: 
+      \texttt{\Bslash#2}}%
+   \MakeSortKey\@tempa{#2}{}%
+   \IndexEntry{%
+      \LevelSorted{Not in #1:}{Not in \texttt{#1}:}%
+      \LevelSorted{\@tempa}{\texttt{\Bslash#2}}%
+   }{usage}{\thepage}%
+}
+% \newcommand\missing[2]{%
+%    \marginpar{%
+%       \raggedleft\leavevmode\strut 
+%       Not in \texttt{#1}: \texttt{\string#2}\strut
+%       \index{Not in #1\actualchar Not in \string\texttt{#1}\levelchar
+%          \string#2\actualchar\string\verb\verbatimchar
+%          \string#2\verbatimchar\encapchar usage}%
+%    }%
+% }
+%    \end{macrocode}
+% \end{macro}
+% 
+%    \begin{macrocode}
+\newcommand\ambiguity[1]{\leavevmode
+   \textbf{#1\index{Ambiguity\encapchar usage}}%
+   \marginpar{\raggedleft\textbf{\huge A}}%
+}
+\newcommand\question[1]{\leavevmode
+   \textbf{#1\index{Question\encapchar usage}}%
+   \marginpar{\raggedleft\textbf{\huge ?}}%
+}
+\AtBeginDocument{\catcode`\_=11}
+\def\MakePrivateLetters{\catcode`\_=11\makeatletter}
+
+%    \end{macrocode}
+% 
+% \multchanges{\cs{meta}}{1.30}{2000/01/02}{\cs{Meta} command (robust 
+%    wrapper around \package{doc}'s \cs{meta}) added. (LH)}
+% \multchanges{\cs{meta}}{1.31}{2000/02/10}{Command redefined so that 
+%    it is robust itself. \cs{Meta} removed. (LH)}
+% \multchanges{\cs{meta@font@select}}{1.33}{2000/02/26}{Macro added. 
+%    (LH)}
+% \multchanges{\cs{meta}}{1.35}{2000/03/25}{Don't make \cs{setlanguage} 
+%    whatsits in restricted horizontal mode. (LH)}
+% \multchanges{\cs{meta}}{2.00}{2000/07/06}{Command definition removed, 
+%    since the command is already defined by \package{doc} or 
+%    \package{xdoc}. (LH)}
+% 
+% \begin{macro}{\cs}
+%   This is \package{ltxdoc}'s normal |\cs|, but with a twist to make 
+%   |\meta| produce better results when used in the argument.
+%   \changes{1.33}{2000/02/26}{Redefinition added. (LH)}
+%   \changes{2.00}{2000/07/06}{Use \cs{MetaNormalfont} and 
+%      \cs{PrintVisibleChar}. (LH)}
+%    \begin{macrocode}
+\DeclareRobustCommand\cs[1]{%
+   \texttt{\MetaNormalfont\PrintVisibleChar{`\\}#1}%
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{environment}{isyntax}
+%   |isyntax| is for ``informal'' syntax specifications, such as
+%   \begin{quote}
+%     A \meta{varchar command} can be one of\\
+%     \begin{quote}
+%       |\vartop|\marg{glyph}\\
+%       |\varmid|\marg{glyph}\\
+%       |\varbot|\marg{glyph}\\
+%       |\varrep|\marg{glyph}
+%     \end{quote}
+%   \end{quote}
+%   The implementation is based on that of the \texttt{verse} 
+%   environment.It usually works just as fine with \texttt{quote}, but 
+%   \texttt{isyntax} handles breaking long lines better (and more 
+%   elegantly).
+%   \changes{1.37}{2000/05/14}{Increased \cs{rightskip} stretchability 
+%      and added setting of \cs{linepenalty}. (LH)}
+%    \begin{macrocode}
+\newenvironment{isyntax}{%
+   \let\\\@centercr
+   \list{}{%
+      \itemsep \z@
+      \itemindent -1.5em%
+      \listparindent \itemindent
+      \advance \leftmargin 1.5em%
+   }%
+   \advance \rightskip \z@\@plus0.7\linewidth \relax
+   \linepenalty=100\relax
+   \item\relax
+}{\endlist}
+%    \end{macrocode}
+% \end{environment}
+%
+% \begin{environment}{obsoletemacro}
+%   \changes{2.00}{2000/07/06}{Environment removed since obsolete. (LH)}
+%   The \texttt{obsoletemacro} environment is for getting the right 
+%   heading on |\changes| comments that refer to macros which have been 
+%   removed. It only updates the |\saved@macroname|.
+%    \begin{macrocode}
+% \newenvironment{obsoletemacro}{\begingroup
+%    \catcode`\\12
+%    \MakePrivateLetters
+%    \obsolete@macro
+% }{}
+% \def\obsolete@macro#1{\endgroup
+%    \edef\saved@macroname{\string#1}%
+% }
+%    \end{macrocode}
+% \end{environment}
+% 
+% 
+% \section{\texttt{macro}-like environments}
+% 
+% This subsection contains the definitions of a couple of environments 
+% that, like \package{doc}'s \texttt{environment}, are for marking up the 
+% document (what is defined and where). The definitions of these 
+% environments are identical to that of \texttt{environment}, except 
+% that the index entry texts are a little different.
+% 
+% This section got a lot shorter in v\,2.00 thanks to \package{xdoc}.
+% 
+% \begin{environment}{fiinteger}
+% \begin{environment}{fistring}
+%   \multchanges{\notcs{\texttt{fiinteger} environment}^^A
+%      \notcs{\texttt{fistring} environment}}{2.03}{2000/07/24}^^A
+%      {Swapped last two arguments of \cs{NewMacroEnvironment} call 
+%       since \package{xdoc} changed.}
+%    \begin{macrocode}
+\NewMacroEnvironment{fiinteger}{\XD@grab@harmless\relax}{1}%
+   {\MacroFont#1 \normalfont integer}%
+   {\XDMainIndex{\levelsorted{#1 I}{\texttt{#1} (integer)}}%
+    \XDMainIndex{\levelsame{integers:}\levelsorted{#1}{\texttt{#1}}}}%
+   {{#1}{\texttt{#1} integer}}{}
+%    \end{macrocode}
+%    \begin{macrocode}
+\NewMacroEnvironment{fistring}{\XD@grab@harmless\relax}{1}%
+   {\MacroFont#1 \normalfont string}%
+   {\XDMainIndex{\levelsorted{#1 S}{\texttt{#1} (string)}}%
+    \XDMainIndex{\levelsame{strings:}\levelsorted{#1}{\texttt{#1}}}}%
+   {{#1}{\texttt{#1} string}}{}
+%    \end{macrocode}
+% \end{environment}\end{environment}
+% 
+% \begin{environment}{PLproperty}
+%   \changes{2.04}{2000/11/03}{Environment added. (LH)}
+%   \changes{2.11}{2001/03/16}{Added \cs{DoNotIndexHarmless}. (LH)}
+%   The \texttt{PLproperty} environment is for marking up definitions 
+%   of macros for interpreting properties in (V)PL files.
+%    \begin{macrocode}
+\NewMacroEnvironment{PLproperty}{\XD@grab@harmless\relax}{1}%
+   {\MacroFont#1 \normalfont property}%
+   {\XDMainIndex{\levelsorted{#1}{\texttt{\Bslash#1}}}%
+    \XDMainIndex{%
+       \levelsame{PL properties:}\levelsorted{#1}{\texttt{#1}}%
+   }}%
+   {{#1}{\texttt{\Bslash#1}}}%
+   {\DoNotIndexHarmless{#1}}
+%    \end{macrocode}
+% \end{environment}
+% 
+% \begin{environment}{numPLproperty}
+%   \changes{2.11}{2001/03/17}{Environment added. (LH)}
+%   The \texttt{numPLproperty} environment is for marking up definitions 
+%   of macros that interpret a numbered family of (V)PL file properties, 
+%   such as \texttt{NUM} for \texttt{NUM1}, \texttt{NUM2}, and 
+%   \texttt{NUM3}. The syntax is
+%   \begin{quote}
+%     |\begin{numPLproperty}|\marg{base}\marg{num-list}
+%   \end{quote}
+%   In the above case the \meta{base} would be \texttt{NUM}. The 
+%   \meta{num-list} is a comma-separated list of digits (no existing 
+%   family of numbered properties have more than 5 members) that 
+%   specify what members of the family are handled by the macro being 
+%   defined.
+%    \begin{macrocode}
+\NewMacroEnvironment{numPLproperty}{%
+   \XD@grab@harmless\relax\XD@grab@marg
+}{2}%
+   {\MacroFont#1$*$ \normalfont properties}%
+   {\XDMainIndex{\levelsorted{#1}{\texttt{\Bslash#1}}}%
+    \@for\@tempa:=#2\do{%
+       \XDMainIndex{%
+          \levelsame{PL properties:}%
+          \levelsorted{#1\@tempa}{\texttt{#1\@tempa}}%
+       }%
+   }}%
+   {{#1}{\texttt{\Bslash#1}}}%
+   {\DoNotIndexHarmless{#1}}
+%    \end{macrocode}
+% \end{environment}
+% 
+% 
+% \multchanges{\notcs{\texttt{switch} environment}}{2.00}{2000/07/06}
+%    {Removed since defined in \package{xdoc}. (LH)}
+% 
+% 
+% \section{Changes of change history formating}
+% 
+% \multchanges{\cs{@changes}}{2.00}{2000/07/06}{Redefinition removed 
+%    since already done in \package{xdoc}. (LH)}
+% 
+% \begin{macro}{\multchanges}
+%   \changes{1.32}{2000/02/22}{\cs{flushleftspace} between \cs{cs} 
+%      items when typeset, instead of space. (LH)}
+%   \changes{1.34}{2000/03/11}{\cs{notcs} marker allowed in 
+%      \meta{commands}. (LH)}
+%   \changes{2.16}{2003/03/29}{Modified macro so that it is based on
+%      \cs{changes@}. This means it is now compatible with \cs{uintver}. 
+%      (LH)}
+%   The |\multchanges| commands is used to record a change to several 
+%   macros. Its syntax is
+%   \begin{quote}
+%     |\multchanges|\marg{commands}\marg{version}\marg{date}^^A
+%       \marg{description}
+%   \end{quote}
+%   The three last arguments are as the arguments of |\changes|. The 
+%   \meta{commands} should be a nonempty sequence of commands, each 
+%   command either a |\cs| or a |\notcs|, and each command with one 
+%   argument. The change history entry generated by a 
+%   |\multchanges| will be for all the macros (or whatever) listed in 
+%   the first argument. |\cs| items will be typeset in typewriter font 
+%   with a leading backslash, whereas |\notcs| items will receive no 
+%   such special formatting.
+%   
+%   This method may have problems with active characters (since I've 
+%   ignored some things the standard |\changes| do to accomodate these), 
+%   but luckily \package{fontinst} hardly uses active characters 
+%   anyway. Furthermore I don't think the \package{doc} way of dealing 
+%   with them would be the right way here. Perhaps an active character 
+%   should rather be entered in the \meta{commands} argument as 
+%   |\active|\marg{code} or something?
+%    \begin{macrocode}
+\newcommand*\multchanges[4]{%
+   \@bsphack
+   \begingroup
+   \begingroup
+      \def\cs##1{,\space##1}%
+      \let\notcs=\cs
+      \protected@xdef\@gtempa{%
+         \expandafter\@gobbletwo#1\@empty\@empty\@empty
+      }%
+      \edef\cs{,\noexpand\flushleftspace
+         \noexpand\protect
+         \expandafter\noexpand\csname cs \endcsname
+      }%
+      \def\notcs##1{,\noexpand\flushleftspace ##1}%
+      \protected@xdef\@gtempa{%
+         {\@gtempa}%
+         {\expandafter\@gobbletwo#1\@empty\@empty\@empty}%
+      }%
+   \endgroup
+   \let\saved@macroname=\@gtempa
+   \changes@{#2}{#3}{#4}%
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\flushleftspace}
+%   The |\flushleftspace| command should typeset something which looks 
+%   like a space when not broken at, and as an \texttt{3em plus 1fil} 
+%   space when broken at. It also have to survive its use in 
+%   |\multchanges|.
+%   \changes{1.32}{2000/02/22}{Command added. (LH)}
+%   \changes{1.38}{2000/06/05}{Modified finite penalty. (LH)}
+%    \begin{macrocode}
+\DeclareRobustCommand\flushleftspace{%
+   \nobreak \hskip 3em\@plus 1fil%
+   \penalty\@m \hskip -3em\@plus -1fil\ %
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\labelednumber}
+%   This \package{xdoc} macro is redefined to put a ``filbreak'' 
+%   space before every page number labelled with a macro name.
+%   \changes{2.16}{2003/03/29}{Redefinition added. (LH)}
+%    \begin{macrocode}
+\renewcommand*\labelednumber[2]{%
+   \hskip -1em\@plus -8em%
+   \vadjust{}\hskip 1em\@plus 8em%
+   #2\nolinebreak[2] (#1)%
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{environment}{theglossary}
+%    \begin{macrocode}
+% \ifhave@multicol
+%   \renewenvironment{theglossary}{%
+%     \begin{multicols}\c@GlossaryColumns
+%                      [\glossary@prologue][\GlossaryMin]%
+%     \GlossaryParms \def\item{\@idxitem v\,}\ignorespaces}%
+%    {\end{multicols}}
+% \else
+%   \renewenvironment{theglossary}{%
+%       \@restonecoltrue\if@twocolumn\@restonecolfalse\fi
+%       \columnseprule \z@  \columnsep 35\p@
+%       \twocolumn[\glossary@prologue]%
+%       \GlossaryParms \def\item{\@idxitem v\,}\ignorespaces}
+%     {\if@restonecol\onecolumn\else\clearpage\fi}
+% \fi
+%    \end{macrocode}
+% 
+%   If we want to use the glossary for some other information as well 
+%   (here I am thinking primarily on collecting |\missing| notices) then 
+%   perhaps we should insert the |v\,| in |\changes| instead. I would 
+%   guess the 64 character limit isn't at all as usual as it was when 
+%   the doc package documentation was written.
+%   
+%    \begin{macrocode}
+% \renewenvironment{theglossary}{%
+% %     \penalty\z@\vskip\GlossaryMin\@plus\z@\@minus\GlossaryMin
+% %     \penalty\z@\vskip-\GlossaryMin\@plus\z@\@minus-\GlossaryMin
+%     \glossary@prologue
+%     \GlossaryParms \let\item\@idxitem \ignorespaces
+% }{\par\bigskip}
+%    \end{macrocode}
+%   On second thoughts, the changes should be printed in one column. 
+%   They're usually very hard to linebreak in narrow columns.
+% \end{environment}
+% 
+% \begin{macro}{\firstsubsubitem}
+%   The idea with |\firstsubsubitem| is that it should be like |\efill| 
+%   |\subsubitem| if the paragraph is ended by a |\subsubitem| and like 
+%   \verb*"\ " if it isn't. This is achieved by grabbing the paragraph 
+%   into a macro and then prepend some suitable material to it when 
+%   typesetting.
+%   \changes{1.36}{2000/04/10}{Grabbing paragraph as list of tokens, 
+%      rather than typeset text. (LH)} 
+%    \begin{macrocode}
+% \newcommand\firstsubsubitem{%
+%    \begingroup
+%    \let\par\@fssi@par
+%    \let\subsubitem\@fssi@subsubitem
+%    \protected@edef\@tempa{\iffalse}\fi
+% }
+%    \end{macrocode}
+%    \begin{macrocode}
+% \def\@fssi@subsubitem{%
+%    \iffalse{\fi}%
+%    \nobreak\hfill\vadjust{\nobreak}%
+%    \penalty-\@M\vadjust{\penalty\@m}\nobreak\hskip -5pt\relax
+%    \@tempa
+%    \endgroup
+%    \subsubitem
+% }
+%    \end{macrocode}
+%   \multchanges{\cs{@fssi@par}}{2000/06/05}{1.38}{Replaced simple space 
+%      by a more complicated sequence of penalties, vadjusts, and glue, 
+%      to make it more like \cs{flushleftspace}. (LH)}
+%    \begin{macrocode}
+% \def\@fssi@par{%
+%    \iffalse{\fi}%
+%    \nobreak \hskip \z@ \@plus 0.4\linewidth
+%    \vadjust{\nobreak}%
+%    \penalty500\hskip \z@ \@plus -0.4\linewidth\hskip 5pt\relax
+%    \penalty\z@\ \vadjust{\penalty\@m}%
+%    \nobreak\hskip -5pt\relax
+%    \@tempa
+%    \endgroup
+%    \par
+% }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\GlossaryParms}
+%    \begin{macrocode}
+% \def\GlossaryParms{%
+%    \parindent \z@
+%    \columnsep 15pt
+%    \parskip 0pt plus 1pt
+%    \rightskip 15pt plus 15pt
+%    \mathsurround \z@
+%    \parfillskip=-\rightskip
+%    \pretolerance=\tolerance
+%    \small
+%    \def\@idxitem{\par\hangindent 30pt v\,}%
+%    \def\subitem{\par\hangindent 30pt\hspace*{15pt}}%
+%    \def\subsubitem{\par\hangindent 30pt\hspace*{25pt}}%
+%    \def\indexspace{\par\vspace{10pt plus 2pt minus 3pt}}%
+% }
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{instance}{docindex}{changes}
+%   \changes{2.10}{2001/02/27}{Redefining it. (LH)}
+%   \changes{2.12}{2001/03/25}{Modified in the same way as the 
+%      \package{docindex} default was with v\,1.00. (LH)}
+%   \changes{2.15}{2003/02/19}{Rewrote this redefinition. Something
+%      was wrong with the old one, but it seems to have worked to 
+%      start again from the definition in \package{docindex}. (LH)}
+%   \changes{2.16}{2003/03/29}{Added an insertion of `\texttt{v}\cs{,}' 
+%      to the version number headings. The way it is done is however a 
+%      hack; I should define a separate instance explicitly instead. 
+%      (LH)}
+%   
+%   Typesetting the list of changes is annoyingly slow. It should be 
+%   examined what takes all that time, but I suspect it is the 
+%   paragraph breaking (the parameters involved are rather absurd). I 
+%   suspect that in particular the |\multchanges| complicates things 
+%   more than they really need to. --- LH, 2004/12/15.
+%    \begin{macrocode}
+\setcounter{GlossaryColumns}{1}
+\@namedef{TP@I{}{docindex}{changes}}#1#2{%
+   \begingroup
+   \def\DI@indexitem@i##1##2##3##4{%
+      \UseInstance{indexitem}{fixed1}{##1}{##2}{v\,##3}{##4}%
+   }%
+   \@letinstance\DI@indexitem@ii{indexitem}{fixed-r2a-nocomma}%
+   \@letinstance\DI@indexitem@iii{indexitem}{aloneaccept3}%
+   \columnsep=10pt%
+   \parskip=0pt plus 1pt%
+   \def\DI@letter@skip{\z@skip}%
+   \let\DI@letter@format\@gobble
+   \def\+{-}%
+   \IfFileExists{\jobname.gls}{%
+      \ifnum \c@GlossaryColumns>\@ne
+         \begin{multicols}{\c@GlossaryColumns}[#1][\GlossaryMin]%
+      \else
+         \enough@room{\GlossaryMin}%
+         #1\par
+         \addvspace\multicolsep
+      \fi
+      \small
+      \makeatletter
+      \hbadness=\@M
+      \hfuzz=\maxdimen
+      \pretolerance=\m@ne
+      \tolerance=9999%
+      \emergencystretch=5em
+      \@nobreakfalse
+      \DI@ind@setup
+      \input{\jobname.gls}%
+      \DI@item@nojoin
+      \ifnum \c@GlossaryColumns>\@ne
+         \end{multicols}%
+      \else
+         \enough@room\postmulticols
+         \addvspace\multicolsep
+      \fi
+      \normalsize #2\par
+   }{\typeout{No file \jobname.gls.}}
+   \endgroup
+}
+% \@namedef{TP@I{}{docindex}{changes}}#1#2{%
+%    \begingroup
+%    \@letinstance\DI@indexitem@i{indexitem}{fixed1}%
+%    \@letinstance\DI@indexitem@ii{indexitem}{fixed-r2a-nocomma}%
+%    \@letinstance\DI@indexitem@iii{indexitem}{aloneaccept3}%
+%    \columnsep=10pt%
+%    \parskip=0pt plus 1pt%
+%    \def\DI@letter@skip{\z@skip}%
+%    \let\DI@letter@format\@gobble
+% %    \ifnum \c@GlossaryColumns>\@ne
+% %       \begin{multicols}{\c@GlossaryColumns}[#1][\GlossaryMin]%
+% %    \else
+%       \enough@room{\GlossaryMin}%
+%       #1\par
+%       \addvspace\multicolsep
+% %    \fi
+%    \small
+%    \emergencystretch=5em
+%    \@nobreakfalse
+%    \DI@ind@setup
+%    \@input@{\jobname.gls}%
+%    \DI@item@nojoin
+% %    \ifnum \c@GlossaryColumns>\@ne
+% %       \end{multicols}%
+% %    \else
+%       \enough@room\postmulticols
+%       \addvspace\multicolsep
+% %    \fi
+%    \normalsize #2\par
+%    \endgroup
+% }
+%    \end{macrocode}
+% \end{instance}
+% 
+% 
+% 
+% \section{Hack for removing ``Marginpar moved'' warning messages}
+%
+% Check if the definition matches the known. To be on the safe 
+% side, only the known definition will be changed.
+% 
+%    \begin{macrocode}
+\def\@tempa{\@next\@marbox\@currlist{\@cons\@freelist\@marbox
+    \@cons\@freelist\@currbox}\@latexbug\@tempcnta\@ne
+    \if@twocolumn
+        \if@firstcolumn \@tempcnta\m@ne \fi
+    \else
+      \if@mparswitch
+         \ifodd\c@page \else\@tempcnta\m@ne \fi
+      \fi
+      \if@reversemargin \@tempcnta -\@tempcnta \fi
+    \fi
+    \ifnum\@tempcnta <\z@  \global\setbox\@marbox\box\@currbox \fi
+    \@tempdima\@mparbottom
+    \advance\@tempdima -\@pageht
+    \advance\@tempdima\ht\@marbox
+    \ifdim\@tempdima >\z@
+      \@latex@warning@no@line {Marginpar on page \thepage\space moved}%
+    \else
+      \@tempdima\z@
+    \fi
+    \global\@mparbottom\@pageht
+    \global\advance\@mparbottom\@tempdima
+    \global\advance\@mparbottom\dp\@marbox
+    \global\advance\@mparbottom\marginparpush
+    \advance\@tempdima -\ht\@marbox
+    \global\setbox \@marbox
+                   \vbox {\vskip \@tempdima
+                          \box \@marbox}%
+    \global \ht\@marbox \z@
+    \global \dp\@marbox \z@
+    \kern -\@pagedp
+    \nointerlineskip
+    \hb@xt@\columnwidth
+      {\ifnum \@tempcnta >\z@
+          \hskip\columnwidth \hskip\marginparsep
+       \else
+          \hskip -\marginparsep \hskip -\marginparwidth
+       \fi
+       \box\@marbox \hss}%
+    \nointerlineskip
+    \hbox{\vrule \@height\z@ \@width\z@ \@depth\@pagedp}}
+\ifx \@addmarginpar\@tempa
+%    \end{macrocode}
+% It matched.
+%    \begin{macrocode}
+   \def\@addmarginpar{\@next\@marbox\@currlist{\@cons\@freelist\@marbox
+       \@cons\@freelist\@currbox}\@latexbug\@tempcnta\@ne
+       \if@twocolumn
+           \if@firstcolumn \@tempcnta\m@ne \fi
+       \else
+         \if@mparswitch
+            \ifodd\c@page \else\@tempcnta\m@ne \fi
+         \fi
+         \if@reversemargin \@tempcnta -\@tempcnta \fi
+       \fi
+       \ifnum\@tempcnta <\z@  \global\setbox\@marbox\box\@currbox \fi
+       \@tempdima\@mparbottom
+       \advance\@tempdima -\@pageht
+       \advance\@tempdima\ht\@marbox
+       \ifdim \@tempdima<\z@ \@tempdima\z@ \fi % Modification
+       \global\@mparbottom\@pageht
+       \global\advance\@mparbottom\@tempdima
+       \global\advance\@mparbottom\dp\@marbox
+       \global\advance\@mparbottom\marginparpush
+       \advance\@tempdima -\ht\@marbox
+       \global\setbox \@marbox
+                      \vbox {\vskip \@tempdima
+                             \box \@marbox}%
+       \global \ht\@marbox \z@
+       \global \dp\@marbox \z@
+       \kern -\@pagedp
+       \nointerlineskip
+       \hb@xt@\columnwidth
+         {\ifnum \@tempcnta >\z@
+             \hskip\columnwidth \hskip\marginparsep
+          \else
+             \hskip -\marginparsep \hskip -\marginparwidth
+          \fi
+          \box\@marbox \hss}%
+       \nointerlineskip
+       \hbox{\vrule \@height\z@ \@width\z@ \@depth\@pagedp}}
+\else
+%    \end{macrocode}
+% It didn't match. Inform the user of what is to come.
+%    \begin{macrocode}
+   \typeout{Expect a lot of ``Marginpar moved'' warnings.}
+\fi
+\let\@tempa=\relax
+%    \end{macrocode}
+% 
+% 
+% \section{Things not to index}
+% 
+%    \begin{macrocode}
+\DoNotIndex{\def,\let,\else,\fi,\then,\x_cs,\x_relax}
+\DoNotIndex{\csname,\endcsname,\string,\the,\expandafter,\noexpand}
+\DoNotIndexBy{@@}\DoNotIndexBy{@}\DoNotIndexBy{_}\DoNotIndexBy{FD@}
+%    \end{macrocode}
+% 
+\endinput
+

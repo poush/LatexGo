@@ -1,0 +1,273 @@
+\section{Apparence du texte}
+
+\subsection{Police de caractères}
+
+\begin{frame}
+  \frametitle{Police de caractères}
+  \begin{itemize}
+  \item Par défaut, tous les documents {\LaTeX} utilisent la même
+    police, {\fontfamily{cmr}\selectfont Computer Modern}
+  \item Aujourd'hui plus facile d'utiliser d'autres polices, surtout
+    avec {\XeLaTeX}
+    \begin{itemize}
+    \item voir les fichiers d'exercices et les gabarits de
+      \class{ulthese} pour des exemples
+    \end{itemize}
+  \item Privilégier les polices de grande qualité et très complètes
+    (lettres accentuées, grand choix de symboles)
+    \begin{itemize}
+    \item polices Postscript standards ou leurs clones du projet
+      TeX~Gyre
+    \end{itemize}
+  \item Peu de polices sont adaptées pour les mathématiques
+    \begin{itemize}
+    \item {\fontfamily{ppl}\selectfont Palatino},
+      {\fontfamily{ptm}\selectfont Times}, \textrm{Lucida} (\$) sont des choix sûrs
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Changement d'attribut de la police}
+  \begin{block}{famille}
+    \vspace{-12pt}
+    \begin{tabbing}
+      \textsf{sans empattements} \qquad\= \verb=\sffamily= \qquad\=
+      \verb=\textsf{texte}= \kill
+      \small
+      \textrm{romain} \> \verb=\rmfamily= \> \verb=\textrm{=\textit{texte}\verb=}= \\
+      \texttt{largeur fixe} \> \verb=\ttfamily= \> \verb=\texttt{=\textit{texte}\verb=}= \\
+      \textsf{sans empattements} \> \verb=\sffamily= \> \verb=\textsf{=\textit{texte}\verb=}=
+    \end{tabbing}
+  \end{block}
+  \vfill
+  \begin{block}{forme}
+    \vspace{-12pt}
+    \begin{tabbing}
+      \textsf{sans empattements} \qquad\= \verb=\sffamily= \qquad\=
+      \verb=\textsf{texte}= \kill
+      \small
+      \textup{\rmfamily droit} \> \verb=\upshape= \> \verb=\textup{=\textit{texte}\verb=}= \\
+      \textit{\rmfamily italique} \> \verb=\itshape= \> \verb=\textit{=\textit{texte}\verb=}= \\
+      \textsl{penché} \> \verb=\slshape= \> \verb=\textsl{=\textit{texte}\verb=}= \\
+      \textsc{\rmfamily petites capitales} \> \verb=\scshape= \> \verb=\textsc{=\textit{texte}\verb=}=
+    \end{tabbing}
+  \end{block}
+  \vfill
+  \begin{block}{série}
+    \vspace{-12pt}
+    \begin{tabbing}
+      \textsf{sans empattements} \qquad\= \verb=\sffamily= \qquad\=
+      \verb=\textsf{texte}= \kill
+      \rmfamily\small
+      \textmd{\rmfamily moyen} \> \verb=\mdseries= \> \verb=\textmd{=\textit{texte}\verb=}= \\
+      \textbf{\rmfamily gras} \> \verb=\bfseries= \> \verb=\textbf{=\textit{texte}\verb=}= \\
+    \end{tabbing}
+    \vfill
+  \end{block}
+  \begin{picture}(0,0)
+    \thicklines\color{blue}
+    \put(98,30){\dashbox{2}(62,190){}}
+    \put(88,20){
+      \begin{minipage}[t]{75\unitlength}
+        \footnotesize\centering
+        s'applique à tout le texte qui suit
+      \end{minipage}}
+  \end{picture}
+  \begin{picture}(0,0)
+    \thicklines\color{blue}
+    \put(162,30){\dashbox{2}(82,190){}}
+    \put(158,20){
+      \begin{minipage}[t]{85\unitlength}
+        \footnotesize\centering
+        s'applique au texte en argument
+      \end{minipage}}
+  \end{picture}
+\end{frame}
+
+\subsection{Taille de la police}
+
+\begin{frame}[fragile]
+  \frametitle{Taille de la police}
+  \vspace{-2pt}
+  \begin{block}{commandes standards}
+    \vspace{-10pt}
+    \begin{tabbing}
+      \verb=\footnotesize= \quad\= \kill
+      \verb=\tiny= \> {\tiny vraiment petit} \\
+      \verb=\scriptsize= \> {\scriptsize encore plus petit} \\
+      \verb=\footnotesize= \> {\footnotesize plus petit} \\
+      \verb=\small= \> {\small petit} \\
+      \verb=\normalsize= \> {\normalsize normal} \\
+      \verb=\large= \> {\large grand} \\
+      \verb=\Large= \> {\Large plus grand} \\
+      \verb=\LARGE= \> {\LARGE encore plus grand} \\
+      \verb=\huge= \> {\huge énorme} \\
+      \verb=\Huge= \> {\Huge encore plus énorme}
+    \end{tabbing}
+  \end{block}
+  \vspace{-10pt}
+  \pause
+  \begin{block}{ajouts de \class{memoir} (et donc \class{ulthese})}
+    \vspace{-10pt}
+    \begin{tabbing}
+      \verb=\footnotesize= \quad\= \kill
+      \verb=\miniscule= \quad\> [$<$ \verb=\tiny=] \\
+      \verb=\HUGE= \> [$>$ \verb=\Huge=] \\
+    \end{tabbing}
+  \end{block}
+\end{frame}
+
+\subsection{Italique}
+
+\begin{frame}[fragile]
+  \frametitle{Italique}
+  \begin{itemize}
+  \item<1-> Une des propriétés les \emph{plus utilisées} dans le texte
+    \vfill
+  \item<1-> Commande sémantique:
+\begin{lstlisting}
+\emph{`\textit{texte}'}
+\end{lstlisting}
+    \vfill
+  \item<2-> Par défaut: texte en italique dans texte droit et vice versa
+    \begin{demo}
+      \small
+      \begin{texample}[0.48\linewidth]
+\begin{lstlisting}
+C'était un peu \emph{rough}
+par moments
+\end{lstlisting}
+        \producing
+        C'était un peu \emph{rough} par moments
+      \end{texample}
+
+      \begin{texample}[0.48\linewidth]
+\begin{lstlisting}
+Il m'a dit: «\emph{Enough
+\emph{poutine} for the
+week!}»
+\end{lstlisting}
+        \producing
+        Il m'a dit: «\emph{Enough \emph{poutine} for the week!}»
+      \end{texample}
+    \end{demo}
+  \item<3-> Pas de commande pour souligner en {\LaTeX\dots} et ce n'est
+    pas une omission!
+  \end{itemize}
+\end{frame}
+
+\subsection{Listes}
+
+\begin{frame}[fragile]
+  \frametitle{Listes}
+  \begin{itemize}
+  \item Deux principales sortes de listes:
+    \begin{enumerate}
+    \item \alert{à puce} avec environnement \verb=itemize=
+    \item \alert{numérotée} avec environnement \verb=enumerate=
+    \end{enumerate}
+  \item Possible de les imbriquer les unes dans les autres
+  \item Marqueurs adaptés automatiquement jusqu'à 4 niveaux
+  \end{itemize}
+  \pause
+
+\begin{lstlisting}
+\begin{itemize}
+\item Deux principales sortes de listes:
+  \begin{enumerate}
+  \item à puce avec environnement \verb=itemize=
+  \item numérotée avec environnement \verb=enumerate=
+  \end{enumerate}
+\item Possible de les imbriquer les unes
+  dans les autres
+\item Marqueurs adaptés automatiquement jusqu'à 4 niveaux
+\end{itemize}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[plain]
+  \begin{conseil}
+    \begin{itemize}
+    \item {\LaTeX} permet de configurer à peu près toutes les facettes
+      de la présentation des listes (puces, alignement, espacement).
+    \item Plusieurs paquetages facilitent la configuration.
+    \item Nous suggérons \pkg{enumitem} pour une configuration simple.
+    \end{itemize}
+  \end{conseil}
+\end{frame}
+
+\subsection{Notes de bas de page}
+
+\begin{frame}[fragile]
+  \frametitle{Notes de bas de page}
+  \begin{itemize}
+  \item Note de bas de page insérée avec la commande
+\begin{lstlisting}
+\footnote{`\textit{texte de la note}'}
+\end{lstlisting}
+  \item Commande doit suivre immédiatement le texte à annoter
+  \item Méthode recommandée
+\begin{lstlisting}[emph=footnote]
+... fera remarquer que Pierre Lasou\footnote{%
+  Spécialiste en ressources documentaires} %
+fut d'une grande aide dans la préparation de ...
+\end{lstlisting}
+  \item Numérotation et disposition automatiques
+  \end{itemize}
+\end{frame}
+
+\subsection{Code source}
+
+\begin{frame}[fragile=singleslide]
+  \frametitle{Code source}
+  \begin{itemize}
+  \item Environnement \verb=verbatim=
+\begin{lstlisting}
+\begin{verbatim}
+Texte disposé exactement tel qu'il est tapé
+dans une police à largeur fixe
+\end{verbatim}
+\end{lstlisting}
+  \item Commande \verb=\verb= dont la syntaxe est
+\begin{lstlisting}
+\verb`\textit{c}'`\textit{source}'`\textit{c}'
+\end{lstlisting}
+    où \textit{c} est un caractère quelconque ne se trouvant pas dans
+    \textit{source}
+  \item Pour usage plus intensif, voir le paquetage \pkg{listings}
+  \end{itemize}
+\end{frame}
+
+%%% >>>
+\stepcounter{exerciceref}
+\subsection{[~Exercice \theexerciceref~]}
+
+\begin{frame}[plain,fragile=singleslide]
+  \begin{exercice}
+    \begin{enumerate}
+    \item Ouvrir le fichier \fichier{exercice\_complet.tex} et en
+      étudier le code source, puis le compiler.
+    \item Supprimer l'option \texttt{article} au chargement de la
+      classe et compiler de nouveau le document. Observer l'effet de
+      cette option.
+    \item Effectuer les modifications suivantes au document.
+      \begin{enumerate}[a)]
+      \item Dernier paragraphe de la première section, placer toute la
+        phrase débutant par \texttt{«De simple dérivé»} à l'intérieur
+        d'une commande \texttt{{\textbackslash}emph}.
+      \item Changer la puce des listes en spécifiant le symbole
+        \texttt{\$>\$} pour \verb=ItemLabeli= dans la commande
+        \verb=\frenchbsetup= du préambule.
+      \end{enumerate}
+    \end{enumerate}
+  \end{exercice}
+\end{frame}
+%%% <<<
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-engine: xetex
+%%% TeX-master: "formation-latex-ul-diapos"
+%%% End:

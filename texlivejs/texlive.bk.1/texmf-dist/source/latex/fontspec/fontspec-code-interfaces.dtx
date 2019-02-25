@@ -1,0 +1,296 @@
+%%^^A%%  fontspec-code-interfaces.dtx -- part of FONTSPEC <wspr.io/fontspec>
+
+% \section{User commands}\label{sec:codeuser}
+%
+% This section contains the definitions of the commands detailed in
+% the user documentation.  Only the `top level' definitions of the
+% commands are contained herein; they all use or define macros which
+% are defined or used later on in \vref{sec:codeinternal}.
+%
+% \iffalse
+%    \begin{macrocode}
+%<*fontspec>
+%    \end{macrocode}
+% \fi
+%
+%    \begin{macrocode}
+\NewDocumentCommand \fontspec { O{} m O{} }
+  {
+    \@@_main_fontspec:nn {#1,#3} {#2}
+    \ignorespaces
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \setmainfont { O{} m O{} }
+  {
+    \@@_main_setmainfont:nn {#1,#3} {#2}
+    \ignorespaces
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \setsansfont { O{} m O{} }
+  {
+    \@@_main_setsansfont:nn {#1,#3} {#2}
+    \ignorespaces
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \setmonofont { O{} m O{} }
+  {
+    \@@_main_setmonofont:nn {#1,#3} {#2}
+    \ignorespaces
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \setmathrm { O{} m O{} }
+  {
+    \@@_main_setmathrm:nn {#1,#3} {#2}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \setboldmathrm { O{} m O{} }
+  {
+    \@@_main_setboldmathrm:nn {#1,#3} {#2}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \setmathsf { O{} m O{} }
+  {
+    \@@_main_setmathsf:nn {#1,#3} {#2}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \setmathtt { O{} m O{} }
+  {
+    \@@_main_setmathtt:nn {#1,#3} {#2}
+  }
+%    \end{macrocode}
+%
+% \begin{macro}{\setromanfont}
+% This is the old name for \cs{setmainfont}, retained \emph{ad infinitum}
+% for backwards compatibility. It was deprecated in 2010.
+%    \begin{macrocode}
+\NewDocumentCommand \setromanfont { O{} m O{} }
+  {
+    \@@_main_setmainfont:nn {#1,#3} {#2}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \newfontfamily { m O{} m O{} }
+  {
+    \@@_main_newfontfamily:NnnN #1 {#2,#4} {#3} \NewDocumentCommand
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \renewfontfamily { m O{} m O{} }
+  {
+    \@@_main_newfontfamily:NnnN #1 {#2,#4} {#3} \RenewDocumentCommand
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \setfontfamily { m O{} m O{} }
+  {
+    \@@_main_newfontfamily:NnnN #1 {#2,#4} {#3} \DeclareDocumentCommand
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \providefontfamily { m O{} m O{} }
+  {
+    \@@_main_newfontfamily:NnnN #1 {#2,#4} {#3} \ProvideDocumentCommand
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \newfontface { m O{} m O{} }
+  {
+    \@@_main_newfontface:NnnN #1 {#2,#4} {#3} \NewDocumentCommand
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \renewfontface { m O{} m O{} }
+  {
+    \@@_main_newfontface:NnnN #1 {#2,#4} {#3} \RenewDocumentCommand
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \setfontface { m O{} m O{} }
+  {
+    \@@_main_newfontface:NnnN #1 {#2,#4} {#3} \DeclareDocumentCommand
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \providefontface { m O{} m O{} }
+  {
+    \@@_main_newfontface:NnnN #1 {#2,#4} {#3} \ProvideDocumentCommand
+  }
+%    \end{macrocode}
+%
+% \begin{macro}{\defaultfontfeatures}
+%   This macro takes one argument that consists of all of feature
+%   options that will be applied by default to all subsequent \cs{fontspec} commands.
+%    \begin{macrocode}
+\NewDocumentCommand \defaultfontfeatures { t+ o m }
+  {
+    \IfNoValueTF {#2}
+      { \@@_set_default_features:nn {#1} {#3} }
+      { \@@_set_font_default_features:nnn {#1} {#2} {#3} }
+    \ignorespaces
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \addfontfeatures {m}
+  {
+    \@@_main_addfontfeatures:n {#1}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \addfontfeature  {m}
+  {
+    \@@_main_addfontfeatures:n {#1}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \newfontfeature {mm}
+  {
+    \@@_main_newfontfeature:nn {#1} {#2}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \newAATfeature {mmmm}
+  {
+    \@@_main_newAATfeature:nnnn {#1} {#2} {#3} {#4}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \newopentypefeature {mmm}
+  {
+    \@@_main_newopentypefeature:nnn {#1} {#2} {#3}
+  }
+%    \end{macrocode}
+%
+% \begin{macro}{\newICUfeature}
+% Deprecated.
+%    \begin{macrocode}
+\NewDocumentCommand \newICUfeature {mmm}
+  {
+    \@@_main_newopentypefeature:nnn {#1} {#2} {#3}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \aliasfontfeature {mm}
+  {
+    \@@_main_aliasfontfeature:nn {#1} {#2}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \aliasfontfeatureoption {mmm}
+  {
+    \@@_main_aliasfontfeatureoption:nnn {#1} {#2} {#3}
+  }
+%    \end{macrocode}
+%
+% \begin{macro}{\newfontscript}
+% Mostly used internally, but also possibly useful for users, to define new OpenType
+% `scripts', mapping logical names to OpenType script tags.
+%    \begin{macrocode}
+\NewDocumentCommand \newfontscript {mm}
+  {
+    \fontspec_new_script:nn {#1} {#2}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\newfontlanguage}
+% Mostly used internally, but also possibly useful for users, to define new OpenType
+% `languages', mapping logical names to OpenType language tags.
+%    \begin{macrocode}
+\NewDocumentCommand \newfontlanguage {mm}
+  {
+    \fontspec_new_lang:nn {#1} {#2}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \DeclareFontExtensions {m}
+  {
+    \@@_main_DeclareFontExtensions:n {#1}
+  }
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\NewDocumentCommand \IfFontFeatureActiveTF {mmm}
+  {
+    \@@_main_IfFontFeatureActiveTF:nnn {#1} {#2} {#3}
+  }
+%    \end{macrocode}
+%
+% \begin{macro}{\oldstylenums}
+% This is performed only after the preamble to overwrite any redefinition by \pkg{textcomp}:
+%    \begin{macrocode}
+\AtBeginDocument
+  {
+    \RenewDocumentCommand \oldstylenums {m}
+      {
+        \@@_main_oldstylenums:n {#1}
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\liningnums}
+%    \begin{macrocode}
+\NewDocumentCommand \liningnums {m}
+  {
+    \@@_main_liningnums:n {#1}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \iffalse
+%    \begin{macrocode}
+%</fontspec>
+%    \end{macrocode}
+% \fi
+
+
+\endinput
+
+% /©
+% ------------------------------------------------
+% The FONTSPEC package  <wspr.io/fontspec>
+% ------------------------------------------------
+% Copyright  2004-2019  Will Robertson, LPPL "maintainer"
+% Copyright  2009-2015  Khaled Hosny
+% Copyright  2013       Philipp Gesang
+% Copyright  2013-2016  Joseph Wright
+% ------------------------------------------------
+% This package is free software and may be redistributed and/or modified under
+% the conditions of the LaTeX Project Public License, version 1.3c or higher
+% (your choice): <http://www.latex-project.org/lppl/>.
+% ------------------------------------------------
+% ©/

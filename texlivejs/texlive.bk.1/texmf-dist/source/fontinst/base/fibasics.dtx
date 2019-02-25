@@ -1,0 +1,2345 @@
+% \CheckSum{1505}
+% \iffalse meta-comment
+%
+% Copyright 1993, 1994, 1995, 1996 Alan Jeffrey,
+% hacked and maintained 1997, 1998 Sebastian Rahtz,
+% copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005 
+% the fontinst maintenance team and any individual authors listed 
+% elsewhere in this file.  All rights reserved.
+% 
+% This file is part of the fontinst system version 1.9.
+% -----------------------------------------------------
+% 
+% It may be distributed under the terms of the LaTeX Project Public
+% License, as described in lppl.txt in the base LaTeX distribution.
+% Either version 1.1 or, at your option, any later version.
+% 
+%%% From file: fibasics.dtx
+%
+%<*driver>
+\documentclass{ltxdoc}
+\title{The \package{fontinst} utility}
+\author{Alan Jeffrey\and Sebastian Rahtz\and Ulrik Vieth\and 
+  Lars Hellstr\"om}
+\usepackage{fisource}
+\begin{document}
+\maketitle
+\DocInput{fibasics.dtx}
+\PrintIndex
+\end{document}
+%</driver>
+% \fi
+%
+% \StopEventually{}
+%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% \begin{quote}
+%   ``Can't say I've ever been too fond of beginnings, myself. 
+%   \emph{Messy} little things. Give me a good ending any time. 
+%   You know where you \emph{are} with an ending.''\relax
+%   \nobreak\hskip 0pt plus 1fill\penalty0\hskip 2em\relax
+%   \vadjust{}\nobreak\hskip 1em plus 1fill\textemdash
+%   \ from \emph{The kindly ones} by \textsc{Neil Gaiman} et al.^^A
+%   \nobreak\hskip-\parfillskip\vadjust{}
+% \end{quote}
+%
+%
+% \section{The first and the last}
+% 
+% \subsection{Version numbers}
+%
+% We start by making some default catcode assignments, in case we are 
+% using ini\TeX{}.
+%    \begin{macrocode}
+%<*pkg>
+\catcode`\{=1
+\catcode`\}=2
+\catcode`\#=6
+\catcode`\^=7
+%</pkg>
+%    \end{macrocode}
+%
+% \begin{macro}{\fontinstversion}
+%   If we are running under ini\TeX{} we cannot put the identification
+%   stuff any earlier than this.  Note that |\fontinstversion| is not
+%   just used for indentification but also in |\needsfontinstversion|.
+%    \begin{macrocode}
+%<pkg|doc>\def\fontinstversion{1.933}
+%    \end{macrocode}
+% \end{macro}
+%
+% If we are running under ini\TeX{} or \texttt{plain}, we have to get
+% around the \LaTeX{}-specific |\ProvidesPackage| stuff.
+%
+%    \begin{macrocode}
+%<*pkg>
+\ifx\ProvidesPackage\undefined
+   \def\NeedsTeXFormat#1{}
+   \def\ProvidesPackage#1[#2]{}
+\fi
+%</pkg>
+%    \end{macrocode}
+%
+% Now we can identify ourselves as usual.
+%
+%    \begin{macrocode}
+%<doc>\NeedsTeXFormat{LaTeX2e}[1995/06/01]
+%<doc>\ProvidesPackage{fontdoc}
+%<pkg>\ProvidesPackage{fontinst}
+%<pkg|doc>[2007/01/23 v\fontinstversion\space
+%<doc>  fontinst documentation package]
+%<pkg>  fontinst installation package]
+%    \end{macrocode}
+%
+% While we're at version numbers anyway, we might as well define the 
+% command for testing them. Note however that the module name is not 
+% \Module{pkg} as above, but \Module{pkg2}. Code in the latter module 
+% ends up at the very end of \texttt{fontinst.sty}!
+% 
+% \begin{macro}{\needsfontinstversion}
+%   The macro:
+%   \begin{quote}
+%      |\needsfontinstversion|\marg{number}
+%   \end{quote}
+%   checks the version number.
+%
+%    \begin{macrocode}
+%<*pkg2>
+\def\needsfontinstversion#1{{
+   \a_dimen=#1pt
+   \b_dimen=\fontinstversion~pt\x_relax
+   \ifnum\a_dimen>\b_dimen
+      \immediate\write16{}
+      \immediate\write16{Warning:~This~file~needs~fontinst~version~#1.}
+      \immediate\write16{Warning:~You~are~using~version~
+         \fontinstversion.}
+      \immediate\write16{Warning:~This~may~cause~errors.}
+      \immediate\write16{}
+   \fi
+}}
+%</pkg2>
+%    \end{macrocode}
+%
+%   In \package{fontdoc}, |\needsfontinstversion| is printed out as a 
+%   comment.
+%   \changes{1.918}{2001/06/19}{Different formatting in encoding 
+%     specification files. (LH)}
+%    \begin{macrocode}
+%<*doc>
+\newcommand*\needsfontinstversion[1]{%
+   \ifFD@spec@
+      \comment{Automatic processing of this document as a data file 
+      requires \textsf{fontinst} v\,#1 or higher.}%
+   \else
+      \Bheading{Needs fontinst v\thinspace#1}%
+   \fi
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \subsection{Special catcodes and configuration file}
+% 
+% \package{fontinst} uses some unusual, but convenient, settings of 
+% |\catcode|. |@| and |_| are made letters, |~| is made a space, and 
+% space and newline are ignored. Before setting those however, we save 
+% the current values of the catcodes, so that they can be restored at 
+% the end of \texttt{fontinst.sty}.
+%
+% \begin{macro}{\normalcc}
+% \begin{macro}{\fontinstcc}
+%   \multchanges{\cs{fontinstcc}\cs{normalcc}}{1.915}{2000/08/09}^^A
+%      {Introduced commands for changing between \package{fontinst} 
+%       internal catcodes and normal catcodes, as suggested by 
+%       Karsten Tinnefeld. (LH)}
+%   The |\fontinstcc| command changes the catcodes of certain characters 
+%   to what is used in the \package{fontinst} source and the |\normalcc| 
+%   command changes them back; their use is analogous to that of the 
+%   |\make|\-|at|\-|letter| and |\make|\-|at|\-|other| commands in 
+%   \LaTeX.
+%   
+%   If, for some reason, you use other ``normal'' catcodes than 
+%   \package{fontinst} does by default, you may have to redefine 
+%   |\fontinstcc| and |\normalcc|. The easiest way to do this is 
+%   probably to use the |\add_to| macro.
+%   
+%   \multchanges{\cs{spacecatcode}\cs{nlcatcode}\cs{atcatcode}^^A
+%      \cs{underscorecatcode}\cs{tildecatcode}}{1.915}{2000/08/09}^^A
+%      {Removed since the contents can just as well be stored in 
+%       \cs{normalcc}. (LH)}
+%    \begin{macrocode}
+%<*pkg>
+\def\a_macro#1{\catcode\number`#1=\the\catcode`#1 }
+\edef\normalcc{%
+   \a_macro{\ }\a_macro{\^^M}\a_macro{\@}\a_macro{\_}\a_macro{\~}
+}
+%    \end{macrocode}
+%   The above definition makes the |\normalcc| macro end with a space. 
+%   This is deliberate; the space is used to terminate the last number 
+%   in the macro.
+%   
+%    \begin{macrocode}
+\def\fontinstcc{%
+   \catcode`\ =9%
+   \catcode`\^^M=9%
+   \catcode`\@=11%
+   \catcode`\_=11%
+   \catcode`\~=10
+}
+\fontinstcc
+%</pkg>
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% We input the \texttt{fontinst.rc} file, if it exists.\relax
+% \changes{1.6}{1997/02/07}{\texttt{fontinst.rc} search order changed 
+%    (Thierry Bouche).}\relax
+% \SortIndex{fontinst.rc file}{\texttt{fontinst.rc} file}
+%
+% UV, 06/1998:  What is this \texttt{fontinst.rc} file good for?
+% It turns out that you can use it to do |\def\raw_encoding{8y}|
+% if you prefer to install your fonts the other way.
+%
+%    \begin{macrocode}
+%<*pkg2>
+%<*!misc>
+\if_file_exists{fontinst.rc}\then
+   \primitiveinput fontinst.rc
+\else
+   \immediate\write16{No~file~fontinst.rc.}
+\fi
+%</!misc>
+%    \end{macrocode}
+% Use a different configuration file for \texttt{finstmsc.sty}.^^A
+% \changes{1.905}{1999/06/21}{Different config file for 
+%    \texttt{finstmsc.sty}. (LH)}
+%    \begin{macrocode}
+%<*misc>
+\if_file_exists{finstmsc.rc}\then
+   \primitiveinput finstmsc.rc
+\else
+   \immediate\write16{No~file~finstmsc.rc.}
+\fi
+%</misc>
+%    \end{macrocode}
+%
+% At the end of \texttt{fontinst.sty}, we restore the catcodes we 
+% changed. 
+% \changes{1.910}{1999/11/01}{Catcodes restored \emph{after} reading 
+%    \texttt{.rc} file. (LH\&UV)}
+%
+%    \begin{macrocode}
+\normalcc
+%</pkg2>
+%    \end{macrocode}
+%
+%
+% \subsection
+% {Plain \TeX{} macros from \texttt{fontinst.ini}}
+% ^^A \subsection{PlainTeX macros from fontinst.ini}
+%
+% If we're running in ini\TeX{} we input some definitions taken
+% from \texttt{plain}.
+%
+%    \begin{macrocode}
+%<*pkg>
+\ifx\@ne\undefined_command
+   \input fontinst.ini\relax
+\fi
+%</pkg>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%<*ini>
+\chardef\active=13
+
+\chardef\@ne=1
+\chardef\tw@=2
+\chardef\thr@@=3
+\chardef\sixt@@n=16
+\chardef\@cclv=255
+\mathchardef\@cclvi=256
+\mathchardef\@m=1000
+\mathchardef\@M=10000
+\mathchardef\@MM=20000
+
+\count10=22 % allocates \count registers 23, 24, ...
+\count11=9 % allocates \dimen registers 10, 11, ...
+\count15=9 % allocates \toks registers 10, 11, ...
+\count16=-1 % allocates input streams 0, 1, ...
+\count17=-1 % allocates output streams 0, 1, ...
+\count20=255 % allocates insertions 254, 253, ...
+\countdef\insc@unt=20 % the insertion counter
+\countdef\allocationnumber=21 % the most recent allocation
+\countdef\m@ne=22 \m@ne=-1 % a handy constant
+\def\wlog{\immediate\write\m@ne} % write on log file (only)
+
+\countdef\count@=255
+\dimendef\dimen@=0
+
+\outer\def\newcount{\alloc@0\count\countdef\insc@unt}
+\outer\def\newdimen{\alloc@1\dimen\dimendef\insc@unt}
+\outer\def\newtoks{\alloc@5\toks\toksdef\@cclvi}
+\outer\def\newread{\alloc@6\read\chardef\sixt@@n}
+\outer\def\newwrite{\alloc@7\write\chardef\sixt@@n}
+
+\def\alloc@#1#2#3#4#5{\global\advance\count1#1by\@ne
+  \ch@ck#1#4#2% make sure there's still room
+  \allocationnumber=\count1#1%
+  \global#3#5=\allocationnumber
+  \wlog{\string#5=\string#2\the\allocationnumber}}
+\outer\def\newinsert#1{\global\advance\insc@unt by\m@ne
+  \ch@ck0\insc@unt\count
+  \ch@ck1\insc@unt\dimen
+  \ch@ck2\insc@unt\skip
+  \ch@ck4\insc@unt\box
+  \allocationnumber=\insc@unt
+  \global\chardef#1=\allocationnumber
+  \wlog{\string#1=\string\insert\the\allocationnumber}}
+\def\ch@ck#1#2#3{\ifnum\count1#1<#2%
+  \else\errmessage{No~room~for~a~new~#3}\fi}
+
+\outer\def\newif#1{\count@\escapechar \escapechar\m@ne
+  \expandafter\expandafter\expandafter
+   \edef\@if#1{true}{\let\noexpand#1=\noexpand\iftrue}%
+  \expandafter\expandafter\expandafter
+   \edef\@if#1{false}{\let\noexpand#1=\noexpand\iffalse}%
+  \@if#1{false}\escapechar\count@} % the condition starts out false
+\def\@if#1#2{\csname\expandafter\if@\string#1#2\endcsname}
+{\uccode`1=`i \uccode`2=`f \uppercase{\gdef\if@12{}}} % `if' is required
+
+\newdimen\p@ \p@=1pt % this saves macro space and time
+\newdimen\z@ \z@=0pt % can be used both for 0pt and 0
+
+\def\space{~}
+\let\bgroup={
+\let\egroup=}
+
+\def\loop#1\repeat{\def\body{#1}\iterate}
+\def\iterate{\body \let\next\iterate \else\let\next\relax\fi \next}
+\let\repeat=\fi % this makes \loop...\if...\repeat skippable
+
+\def\supereject{\par\penalty-\@MM}
+\outer\def\bye{\par\vfill\supereject\end}
+%</ini>
+%    \end{macrocode}
+% The two last commands above also need to be defined if we're 
+% running under \LaTeX. In that case we need to be careful with |\bye| 
+% however, as no |\if|\textellipsis\ can skip over code that explicitly 
+% contains that control sequence, if it has been defined as above.
+%    \begin{macrocode}
+%<*pkg>
+\ifx\bye\undefined_command
+   \def\supereject{\par\penalty-\@MM}
+   \outer\expandafter\def \csname bye\endcsname
+     {\par\vfill\supereject\@@end}
+\fi
+%</pkg>
+%    \end{macrocode}
+% 
+% \changes{1.910}{1999/11/01}{Make \cs{everyjob} code optional, and 
+%    simplify it a little. (LH\&UV)}
+%    \begin{macrocode}
+%<*ini&everyjob>
+\everyjob{%
+   \if_file_exists{fontinst.rc}\then
+      \primitiveinput~fontinst.rc
+   \else
+      \immediate\write16{No~file~fontinst.rc.}
+   \fi
+}
+%</ini&everyjob>
+%    \end{macrocode}
+%
+% 
+% \section{Basic definitions}
+% 
+% \subsection{Declaring variables and constants}
+%
+% Some temporary variables:
+% 
+% \begin{macro}{\a_count}
+% \begin{macro}{\b_count}
+% \begin{macro}{\c_count}
+% \begin{macro}{\d_count}
+% \begin{macro}{\e_count}
+% \begin{macro}{\f_count}
+% \begin{macro}{\g_count}
+%    \begin{macrocode}
+%<*pkg>
+\newcount\a_count
+\newcount\b_count
+\newcount\c_count
+\newcount\d_count
+\newcount\e_count
+\newcount\f_count
+\newcount\g_count
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}\end{macro}\end{macro}\end{macro}
+% \end{macro}
+% \begin{macro}{\a_dimen}
+% \begin{macro}{\b_dimen}
+% \begin{macro}{\c_dimen}
+% \begin{macro}{\d_dimen}
+%    \begin{macrocode}
+\newdimen\a_dimen
+\newdimen\b_dimen
+\newdimen\c_dimen
+\newdimen\d_dimen
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}\end{macro}
+% \begin{macro}{\a_toks}
+% \begin{macro}{\b_toks}
+% \begin{macro}{\c_toks}
+%    \begin{macrocode}
+\newtoks\a_toks
+\newtoks\b_toks
+\newtoks\c_toks
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+% 
+% \begin{switch}{_a_}
+%   \changes{1.901}{1999/03/07}{Temporary switch added. (LH)}
+%    \begin{macrocode}
+\newif\if_a_
+%    \end{macrocode}
+% \end{switch}
+% 
+% \describecsfamily{\meta{letter}_macro}
+% Besides these temporary variables that have to be declared, the family 
+% of control sequences with names of the form |\|\meta{letter}|_macro|, 
+% such as |\a_macro|, |\b_macro|, etc., should be used as ``macro valued'' 
+% temporary variables.
+% \changes{1.903}{1999/05/13}{Introduced the 
+%    \cs{\meta{letter}_macro} temporary variables, 
+%    replaced \cs{temp_command}. (LH)}
+% 
+% \begin{macro}{\out_file}
+%   Some global variables:
+%    \begin{macrocode}
+\newwrite\out_file
+%    \end{macrocode}
+% \end{macro}
+%
+% 
+% \begin{macro}{\one_thousand}
+% \begin{macro}{\five_hundred}
+% \begin{macro}{\one_hundred}
+% \begin{macro}{\max_mathchardef}
+% \begin{macro}{\two_thousand}
+%   \changes{1.913}{2000/03/11}{Constant added. (LH)}
+% \begin{macro}{\half_point}
+%   \changes{1.913}{2000/03/04}{Constant added. (LH)}
+%   Some constants:
+%    \begin{macrocode}
+\mathchardef\one_thousand=1000
+\mathchardef\five_hundred=500
+\mathchardef\one_hundred=100
+\mathchardef\max_mathchardef="7FFF
+\mathchardef\two_thousand=2000
+\newdimen\half_point    \half_point=0.5pt
+%</pkg>
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}\end{macro}\end{macro}\end{macro}
+%
+%
+%  \subsection{Trigonometry macros}
+%
+% Before v\,1.930, the file \texttt{trig.sty} used to be input at this 
+% point. That is now inlined into the \package{fontinst} source proper 
+% instead.
+% 
+% \multchanges{\cs{@tempdima}\cs{@tempdimb}}{1.930}{2005/02/06}
+%   {These aliases for \cs{a_dimen} and \cs{b_dimen} were removed, 
+%    since we may now hack them out of \cs{CalculateTan}. (LH)}
+%
+% 
+% \subsection
+% {\package{fontdoc}-specific declarations}
+% ^^A \subsection{fontdoc-specific declarations}
+% 
+% As of v\,1.917, \package{fontdoc} has options, so we better start 
+% with declaration and processing of these.
+% \changes{1.917}{2001/03/31}{Option processing added. (LH)}
+% 
+% \begin{option}{specification}
+% \begin{switch}{FD@spec@}
+%   The \texttt{specification} option tells \package{fontdoc} that the 
+%   document is an encoding specification rather than a production 
+%   file---this changes some minor details in the typesetting. The 
+%   state of this option is recorded in the |FD@spec@| switch. 
+%    \begin{macrocode}
+%<*doc>
+\newif\ifFD@spec@
+\FD@spec@false
+\DeclareOption{specification}{\FD@spec@true}
+%    \end{macrocode}
+% \end{switch}\end{option}
+% 
+% \begin{option}{hypertex}
+%   \changes{1.918}{2001/06/17}{Option added. (LH)}
+% \begin{option}{pdftex}
+%   \changes{1.920}{2001/09/24}{Option added. (LH)}
+% \begin{macro}{\FD@codepoint}
+%   The \texttt{hypertex} and \texttt{pdftex} options tell 
+%   \package{fontdoc} to include Hyper\TeX\ |\special|s and pdf\TeX\ 
+%   annotations, in every code point number set using |\Unicode| or 
+%   |\textunicode|, for links to glyph images on the Unicode 
+%   consortium web site. The URLs to use are as follows:
+%   \begin{quote}
+%     \small
+%     To access the reference glyph for any Unicode character, 
+%     you can use the new URL syntax like this:
+%     \begin{quote}
+%       \texttt{http://www.unicode.org/cgi-bin/refglyph?}^^A
+%       \meta{XX}\texttt{-}\meta{nnnn}
+%     \end{quote}
+%     where \meta{XX} is the point size and \meta{nnnn} is the 
+%     hexadecimal codepoint. Please note however that only \texttt{24} 
+%     is supported as a size parameter at this time. (We are 
+%     reserving the possibility of providing other sizes in the 
+%     future.) Here is an example of usage for \texttt{U+4E78}:
+%     \begin{quote}
+%       \texttt{http://www.unicode.org/cgi-bin/refglyph?24-4E78}
+%     \end{quote}
+%     (This supports up to 6 hex digits, so it can also be used 
+%     with the supplementary characters.)
+%   \end{quote}
+%   
+%   \iffalse
+%   Documentation for a similar older service:
+%   \begin{quotation}
+%     \small
+%     You may embed references to the glyph images on the Unicode site 
+%     in your own web pages. For example, to display a Euro sign 
+%     (\texttt{U+20AC}) you can use the following HTML:
+%     \begin{quote}
+%       |<IMG SRC="http://charts.unicode.org/Glyphs/20/U20AC.gif">|
+%     \end{quote}
+%     The subdirectory to use within the \texttt{Glyphs/} directory 
+%     is the first two hexadecimal digits of the Unicode code point.
+%     The set of glyphs available covers all of Unicode 3.0 with the 
+%     exception of Han ideographs and Hangul syllables.
+%     
+%     However, you should only make occasional use of these glyphs. 
+%     If there is too much web traffic the Unicode
+%     Consortium may be forced to discontinue this service.
+%   \end{quotation}
+%   \fi
+%   Coding this for Hyper\TeX\ is pretty straightforward.
+%    \begin{macrocode}
+\DeclareOption{hypertex}{
+   \providecommand*\FD@codepoint[1]{%
+      \uppercase{\edef\@tempa{#1}}%
+      \special{html:<a href="%
+         http://www.unicode.org/cgi-bin/refglyph?24-\@tempa
+         ">%
+      }%
+      \texttt{U+\@tempa}%
+      \special{html:</a>}%
+   }%
+}
+%    \end{macrocode}
+%   The pdf\TeX\ implementation is easy too, but there is one 
+%   complication: The key primitive is called |\pdfannotlink| in 
+%   v\,0.13, but |\pdfstartlink| in v\,0.14. My thanks goes to H\`an 
+%   Th\'{\^e} Th\`anh, who helped me sort that out.
+%    \begin{macrocode}
+\DeclareOption{pdftex}{
+   \providecommand*\FD@codepoint[1]{%
+      \mbox{%
+         \uppercase{\edef\@tempa{#1}}%
+         \ifx \pdfstartlink\@undefined
+            \pdfannotlink
+         \else
+            \pdfstartlink
+         \fi attr {/Border [0 0 0]} user {%
+            /Subtype /Link /A <<%
+               /S /URI /URI (%
+                  http://www.unicode.org/cgi-bin/refglyph?24-\@tempa
+               )%
+            >>}%
+         \textcolor{blue}{\texttt{U+\@tempa}}%
+         \pdfendlink
+      }%
+   }%
+   \AtEndOfPackage{\RequirePackage[pdftex]{color}}%
+}
+%    \end{macrocode}
+%   It would be quite possible to make these links according to some 
+%   other standard (e.g.~\LaTeX\-to\-HTML) instead by including a suitable 
+%   definition of |\FD@codepoint| in your \texttt{fontdoc.cfg} file. 
+%   I could include code for those standards as well if someone sends 
+%   it to me.
+%   
+%   I decided against using commands in the \package{hyperref} or 
+%   \package{hyper} packages for this as these packages do so much more 
+%   that I don't want. If some day a package providing a basic interface 
+%   for making hyperlinks is included in required \LaTeX\ then this 
+%   decision should certainly be reconsidered.
+% \end{macro}\end{option}\end{option}
+% 
+% Input a local configuration file, if it exists.
+%    \begin{macrocode}
+\InputIfFileExists{fontdoc.cfg}{%
+   \typeout{*************************************^^J%
+            * Local config file fontdoc.cfg used^^J%
+            *************************************}%
+}{}
+%    \end{macrocode}
+%    
+% Finally process the options.
+%    \begin{macrocode}
+\ProcessOptions\relax
+%    \end{macrocode}
+% 
+% 
+% The \package{amstext} package is required, since the |\text| command 
+% is used in formatting some integer expressions.
+% \changes{1.916}{2001/01/02}{Requiring the \package{amstext} package 
+%    in \package{fontdoc}. (LH)}
+%    \begin{macrocode}
+\RequirePackage{amstext}
+%    \end{macrocode}
+% 
+% \begin{macro}{\a@count}
+% \begin{macro}{\b@count}
+%   \changes{1.916}{2001/01/02}{Variable added. (LH)}
+% \begin{macro}{\a@dimen}
+%   Three private variables:
+%    \begin{macrocode}
+\newcount\a@count
+\newcount\b@count
+\newdimen\a@dimen
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+%
+% Some useful macros and constrol structures:
+%
+%    \begin{macrocode}
+\def\x@cs#1#2{\expandafter#1\csname#2\endcsname}
+\def\FD@swap@two#1#2{#2#1}
+%    \end{macrocode}
+%
+% \begin{macro}{\Aheading}
+%   \changes{1.909}{1999/10/18}{Use \cs{addvspace} to make space 
+%      above. (LH)}
+%   \changes{1.909}{1999/10/20}{Insert a \cs{penalty} for pagebreaking 
+%      after an \cs{Aheading}. (LH)}
+%   \changes{1.920}{2001/10/19}{Encouraged page breaks before an 
+%      \cs{Aheading}. (LH)}
+% \begin{macro}{\Bheading}
+%   |\Aheading| and |\Bheading| are used to typeset various headings.
+%    \begin{macrocode}
+\newcommand\Aheading[1]{%
+   \par\pagebreak[1]\addvspace\medskipamount
+   \noindent\textbf{#1}\vadjust{\penalty200}\par
+}
+\newcommand\Bheading[1]{\par\noindent\textbf{#1}}
+%    \end{macrocode}
+% \end{macro}\end{macro}
+%
+% Some formating commands and a macro that comes in handy. It used to 
+% say |\raggedright| at this point as well, but that functionality has 
+% been moved into |\encoding| and |\metrics|.
+% 
+% \definechange{raggedright}{1.920}{2001/09/16}{The body (between 
+%   \cs{metrics} and \cs{endmetrics}, and \cs{encoding} and 
+%   \cs{endencoding} respectively) of a \package{fontdoc} document is 
+%   now typeset in a \texttt{flushleft} environment. It used to be that 
+%   the entire document was typeset this way. (LH)}
+% \usechange{raggedright}
+% \changes{1.923}{2002/10/26}{Making sure \cs{lineskiplimit} is 
+%    positive. (LH)}
+% 
+%    \begin{macrocode}
+\raggedbottom
+\ifdim 1sp>\lineskiplimit \lineskiplimit=0.5pt \fi
+\newcommand\plain{\texttt{plain}}
+%    \end{macrocode}
+%
+% \begin{macro}{\plainint}
+% \begin{macro}{\plaindiv}
+% \begin{macro}{\plainneg}
+%   \changes{1.928}{2004/11/24}{Added \cs{plainneg}. That the 
+%     \protect\LaTeX\ \cs{neg} is taken over by \package{fontdoc} but 
+%     is needed in \texttt{oms.etx} had gone unnoticed for over ten 
+%     years!! (LH) Problem reported by Peter Dyballa.}
+% \begin{macro}{\plainmax}
+% \begin{macro}{\plainmin}
+%   \package{fontdoc} saves away \LaTeX's |\int|, |\div|, |\neg|, |\max|, 
+%   and |\min| as |\plainint|, |\plaindiv|, |\plainneg|, |\plainmax|, 
+%   and |\plainmin| respectively, since these control sequences are going 
+%   to be used for other purposes.
+%    \begin{macrocode}
+\let\plainint=\int
+\let\plaindiv=\div
+\let\plainneg=\neg
+\let\plainmax=\max
+\let\plainmin=\min
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}\end{macro}\end{macro}
+% 
+% \begin{macro}{\TypesetList}
+%   \changes{1.914}{2000/05/13}{Macro added. (LH)}
+% \begin{macro}{\list@item@counter}
+%   The |\TypesetList| command typesets the \meta{arg}s in a sequence of 
+%   |\do|\marg{arg} macros with separators depending on position in and 
+%   length of the sequence. It is loosely based on a description of a 
+%   similar command in the \package{amsref} package, but it has fewer 
+%   features, and I don't know if there is any similarity between the 
+%   implementations.
+%   
+%   The syntax is
+%   \begin{isyntax}
+%     |\TypesetList|\marg{left}\marg{onlysep}\marg{nonlastsep}\penalty0
+%       \marg{lastsep}\penalty0\marg{right}\penalty0
+%       \marg{empty}\penalty0\marg{wrap}\penalty0\marg{list}
+%   \end{isyntax}
+%   \meta{list} is the actual list of |\do|\marg{arg}s. If that is 
+%   empty then \meta{empty} is typeset. Otherwise the typeset text 
+%   begins with \meta{left}, ends with \meta{right}, and contains the 
+%   formatted forms of every \meta{arg} in the list of |\do|\marg{arg}s. 
+%   The formatting here consists of passing the \meta{arg} as the 
+%   argument to \meta{wrap}, which is typically a one-argument macro.
+%   Between two ``formatted \meta{arg}s'' will \meta{onlysep}, 
+%   \meta{nonlastsep}, or \meta{lastsep} be put, depending on the number 
+%   of \meta{arg}s in the list and the position in the list. If the list 
+%   has length two then \meta{onlysep} will be used for the only separator 
+%   needed. If the list has length greater than two then \meta{nonlastsep} 
+%   will be used for all separators but the last, and \meta{lastsep} will 
+%   be used for the last.
+%   
+%   All of the arguments of |\TypesetList| must survive being passed 
+%   through a |\def|.
+%    \begin{macrocode}
+\newcount\list@item@counter
+\newcommand\TypesetList[8]{%
+   \begingroup
+      \list@item@counter=\z@
+      \def\do##1{\advance\list@item@counter\@ne}%
+      #8%
+      \ifcase \list@item@counter \or
+         \def\do##1{#1#7{##1}}%
+      \or
+         \def\do##1{%
+            \advance\list@item@counter\@ne
+            \ifnum \list@item@counter=\@ne #1\else #2\fi
+            #7{##1}%
+         }%
+      \else
+         \advance\list@item@counter\m@ne
+         \expandafter\def \expandafter\do \expandafter##\expandafter1%
+            \expandafter{\expandafter\ifnum \the\list@item@counter
+               =\list@item@counter
+               #4%
+            \else\ifnum \z@=\list@item@counter
+               #1%
+            \else
+               #3%
+            \fi\fi
+            \advance\list@item@counter\@ne
+            #7{##1}%
+         }%
+      \fi
+      \ifnum \z@=\list@item@counter
+         #6%
+      \else
+         \list@item@counter=\z@
+         #8%
+         #5%
+      \fi
+   \endgroup
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% 
+% \section
+% {\TeX{} hackery}
+% ^^A \section{TeX hackery}
+% \changes{1.902}{1999/05/01}{Moved Section \thesection\space to 
+%     \texttt{fibasics.dtx}. (LH)}
+% 
+% \subsection{Utiltiy macros}
+%
+% \begin{macro}{\x_cs}
+% \begin{macro}{\x_relax}
+% \begin{macro}{\g_let}
+%    \begin{macrocode}
+%<*pkg>
+\def\x_cs#1#2{\expandafter#1\csname#2\endcsname}
+\let\x_relax=\relax
+\def\g_let{\global\let}
+%</pkg>
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+% \changes{1.900}{1999/02/07}{Replaced \cs{relax} by \cs{x_relax}. (LH)}
+%
+% \begin{macro}{\x@relax}
+%    \begin{macrocode}
+%<doc>\let\x@relax=\relax
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\empty_command}
+% \begin{macro}{\gobble_one}
+% \begin{macro}{\gobble_two}
+% \begin{macro}{\gobble_three}
+% \begin{macro}{\identity_one}
+% \begin{macro}{\first_of_two}
+% \begin{macro}{\second_of_two}
+% \begin{macro}{\swap_two}
+%   \changes{1.912}{2000/02/16}{Macro added. (LH)}
+% \begin{macro}{\first_of_three}
+%   \changes{1.914}{2000/05/30}{Macro added. (LH)}
+%    \begin{macrocode}
+%<*pkg>
+\def\empty_command{}
+\def\gobble_one#1{}
+\def\gobble_two#1#2{}
+\def\gobble_three#1#2#3{}
+\def\identity_one#1{#1}
+\def\first_of_two#1#2{#1}
+\def\second_of_two#1#2{#2}
+\def\swap_two#1#2{#2#1}
+\def\first_of_three#1#2#3{#1}
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}\end{macro}\end{macro}\end{macro}
+% \end{macro}\end{macro}\end{macro}
+%
+% \begin{macro}{\hash_char}
+% \begin{macro}{\percent_char}
+% \begin{macro}{\left_brace_char}
+% \begin{macro}{\right_brace_char}
+%    \begin{macrocode}
+\bgroup
+   \catcode`\[=1
+   \catcode`\]=2
+   \catcode`\#=12
+   \catcode`\%=12
+   \catcode`\{=12
+   \catcode`\}=12
+   \gdef\hash_char[#]
+   \gdef\percent_char[%]
+   \gdef\left_brace_char[{]
+   \gdef\right_brace_char[}]
+\egroup
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}\end{macro}
+%
+% \begin{macro}{\first_char}
+% Return the first character of a string.
+%
+%    \begin{macrocode}
+\def\first_char#1#2={#1}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\add_to}
+%   Append one or more tokens to the replacement text of a 
+%   parameterless macro.
+%    \begin{macrocode}
+\def\add_to#1#2{
+   \ifx#1\x_relax
+      \def#1{#2}
+   \else
+      \expandafter\def\expandafter#1\expandafter{#1#2}
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\prep_to}
+%   Prepend one or more tokens to the replacement text of a 
+%   parameterless macro. Note that if more than one token is added then 
+%   the second parameter must contain an |\expandafter| between every 
+%   pair of tokens you actually mean to contribute. Thus if you want 
+%   to prepend |abc| to |\next|, you must write
+%   \begin{quote}
+%     |\prep_to\next{a\expandafter b\expandafter c}|
+%   \end{quote}
+%   Also note that the second argument must not be empty.
+%    \begin{macrocode}
+\def\prep_to#1#2{
+   \ifx#1\x_relax
+      \expandafter\def\expandafter#1\expandafter{\expandafter#2}
+   \else
+      \expandafter\def\expandafter#1\expandafter{\expandafter#2#1}
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\never_do}
+%   The command |\do|, protected from expansion.
+%   
+%    \begin{macrocode}
+\def\never_do{\noexpand\do}
+%</pkg>
+%    \end{macrocode}
+% \end{macro}
+%
+% 
+% \subsection{Testing for \TeX\ extensions}
+% \changes{1.914}{2000/05/13}{Added commands for testing for 
+%    \protect\TeX\ extensions. (LH)}
+% Some tasks can be done better (and usually with simpler code) if 
+% one can assume that certain features in some \TeX\ extensions, such as 
+% \eTeX, is available. Unfortunately one cannot generally make this 
+% assumption, but it is sometimes possible to provide two implementations 
+% of a macro and at runtime choose the one which best utilizes the 
+% available features. This subsection defines macros for making these 
+% tests.
+% 
+% There is also a command |\needsTeXextension| which is used like 
+% |\needs|\-|fontinst|\-|version|, but which tests the \TeX\ rather than 
+% the version of \package{fontinst}. This ought to be of use for ETX files 
+% that describe 16 bit encodings,\footnote{At the time of writing, no 
+% such ETX files exist that I know of, but \package{fontinst} should 
+% not have any problem using them. /LH} as the current implementation 
+% of the (V)PL writer in this case requires the underlying \TeX\ to 
+% support 16 bit character codes.
+% 
+% The normal operation of the extension-testing macros is to set the |_a_| 
+% switch to true if the requested extension is present, and to leave the 
+% switch as it was if it isn't present. This is so that one can easily 
+% test for a feature that has been added to several different extensions 
+% of \TeX\ simply by doing the tests in sequence. That, however, is what 
+% the testing macros do if the switch |_extensions_warning_| is set to 
+% false. When it is set to true they instead expand to a short piece of 
+% text suitable for inclusion in a warning message about the absence of 
+% a needed feature.
+% 
+% \begin{switch}{_extensions_warning_}
+%   This switch controls whether extension-testing macros should 
+%   actually do the test (false) or produce a warning (true).
+%    \begin{macrocode}
+%<*pkg>
+\newif\if_extensions_warning_
+\_extensions_warning_false
+%    \end{macrocode}
+% \end{switch}
+% 
+% 
+% \begin{macro}{\eTeX}
+%   The |\eTeX| command has the syntax
+%   \begin{quote}
+%     |\eTeX|\marg{version number}
+%   \end{quote}
+%   where the \meta{version number} is the complete version number 
+%   (version number plus revision) of the \eTeX\ one wishes to test for.
+%   
+%   The code below is geared towards not letting unnecessary control 
+%   sequences get tokenized, as they will then always occupy a position 
+%   in \TeX's hash table, but it seems one cannot get around testing 
+%   whether |\eTeXversion| is defined, so we start with that and then 
+%   do a |\catcode| trick to prevent \TeX\ from seeing |\eTeXrevision|.
+%    \begin{macrocode}
+\ifx \eTeXversion\undefined_command
+   \catcode`\~=14 % 14=comment
+\fi
+\def\eTeX#1{
+   \if_extensions_warning_
+      \space/\space e-TeX\space version\space #1
+~  \else
+~     \ifdim \number\eTeXversion\eTeXrevision\p@ < #1\p@ \else
+~        \_a_true
+~     \fi
+   \fi
+}
+\catcode`\~=10
+%</pkg>
+%    \end{macrocode}
+%   \begin{macro}{\eTeXlogo}
+%     The |\eTeXlogo| command prints the \eTeX\ logo.
+%     \changes{1.923}{2002/10/20}{Added kern, to match 
+%       \package{ltugboat} definition. (LH)}
+%    \begin{macrocode}
+%<*doc>
+\def\eTeX#1{\do{\eTeXlogo\nolinebreak[3] v\,#1}}
+\def\eTeXlogo{\ensuremath{\varepsilon}-\kern-.125em\TeX}
+%</doc>
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% 
+% \begin{macro}{\pdfTeX}
+%   The |\pdfTeX| command has the syntax
+%   \begin{quote}
+%     |\pdfTeX|\marg{version number}\marg{revision}
+%   \end{quote}
+%   where the \meta{version number} is the version number as returned 
+%   by |\pdftexversion|, i.e., 100 times what it would normally be 
+%   printed as, and the \meta{revision} is the revision code as returned 
+%   by |\pdftexrevision|. To test for pdf\TeX\ 0.13c or newer, one would 
+%   say |\pdfTeX{13}{c}|.
+%   
+%   The code below uses the same |\catcode| trick as that in |\eTeX|.
+%    \begin{macrocode}
+%<*pkg>
+\ifx \pdftexversion\undefined_command
+   \catcode`\~=14 % 14=comment
+\fi
+%</pkg>
+%<*pkg|doc>
+\def\pdfTeX#1#2{%
+%<pkg>   \if_extensions_warning_
+%<pkg>      \space/\space pdfTeX\space version\space 
+%<doc>   \do{pdf\TeX\nolinebreak[3] v\,%
+      \ifnum #1<100\space
+         0.\ifnum #1<10\space 0\fi
+      \else
+%<pkg>         \expandafter\swap_two \expandafter.
+%<doc>         \expandafter\FD@swap@two \expandafter.%
+      \fi
+      #1#2%
+%<doc>   }
+%<doc>}
+%</pkg|doc>
+%<*pkg>
+%    \end{macrocode}
+%   The above is not ideal, but it will do for now.
+%    \begin{macrocode}
+~  \else
+~     \ifdim #1>\pdftexversion \else
+~        \ifnum \expandafter\expandafter \expandafter` 
+~                   \expandafter\first_char \pdftexrevision= <
+~               \expandafter` \first_char#2=
+~        \else \_a_true \fi
+~     \fi
+   \fi
+}
+\catcode`\~=10
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \begin{macro}{\needsTeXextension}
+%   The |\needsTeXextension| command has the syntax
+%   \begin{quote}
+%     |\needsTeXextension|\marg{extension tests}\marg{who}
+%   \end{quote}
+%   If none of the extension tests set the |_a_| switch to true, then 
+%   it prints a warning detailing the extensions tests which failed. 
+%   \meta{who} is what should be listed as the originator of this 
+%   message; it is typically the name of the file which contains the 
+%   |\needsTeXextension| command.
+%   
+%   An example (assuming that there will be an |\Omega| test as well 
+%   some time in the future; I haven't really looked into what that 
+%   should look like, so maybe the arguments should be different): The 
+%   command
+%   \begin{quote}
+%     |\needsTeXextension{\eTeX{1.2}\Omega{1.0}}{foobar.etx}|
+%   \end{quote}
+%   tests if the current \TeX\ is \eTeX\ verision 1.2 (or newer) 
+%   \emph{or} Omega version 1.0 (or newer). The implied conjunction 
+%   between the tests is always `or'.
+%    \begin{macrocode}
+\def\needsTeXextension#1#2{
+   \_a_false
+   #1
+   \if_a_ \else
+      \_extensions_warning_true
+      \edef\a_macro{#1}
+      \_extensions_warning_false
+      \fontinstwarningnoline{#2}{
+         This~file~needs:\messagebreak
+         \expandafter\second_of_two\a_macro
+         \iffalse
+            <no~sufficient~extensions~were~listed!!>\if_false
+         \fi
+         \messagebreak
+         You~are~not~using~any~of~them.~This~is~likely~to~cause~errors
+      }
+   \fi
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\def\needsTeXextension#1#2{%
+   \Bheading{Needs 
+      \TypesetList{}{ or }{, }{, or }{}{(unspecified)}{\@firstofone}{#1}}%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% 
+% \subsection{Writing to output files}
+% 
+% \changes{1.901}{1999/03/04}{Pooled output file allocation added. (LH)}
+% As of v\,1.901, there are two different output file 
+% models in \package{fontinst}. One has been along ``forever'' and is 
+% for writing output to files which are only open for a short period of 
+% time---every \package{fontinst} file command that opens a file in this 
+% model must also close it---and it can only be used for one file at at 
+% time. The other model offers pooled allocation of output files---as 
+% long as there is an unused \TeX\ output stream to open, you may open a 
+% new file, and it does not matter if files are not closed in the revese 
+% order of that in which they were opened.
+% 
+% \begin{macro}{\open_out}
+%   \changes{1.901}{1999/03/04}
+%      {\cs{xdef} instead of \cs{def} on \cs{out_filename}. (LH)}
+% \begin{macro}{\close_out}
+% \begin{macro}{\out_line}
+% \begin{macro}{\out_lline}
+%   \changes{1.908}{1999/08/25}{\cs{edef}, to save macro expansions 
+%      later. (LH)}
+% \begin{macro}{\out_llline}
+%   \changes{1.908}{1999/08/25}{\cs{edef} and don't use \cs{out_lline}, 
+%      to save macro expansions later. (LH)}
+%   These macros implement the classical output file commands.
+%    \begin{macrocode}
+%<*pkg>
+\def\open_out#1{
+   \immediate\openout\out_file=#1 \xdef\out_filename{#1}}
+\def\close_out#1{
+   \immediate\write16{#1~written~on~\out_filename.}
+   \immediate\closeout\out_file}
+\def\out_line#1{\immediate\write\out_file{#1}}
+\edef\out_lline#1{\noexpand\out_line{\space\space\space#1}}
+\edef\out_llline#1{
+   \noexpand\out_line{\space\space\space\space\space\space#1}
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% 
+% 
+% In the new model, the basic writing command 
+% \DescribeMacro{\pout_line}|\pout_line| takes two arguments: a file 
+% identifier control sequence and the token sequence to write. Thus its 
+% call looks like
+% \begin{quote}
+%   |\pout_line|\meta{identifier}\marg{text}
+% \end{quote}
+% The \meta{identifier} is usually a chardef token whose number tells 
+% which input stream is used, but if \TeX\ runs out of output streams 
+% then it might be defined as a parameterless macro which expands to 
+% |\m@ne|. This has the effect of making all output to that ``file'' go 
+% to the log file, from which the data might be salvaged.
+% 
+% The new model operates using the control sequence family 
+% \describecsfamily{out_filename-\meta{stream}}^^A
+% |\out_filename-|\meta{stream} 
+% both for storing the name of the output file and for handling 
+% allocation of output streams.
+% 
+% \begin{macro}{\TeX_terminal}
+% \begin{macro}{\closed_stream}
+% \begin{macro}{\out_filename-99}
+% \begin{macro}{\out_filename--1}
+%   Output streams 16 and above always write to \TeX's terminal, and any 
+%   output file that gets closed gets its identifier set to 99 so that 
+%   any attempts to write to a closed file can be easily spotted. (99 
+%   is the character code for |c|.) Output stream --1 is the log file, and 
+%   if another output stream cannot be allocated then attempts to write to 
+%   the output file will be redirected to the log file.
+%    \begin{macrocode}
+\def\TeX_terminal{\string\TeX\space terminal}
+\chardef\closed_stream=99
+\x_cs\let{out_filename-99}=\TeX_terminal
+\x_cs\def{out_filename--1}{\jobname.log}
+%    \end{macrocode}
+% \end{macro} \end{macro} \end{macro} \end{macro}
+% 
+% \begin{macro}{\allocate_stream}
+% \begin{macro}{\ch@ck}
+%    \begin{macrocode}
+\def\allocate_stream{
+   \a_count=\m@ne
+   \b_count=\m@ne
+   \loop \ifnum \count17>\a_count
+%    \end{macrocode}
+%   While |\a_count|${}<$ the number of the last allocated output 
+%   stream \textellipsis
+%    \begin{macrocode}
+      \advance \a_count \@ne
+      \x_cs\ifx{out_filename-\the\a_count}\TeX_terminal
+%    \end{macrocode}
+%   If |\out_filename-|\meta{stream}, where \meta{stream} is the value 
+%   of |\a_count|, is equal to |\TeX_terminal|, then output stream 
+%   |\a_count| is allocated to the pool but is not used for any 
+%   currently open file. Thus we've found a stream that can be used.
+%    \begin{macrocode}
+         \b_count=\a_count
+         \a_count=\count17
+      \fi
+   \repeat
+   \ifnum \b_count=\m@ne
+%    \end{macrocode}
+%   In this case all streams allocated to the pool are currently in use, 
+%   so try to allocate a new one.
+%    \begin{macrocode}
+      \global\advance\count17by\@ne
+      \ifnum \count17<\sixt@@n
+%    \end{macrocode}
+%   Then case: There was another output stream.
+%    \begin{macrocode}
+         \b_count=\count17
+         \global\x_cs\let{out_filename-\the\b_count}\TeX_terminal
+         \wlog{\string\write\the\b_count\space allocated~to~the~pool.}
+      \else
+%    \end{macrocode}
+%   Else case: See to that the output stream allocation register holds 
+%   at 16.
+%    \begin{macrocode}
+         \global\count17=\sixt@@n
+      \fi
+   \fi
+}
+%    \end{macrocode}
+%   By now, if a new stream could be allocated then the number of that 
+%   stream is in |\b_count|, and if it couldn't then |\b_count| is --1.
+%   
+%   All output streams up to and including that whose number is in 
+%   |\count17| is checked to see if it is available. Many unsuccessful 
+%   |\newwrite|s could therefore mean we have to do quite a lot of 
+%   checking. What's more, output stream 99 would incorrectly be 
+%   interpreted as being in the pool but not used. To guard against these 
+%   (improbable) errors, |\ch@ck| is redefined to stop allocation 
+%   |\count| registers at their limit value.
+%    \begin{macrocode}
+\def\ch@ck#1#2#3{
+   \ifnum \count1#1<#2 \else
+      \errmessage{No~room~for~a~new~#3}
+      \global\count1#1=#2
+   \fi
+}
+%    \end{macrocode}
+% \end{macro} \end{macro}
+% 
+% 
+% \begin{macro}{\open_pout}
+% \begin{macro}{\close_pout}
+%   The syntax for |\open_pout| is
+%   \begin{quote}
+%     |\open_pout|\meta{identifier}\marg{name}
+%   \end{quote}
+%   \meta{name} is the name of the output file one wishes to open. 
+%   \meta{identifier} is a control sequence which will be redefined 
+%   (globally) to act as an identifier of the file.
+%    \begin{macrocode}
+\def\open_pout#1#2{
+   \allocate_stream
+   \ifnum \b_count=\m@ne
+      \immediate\write\sixt@@n{fontinst~is~out~of~output~streams.^^J
+         Output~file~#2~cannot~be~opened.^^J
+         Writes~will~be~redirected~to~the~log~file.
+      }
+      \gdef#1{\m@ne}
+   \else
+      \immediate\openout\b_count=#2\x_relax
+      \x_cs\xdef{out_filename-\the\b_count}{#2}
+      \global\chardef#1=\b_count
+   \fi
+}
+%    \end{macrocode}
+%   
+%   The syntax for |\close_pout| is
+%   \begin{quote}
+%     |\close_pout|\meta{identifier}\marg{what}
+%   \end{quote}
+%   \meta{identifier} is the output stream identifier which should have 
+%   been defined in an earlier call of |\open_pout|. \meta{what} is a 
+%   string which describes what has been written to the output file, 
+%   e.g.\ |Metrics| or |Raw~font|. It will be used to write a message on 
+%   the terminal.
+%    \begin{macrocode}
+\def\close_pout#1#2{
+   \ifnum #1=\closed_stream
+      \errmessage{Output~file~\string#1~(#2)~not~closed,^^J
+         since~it~was~not~open}
+   \else
+      \immediate\write\sixt@@n{#2~written~on~
+         \csname out_filename-\the#1\endcsname.}
+      \ifnum #1=\m@ne \else
+         \immediate\closeout#1
+         \global\x_cs\let{out_filename-\the#1}=\TeX_terminal
+      \fi
+      \global\chardef#1=\closed_stream
+   \fi
+}
+%    \end{macrocode}
+% \end{macro} \end{macro}
+% 
+% 
+% \begin{macro}{\pout_line}
+%   The syntax for |\pout_line| is
+%   \begin{quote}
+%     |\pout_line|\meta{identifier}\marg{text}
+%   \end{quote}
+%   \meta{identifier} is the output stream identifier which should have 
+%   been defined in an earlier call to |\open_pout|. \meta{text} is 
+%   what will be written to the file.
+%    \begin{macrocode}
+\def\pout_line#1#2{\immediate\write#1{#2}}
+%    \end{macrocode}
+%   
+% \begin{macro}{\pout_lline}
+%   \changes{1.904}{1999/06/15}{Command added. (LH)}
+%   \changes{1.908}{1999/08/25}{\cs{edef}, to save macro expansions 
+%      later. (LH)}
+% \begin{macro}{\pout_llline}
+%   \changes{1.904}{1999/06/15}{Command added. (LH)}
+%   \changes{1.908}{1999/08/25}{\cs{edef} and don't use \cs{pout_lline}, 
+%      to save macro expansions later. (LH)}
+%   There relate to |\pout_line| as |\out_lline| and |\out_llline| to 
+%   |\out_line|.
+%    \begin{macrocode}
+\edef\pout_lline#1#2{\noexpand\pout_line#1{\space\space\space#2}}
+\edef\pout_llline#1#2{
+   \noexpand\pout_line#1{\space\space\space\space\space\space#2}
+}
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+% 
+%
+% \begin{macro}{\tempfileprefix}
+% \begin{macro}{\temp_prefix}
+%   Selecting the directory for temporary files.
+%
+%    \begin{macrocode}
+\def\tempfileprefix#1{\def\temp_prefix{#1}}
+\tempfileprefix{}
+%</pkg>
+%    \end{macrocode}
+% \end{macro} \end{macro}
+%
+%
+% \subsection{Conditionals}
+%
+% \subsubsection{Conditionals in \package{fontinst}}
+% 
+% \begin{macro}{\then}
+% \begin{macro}{\if_true}
+% \begin{macro}{\if_false}
+%   In order to write macros that expand out to nested |\if|-statements,
+%   I say:
+%   \begin{quote}
+%      |\ifblah| \textellipsis\ |\then| \textellipsis\ |\else| 
+%      \textellipsis\ |\fi|
+%   \end{quote}
+%   In order to match the |\fi|, |\then| has to be an |\if|.
+%   
+%    \begin{macrocode}
+%<pkg|doc>\let\then=\iffalse
+%<*pkg>
+\def\if_false{\iffalse}
+\def\if_true{\iftrue}
+%    \end{macrocode}
+% \end{macro} \end{macro} \end{macro}
+%
+% \begin{macro}{\if_defined}
+% \begin{macro}{\if_undefined}
+%   \multchanges{\cs{if_defined}\cs{if_undefined}}{1.912}
+%      {2000/02/10}{Macro added. (LH)}
+%   These two macros are used as
+%   \begin{quote}
+%     |\if_defined|\marg{control sequence name}|\then|\\
+%     |\if_undefined|\marg{control sequence name}|\then|
+%   \end{quote}
+%   The latter is functionally equivalent to
+%   \begin{quote}
+%     |\x_cs\ifx|\marg{control sequence name}|\x_relax|
+%   \end{quote}
+%   but it is shorter (1--3 tokens, depending on whether the 
+%   unnecessary braces around \meta{control sequence name} are included 
+%   or not). The former tests the same thing, but has true and false 
+%   cases reversed.
+%   
+%   Apart from that it is shorter, another important reason for 
+%   introducing these macros is that the \eTeX\ primitives 
+%   |\ifcsname| and |\unless| provide a much better implementation than 
+%   what is possible in normal \TeX. Therefore it is desirable to use 
+%   these commands as much as possible, and by introducing these macros 
+%   one can achieve this without having double definitions for more 
+%   than these two macros.
+%   
+%   To avoid trouble with mismatched ifs and tokenizing control 
+%   sequences special for \eTeX, |~| is temporarily made a comment 
+%   character. I'm not sure |\ifcsname| and |\unless| weren't available 
+%   in \eTeX\ versions before 2.0, but that's the oldest version I have 
+%   a manual for.
+%   \multchanges{\cs{if_defined}\cs{if_undefined}}{1.914}{2000/05/13}
+%      {Automatically selecting between \protect\TeX\ and \eTeX\ 
+%       definitions. (LH)}
+%   \multchanges{\cs{if_defined}\cs{if_undefined}}{1.927}{2003/12/11}
+%      {Modified \eTeX\ definitions to make them work with the 
+%        crufty old ``unset is \cs{let} to \cs{relax}'' tradition 
+%        of \package{fontinst} implementation. (LH) This was found
+%        to be a show-stopper for using v\,1.926 with \eTeX;
+%        Heiko Oberdiek found the cause of it.}
+%   \changes{1.927}{2004/08/07}{Fixed problem with \cs{unless}. (LH)}
+%    \begin{macrocode}
+\_a_false\eTeX{2.0}
+\if_a_\else \catcode`\~=14\x_relax \fi
+%    \end{macrocode}
+%   The following use of |\if| is a trick I learnt from the 
+%   implementation of \package{docstrip}. |\if| will expand any amount of 
+%   material until it has two unexpandable tokens to compare, hence one 
+%   can use it to evaluate arbitrary boolean expressions in a single 
+%   \TeX\ conditional, by expressing the expression as something which 
+%   expands in \TeX's mouth to the value of the expression (either |0| 
+%   or |1|). In this case the expression is ``the control sequence is 
+%   defined and that definition is not \cs{relax}''.
+%    \begin{macrocode}
+~  \def\if_defined#1\then{
+~     \if
+~        \ifcsname#1\endcsname
+~           \expandafter\ifx \csname#1\endcsname \x_relax
+~              0
+~           \else
+~              1
+~           \fi
+~        \else
+~           0
+~        \fi
+~        1
+~  }
+~  \def\if_undefined{\expandafter\unless\if_defined}
+%    \end{macrocode}
+%    \begin{macrocode}
+\catcode`\~=\if_a_ 14 \else 10 \fi \x_relax
+%    \end{macrocode}
+%    \begin{macrocode}
+~  \def\if_defined#1\then{
+~     \expandafter\ifx \csname#1\endcsname\x_relax
+~        \expandafter\if_false
+~     \else
+~        \expandafter\if_true
+~     \fi
+~  }
+~  \def\if_undefined#1\then{
+~     \expandafter\ifx \csname#1\endcsname\x_relax
+~  }
+%    \end{macrocode}
+%    \begin{macrocode}
+\catcode`\~=10\x_relax
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% \begin{macro}{\gobble_if}
+%   It is sometimes best to skip both the then-part and 
+%   the else-part of a conditional. |\gobble_if| does this by using the 
+%   fact that expanding |\else| skips everything until the next matching 
+%   |\fi| without looking for other |\else|s.
+%   \changes{1.900}{1998/12/11}{Macro added. (LH)}
+%   \changes{1.913}{2000/03/03}{Macro redefined; it now works entirely 
+%      in the mouth. (LH)}
+%    \begin{macrocode}
+\def\gobble_if{\iftrue\else}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\if_or}
+% \begin{macro}{\or_else}
+%   |\if_or| \textellipsis\ |\or_else| \textellipsis\ |\then| gives the 
+%   disjunction of two booleans.
+%    \begin{macrocode}
+\def\if_or#1\or_else#2\then{
+   #1\then
+      \expandafter\if_true
+   \else
+      #2\then
+         \expandafter\expandafter\expandafter\if_true
+      \else
+         \expandafter\expandafter\expandafter\if_false
+      \fi
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% \begin{macro}{\if_equal}
+%   The |\if_equal| macro is a \textellipsis|\then|-style wrapper around the 
+%   |\ifx| primitive. Its calling syntax is
+%   \begin{quote}
+%     |\if_equal|\meta{token1}\meta{token2}|\then|
+%   \end{quote}
+%   \changes{1.912}{2000/02/23}{Macro added. (LH)}
+%    \begin{macrocode}
+\def\if_equal#1\then{\ifx#1}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\if_file_exists}
+%   |\if_file_exists| checks to see if a file exits, using |\openin|.
+%
+%    \begin{macrocode}
+\def\if_file_exists#1\then{
+   \immediate\openin1=#1\x_relax
+   \ifeof1\x_relax
+      \immediate\closein1
+      \expandafter\if_false
+   \else
+      \immediate\closein1
+      \expandafter\if_true
+   \fi
+}
+%</pkg>
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \subsubsection{Conditionals in \package{fontdoc}}
+% 
+% \changes{1.909}{1999/10/16}{System for documenting both branches of 
+%    \texttt{if} statements in ETX and MTX files added. (LH)}
+% In order to get a reasonable documentation of branches in an ETX or 
+% MTX file, the code in both branches must be typeset and the positions 
+% of the if, the else, and the fi must be clearly marked. There seems to 
+% be no reasonable way to achieve this if the standard names for the 
+% else and fi are used. Therefore the alternative names |\Else| and 
+% |\Fi| for |\else| and |\fi| have been introduced, to be used as in 
+% for example
+% \begin{quote}
+%   |\ifisint{monowidth}\then|\\
+%   \vadjust{}\quad\meta{then-part}\\
+%   |\Else|\\
+%   \vadjust{}\quad\meta{else-part}\\
+%   |\Fi|
+% \end{quote}
+% 
+% \begin{macro}{\Else}
+% \begin{macro}{\Fi}
+%   By default, these are identical to their lowercase counterparts.
+%    \begin{macrocode}
+%<*pkg|doc>
+\let\Else=\else
+\let\Fi=\fi
+%</pkg|doc>
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% The interesting part begins if the ETX or MTX file gives the command 
+% |\showbranches|, since this means (i) that it wants the branches to be 
+% shown and (ii) that it complies to a simple rule about where to use 
+% |\Else| and |\Fi|. The rule is as follows: If an \texttt{if} statement 
+% is of \package{fontinst} form (it uses |\then|), then it must be 
+% terminated by |\Fi|, and a possible else in the statement must be an 
+% |\Else|. If an \texttt{if} statement is \emph{not} of \package{fontinst} 
+% form (it has no |\then|), then it must be terminated by |\fi|, and a 
+% possible else in the statement must be an |\else|. Only the 
+% \package{fontinst} form \texttt{if} statements are affected by 
+% |\showbranches|.
+% 
+% \begin{macro}{\showbranches}
+% \begin{macro}{\generic@if}
+%   The |\showbranches| command changes the definitions of 
+%   |\generic@if|, |\then|, |\Else|, and |\Fi| so that the branches of 
+%   \texttt{if} statements will be made visible. |\generic@if| is used 
+%   to implement all the \package{fontinst} form \texttt{if} statements 
+%   in \package{fontdoc}. It is called as
+%   \begin{quote}
+%     |\generic@if|\marg{description}
+%   \end{quote}
+%   and this will by default expand to |\iftrue|, but after executing 
+%   |\showbranches| it will instead typeset
+%   \begin{quote}
+%     If \meta{description} then
+%   \end{quote}
+%   and do a bit of additional housekeeping.
+%   
+%    \begin{macrocode}
+%<*doc>
+\def\generic@if#1{\iftrue}
+%    \end{macrocode}
+%    \begin{macrocode}
+\newcommand\showbranches{%
+   \let\generic@if=\branches@if
+   \let\then=\x@relax
+   \let\Else=\branches@else
+   \let\Fi=\branches@fi
+}   
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% \begin{macro}{\saved@slot@number}
+%   The |\saved@slot@number| is used for storing the value of 
+%   |\slot@number| at the \texttt{if} until the |\Else|. Unlike 
+%   |\slot@number|, it is always set locally.
+%    \begin{macrocode}
+\newcount\saved@slot@number
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\branches@if}
+% \begin{macro}{\branches@else}
+% \begin{macro}{\branches@fi}
+%   \changes{1.916}{2001/01/25}{Commented out test which concatenates 
+%      consecutive \cs{Fi}s, since that doesn't work together with the 
+%      \texttt{IfBranch} environment. (LH)}
+% \begin{macro}{\branches@type}
+% \begin{macro}{\branches@par}
+%   The macros |\branches@if|, |\branches@else|, and |\branches@fi| 
+%   contain the definitions of |\generic@if|, |\Else|, and |\Fi| 
+%   respectively that are used when branches are to be shown. Their 
+%   basic task is to typeset the texts |If #1 then|, |Else|, and |Fi| in 
+%   an appropriate style and with appropriate spacing around. A 
+%   complicating matter is however that |\slot@number| must have the 
+%   same value at the beginning of the \textit{else} part as at the 
+%   beginning of the \textit{then} part. To achieve this, the value of 
+%   |\slot@number| is saved in |\saved@slot@number| at the \textit{if} 
+%   and copied back at the \textit{else}. To make this work even with 
+%   nested \textit{if}s, both the \textit{then} branch and the 
+%   \textit{else} branch are enclosed in groups and 
+%   |\saved@slot@number| is assigned locally.
+%   
+%   There are still some formatting issues to solve, however. In some 
+%   cases it works best to put the text of adjacent \textit{if}, 
+%   \textit{else}, or \textit{fi} in the same paragraph, and it must be 
+%   possible to recognize those cases. This is done by looking at the 
+%   macro |\branches@type|, which should expand to
+%   \begin{enumerate}
+%     \item[\texttt{0}] if the preceeding item was an \textit{if},
+%     \item[\texttt{1}] if the preceeding item was an \textit{else} 
+%        preceeded by an \textit{if},
+%     \item[\texttt{2}] if the preceeding item was an \textit{else} 
+%        not preceeded by an \textit{if},
+%     \item[\texttt{3}] if the preceeding item was a \textit{fi},
+%     \item[\texttt{4}] if it was anything else.
+%   \end{enumerate}
+%   |\branches@par| is used for resetting |\branches@type| to \texttt{4}. 
+%   It is an auto-resetting definition of |\par|.
+%   
+%    \begin{macrocode}
+\def\branches@if#1{%
+   \ifnum \branches@type=\tw@
+      \begin{IfBranchDummy}%
+      \textit{ if #1 then}%
+   \else
+      \par
+      \ifFD@tight@\else \addvspace\medskipamount \fi
+      \noindent\textit{If #1 then}%
+   \fi
+   \saved@slot@number=\slot@number
+   \gdef\branches@type{0}%
+   \let\par=\branches@par
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\branches@else{%
+   \ifnum \branches@type=\z@
+      \textit{ relax else}%
+      \gdef\branches@type{1}%
+   \else
+      \par
+      \end{IfBranch}%
+      \noindent\textit{Else}%
+      \gdef\branches@type{2}%
+   \fi
+   \global\slot@number=\saved@slot@number
+   \let\par=\branches@par
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\branches@fi{%
+   \ifnum \branches@type=\thr@@
+      \expandafter\end \expandafter{\@currenvir}%
+      \expandafter\gdef \expandafter\FD@saved@fis 
+         \expandafter{\FD@saved@fis \space fi}%
+   \else
+      \end{IfBranch}%
+      \gdef\FD@saved@fis{Fi}%
+   \fi
+   \gdef\branches@type{3}%
+   \let\par=\branches@par
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\gdef\branches@type{4}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\branches@par{%
+   \@restorepar
+   \ifnum \branches@type=\thr@@
+      \noindent\textit{\FD@saved@fis}\par
+   \else
+      \begin{IfBranch}%
+   \fi
+   \gdef\branches@type{4}%
+}
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}\end{macro}\end{macro}
+% 
+% \begin{environment}{IfBranch}
+%   \changes{1.916}{2001/01/09}{Environment added. (LH)}
+%   \changes{1.920}{2001/09/16}{Removed assignment to \cs{listparindent}. 
+%     I don't know why it was there in the first place. (LH)}
+% \begin{switch}{FD@tight@}
+%   \changes{1.916}{2001/01/09}{Switch added. (LH)}
+%   The branches of a conditional that is being shown are put in an 
+%   \texttt{IfBranch} environment, to emphasize the branches as logical 
+%   units in the file. Depending on the value of the \texttt{FD@tight@} 
+%   switch, there are two different ways that the branches can be 
+%   distinguished. In the non-tight setting (\texttt{FD@tight@} false), 
+%   there is one |\medskip|\-|amount| of vertical space before and after 
+%   the branch, but no indentation. In the tight setting (which is used 
+%   for \meta{glyph commands} and \meta{slot commands}), there is no 
+%   extra vertical space around the branch, instead it is indented by 
+%   $1\,\mathrm{em}$.
+%    \begin{macrocode}
+\newif\ifFD@tight@
+\newenvironment{IfBranch}{%
+   \list{}{%
+      \ifFD@tight@
+         \setlength\topsep{\z@skip}%
+         \@beginparpenalty=\z@
+         \@endparpenalty=\z@
+         \setlength\leftmargin{1em}%
+      \else
+         \setlength\topsep{\medskipamount}%
+         \@beginparpenalty=-10%
+         \@endparpenalty=\@beginparpenalty
+         \setlength\leftmargin{\z@}%
+      \fi
+      \setlength\partopsep{\z@skip}%
+      \setlength\itemsep{\z@skip}%
+      \setlength\parsep{\z@ plus\p@}%
+      \setlength\rightmargin{\z@}%
+      \setlength\itemindent{\z@}%
+   }%
+   \item[]%
+}{\endlist}
+%    \end{macrocode}
+% \end{switch}\end{environment}
+% 
+% \begin{environment}{IfBranchDummy}
+%   \changes{1.916}{2001/01/25}{Environment added. (LH)}
+%   In order to get the nesting right, each |\branches@else| command has 
+%   to |\begin| a new environment, but if it is immediately followed by 
+%   a |\branches@if| then that environment should not cause an 
+%   indentation. In these cases the \texttt{IfBranchDummy} environment 
+%   is used instead of \texttt{IfBranch}.
+%    \begin{macrocode}
+\newenvironment{IfBranchDummy}{}{}
+%</doc>
+%    \end{macrocode}
+% \end{environment}
+% 
+% 
+% \subsubsection{Miscellanea}
+% 
+% \begin{macro}{\primitiveinput}
+%
+% If |\@@input| is defined, I'll assume it's the \LaTeX{} version
+% of the \TeX{} |\input| primitive.  I need this so that I can say
+% |\expandafter\foo\primitiveinput|, which doesn't work with the
+% \LaTeX{} version of |\input|.
+%
+%    \begin{macrocode}
+%<*pkg>
+\x_cs\ifx{@@input}\x_relax
+   \let\primitiveinput=\input
+\else
+   \let\primitiveinput=\@@input
+\fi
+%    \end{macrocode}
+%  \end{macro}
+%
+% 
+% \DescribeMacro{\process_csep_list}
+% The macro
+% \begin{quote}
+%   |\process_csep_list|\marg{pretext}\meta{comma-sep~list}^^A
+%      |,\process_csep_list,|
+% \end{quote}
+% executes \meta{pretext}\marg{item} for every item in the 
+% \meta{comma-sep~list}.
+% 
+% \begin{macro}{\process_csep_list}
+%    \begin{macrocode}
+\def\process_csep_list#1#2,{
+   \ifx\process_csep_list#2
+      \expandafter\gobble_one
+   \else
+      \expandafter\identity_one
+   \fi{
+      #1{#2}
+      \process_csep_list{#1}
+   }
+}
+%</pkg>
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \begin{macro}{\print@csep@list}
+%   \textit{Use of this macro is now deprecated; use \cs{TypesetList} 
+%   instead wherever possible.} The macro call
+%   \begin{quote}
+%     |\print@csep@list|\marg{format}\marg{list}
+%   \end{quote}
+%   prints the comma-separated list \meta{list} in math mode. 
+%   \meta{format} can be used to set the style in which the list is 
+%   printed, since it is executed in the beginning of the same group as 
+%   in which the list is printed.
+%   
+%   The formating is based on changing the |\mathcode| of comma to 
+%   |"8000| so that the comma can be used as if it was an active character 
+%   without actually having to be one.
+%    \begin{macrocode}
+%<*doc>
+\begingroup
+   \catcode`\,=13
+   \gdef\print@csep@list#1#2{%
+      $%
+      \ifnum "8000=\mathcode`\,\else
+         \mathchardef\private@comma=\mathcode`\,%
+         \mathcode`\,="8000\x@relax
+      \fi
+      #1%
+      \let,=\active@comma
+      #2%
+      $%
+   }
+\endgroup
+\def\active@comma{\private@comma \penalty\binoppenalty}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% 
+% \subsection{Real numbers}
+% 
+% \TeX's \meta{number}s are merely integers, but \package{fontinst} 
+% needs to store and calculate with numerical entities (most of which 
+% are lengths) that are intrinsically real numbers. Most of the time, 
+% \package{fontinst} does this by using a representation of real numbers 
+% by integers in which a real number $x$ is represented by the integer 
+% that $1000x$ gets rounded to. This representation has proved 
+% sufficiently precise for most purposes.
+% 
+% There are however a few cases in which real numbers must be delt with 
+% in a more general fashion. Generic routines for this appear in this 
+% subsection.
+% 
+% \begin{macro}{\make_factor}
+%   \changes{1.903}{1999/05/13}{Macro added. (LH)}
+%   The |\make_factor| macro is meant to be used in the context
+%   \begin{quote}
+%     |\make_factor|\marg{number}
+%   \end{quote}
+%   where \meta{number} can be any legal \TeX\ number. It expands to 
+%   the same number divided by 1000, with decimals, so that what it 
+%   expands to matches the regular expression
+%   \begin{quote}
+%     |-?[0-9]+\.[0-9][0-9][0-9]|
+%   \end{quote}
+%   
+%   More specifically, |\make_factor| has two tasks to perform: it takes 
+%   care of the sign, so that its subsidary macros need only work with 
+%   unsigned numbers, and it converts the \meta{number} (which could 
+%   well be a countdef or mathchardef token) to a sequence of digits.
+%    \begin{macrocode}
+%<*pkg>
+\def\make_factor#1{
+   \ifnum #1<\z@
+      -\expandafter\make_factor_i\expandafter{\number-#1}
+   \else
+      \expandafter\make_factor_i\expandafter{\number#1}
+   \fi
+}
+%    \end{macrocode}
+%   
+%   \begin{macro}{\make_factor_i}
+%     |\make_factor_i| distinguishes between the two main cases of 
+%     numbers that in absolute value are less than 1000 and numbers that 
+%     in absolute value are greater than or equal to 1000. In the former 
+%     case, zeros need to be inserted. In the latter case, some number 
+%     of digits need to be stepped over before the decimal point can be 
+%     inserted.
+%    \begin{macrocode}
+\def\make_factor_i#1{
+   \ifnum #1<\one_thousand
+      \make_factor_ii{#1}
+   \else
+      \make_factor_iii #1
+   \fi
+   #1
+}
+%    \end{macrocode}
+%   \end{macro}
+%   
+%   \begin{macro}{\make_factor_ii}
+%     |\make_factor_ii| inserts extra zeros, in the extent it is 
+%     needed.
+%    \begin{macrocode}
+\def\make_factor_ii#1{
+   0.
+   \ifnum #1<\one_hundred
+      0
+      \ifnum #1<10~ 0\fi
+   \fi
+}
+%    \end{macrocode}
+%   \end{macro}
+%   
+%   \begin{macro}{\make_factor_iii}
+%     |\make_factor_iii| steps over one digit and checks if this is the 
+%     correct position for the decimal point. Note that |#2#3| is 
+%     exactly the digits in the number that has not been stepped over. 
+%     Also note that comparision with |#2#3| would not work, since |#2| 
+%     can be |0|.
+%    \begin{macrocode}
+\def\make_factor_iii#1#2#3\fi#4{
+   \fi
+   #4
+   \ifnum 1#3<\one_thousand
+      .
+   \else
+      \make_factor_iii#2#3
+   \fi
+}
+%    \end{macrocode}
+%   \end{macro}
+% \end{macro}
+% 
+% It also happens that real numbers are represented by dimens, in the 
+% common way that the number 1 is represented by the dimen 1\,pt. For 
+% those cases the following macro is indispensable.
+% 
+% \begin{macro}{\lose_measure}
+%   Get rid of a trailing |pt| when converting dimension.
+%    \begin{macrocode}
+{
+   \catcode`\p=12
+   \catcode`\t=12
+   \gdef\lose_measure#1pt{#1}
+}
+%</pkg>
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \subsection{Hexadecimal numbers}
+% 
+% Some of the file formats \package{fontinst} can generate requires 
+% that some numbers are written in hexadecimal form rather than in 
+% \TeX's default decimal form. This is somewhat awkward, as it would be 
+% very hard to implement without using explicit arithmetic.
+% 
+% \begin{macro}{\format_hex}
+%   The |\format_hex| command formats a number as hexadecimal digits. 
+%   The syntax is
+%   \begin{quote}
+%     |\format_hex|\marg{command}\marg{value}\marg{digits}
+%   \end{quote}
+%   where \meta{command} will be |\def|ined to be the formatted number. 
+%   \meta{value} is the number to format; it must not be negative. 
+%   \meta{digits} is the number of digits to generate. If the 
+%   \meta{value} is greater than or equal to $16^{\mathit{digits}}$ 
+%   then |\a_count| will be set to \meta{value} divided by this number 
+%   and the formatted value will be for the corresponding remainder.
+%   \changes{1.928}{2004/11/28}{Macro added. (LH)}
+%   
+%   The macro overwrites |\a_count|, |\b_count|, and |\c_count|.
+%   
+%   \begin{macro}{\format_hex_i}
+%     The |\format_hex_i| macro is the iterator for |\format_hex|. 
+%     It is used in the context
+%     \begin{quote}
+%       |\format_hex_i|\marg{command}\marg{control token}
+%     \end{quote}
+%     If the \meta{control token} is |i| then nothing is done. 
+%     Otherwise the quotient and remainder of |\a_count| with respect to 
+%     $16$ is computed, where the former is assigned to |\a_count| and 
+%     the latter is converted to hexadecimal and prepended to the 
+%     \meta{command}, after which the macro expands to 
+%     |\format_hex_i|\meta{command}.
+%    \begin{macrocode}
+%<*pkg>
+\def\format_hex_i#1#2{
+   \if #2i \else
+      \b_count=\a_count
+      \divide \a_count \sixt@@n
+      \c_count=\a_count
+      \multiply \c_count \sixt@@n
+      \advance \b_count -\c_count
+      \edef#1{
+         \ifcase\b_count 0\or 1\or 2\or 3\or 4\or 5\or 6\or 7\or 8\or 
+            9\or a\or b\or c\or d\or e\or f\fi
+         #1
+      }
+      \expandafter\format_hex_i \expandafter#1
+   \fi
+}
+%    \end{macrocode}
+%   \end{macro}
+%   
+%   To get the loop to run the wanted number of times, one uses the 
+%   trick that |\romannumeral| can generate an arbitrary number of |m|s. 
+%   The |\identity_one| stuff is to prevent |\number| from processesing 
+%   the subsequent |001~|, which will be the last that |\romannumeral| 
+%   reads.
+%    \begin{macrocode}
+\def\format_hex#1#2#3{
+   \a_count=#2
+   \let#1\empty_command
+   \expandafter\format_hex_i \expandafter#1 \romannumeral
+      \expandafter\identity_one\expandafter{\number#3}001~
+}
+%</pkg>
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% 
+% \subsection{Error, warning, and info messages}
+% 
+% The code in this subsection is an adaptation of code from the 
+% \LaTeX\ kernel---more precisely from the source file 
+% \texttt{lterror.dtx}---and the same is true for some of the comments. 
+% As authors of that code are listed Johannes Braams, David Carlisle, 
+% Alan Jeffrey, Leslie Lamport, Frank Mittelbach, Chris Rowley, and 
+% Rainer Sch\"opf. The original source can be found in the file 
+% \texttt{lterror.dtx} in the \texttt{macros}\slash\texttt{latex}\slash
+% \texttt{base} directory in any of the Comprehensive \TeX\ Archive 
+% Network FTP sites.\footnote{As if anyone who has managed to get this 
+% far didn't already know that!}
+% 
+% That should have fulfilled the conditions in the LPPL.^^A
+% \changes{1.906}{1999/07/23}{Adaptation of \LaTeX's message system 
+%    completed. (LH)}
+% \par\bigskip
+% 
+% 
+% \subsubsection{General commands}
+%
+% \begin{macro}{\messagebreak}
+%   This command prints a new-line inside a message, followed by a 
+%   continuation whose exact appearence may depend on the context. 
+%   Normally this command is defined to be |\relax|, but inside messages 
+%   it gets redefined to a linebreak (|^^J|) followed by the appropriate 
+%   continuation.
+%   \changes{1.909}{1999/10/16}{New name for \cs{message_break}. (LH)}
+%    \begin{macrocode}
+%<pkg>\let\messagebreak\x_relax
+%<doc>\let\messagebreak\space
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\generic_info}
+%    This takes two arguments: a continuation and a message, and sends 
+%    the result to the log file.
+%    \begin{macrocode}
+%<*pkg>
+\def\generic_info#1#2{
+   \begingroup
+      \def\messagebreak{^^J#1}
+      \immediate\write\m@ne{#2\on_line.}
+   \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\generic_warning}
+%    This takes two arguments: a continuation and a message, and sends 
+%    the result to the screen.
+%    \begin{macrocode}
+\def\generic_warning#1#2{
+   \begingroup
+      \def\messagebreak{^^J#1}
+      \immediate\write\closed_stream{^^J#2\on_line.^^J}
+   \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\generic_error}
+%   ``This macro takes four arguments: a continuation,
+%   an error message, where to go for further information, and the help
+%   information.  It displays the error message, and sets the error help
+%   (the result of typing |h| to the prompt), and does a horrible hack
+%   to turn the last context line (which by default is the only context
+%   line) into just three dots.  This could be made more efficient.''
+%   
+%   Thus far the \LaTeX\ comments, but the horrible hack it mensions 
+%   has been removed since it just makes things look strange when 
+%   |\errorcontextlines| is larger than one.
+% ^^A What the hack actually does is that it turns 
+% ^^A as much as possible of the topmost context line to spaces. It has 
+% ^^A two ways of achieving this. The first is to make the context line 
+% ^^A too long to display in full, by ending the argument of |\errmessage| 
+% ^^A with the control sequence
+% ^^A \begin{quote}
+% ^^A   \tiny\verb*+\@err@                          +^^A
+% ^^A   \verb*+                                       +
+% ^^A \end{quote}
+% ^^A As its name ends with a long sequence of spaces, it won't be visible; 
+% ^^A the |@err@| appears in the |...| part of the line. The other method 
+% ^^A it uses is to turn every token in the context line that is not part 
+% ^^A of a control sequence name to spaces (as characters, not in 
+% ^^A category) through a |\lowercase| trick. The only characters that 
+% ^^A cannot be turned into spaces this way are the three continuation 
+% ^^A dots.
+%   The ``where to go for further information'' message is currently not 
+%   used (it is commented out in |\fontinsterror| below), since there 
+%   is no good place to refer to anyway. If the documentation is ever 
+%   improved in this respect, it would of course be best to reinsert 
+%   this message. Note however that unlike the case in \LaTeX, this 
+%   message should end with a |^^J|.
+%   
+%   A complication is that \TeX\ versions older than 3.141 have a bug 
+%   which causes |^^J| to not force a linebreak in |\message| and 
+%   |\errmessage| commands. So for these old \TeX's we use a |\write| to 
+%   produce the message, and then have an empty |\errmessage| command. 
+%   This causes an extra line of the form
+%\begin{verbatim}
+%! .
+%\end{verbatim}
+%   to appear on the terminal, but if you do not like it, you can always
+%   upgrade your \TeX!
+%   
+%   Since I don't think many \package{fontinst} users use such old 
+%   \TeX s, I removed \LaTeX's test for \TeX\ version at this point. The 
+%   code for old \TeX s is still there, but it lies in a \package{docstrip} 
+%   module of its own.
+%   
+%   First the `standard case'.
+%    \begin{macrocode}
+%<*!oldTeX>
+\def\generic_error#1#2#3#4{
+   \begingroup
+      \immediate\write\closed_stream{}
+      \def\messagebreak{^^J}
+      \edef\a_macro{{#4}}
+      \errhelp\a_macro
+      \def\messagebreak{^^J#1}
+      \errmessage{#2.^^J^^J#3
+         Type~\space H~<return>~\space for~immediate~help
+      }
+   \endgroup
+}
+%</!oldTeX>
+%    \end{macrocode}
+%
+% Secondly the version for old \TeX's.
+%    \begin{macrocode}
+%<*oldTeX>
+\def\generic_error#1#2#3#4{%
+   \begingroup
+      \immediate\write\closed_stream{}
+      \def\messagebreak{^^J}
+      \edef\a_macro{{#4}}
+      \errhelp\a_macro
+      \def\messagebreak{^^J#1}
+      \immediate\write\closed_stream{!~#2.^^J^^J#3^^J
+         Type~\space H~<return>~\space for~immediate~help.
+      }
+      \errmessage{}
+   \endgroup
+}
+%</oldTeX>
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% 
+% \begin{macro}{\fontinsterror}
+%   \changes{1.909}{1999/10/16}{New name for \cs{fontinst_error}. (LH)}
+% \begin{macro}{\fontinstwarning}
+%   \changes{1.909}{1999/10/16}{New name for \cs{fontinst_warning}. (LH)}
+% \begin{macro}{\fontinstwarningnoline}
+%   \changes{1.909}{1999/10/16}{New name for 
+%       \cs{fontinst_warning_no_line}. (LH)}
+% \begin{macro}{\fontinstinfo}
+%   \changes{1.909}{1999/10/16}{New name for \cs{fontinst_info}. (LH)}
+%   These commands are intended for giving a uniformed, and for the 
+%   programmers hopefully simplified, form of error, warning, and info 
+%   messages. The syntax is:
+%   \begin{quote}
+%     |\fontinsterror|\marg{subsystem}\marg{error}\marg{help}\\
+%     |\fontinstwarning|\marg{subsystem}\marg{warning}\\
+%     |\fontinstwarningnoline|\marg{subsystem}\marg{warning}\\
+%     |\fontinstinfo|\marg{subsystem}\marg{info}
+%   \end{quote}
+%   A \meta{subsystem} in this context is intended to be some piece of 
+%   text which identifies some functionally clearly defined part of 
+%   \package{fontinst}. Examples of \meta{subsystem}s could be 
+%   \texttt{PL to MTX converter}, \texttt{Ligful (V)PL writer}, and 
+%   \texttt{Latin family}.
+%   
+%   The |\fontinsterror| command prints the \meta{error} message, and 
+%   presents the interactive prompt; if the user types |h|, then the 
+%   \meta{help} information is displayed. The |\fontinstwarning| 
+%   command produces a warning but does not present the interactive 
+%   prompt. The |\fontinstwarningnoline| command does the same, but 
+%   doesn't print the input line number. The |\fontinstinfo| command 
+%   writes the message to the |log| file. Within the messages, the 
+%   command |\messagebreak| can be used to break a line and |\space| is 
+%   a space, for example:
+% \begin{verbatim}
+%    \def\foo{FOO}
+%    \fontinstwarning{Hungarian}{
+%       Your~hovercraft~is~full~of~eels,\messagebreak
+%       and~\string\foo\space is~\foo}
+% \end{verbatim}
+%    produces:
+% \begin{verbatim}
+%    Hungarian warning:
+%            Your hovercraft is full of eels,
+%            and \foo is FOO on input line 54.
+% \end{verbatim}
+% 
+%    \begin{macrocode}
+\def\fontinsterror#1#2#3{
+   \generic_error{
+      \four_spaces\four_spaces
+   }{
+      #1~error:\messagebreak #2
+   }{
+%       See~the~#1~package~documentation~for~explanation.^^J
+   }{#3}
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\fontinstwarning#1#2{
+   \generic_warning{
+      \four_spaces\four_spaces
+   }{
+      #1~warning:\messagebreak #2
+   }
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\fontinstwarningnoline#1#2{
+   \fontinstwarning{#1}{#2\gobble_one}
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\fontinstinfo#1#2{
+   \generic_info{
+      \four_spaces\four_spaces
+   }{
+      #1~info:\messagebreak #2
+   }
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\def\fontinsterror#1#2#3{%
+   \Bheading{Error} observed by #1:%
+   \begin{quote}#2.\end{quote}%
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\fontinstwarning#1#2{
+   \Bheading{Warning} from #1:%
+   \begin{quote}#2.\end{quote}%
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\let\fontinstwarningnoline=\fontinstwarning
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\fontinstinfo#1#2{
+   \Bheading{Info} from #1:%
+   \begin{quote}#2.\end{quote}%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\on_line}
+%   The message ` on input line~$n$'. \LaTeX\ has special code for 
+%   \TeX~2, but since \package{fontinst} has assumed the existence of 
+%   the |\errorcontextlines| parameter since v\,1.500, the removal of 
+%   that code shouldn't cause problems for anyone who wasn't already 
+%   having related problems.
+%   
+%    \begin{macrocode}
+%<*pkg>
+\def\on_line{~on~input~line~\the\inputlineno}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\four_spaces}
+%   Four spaces. Using |\edef| (rather than |\def| as in \LaTeX) to 
+%   save some macro expansions.
+%    \begin{macrocode}
+\edef\four_spaces{\space\space\space\space}
+%    \end{macrocode}
+% \end{macro}
+% 
+%
+% \subsubsection{Specific errors}
+%
+% \begin{macro}{\error_help_a}
+% \begin{macro}{\error_help_c}
+% \begin{macro}{\error_help_d}
+% \begin{macro}{\error_help_e}
+%   \changes{1.912}{2000/02/12}{Macro added. (LH)}
+%   The more common error help messages. The first three are called 
+%   |\@eha|, |\@ehc|, and |\@ehd| in \LaTeX. |\@ehb| is of no use for 
+%   \package{fontinst}, so it has been omitted. |\error_help_e| is a 
+%   new one for \package{fontinst}.
+%    \begin{macrocode}
+\gdef\error_help_a{
+  Your~command~was~ignored.\messagebreak
+  Type~\space I~<command>~<return>~\space to~replace~it~
+  with~another~command,\messagebreak
+  or~\space <return>~\space to~continue~without~it.}
+\gdef\error_help_c{
+  Try~typing~\space <return>~
+  \space to~proceed.\messagebreak
+  If~that~doesn't~work,~type~\space X~<return>~\space to~quit.}
+\gdef\error_help_d{
+  You're~in~trouble~here.~\space\error_help_c}
+\def\error_help_e#1{You~can~continue,~but~the~#1~wrong.}
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}\end{macro}
+%
+% 
+% \subsubsection{\TeX\ parameters}
+% 
+% \multchanges{\cs{newlinechar}\cs{errorcontextlines}}{1.914}
+%    {2000/05/20}{Moved to error message subsection. (LH)}
+% \begin{macro}{\newlinechar}
+%   Set |\newlinechar| for |\errhelp| messages.
+%    \begin{macrocode}
+\newlinechar=`\^^J
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\errorcontextlines}
+%   By default, show as much error info as you can.
+%   (We assume \package{fontinst} users are \TeX{}perts.)
+%    \begin{macrocode}
+\errorcontextlines=999
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\tracinglostchars}
+%   \changes{1.915}{2000/07/31}{Added setting this parameter. (LH)}
+%   Make |\tracinglostchars| positive---this will simplify catching 
+%   bugs, as many \package{fontinst} bugs show up in that output is 
+%   being generated, but that used to disappear silently when 
+%   \package{fontinst} was run under Ini\TeX.
+%    \begin{macrocode}
+\tracinglostchars=1
+%</pkg>
+%    \end{macrocode}
+% \end{macro}
+% 
+% \Finale
+\endinput

@@ -1,0 +1,215 @@
+% \iffalse meta-comment
+%
+% Copyright 1989-2015 Johannes L. Braams, Javier Bezos and any
+% individual authors listed elsewhere in this file.  All rights
+% reserved.
+% 
+% This file is part of the Babel system.
+% --------------------------------------
+% 
+% It may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2003/12/01 or later.
+% 
+% This work has the LPPL maintenance status "maintained".
+% 
+% The Current Maintainer of this work is Javier Bezos
+% 
+% The list of all files belonging to the Babel system is
+% given in the file `manifest.bbl. See also `legal.bbl' for additional 
+% information.
+% 
+% The list of derived (unpacked) files belonging to the distribution
+% and covered by LPPL is defined by the unpacking scripts (with
+% extension .ins) which are part of the distribution.
+% \fi
+% \CheckSum{81}
+%
+% \iffalse
+%    Tell the \LaTeX\ system who we are and write an entry on the
+%    transcript.
+%<*dtx>
+\ProvidesFile{welsh.dtx}
+%</dtx>
+%<code>\ProvidesLanguage{welsh}
+%\fi
+%\ProvidesFile{welsh.dtx}
+        [2015/09/03 v1.1a Welsh support from the babel system]
+%\iffalse
+%% File `welsh.dtx'
+%% Babel package for LaTeX version 2e
+%% Copyright (C) 1989 -- 2015
+%%           by Johannes Braams, TeXniek
+%            by Javier Bezos
+%
+%    This file is part of the babel system, it provides the source
+%    code for the Welsh language definition file.
+%<*filedriver>
+\documentclass{ltxdoc}
+\newcommand*{\TeXhax}{\TeX hax}
+\newcommand*{\babel}{\textsf{babel}}
+\newcommand*{\langvar}{$\langle \mathit lang \rangle$}
+\newcommand*{\note}[1]{}
+\newcommand*{\Lopt}[1]{\textsf{#1}}
+\newcommand*{\file}[1]{\texttt{#1}}
+\begin{document}
+ \DocInput{welsh.dtx}
+\end{document}
+%</filedriver>
+%\fi
+% \GetFileInfo{welsh.dtx}
+%
+%  \section{The Welsh language}
+%
+%    The file \file{\filename}\footnote{The file described in this
+%    section has version number \fileversion\ and was last revised on
+%    \filedate.}  defines all the language definition macros for the
+%    Welsh language.
+%
+%    For this language currently no special definitions are needed or
+%    available.
+%
+% \StopEventually{}
+%
+%  \section{Code}
+%
+%    The macro |\ldf@init| takes care of preventing that this file is
+%    loaded more than once, checking the category code of the
+%    \texttt{@} sign, etc.
+%    \begin{macrocode}
+%<*code>
+\LdfInit{welsh}{captionswelsh}
+%    \end{macrocode}
+%
+%    When this file is read as an option, i.e. by the |\usepackage|
+%    command, \texttt{welsh} could be an `unknown' language in
+%    which case we have to make it known.  So we check for the
+%    existence of |\l@welsh| to see whether we have to do
+%    something here.
+%
+%    \begin{macrocode}
+\ifx\undefined\l@welsh
+  \@nopatterns{welsh}
+  \adddialect\l@welsh0\fi
+%    \end{macrocode}
+%    The next step consists of defining commands to switch to (and
+%    from) the Welsh language.
+%
+%  \begin{macro}{\welshhyphenmins}
+%    This macro is used to store the correct values of the hyphenation
+%    parameters |\lefthyphenmin| and |\righthyphenmin|.
+% \changes{welsh-1.0c}{2000/09/22}{Now use \cs{providehyphenmins} to
+%    provide a default value}
+%    \begin{macrocode}
+\providehyphenmins{\CurrentOption}{\tw@\thr@@}
+%    \end{macrocode}
+%  \end{macro}
+%
+% \begin{macro}{\captionswelsh}
+%    The macro |\captionswelsh| defines all strings used in the
+%    four standard documentclasses provided with \LaTeX.
+% \changes{welsh-1.0c}{2000/09/20}{Added \cs{glossaryname}}
+% \changes{welsh-1.0d}{2005/03/31}{Provided the translation for
+%    Glossary} 
+% \begin{macro}{\datewelsh}
+%    The macro |\datewelsh| redefines the command |\today| to
+%    produce welsh dates.
+% \changes{welsh-1.0b}{1997/10/01}{Use \cs{edef} to define
+%    \cs{today} to save memory}
+% \changes{welsh-1.0b}{1998/03/28}{use \cs{def} instead of
+%    \cs{edef}}
+% \changes{welsh-1.0d}{2005/03/31}{removed `a viz' from the definition
+%    of \cs{today}} 
+% \changes{welsh-1.1a}{2015/09/03}{Strings are defined in the 3.9 way.
+%    Also Unicode strings} 
+%    \begin{macrocode}
+\StartBabelCommands*{welsh}{captions}
+  [unicode, charset=utf8, fontenc=EU1 EU2]
+  \SetString{\enclname}{amgaeëdig}
+  \SetString{\ccname}{copï au}
+%    \end{macrocode}
+%
+%    And now, the generic branch, using the LICR and assuming T1.
+%
+%    \begin{macrocode}
+\StartBabelCommands*{welsh}{captions}
+  \SetString{\prefacename}{Rhagair}
+  \SetString{\refname}{Cyfeiriadau}
+  \SetString{\abstractname}{Crynodeb}
+  \SetString{\bibname}{Llyfryddiaeth}
+  \SetString{\chaptername}{Pennod}
+  \SetString{\appendixname}{Atodiad}
+  \SetString{\contentsname}{Cynnwys}
+  \SetString{\listfigurename}{Rhestr Ddarluniau}
+  \SetString{\listtablename}{Rhestr Dablau}
+  \SetString{\indexname}{Mynegai}
+  \SetString{\figurename}{Darlun}
+  \SetString{\tablename}{Taflen}
+  \SetString{\partname}{Rhan}
+  \SetString{\enclname}{amgae\"edig}
+  \SetString{\ccname}{cop\"\i au}
+  \SetString{\headtoname}{At}
+  \SetString{\pagename}{tudalen}
+  \SetString{\seename}{gweler}
+  \SetString{\alsoname}{gweler hefyd}
+  \SetString{\proofname}{Prawf}
+  \SetString{\glossaryname}{Rhestr termau}
+\StartBabelCommands*{welsh}{date}
+  \SetStringLoop{month#1name}{%
+    Ionawr,Chwefror,Mawrth,Ebrill,Mai,Mehefin,%
+    Gorffennaf,Awst,Medi,Hydref,Tachwedd,Rhagfyr}
+  \SetString\today{%
+    {\number\day} \@nameuse{month\romannumeral\month name} {\number\year}}
+\EndBabelCommands
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\extraswelsh}
+% \begin{macro}{\noextraswelsh}
+%    The macro |\extraswelsh| will perform all the extra
+%    definitions needed for the welsh language. The macro
+%    |\noextraswelsh| is used to cancel the actions of
+%    |\extraswelsh|.  For the moment these macros are empty but
+%    they are defined for compatibility with the other
+%    language definition files.
+%
+%    \begin{macrocode}
+\addto\extraswelsh{}
+\addto\noextraswelsh{}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+%    The macro |\ldf@finish| takes care of looking for a
+%    configuration file, setting the main language to be switched on
+%    at |\begin{document}| and resetting the category code of
+%    \texttt{@} to its original value.
+%    \begin{macrocode}
+\ldf@finish{welsh}
+\endinput
+%</code>
+%    \end{macrocode}
+%
+% \Finale
+%\endinput
+%% \CharacterTable
+%%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%%   Digits        \0\1\2\3\4\5\6\7\8\9
+%%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%%   Dollar        \$     Percent       \%     Ampersand     \&
+%%   Acute accent  \'     Left paren    \(     Right paren   \)
+%%   Asterisk      \*     Plus          \+     Comma         \,
+%%   Minus         \-     Point         \.     Solidus       \/
+%%   Colon         \:     Semicolon     \;     Less than     \<
+%%   Equals        \=     Greater than  \>     Question mark \?
+%%   Commercial at \@     Left bracket  \[     Backslash     \\
+%%   Right bracket \]     Circumflex    \^     Underscore    \_
+%%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%%   Right brace   \}     Tilde         \~}
+\endinput

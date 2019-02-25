@@ -1,0 +1,14 @@
+\RequirePackage{hyperref}
+\RequirePackage{lipsum}
+\RequirePackage{zref-user}
+\RequirePackage{zref-abspos}
+
+\let\origDescribeMacro\DescribeMacro
+\def\DescribeMacro#1{%
+    \edef\name{\expandafter\@gobble\string#1}%
+    \ifx\name\@backslashchar\else
+    \zsavepos{\expandafter\@gobble\string#1}%
+    \fi
+    \origDescribeMacro{#1}%
+}
+

@@ -1,0 +1,130 @@
+\newif\ifenigmaisrunningplain
+\ifcsname ver@enigma.sty\endcsname\else
+  \enigmaisrunningplaintrue
+  \input{luatexbase.sty}
+  \catcode`\@=11
+% \else latex
+\fi
+\catcode`\_=11 % There’s no reason why this shouldn’t be the case.
+\catcode`\!=11
+%D Nice tool from luat-ini.mkiv. This really helps with those annoying
+%D string separators of Lua’s that clutter the source.
+% this permits \typefile{self} otherwise nested b/e sep problems
+\def\luastringsep{===}
+\edef\!!bs{[\luastringsep[}
+\edef\!!es{]\luastringsep]}
+%D \startdocsection[title=Prerequisites]
+%D \startparagraph
+%D Package loading and the namespacing issue are commented on in
+%D \identifier{enigma.lua}.
+%D \stopparagraph
+\directlua{
+  packagedata = packagedata or { }
+  dofile(kpse.find_file\!!bs enigma.lua\!!es)
+}
+
+%D \startparagraph
+%D First, create somthing like \CONTEXT’s asciimode. We found
+%D \texmacro{newluatexcatcodetable} in \identifier{luacode.sty} and it
+%D seems to get the job done.
+%D \stopparagraph
+\newluatexcatcodetable \enigmasetupcatcodes
+\bgroup
+  \def\escapecatcode      {0}
+  \def\begingroupcatcode  {1}
+  \def\endgroupcatcode    {2}
+  \def\spacecatcode      {10}
+  \def\lettercatcode     {11}
+  \setluatexcatcodetable\enigmasetupcatcodes {
+      \catcode`\^^I = \spacecatcode % tab
+      \catcode`\    = \spacecatcode
+      \catcode`\{   = \begingroupcatcode
+      \catcode`\}   = \endgroupcatcode
+      \catcode`\^^L = \lettercatcode    % form feed
+      \catcode`\^^M = \lettercatcode    % eol
+  }
+\egroup
+%D \stopdocsection
+
+%D \startdocsection[title=Setups]
+%D \startparagraph
+%D Once the proper catcodes are in place, the setup macro
+%D \texmacro{do_setup_enigma} doesn’t to anything besides passing stuff
+%D through to Lua.
+%D \stopparagraph
+\def\do_setup_enigma#1{%
+    \directlua{
+      local enigma = packagedata.enigma
+      local current_args = enigma.parse_args(\!!bs\detokenize{#1}\!!es)
+      enigma.save_raw_args(current_args, \!!bs\current_enigma_id\!!es)
+      enigma.new_callback(
+        enigma.new_machine(\!!bs\current_enigma_id\!!es),
+        \!!bs\current_enigma_id\!!es)
+    }%
+  \egroup%
+}
+
+%D The module setup \texmacro{setupenigma} expects key=value, notation.
+%D All the logic is at the Lua end, not much to see here …
+\def\setupenigma#1{%
+  \bgroup
+    \edef\current_enigma_id{#1}
+    \luatexcatcodetable \enigmasetupcatcodes
+    \do_setup_enigma%
+}
+%D \stopdocsection
+
+%D \startdocsection[title=Encoding Macros]
+%D \startparagraph
+%D The environment of \texmacro{begin<enigmaid>} and
+%D \texmacro{end<enigmaid>} toggles Enigma encoding.
+%D (Regarding environment delimiters we adhere to Knuth’s
+%D practice of prefixing with \type{begin}/\type{end}.)
+%D \stopparagraph
+
+\def\e!start{begin} %{start}
+\def \e!stop{end}   %{stop}
+\edef\c!pre_linebreak_filter{pre_linebreak_filter}
+\def\do_define_enigma#1{%
+  \@EA\gdef\csname \e!start\current_enigma_id\endcsname{%
+    \endgraf
+    \bgroup%
+    \directlua{%
+      if packagedata.enigma                         and
+         packagedata.enigma.machines[ \!!bs#1\!!es] then
+        luatexbase.add_to_callback(
+          \!!bs\c!pre_linebreak_filter\!!es,
+          packagedata.enigma.callbacks[ \!!bs#1\!!es],
+          \!!bs#1\!!es)
+      else
+        print\!!bs ENIGMA: No machine of that name: #1!\!!es
+        os.exit()
+      end
+    }%
+  }%
+  \@EA\gdef\csname \e!stop\current_enigma_id\endcsname{%
+    \endgraf
+    \directlua{
+      luatexbase.remove_from_callback(
+        \!!bs\c!pre_linebreak_filter\!!es,
+        \!!bs#1\!!es)
+      packagedata.enigma.machines[ \!!bs#1\!!es]:processed_chars()
+    }%
+    \egroup%
+  }%
+}
+
+\def\defineenigma#1{%
+  \begingroup
+  \let\@EA\expandafter
+  \edef\current_enigma_id{#1}%
+  \@EA\do_define_enigma\@EA{\current_enigma_id}%
+  \endgroup%
+}
+
+%D \stopdocsection
+
+\catcode`\_=8  % \popcatcodes
+\catcode`\!=12 % reserved according to source2e
+\ifenigmaisrunningplain\catcode`\@=12\fi
+% vim:ft=plaintex:sw=2:ts=2:expandtab:tw=71

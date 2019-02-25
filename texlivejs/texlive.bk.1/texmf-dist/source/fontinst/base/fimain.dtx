@@ -1,0 +1,4965 @@
+% \CheckSum{4056}
+% \iffalse meta-comment
+%
+% Copyright 1993, 1994, 1995, 1996 Alan Jeffrey,
+% hacked and maintained 1997, 1998 Sebastian Rahtz,
+% copyright 1998, 1999, 2000 the fontinst maintenance team and any 
+% individual authors listed elsewhere in this file.  All rights reserved.
+% 
+% This file is part of the fontinst system version 1.9.
+% -----------------------------------------------------
+% 
+% It may be distributed under the terms of the LaTeX Project Public
+% License, as described in lppl.txt in the base LaTeX distribution.
+% Either version 1.1 or, at your option, any later version.
+% 
+%%% From file: fimain.dtx
+%
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage{fisource}
+\title{The \package{fontinst} utility}
+\author{Alan Jeffrey, Sebastian Rahtz, Ulrik Vieth, Lars Hellstr\"om}
+\begin{document}
+\maketitle
+\tableofcontents
+\DocInput{fimain.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \StopEventually{}
+%
+% 
+% \section{Encoding files}
+% 
+% \changes{1.911}{1999/11/21}{Definitions of encoding file commands 
+%    added to \protect\protect\protect\Module{misc}. (LH)}
+% 
+% \DescribeMacro{\inputetx}
+% The macro
+% \begin{quote}
+%    |\inputetx|\marg{filename}
+% \end{quote}
+% inputs \meta{filename}|.etx|, ignoring anything between |\relax|
+% and |\encoding|, and anything after |\endencoding|.
+%
+% The file name is transformed to lowercase before opening.
+%
+% \begin{macro}{\inputetx}
+% \begin{macro}{\encoding}
+%   \changes{1.900}{1999/02/07}
+%       {Changed group in fontdoc to \cs{begingroup} type. (LH)}
+%   \usechange{raggedright}
+% \begin{macro}{\endencoding}
+%   \changes{1.900}{1999/02/07}{Made it outer. (LH)}
+%   \usechange{raggedright}
+%    \begin{macrocode}
+%<*pkg|misc>
+\def\inputetx#1{
+   \edef\lowercase_file{\lowercase{
+     \edef\noexpand\lowercase_file{#1}}}
+   \lowercase_file
+   \slot_number=0
+   \def\relax{\let\relax=\x_relax\iffalse}
+   \let\encoding=\fi
+   \primitiveinput \lowercase_file.etx\x_relax
+   \let\relax=\x_relax
+}
+\let\encoding=\relax
+\outer\def\endencoding{\endinput}
+%</pkg|misc>
+%    \end{macrocode}
+%   
+%   Things are a bit more complicated in \package{fontdoc}, since the 
+%   |\relax| \textellipsis\ |\encoding| \textellipsis\ |\endencoding| 
+%   markup must be able to work in two different ways. In the main file 
+%   only |\encoding| actually does anything---it sets |\slot@number| to 
+%   zero. In a file that is being |\inputetx|ed, they must work as with 
+%   \package{fontinst}: Everything between |\relax| and |\encoding|, 
+%   and everything after |\endencoding| must be ignored.
+%   \multchanges{\cs{inputetx}\cs{inputmtx}}{1.914}{2000/05/27}
+%      {New \package{fontdoc} definition, using \cs{IfFileExists}. (LH)}
+%   \multchanges{\cs{encoding}\cs{endencoding}}{1.918}{2001/06/19}
+%      {Added \cs{par} and \cs{addvspace} to \package{fontdoc} 
+%       definitions. (LH)}
+%   \multchanges{\cs{endencoding}}{1.919}{2001/09/01}
+%      {Added setting of \cs{parindent} to 1\,em to \package{fontdoc} 
+%       definition. (LH)}
+%    \begin{macrocode}
+%<*doc>
+\def\inputetx#1{%
+   \begingroup
+      \edef\lowercase@file{\lowercase{%
+         \edef\noexpand\lowercase@file{#1}%
+      }}%
+      \lowercase@file
+      \global\slot@number=0%
+      \FD@slot@known@true
+      \IfFileExists{\lowercase@file.etx}{%
+         \FD@relax@encoding@tricks
+         \@@input \@filef@und
+         \let\relax=\x@relax
+      }{%
+         \PackageError{fontdoc}{File #1.etx not found}%
+            {\@eha\MessageBreak You can \protect\inputetx\space
+             some other file now, if you want.}%
+      }
+   \endgroup
+}
+%    \end{macrocode}
+%   \begin{macro}{\FD@relax@encoding@tricks}
+%     There is a problem with |\if| \dots\ |\fi| nesting in the 
+%     redefinition of |\relax| and |\encoding|, which interacts badly 
+%     with |\IfFileExists|. To work around that, these redefinitions 
+%     are hidden in the |\FD@relax@encoding@tricks| macro.
+%     \changes{1.928}{2004/11/24}{Macro added, to fix bug reported by 
+%       Peter Dyballa. (LH)}
+%    \begin{macrocode}
+\def\FD@relax@encoding@tricks{%
+   \def\relax{\let\relax=\x@relax\iffalse}%
+   \let\encoding=\fi
+   \outer\x@cs\def{endencoding}{\endinput}%
+}
+%    \end{macrocode}
+%   \end{macro}
+%    \begin{macrocode}
+\def\encoding{%
+   \par
+   \ifFD@spec@ \addvspace{\bigskipamount}\fi
+   \begin{flushleft}
+   \global\slot@number=\z@
+}
+\outer\def\endencoding{%
+   \end{flushleft}
+   \ifFD@spec@ \addvspace{\bigskipamount}\fi
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro} \end{macro} \end{macro}
+% 
+%
+% \begin{macro}{\setslot}
+%   \changes{1.917}{2001/03/23}{Made slots referencable using 
+%      \cs{label}. (LH)}
+% \begin{macro}{\endsetslot}
+% \begin{macro}{\slot_name}
+%   |\setslot|\marg{name} \meta{slot commands} |\endsetslot|
+% 
+%   In \package{fontinst}, this sets |\slot_name| to \meta{name} and 
+%   calls |\do_slot| at the beginning of the slot and it calls 
+%   |\end_do_slot| and increments |\slot_number| by one at the end. 
+%   By default, |\do_slot| and |\end_do_slot| do nothing, but this is 
+%   over-ridden later.
+% 
+%    \begin{macrocode}
+%<*pkg|misc>
+\def\setslot#1{\edef\slot_name{#1}\do_slot}
+\def\endsetslot{\end_do_slot\advance\slot_number by 1\x_relax}
+%</pkg|misc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\slot@name}
+%   \changes{1.917}{2001/03/23}{Now storing the printable form of the 
+%      name, rather than the raw code. (LH)}
+%   In \package{fontdoc}, the same code converts \meta{name} to a 
+%   printable string and stores the result in |\slot@name|, prints an 
+%   |\Aheading| heading for the slot which show the name and number 
+%   of the slot, and prints the current automatic slot comment (if 
+%   one has been set) at the beginning of the slot. At the end of 
+%   the slot, it simply increments |\slot@number| by one.
+% 
+%    \begin{macrocode}
+%<*doc>
+\newcommand\setslot[1]{%
+   \protected@edef\slot@name{%
+      \noexpand\MakePrintable \noexpand\slot@name {FD@swa}{#1}%
+   }%
+   \slot@name
+   \FD@tight@true
+   \Aheading{Slot 
+      \ifFD@slot@known@
+         \the\slot@number\space
+      \else
+         \(\FD@slot@expression + \the\slot@number\)
+      \fi
+      `\FD@typeset@string{\slot@name}'%
+   }%
+   \protected@edef\@currentlabel{%
+      \ifFD@slot@known@
+         \the\slot@number
+      \else
+         \protect\(%
+         \FD@slot@expression+\the\slot@number
+         \protect\)%
+      \fi
+      \space(\protect\FD@typeset@string{\slot@name})%
+   }%
+   \ifFD@slot@known@ \ifslot@comment@ \comment{\slot@comment}\fi\fi
+}
+\def\endsetslot{%
+   \global\advance \slot@number \@ne
+   \FD@tight@false
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+%
+% \begin{macro}{\do_slot}
+% \begin{macro}{\end_do_slot}
+%    \begin{macrocode}
+%<*pkg|misc>
+\let\do_slot\empty_command
+\let\end_do_slot\empty_command
+%    \end{macrocode}
+% \end{macro} \end{macro}
+% \multchanges{\cs{do_new_slot}}{1.910}{1999/11/01}{Macro removed. (LH)}
+%
+% \begin{macro}{\nextslot}
+% \begin{macro}{\skipslots}
+% \begin{macro}{\slot_number}
+% \begin{macro}{\slot@number}
+% \begin{switch}{FD@slot@known@}
+% \begin{macro}{\FD@slot@expression}
+%   |\nextslot|\marg{integer expression}\\
+%   |\skipslots|\marg{integer expression}
+%
+%   In \package{fontinst}, |\nextslot| sets the |\slot_number| and
+%   |\skipslots| addvances the |\slot_number|.
+%
+%    \begin{macrocode}
+\newcount\slot_number
+\def\nextslot#1{\eval_expr_to\slot_number{#1}}
+\def\skipslots#1{\eval_expr{#1} \advance\slot_number by \result}
+%</pkg|misc>
+%    \end{macrocode}
+%   
+%   The commands do the same in \package{fontdoc} as in 
+%   \package{fontinst}, although they do it to |\slot@number| instead of 
+%   |\slot_number|. 
+%   
+%    \begin{macrocode}
+%<*doc>
+\newcount\slot@number
+\def\FD@slot@known@true{\global\let\ifFD@slot@known@\iftrue}
+\def\FD@slot@known@false{\global\let\ifFD@slot@known@\iffalse}
+\FD@slot@known@true
+\newcommand\nextslot[1]{%
+   \FD@evaluate@true
+   \FD@eval@expr{#1}%
+   \ifFD@evaluate@
+      \global\slot@number=\FD@result
+      \FD@slot@known@true
+   \else
+      \global\let\FD@slot@expression=\FD@expression
+      \global\slot@number=\z@
+      \FD@slot@known@false
+   \fi
+}
+\newcommand\skipslots[1]{%
+   \FD@evaluate@true
+   \FD@eval@expr{#1}%
+   \ifFD@evaluate@
+      \global\advance \slot@number \FD@result
+   \else
+      \ifFD@slot@known@
+         \global\let\FD@slot@expression=\FD@expression
+      \else
+         \protected@xdef\FD@slot@expression{%
+            \FD@slot@expression+\FD@expression
+         }%
+      \fi
+      \FD@slot@known@false
+   \fi
+}
+%</doc>
+%    \end{macrocode}
+%   
+%   There has been some ambiguity concerning what is allowed as 
+%   arguments of \cs{nextslot} and \cs{skipslots}. At least since 
+%   v\,1.335 the comments in the source has said it was an integer 
+%   expression, but the implementation was for a \TeX\ number. 
+%   Alan's v\,1.5 manual and Rowland's v\,1.8 manual both say the 
+%   arguments must be numbers. Allowing arbitrary integer 
+%   expressions with \package{fontinst} is trivial, the above 
+%   implementation copes with that, but \package{fontdoc} gets in 
+%   trouble, so what should we do about it? /LH
+%   
+%   AFAIK, all instances of |\nextslot| or |\skipslots| appearing in
+%   present |*.etx| files are explicit numbers, no fancy constructs. /UV
+%   
+%   No, but if a |\setslot| command appears in a |\for| loop then the 
+%   slot number in that command will depend on the values of various 
+%   integer expressions anyway, so we might as well deal with it. /LH
+%   
+%   The matter was finally resolved when \package{fontdoc} was 
+%   augmented to handle (and typeset) arbtrary integer expressions.
+%   
+%   \multchanges{\cs{nextslot}\cs{skipslots}}{1.900}{1999/02/07}^^A
+%      {Made changes of \cs{slot@number} global. (LH)}
+% \end{macro}\end{switch}\end{macro}\end{macro}\end{macro}\end{macro}
+%
+% \begin{macro}{\setleftboundary}
+%   \multchanges{\cs{setleftboundary}\cs{endsetleftboundary}}^^A
+%      {1.909}{1999/10/19}{\package{fontdoc} definition added. (LH)}
+%   \changes{1.917}{2001/03/23}{Made the left boundary referencable 
+%      using \cs{label}. (LH)}
+% \begin{macro}{\endsetleftboundary}
+% \begin{macro}{\do_boundary}
+%   |\setleftboundary|\marg{glyph} \meta{slot commands}
+%   |\endsetleftboundary|
+%   
+%   These macros are like |\setslot| and |\endsetslot|, but they merely 
+%   set the left boundary ligkern program, they do not cause any 
+%   |CHARACTER| property list to be written. Thus the only metric 
+%   information connected to the \meta{glyph} argument that is ever used 
+%   is the kerns with this glyph on the left.
+%   
+%   |\do_boundary| and |\endsetleftboundary| are initally |\relax|, but 
+%   are later redefined.
+%   
+%    \begin{macrocode}
+%<*pkg>
+\def\setleftboundary#1{\edef\slot_name{#1}\do_boundary}
+\let\endsetleftboundary\x_relax
+\let\do_boundary\x_relax
+%</pkg>
+%<*doc>
+\newcommand\setleftboundary[1]{%
+   \protected@edef\slot@name{%
+      \noexpand\MakePrintable \noexpand\slot@name {FD@swa}{#1}%
+   }%
+   \slot@name
+   \FD@tight@true
+   \Aheading{Left boundary `\FD@typeset@string{\slot@name}'}%
+   \protected@edef\@currentlabel{%
+      left boundary (\protect\FD@typeset@string{\slot@name})%
+   }%
+}
+\let\endsetleftboundary=\FD@tight@false
+%</doc>
+%<*misc>
+\let\setleftboundary=\gobble_one
+\let\endsetleftboundary=\x_relax
+%</misc>
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+% 
+% 
+% \begin{macro}{\setrightboundary}
+%   |\setrightboundary|\marg{glyph}
+%   
+%   The |\setrightboundary| macro should be used to set which slot in 
+%   the font is used as right boundary marker if that slot is empty. It 
+%   advances |\slot_number| just like a |\setslot| \textellipsis\ 
+%   |\endsetslot| pair, but since the slot will be left empty, there is 
+%   no need for any \meta{slot commands}, and hence there is no need for 
+%   a closing |\endset|\textellipsis\ command either.
+%   
+%   If the right boundary marker slot is not to be left empty (often 
+%   unavoidable), then one should use the slot command 
+%   |\makerightboundary| instead.
+%   
+%   \changes{1.909}{1999/10/19}{doc definition added. (LH)}
+%    \begin{macrocode}
+%<*pkg|misc>
+\def\setrightboundary#1{
+   \makerightboundary{#1}
+   \advance \slot_number 1\x_relax
+}
+%</pkg|misc>
+%<*doc>
+\newcommand\setrightboundary[1]{%
+   \Aheading{Right boundary slot
+      \ifFD@slot@known@
+         \the\slot@number\space
+      \else
+         \(\FD@slot@expression + \the\slot@number\)
+      \fi
+      `\TypesetStringExpression{#1}'%
+   }%
+   \global\advance \slot@number \@ne
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \DescribeMacro{\ligature}
+% \DescribeMacro{\Ligature}
+% \DescribeMacro{\oddligature}
+% \DescribeMacro{\nextlarger}
+% \DescribeMacro{\varchar}
+% \DescribeMacro{\endvarchar}
+% \DescribeMacro{\usedas}
+% \DescribeMacro{\makerightboundary}
+% \DescribeMacro{\Unicode}
+% The \meta{slot commands} are:
+% \begin{quote}
+%   |\ligature|\marg{lig}\marg{glyph}\marg{glyph}\\
+%   |\Ligature|\marg{lig}\marg{glyph}\marg{glyph}\\
+%   |\oddligature|\marg{note}\marg{lig}\marg{glyph}\marg{glyph}\\
+%   |\nextlarger|\marg{glyph}\\
+%   |\varchar| \meta{varchar commands} |\endvarchar|\\
+%   |\usedas|\marg{command}\marg{type}\\
+%   |\makerightboundary|\marg{glyph}\\
+%   |\Unicode|\marg{code point}\marg{name}
+% \end{quote}
+% By default, these do nothing in \package{fontinst}, but most of 
+% those defaults are overridden locally in those situations where one 
+% wants them to do something. Exceptions are \cs{usedas}, 
+% which is never used at all AFAIK,\footnote{It was intended to be 
+% used for math font encodings, but that never got off the 
+% \texttt{TODO} list. /LH} and |\oddligature| and |\Unicode|, 
+% which are purely documentation commands. In \package{fontdoc}, 
+% they generate descriptive headings.
+% 
+% \begin{macro}{\ligature}
+% \begin{macro}{\Ligature}
+%   \changes{1.917}{2001/03/31}{Command added. (LH)}
+% \begin{macro}{\oddligature}
+%   \changes{1.918}{2001/05/31}{Command added. (LH)}
+%   The |\ligature| and |\Ligature| commands have the same syntax and 
+%   meaning to \package{fontinst}, but \package{fontdoc} can give them 
+%   slightly different treatment. In a specification ETX file, the 
+%   |\Ligature| command gets the heading ``Mandatory ligature'', whereas 
+%   the |\ligature| command gets the heading ``Ordinary ligature''.
+%   
+%   The |\oddligature| command takes a fourth argument which contains a 
+%   short note on when the ligature might be appropriate. The entire 
+%   command is always ignored by \package{fontinst}.
+%    \begin{macrocode}
+%<pkg|misc>\let\ligature=\gobble_three
+%<pkg|misc>\def\Ligature{\ligature}
+%<pkg|misc>\def\oddligature#1#2#3#4{}
+%<*doc>
+\newcommand\ligature[3]{%
+   \Bheading{\ifFD@spec@ Ordinary ligature\else Ligature\fi} 
+   \@nameuse{FD@lig-#1}{#2}{#3}%
+}
+\newcommand\Ligature[3]{%
+   \Bheading{\ifFD@spec@ Mandatory ligature\else Ligature\fi} 
+   \@nameuse{FD@lig-#1}{#2}{#3}%
+}
+\newcommand\oddligature[4]{%
+   \Bheading{Odd\footnote{#1} ligature} 
+   \@nameuse{FD@lig-#2}{#3}{#4}%
+}
+%    \end{macrocode}
+% 
+%   Symbolic typesetting of |\ligature| programs requires
+%   special processing.\describecsfamily{FD@lig-\meta{lig}}
+%   \multchanges{\cs{FD@lig-/LIG\PrintChar{`>}}\cs
+%      {FD@lig-LIG/\PrintChar{`>}}\cs{FD@lig-/LIG/\PrintChar{`>}}\cs
+%      {FD@lig-/LIG/\PrintChar{`>}\PrintChar{`>}}}{1.917}
+%      {2001/03/31}{Changed how \package{fontdoc} marks the current 
+%      position after a ligature instruction, from $+$ to 
+%      $*\lfloor$. (LH)}
+%   \multchanges{\cs{FD@lig-/LIG}}{1.927}
+%      {2004/06/21}{Fixed a typo. (LH) Reported by Werner Lemberg.}
+%   \multchanges{\cs{FD@lig-/LIG/\PrintChar{`>}\PrintChar{`>}}}{1.927}
+%      {2004/06/24}{Fixed a typo. (LH) Reported by Werner Lemberg.}
+%
+%    \begin{macrocode}
+\x@cs\def{FD@lig-LIG}#1#2{%
+   \FD@typeset@string{\slot@name}${}*{}$\typeset@glyph{#1}%
+   ${}\rightarrow{}$\typeset@glyph{#2}%
+}
+\x@cs\def{FD@lig-/LIG}#1#2{%
+   \FD@typeset@string{\slot@name}${}*{}$\typeset@glyph{#1}%
+   ${}\rightarrow{}$%
+   \FD@typeset@string{\slot@name}${}*{}$\typeset@glyph{#2}%
+}
+\x@cs\def{FD@lig-LIG/}#1#2{%
+   \FD@typeset@string{\slot@name}${}*{}$\typeset@glyph{#1}%
+   ${}\rightarrow{}$%
+   \typeset@glyph{#2}${}*{}$\typeset@glyph{#1}%
+}
+\x@cs\def{FD@lig-/LIG/}#1#2{%
+   \FD@typeset@string{\slot@name}${}*{}$\typeset@glyph{#1}%
+   ${}\rightarrow{}$%
+   \FD@typeset@string{\slot@name}${}*{}$%
+   \typeset@glyph{#2}${}*{}$\typeset@glyph{#1}%
+}
+\x@cs\def{FD@lig-/LIG>}#1#2{%
+   \FD@typeset@string{\slot@name}${}*{}$\typeset@glyph{#1}%
+   ${}\rightarrow{}$%
+   \FD@typeset@string{\slot@name}${}*\lfloor$\typeset@glyph{#2}%
+}
+\x@cs\def{FD@lig-LIG/>}#1#2{%
+   \FD@typeset@string{\slot@name}${}*{}$\typeset@glyph{#1}%
+   ${}\rightarrow{}$%
+   \typeset@glyph{#2}${}*\lfloor$\typeset@glyph{#1}%
+}
+\x@cs\def{FD@lig-/LIG/>}#1#2{%
+   \FD@typeset@string{\slot@name}${}*{}$\typeset@glyph{#1}%
+   ${}\rightarrow{}$%
+   \FD@typeset@string{\slot@name}${}*\lfloor$%
+   \typeset@glyph{#2}${}*{}$\typeset@glyph{#1}%
+}
+\x@cs\def{FD@lig-/LIG/>>}#1#2{%
+   \FD@typeset@string{\slot@name}${}*{}$\typeset@glyph{#1}%
+   ${}\rightarrow{}$%
+   \FD@typeset@string{\slot@name}${}*{}$%
+   \typeset@glyph{#2}${}*\lfloor$\typeset@glyph{#1}%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+%
+% 
+% \begin{macro}{\nextlarger}
+% \begin{macro}{\usedas}
+% \begin{macro}{\makerightboundary}
+%    \begin{macrocode}
+%<*pkg|misc>
+\let\nextlarger=\gobble_one
+\let\usedas=\gobble_two
+\let\makerightboundary=\gobble_one
+%</pkg|misc>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\def\nextlarger#1{\Bheading{Next larger} \typeset@glyph{#1}}
+\def\makerightboundary#1{%
+   \Bheading{Right boundary marker slot} designation \typeset@glyph{#1}%
+}
+%</doc>
+%    \end{macrocode}
+%   \missing{doc}{\usedas}
+% \end{macro} \end{macro} \end{macro}
+% 
+% 
+% \begin{macro}{\Unicode}
+%   \changes{1.917}{2001/03/13}{Command added. (LH)}
+%   \changes{1.917}{2001/03/31}{Added setting of \cs{linepenalty} and 
+%   \cs{spaceskip}. (LH)}
+% \begin{macro}{\textunicode}
+%   \changes{1.918}{2001/06/17}{Command added. (LH)}
+% \begin{macro}{\FD@codepoint}
+%   \changes{1.918}{2001/06/17}{Macro added. (LH)}
+% \begin{macro}{\FD@charname}
+%   \changes{1.918}{2001/06/17}{Macro added. (LH)}
+%   Since ISO\,10646\slash Unicode has become the primary reference for 
+%   identifying characters, we provide a special comment command for 
+%   specifying which Unicode character corresponds to a particular slot 
+%   in an encoding. \label{Unicode} The syntax is
+%   \begin{quote}
+%     |\Unicode|\marg{code point}\marg{name}
+%   \end{quote}
+%   where the \meta{code point} is the four hexadecimal digits that 
+%   identify the code point of the character and \meta{name} is the 
+%   name of the character. An example is
+%   \begin{quote}
+%     |\Unicode{0041}{LATIN CAPITAL LETTER A}|
+%   \end{quote}
+%   which is typeset as
+%   \begin{quote}
+%     Unicode character \texttt{U+0041}, \textsc{latin capital letter a}.
+%   \end{quote}
+%   The \meta{name} field may be left empty.
+%   
+%   The |\Unicode| command makes a whole |\comment|, but it is also 
+%   useful to have a similar command for writing such data as part of a 
+%   longer paragraph. The |\textunicode| command, which has the same 
+%   argument structure as |\Unicode|, is provided for this. If you write
+%   \begin{quote}
+%     |see also \textunicode{0041}{LATIN CAPITAL LETTER A} for|
+%   \end{quote}
+%   then this is typeset as
+%   \begin{quote}
+%     see also \texttt{U+0041} (\textsc{latin capital letter a}) for
+%   \end{quote}
+%   
+%   As case is not significant in the character names and they 
+%   furthermore usually seem to be written in capitals, I have chosen 
+%   to typeset them using small capitals only. This is done by 
+%   |\FD@charname|. The |\FD@codepoint| macro similarly handles 
+%   typesetting of code points. See also the \texttt{hypertex} option 
+%   to the \package{fontdoc} package.
+%   
+%   The \package{fontinst} and \package{finstmsc} definitions of 
+%   |\Unicode| are to gobble the arguments.
+%    \begin{macrocode}
+%<pkg|misc>\let\Unicode=\gobble_two
+%<*doc>
+\newcommand*\Unicode[2]{%
+   \comment{%
+      \spaceskip=\fontdimen2\font minus 1.1\fontdimen4\font
+      Unicode character \FD@codepoint{#1}%
+      \ifx \par#2\par \else , \FD@charname{#2}\fi.%
+      \linepenalty=300\par
+   }%
+}
+\newcommand*\textunicode[2]{%
+   \FD@codepoint{#1} \ifx\par#2\par\else(\FD@charname{#2})\fi
+}
+\providecommand*\FD@codepoint[1]{\texttt{U+\uppercase{#1}}}
+\providecommand*\FD@charname[1]{\textsc{\lowercase{#1}}}
+%</doc>
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}\end{macro}
+% 
+% \begin{macro}{\charseq}
+%   Most commonly occurring glyphs correspond to one |\Unicode| 
+%   character, but this is not at all true in general---in fact there 
+%   may even be letters which cannot be encoded as single characters, 
+%   as they do not exist in precomposed form but have to be expressed 
+%   with a base letter and combining diacritical mark. Reasonable 
+%   compliance with the standard requires supporting character 
+%   sequences as well as individual characters.
+%   \changes{1.928}{2004/11/27}{Command added. (LH)}
+%   \changes{1.928}{2004/12/16}{Typeset form changed, from paragraph to 
+%      a one-item-per-line list. (LH)}
+%   
+%   In \package{fontinst}, the |\charseq| command is used to specify 
+%   such a character sequence. The syntax is
+%   \begin{quote}
+%     |\charseq|\marg{\cs{Unicode} commands}
+%   \end{quote}
+%   where the \meta{\cs{Unicode} commands} is one or several |\Unicode| 
+%   commands. This means the sequence of those characters. For example
+%   \begin{quote}
+%     |\charseq{|\\
+%     |   \Unicode{0066}{LATIN SMALL LETTER F}|\\
+%     |   \Unicode{0069}{LATIN SMALL LETTER I}|\\
+%     |}|
+%   \end{quote}
+%   is typeset as
+%   \begin{quote}
+%     Unicode character sequence:\\
+%     \vadjust{}\quad\texttt{U+0066} (\textsc{latin small letter f})\\
+%     \vadjust{}\quad\texttt{U+0069} (\textsc{latin small letter i})
+%   \end{quote}
+%   This indentation is made using the \texttt{IfBranch} environment, 
+%   which could be considered a bit hackish.
+%   
+%   |\charseq| is gobbled in \Module{pkg} and \Module{misc}, but in the 
+%   latter case it might get redefined.
+%    \begin{macrocode}
+%<pkg|misc>\let\charseq=\gobble_one
+%    \end{macrocode}
+%   Note how the environment group restores the definition 
+%   of |\Unicode|.
+%    \begin{macrocode}
+%<*doc>
+\newcommand\charseq[1]{%
+   \comment{Unicode character sequence:}%
+   \begin{IfBranch}%
+      \def\Unicode##1##2{%
+         \noindent\FD@codepoint{##1} 
+         \ifx\par##2\par\else(\FD@charname{##2})\fi
+         \par
+      }%
+      #1%
+   \end{IfBranch}%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \DescribeMacro{\vartop}
+% \DescribeMacro{\varmid}
+% \DescribeMacro{\varbot}
+% \DescribeMacro{\varrep}
+% The \meta{varchar commands} are:
+% \begin{quote}
+%    |\vartop|\marg{glyph}\\
+%    |\varmid|\marg{glyph}\\
+%    |\varbot|\marg{glyph}\\
+%    |\varrep|\marg{glyph}
+% \end{quote}
+% These too do by default, which is overridden later, nothing in 
+% \package{fontinst} but typeset descriptive headings in \package{fontdoc}.
+% 
+% \begin{macro}{\varchar}
+% \begin{macro}{\vartop}
+% \begin{macro}{\varmid}
+% \begin{macro}{\varbot}
+% \begin{macro}{\varrep}
+% \begin{macro}{\endvarchar}
+%    \begin{macrocode}
+%<*pkg|misc>
+\let\varchar=\empty_command
+\let\vartop=\gobble_one
+\let\varmid=\gobble_one
+\let\varbot=\gobble_one
+\let\varrep=\gobble_one
+\let\endvarchar=\empty_command
+%</pkg|misc>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\def\varchar{\Bheading{Extensible glyph:}}
+\def\vartop#1{\Bheading{Top} \typeset@glyph{#1}}
+\def\varmid#1{\Bheading{Middle} \typeset@glyph{#1}}
+\def\varbot#1{\Bheading{Bottom} \typeset@glyph{#1}}
+\def\varrep#1{\Bheading{Repeated} \typeset@glyph{#1}}
+\let\endvarchar\relax
+%</doc>
+%    \end{macrocode}
+% \end{macro} \end{macro} \end{macro} \end{macro} \end{macro} \end{macro}
+% 
+% 
+% \begin{macro}{\useexamplefont}
+% \begin{macro}{\slotexample}
+% \begin{macro}{\setslotcomment}
+% \begin{macro}{\resetslotcomment}
+% \begin{macro}{\unsetslotcomment}
+% \begin{macro}{\slot@comment}
+% \begin{macro}{\slot@font}
+%   As of v\,1.8 of \package{fontinst}, we have added an interface
+%   for automatic documentation of encoding files, which has been
+%   developed by Matthias Clasen as part of his work on math fonts.
+%   The implementation was slightly modified and integrated into
+%   this version by Ulrik Vieth.
+%   
+%   |\setslotcomment| defines a default slot comment, stored in the
+%   variable |\slot@comment|, which is subsequently used to annotate
+%   all |\setslot| commands.  The slot comment can be changed by
+%   |\resetslotcomment| or turned off by |\unsetslotcomment|.
+%   
+%   |\useexamplefont| defines a default font, |\slot@font|, which
+%   may be referenced by calling |\slotexample| in slot comments to
+%   display the character or symbol allocated to the current slot.
+%   
+%   Taking advantage of this mechanism, it is possible to write:
+%   \begin{quote}
+%     |\useexamplefont{FONT}|\\[0.5\baselineskip]
+%     |\setslotcomment{The symbol `\slotexample'.}|\\
+%     |\setslot{FOO}\endsetslot|\\
+%     |\setslot{BAR}\endsetslot|\\
+%     |\resetslotcomment{The character `\slotexample'.}|\\
+%     |\setslot{BAZ}\endsetslot|
+%   \end{quote}
+%   instead of having to write:
+%   \begin{quote}
+%     |\usepackage{PACKAGE-to-use-symbols-from-FONT}|\\[0.5\baselineskip]
+%     |\setslot{FOO}\comment{The symbol `\foo'.}\endsetslot|\\
+%     |\setslot{BAR}\comment{The symbol `\bar'.}\endsetslot|\\
+%     |\setslot{BAZ}\comment{The character `\baz'.}\endsetslot|
+%   \end{quote}
+%
+%   These macros never do anything in \package{fontinst}, they just 
+%   gobble their arguments.
+%    \begin{macrocode}
+%<*pkg|misc>
+\let\useexamplefont=\gobble_one
+\let\slotexample=\empty_command
+\let\setslotcomment=\gobble_one
+\let\resetslotcomment=\gobble_one
+\let\unsetslotcomment=\empty_command
+%</pkg|misc>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\newif\ifslot@comment@
+\slot@comment@false
+\def\slot@comment{}
+\newcommand\setslotcomment[1]{%
+   \slot@comment@true
+   \gdef\slot@comment{#1}%
+}
+\newcommand\resetslotcomment[1]{\gdef\slot@comment{#1}}
+\newcommand\unsetslotcomment{%
+   \slot@comment@false
+   \global\let\slot@comment\@empty
+}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\let\slot@font=\nullfont
+\newcommand\useexamplefont[1]{\font\slot@font=#1 }
+\newcommand\slotexample{%
+   \ifFD@slot@known@{\slot@font\char\slot@number}\fi
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% 
+% \begin{macro}{\setfontdimen}
+%   \changes{1.917}{2001/03/16}{Command added. (LH)}
+%   The |\setfontdimen| command is used in an ETX file to set a font 
+%   dimen. The syntax is
+%   \begin{quote}
+%     |\setfontdimen|\marg{fontdimen no.}\marg{integer}
+%   \end{quote}
+%   where \meta{fontdimen no.} and \meta{integer} are \emph{string} 
+%   expressions. \meta{fontdimen no.} specifies the fontdimen to set. 
+%   \meta{integer} is the name of the integer variable to whose value 
+%   the fontdimen will be set.
+%   
+%   When used in font installation, the above |\setfontdimen| command 
+%   is equivalent to
+%   \changes{1.923}{2002/10/25}{Leave the fontdimen unset when the 
+%     integer variable has not been set. (LH)}
+%   \begin{quote}
+%     |\ifisint|\marg{integer}|\then|\\
+%     |   \setint{fontdimen(|\meta{fontdimen no.}|)}{\int{|^^A
+%     \meta{integer}|}}|\\
+%     |\fi|
+%   \end{quote}
+%   but |\setfontdimen| is also understood by the (V)PL-to-MTX 
+%   converter as declaring an integer that the generated MTX file 
+%   should set to the value of the fontdimen in the (V)PL.
+%    \begin{macrocode}
+%<*pkg>
+\def\setfontdimen#1#2{
+   \ifisint{#2}\then \setint{fontdimen(#1)}{\int{#2}} \fi
+}
+%</pkg>
+%<misc>\let\setfontdimen\gobble_two
+%<*doc>
+\newcommand\setfontdimen[2]{%
+   \Bheading{Fontdimen} \TypesetStringExpression{#1} is
+   \(\TypesetIntegerExpression{\int{#2}}\)%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\label}
+%   \changes{1.917}{2001/03/23}{Macro added. (LH)}
+%   \package{fontinst} and \package{finstmsc} defines the \LaTeX\ 
+%   |\label| command to gobble its argument, so that one can use it to 
+%   reference slots.
+%    \begin{macrocode}
+%<pkg|misc>\let\label=\gobble_one
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{switch}{direct}
+%   The encoding aspect of a font can to a large extent be understood 
+%   as a mapping from the set of slots to the set of glyphs---such 
+%   mappings are for example realised by PostScript encoding vectors 
+%   (mapping slots to glyph names) and virtual fonts (mapping slots to 
+%   DVI commands for drawing a glyph). In some cases however, encodings 
+%   are rather used to specify an inverse mapping going the opposite 
+%   way. Since encodings are in general many-to-one, this means there 
+%   need not be a proper inverse to a given encoding; instead the 
+%   inverse image of a glyph is in practice chosen randomly\footnote{In 
+%   the sense: according to a very deterministic (but not particularly 
+%   useful) rule which depends completely on details in the 
+%   implementation, and therefore should not be relied upon anyway.} 
+%   among the slots that are mapped to it. This is not always desirable.
+%   
+%   The \texttt{direct} switch can be used to check whether an encoding 
+%   is interpreted in the direct (slots to glyphs) or inverse (glyphs to 
+%   slots) manner. If those |\setslot| commands which are undesirable 
+%   under the inverse interpretation are put inside an |\ifdirect| 
+%   \dots\ |\Fi| construction, then these will be ignored in that 
+%   circumstance, thus allowing the programmer to exactly specify both 
+%   the direct and the inverse mappings.
+%   \changes{1.924}{2003/02/08}{Command added. (LH)}
+%   
+%   In \package{fontinst}, this command is a switch, which is usually 
+%   true.
+%    \begin{macrocode}
+%<pkg|misc>\newif\ifdirect \directtrue
+%    \end{macrocode}
+%   In \package{fontdoc}, this is a conditional that will be typeset 
+%   if |\showbranches| is being used.
+%    \begin{macrocode}
+%<doc>\newcommand\ifdirect{\generic@if{direct}}
+%    \end{macrocode}
+% \end{switch}
+% 
+% \begin{macro}{\input_mtx_as_etx}
+%   The |\input_mtx_as_etx| command is syntactically similar to the 
+%   |\inputetx| command, but it inputs an MTX file instead of an ETX 
+%   file and redefines |\setscaledrawglyph| so that it expands to a 
+%   |\nextslot| followed by a |\setslot| \dots\ |\endsetslot|. This is 
+%   useful when making proofs of fonts with nonstandard encodings, as 
+%   the MTX of a font can be used to specify ``the default encoding'' 
+%   of that font.
+%   
+%   \textbf{Warning:} Since this macro redefines a lot of the metric 
+%   commands, you'll probably only want to call it inside a group.
+%   \changes{1.923}{2002/10/24}{Macro added. (LH)}
+%    \begin{macrocode}
+%<*pkg|misc>
+\def\input_mtx_as_etx#1{
+   \def\setscaledrawglyph##1##2##3##4##5##6##7##8##9{
+      \nextslot{##5}
+      \setslot{##1}\endsetslot
+   }
+   \offcommand\setscalednotglyph
+   \let\setglyph=\gobble_glyph
+   \offcommand\setkern
+   \inputmtx{#1}
+}
+%</pkg|misc>
+%    \end{macrocode}
+% \end{macro}
+% 
+%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% \section{Metric files}
+% \label{Sec:Metric files}
+%
+% \changes{1.911}{1999/11/17}{Definitions of metric file commands 
+%    added to \protect\protect\protect\Module{misc}. (LH)}
+% 
+% \DescribeMacro{\inputmtx}
+% The macro
+% \begin{quote}
+%    |\inputmtx|\marg{filename}
+% \end{quote}
+% inputs \meta{filename}|.mtx|, ignoring anything between |\relax| and
+% |\metrics|, and anything after |\endmetrics|.
+%
+% \begin{macro}{\inputmtx}
+% \begin{macro}{\metrics}
+%   \changes{1.914}{2000/05/26}{Fixed typo: \cs{x@relax} instead of 
+%      \cs{x_relax}. (LH)}
+%   \usechange{raggedright}
+% \begin{macro}{\endmetrics}
+%   \changes{1.900}{1999/02/08}{Made it outer. (LH)}
+%   \usechange{raggedright}
+% \begin{macro}{\endmetrics_text}
+% \begin{macro}{\endmetrics@hook}
+%   The |\endmetrics_text| macro expands to |\endmetrics| (eleven 
+%   `other' tokens, not one control sequence token). It is used instead 
+%   of |\string\endmetrics|, which does not work since |\endmetrics| is 
+%   outer.
+%    \begin{macrocode}
+%<*pkg|misc>
+\def\inputmtx#1{
+   \def\relax{\let\relax=\x_relax\iffalse}
+   \let\metrics=\fi
+   \primitiveinput #1.mtx\x_relax
+   \let\relax=\x_relax
+}
+\let\metrics=\x_relax
+\edef\endmetrics_text{\string\endmetrics}
+\outer\def\endmetrics{\endinput}
+%</pkg|misc>
+%    \end{macrocode}
+%   |\inputmtx| used to set |\a_count|, but we haven't been able to 
+%   find a reason for this, so it was removed.
+%   
+%   In \package{fontdoc}, the |\metrics| and |\endmetrics| macros 
+%   initially just define a group, but |\inputmtx| redefines them to 
+%   work as they do in \package{fontinst}. |\endmetrics@hook| is a 
+%   macro that gets executed just before the |\endgroup| in 
+%   |\endmetrics|; it is normally |\@empty|, and it is set to this value 
+%   at each |\metrics|, but the metric package system redefines it.
+%   \multchanges{\cs{endmetrics_hook}}{1.914}{2000/05/27}{Macro added. 
+%      (LH)}
+%   \multchanges{\cs{inputetx}\cs{inputmtx}}{1.914}{2000/05/27}
+%      {New \package{fontdoc} definition, using \cs{IfFileExists}. (LH)}
+%    \begin{macrocode}
+%<*doc>
+\def\inputmtx#1{%
+   \begingroup
+      \edef\lowercase@file{\lowercase{%
+         \edef\noexpand\lowercase@file{#1}%
+      }}%
+      \lowercase@file
+      \let\endmetrics@hook=\@empty
+      \IfFileExists{\lowercase@file.mtx}{%
+         \skip@mtx@preamble
+         \@@input \@filef@und
+         \let\relax=\x@relax
+      }{%
+         \PackageError{fontdoc}{File #1.mtx not found}%
+            {\@eha\MessageBreak You can \protect\inputmtx\space
+             some other file now, if you want.}%
+      }
+      \endmetrics@hook
+   \endgroup
+}
+\def\skip@mtx@preamble{%
+   \def\relax{\let\relax=\x@relax\iffalse}%
+   \let\metrics=\fi
+   \outer\x@cs\def{endmetrics}{\endinput}%
+}
+\def\metrics{%
+   \begin{flushleft}%
+   \let\endmetrics@hook=\@empty
+}
+\outer\def\endmetrics{%
+   \endmetrics@hook
+   \end{flushleft}%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}\end{macro}\end{macro}
+%
+%
+% \begin{macro}{\ProvidesMtxPackage}
+%   \changes{1.923}{2003/01/05}{Redesigned the headings for metric 
+%     packages, since they interact poorly with \cs{section} headings. 
+%     (LH)}
+% \begin{switch}{@mtxpackage@headed@}
+% \begin{macro}{\announce@package}
+% \begin{macro}{\finish@package}
+%   \multchanges{\cs{ProvidesMtxPackage}\cs{usemtxpackage}}{1.914}
+%      {2000/05/27}{New \package{fontdoc} implementation---the packages 
+%       are actually loaded (they have to, since they can define 
+%       commands). Multiple loading is prevented as in 
+%       \package{fontinst}. (LH)}
+%   The call
+%   \begin{quote}
+%     |\ProvidesMtxPackage|\marg{package~name}
+%   \end{quote}
+%   signals to the package managing system that there is no need to load 
+%   this package again.
+%    \begin{macrocode}
+%<pkg>\def\ProvidesMtxPackage#1{\x_cs\let{pack-#1}P}
+%<*doc>
+\def\ProvidesMtxPackage#1{%
+   \endmetrics@hook
+%    \@mtxpackage@headed@false
+%    \everypar={
+   \announce@package{#1}%
+%    }%
+   \def\endmetrics@hook{\finish@package{#1}}
+   \global\x@cs\let{FD@pack-#1}\@empty
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+% \newif\if@mtxpackage@headed@
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\announce@package#1{%
+%    \everypar={}%
+%    \@mtxpackage@headed@true
+   \Aheading{[Start of metric package \textsf{#1}.}%
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\finish@package#1{%
+%    \if@mtxpackage@headed@
+      \Aheading{End of metric package \textsf{#1}.]}%
+%    \else
+%       \everypar={}%
+%       \Aheading{(Metric package \textsf{#1}.)}%
+%    \fi
+   \par\addvspace\medskipamount
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{switch}\end{macro}
+% 
+% 
+% \begin{macro}{\usemtxpackage}
+%   The call
+%   \begin{quote}
+%     |\usemtxpackage|\marg{package~list}
+%   \end{quote}
+%   inputs those of the packages in the list that have not been loaded 
+%   yet (i.e., those for which no |\ProvidesMtxPackage| has been made). 
+%   Each package is assumed to reside in the metric file that 
+%   |\inputmtx| loads when given the name of the package as argument.
+%   
+%   The call
+%   \begin{quote}
+%     |\usemtxpackage|\oarg{filename}\marg{package~list}
+%   \end{quote}
+%   inputs the packages in the list if at least one of them has not been 
+%   loaded yet. In this case, all the packages are assumed to reside in 
+%   the single metric file that |\inputmtx| loads when given 
+%   \meta{filename} as argument.
+% 
+%    \begin{macrocode}
+%<*pkg>
+\def\usemtxpackage{\futurelet\next_token\test_UseMtxPkg_arguments}
+\def\test_UseMtxPkg_arguments{\ifx\next_token[
+      \expandafter\mtx_package_given_file
+   \else
+      \expandafter\mtx_package_separate_files
+   \fi
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\mtx_package_given_file[#1]#2{
+   \_a_false
+   \process_csep_list\load_true_unless_loaded #2,\process_csep_list,
+   \if_a_ \inputmtx{#1} \fi
+}
+\def\load_true_unless_loaded#1{
+   \x_cs\ifx{pack-#1}P\else\_a_true\fi
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\mtx_package_separate_files#1{
+   \process_csep_list\load_file_unless_loaded #1,\process_csep_list,
+}
+\def\load_file_unless_loaded#1{
+   \x_cs\ifx{pack-#1}P\else \inputmtx{#1} \fi
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\newcommand\usemtxpackage[2][\x@relax]{%
+   \ifx \x@relax#1%
+      \@for\@tempa:=#2\do{%
+         \x@cs\ifx{FD@pack-\@tempa}\@empty \else 
+            \inputmtx{\@tempa}%
+         \fi
+      }%
+   \else
+      \@tempswafalse
+      \@for\@tempa:=#1\do{%
+         \x@cs\ifx{FD@pack-\@tempa}\@empty \else \@tempswatrue \fi
+      }%
+      \if@tempswa
+         \inputmtx{#2}%
+      \fi
+   \fi
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\glyph_name_modifier}
+%   The |\glyph_name_modifier| macro is applied to all glyph names 
+%   supplied to commands that are allowed in transformable MTX files 
+%   (see Subsection~\ref{Ssec:TransMTX}). The syntax is
+%   \begin{quote}
+%     |\glyph_name_modifier|\marg{glyph name}
+%   \end{quote}
+%   and the above must expand fully to a valid glyph name in \TeX's 
+%   mouth.
+%   
+%   \changes{1.923}{2002/10/20}{Macro added. (LH)}
+%   The normal definition is to simply expand to the \meta{glyph name}, 
+%   i.e., 
+%    \begin{macrocode}
+%<pkg>\let\glyph_name_modifier=\identity_one
+%    \end{macrocode}
+%   but the command may expand to any sequence of character tokens. It 
+%   was introduced to support (simple) automatic renaming of glyphs 
+%   in cases where the |\reglyphfont| command would not be appropriate, 
+%   such as when the wanted renaming is simply to add a short suffix to 
+%   the glyph names.
+%   
+%   The reason it only affects the commands allowed in transformable 
+%   MTX files is that the macro isn't meant as a generic override for 
+%   metric commands.
+% \end{macro}
+% 
+% 
+% \subsection{Kerning information}
+% 
+% The kerning information is kept in the macros 
+% \describecsfamily{l-\meta{name}}|\l-|\meta{name} and
+% \describecsfamily{r-\meta{name}}|\r-|\meta{name}, containing 
+% information about how \meta{name} kerns on the left and on the right, 
+% respectively.  The |\l-|\meta{name} macro should expand out to a 
+% series of 
+% \begin{quote}
+%   \DescribeMacro{\k}|\k|\,|\r-|\meta{name}\,|\|\meta{amount}
+% \end{quote}
+% control sequences, and vice versa. Examples of  
+% \describecsfamily{\meta{amount}} |\|\meta{amount}
+% control sequences are: |\0|, |\1|, |\1000|, |\-50|, |\33|; these 
+% corresponds to the kern amounts $0$, $1$, $1000$ (which would be 
+% a very large kern), $-50$, and $33$ respectively.
+%
+%
+% \begin{macro}{\setkern}
+% |\setkern|\marg{glyph1}\marg{glyph2}\marg{integer expression}
+%
+% Sets a kern pair between \meta{glyph1} and \meta{glyph2} to the 
+% specified value, which is typically a value returned by 
+% |\kerning|\marg{glyph3}\marg{glyph4}. If there already is a kern 
+% set between \meta{glyph1} and \meta{glyph2} then this will not affect 
+% the output, but it will use up another 3 units of token memory.
+%
+%    \begin{macrocode}
+%<*pkg>
+\def\setkern#1#2#3{
+   \x_cs\ifx{i-rawscale}\x_relax
+      \expandafter\set_kern
+         \csname~r-\glyph_name_modifier{#1}\expandafter\endcsname
+         \csname~l-\glyph_name_modifier{#2}\endcsname
+         {#3}
+   \else
+      \expandafter\set_kern
+         \csname~r-\glyph_name_modifier{#1}\expandafter\endcsname
+         \csname~l-\glyph_name_modifier{#2}\endcsname
+         {\scale{#3}{\int{rawscale}}}
+   \fi
+}
+\def\set_kern#1#2#3{
+   \eval_expr{#3}
+   \expandafter\set_kern_cs\csname\the\result\endcsname#1#2
+}
+\def\set_kern_cs#1#2#3{
+   \add_to#2{\k#3#1}
+   \add_to#3{\k#2#1}
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\newcommand\setkern[3]{%
+   \Bheading{Kern} \typeset@glyph{#1}${{}+{}}$\typeset@glyph{#2}%
+   ${}\rightarrow \TypesetIntegerExpression{#3}$%
+}
+%</doc>
+%<misc>\let\setkern=\gobble_three
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\resetkern}
+%   |\resetkern|\marg{glyph1}\marg{glyph2}\marg{integer expression}
+%   
+%   Resets the kern pair between \meta{glyph1} and \meta{glyph2} to 
+%   the specified value. Note however that this does not relieve \TeX\ 
+%   of the burden to remember the previous kerning pair between these 
+%   two glyphs (if there was one).
+% 
+%    \begin{macrocode}
+%<*pkg>
+\def\resetkern#1#2#3{
+   \x_cs\ifx{i-rawscale}\x_relax
+      \expandafter\reset_kern
+         \csname~r-#1\expandafter\endcsname
+         \csname~l-#2\endcsname{#3}
+   \else
+      \expandafter\reset_kern
+         \csname~r-#1\expandafter\endcsname
+         \csname~l-#2\endcsname{\scale{#3}{\int{rawscale}}}
+   \fi
+}
+\def\reset_kern#1#2#3{
+   \eval_expr{#3}
+   \expandafter\reset_kern_cs\csname\the\result\endcsname#1#2
+}
+\def\reset_kern_cs#1#2#3{
+   \prep_to#2{\k\expandafter#3\expandafter#1}
+   \prep_to#3{\k\expandafter#2\expandafter#1}
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\newcommand\resetkern[3]{%
+   \Bheading{Override kern} \typeset@glyph{#1}${{}+{}}$\typeset@glyph{#2}%
+   ${}\rightarrow \TypesetIntegerExpression{#3}$%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\setleftkerning}
+% \begin{macro}{\setrightkerning}
+% \begin{macro}{\setleftrightkerning}
+% |\setleftkerning|\marg{glyph1}\marg{glyph2}\marg{scaled}\\
+% |\setrightkerning|\marg{glyph1}\marg{glyph2}\marg{scaled}\\
+% |\setleftrightkerning|\marg{glyph1}\marg{glyph2}\marg{scaled}
+%
+% Sets left or right kerning of \meta{glyph1} to that of \meta{glyph2}
+% scaled by \meta{scaled} (which is an integer expression).  
+% |\setleftrightkerning| does both.
+%
+%    \begin{macrocode}
+%<*pkg>
+\def\setleftkerning#1#2#3{
+   \eval_expr_to\b_count{#3}
+   \expandafter\set_kerning
+      \csname~l-#1\expandafter\endcsname
+      \csname~l-#2\endcsname
+}
+\def\setrightkerning#1#2#3{
+   \eval_expr_to\b_count{#3}
+   \expandafter\set_kerning
+      \csname~r-#1\expandafter\endcsname
+      \csname~r-#2\endcsname
+}
+\def\setleftrightkerning#1#2#3{
+   \eval_expr_to\b_count{#3}
+   \expandafter\set_kerning
+      \csname~l-#1\expandafter\endcsname
+      \csname~l-#2\endcsname
+   \expandafter\set_kerning
+      \csname~r-#1\expandafter\endcsname
+      \csname~r-#2\endcsname
+}
+\def\set_kerning#1#2{
+   \if\b_count=\one_thousand
+      \def\k##1##2{
+         \set_kern_cs##2##1#1
+      }
+   \else
+      \def\k##1##2{
+         \set_kern##1#1{
+            \scale\b_count{\expandafter\gobble_one\string##2}
+         }
+      }
+   \fi
+   #2
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\newcommand\setleftkerning[3]{%
+   \Bheading{Kern} \typeset@glyph{#1} on the left like 
+   \typeset@glyph{#2} \ConditionallyScaled{#3}}
+\newcommand\setrightkerning[3]{%
+   \Bheading{Kern} \typeset@glyph{#1} on the right like 
+   \typeset@glyph{#2} \ConditionallyScaled{#3}}
+\newcommand\setleftrightkerning[3]{%
+   \Bheading{Kern} \typeset@glyph{#1} on the left and right like 
+   \typeset@glyph{#2} \ConditionallyScaled{#3}}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% 
+% \begin{macro}{\ConditionallyScaled}
+%   \changes{1.916}{2001/01/06}{Command added. (LH)}
+%   Several metric commands have take a scaling factor argument which is 
+%   rendered by \package{fontdoc} as ``scaled \meta{argument}''. The by 
+%   far most common value for this argument is however the constant 
+%   number 1000 (no scaling), and in those cases the ``scaled 
+%   \textellipsis'' feels a bit long-winded. The cure for this is the 
+%   |\Conditionally|\-|Scaled| command, which takes an integer expression 
+%   as its argument and typesets the ``scaled \meta{integer expression}'' 
+%   \emph{unless} that expression evaluates to 1000, in which case 
+%   |\Conditionally|\-|Scaled| simply gobbles any spaces following it.
+%    \begin{macrocode}
+\newcommand\ConditionallyScaled[1]{%
+   \FD@evaluate@true
+   \FD@eval@expr{#1}%
+   \@tempswatrue
+   \ifFD@evaluate@ \ifnum \FD@result=\@m \@tempswafalse \fi\fi
+   \FD@evaluate@false
+   \if@tempswa scaled \(\FD@expression\)\else \ignorespaces \fi
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+%
+% 
+% \begin{macro}{\kerning}
+%   |\kerning|\marg{glyph1}\marg{glyph2}
+%
+%   Returns the value of kern pair between \meta{glyph1} and 
+%   \meta{glyph2} as an integer.  Returns a value of zero if such a kern 
+%   pair doesn't exist.
+%
+%    \begin{macrocode}
+%<*pkg>
+\def\kerning#1#2{0\x_relax
+   \def\k##1{\csname~set-\string##1\endcsname\gobble_one}
+   \bgroup
+   \x_cs\def{set-\string\l-#2}##1##2{
+      \global\result=\expandafter\gobble_one\string##2\egroup
+   }
+   \csname~r-#1\endcsname
+   \csname~set-\string\l-#2\endcsname\gobble_one{00}
+}
+%</pkg>
+%    \end{macrocode}
+%   \changes{1.909}{1999/10/19}{A use of \#1 where it should have 
+%      been \#2 was corrected. (LH)}
+%    \begin{macrocode}
+%<*doc>
+\DeclareRobustCommand\kerning[2]{%
+   \begingroup
+   \MakePrintable\@tempa{FD@swa}{#1}%
+   \MakePrintable\@tempb{FD@swa}{#2}%
+   \protected@xdef\FD@expression{%
+      \mathop{\protect\mathrm{k{}}}(%
+      \text{\protect\FD@typeset@string{\@tempa}}%
+      ,\penalty\FD@commapenalty
+      \text{\protect\FD@typeset@string{\@tempb}}%
+      )%
+   }%
+   \global\chardef\FD@priority=5%
+   \global\FD@bracket@level=\@ne
+   \FD@evaluate@false
+   \endgroup
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\ifiskern}
+%   |\ifiskern|\marg{glyph1}\marg{glyph2}|\then|
+%   
+%   This command tests if there is a kern pair between \meta{glyph1} and 
+%   \meta{glyph2}. It's hard to say if there is a use for it, but it is 
+%   included for symmetry.
+%
+%    \begin{macrocode}
+%<*pkg>
+\def\ifiskern#1#2\then{
+   \def\k##1##2{\ifx T##1 \let\k\gobble_two \fi}
+   \bgroup
+      \x_cs\let{l-#2}T
+      \csname r-#1\endcsname
+   \expandafter\egroup \ifx\k\gobble_two
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\def\ifiskern#1#2\then{%
+   \generic@if{kern \typeset@glyph{#1}${}+{}$\typeset@glyph{#2} set}%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+%
+% 
+% \begin{macro}{\unsetkerns}
+%   |\unsetkerns|\marg{left~glyph~list}\marg{right~glyph~list}
+%   
+%   This command unsets all kerns with a glyph in the \meta{left~glyph~list} 
+%   on the left and a glyph in the \meta{right~glyph~list} on the right. 
+%   The lists themselves are ordinary comma-separated lists. Unlike 
+%   |\setkern| and |\resetkern|, |\unsetkerns| actually removes the 
+%   kerning pairs from \TeX's memory.
+%   
+%   The implementation itself simply goes through |\r-|\meta{left~glyph} 
+%   for each element \meta{left~glyph} in \meta{left~glyph~list} and 
+%   |\l-|\meta{right~glyph} for each element \meta{right~glyph} in 
+%   \meta{right~glyph~list}, removing each |\k|\meta{token}\meta{token} 
+%   tripple that refers to a glyph from the opposite list as it goes 
+%   along. To make this test reasonably fast, the routine first ``marks'' 
+%   the glyphs in the other list by setting the control sequences 
+%   |\slots-|\meta{glyph} to |U| (the letter token U). This mark is 
+%   later removed when the |\r-|\meta{glyph} or |\l-|\meta{glyph}
+%   respectively control sequences have been gone through; the 
+%   |\slots-|\meta{glyph} control sequences are then set to |\relax|.
+%   
+%    \begin{macrocode}
+%<*pkg>
+\def\unsetkerns#1#2{
+   \let\k\k_unless_to_U
+   \process_csep_list\make_slots_U#1,\process_csep_list,
+   \def\do##1{\x_cs\main_remove_Us{l-##1}}
+   \process_csep_list\do#2,\process_csep_list,
+   \process_csep_list\make_slots_relax#1,\process_csep_list,
+   \process_csep_list\make_slots_U#2,\process_csep_list,
+   \def\do##1{\x_cs\main_remove_Us{r-##1}}
+   \process_csep_list\do#1,\process_csep_list,
+   \process_csep_list\make_slots_relax#2,\process_csep_list,
+}
+\def\make_slots_U#1{\x_cs\let{slots-#1}U}
+\def\make_slots_relax#1{\x_cs\let{slots-#1}\x_relax}
+\def\k_unless_to_U#1#2{
+   \x_cs\ifx{slots-\expandafter\gobble_three\string#1}U \else
+      \noexpand\k\noexpand#1\noexpand#2
+   \fi
+}
+\def\main_remove_Us#1{
+   \ifx#1\x_relax \else
+      \edef#1{#1}
+      \ifx#1\empty_command \let#1\x_relax \fi
+   \fi
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\newcommand\unsetkerns[2]{%
+   \Bheading{Remove} all kerning pairs in 
+   \FD@typeset@string@set{#1}${}\times{}$\FD@typeset@string@set{#2}%
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\FD@typeset@string@set}
+% \begin{macro}{\FD@typeset@string@set@}
+%   \multchanges{\cs{FD@typeset@string@set}^^A
+%      \cs{FD@typeset@string@set@}}{1.916}{2001/01/02}{Macros added. 
+%      \cs{FD@typeset@string@set} should be used instead of 
+%      \cs{print@csep@list} in most occations. (LH)}
+%   The |\FD@typeset@string@set| macro takes a comma-separated list of 
+%   string expressions as argument and typesets that list as elements of 
+%   a set, e.g.
+%   \begin{quote}
+%     |\FD@typeset@string@set{a,b,\str{c}}|
+%   \end{quote}
+%   is typeset as
+%   \begin{quote}
+%     $\{$\texttt{a}$,{}$\texttt{b}$,\mathrm{s}($\texttt{c}$)\}$
+%   \end{quote}
+%    \begin{macrocode}
+\def\FD@typeset@string@set#1{%
+   \toks@={}%
+   \@for\@tempa:=#1\do{%
+      \protected@edef\@tempa{%
+         \noexpand\MakePrintable \noexpand\@tempa {FD@swa}{\@tempa}%
+      }%
+      \@tempa
+      \toks@=\expandafter{\the\expandafter\toks@
+         \expandafter\do \expandafter{\@tempa}}%
+   }%
+   \expandafter\FD@typeset@string@set@ \expandafter{\the\toks@}%
+}
+\def\FD@typeset@string@set@#1{%
+   \TypesetList{$\{$}{$,\penalty\FD@commapenalty{}$}%
+      {$,\penalty\FD@commapenalty{}$}{$,\penalty\FD@commapenalty{}$}%
+      {$\}$}{$\emptyset$}{\FD@typeset@string}{#1}%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% 
+% \begin{macro}{\noleftkerning}
+%   \changes{1.906}{1999/07/30}{Macro added. (LH)}
+% \begin{macro}{\norightkerning}
+%   \changes{1.906}{1999/07/30}{Macro added. (LH)}
+% \begin{macro}{\noleftrightkerning}
+%   \changes{1.906}{1999/07/30}{Macro added. (LH)}
+%   The argument of these commands is the name of a glyph. The commands 
+%   removes all kerns on the left, on the right, and on both sides 
+%   respectively, of this glyph.
+%   
+%    \begin{macrocode}
+%<*pkg>
+\def\noleftkerning#1{\no_kerning{l}{#1}}
+\def\norightkerning#1{\no_kerning{r}{#1}}
+\def\noleftrightkerning#1{\no_kerning{l}{#1}\no_kerning{r}{#1}}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\newcommand\noleftkerning[1]{%
+   \Bheading{Remove kerns} on the left of glyphs in 
+   \FD@typeset@string@set{#1}.}
+\newcommand\norightkerning[1]{%
+   \Bheading{Remove kerns} on the right of glyphs in 
+   \FD@typeset@string@set{#1}.}
+\newcommand\noleftrightkerning[1]{%
+   \Bheading{Remove kerns} on any side of glyphs in 
+   \FD@typeset@string@set{#1}.}
+%</doc>
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+% 
+% \begin{macro}{\no_kerning}
+%   \changes{1.906}{1999/07/30}{Macro added. (LH)}^^A
+%   \changes{1.906}{1999/08/01}{Macro thoroughly rewritten. (LH)}^^A
+%   This macro is called as
+%   \begin{quote}
+%     |\no_kerning|\marg{side}\marg{glyph list}
+%   \end{quote}
+%   where \meta{side} is |l| or |r|, and \meta{glyph list} is a 
+%   comma-separated list of glyph names. The macro unsets all kerns on 
+%   the \meta{side} side of the glyphs in the \meta{glyph list}.
+%   
+%    \begin{macrocode}
+%<*pkg>
+\def\no_kerning#1#2{
+   \let\k\no_kerning_i
+   \def\do##1{\csname #1-##1\endcsname}
+   \bgroup
+      \aftergroup\def \aftergroup\a_macro \aftergroup{
+      \process_csep_list\do #2,\process_csep_list,
+      \aftergroup}
+   \egroup
+   \def\do##1{\expandafter\let \csname #1-##1\endcsname \x_relax}
+   \process_csep_list\do #2,\process_csep_list,
+   \let\k\no_kerning_ii
+   \def\do##1{\edef##1{##1}}
+   \a_macro
+}
+%    \end{macrocode}
+%   \begin{macro}{\no_kerning_i}
+%     The |\no_kerning_i| macro is used by |\no_kerning| in constructing 
+%     a list of all glyphs that a glyph in the \meta{glyph list} has a 
+%     \meta{side} kern to, while avoiding repetitions.
+%    \begin{macrocode}
+\def\no_kerning_i#1#2{
+   \ifx #1\x_relax \else
+      \aftergroup\do \aftergroup#1
+      \let #1\x_relax
+   \fi
+}
+%    \end{macrocode}
+%   \end{macro}
+%   \begin{macro}{\no_kerning_ii}
+%     The |\no_kerning_ii| macro is similar to the |\k_unless_to_U| 
+%     macro.
+%    \begin{macrocode}
+\def\no_kerning_ii#1#2{
+   \ifx #1\x_relax \else \noexpand\k \noexpand#1 \noexpand#2 \fi
+}
+%</pkg>
+%    \end{macrocode}
+%   \end{macro}
+% \end{macro}
+% 
+% 
+% 
+% \subsection{Glyph information}
+% \label{Ssec:Glyph-info}
+% 
+% The glyph information is kept in the macros 
+% \describecsfamily{g-\meta{name}}|\g-|\meta{name}, which expands 
+% out to:
+% \begin{quote}
+%   \marg{width}\marg{height}\marg{depth}\marg{italic}^^A
+%   \marg{mapcommands}\marg{mapfonts}
+% \end{quote}
+% where the \meta{mapcommands} will write out VPL |MAP| fragments to a
+% |.vpl| file, and the \meta{mapfonts} will produce any |MAPFONT| 
+% instructions that are needed.
+% 
+% 
+% \begin{macro}{\typeset@glyph}
+%   \changes{1.909}{1999/10/20}{Macro added, and most commands that 
+%      print a glyph name changed to use this macro. (LH)}
+%   \changes{1.916}{2001/01/02}{Macro redefined (made synonymous to 
+%      \cs{Typeset\-String\-Expression}). (LH)}
+%   The |\typeset@glyph| macro takes a string expression and typesets 
+%   that as the name of a glyph. Currently names of glyphs are formatted 
+%   precisely the same as any other string expression.
+%    \begin{macrocode}
+%<doc>\let\typeset@glyph=\TypesetStringExpression
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \begin{macro}{\width}
+% \begin{macro}{\height}
+% \begin{macro}{\depth}
+% \begin{macro}{\italic}
+%   |\width|\marg{glyph}\\
+%   |\height|\marg{glyph}\\
+%   |\depth|\marg{glyph}\\
+%   |\italic|\marg{glyph}
+% 
+%   In \package{fontinst}, these macros return the width, height, 
+%   depth, and italic correction of \meta{glyph} as an integer.
+%    \begin{macrocode}
+%<*pkg>
+\def\width{\glyph_parameter\first_of_six}
+\def\height{\glyph_parameter\second_of_six}
+\def\depth{\glyph_parameter\third_of_six}
+\def\italic{\glyph_parameter\fourth_of_six}
+%</pkg>
+%    \end{macrocode}
+% 
+%   In \package{fontdoc}, they print symbolic representations for the 
+%   corresponding integer expressions.
+%    \begin{macrocode}
+%<*doc>
+\DeclareRobustCommand\width[1]{\FD@glyph@metric{w}{#1}}
+\DeclareRobustCommand\height[1]{\FD@glyph@metric{h}{#1}}
+\DeclareRobustCommand\depth[1]{\FD@glyph@metric{d}{#1}}
+\DeclareRobustCommand\italic[1]{\FD@glyph@metric{i}{#1}}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% 
+% \begin{macro}{\FD@glyph@metric}
+%   The |\FD@glyph@metric| macro is a convenient shorthand to use when 
+%   defining integer-valued functions which represents some glyph 
+%   metric (e.g.\ \cs{height}). Its syntax is
+%   \begin{quote}
+%     |\FD@glyph@metric|\marg{func-name}\marg{string expression}
+%   \end{quote}
+%   The \meta{string expression} must be expanded.
+%    \begin{macrocode}
+\def\FD@glyph@metric#1#2{%
+   \begingroup
+   \MakePrintable\@tempa{FD@swa}{#2}%
+   \protected@xdef\FD@expression{%
+      \protect\FD@integer@func{#1}{\@tempa}%
+   }%
+   \global\chardef\FD@priority=5%
+   \global\FD@bracket@level=\@ne
+   \FD@evaluate@false
+   \endgroup
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+%
+% 
+% \begin{macro}{\mapcommands}
+% \begin{macro}{\mapfonts}
+%   These are similar to |\width| and its companions, but they are not 
+%   user level commands.
+%    \begin{macrocode}
+%<*pkg>
+\def\mapcommands{\glyph_parameter\fifth_of_six}
+\def\mapfonts{\glyph_parameter\sixth_of_six}
+%</pkg>
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% 
+% \begin{macro}{\glyph_parameter}
+% \begin{macro}{\first_of_six}
+% \begin{macro}{\second_of_six}
+% \begin{macro}{\third_of_six}
+% \begin{macro}{\fourth_of_six}
+% \begin{macro}{\fifth_of_six}
+% \begin{macro}{\sixth_of_six}
+% \begin{macro}{\glyph_metrics}
+%   These macros are used to define |\width| and its friends. 
+%   |\glyph_parameter| takes one of the other seven for its first 
+%   argument and a glyph name for its second argument. The 
+%   |\glyph_metrics| macro can be used if one wants to get all the 
+%   metric variables at once.
+%    \begin{macrocode}
+%<*pkg>
+\def\glyph_parameter#1#2{
+   \expandafter\expandafter\expandafter
+         #1\csname g-#2\endcsname
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\first_of_six#1#2#3#4#5#6{#1}
+\def\second_of_six#1#2#3#4#5#6{#2}
+\def\third_of_six#1#2#3#4#5#6{#3}
+\def\fourth_of_six#1#2#3#4#5#6{#4}
+\def\fifth_of_six#1#2#3#4#5#6{#5}
+\def\sixth_of_six#1#2#3#4#5#6{#6}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\glyph_metrics#1#2#3#4#5#6{
+   \a_count=#1
+   \b_count=#2
+   \c_count=#3
+   \d_count=#4~
+}
+%    \end{macrocode}
+% \end{macro} \end{macro} \end{macro} \end{macro} \end{macro}
+% \end{macro} \end{macro} \end{macro}
+%
+% 
+% \begin{macro}{\saved_scale}
+% \begin{macro}{\saved_mapfont}
+% \begin{macro}{\saved_raw}
+% \begin{macro}{\saved_rule}
+% \begin{macro}{\saved_special}
+% \begin{macro}{\saved_warning}
+% \begin{macro}{\saved_movert}
+% \begin{macro}{\saved_moveup}
+% \begin{macro}{\saved_push}
+% \begin{macro}{\saved_pop}
+%   These are the commands allowed inside a glyph.  They are initally 
+%   set to |\relax|, so we can |\edef| with them safely.
+%    \begin{macrocode}
+\let\saved_scale\x_relax
+\let\saved_mapfont\x_relax
+\let\saved_raw\x_relax
+\let\saved_rule\x_relax
+\let\saved_special\x_relax
+\let\saved_warning\x_relax
+\let\saved_movert\x_relax
+\let\saved_moveup\x_relax
+\let\saved_push\x_relax
+\let\saved_pop\x_relax
+%    \end{macrocode}
+% \end{macro} \end{macro} \end{macro} \end{macro} \end{macro}
+% \end{macro} \end{macro} \end{macro} \end{macro} \end{macro}
+%
+% When the glyph is being constructed by
+% \begin{quote}
+%    |\setglyph|\marg{glyph} \meta{glyph commands} |\endsetglyph|
+% \end{quote}
+% the values of each of these parameters are kept in the following
+% variables.  Except for |\glyph_width|, these are kept globally,
+% so they survive through |\push| \textellipsis\ |\pop| pairs.  In 
+% addition, the current vertical offset is kept locally in 
+% |\glyph_voffset|. The |\glyph_maxhpos| variable globally keeps track 
+% of the largest horizontal offset position reached so far (with the 
+% possible exception of the current position, i.e.\ width, which may 
+% well be larger).
+%
+% 
+% \begin{macro}{\glyph_width}
+% \begin{macro}{\glyph_height}
+% \begin{macro}{\glyph_depth}
+% \begin{macro}{\glyph_italic}
+% \begin{macro}{\glyph_map_commands}
+% \begin{macro}{\glyph_map_fonts}
+% \begin{macro}{\glyph_voffset}
+% \begin{macro}{\glyph_maxhpos}
+%   \changes{1.903}{1999/05/20}{Variable added. (LH)}
+%    \begin{macrocode}
+\newcount\glyph_width
+\newcount\glyph_height
+\newcount\glyph_depth
+\newcount\glyph_italic
+\newtoks\glyph_map_commands
+\newtoks\glyph_map_fonts
+\newcount\glyph_voffset
+\newcount\glyph_maxhpos
+%    \end{macrocode}
+% \end{macro} \end{macro} \end{macro} \end{macro} \end{macro}
+% \end{macro} \end{macro} \end{macro}
+%
+% \begin{macro}{\setglyph}
+%   \changes{1.916}{2001/01/06}{Added `set' to \package{fontdoc} text. 
+%      (LH)}
+% \begin{macro}{\gobble_glyph}
+%   The |\setglyph|\marg{name} command defines |\g-|\meta{name}, 
+%   unless |\g-|\meta{name} has already been defined.
+%   
+%   The reason |\g-|\meta{name} is defined before calling |\resetglyph| 
+%   is to make it possible to refer to ``the glyph constructed so far'' 
+%   using |\width|\marg{name}, |\height|\marg{name}, etc.
+%    \begin{macrocode}
+\def\setglyph#1{
+   \ifisglyph{\glyph_name_modifier{#1}}\then
+      \expandafter\gobble_glyph
+   \else
+      \x_cs\def{g-\glyph_name_modifier{#1}}{
+         {\the\glyph_width}{\the\glyph_height}
+         {\the\glyph_depth}{\the\glyph_italic}
+         {\the\glyph_map_commands}{\the\glyph_map_fonts}
+      }
+      \resetglyph{\glyph_name_modifier{#1}}
+   \fi
+}
+\long\def\gobble_glyph#1\endsetglyph{}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\newcommand\setglyph[1]{%
+   \FD@tight@true
+   \Aheading{Set glyph `\typeset@glyph{#1}'}%
+}
+%</doc>
+%<misc>\long\def\setglyph#1\endsetglyph{}
+%    \end{macrocode}
+%   
+%   LH 2003/01/05: A very useful trick, which unfortunately used to be 
+%   undocumented, is to put kerning or variable assignment commands 
+%   between |\setglyph| and the corresponding |\endsetglyph|. These 
+%   commands will then only be executed if the glyph is being set by 
+%   that |\setglyph|. Typical application: If \texttt{Aacutesmall} 
+%   is being made by skrinking \texttt{Aacute}, then it is reasonable 
+%   to make \texttt{Aacutesmall} kern like \texttt{Aacute} (modulo 
+%   some scaling factor). If on the other hand \texttt{Aacutesmall} 
+%   has already been set then there is less reason to believe 
+%   \texttt{Aacutesmall} should kern like \texttt{Aacute} (a more 
+%   probable guess is that it should kern like \texttt{Asmall}).
+% \end{macro} \end{macro}
+%
+% \begin{macro}{\resetglyph}
+%   The |\resetglyph|\marg{name} command redefines |\g-|\meta{name}, 
+%   regardless of whether |\g-|\meta{name} has already been defined.
+%   \changes{1.923}{2002/10/20}{\cs{edef}ing \cs{glyphname}, for 
+%      consistency with \cs{setslot}. In principle, this could break 
+%      MTX files, but I doubt that it will. (LH)}
+%
+%    \begin{macrocode}
+%<*pkg>
+\def\resetglyph#1{
+   \edef\glyphname{#1}
+   \glyph_width=0
+   \global\glyph_height=0
+   \global\glyph_depth=0
+   \global\glyph_italic=0
+   \glyph_voffset=0
+   \global\glyph_maxhpos=0
+   \global\glyph_map_commands={}
+   \global\glyph_map_fonts={}
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\newcommand\resetglyph[1]{%
+   \FD@tight@true
+   \Aheading{Reset glyph `\typeset@glyph{#1}'}}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\endsetglyph}
+% \begin{macro}{\endresetglyph}
+%    \begin{macrocode}
+%<*pkg>
+\def\endsetglyph{
+   \x_cs\edef{g-\glyphname}
+      {{\the\glyph_width}{\the\glyph_height}
+       {\the\glyph_depth}{\the\glyph_italic}
+       {\the\glyph_map_commands}{\the\glyph_map_fonts}}
+}
+\let\endresetglyph=\endsetglyph
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\let\endsetglyph=\FD@tight@false
+\let\endresetglyph=\FD@tight@false
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\setscaledrawglyph}
+%   \changes{1.922}{2002/09/07}{Corrected typo: should test whether the 
+%      \texttt{rawscale} integer exists, not whether the 
+%      \texttt{i-rawscale} integer exists. (LH)}
+% \begin{macro}{\setrawglyph}
+%   The |\setscaledrawglyph| has the syntax
+%   \begin{isyntax}
+%     |\setscaledrawglyph|\marg{glyph}\marg{font}\marg{design size}^^A
+%       \marg{scale}\penalty0\marg{slot}\penalty0\marg{width}\penalty0
+%       \marg{height}\penalty0\marg{depth}\penalty0\marg{italic}
+%   \end{isyntax}
+%   It is a generalized form of the old |\setrawglyph| command, which 
+%   has the syntax
+%   \begin{isyntax}
+%     |\setrawglyph|\marg{glyph}\marg{font}\marg{design size}^^A
+%       \marg{slot}\penalty0\marg{width}\penalty0
+%       \marg{height}\penalty0\marg{depth}\penalty0\marg{italic}
+%   \end{isyntax}
+%   |\setrawglyph| is now syntactic sugar for the equivalent call of
+%   |\set|\-|scaled|\-|raw|\-|glyph|.
+%    \begin{macrocode}
+%<*pkg>
+\def\setrawglyph#1#2#3{
+   \setscaledrawglyph{#1}{#2}{#3}\one_thousand
+}
+%    \end{macrocode}
+%   
+%   These commands are generated automatically, when an |.mtx| file is 
+%   written out by |\afmtomtx|, |\pltomtx|, or |\mtxtomtx|.
+%   
+%   To illustrate the difference between |\setrawglyph| and the new 
+%   |\set|\-|scaled|\-|raw|\-|glyph|, note that
+%   \begin{quote}
+%     |\setscaledrawglyph{fscaled}{xfont}{10pt}{800}{102}%|\\
+%     |   {300}{600}{300}{40}|
+%   \end{quote}
+%   produces the same \texttt{fscaled} glyph as
+%   \begin{quote}
+%     |\setrawglyph{f}{xfont}{10pt}{102}{375}{750}{375}{50}|\\
+%     |\setglyph{fscaled}  \glyph{f}{800}  \endsetglyph|
+%   \end{quote}
+%   
+%    \begin{macrocode}
+\def\setscaledrawglyph#1#2#3#4#5#6#7#8#9{
+   \if_undefined{g-\glyph_name_modifier{#1}}\then
+      \eval_expr{#4}
+      \ifnum \result=\one_thousand
+         \let\a_macro\identity_one
+      \else
+         \edef\a_macro##1{\saved_scale{\the\result}{##1}}
+      \fi
+      \eval_expr_to\a_count{#6}
+      \eval_expr_to\b_count{#7}
+      \eval_expr_to\c_count{#8}
+      \eval_expr_to\d_count{#9}
+      \ifisint{rawscale}\then
+         \e_count=\int{rawscale}
+         \multiply \a_count \e_count  \l_rounded_thousandths\a_count
+         \multiply \b_count \e_count  \l_rounded_thousandths\b_count
+         \multiply \c_count \e_count  \l_rounded_thousandths\c_count
+         \multiply \d_count \e_count  \l_rounded_thousandths\d_count
+         \edef\a_macro##1{\saved_scale{\the\e_count}{\a_macro{##1}}}
+      \fi
+      \x_cs\edef{g-\glyph_name_modifier{#1}}{
+         {\the\a_count}
+         {\the\b_count}
+         {\the\c_count}
+         {\the\d_count}
+         {\a_macro{\saved_raw{#2}{#5}{#1}}}
+         {\a_macro{\saved_mapfont{#2}{#3}}}
+      }
+   \fi
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\newcommand\setrawglyph[8]{%
+   \Aheading{Glyph `\typeset@glyph{#1}'}
+   \Bheading{Taken from} slot $\TypesetIntegerExpression{#4}$ in 
+   font \TypesetStringExpression{#2}%
+}
+\newcommand\setscaledrawglyph[9]{%
+   \Aheading{Glyph `\typeset@glyph{#1}'}
+   \Bheading{Taken from} slot $\TypesetIntegerExpression{#5}$ in 
+   font \TypesetStringExpression{#2} \ConditionallyScaled{#4}%
+}
+%</doc>
+%<misc>\def\setrawglyph#1#2#3#4#5#6#7#8{}
+%<misc>\def\setscaledrawglyph#1#2#3#4#5#6#7#8#9{}
+%    \end{macrocode}
+% \end{macro}\end{macro}
+%
+% \begin{macro}{\setscalednotglyph}
+%   \changes{1.917}{2001/03/13}{This macro should set 
+%      \cs{g-\meta{glyph}-not}, not \cs{g-\meta{glyph}}. (LH)}
+%   \changes{1.922}{2002/09/07}{Corrected typo: should test whether 
+%      the \texttt{rawscale} integer exists, not whether the 
+%      \texttt{i-rawscale} integer exists. (LH)}
+% \begin{macro}{\setnotglyph}
+%   The |\setscalednotglyph| command has the same syntax as the 
+%   |\set|\-|scaled|\-|raw|\-|glyph| command, i.e.,
+%   \begin{isyntax}
+%     |\setscalednotglyph|\marg{glyph}\marg{font}\marg{design size}^^A
+%       \marg{scale}\penalty0\marg{slot}\penalty0\marg{width}\penalty0
+%       \marg{height}\penalty0\marg{depth}\penalty0\marg{italic}
+%   \end{isyntax}
+%   It is a generalized form of the old |\setnotglyph| command, which 
+%   has the syntax
+%   \begin{isyntax}
+%     |\setnotglyph|\marg{glyph}\marg{font}\marg{design size}^^A
+%       \marg{slot}\penalty0\marg{width}\penalty0\marg{height}\penalty0
+%       \marg{depth}\penalty0\marg{italic}
+%   \end{isyntax}
+%   |\setnotglyph| is now syntactic sugar for the equivalent call of
+%   |\set|\-|scaled|\-|not|\-|glyph|.
+%    \begin{macrocode}
+%<*pkg>
+\def\setnotglyph#1#2#3{
+   \setscalednotglyph{#1}{#2}{#3}\one_thousand
+}
+%    \end{macrocode}
+%   
+%   Note that only the \meta{glyph}, \meta{width}, \meta{height}, 
+%   \meta{depth}, and \meta{italic} parameters are used. The reason for 
+%   having the other parameters is that |\set|\-|scaled|\-|not|\-^^A
+%   |glyph| commands can be converted to |\set|\-|scaled|\-|raw|\-^^A
+%   |glyph| commands when a font is reencoded. Therefore all the 
+%   information must be present, even if it is not used by the main 
+%   definition.
+%   
+%   To think about (LH 2000/03/02): Perhaps the \meta{mapcommands} field 
+%   of a \texttt{-not}-glyph should contain a |\glyphwarning|, just in 
+%   case anyone tries to use one?
+%    \begin{macrocode}
+\def\setscalednotglyph#1#2#3#4#5#6#7#8#9{
+   \if_undefined{g-\glyph_name_modifier{#1}-not}\then
+      \eval_expr_to\a_count{#6}
+      \eval_expr_to\b_count{#7}
+      \eval_expr_to\c_count{#8}
+      \eval_expr_to\d_count{#9}
+      \ifisint{rawscale}\then
+         \e_count=\int{rawscale}
+         \multiply \a_count \e_count  \l_rounded_thousandths\a_count
+         \multiply \b_count \e_count  \l_rounded_thousandths\b_count
+         \multiply \c_count \e_count  \l_rounded_thousandths\c_count
+         \multiply \d_count \e_count  \l_rounded_thousandths\d_count
+      \fi
+      \x_cs\edef{g-\glyph_name_modifier{#1}-not}{
+         {\the\a_count}
+         {\the\b_count}
+         {\the\c_count}
+         {\the\d_count}
+         {}{}
+      }
+   \fi
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\newcommand\setnotglyph[8]{%
+   \Aheading{Pseudoglyph `\typeset@glyph{#1-not}'}%
+}
+\newcommand\setscalednotglyph[9]{%
+  \setnotglyph{#1}{#2}{#3}{#5}{#6}{#7}{#8}{#9}%
+}
+%</doc>
+%<misc>\let\setnotglyph=\setrawglyph
+%<misc>\let\setscalednotglyph=\setscaledrawglyph
+%    \end{macrocode}
+% \end{macro}\end{macro}
+%
+% \begin{macro}{\unsetglyph}
+%   The |\unsetglyph|\marg{name} command makes |\g-|\meta{name} 
+%   undefined.
+%
+%    \begin{macrocode}
+%<pkg>\def\unsetglyph#1{\x_cs\let{g-#1}\x_relax}
+%<doc>\newcommand\unsetglyph[1]{%
+%<doc>   \Aheading{Unset glyph `\typeset@glyph{#1}'}}
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \subsection{Glyph commands}
+%
+% The \meta{glyph commands} are:
+% \changes{1.908}{1999/08/22}{Glyph commands avoid \cs{edef}ing old 
+%    contents of \cs{glyph_map_commands} and \cs{glyph_map_fonts}. (LH)}
+% \begin{macro}{\glyph}
+%   |\glyph|\marg{glyph}\marg{scale}
+%   \changes{1.900}{1999/02/08}{Avoids scaling by 1000. (LH)}
+%
+%    \begin{macrocode}
+%<*pkg>
+\def\glyph#1#2{
+   \glyph_parameter\glyph_metrics{#1}
+   \eval_expr_to\e_count{#2}
+   \ifnum \e_count=\one_thousand
+      \edef\a_macro{\mapcommands{#1}}
+      \global\glyph_map_commands\expandafter{
+         \the\expandafter\glyph_map_commands \a_macro
+      }
+      \edef\a_macro{\mapfonts{#1}}
+   \else
+      \multiply \a_count \e_count  \l_rounded_thousandths\a_count
+      \multiply \b_count \e_count  \l_rounded_thousandths\b_count
+      \multiply \c_count \e_count  \l_rounded_thousandths\c_count
+      \multiply \d_count \e_count  \l_rounded_thousandths\d_count
+      \edef\a_macro{\saved_scale{\the\e_count}{\mapcommands{#1}}}
+      \global\glyph_map_commands\expandafter{
+         \the\expandafter\glyph_map_commands \a_macro
+      }
+      \edef\a_macro{\saved_scale{\the\e_count}{\mapfonts{#1}}}
+   \fi
+   \advance \glyph_width \a_count
+   \advance \b_count \glyph_voffset
+   \ifnum \glyph_height<\b_count \global\glyph_height=\b_count \fi
+   \advance \c_count -\glyph_voffset
+   \ifnum \glyph_depth<\c_count \global\glyph_depth=\c_count \fi
+   \global\glyph_italic=\d_count
+   \global\glyph_map_fonts\expandafter{
+      \the\expandafter\glyph_map_fonts \a_macro
+   }
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\newcommand\glyph[2]{%
+   \Bheading{Glyph} `\typeset@glyph{#1}' \ConditionallyScaled{#2}%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\glyphrule}
+%   |\glyphrule|\marg{width}\marg{height}
+%
+%    \begin{macrocode}
+%<*pkg>
+\def\glyphrule#1#2{
+   \eval_expr_to\b_count{#1} \eval_expr_to\c_count{#2}
+   \advance\glyph_width by \b_count
+   \g_eval_expr_to\glyph_depth{\max\glyph_depth{-\glyph_voffset}}
+   \g_eval_expr_to\glyph_height{
+      \max\glyph_height{\add\glyph_voffset\c_count}
+   }
+   \global\glyph_italic=0
+   \edef\a_macro{\saved_rule{\the\b_count}{\the\c_count}}
+   \global\glyph_map_commands\expandafter{
+      \the\expandafter\glyph_map_commands \a_macro
+   }
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\newcommand\glyphrule[2]{%
+   \Bheading{Rule} $\TypesetIntegerExpression{#1}$ by
+   $\TypesetIntegerExpression{#2}$%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\glyphspecial}
+% \begin{macro}{\glyphwarning}
+%   |\glyphspecial|\marg{string}\\
+%   |\glyphwarning|\marg{string}
+%
+%    \begin{macrocode}
+%<*pkg>
+\def\glyphspecial#1{
+   \edef\a_macro{\saved_special{#1}}
+   \global\glyph_map_commands\expandafter{
+      \the\expandafter\glyph_map_commands \a_macro
+   }
+}
+\def\glyphwarning#1{
+   \edef\a_macro{\saved_warning{#1}}
+   \global\glyph_map_commands\expandafter{
+      \the\expandafter\glyph_map_commands \a_macro
+   }
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\newcommand\glyphspecial[1]{%
+   \Bheading{Special} `\TypesetStringExpression{#1}'}
+\newcommand\glyphwarning[1]{%
+   \Bheading{Warning} `\TypesetStringExpression{#1}'}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\movert}
+%   \changes{1.903}{1999/05/20}{Added update of \cs{glyph_maxhpos}. (LH)}
+% \begin{macro}{\moveup}
+%   |\movert|\marg{xoffset}\\
+%   |\moveup|\marg{yoffset}
+%
+%    \begin{macrocode}
+%<*pkg>
+\def\movert#1{
+   \eval_expr{#1}
+   \ifnum \glyph_maxhpos<\glyph_width
+      \global\glyph_maxhpos\glyph_width
+   \fi
+   \ifnum 0=\result \else
+      \advance\glyph_width by \result
+      \edef\a_macro{\saved_movert{\the\result}}
+      \global\glyph_map_commands\expandafter{
+         \the\expandafter\glyph_map_commands \a_macro
+      }
+   \fi
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\moveup#1{
+   \eval_expr{#1}
+   \ifnum\result=0\else
+      \advance\glyph_voffset by \result
+      \edef\a_macro{\saved_moveup{\the\result}}
+      \global\glyph_map_commands\expandafter{
+         \the\expandafter\glyph_map_commands \a_macro
+      }
+   \fi
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\newcommand\movert[1]{\Bheading{Rt}~$\TypesetIntegerExpression{#1}$}
+\newcommand\moveup[1]{\Bheading{Up}~$\TypesetIntegerExpression{#1}$}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\push}
+%   \changes{1.907}{1999/08/02}{Removed the \cs{edef}. (LH)}
+% \begin{macro}{\pop}
+%   \changes{1.903}{1999/05/20}{Added update of \cs{glyph_maxhpos}. (LH)}
+%   \changes{1.907}{1999/08/02}{Removed the \cs{edef}. (LH)}
+%    \begin{macrocode}
+%<*pkg>
+\def\push{
+   \bgroup
+   \global\glyph_map_commands\expandafter{
+      \the\glyph_map_commands \saved_push
+   }
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\pop{
+   \ifnum \glyph_maxhpos<\glyph_width
+      \global\glyph_maxhpos\glyph_width
+   \fi
+   \egroup
+   \global\glyph_map_commands\expandafter{
+      \the\glyph_map_commands \saved_pop
+   }
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\newcommand\push{\Bheading{Push}}
+\newcommand\pop{\Bheading{Pop}}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\resetwidth}
+% \begin{macro}{\resetheight}
+% \begin{macro}{\resetdepth}
+% \begin{macro}{\resetitalic}
+%   |\resetwidth|\marg{width}\\
+%   |\resetheight|\marg{height}\\
+%   |\resetdepth|\marg{depth}\\
+%   |\resetitalic|\marg{italic}
+%
+%    \begin{macrocode}
+%<*pkg>
+\def\resetwidth#1{\movert{\sub{#1}\glyph_width}}
+\def\resetheight{\g_eval_expr_to\glyph_height}
+\def\resetdepth{\g_eval_expr_to\glyph_depth}
+\def\resetitalic{\g_eval_expr_to\glyph_italic}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\newcommand\resetwidth[1]{%
+   \Bheading{Reset width to $\TypesetIntegerExpression{#1}$}%
+}
+\newcommand\resetheight[1]{%
+   \Bheading{Reset height to $\TypesetIntegerExpression{#1}$}%
+}
+\newcommand\resetdepth[1]{%
+   \Bheading{Reset depth to $\TypesetIntegerExpression{#1}$}%
+}
+\newcommand\resetitalic[1]{%
+   \Bheading{Reset italic to $\TypesetIntegerExpression{#1}$}%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\glyphpcc}
+%   Some syntactic sugar: |\glyphpcc| could do with optimization.
+%   \begin{quote}
+%     |\glyphpcc|\marg{glyph}\marg{xoffset}\marg{yoffset}
+%   \end{quote}
+%   \changes{1.925}{2003/05/28}{Added check that the glyph used is 
+%     defined; we get an ugly error if it isn't. (LH)}
+%   \changes{1.932}{2005/06/17}{Changed error message to warning when a 
+%     corresponding notglyph exists. (LH) This deals with an issue 
+%     regarding composites in fonts which have been reencoded to 
+%     something not a superset of \texttt{8a}.}
+%   
+%    \begin{macrocode}
+%<*pkg>
+\def\glyphpcc#1#2#3{
+   \ifisglyph{\glyph_name_modifier{#1}}\then
+      \push
+         \movert{#2}
+         \moveup{#3}
+         \glyph{\glyph_name_modifier{#1}}{\one_thousand}
+      \pop
+   \else\ifisglyph{\glyph_name_modifier{#1}-not}\then
+      \fontinstwarning{\string\glyphpcc}{
+         Base~glyph~`\glyph_name_modifier{#1}'~not~appended,\messagebreak 
+         because~it~is~so~far~unencoded~in~the~glyph~base
+      }
+   \else
+      \fontinsterror{\string\glyphpcc}{
+         Base~glyph~not~set.\messagebreak 
+         This~could~be~a~sign~that~the~AFM~file~is~buggy
+      }\error_help_a
+   \fi\fi
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\def\glyphpcc#1#2#3{
+   \push
+      \movert{#2}
+      \moveup{#3}
+      \glyph{#1}{1000}
+   \pop
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\glyphbboxright}
+%   \changes{1.903}{1999/05/20}{Macro added. (LH)}
+%   The |\glyphbboxright| command is a valid integer expression, but 
+%   its value is only meaningful inside a |\setglyph| \textellipsis\ 
+%   |\endsetglyph| or |\resetglyph| \textellipsis\ |\endresetglyph| 
+%   structure. There its value is almost the horizontal position of 
+%   the right edge of the bounding box for the glyph constructed so 
+%   far---in reality it is the greatest horizontal offset reached so 
+%   far.
+%   
+%    \begin{macrocode}
+%<pkg>\def\glyphbboxright{\max\glyph_width\glyph_maxhpos}
+%<*doc>
+\DeclareRobustCommand\glyphbboxright{%
+   \gdef\FD@expression{\protect\mathrm{glyphbboxright}}
+   \global\chardef\FD@priority=\tw@
+   \global\FD@bracket@level=\z@
+   \FD@evaluate@false
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\samesize}
+%   \changes{1.903}{1999/05/20}{Added behaviour for nonexistent glyph 
+%      (based on a suggestion from Hilmar Schlegel) and fixed typo in 
+%      \package{fontdoc}. (LH)}
+%   |\samesize|\marg{glyph}
+%
+%    \begin{macrocode}
+%<*pkg>
+\def\samesize#1{
+   \if_undefined{g-\glyph_name_modifier{#1}}\then
+      \resetwidth{\glyphbboxright}
+   \else
+      \expandafter\expandafter\expandafter
+         \same_size\csname g-\glyph_name_modifier{#1}\endcsname
+   \fi
+}
+\def\same_size#1#2#3#4#5#6{
+   \movert{\sub{#1}\glyph_width}
+   \global\glyph_height=#2
+   \global\glyph_depth=#3
+   \global\glyph_italic=#4
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\newcommand\samesize[1]{%
+   \Bheading{Reset dimensions to those of `\typeset@glyph{#1}'.}%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\ifisglyph}
+%   The control flow command:
+%   \changes{1.923}{2002/10/20}{Using \cs{if_defined}. (LH)}
+%    \begin{macrocode}
+%<pkg>\def\ifisglyph#1\then{\if_defined{g-#1}\then}
+%    \end{macrocode}
+%   \changes{1.911}{1999/11/30}{\protect\protect\protect\Module{misc} 
+%      definition added. (LH)}
+%   |\ifisglyph| evaluates to false in \Module{misc}, since this avoids 
+%   uses of various metric integer expressions (such as |\width|, 
+%   |\height|, etc.) that are not defined there.
+%    \begin{macrocode}
+%<doc>\def\ifisglyph#1\then{\generic@if{glyph \typeset@glyph{#1} set}}
+%<misc>\def\ifisglyph#1\then{\iffalse}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\ifareglyphs}
+%   \changes{1.917}{2001/03/17}{Macro added. (LH)}
+%   The |\ifareglyphs| command test if all glyphs in a comma-separeted 
+%   list of glyphs are set. The syntax is
+%   \begin{quote}
+%     |\ifareglyphs|\marg{glyph list}|\then|
+%   \end{quote}
+%   The implementation relies on that |\if_true| and |\if_false| do not 
+%   count when \TeX\ is skipping text that is balanced with respect to 
+%   |\if|s and |\fi|s.
+%    \begin{macrocode}
+%<*pkg>
+\def\ifareglyphs#1\then{
+   \process_csep_list{\if_is_glyph}#1,\process_csep_list,
+   \if_true
+}
+\def\if_is_glyph#1{
+   \if_undefined{g-#1}\then \expandafter\if_false \fi
+}
+%</pkg>
+%<misc>\let\ifareglyphs=\ifisglyph
+%<*doc>
+\def\ifareglyphs#1\then{%
+   \generic@if{all glyphs in \FD@typeset@string@set{#1} are set}%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% \section{Converting an ETX file to a (V)PL file}
+%
+% \subsection{Lowest-level user interface}
+% 
+% \DescribeMacro{\etxtovpl}
+% The macro:
+% \begin{quote}
+%    |\etxtovpl|\marg{encoding list}\marg{vplfile}
+% \end{quote}
+% writes a virtual font (as a virtual property list) with the 
+% encoding specified by the items in the \meta{encoding list}, 
+% which typically are names of ETX files.  
+% (This macro is called by |\installfont|.)
+%
+% \DescribeMacro{\etxtopl}
+% The macro:
+% \begin{quote}
+%    |\etxtopl|\marg{encoding list}\marg{plfile}
+% \end{quote}
+% writes a font (as a property list) with the encoding 
+% specified by the items in the \meta{encoding list}, 
+% which typically are names of ETX files.  
+% (This macro is called by |\installrawfont|.)
+% 
+% \multchanges{\cs{etxtovpl}\cs{etxtopl}}{1.923}{2002/10/24}{The 
+%   first argument of these macros is now a comma-separated list 
+%   of ETX files, and the items may be subjected to modifier 
+%   clauses. (LH)}
+% 
+% \begin{macro}{\etxtovpl}
+%   \changes{1.923}{2002/10/25}{The program is called \texttt{vptovf}, 
+%      not \texttt{vpltovf}. (LH)}
+% \begin{macro}{\etxtopl}
+%    \begin{macrocode}
+%<*pkg>
+\def\etxtovpl#1#2{{
+   \def\vpl_extension{vpl}
+   \def\vpl_title{COMMENT}
+   \def\vpl_font{virtual~font}
+   \def\vpl_Font{Virtual~font}
+   \def\vpl_call{\string\etxtovpl{#1}{#2}}
+   \def\vpl_to_vf##1{vptovf~##1.vpl~##1.vf~##1.tfm}
+   \a_toks={}
+   \process_csep_list\make_inputetx #1,\process_csep_list,
+   \expandafter\etx_to_font \expandafter{\the\a_toks}{#2}
+}}
+\def\etxtopl#1#2{{
+   \def\vpl_extension{pl}
+   \def\vpl_title{COMMENT}
+   \def\vpl_font{font}
+   \def\vpl_Font{Font}
+   \def\vpl_call{\string\etxtopl{#1}{#2}}
+   \def\vpl_to_vf##1{pltotf~##1.pl~##1.tfm}
+   \_including_map_false
+   \global\rawfont_scaling=-\p@
+   \a_toks={}
+   \process_csep_list\make_inputetx #1,\process_csep_list,
+   \expandafter\etx_to_font \expandafter{\the\a_toks}{#2}
+}}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% 
+% \begin{switch}{_including_map_}
+%   \changes{1.900}{1998/10/02}{New switch that can inhibit writing of 
+%      VPL-specific properties. (LH)}
+%   The v\,1.5 method of controlling whether \texttt{MAP} and 
+%   \texttt{MAPFONT} properties should be written requires that some 
+%   code is put in an awkward place (in |\make_mapfonts| rather than 
+%   |\make_characters|). As the code was being reorganised anyway, it 
+%   seemed best to let a switch control this instead. If 
+%   |\if_including_map_| is true, \texttt{MAP} and \texttt{MAPFONT} 
+%   properties are written to the file (which should be a VPL), if it is 
+%   false then they are not written to the file (which is then a normal 
+%   PL).
+%    \begin{macrocode}
+\newif\if_including_map_
+\_including_map_true
+%    \end{macrocode}
+% \end{switch}
+%
+% \begin{macro}{\make_inputetx}
+%   The |\make_inputetx| macro takes a single argument that should have 
+%   the form
+%   \begin{quote}
+%     \meta{file name root}\meta{optional modifiers}
+%   \end{quote}
+%   as explained in the comments to |\input_mtx_file|. The effect of 
+%   this macro is to append some commands (usually 
+%   |\inputetx|\marg{file name root}) to |\a_toks|. This may however 
+%   change if some clause in the \meta{optional modifiers} redefines 
+%   |\a_macro|.
+%   \changes{1.923}{2002/10/24}{Macro added. (LH)}
+%    \begin{macrocode}
+\def\make_inputetx#1{
+   \def\a_macro{\noexpand\inputetx{\file_name}}
+   \get_file_name #1~{}~\par
+   \edef\a_macro{\a_macro}
+   \a_toks=\expandafter{ \the\expandafter\a_toks \a_macro}
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\IFKW-mtxasetx}
+%   The \texttt{mtxasetx} modifier clause causes the \meta{encoding 
+%   list} item in question to be input using |\input_mtx_as_etx| rather 
+%   than |\inputetx|. This makes it possible to use the |\setrawglyph| 
+%   and |\setscaledrawglyph| commands in an MTX file as a poor 
+%   substitute for a proper ETX file. This is sometimes useful for 
+%   making proofs.
+%   \changes{1.923}{2002/10/24}{Macro added. (LH)}
+%    \begin{macrocode}
+\x_cs\def{IFKW-mtxasetx}{
+   \def\a_macro{\noexpand\input_mtx_as_etx{\file_name}}
+   \get_keyword
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \begin{macro}{\etx_to_font}
+%   |\etx_to_font|\marg{encoding commands}\marg{fontfile} makes 
+%   a (V)PL file whose encoding is specified by the \meta{encoding 
+%   commands}. These are usually just one or a few |\inputetx| 
+%   commands, as the specification of an encoding usually requires much 
+%   more code than is convenient to provide as an argument.
+%   \changes{1.923}{2002/10/24}{Made the first argument a list of 
+%      commands. Renamed \cs{vpl_caller} to \cs{vpl_call}; it is now 
+%      assumed to contain the arguments as well. (LH)}
+%    \begin{macrocode}
+\def\etx_to_font#1#2{
+   \make_assignments{#1}
+   \open_out{#2.\vpl_extension}
+   \top_of_pl_hook
+   \out_line{(\vpl_title\space\vpl_font\space
+      #2~created~by~fontinst~v\fontinstversion)}
+   \out_line{}
+   \out_line{(COMMENT~Filename:~#2.\vpl_extension)}
+   \out_line{(COMMENT~Created~by:~tex~\jobname)}
+   \out_line{(COMMENT~Created~using:~\vpl_call)}
+   \out_line{}
+   \out_line{(COMMENT~This~file~can~be~turned~into~a~\vpl_font\space 
+      with)}
+   \out_line{(COMMENT~\vpl_to_vf{#2})}
+   \out_line{}
+   \out_line{(COMMENT~THIS~FILE~CAN~THEN~BE~DELETED.)}
+   \out_line{}
+   \make_header{#1}
+   \if_including_map_ \make_mapfonts{#1} \fi
+   \make_fontdimens{#1}
+   \make_ligtable{#1}
+   \make_characters{#1}
+   \make_tidy{#1}
+   \out_line{}
+   \out_line{(COMMENT~END~OF~FILE~#2.\vpl_extension)}
+   \close_out{\vpl_Font}
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \begin{macro}{\pre_first_etx_pass_hook}
+% \begin{macro}{\pre_second_etx_pass_hook}
+% \begin{macro}{\pre_third_etx_pass_hook}
+% \begin{macro}{\pre_fourth_etx_pass_hook}
+% \begin{macro}{\post_first_etx_pass_hook}
+% \begin{macro}{\post_second_etx_pass_hook}
+% \begin{macro}{\post_third_etx_pass_hook}
+% \begin{macro}{\post_fourth_etx_pass_hook}
+% \begin{macro}{\tidying_up_hook}
+%   \multchanges{\cs{pre_first_etx_pass_hook}^^A
+%      \cs{pre_second_etx_pass_hook}\cs{pre_third_etx_pass_hook}^^A
+%      \cs{pre_fourth_etx_pass_hook}\cs{post_first_etx_pass_hook}^^A
+%      \cs{post_second_etx_pass_hook}\cs{post_third_etx_pass_hook}^^A
+%      \cs{post_fourth_etx_pass_hook}\cs{tidying_up_hook}}{1.900}^^A
+%      {1998/09/30}{ETX-to-VPL hooks added. (LH)}
+% \begin{macro}{\top_of_pl_hook}
+%   \changes{1.912}{2000/01/29}{Property list hook added. (LH)}
+%   As the |\etxtovpl| and |\etxtopl| macros are the 
+%   lowest-level interfaces to what they do that are available in 
+%   \package{fontinst} and as the amount of code they execute is really 
+%   quite large, I suspect that users may occationally have need of 
+%   some robust mechanism for inserting extra code at well specified 
+%   positions. Such a mechanism is provided by the following hooks:
+%    \begin{macrocode}
+\let\pre_first_etx_pass_hook\x_relax
+\let\pre_second_etx_pass_hook\x_relax
+\let\pre_third_etx_pass_hook\x_relax
+\let\pre_fourth_etx_pass_hook\x_relax
+\let\post_first_etx_pass_hook\x_relax
+\let\post_second_etx_pass_hook\x_relax
+\let\post_third_etx_pass_hook\x_relax
+\let\post_fourth_etx_pass_hook\x_relax
+\let\tidying_up_hook\x_relax
+\let\top_of_pl_hook\x_relax
+%    \end{macrocode}
+%   The first nine are executed at the positions of the ETX-to-VPL 
+%   file generation that their name indicate. |\top_of_pl_hook| is 
+%   slightly different---it is executed right after a PL or VPL file 
+%   is opened for writing. Thus it is also used by the MTX-to-PL system.
+%   
+%   To include code in one of them, one should write things like
+%   \begin{quote}
+%     |\add_to\pre_first_etx_pass_hook|\marg{extra code}
+%   \end{quote}
+%   I (LH) have the following in my \texttt{fontinst.rc} file\relax
+%   \SortIndex{fontinst.rc file}{\texttt{fontinst.rc} file}
+%   \begin{quote}
+%     |\add_to\top_of_pl_hook{\out_line{(COMMENT~-*-Text-*-)}}|
+%   \end{quote}
+%   Without it, my text editor annoys me by assuming that \texttt{.pl} 
+%   stands for Perl.
+% \end{macro} \end{macro} \end{macro} \end{macro} \end{macro}
+% \end{macro} \end{macro} \end{macro} \end{macro} \end{macro}
+% 
+% 
+% \subsection{Glyph to slot assignments}
+% 
+% \changes{1.900}{1998/12/06}{New method of storing slot assignments. 
+%    (LH)}
+% The way \package{fontinst} has traditionally kept track 
+% of which glyph goes to which slot---information which is needed when 
+% writing the |LIGTABLE| in a (V)PL, for |\nextlarger|, and for the 
+% varchar commands---is by storing the slot number in the integer 
+% whose name is the name of the glyph. There are two main problems with 
+% this implementation: (i)~If a user sets an integer which happens to 
+% have the same name as a glyph that is not assigned to any slot, then 
+% kerns for that unused glyph might be written to the file, accidentally 
+% creating a kerning pair where there should be none. (ii)~It is only 
+% possible to store one slot number per glyph, so if one uses the same 
+% glyph for several slots then \package{fontinst} can only write kerns 
+% (and ligatures) for one of the occurences, despite the fact that all 
+% occurences have the same typographical need for them. These problems 
+% do only occur for glyphs on the right side of a ligature/kerning 
+% pair, but they are still serious enough. This part of 
+% \package{fontinst} has therefore been reimplemented.
+% 
+% \changes{1.910}{1999/11/04}{Changed the way slot numbers are stored 
+%    in \cs{slots-}\meta{glyph} control sequences. (LH)}
+% The new implementation does not use integers, instead it uses a new 
+% family of macros with names on the form |\slots-|\meta{glyph}^^A
+% \describecsfamily{slots-\meta{glyph}}. These macros expand to 
+% sequences of |\do|\thinspace\meta{character}, where \meta{character} 
+% is a category 12 (other) token whose character code equals the slot 
+% number.
+% 
+% In the entire space of such names, each slot should be mentioned 
+% at most once, with one exception, namely the slot which serves as 
+% right boundary marker, which may occur twice (once for the glyph 
+% which actually is assigned to the slot and once for the right boundary 
+% marker glyph). To detect whether there is a collision between these two 
+% uses of the slot, the right boundary marker glyph uses |\rboundary_do| 
+% instead of |\do| and the glyph whose slot serves as boundarychar uses 
+% |\rbserver_do| instead of |\do|. By redefining these two control 
+% sequences to generate a warning message when appropriate, the occurence 
+% of such a collision can be brought to the user's attention.
+% 
+% \changes{1.900}{1998/12/11}{Added compability code for the old 
+%    interface for boundary ligatures and kerns. (LH)}
+% As it turned out to not be such a big deal, some extra code (protected 
+% by a \package{docstrip} switch called \Module{boundaryCompability}) 
+% that makes \package{fontinst} compatible with the previous syntax for 
+% boundary handling has been included. I don't recommend using 
+% it though, since it makes \package{fontinst} store almost all slot 
+% numbers in two places.
+% 
+% 
+% \begin{macro}{\make_assignments}
+%    \begin{macrocode}
+\def\make_assignments#1{
+   \let\do_slot=\assign_slot
+   \let\end_do_slot=\end_assign_slot
+   \def\do_boundary{\bgroup
+      \let\makerightboundary=\bad_makerightboundary
+   }
+   \let\endsetleftboundary=\egroup
+   \let\makerightboundary=\assign_rboundary
+   \pre_first_etx_pass_hook
+   #1
+   \post_first_etx_pass_hook
+   \let\end_do_slot=\empty_command
+   \let\do_boundary=\x_relax
+   \let\endsetleftboundary=\x_relax
+   \let\makerightboundary=\gobble_one
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% 
+% \begin{macro}{\assign_slot}
+% \begin{macro}{\end_assign_slot}
+%   \changes{1.907}{1999/08/20}{Slots are not assigned to glyphs that 
+%      do not exist. (LH)}
+%   |\assign_slot| begins the assignment of a slot to a glyph. 
+%   |\end_assign_slot| completes it. In the time between these two, 
+%   some information is stored in |\a_toks|, so that it can be 
+%   modified by an intervening |\makerightboundary| (which is then 
+%   |\assign_rboundary|).
+%   
+%   Note that the code below will not reset |\lccode0|. The value of 
+%   this register should be considered uncertain while a ligful PL 
+%   or VPL file is written, i.e., in ETX files.
+%   \SortIndex{lccode0}{\cs{lccode\,0} register\encapchar usage}
+%    \begin{macrocode}
+\def\assign_slot{\a_toks={\do}}
+\begingroup
+   \catcode0=12
+   \gdef\end_assign_slot{
+      \ifisglyph\slot_name\then
+         \lccode0=\slot_number
+         \lowercase{
+            \expandafter\add_to 
+               \csname slots-\slot_name\expandafter\endcsname
+               \expandafter{\the\a_toks^^@}
+         }
+%<boundaryCompability>         \x_resetint\slot_name\slot_number
+      \fi
+   }
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% 
+% \begin{macro}{\assign_rboundary}
+% \begin{macro}{\bad_makerightboundary}
+%   |\assign_rboundary| is what |\makerightboundary| is when it is 
+%   assigning a slot to act as right boundary marker.
+%   
+%   |\bad_makerightboundary| is what |\makerightboundary| temporarily 
+%   gets set to between |\setleftboundary| and |\endsetleftboundary|.
+%    \begin{macrocode}
+   \gdef\assign_rboundary#1{
+      \lccode0=\slot_number
+      \lowercase{\x_cs\add_to{slots-#1}{\rboundary_do^^@}}
+      \x_setint{\percent_char boundarychar}\slot_number
+      \a_toks={\rbserver_do}
+   }
+\endgroup
+\def\bad_makerightboundary#1{
+   \errhelp={The~left~boundary~is~not~a~slot,~so~it~cannot~serve~
+      as~right~boundary.}
+   \errmessage{Incorrect~use~of~\string\makerightboundary}
+}
+%    \end{macrocode}
+% \end{macro} \end{macro}
+% 
+% \begin{macro}{\get_slot_num}
+%   \changes{1.910}{1999/11/04}{Removed redefinition of \cs{do} to 
+%      \cs{gobble_one} from temporary definition of \cs{do}, since a 
+%      \cs{slots-} list usually contains only one or two elements 
+%      anyway. (LH)}
+%   It is sometimes necessary to get the number of an arbitrary slot 
+%   given only the name of the glyph which has been assigned to the 
+%   slot. In such situations, the call
+%   \begin{quote}
+%     |\get_slot_num{|\meta{glyph}|}|
+%   \end{quote}
+%   will set |\result| to the number of one such slot if the glyph has 
+%   been assigned to some slot, or set |\result| to minus one if the glyph 
+%   has not been assigned to a slot.
+%    \begin{macrocode}
+\def\get_slot_num#1{
+%<*!boundaryCompability>
+   \global\result=-1
+   \bgroup
+      \def\do{\global\result=`}
+      \let\rbserver_do=\do
+      \let\rboundary_do=\gobble_one
+      \csname slots-#1\endcsname
+   \egroup
+%</!boundaryCompability>
+%<*boundaryCompability>
+   \ifisint{#1}\then
+      \global\result=\int{#1}
+   \else
+      \global\result=-1
+   \fi
+   \x_relax
+%</boundaryCompability>
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \begin{macro}{\ifisinslot}
+%   The call |\ifisinslot|\marg{glyph}\marg{slot}|\then| can be used to 
+%   test whether glyph \meta{glyph} has been assigned to slot \meta{slot}. 
+%   Both then-part and else-part of the conditional will however be 
+%   ignored when the ETX file is read the first time, since the 
+%   assignment of glyph to slots need not have been completed yet.
+%    \begin{macrocode}
+\def\ifisinslot#1#2\then{
+   \ifx \makerightboundary\gobble_one
+%    \end{macrocode}
+%   This is used to test if the ETX file is being read in for the first 
+%   time. It is a bit hacky, but it is efficient.
+%    \begin{macrocode}
+      \eval_expr{#2}
+      \begingroup
+         \def\do##1{\ifnum `##1=\result \let\do=\gobble_one \fi}
+         \def\rbserver_do{\do}
+         \let\rboundary_do=\gobble_one
+         \csname slots-#1\endcsname
+      \expandafter\endgroup
+      \ifx \do\gobble_one
+         \expandafter\expandafter \expandafter\if_true
+      \else
+         \expandafter\expandafter \expandafter\if_false
+      \fi
+   \else
+      \expandafter\gobble_if
+   \fi
+}
+%</pkg>
+%    \end{macrocode}
+%    \begin{macrocode}
+%<*doc>
+\def\ifisinslot#1#2\then{%
+   \generic@if{glyph \typeset@glyph{#1} assigned to slot 
+   $\TypesetIntegerExpression{#2}$}%
+}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \subsection{The header, mapfonts, and fontdimens}
+% 
+% \changes{1.913}{2000/02/26}{Using \cs{make_factor} for making PL 
+%    reals, rather than \cs{afm_convert}+\cs{vpl_real}. 
+%    \cs{scaled_design_size} replaced by new dimen \cs{mapfont_scaling} for 
+%    determining mapfont atsize. (LH)}
+% 
+% \begin{macro}{\mapfont_scaling}
+%   The |\mapfont_scaling| dimen is used for calculating how much a mapfont 
+%   has been scaled, for use in \texttt{FONTAT} properties, and for 
+%   selecting the correct mapfont. It is initialized to $1$.
+%    \begin{macrocode}
+%<*pkg>
+\newdimen\mapfont_scaling
+\mapfont_scaling=1pt
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\rawfont_scaling}
+%   The |\rawfont_scaling| dimen is used for communicating the scaling 
+%   that has been applied to a raw font---a font being installed using 
+%   |\install|\-|rawfont|\penalty0---out to that macro. |\rawfont_|\-^^A
+%   |scaling| should always be globally assigned.
+%   \changes{1.913}{2000/03/21}{Dimen added. (LH)}
+%    \begin{macrocode}
+\newdimen\rawfont_scaling
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\scaled_design_size}
+% \begin{macro}{\afm_convert}
+%   The call
+%   \begin{quote}
+%     |\afm_convert|\meta{dimen}|=|\meta{integer expression}|;|
+%   \end{quote}
+%   converts a count into a dimen, assuming the count is a number
+%   of AFM units.  I'll assume that the largest dimension I'll have
+%   to deal with is 131\,pt, to try to minimize rounding errors.
+%   
+%    \begin{macrocode}
+% \newdimen\scaled_design_size
+%    \end{macrocode}
+%    \begin{macrocode}
+% \def\afm_convert#1=#2;{
+%    \eval_expr{#2}
+%    #1=\scaled_design_size
+%    \divide#1 by 8
+%    \multiply #1 by \result
+%    \divide #1 by \one_thousand
+%    \multiply#1 by 8
+% }
+%    \end{macrocode}
+% \end{macro} \end{macro}
+%
+% \begin{macro}{\vpl_real}
+% \begin{macro}{\vpl_int}
+%   The commands |\vpl_real|\meta{dimen} and |\vpl_int|\meta{count} print 
+%   a dimension and integer respectively in (V)PL syntax.
+%   
+%    \begin{macrocode}
+\def\vpl_real#1{R~\expandafter\lose_measure\the#1}
+\def\vpl_int#1{D~\the#1}
+%    \end{macrocode}
+% \end{macro} \end{macro}
+%
+% 
+% The count register |\boundary_char| has been removed, since 
+% the reimplementation of the left and right boundaries have drastically 
+% decreased the need to check which slot serves as the right boundary. 
+% Instead the integer |%boundarychar| (whose name cannot normally be typed) 
+% is used to store the number of this slot, but the user need never (and 
+% should not) access this integer directly. If the integer is not set 
+% then no slot serves as boundarychar.
+% \changes{1.900}{1998/12/04}{\cs{boundary_char} count register 
+%    removed. Right boundary slot number is now stored in the 
+%    \texttt{\%boundarychar} integer instead. (LH)}
+% 
+% \begin{macro}{\side_bearings}
+% \begin{macro}{\curr_bearings}
+%   These two dimens are used by the letterspacing mechanism.
+%    \begin{macrocode}
+\newdimen\side_bearings
+\newdimen\curr_bearings
+%    \end{macrocode}
+% \end{macro} \end{macro}
+%
+% \begin{macro}{\make_header}
+%    \begin{macrocode}
+\def\make_header#1{
+   \global\font_count=0
+   \setdim{designsize}{10pt}
+   \a_dimen=\dim{designsize}
+   \out_line{(DESIGNSIZE~\vpl_real\a_dimen)}
+   \x_setstr{codingscheme}{UNKNOWN}
+   \out_line{(CODINGSCHEME~\str{codingscheme})}
+%<*boundaryCompability>
+   \ifisint{boundarychar}\then
+      \x_setint{\percent_char boundarychar}{\int{boundarychar}}
+      \immediate\write16{Please~use~\string\setleftboundary\space
+         and/or~\string\makerightboundary^^J
+         instead~of~setting~the~boundarychar~integer.}
+   \fi
+%</boundaryCompability>
+   \ifisint{\percent_char boundarychar}\then
+      \a_count=\int{\percent_char boundarychar}
+      \out_line{(BOUNDARYCHAR~\vpl_int\a_count)}
+   \fi
+   \x_setint{letterspacing}{0}
+   \side_bearings=\make_factor{\int{letterspacing}}\half_point
+   \x_setint{minimumkern}{0}
+   \minimum_kern=\int{minimumkern}
+   \out_line{}
+}
+%    \end{macrocode}
+%   \changes{1.900}{1999/01/20}{Removed test for no letterspacing. (LH)}
+%   \changes{1.900}{1999/01/20}{Made integer expression \cs{div} a 
+%      dimen \cs{divide}. (LH)}
+% \end{macro}
+%
+% 
+% \begin{macro}{\make_mapfonts}
+%    \begin{macrocode}
+\def\make_mapfonts#1{
+   \let\saved_scale\vpl_scale
+   \let\saved_mapfont\vpl_mapfont
+   \let\do_slot=\do_mapfont
+   \pre_second_etx_pass_hook
+   #1
+   \post_second_etx_pass_hook
+   \out_line{}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\do_mapfont}
+%   |\do_mapfont| produces a |MAPFONT| entry for each font used by
+%   glyph |\slot_name|.
+%    \begin{macrocode}
+\def\do_mapfont{
+   \ifisglyph\slot_name\then
+      \mapfonts\slot_name
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% The following commands can be used in the \meta{mapfonts} glyph 
+% parameter.
+%
+% \begin{macro}{\vpl_scale}
+%    \begin{macrocode}
+\def\vpl_scale#1#2{{
+   \mapfont_scaling=\make_factor{#1}\mapfont_scaling
+   #2
+}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\vpl_mapfont}
+%   \changes{1.904}{1999/06/16}{Added \cs{record_usage}. (LH)}
+%   \changes{1.913}{2000/02/26}{Mapfont number control sequences are 
+%      named \cs{\meta{scaling factor}pt-\meta{font}} instead of 
+%      \cs{\meta{font}-\meta{scaling factor}pt}. They are also made 
+%      \cs{mathchardef}s. (LH)}
+%    \begin{macrocode}
+\def\vpl_mapfont#1#2{
+   \a_dimen=#2
+   \if_undefined{\the\mapfont_scaling-#1}\then
+      \global\x_cs\mathchardef{\the\mapfont_scaling-#1}=\font_count
+      \x_cs\xdef{f-\the\font_count}{\the\mapfont_scaling-#1}
+      \out_line{(MAPFONT~\vpl_int\font_count\space
+         (FONTNAME~#1)~
+         (FONTDSIZE~\vpl_real\a_dimen)~
+         (FONTAT~\vpl_real\mapfont_scaling))}
+      \record_usage{#1}
+      \global\advance\font_count by 1
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\pl_mapfont}
+%   As PL files have no \texttt{MAPFONT} properties, the |\pl_mapfont| 
+%   macro only needs to do one thing: copy the current value of 
+%   |\mapfont_|\-|scaling| to |\rawfont_|\-|scaling|. This is necessary 
+%   since if the raw font for which a ligful PL is being written has 
+%   been scaled, then that scaling factor must be put in the appropriate 
+%   place in the FD file entry, and the simplest way to determine this 
+%   scaling factor is to execute the |\mapfonts| of some glyph in the 
+%   font.
+%   
+%   Due to the fact that the second ETX file pass (that during which the 
+%   \texttt{MAPFONT} properties are written) is skipped when a PL file 
+%   is being written, the |\mapfonts| get executed during the fourth ETX 
+%   file pass instead of the second. This works fine since the 
+%   |\mapcommands| that are executed at that time when a VPL file is 
+%   being written aren't needed for PL files.
+%   \changes{1.913}{2000/03/21}{Macro added. (LH)}
+%    \begin{macrocode}
+\def\pl_mapfont#1#2{\global\rawfont_scaling=\mapfont_scaling}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\font_count}
+% \begin{macro}{\next_mapfont}
+% \begin{macro}{\prev_mapfont}
+%    \begin{macrocode}
+\newcount\font_count
+\newcount\next_mapfont
+\newcount\prev_mapfont
+%    \end{macrocode}
+% \end{macro} \end{macro} \end{macro}
+%
+% 
+% \begin{macro}{\make_fontdimens}
+%   This macro writes the \texttt{FONTDIMEN} property list. Note that 
+%   there is a difference between fontdimen 1 and the others, in that 
+%   fontdimen 1 is always in \texttt{pt}, not in the atsize-relative 
+%   \texttt{FONTUNITS} unit that the others are. Nonetheless, they can 
+%   both be treated the same here. This relies on (i) that 1000 denotes 
+%   the factor 1, and (ii) that 1000 AFM units equals 1 fontunit.
+%    \begin{macrocode}
+\def\make_fontdimens#1{
+   \out_line{(FONTDIMEN}
+      \a_count=1
+      \loop\ifnum 256>\a_count
+         \ifisint{fontdimen(\the\a_count)}\then
+            \out_lline{(PARAMETER~\vpl_int\a_count\space
+               R~\make_factor{\int{fontdimen(\the\a_count)}})}
+         \fi
+         \advance \a_count \@ne
+      \repeat
+   \out_lline{)}
+   \out_line{}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% 
+% \subsection{The ligtable}
+% 
+% \begin{macro}{\make_ligtable}
+%   \changes{1.927}{2003/12/08}{Changed the surrounding group to 
+%     \cs{begingroup} type. This helps contain errors that arise when 
+%     the \cs{setslot}s and \cs{endsetslot}s aren't properly balanced. 
+%     (LH)}
+%    \begin{macrocode}
+\def\make_ligtable#1{
+   \begingroup
+      \out_line{(LIGTABLE}
+%<!boundaryCompability>      \let\do_slot=\bgroup
+%<*boundaryCompability>
+      \def\do_slot{\bgroup
+         \ifisint{boundarychar}\then
+            \ifnum \int{boundarychar}=\slot_number
+               \def\vpl_liglabel{\out_liglabel\boundary_liglabel}
+            \fi
+         \fi
+      }
+%</boundaryCompability>
+      \let\end_do_slot=\vpl_kerning
+      \def\do_boundary{\bgroup \let\vpl_liglabel=\boundary_liglabel}
+      \let\endsetleftboundary=\vpl_kerning
+      \let\ligature=\vpl_ligature
+      \let\k=\vpl_kern
+      \let\rbserver_do=\vpl_rbserver_do
+      \let\rboundary_do=\vpl_rboundary_do
+      \pre_third_etx_pass_hook
+      #1
+      \post_third_etx_pass_hook
+      \out_lline{)}
+   \endgroup
+   \out_line{}
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\vpl_rbserver_do}
+% \begin{macro}{\vpl_rboundary_do}
+% \begin{macro}{\wrn_rboundary_do}
+%   |\vpl_rbserver_do| and |\vpl_rboundary_do| are what |\rbserver_do| 
+%   and |\rboundary_do| respectively are when a ligkern program is being 
+%   written and no entry has yet been written for the boundarychar 
+%   slot. |\wrn_rboundary_do| is what one of them will get set to 
+%   afterwards, so that warnings are written when collisions between 
+%   using the slot as a right boundary marker and using the slot for 
+%   the actual glyph occur.
+%    \begin{macrocode}
+\def\vpl_rbserver_do#1{
+   \do{#1}
+   \let\rboundary_do=\wrn_rboundary_do
+}
+\def\vpl_rboundary_do#1{
+   \do{#1}
+   \let\rbserver_do=\wrn_rboundary_do
+}
+\def\wrn_rboundary_do#1{
+   \do{#1}
+   \immediate\write16{Boundarychar~slot~usage~collision~in~
+      `\slot_name'~ligkern~program.}
+}
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+% 
+% 
+% \begin{macro}{\vpl_ligature}
+%   |\vpl_ligature{|\meta{type}|}{|\meta{glyph}|}{|\meta{glyph}|}| 
+%   produces a ligtable entry for glyph |\slot_name|.
+%   
+%   The double spaces in the |\out_lline| statement below might look 
+%   strange, but |\number| will always gobble the first one.
+%    \begin{macrocode}
+\def\vpl_ligature#1#2#3{
+   \get_slot_num{#3}
+   \ifnum -1=\result
+      \immediate\write16{Warning:~\string\ligature\space
+         for~unknown~slot~`#3'.}
+   \else
+      \x_cs\ifx{slots-#2}\x_relax
+         \immediate\write16{Warning:~\string\ligature\space
+            for~unknown~slot~`#2'.}
+      \else
+         \def\do##1{
+            \vpl_liglabel
+            \out_lline{(#1~D~\number`##1~\space\vpl_int\result)~
+               (COMMENT~#2~#3)}
+         }
+         \csname slots-#2\endcsname
+      \fi
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}  
+% 
+% 
+%
+% \begin{macro}{\vpl_kerning}
+%   |\vpl_kerning| writes out kerning instructions.
+%    \begin{macrocode}
+\def\vpl_kerning{
+   \let\do=\vpl_kern_do
+   \csname~r-\slot_name\endcsname
+   \vpl_ligstop
+   \egroup
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\vpl_kern}
+%   |\vpl_kern|\,|\l-|\meta{name}\,|\|\meta{amount} writes out a |KRN| 
+%   instruction.
+%   
+%   \changes{1.900}{1998/10/02}{Macro modified to avoid duplicate kerns. 
+%      (LH)}
+%   |\vpl_kern| has been modified so that at most one 
+%   \texttt{KRN} instruction is written for each (ordered) pair of 
+%   characters. The idea is basically to make \package{fontinst} forget, 
+%   until the end of |\vpl_kerning|, that the glyph for which |\vpl_kern| 
+%   is being called has been assigned a slot, as this stops any more 
+%   \texttt{KRN} instructions for that particular glyph from being 
+%   written. |\vpl_kern| has also been modified so that it will not write 
+%   out any \texttt{KRN} instructions for kerns whose absolute value is 
+%   less than or equal to |\minimum_kern|. |\minimum_kern| gets set to 
+%   the value of the integer \texttt{minimumkern} in |\make_header|. If 
+%   the user has not set \texttt{minimumkern}, a default value of 0 will 
+%   be supplied by \package{fontinst}.
+%   
+%   \changes{1.900}{1998/12/07}{Much of the code from \cs{vpl_kern} has 
+%     been moved to \cs{vpl_kern_do}. (LH)}
+%   \changes{1.913}{2000/02/26}{Using a nested \cs{ifnum} construct to 
+%      test the condition $\left\protect\vert
+%      \protect\mbox{\cs{a_count}}\right\protect\vert \quotechar >
+%      \protect\mbox{\cs{minimum_kern}}$. (LH)}
+%    \begin{macrocode}
+\def\vpl_kern#1#2{
+   \edef\a_macro{\expandafter\gobble_three\string#1}
+   \a_count=\expandafter\gobble_one\string#2\x_relax
+   \ifnum \ifnum -\a_count>\a_count - \fi\a_count>\minimum_kern
+      \edef\b_macro{~R~\make_factor\a_count}
+      \csname slots-\a_macro\endcsname
+   \fi
+   \x_cs\let{slots-\a_macro}=\x_relax
+}
+%    \end{macrocode}
+%   Observation (LH 1999/03/16): The above construction has the 
+%   side-effect that a direct contradiction between a right boundary 
+%   glyph and a glyph in the |%boundarychar| slot won't be detected if 
+%   one of the items in contradiction is a kern less than or equal to 
+%   |\minimum_kern|. Perhaps this should be changed (letting |\do| equal 
+%   to |\gobble_one| would let the dectection mechanism work, but |\do| 
+%   would have to be restored afterwards and it is doubtful if it is 
+%   worth it).
+% \end{macro}
+% 
+% 
+% \begin{macro}{\vpl_kern_do}
+%   |\vpl_kern_do| is what |\do| is defined to be when kerns are written.
+%    \begin{macrocode}
+\def\vpl_kern_do#1{
+   \vpl_liglabel
+   \out_lline{
+      (KRN~D~\number`#1~\b_macro)~
+      (COMMENT~\a_macro)
+   }
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \begin{macro}{\out_liglabel}
+% \begin{macro}{\boundary_liglabel}
+% \begin{macro}{\vpl_liglabel}
+%   |\out_liglabel| writes out a |LIGLABEL| instruction for a slot. 
+%   |\boundary_liglabel| writes out a |LIGLABEL| instruction for the 
+%   |BOUNDARYCHAR| ligkern program. |\vpl_liglabel| writes out the 
+%   correct |LIGLABEL| instruction for the current ligkern program, if it 
+%   is approriate.
+% 
+%    \begin{macrocode}
+\def\out_liglabel{
+   \out_lline{(LABEL~\vpl_int\slot_number)~(COMMENT~\slot_name)}
+   \let\vpl_liglabel=\x_relax
+   \let\vpl_ligstop=\out_ligstop
+}
+\def\boundary_liglabel{
+   \out_lline{(LABEL~BOUNDARYCHAR)~(COMMENT~\slot_name)}
+   \let\vpl_liglabel=\x_relax
+   \let\vpl_ligstop=\out_ligstop
+}
+\let\vpl_liglabel=\out_liglabel
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+%
+% \begin{macro}{\out_ligstop}
+% \begin{macro}{\vpl_ligstop}
+%   |\vpl_ligstop| writes out a |LIGSTOP| instruction if appropriate.
+%    \begin{macrocode}
+\def\out_ligstop{\out_lline{(STOP)}
+   \let\vpl_liglabel=\out_liglabel
+   \let\vpl_ligstop=\x_relax}
+\let\vpl_ligstop=\x_relax
+%    \end{macrocode}
+% \end{macro} \end{macro}
+%
+% 
+% \subsection{The characters}
+% 
+% \begin{macro}{\make_characters}
+%    \begin{macrocode}
+\def\make_characters#1{
+   \bgroup
+      \let\do_slot=\do_character
+      \let\end_do_slot=\end_do_character
+      \let\nextlarger=\vpl_nextlarger
+      \let\varchar=\vpl_varchar
+      \let\endvarchar=\end_vpl_varchar
+      \let\vartop=\vpl_vartop
+      \let\varmid=\vpl_varmid
+      \let\varbot=\vpl_varbot
+      \let\varrep=\vpl_varrep
+      \if_including_map_
+         \let\saved_raw\vpl_raw
+         \let\saved_rule\vpl_rule
+         \let\saved_special\vpl_special
+         \let\saved_warning\vpl_warning
+         \let\saved_movert\vpl_movert
+         \let\saved_moveup\vpl_moveup
+         \let\saved_push\vpl_push
+         \let\saved_pop\vpl_pop
+      \else
+         \def\do_character_map{
+            \ifdim \rawfont_scaling=-\p@
+               \mapfonts\slot_name
+            \else
+               \let\do_character_map=\x_relax
+            \fi
+         }
+         \let\saved_mapfont\pl_mapfont
+         \let\saved_scale\vpl_scale
+      \fi
+      \pre_fourth_etx_pass_hook
+      #1
+      \post_fourth_etx_pass_hook
+   \egroup
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\do_character}
+%   \changes{1.913}{2000/03/10}{Negative italic corrections \emph{are} 
+%      written to the (V)PL being generated. (LH)}
+%   \changes{1.927}{2004/07/13}{Added flag for emitting warning message 
+%      when a glyph is missing. (LH) Requested by Werner Lemberg.}
+%   |\do_character| produces a character entry for glyph |\slot_name| in
+%   slot |\slot_number|.
+%   
+%    \begin{macrocode}
+\def\do_character{
+   \if_undefined{g-\slot_name}\then
+      \ifisint{requireglyphs}\then
+         \fontinstwarning{ETX~to~(V)PL}{
+            Undefined~glyph~`\slot_name'~requested\message_break
+            for~slot~\the\slot_number\message_number}
+      \fi
+      \expandafter\gobble_setslot
+   \else
+      \ifx\slot_name\notdef_name\else
+         \out_line{(CHARACTER~\vpl_int\slot_number\space
+            (COMMENT~\slot_name)}
+         \glyph_parameter\glyph_metrics\slot_name
+         \a_dimen=\make_factor\a_count \p@
+         \do_character_sidebearings
+         \out_lline{(CHARWD~\vpl_real\a_dimen)}
+         \ifnum \z@=\b_count \else
+            \out_lline{(CHARHT~R~\make_factor\b_count)}
+         \fi
+         \ifnum \z@=\c_count \else
+            \out_lline{(CHARDP~R~\make_factor\c_count)}
+         \fi
+         \ifnum \z@=\d_count \else
+            \out_lline{(CHARIC~R~\make_factor\d_count)}
+         \fi
+         \do_character_map
+      \fi
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\do_character_sidebearings}
+%    \begin{macrocode}
+\def\do_character_sidebearings{
+   \ifisint{\slot_name-spacing}\then
+      \curr_bearings=\make_factor{\int{\slot_name-spacing}}\half_point
+   \else
+      \curr_bearings=\side_bearings
+   \fi
+   \advance\a_dimen by 2\curr_bearings
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\do_character_map}
+%    \begin{macrocode}
+\def\do_character_map{
+   \global\prev_mapfont=0
+   \out_lline{(MAP}
+   \ifdim 0pt=\curr_bearings
+      \mapcommands\slot_name
+   \else
+      \out_llline{(MOVERIGHT~\vpl_real\curr_bearings)}
+      \mapcommands\slot_name
+      \out_llline{(MOVERIGHT~\vpl_real\curr_bearings)}
+   \fi
+   \out_llline{)}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\do_character_no_letterspacing}
+%   LH 1999/03/27: This is an alternative version of |\do_character| 
+%   which I think is now antiquated. It used to have an advantage over 
+%   |\do_character| in that it did not do any letterspacing (in v\,1.5, 
+%   that was good since |\do_character| used to write code for 
+%   letterspacing to the VPL regardless of whether is was needed or 
+%   not), but that advantage is gone since |\do_character_map| is now
+%   a bit less stupid than it used to be.
+%   
+%   For the record, I don't think there ever was a user interface for 
+%   using this macro instead of |\do_character|, but I suspect there 
+%   are plenty of people around who have hacked it into being used.
+%   
+%   With v\,1.913 I commented it out completely, since I didn't feel 
+%   like updating the calls to |\afm_convert|.
+%    \begin{macrocode}
+%<*obsolete>
+% \def\do_character_no_letterspacing{
+%    \x_cs\ifx{g-\slot_name}\x_relax
+%       \expandafter\gobble_setslot
+%    \else
+%       \ifx\slot_name\notdef_name\else
+%          \out_line{(CHARACTER~\vpl_int\slot_number\space
+%             (COMMENT~\slot_name)}
+%          \afm_convert\a_dimen=\width\slot_name;
+%          \out_lline{(CHARWD~\vpl_real\a_dimen)}
+%          \afm_convert\a_dimen=\height\slot_name;
+%          \out_lline{(CHARHT~\vpl_real\a_dimen)}
+%          \afm_convert\a_dimen=\depth\slot_name;
+%          \out_lline{(CHARDP~\vpl_real\a_dimen)}
+%          \afm_convert\a_dimen=\italic\slot_name;
+%          \ifnum\a_dimen>0 \out_lline{(CHARIC~\vpl_real\a_dimen)} \fi
+%          \global\prev_mapfont=0 \out_lline{(MAP}
+%             \mapcommands\slot_name
+%          \out_llline{)}
+%       \fi
+%    \fi
+% }
+%</obsolete>
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\gobble_setslot}
+%    \begin{macrocode}
+\long\def\gobble_setslot#1\endsetslot{\endsetslot}
+%    \end{macrocode}
+%   \changes{1.901}{1999/03/27}{Made \cs{gobble_setslot} a \cs{long} 
+%      macro. (LH)}
+% \end{macro}
+%
+% \begin{macro}{\end_do_character}
+%    \begin{macrocode}
+\def\end_do_character{
+   \ifisglyph\slot_name\then
+      \out_lline{)}
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\notdef_name}
+%    \begin{macrocode}
+\def\notdef_name{.notdef}
+%    \end{macrocode}
+% \end{macro}
+%
+% 
+% \subsection{Slot commands that put things in a character property list}
+% 
+% Here follows the active definitions for those slot commands that 
+% causes things to be put in |CHARACTER| property lists.
+% 
+% \begin{macro}{\vpl_nextlarger}
+%   |\vpl_nextlarger|\marg{name} produces a |NEXTLARGER| entry.
+%    \begin{macrocode}
+\def\vpl_nextlarger#1{
+   \get_slot_num{#1}
+   \ifnum -1<\result
+      \out_lline{(NEXTLARGER~D~\the\result)~(COMMENT~#1)}
+   \else
+      \immediate\write16{Warning:~\string\nextlarger\space
+         for~unknown~slot~`#1'}
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\vpl_varchar}
+% \begin{macro}{\end_vpl_varchar}
+%   |\vpl_varchar| \meta{varchar commands} |\end_vpl_varchar| produces 
+%   a |VARCHAR| entry.
+%   
+%    \begin{macrocode}
+\def\vpl_varchar{\out_lline{(VARCHAR}}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\end_vpl_varchar{\out_llline{)}}
+%    \end{macrocode}
+% \end{macro} \end{macro}
+%
+%
+% \begin{macro}{\vpl_vartop}
+%    \begin{macrocode}
+\def\vpl_vartop#1{
+   \get_slot_num{#1}
+   \ifnum -1<\result
+      \out_llline{(TOP~D~\the\result)~(COMMENT~#1)}
+   \else
+      \immediate\write16{Warning:~\string\vartop\space
+         for~unknown~slot~`#1'}
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\vpl_varmid}
+%    \begin{macrocode}
+\def\vpl_varmid#1{
+   \get_slot_num{#1}
+   \ifnum -1<\result
+      \out_llline{(MID~D~\the\result)~(COMMENT~#1)}
+   \else
+      \immediate\write16{Warning:~\string\varmid\space
+         for~unknown~slot~`#1'}
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\vpl_varbot}
+%    \begin{macrocode}
+\def\vpl_varbot#1{
+   \get_slot_num{#1}
+   \ifnum -1<\result
+      \out_llline{(BOT~D~\the\result)~(COMMENT~#1)}
+   \else
+      \immediate\write16{Warning:~\string\varbot\space
+         for~unknown~slot~`#1'}
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\vpl_varrep}
+%    \begin{macrocode}
+\def\vpl_varrep#1{
+   \get_slot_num{#1}
+   \ifnum -1<\result
+      \out_llline{(REP~D~\the\result)~(COMMENT~#1)}
+   \else
+      \immediate\write16{Warning:~\string\varrep\space
+         for~unknown~slot~`#1'}
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \subsection{Saved map commands}
+% 
+% The following commands (and |\vpl_scale|, which is defined above) can 
+% be used in the \meta{mapcommands} glyph parameter.
+% 
+% \begin{macro}{\vpl_raw}
+%   This macro writes the entries in a \texttt{MAP} that are needed for 
+%   the given raw character. Note that the `at' comment below gives the 
+%   scaling relative to the atsize of the virtual font, not the physical 
+%   atsize.
+%   \IndexEntry{\LevelSame{PL properties:}^^A
+%      \LevelSorted{SELECTFONT}{\texttt{SELECTFONT}}^^A
+%   }{usage}{\thepage}
+%    \begin{macrocode}
+\def\vpl_raw#1#2#3{
+   \global\next_mapfont=\csname\the\mapfont_scaling-#1\endcsname
+   \ifnum \next_mapfont=\prev_mapfont \else
+      \out_llline{(SELECTFONT~\vpl_int\next_mapfont)~
+         (COMMENT~#1~at~
+          \expandafter\lose_measure \the\mapfont_scaling)}
+   \fi
+   \out_llline{(SETCHAR~D~#2)~(COMMENT~#3)}
+   \global\prev_mapfont=\next_mapfont
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\vpl_rule}
+%    \begin{macrocode}
+\def\vpl_rule#1#2{
+   \a_dimen=\make_factor{#2}\mapfont_scaling
+   \b_dimen=\make_factor{#1}\mapfont_scaling
+   \out_llline{(SETRULE~\vpl_real\a_dimen\space\vpl_real\b_dimen)}
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\vpl_special}
+% \begin{macro}{\vpl_warning}
+% \begin{switch}{warningspecials}
+%   \changes{1.913}{2000/02/26}{Switch controlling whether 
+%      \cs{glyphwarning}s should put \texttt{SPECIALS} in the VPL was 
+%      added. (LH)}
+%    \begin{macrocode}
+\def\vpl_special#1{
+   \out_llline{(SPECIAL~#1)}}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\vpl_warning#1{
+   \ifwarningspecials
+      \out_llline{(SPECIAL~Warning:~#1)}
+   \fi
+   \immediate\write16{Warning:~#1.}
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\newif\ifwarningspecials
+\warningspecialstrue
+%    \end{macrocode}
+% \end{switch}\end{macro}\end{macro}
+% 
+% \begin{macro}{\vpl_movert}
+% \begin{macro}{\vpl_moveup}
+%    \begin{macrocode}
+\def\vpl_movert#1{
+   \a_dimen=\make_factor{#1}\mapfont_scaling
+   \out_llline{(MOVERIGHT~\vpl_real\a_dimen)}
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\vpl_moveup#1{
+   \a_dimen=\make_factor{#1}\mapfont_scaling
+   \out_llline{(MOVEUP~\vpl_real\a_dimen)}
+}
+%    \end{macrocode}
+% \end{macro} \end{macro}
+% 
+% \begin{macro}{\vpl_push}
+% \begin{macro}{\vpl_pop}
+%    \begin{macrocode}
+\def\vpl_push{\out_llline{(PUSH)}}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\vpl_pop{\out_llline{(POP)}}
+%    \end{macrocode}
+% \end{macro} \end{macro}
+%
+% 
+% \subsection{Tidying up}
+% 
+% \begin{macro}{\make_tidy}
+%   If a VPL file was written, the tidying up consists of clearing the 
+%   list of mapfont numbers, since that is stored globally. If a PL 
+%   file was written, the tidying up consists of writing a 
+%   \texttt{DESIGNUNITS} property for those fonts which need one.
+%    \begin{macrocode}
+\def\make_tidy#1{
+   \tidying_up_hook
+   \if_including_map_
+      \a_count=0
+      \loop\ifnum \a_count<\font_count
+         \edef\a_macro{\csname~f-\the\a_count\endcsname}
+         \global\x_cs\let\a_macro\x_relax
+         \advance\a_count by 1
+      \repeat
+      \global\font_count=0
+   \else
+      \ifdim \rawfont_scaling<\z@
+         \fontinstwarning{ETX~to~(V)PL}{The~font~
+            \out_filename\space doesn't~contain~any~characters}
+         \global\rawfont_scaling=\p@
+      \fi
+      \ifdim \rawfont_scaling=\p@ \else
+         \out_line{(DESIGNUNITS~\vpl_real\rawfont_scaling)}
+      \fi
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% \section{Font installation commands and \texttt{.fd} files}
+% 
+% \DescribeMacro{\installfonts}
+% \DescribeMacro{\endinstallfonts}
+% The call
+% \begin{quote}
+%    |\installfonts| \meta{install commands} |\endinstallfonts|
+% \end{quote}
+% is the top-level interface for installing a number of fonts
+% and creating |.fd| files for them.
+%
+% \DescribeMacro{\installfamily}
+% \DescribeMacro{\installfont}
+% \DescribeMacro{\installrawfont}
+% The \meta{install commands} are:
+% \begin{isyntax}
+%    |\installfamily|\marg{encoding}\marg{family}\marg{FD-commmands}\\
+%    |\installfont|\marg{font-name}\marg{file-list}\marg{etx}\penalty0
+%      \marg{encoding}\marg{family}\marg{series}\marg{shape}\marg{size}\\
+%    |\installrawfont|\marg{font-name}\marg{file-list}\marg{etx}^^A
+%      \penalty0
+%      \marg{encoding}\marg{family}\marg{series}\marg{shape}\marg{size}\\
+%    |\installfontas|\marg{font-name}\penalty0\marg{encoding}^^A
+%       \marg{family}\marg{series}\marg{shape}\marg{size}
+% \end{isyntax}
+%
+% Each |\installfamily| command causes the generation of an |.fd| file
+% for \meta{encoding} and \meta{family}, which is writen out by the time
+% |\endinstallfonts| is processed.
+%
+% Each |\installfont| generates a |.vpl| font by calling |\etxtovpl|
+% and adds an |.fd| entry.
+% Each |\installrawfont| generates a ligfull |.pl| font by calling
+% |\etxtopl| and adds an |.fd| entry.  (Raw |.pl| fonts, containing only
+% the glyph metrics without any ligaturing or kerning information,
+% are also generated by |\mtxtopl| called from |\transformfont|
+% statements.)
+%
+% \changes{1.912}{2000/01/15}{\cs{install}\dots\ commands updated to 
+%    set \cs{setsomething_global} to \cs{global} around themselves. This 
+%    reduces problems with assignments ``not working'' due to the 
+%    unintuitive grouping. (LH) Problem pointed out by Hilmar 
+%    Schlegel, , and others.}
+%
+% \begin{macro}{\installfonts}
+%   Initializes the |\family_toks| token register, which is used to store 
+%   the information which is written out to |.fd| files at the end of the 
+%   job.
+%
+%    \begin{macrocode}
+\newtoks\family_toks
+\def\installfonts{
+   \bgroup
+   \global\family_toks={}
+   \gdef\prev_file_list{}
+   \global\let\setsomething_global=\global
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\installfamily}
+%   |\installfamily|\marg{encoding}\marg{family}\marg{FD-commmands}
+%   
+%   Adds the command
+%   \begin{quote}
+%     |\fd_family|\marg{encoding}\marg{family}\marg{FD-commmands}
+%   \end{quote}
+%   to the token list |\family_toks| and defines a macro 
+%   |\|\meta{encoding}|-|\meta{family}.^^A
+%   \describecsfamily{\meta{encoding}-\meta{family}}
+%
+%    \begin{macrocode}
+\def\installfamily#1#2#3{
+   \global\family_toks=
+      \expandafter{\the\family_toks\fd_family{#1}{#2}{#3}}
+   \global\x_cs\let{#1-#2}\empty_command
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\installfont}
+% \begin{macro}{\installrawfont}
+%   \changes{1.904}{1999/06/16}{Added \cs{record_usage}. (LH)}
+%   \multchanges{\cs{installfont}\cs{installrawfont}}{1.913}{2000/03/21}
+%      {Moved some code from \cs{install_font} to these commands. (LH)}
+%   |\installfont|\marg{font-name}\marg{file-list}\marg{etx}\\
+%   \vadjust{}\qquad \marg{encoding}\marg{family}\marg{series}^^A
+%     \marg{shape}\marg{size}\\
+%   |\installrawfont|\marg{font-name}\marg{file-list}\marg{etx}\\
+%   \vadjust{}\qquad \marg{encoding}\marg{family}\marg{series}^^A
+%     \marg{shape}\marg{size}
+%
+%    \begin{macrocode}
+\def\installfont#1#2#3#4#5#6#7#8{
+   \global\let\setsomething_global=\x_relax
+   \input_metrics{}{#2}
+   \etxtovpl{#3}{#1}
+   \installfontas{#1}{#4}{#5}{#6}{#7}{#8}
+   \global\let\setsomething_global=\global
+}
+\def\installrawfont#1#2#3#4#5#6#7#8{
+   \global\let\setsomething_global=\x_relax
+   \xdef\out_filename{#1}
+   \input_metrics{\let\storemapdata=\installraw_storemap}{#2}
+   \let\storemapdata=\gobble_three
+   \etxtopl{#3}{#1}
+   \record_usage{#1}
+   \installfontas{
+      \ifdim \rawfont_scaling=\p@ \else
+         [\expandafter\lose_measure\the\rawfont_scaling]~
+      \fi #1
+   }{#4}{#5}{#6}{#7}{#8}
+   \global\let\setsomething_global=\global
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\installraw_storemap}
+%   The |\installraw_storemap| macro is a definition of |\storemapdata| 
+%   that is used when the metrics for a ligful PL file is being inputed. 
+%   Its job is to write a |\storemapdata| command for this PL to the 
+%   transforms record file if the PL being written does not have the 
+%   same name as the MTX that the metrics are taken from (the 
+%   information is already stored if both files have the same name). 
+%   |\out_filename| is prematurely set by |\installrawfont| (i.e., long 
+%   before the PL file is actually opened) so that it can be used in 
+%   comparing the file names.
+%   \changes{1.913}{1999/03/23}{Macro added. (LH)}
+%    \begin{macrocode}
+\def\installraw_storemap#1#2#3{
+   \def\a_macro{#1}
+   \ifx \a_macro\out_filename \else
+      \record_transform{\out_filename}{\string\frommtx{#1}}{}\if_false
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \begin{macro}{\input_metrics}
+%   The |\input_metrics| macro takes a comma-separated list of metric 
+%   files as its second argument and sees to that exactly these metrics 
+%   are loaded. If the list is identical to that used in the last call 
+%   to |\input_metrics|, then this is already the case and 
+%   |\input_metrics| simply refrains from flushing those previous 
+%   metrics from \TeX's memory. Otherwise it closes a group (flushing 
+%   the metrics from a previous call), opens a group (so that these 
+%   metrics can be flushed at the next |\installfont| or 
+%   |\installrawfont| command, if necessary), and starts inputting the 
+%   metrics files in question.
+%   
+%   The first argument consists of code that will be executed after the 
+%   group has been closed and opened, but before any metrics is inputed.
+%   \changes{1.900}{1999/02/13}
+%     {Use \cs{process_csep_list} for file-list. (LH)}
+%   \changes{1.914}{2000/05/26}{Redefined to suite \cs{file_list_metrics}. 
+%      In particular, there will now be a comma at the end of 
+%      \cs{curr_file_list} and \cs{prev_file_list}. (LH)}
+%    \begin{macrocode}
+\def\input_metrics#1#2{
+   \let\metrics=\file_list_metrics
+   \xdef\curr_file_list{#2,}
+   \let\metrics=\x_relax
+   \ifx\prev_file_list\curr_file_list\else
+      \egroup\bgroup
+      #1
+      \expandafter\process_csep_list \expandafter\input_mtx_file
+        \curr_file_list\process_csep_list,
+      \global\let\prev_file_list=\curr_file_list
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\file_list_metrics}
+%   The |\file_list_metrics| macro is a definition of |\metrics| that 
+%   is used in the \meta{file-list} argument of |\install|\-|font| and 
+%   |\install|\-|raw|\-|font| when that is |\xdef|ed by |\input_metrics|. 
+%   This special definition prevents the succeeding \meta{metric 
+%   commands} from getting expanded.
+%   \changes{1.914}{2000/05/26}{Macro added. (LH)}
+%    \begin{macrocode}
+\def\file_list_metrics#1,{
+   \iffalse{\fi}
+   \a_toks=\expandafter{\curr_file_list\x_relax#1,}
+   \xdef\curr_file_list{\the\a_toks \iffalse}\fi
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\installfontas}
+%   The |\installfontas| command has the syntax
+%   \begin{isyntax}
+%     |\installfontas|\marg{font-info}\marg{encoding}\marg{family}^^A
+%       \penalty0\marg{series}\penalty0\marg{shape}\penalty0\marg{size}
+%   \end{isyntax}
+%   The precise definition of a \meta{font-info} can be found in 
+%   \cite[Sec.~4]{fntguide}, here it suffices to say that a font name 
+%   (name of (V)PL file) is a valid \meta{font-info}. The |\installfontas| 
+%   command adds an entry for the \meta{font-info} font to a font 
+%   definition file, giving it the NFSS attributes \meta{encoding}^^A
+%   \texttt{/}\nolinebreak[1]\meta{family}\texttt{/}\nolinebreak[1]^^A
+%   \meta{series}\texttt{/}\nolinebreak[1]\meta{shape}\texttt{/}^^A
+%   \nolinebreak[1]\meta{size}. The substitution mechanism will act on 
+%   \meta{series} and \meta{shape}, and it is therefore possible that 
+%   \meta{font-info} will appear in more than one |\Declare|\-|Font|\-^^A
+%   |Shape| command. \meta{size} can be either some \meta{size-infos}, 
+%   as defined in \cite[Sec.~4]{fntguide}, or a \package{fontinst} 
+%   shorthand for a such, declared using |\declaresize|.
+%   \changes{1.912}{2000/01/16}{Command added. (LH)}
+%   \changes{1.913}{2000/03/02}{Specification changed to allow 
+%      arbitrary \meta{font-info}s as first argument. (LH)}
+%   \changes{1.921}{2002/03/27}{Automatically doing an 
+%      \cs{installfamily} if that has not been done. (LH) Suggested 
+%      by Rowland McDonnell.}
+%    \begin{macrocode}
+\def\installfontas#1#2#3#4#5#6{
+   \if_undefined{#2-#3-#4-#5}\then
+      \let\do_shape=\x_relax
+      \if_undefined{#2-#3}\then
+         \x_cs\let{#2-#3}\empty_command
+         \autoinstallfamily{#2}{#3}
+      \fi
+      \x_cs\xdef{#2-#3}{
+         \csname#2-#3\endcsname
+         \do_shape{#2}{#3}{#4}{#5}
+      }
+   \fi
+   \let\do_size=\x_relax
+   \x_cs\xdef{#2-#3-#4-#5}{
+      \if_defined{#2-#3-#4-#5}\then
+         \csname#2-#3-#4-#5\endcsname
+      \fi
+      \do_size{#6}{#1}
+   }
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\autoinstallfamily}
+%   This command is called by |\installfontas| when it is asked to 
+%   install a font for which no |\installfamily| has been given. The 
+%   syntax is
+%   \begin{quote}
+%     |\autoinstallfamily|\marg{encoding}\marg{family}
+%   \end{quote}
+%   It defaults to calling |\installfamily| in the obvious way, but 
+%   it can be redefined if the user wants something different.
+%   \changes{1.924}{2003/02/08}{Macro added. (LH)}
+%    \begin{macrocode}
+\def\autoinstallfamily#1#2{\installfamily{#1}{#2}{}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\endinstallfonts}
+%   Finish the installation by processing the |\family_toks|
+%   token register, which contains the accumulated information
+%   to be written out to |.fd| files.
+%
+%    \begin{macrocode}
+\def\endinstallfonts{
+   \global\let\setsomething_global=\x_relax
+   \let\do_shape=\fd_shape
+   \let\do_size=\fd_size
+   \the\family_toks
+   \global\family_toks{}
+   \egroup
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% 
+% The |\installfont| command has traditionally allowed that names of 
+% base fonts (MTX files) are suffixed by a 
+% \verb*" scaled "\meta{factor} that would cause the \texttt{rawscale} 
+% integer to be set and thereby scale everything that was in that base 
+% font by the said \meta{factor}. There is now a more general approach 
+% to this. If the control sequence 
+% \describecsfamily{IFKW-\meta{keyword}}|IFKW-|\meta{keyword} is 
+% defined then \meta{keyword} may be used as \texttt{scaled} is above; 
+% this control sequence should grab all the ``arguments'' of the 
+% keyword, process them as necessary, and end with the |\get_keyword| 
+% macro so that another keyword may be processed. As a rule, the 
+% arguments and keywords are delimited from each other by single spaces. 
+% A macro grabbing an argument grabs also the space after it. The 
+% \texttt{IFKW} is for \texttt{I}nstall\texttt{F}ont 
+% \texttt{K}ey\texttt{W}ord.
+% 
+% \changes{1.923}{2002/10/09}{Added support for keywords other than 
+%    \texttt{scaled} in the second argument of \cs{installfont} and 
+%    such. (LH)}
+% 
+% \begin{macro}{\input_mtx_file}
+%   The |\input_mtx_macro| takes one undelimited argument. It 
+%   interprets this argument as if it was one item in the \meta{file-list} 
+%   argument of |\install|\-|font| or |\install|\-|rawfont|, and does 
+%   the corresponding processing. The argument should be one of the 
+%   following three things:
+%   \begin{quote}
+%     \meta{font}\meta{optional modifiers}\\
+%     |\metrics| \meta{metric commands}\\
+%     \meta{nothing}
+%   \end{quote}
+%   If, in the first case, an MTX file for \meta{font} does not 
+%   exist then it is generated on the fly from a corresponding |.pl|, 
+%   |.afm|, or |.vpl| file in the call to |\fromany|. In the second 
+%   case, the \meta{metric commands} simply get executed. In the third 
+%   case, nothing happens.
+%   
+%   The \meta{optional modifiers} is either empty or has the form 
+%   \meta{modifier clause}\meta{optional modifiers}. A \meta{modifier 
+%   clause} generally has the form
+%   \begin{quote}
+%     \verb*" "\meta{keyword}\verb*" "\meta{argument(s)}
+%   \end{quote}
+%   e.g.,
+%   \begin{quote}
+%     \verb*| scaled |\meta{rawscale factor}
+%   \end{quote}
+%   
+%   \changes{1.904}{1999/06/16}{Now using \cs{fromany} to make an MTX 
+%      file when necessary. Furthermore testing for empty argument using 
+%      \cs{ifx} rather than \cs{if}. (LH)}
+%   \changes{1.912}{2000/01/15}{Added error message. (LH) Suggested by 
+%      Alexei Kostin.}
+%   \changes{1.914}{2000/05/26}{Can now accept arbitrary metric 
+%      commands in argument. (LH)}
+%    \begin{macrocode}
+\def\input_mtx_file#1{
+   \reset_modifiers_hook
+   \ifx\x_relax#1\x_relax
+%    \end{macrocode}
+%   This tests for an empty argument, but it also lets explicit metric 
+%   commands be executed. 
+%    \begin{macrocode}
+   \else
+      \identity_one{\get_file_name #1~}~\par
+%    \end{macrocode}
+%   The two spaces have the effect of putting an empty keyword modifier 
+%   last in the \meta{optional modifiers}. If everything is all right 
+%   then this will gobble the |\par|. However, if the user forgot some 
+%   argument of the last keyword then there will be an error message 
+%   when |\get_keyword| will try to grab the next keyword.
+%   
+%   If an encoding has been specified then the source file must be a PL 
+%   or VPL file (since these are the only ones for which it makes sense 
+%   to specify an encoding), otherwise we rely on |\fromany| to find a 
+%   font metrics file.
+%   \changes{1.926}{2003/07/10}{Only looking for PL and VPL files when 
+%      an encoding is specified. (LH)}
+%   \changes{1.929}{2005/01/13}{Missing space in message inserted. (LH)
+%     Pointed out by Peter Dyballa.}
+%    \begin{macrocode}
+      \ifx \pl_encoding\empty_command
+         \fromany\file_name
+      \else
+         \metrics_given_encoding{\file_name}{\pl_encoding}
+      \fi
+      \ifisstr{afm-name}\then 
+         \inputmtx{\str{afm-name}}
+      \else
+         \fontinsterror{\string\install...}{
+            Font/MTX~file~\file_name\space not~found
+         }{
+            You~can~insert~an~\string\inputmtx\space command~here
+            \messagebreak to~input~some~other~MTX~file~instead.
+            \ifisint{rawscale}\then \messagebreak 
+            The~requested~raw~scaling~will~then~be~applied~on~that.
+            \fi
+         }
+      \fi
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\metrics_given_encoding}
+%   This macro is a cousin of |\fromany|, for the case that metrics are 
+%   taken from a (V)PL file that furthermore is assigned nonstandard 
+%   metrics. The syntax is
+%   \begin{quote}
+%     |\metrics_given_encoding|\marg{font}\marg{etx}
+%   \end{quote}
+%   and the generated MTX file is named 
+%   \meta{font}\texttt{-}\meta{etx}\texttt{.mtx} to avoid that it is 
+%   picked up by |\fromany| by mistake.
+%   \changes{1.929}{2005/01/12}{The \texttt{afm-name} string usually has 
+%      a value at this point, so it is necessary to reset it. (LH, 
+%      sighing because he knows this isn't the first time this problem 
+%      occurred) First to be hit by this bug was Michael Zedler.}
+%    \begin{macrocode}
+\def\metrics_given_encoding#1#2{
+   \x_cs\edef{s-afm-name}{#1-#2}
+   \if_file_exists{#1.pl}\then
+      \generalpltomtx{#1}{#1-#2}{pl}{#2}
+   \else
+      \if_file_exists{#1.vpl}\then
+         \generalpltomtx{#1}{#1-#2}{vpl}{#2}
+      \else
+         \unsetstr{afm-name}
+   \fi\fi
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \definechange{option-keyword}{1.924}{2002/02/16}{Added mechanism
+%    for passing options to MTX and ETX files. (LH)}
+% 
+% \begin{macro}{\reset_modifiers_hook}
+%   The |\reset_modifiers_hook| macro contains code that initialises 
+%   all parameters that are modified by some \meta{modifier clause} to 
+%   their default values. If you need to add some initialisations due 
+%   to that you define additional keywords then you should append 
+%   these initialisations to this macro.
+%   \usechange{option-keyword}
+%    \begin{macrocode}
+\def\reset_modifiers_hook{
+   \unsetint{rawscale}
+   \let\glyph_name_modifier\identity_one
+   \let\pl_encoding\empty_command
+   \let\list_of_options\empty_command
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\get_file_name}
+%   The macro |\get_file_name| grabs the base font (or other MTX file) 
+%   name and starts the processing of the \meta{optional modifiers}.
+%    \begin{macrocode}
+\def\get_file_name #1~{
+   \edef\file_name{#1}
+   \get_keyword
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\get_keyword}
+% \begin{macro}{\gobble_keywords}
+%   The |\get_keyword| macro expects to be expanded in the context
+%   \begin{quote}
+%     |\get_keyword|\,\meta{keyword}\verb*" "
+%   \end{quote}
+%   where the \meta{keyword} is a possible keyword. If 
+%   |\IFKW-|\meta{keyword} is defined then the above expands to it, 
+%   otherwise the above expands to an error message followed by a 
+%   |\gobble_keywords|, which will gobble the rest of the list of 
+%   keywords and arguments.
+%    \begin{macrocode}
+\def\get_keyword #1~{
+   \if_defined{IFKW-#1}\then
+      \csname IFKW-#1 \expandafter\endcsname
+   \else
+      \fontinsterror{\string\install...}{
+         `#1'~is~not~a~defined~keyword
+      }{
+         \error_help_a\messagebreak
+         Extra~tokens~will~be~flushed.
+      }
+      \expandafter\gobble_keywords
+   \fi
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\gobble_keywords#1\par{}
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% \begin{macro}{\IFKW-}
+%   The empty keyword is used to flag the end of the \meta{optional 
+%   modifiers}.
+%    \begin{macrocode}
+\x_cs\let{IFKW-}=\gobble_keywords
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\IFKW-scaled}
+%   This macro handles grabbing the argument of the traditional 
+%   \texttt{scaled} keyword.
+%   \changes{1.900}{1999/02/05}{Changed \cs{setint} to \cs{resetint}. 
+%      (LH)}
+%    \begin{macrocode}
+\x_cs\def{IFKW-scaled}#1~{
+   \ifnum #1=\one_thousand
+      \unsetint{rawscale}
+   \else
+      \x_resetint{rawscale}{#1}
+   \fi
+   \get_keyword
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\IFKW-suffix}
+%   This macro handles grabbing the argument of the \texttt{suffix} 
+%   keyword. The effect of `\texttt{suffix} \meta{suffix}' is that 
+%   \meta{suffix} will be appended to the name of every glyph defined 
+%   by the next MTX file to be read in.
+%    \begin{macrocode}
+\x_cs\def{IFKW-suffix}#1~{
+   \def\glyph_name_modifier##1{##1#1}
+   \get_keyword
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\IFKW-encoding}
+% \begin{macro}{\pl_encoding}
+%   This macro handles grabbing the argument of the \texttt{encoding} 
+%   keyword. The effect of `\texttt{encoding} \meta{etx}' is that 
+%   \meta{etx} will be used as encoding when converting a PL or VPL 
+%   file to MTX. |\pl_encoding| is used for storing the argument 
+%   value. Its expansion is normally empty, which means |\fromafm| 
+%   handles locating the metrics file and the encoding used for a PL 
+%   or VPL is determined by its codingscheme.
+%    \begin{macrocode}
+\x_cs\def{IFKW-encoding}#1~{
+   \def\pl_encoding{#1}
+   \get_keyword
+}
+\let\pl_encoding=\empty_command
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% 
+% \begin{macro}{\IFKW-option}
+%   This macro handles grabbing the argument of the \texttt{option} 
+%   keyword. One can test using |\ifoption| whether a particular option 
+%   was specified.
+%   \usechange{option-keyword}
+%    \begin{macrocode}
+\x_cs\def{IFKW-option}#1~{
+   \add_to\list_of_options{\do{#1}}
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\ifoption}
+%   \usechange{option-keyword}
+% \begin{macro}{\list_of_options}
+%   \usechange{option-keyword}
+%   The |\ifoption| command is used to test whether a particular option 
+%   is present on the list of options. The syntax is
+%   \begin{quote}
+%     |\ifoption|\marg{string}|\then|
+%   \end{quote}
+%   and it is tested whether the \meta{string} was one of the options 
+%   given. Like strings in general, the \meta{string} is expanded 
+%   before it is compared to the options listed in |\list_of_options|.
+%   
+%   The |\list_of_options| is a sequence of items on the form
+%   \begin{quote}
+%     |\do|\marg{option}
+%   \end{quote}
+%   where each \meta{option} is an already expanded string of 
+%   characters.
+%    \begin{macrocode}
+\def\ifoption#1\then{
+   \_a_false
+   \edef\a_macro{#1}
+   \def\do##1{
+      \if_a_ \else
+         \def\b_macro{##1}
+         \ifx \a_macro\b_macro \_a_true \fi
+      \fi
+   }
+   \list_of_options
+   \if_a_
+}
+%</pkg>
+%<*doc>
+\def\ifoption#1\then{%
+   \generic@if{option \TypesetStringExpression{#1}}%
+}
+%</doc>
+%<*pkg>
+\let\list_of_options\empty_command
+%    \end{macrocode}
+% \end{macro}\end{macro}
+%
+% 
+% \subsection{Writing font definition files}
+% 
+% \begin{macro}{\fd_family}
+%    |\fd_family{ENCODING}{FAMILY}{FD-COMMANDS}|
+%
+% Writes out an |.fd| file for the specified |ENCODING| and |FAMILY|
+% processing the accumulated information and default substitutions.
+%
+%    \begin{macrocode}
+\def\fd_family#1#2#3{
+   \a_toks{#3}
+   \edef\lowercase_file{\lowercase{
+     \edef\noexpand\lowercase_file{#1#2.fd}}}
+   \lowercase_file
+   \open_out{\lowercase_file}
+   \out_line{\percent_char~Filename:~\lowercase_file}
+   \out_line{\percent_char~Created~by:~tex~\jobname}
+   \out_line{\percent_char~Created~using~fontinst~v\fontinstversion}
+   \out_line{}
+   \out_line{\percent_char~THIS~FILE~SHOULD~BE~PUT~IN~A~TEX~INPUTS~
+      DIRECTORY}
+   \out_line{}
+   \out_line{\string\ProvidesFile{\lowercase_file}}
+   \out_lline{[
+      \the\year/
+      \ifnum10>\month0\fi\the\month/
+      \ifnum10>\day0\fi\the\day\space
+      Fontinst~v\fontinstversion\space
+      font~definitions~for~#1/#2.
+   ]}
+   \out_line{}
+   \out_line{\string\DeclareFontFamily{#1}{#2}{\the\a_toks}}
+   {
+      \csname #1-#2\endcsname
+      \out_line{}
+      \let\do_shape=\substitute_shape
+      \csname #1-#2\endcsname
+      \let\do_shape=\remove_shape
+      \csname #1-#2\endcsname
+   }
+   \x_cs\g_let{#1-#2}\x_relax
+   \out_line{}
+   \out_line{\string\endinput}
+   \close_out{Font~definitions}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\fd_shape}
+%    |\fd_shape{ENCODING}{FAMILY}{SERIES}{SHAPE}|
+%
+%    \begin{macrocode}
+\def\fd_shape#1#2#3#4{
+   \out_line{}
+   \out_line{\string\DeclareFontShape{#1}{#2}{#3}{#4}\left_brace_char}
+   \csname #1-#2-#3-#4\endcsname
+   \x_cs\g_let{#1-#2-#3-#4}\empty_command
+   \out_line{\right_brace_char{}}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\fd_size}
+%    |\fd_size{SIZE}{FONT-NAME}|
+%
+%    \begin{macrocode}
+\def\fd_size#1#2{
+   \x_cs\ifx{siz-#1}\x_relax
+      \out_lline{#1~#2}
+   \else
+      \out_lline{\csname siz-#1\endcsname\space #2}
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\remove_shape}
+%    |\remove_shape{ENCODING}{FAMILY}{SERIES}{SHAPE}|
+%
+%    \begin{macrocode}
+\def\remove_shape#1#2#3#4{
+   \x_cs\g_let{#1-#2-#3-#4}\x_relax
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\substitute_shape}
+%    |\substitute_shape{ENCODING}{FAMILY}{SERIES}{SHAPE}|
+%
+%    \begin{macrocode}
+\def\substitute_shape#1#2#3#4{
+   \edef\orig_shape{#4}
+   \substitute_series{#1}{#2}{#3}{\orig_shape}
+   \x_cs\ifx{sub-\orig_shape}\x_relax\else
+      \edef\subst_shape{\csname sub-\orig_shape\endcsname}
+      \x_cs\ifx{#1-#2-#3-\subst_shape}\x_relax
+         \out_line{
+            \string\DeclareFontShape{#1}{#2}{#3}{\subst_shape}{
+               <->\csname typ-\orig_shape\endcsname\space 
+               *~#2/#3/\orig_shape
+            }{}
+         }
+         \x_cs\let{#1-#2-#3-\subst_shape}\empty_command
+         \substitute_shape{#1}{#2}{#3}{\subst_shape}
+      \fi
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\substitute_series}
+%    |\substitute_series{ENCODING}{FAMILY}{SERIES}{SHAPE}|
+%
+%    \begin{macrocode}
+\def\substitute_series#1#2#3#4{
+   \edef\orig_series{#3}
+   \x_cs\ifx{sub-\orig_series}\x_relax\else
+      \edef\subst_series{\csname sub-\orig_series\endcsname}
+      \x_cs\ifx{#1-#2-\subst_series-#4}\x_relax
+         \out_line{
+            \string\DeclareFontShape{#1}{#2}{\subst_series}{#4}{
+               <->\csname typ-\orig_series\endcsname\space 
+               *~#2/\orig_series/#4
+            }{}
+         }
+         \x_cs\let{#1-#2-\subst_series-#4}\empty_command
+         \substitute_series{#1}{#2}{\subst_series}{#4}
+      \fi
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\substitutesilent}
+% \begin{macro}{\substitutenoisy}
+%   These commands specify a default substitution for series or shape 
+%   \meta{to}, which points to the series or shape \meta{from}.
+%   \begin{quote}
+%     |\substitutesilent|\marg{to}\marg{from}\\
+%     |\substitutenoisy|\marg{to}\marg{from}
+%   \end{quote}
+%   There can be at most one \meta{to} for every \meta{from}; later 
+%   substitutions will override previous ones. If \meta{to} and 
+%   \meta{from} are equal, then any existing substitution from 
+%   \meta{from} is disabled.
+%   
+%   The way this is implemented is that if a font has been installed 
+%   with shape or series \meta{from}, but no entry for \meta{to} has 
+%   been written, then write an entry also for \meta{to} consisting of 
+%   a substitution by \meta{from}. (After doing that, an entry has been 
+%   written also for \meta{to}, so the process may repeat itself with 
+%   the old \meta{to} as a new \meta{from}.) 
+%
+%   \begin{macro}{\substitute_generic}
+%     This is the common part of |\substitutesilent| and 
+%     |\substitutenoisy|. The syntax is
+%     \begin{quote}
+%       |\substitute_generic|\marg{type}\marg{to}\marg{from}
+%     \end{quote}
+%     where \meta{type} is |ssub| or |sub| respectively.
+%     \changes{1.931}{2005/05/12}{Macro added, to support explicit 
+%        disabling of substitutions. (LH)}
+%    \begin{macrocode}
+\def\substitute_generic#1#2#3{
+   \edef\a_macro{#2}
+   \edef\b_macro{#3}
+   \ifx \a_macro \b_macro
+      \x_cs\let{sub-#3}\undefined_command
+   \else
+      \x_cs\let{sub-#3}\a_macro
+      \x_cs\def{typ-#3}{#1}
+   \fi
+}
+%    \end{macrocode}
+%   \end{macro}
+%    \begin{macrocode}
+\def\substitutesilent{\substitute_generic{ssub}}
+\def\substitutenoisy{\substitute_generic{sub}}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+%    \begin{macrocode}
+\substitutesilent{bx}{b}
+\substitutesilent{b}{bx}
+\substitutesilent{b}{sb}
+\substitutesilent{b}{db}
+\substitutesilent{m}{mb}
+\substitutesilent{m}{l}
+%    \end{macrocode}
+%    \begin{macrocode}
+\substitutenoisy{ui}{it}
+%    \end{macrocode}
+%
+% I don't think we want these since in OT1 encoding it will
+% cause the old |<sterling>| vs |<dollar>| problem. (ASAJ)
+% --- Oh yes we do. (SPQR)
+%
+%    \begin{macrocode}
+\substitutesilent{sl}{it}
+\substitutesilent{it}{sl}
+%    \end{macrocode}
+%
+% 
+% \subsection{New font substitution mechanism}
+% 
+% \textbf{Note:} This subsection contains (part of) a new implementation 
+% of the font substitution mechanism, but it is uncertain whether it 
+% will ever be completed.
+%    \begin{macrocode}
+%<*underconstruction>
+%    \end{macrocode}
+% 
+% 
+% \subsubsection{The substitution graph}
+% 
+% Which substitutions are performed are determined by the substitution 
+% graph. The vertices of this graph are all combinations of a series and 
+% a shape. The arcs (directed edges) of this graph are the substitutions 
+% that can be made. Each arc has a wheight---a real number in the range 
+% $[0,1]$---that describes how much of the quality of the font that is 
+% preserved with this substitution.
+% 
+% As an example, consider the case that there is an arc from \texttt{m/it} 
+% to \texttt{m/sl} and that the wheight of this arc is $0.5$. This means 
+% that it is OK to substitute the medium italic (\texttt{m/it}) font as a 
+% medium slanted (\texttt{m/sl}) font if there is no medium slanted font, 
+% but that the medium italic font is only considered as being half 
+% ($0.5$) as good a medium slanted font as it is a medium italic font.
+% 
+% The main problem the substitution mechanism has to solve in this 
+% context is to find the best possible way of substituting a font, given 
+% the real fonts which has actually been installed (using |\installfont| 
+% or |\installrawfont|). The solution to this problem is computed by a 
+% brute force approach---all possible substitution paths are followed 
+% and during this process the best solution so far, for each vertex 
+% separately, is stored.
+% \medskip
+% 
+% In practice, the substitution graph $G$ is constructed as the cartesian 
+% product of one graph $G\sb{1}$ of series substitutions and one graph 
+% $G\sb{2}$ of shape substitutions, with the option of adding some 
+% additional arcs to this product. The reason for this is that one 
+% usually wants to make the same shape substitutions in all series and 
+% vice versa, so by only storing the $G\sb{1}$ and $G\sb{2}$ graphs, plus 
+% perhaps a handfull of extra edges, one gets away with using fewer 
+% tokens.
+% The wheights of the arcs are stored as integers in the range 0--1000, 
+% where 0 means the real number $0$ and 1000 means the real number $1$. 
+% \medskip
+% 
+% \DescribeMacro\do_arc
+% The |\do_arc| macro is probably the most common in the data 
+% structures that constitute the substitution graph. Its syntax is 
+% always
+% \begin{quote}
+%   |\do_arc|\marg{series}\marg{shape}\marg{wheight}
+% \end{quote}
+% but it is meant to be redefined whenever one needs to do something 
+% ``for all arcs'' (usually all arcs at a given vertex or so). There are 
+% three families of macros which consist of |\do_arc| lists, namely
+% \begin{quote}
+%   |\sub1-|\meta{series}\\
+%   |\sub2-|\meta{shape}\\
+%   |\sub-|\meta{series}|-|\meta{shape}
+% \end{quote}
+% These macros store arcs going out from a vertex. The 
+% |\sub1-|\meta{series} macross store the arcs incident with the vertex 
+% \meta{series} in the series substitution graph $G\sb{1}$. The 
+% |\sub2-|\meta{shape} macros store the arcs incident with the vertex 
+% \meta{shape} in the shape substitution graph $G\sb{2}$. The 
+% |\sub-|\meta{series}|-|\meta{shape} macros store the arcs of $G$ that 
+% are incident with the vertex \meta{series}|/|\meta{shape} but do 
+% \emph{not} appear in the cartesian product $G\sb{1} \times G\sb{2}$.
+% 
+% The \meta{series} and \meta{shape} arguments of |\do_arc| tells which 
+% vertex the arc goes to, hence for example |\do_arc{b}{it}{600}| in the 
+% macro |\sub-db-sl| corresponds to an arc going from the |db/sl| vertex 
+% to the |b/it| vertex and having a wheight of $0.6$.
+% 
+% \DescribeMacro\curr_series
+% \DescribeMacro\curr_shape
+% The above omits one important detail, namely that the \meta{shape} 
+% argument for a |\do_arc| in a |\sub1-|\textellipsis\ must be able to 
+% be \emph{all} shapes since the shape is not determined for arcs in 
+% $G\sb{1}$ and the series is likewise for arcs in $G\sb{2}$. To make things 
+% work anyway, there are two macros |\curr_series| and |\curr_shape| 
+% which contain this missing information. Furthermore, a |\do_arc| item 
+% for an arc in $G\sb{1}$ will always have the structure
+% \begin{quote}
+%   |\do_arc|\marg{series}|\curr_shape|\marg{wheight}
+% \end{quote}
+% and a |\do_arc| item for an arc in $G\sb{2}$ will have the structure
+% \begin{quote}
+%   |\do_arc\curr_series|\marg{shape}\marg{wheight}
+% \end{quote}
+% 
+% 
+% \begin{macro}{\substituteshape}
+% \begin{macro}{\substituteseries}
+% \begin{macro}{\substituteseriesshape}
+%   |\substituteshape|\marg{to}\marg{from}\marg{wheight}\\
+%   |\substituteseries|\marg{to}\marg{from}\marg{wheight}\\
+%   |\substituteseriesshape|\marg{toseries}\marg{toshape}^^A
+%   \marg{fromseries}\marg{fromshape}\marg{wheight}
+%   
+%    \begin{macrocode}
+\def\substituteshape#1#2#3{
+   \round_wheight{#3}
+   \edef\temp_command{#1}
+   \edef\sub_suffix{#2}
+   \ifx \temp_command\sub_suffix \else
+      \def\sub_suffix##1##2{2-##2}
+      \def\do_arc##1##2##3{
+         \x_cs\ifx{sub2-##2}R \else
+            \noexpand\do_arc\noexpand\curr_series{##2}{##3}
+         \fi
+      }
+      \update_do_arc_list{}{#2}{}{#1}{\noexpand\curr_series{#1}}
+   \fi
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\substituteseries#1#2#3{
+   \round_wheight{#3}
+   \edef\temp_command{#1}
+   \edef\sub_suffix{#2}
+   \ifx \temp_command\sub_suffix \else
+      \def\sub_suffix##1##2{1-##1}
+      \def\do_arc##1##2##3{
+         \x_cs\ifx{sub1-##1}R \else
+            \noexpand\do_arc{##1}\noexpand\curr_shape{##3}
+         \fi
+      }
+      \update_do_arc_list{#2}{}{#1}{}{{#1}\noexpand\curr_shape}
+   \fi
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\substituteseriesshape#1#2#3#4#5{
+   \round_wheight{#5}
+   \edef\temp_command{#1-#2}
+   \edef\sub_suffix{#3-#4}
+   \ifx \temp_command\sub_suffix \else
+      \def\sub_suffix##1##2{-##1-##2}
+      \def\do_arc##1##2##3{
+         \x_cs\ifx{sub-##1-##2}R \else
+            \noexpand\do_arc{##1}{##2}{##3}
+         \fi
+      }
+      \update_do_arc_list{#3}{#4}{#1}{#2}{{#1}{#2}}
+   \fi
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\round_wheight#1{
+   \eval_expr{#1}
+   \ifnum \one_thousand<\result
+      \result=\one_thousand
+   \else \ifnum 0>\result
+      \result=\z@
+   \fi\fi
+}
+%    \end{macrocode}
+%   
+%   |\update_do_arc_list|\marg{update-series}\marg{update-shape}^^A
+%   \allowbreak\marg{tag-series}\allowbreak\marg{tag-shape}^^A
+%   \allowbreak\marg{inserted series+shape}
+%   
+%    \begin{macrocode}
+\def\update_do_arc_list#1#2#3#4#5{
+   \bgroup
+      \edef\temp_command{sub\sub_suffix{#1}{#2}}
+      \x_cs\let{sub\sub_suffix{#3}{#4}}=R
+      \x_cs\xdef\temp_command{
+         \x_cs\ifx\temp_command\relax \else
+            \csname\temp_command\endcsname
+         \fi
+         \ifnum 0<\result
+            \noexpand\do_arc #5{\the\result}
+         \fi
+      }
+   \egroup
+}
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+% 
+%  
+% 
+% \begin{macro}{\substitutesilent}
+% \begin{macro}{\substitutenoisy}
+%    |\substitutesilent{TO}{FROM}|\\
+%    |\substitutenoisy{TO}{FROM}|
+%
+% Specifies a default substitution for family or shape |TO|,
+% which is substituted by family or shape |FROM|.
+%
+%    \begin{macrocode}
+\def\substitutesilent#1#2{
+   \substituteseries{#1}{#2}{900}
+   \substituteshape{#1}{#2}{900}
+}
+\def\substitutenoisy#1#2{
+   \substituteseries{#1}{#2}{500}
+   \substituteshape{#1}{#2}{500}
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+%    \begin{macrocode}
+\a_count=900 % Silent substitution wheight
+\b_count=500 % Noisy substitution wheight
+\substituteseries{bx}{b}{\a_count}
+\substituteseries{b}{bx}{\a_count}
+\substituteseries{b}{sb}{\a_count}
+\substituteseries{b}{db}{\a_count}
+\substituteseries{m}{mb}{\a_count}
+\substituteseries{m}{l}{\a_count}
+%    \end{macrocode}
+%    \begin{macrocode}
+\substituteshape{ui}{it}{\b_count}
+%    \end{macrocode}
+%
+% I don't think we want these since in OT1 encoding it will
+% cause the old |<sterling>| vs |<dollar>| problem. (ASAJ)
+% --- Oh yes we do. (SPQR)
+%
+%    \begin{macrocode}
+\substituteshape{sl}{it}{\a_count}
+\substituteshape{it}{sl}{\a_count}
+%    \end{macrocode}
+%
+% 
+% \subsubsection{Listing reachable vertices}
+% 
+% While determining the optimal substitutions, there is a need to store 
+% some---more or less temporary---information for each vertex. Such 
+% information will be called a \emph{property} of the vertex and it is 
+% stored in the |\v-|\meta{series}|-|\meta{shape} family of macros.
+% 
+% The following are the basic properties:
+% \begin{list}{}{^^A
+%   ^^A How does one make the label go on a line of its own??
+% }
+%   \item[\cs{real_font}\marg{quality}]
+%     This expresses that this vertex corresponds to a font that has 
+%     actually been installed with a nominal quality of \meta{quality}.
+%   \item[\cs{subs_font}\marg{series}\marg{shape}\marg{quality}]
+%     This expresses that this vertex corresponds to a font for which 
+%     the font \meta{series}|/|\meta{shape} has been substituted. 
+%     \meta{quality} is the quality this substitution is considered to 
+%     have.
+%   \item
+% \end{list}
+% 
+% 
+% There will also be some lists of vertices. These will consist of simple 
+% |\do|\marg{series}\marg{shape} triples.
+% 
+%    \begin{macrocode}
+\def\list_subs_vertices{
+   \def\subs_vertex_list{}
+   \let\do_arc=\subs_do_arc
+   \let\do=\never_do
+   \def\real_font##1{\c_count=\@MM}
+   \def\subs_font##1##2##3{\c_count=##3\relax}
+   \real_vertex_list
+}
+\def\subs_do_arc#1#2#3{
+   \b_count=#3
+   \multiply \b_count \a_count
+   \divide \b_count \one_thousand
+   \c_count=-\max_mathchardef
+   \csname v-#1-#2\endcsname
+   \ifnum \c_count<\b_count
+      \ifnum \c_count=-\max_mathchardef
+         \edef\subs_vertex_list{\subs_vertex_list\do{#1}{#2}}
+      \fi
+      \x_cs\edef{v-#1-#2}{\noexpand\subs_font{\subs_series}
+         {\subs_shape}{\the\b_count}}
+      \toks_a=\expandafter{\the\a_toks \do_subs{#1}{#2}}
+   \fi
+}
+\def\do_subs#1#2{
+   \edef\curr_series{#1}
+   \edef\curr_shape{#2}
+   \csname v-#1-#2\endcsname
+   \a_count=\c_count
+   \a_toks={}
+   \csname sub-#1-#2\endcsname
+   \csname sub1-#1\endcsname
+   \csname sub2-#2\endcsname
+   \the\a_toks
+}
+\def\start_subs_at#1#2{
+   \edef\subs_series{#1} \let\curr_series=\subs_series
+   \edef\subs_shape{#2}  \let\curr_shape=\subs_shape
+   \a_count=\x_cs\second_of_two{v-#1-#2}
+   \a_toks={}
+   \csname sub-#1-#2\endcsname
+   \csname sub1-#1\endcsname
+   \csname sub2-#2\endcsname
+   \the\a_toks
+}
+%    \end{macrocode}
+% 
+%
+%    \begin{macrocode}
+%</underconstruction>
+%    \end{macrocode}
+% 
+%
+% \subsection{Default encodings and font sizes}
+%
+% \begin{macro}{\declareencoding}
+%    |\declareencoding{CODINGSCHEME}{ENCODING}|
+%
+% Declare a macro |\enc-CODINGSCHEME| which expands to |ENCODING|.
+% This is used to determine the encoding in |\pltomtx|.
+% \changes{1.927}{2004/07/31}{Lowercased encoding file names. (LH)}
+%
+%    \begin{macrocode}
+\def\declareencoding#1#2{\x_cs\edef{enc-#1}{#2}}
+%    \end{macrocode}
+% \end{macro}
+%
+% Old \TeX{} text font encodings.
+%    \begin{macrocode}
+\declareencoding{TEX~TEXT}{ot1}
+\declareencoding{TEX~TEXT~WITHOUT~F-LIGATURES}{ot1}
+\declareencoding{TEX~TYPEWRITER~TEXT}{ot1tt}
+%    \end{macrocode}
+%
+% Old \TeX{} math font encodings.
+%    \begin{macrocode}
+\declareencoding{TEX~MATH~ITALIC}{oml}
+\declareencoding{TEX~MATH~SYMBOLS}{oms}
+\declareencoding{TEX~MATH~EXTENSION}{omx}
+\declareencoding{LATEX~SYMBOLS}{lasy}
+%    \end{macrocode}
+%
+% Euler math font encodings.
+%    \begin{macrocode}
+\declareencoding{TEX~TEXT~SUBSET}{eufrak}
+\declareencoding{TEX~MATH~ITALIC~SUBSET}{eurm}
+\declareencoding{TEX~MATH~SYMBOLS~SUBSET}{euscr}
+\declareencoding{EULER~SUBSTITUTIONS~ONLY}{euex}
+%    \end{macrocode}
+%
+% New \TeX{} text font encodings.
+%    \begin{macrocode}
+\declareencoding{EXTENDED~TEX~FONT~ENCODING~-~LATIN}{t1}
+\declareencoding{TEX~TEXT~COMPANION~SYMBOLS~1---TS1}{ts1}
+%    \end{macrocode}
+%
+% Rencoded PostScript font encdings.
+%    \begin{macrocode}
+\declareencoding{TEXBASE1ENCODING}{8r}
+\declareencoding{TEX~TYPEWRITER~AND~WINDOWS~ANSI}{8y}
+%    \end{macrocode}
+%
+% \begin{macro}{\declaresize}
+%    |\declaresize{FONTSIZE}{LATEXSIZE}|
+%
+%    \begin{macrocode}
+\def\declaresize#1#2{\x_cs\edef{siz-#1}{#2}}
+%    \end{macrocode}
+% \end{macro}
+%
+% Default sizes.  An empty size argument is equivalent to |<->|,
+% for use with scalable fonts.
+%
+%    \begin{macrocode}
+\declaresize{}{<->}
+\declaresize{5}{<5>}
+\declaresize{6}{<6>}
+\declaresize{7}{<7>}
+\declaresize{8}{<8>}
+\declaresize{9}{<9>}
+\declaresize{10}{<10>}
+\declaresize{11}{<10.95>}
+\declaresize{12}{<12>}
+\declaresize{14}{<14.4>}
+\declaresize{17}{<17.28>}
+\declaresize{20}{<20.74>}
+\declaresize{25}{<24.88>}
+%    \end{macrocode}
+%
+%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% \section{Debugging}
+%
+% \begin{macro}{\NOFILES}
+%   |\NOFILES| switches off file generation, and causes 
+%   \package{fontinst} to only generate empty files. It only affects the 
+%   user level commands, so it is primarily of use when debugging 
+%   commands that build on these, such as for example the 
+%   |\latin|\-|family| command.
+%   \changes{1.914}{2000/05/20}{Added \cs{reglyphfont}. (LH)}
+%    \begin{macrocode}
+\def\NOFILES{
+   \def\transformfont##1##2{
+      \touch_file{##1.mtx}
+      \touch_file{##1.pl}
+   }
+   \def\reglyphfont##1##2{\touch_file{##1.mtx}}
+   \def\installfonts{}
+   \def\endinstallfonts{}
+   \def\installfont##1##2##3##4##5##6##7##8{
+      \touch_file{##1.vpl}
+   }
+   \def\installrawfont##1##2##3##4##5##6##7##8{
+      \touch_file{##1.pl}
+   }
+   \def\installfamily##1##2##3{\touch_file{##1##2.fd}}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\touch_file}
+%    \begin{macrocode}
+\def\touch_file#1{
+   \edef\lowercase_file{\lowercase{
+     \edef\noexpand\lowercase_file{#1}}}
+   \lowercase_file
+   \open_out{\lowercase_file}
+   \out_line{\percent_char~TEST~FILE.}
+   \out_line{\percent_char~Created~whilst~debugging~fontinst.}
+   \close_out{Test~file}
+}
+%</pkg>
+%    \end{macrocode}
+% \end{macro}
+%
+% \Finale
+\endinput

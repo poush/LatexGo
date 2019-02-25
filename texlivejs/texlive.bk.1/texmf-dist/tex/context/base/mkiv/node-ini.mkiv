@@ -1,0 +1,62 @@
+%D \module
+%D   [       file=node-ini,
+%D        version=2006.08.20,
+%D          title=\CONTEXT\ Node Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Node Support / Initialization}
+
+\unprotect
+
+\newcount\filterstate \filterstate\plusone % hm, public
+
+\registerctxluafile{node-ini}{}
+\registerctxluafile{node-met}{}
+\registerctxluafile{node-nut}{}
+\registerctxluafile{node-res}{}
+%registerctxluafile{node-ppt}{} % experimental, not used so probably useless
+\registerctxluafile{node-dir}{}
+\registerctxluafile{node-aux}{}
+\registerctxluafile{node-tst}{}
+\registerctxluafile{node-tra}{} % we might split it off (module)
+\registerctxluafile{node-snp}{}
+\registerctxluafile{node-tsk}{}
+\registerctxluafile{node-tex}{}
+\registerctxluafile{node-pro}{}
+\registerctxluafile{node-ser}{}
+\registerctxluafile{node-ext}{}
+\registerctxluafile{node-acc}{} % experimental
+%registerctxluafile{node-prp}{} % makes no sense (yet)
+\registerctxluafile{node-scn}{}
+\registerctxluafile{node-syn}{}
+\registerctxluafile{node-par}{}
+
+\newcount\c_node_tracers_show_box % box number
+
+\unexpanded\def\shownextnodes{\afterassignment\node_tracers_show_next\c_node_tracers_show_box}
+\unexpanded\def\showflatnodes{\afterassignment\node_tracers_show_flat\c_node_tracers_show_box}
+
+\def\node_tracers_show_next{\ctxlua{texio.write_nl('log',nodes.serializebox(\number\c_node_tracers_show_box,false,true))}}
+\def\node_tracers_show_flat{\ctxlua{texio.write_nl('log',nodes.serializebox(\number\c_node_tracers_show_box,true, true))}}
+
+\unexpanded\def\visualizenextnodes{\dowithnextbox{\ctxlua{nodes.visualizebox(\number\nextbox,false,true)}}}
+\unexpanded\def\visualizeflatnodes{\dowithnextbox{\ctxlua{nodes.visualizebox(\number\nextbox,true,true)}}}
+
+\unexpanded\def\starttracingnodes[#1]{\ctxlua{nodes.tracers.characters.start("#1")}}
+\unexpanded\def\stoptracingnodes     {\ctxlua{nodes.tracers.characters.stop()}}
+
+% \starttext
+%     \starttracingnodes[characters]
+%         \input tufte \par
+%         \input tufte \par
+%     \stoptracingnodes
+% \stoptext
+
+\protect \endinput

@@ -1,0 +1,277 @@
+% \iffalse
+%% Source File: luatex85.dtx
+%% Copyright 2015-2016 LaTeX3 project
+%%
+%% This file may be distributed under the terms of the LPPL.
+%% See README for details.
+%
+%<*dtx>
+          \ProvidesFile{luatex85.dtx}
+%</dtx>
+%<package>\ifx\ProvidesPackage\undefined
+%<package>\def\next#1#2[#3]{\wlog{#2 #3}\expandafter\gdef
+%<package>\csname ver@luatex85.sty\endcsname{#3}}
+%<package>\expandafter\next\fi
+%<package>\ProvidesPackage{luatex85}
+%<driver> \ProvidesFile{luatex85.drv}
+% \fi
+%         \ProvidesFile{luatex85.dtx}
+       [2016/06/15 v1.4 pdftex aliases for luatex]
+%
+% \iffalse
+%<*driver>
+\documentclass{ltxdoc}
+\begin{document}
+\DocInput{luatex85.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \hfuzz0.6pt
+%
+% \GetFileInfo{luatex85.dtx}
+%
+% \title{The \textsf{luatex85} Package\thanks{This file
+%        has version number \fileversion, last
+%        revised \filedate.
+% Please report any issues at https://github.com/josephwright/luatex85/issues}}
+% \author{LaTeX3 project}
+% \date{\filedate}
+% \maketitle
+%
+% \section{Introduction}
+%
+% Lua\TeX\ 0.85 and 0.87 contain many changes from Lua\TeX~0.80 as contained in \TeX{}Live 2014.
+% Most notably almost all the pdf\TeX\ extended primitves with names
+% \verb|\pdf...| have been renamed or removed. Lua\TeX\ is aiming for
+% a cleaner separation of the ``back end'' PDF generation (that
+% corresponds to the work of a dvi driver with classical \TeX).
+% 
+% There are many other changes and bug fixes in the Lua\TeX\ sources,
+% however this package is just concerned with compatibility for
+% documents or packages using the pdf\TeX\ primitives.
+%
+% The changes are of several types:
+%
+% A few commands have been removed,
+% as the facilities are achievable in Lua (mostly these had already
+% been removed in earlier release).
+%
+% Some commands have been ``adopted'' as Lua\TeX\ primitives and so
+% lose their \verb|\pdf| prefix (and in some cases are renamed)
+% so \verb|\pdfsavepos| becomes \verb|\savepos|, but \verb|\pdfoutput|
+% becomes \verb|\outputmode|.
+%
+% The majority of the ``back end'' commands have been removed and
+% replaced by calls to one of three new primitives,
+% \verb|\pdffeedback|, \verb|\pdfextension| and \verb|\pdfvariable|
+% These take keywords so for example \verb|\pdfliteral| becomes
+% \verb|\pdfextension literal|.
+%
+% The Lua\TeX\ manual lists suitable compatibility definitions
+% that may be made so that documents can continue to use the old
+% names. Mostly this package just consists of those definitions, with
+% minor changes in some cases. (Mostly different choices over the use
+% of \verb|\protected| or \verb|\edef|.)
+%
+% In general it is recommended that packages are updated to use the
+% new primitive Lua\TeX\ syntax when used with Lua\TeX, but until
+% packages are updated authors may find that adding\\%
+% \verb|\RequirePackage{luatex85}|\\
+% as the first line of their
+% document helps with the use of older packages with the new Lua\TeX.
+%
+% As noted above, there are other changes in Lua\TeX, notably the
+% removal of the |\verb\write18| syntax for accessing system commands.
+% The \LaTeX\ \textsf{tools} bundle includes 
+%  the \textsf{shellesc} package which emulates
+% \verb|\write18| as well as providing an alternative
+% \verb|\Shellescape| syntax that may be used with all engines.
+%
+% Note that if packages are found that require \textsf{luatex85}
+% you may want to contact the authors asking that the packages 
+% be updated to current Lua\TeX\ syntax. The \textsf{luatex85} package
+% should be seen as a temporary aid to improve compatibility during
+% the transition towards Lua\TeX~1.0 it is not intended that future
+% documents should always have to load this compatibility emulation.
+%
+% The package is designed to also be usable with plain Lua\TeX.
+%
+% 
+% \section{Implementation}
+%
+%    \begin{macrocode}
+%<*package>
+%    \end{macrocode}
+%
+% \subsection{Checking the engine}
+%    \begin{macrocode}
+\ifx\pdfvariable\undefined
+  \expandafter\endinput
+\fi
+%    \end{macrocode}
+
+% \subsection{Commands promoted to Lua\TeX\ primitives.}
+%
+%
+%    \begin{macrocode}
+\let\pdfpagewidth        \pagewidth
+\let\pdfpageheight       \pageheight
+\let\pdfadjustspacing    \adjustspacing
+\let\pdfprotrudechars    \protrudechars
+\let\pdfnoligatures      \ignoreligaturesinfont
+\let\pdffontexpand       \expandglyphsinfont
+\let\pdfcopyfont         \copyfont
+\let\pdfxform            \saveboxresource
+\let\pdflastxform        \lastsavedboxresourceindex
+\let\pdfrefxform         \useboxresource
+\let\pdfximage           \saveimageresource
+\let\pdflastximage       \lastsavedimageresourceindex
+\let\pdflastximagepages  \lastsavedimageresourcepages
+\let\pdfrefximage        \useimageresource
+\let\pdfsavepos          \savepos
+\let\pdflastxpos         \lastxpos
+\let\pdflastypos         \lastypos
+\let\pdfoutput           \outputmode
+\let\pdfdraftmode        \draftmode
+\let\pdfpxdimen          \pxdimen
+\let\pdfinsertht         \insertht
+\let\pdfnormaldeviate    \normaldeviate
+\let\pdfuniformdeviate   \uniformdeviate
+\let\pdfsetrandomseed    \setrandomseed
+\let\pdfrandomseed       \randomseed
+\let\pdfprimitive        \primitive
+\let\ifpdfprimitive      \ifprimitive
+\let\ifpdfabsnum         \ifabsnum
+\let\ifpdfabsdim         \ifabsdim
+%    \end{macrocode}
+% Use |\enableprimitives| here in case of conflict with tracefnt.
+%    \begin{macrocode}
+\directlua{tex.enableprimitives('pdf',{'tracingfonts'})}
+%    \end{macrocode}
+%
+% \subsection{Commands converted to constants}
+% The |\pdffeedback| version is not defined in dvi mode and (currently) is
+% curiously defined to be 40 in pdf mode, so define these as constant values.
+%    \begin{macrocode}
+\protected\def\pdftexversion     {\numexpr 140\relax}
+          \def\pdftexrevision    {7}
+%\protected\def\pdftexversion     {\numexpr\pdffeedback version\relax}
+%          \def\pdftexrevision    {\pdffeedback revision}
+%    \end{macrocode}
+%
+% \subsection{Commands converted to \cs{pdffeedback}}
+% Expandable commands use a simple |\def|. Internal registers that
+% were accessed via |\the| in PDF\TeX\ use a |\protected| definition 
+% using |\numexpr| terminated by an explicit |\relax|.
+%    \begin{macrocode}
+\protected\def\pdflastlink       {\numexpr\pdffeedback lastlink\relax}
+\protected\def\pdfretval         {\numexpr\pdffeedback retval\relax}
+\protected\def\pdflastobj        {\numexpr\pdffeedback lastobj\relax}
+\protected\def\pdflastannot      {\numexpr\pdffeedback lastannot\relax}
+          \def\pdfxformname      {\pdffeedback xformname}
+{\outputmode=1
+         \xdef\pdfcreationdate   {\pdffeedback creationdate}
+}
+          \def\pdffontname       {\pdffeedback fontname}
+          \def\pdffontobjnum     {\pdffeedback fontobjnum}
+          \def\pdffontsize       {\pdffeedback fontsize}
+          \def\pdfpageref        {\pdffeedback pageref}
+          \def\pdfcolorstackinit {\pdffeedback colorstackinit}
+%    \end{macrocode}
+%
+% \subsection{Commands converted to calls to \cs{pdfextension}}
+% These use a |\protected| definition. Commands that take no following
+% argument are currently terminated by |\relax| as suggested in the
+% Lua\TeX\ manual, although it would be appear to be sufficient to
+% consistently terminate these commands with a space.
+%    \begin{macrocode}
+\protected\def\pdfliteral        {\pdfextension literal}
+\protected\def\pdfcolorstack     {\pdfextension colorstack}
+\protected\def\pdfsetmatrix      {\pdfextension setmatrix}
+\protected\def\pdfsave           {\pdfextension save\relax}
+\protected\def\pdfrestore        {\pdfextension restore\relax}
+\protected\def\pdfobj            {\pdfextension obj }
+\protected\def\pdfrefobj         {\pdfextension refobj }
+\protected\def\pdfannot          {\pdfextension annot }
+\protected\def\pdfstartlink      {\pdfextension startlink }
+\protected\def\pdfendlink        {\pdfextension endlink\relax}
+\protected\def\pdfoutline        {\pdfextension outline }
+\protected\def\pdfdest           {\pdfextension dest }
+\protected\def\pdfthread         {\pdfextension thread }
+\protected\def\pdfstartthread    {\pdfextension startthread }
+\protected\def\pdfendthread      {\pdfextension endthread\relax}
+\protected\def\pdfinfo           {\pdfextension info }
+\protected\def\pdfcatalog        {\pdfextension catalog }
+\protected\def\pdfnames          {\pdfextension names }
+\protected\def\pdfincludechars   {\pdfextension includechars }
+\protected\def\pdffontattr       {\pdfextension fontattr }
+\protected\def\pdfmapfile        {\pdfextension mapfile }
+\protected\def\pdfmapline        {\pdfextension mapline }
+\protected\def\pdftrailer        {\pdfextension trailer }
+\protected\def\pdfglyphtounicode {\pdfextension glyphtounicode }
+%    \end{macrocode}
+%
+% \subsection{Commands converted to calls to \cs{pdfvariable}}
+% Currently as suggested in the manual the call to |\pdfvariable| has
+% no explict termination, and relies on the fact that no variable name
+% is a prefix of another. |\edef| is used to save one expansion step
+% when these comands are used the definition directly access the
+% internal command token.
+%    \begin{macrocode}
+\protected\edef\pdfcompresslevel       {\pdfvariable compresslevel}
+\protected\edef\pdfobjcompresslevel    {\pdfvariable objcompresslevel}
+\protected\edef\pdfdecimaldigits       {\pdfvariable decimaldigits}
+\protected\edef\pdfgamma               {\pdfvariable gamma}
+\protected\edef\pdfimageresolution     {\pdfvariable imageresolution}
+\protected\edef\pdfimageapplygamma     {\pdfvariable imageapplygamma}
+\protected\edef\pdfimagegamma          {\pdfvariable imagegamma}
+\protected\edef\pdfimagehicolor        {\pdfvariable imagehicolor}
+%    \end{macrocode}
+% Note that |\pdfimageaddfilename| was never actually in PDF\TeX,
+% But is included here so that all the |\pdfvariable| cases are covered.
+%    \begin{macrocode}
+\protected\edef\pdfimageaddfilename    {\pdfvariable imageaddfilename}
+%    \end{macrocode}
+%    \begin{macrocode}
+\protected\edef\pdfpkresolution        {\pdfvariable pkresolution}
+\protected\edef\pdfinclusioncopyfonts  {\pdfvariable inclusioncopyfonts}
+\protected\edef\pdfinclusionerrorlevel {\pdfvariable inclusionerrorlevel}
+%    \end{macrocode}
+% Note that |\pdfreplacefont| was never in public releases of
+% PDF\TeX, It was in Lua\TeX0.85, but discussion on luatex list
+% lead to it being removed in 0.87
+%    \begin{macrocode}
+%\protected\edef\pdfreplacefont         {\pdfvariable replacefont}
+%    \end{macrocode}
+%    \begin{macrocode}
+\protected\edef\pdfgentounicode        {\pdfvariable gentounicode}
+\protected\edef\pdfpagebox             {\pdfvariable pagebox}
+\protected\edef\pdfminorversion        {\pdfvariable minorversion}
+\protected\edef\pdfuniqueresname       {\pdfvariable uniqueresname}
+\protected\edef\pdfhorigin             {\pdfvariable horigin}
+\protected\edef\pdfvorigin             {\pdfvariable vorigin}
+\protected\edef\pdflinkmargin          {\pdfvariable linkmargin}
+\protected\edef\pdfdestmargin          {\pdfvariable destmargin}
+\protected\edef\pdfthreadmargin        {\pdfvariable threadmargin}
+\protected\edef\pdfpagesattr           {\pdfvariable pagesattr}
+\protected\edef\pdfpageattr            {\pdfvariable pageattr}
+\protected\edef\pdfpageresources       {\pdfvariable pageresources}
+%    \end{macrocode}
+% Note that |\pdfxformattr| and |\pdfxformresources| were never
+% in PDF\TeX, But are included here so that all the
+% |\pdfvariable| cases are covered.
+%    \begin{macrocode}
+\protected\edef\pdfxformattr           {\pdfvariable xformattr}
+\protected\edef\pdfxformresources      {\pdfvariable xformresources}
+%    \end{macrocode}
+%    \begin{macrocode}
+\protected\edef\pdfpkmode              {\pdfvariable pkmode}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%</package>
+%    \end{macrocode}
+%
+% \Finale
+%

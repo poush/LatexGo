@@ -1,0 +1,38 @@
+%%%%
+%%%% This file belongs to the ROEX package.
+%%%%
+%%% draw write_preamble write_postamble find_BB set_BB fill_C draw_C
+%%% draw fix_fill_cmyk fix_draw_cmyk
+% ROES-01.MF, ``SUN'':
+%  An example making use of both expanding stroke and removing overlaps.
+% ---
+input mftoeps; eps_mode_setup; input roex;
+tracingexpanding:=1; tracingremoving:=1;
+% ---
+beginchar("0",in#,in#,0);
+ path Q,R[\\]; R.num:=0;
+ M:=12; % number of half-periods of a sine wave
+ N:=11; % number of gaps
+ H:=h/(2N); W=1.2w;
+ Q:=reverse for i:=0 upto M: if i>0: .. fi
+  ((i/M)[1/2(w-W),w-1/2(w-W)],1/2sind(90(i mod 4))*H)
+ endfor;
+%
+ expand_stroke(Q)(1/2H)R; Q:=reverse R1; R.num:=0;
+ if proofing>0:
+  for j:=0 upto length(Q)-1: makelabel("Q" & decimal(j),point j of Q); endfor
+  fix_line_width 1; draw_C Q;
+ fi
+ for i:=1 upto N: R[incr R.num]:=Q shifted (0,(2i-1)*H); endfor
+ R[incr R.num]:=fullcircle scaled w shifted (.5w,.5h);
+%
+ remove_overlap(make_list(1,R.num) R)() R;
+ find_BB make_list(1,R.num) R;
+ write_preamble jobname;
+ for i:=1 upto R.num:
+  fix_fill_cmyk 0,((i-1)/(R.num-1))[1,0],1,0; fill_C R[i];
+ endfor;
+ write_postamble;
+endchar;
+end.
+%%\end

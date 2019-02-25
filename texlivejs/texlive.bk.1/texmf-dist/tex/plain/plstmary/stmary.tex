@@ -1,0 +1,260 @@
+% Loads stmaryrd symbols for 10pt plain TeX documents.
+%
+\ifx\plstmaryversion\UndEfInEd\else\expandafter\endinput\fi
+\def\plstmaryversion{0.5c}%
+\edef\stmaryrestorecatcodes{%
+   \catcode`\noexpand\@=\number\catcode`\@\relax
+   \catcode`\noexpand\!=\number\catcode`\!\relax
+   \newlinechar=\number\newlinechar\relax
+}%
+% Announce ourself
+\newlinechar`\^^J
+\immediate\write16{%
+plstmary package: plain TeX macros for St. Mary's Road symbol font.^^J}
+%
+\newfam\stmaryrdfam
+%
+\font\stmaryfive    stmary5
+\font\stmarysix     stmary6
+\font\stmaryseven   stmary7
+\font\stmaryeight   stmary8
+\font\stmarynine    stmary9
+\font\stmaryten     stmary10
+\font\stmaryeleven  stmary10 at10.95pt
+\font\stmarytwelve  stmary10 at12pt
+%
+% AMS fonts: 10, 7 and 5 pt sizes loaded in amssym.tex.
+% St. Mary Road only needs msam, but we load msbm as well.
+%
+\input amssym
+\font\twelvemsa = msam10 at 12pt
+\font\elevenmsa = msam10 at 10.95pt
+\font\ninemsa   = msam9
+\font\eightmsa  = msam8
+\font\sixmsa    = msam6
+\font\twelvemsb = msbm10 at 12pt
+\font\elevenmsb = msbm10 at 10.95pt
+\font\ninemsb   = msbm9
+\font\eightmsb  = msbm8
+\font\sixmsb    = msbm6
+%
+\def\stmaryrdeightpoint{%
+          \textfont\stmaryrdfam \stmaryeight
+        \scriptfont\stmaryrdfam \stmarysix
+  \scriptscriptfont\stmaryrdfam \stmaryfive
+  \amseightpoint
+}%
+\def\amseightpoint{%
+          \textfont\msafam \eightmsa
+        \scriptfont\msafam \sixmsa
+  \scriptscriptfont\msafam \fivemsa
+          \textfont\msbfam \eightmsb
+        \scriptfont\msbfam \sixmsb
+  \scriptscriptfont\msbfam \fivemsb
+}%
+%
+\def\stmaryrdninepoint{%
+          \textfont\stmaryrdfam \stmarynine
+        \scriptfont\stmaryrdfam \stmaryseven
+  \scriptscriptfont\stmaryrdfam \stmaryfive
+  \amsninepoint
+}%
+\def\amsninepoint{%
+          \textfont\msafam \ninemsa
+        \scriptfont\msafam \sevenmsa
+  \scriptscriptfont\msafam \fivemsa
+          \textfont\msbfam \ninemsb
+        \scriptfont\msbfam \sevenmsb
+  \scriptscriptfont\msbfam \fivemsb
+}%
+%
+\def\stmaryrdtenpoint{%
+          \textfont\stmaryrdfam \stmaryten
+        \scriptfont\stmaryrdfam \stmaryseven
+  \scriptscriptfont\stmaryrdfam \stmaryfive
+  \amstenpoint
+}%
+\def\amstenpoint{%
+          \textfont\msafam \tenmsa
+        \scriptfont\msafam \sevenmsa
+  \scriptscriptfont\msafam \fivemsa
+          \textfont\msbfam \tenmsb
+        \scriptfont\msbfam \sevenmsb
+  \scriptscriptfont\msbfam \fivemsb
+}%
+%
+\def\stmaryrdelevenpoint{%
+          \textfont\stmaryrdfam \stmaryeleven
+        \scriptfont\stmaryrdfam \stmaryeight
+  \scriptscriptfont\stmaryrdfam \stmarysix
+  \amselevenpoint
+}%
+\def\amselevenpoint{%
+          \textfont\msafam \elevenmsa
+        \scriptfont\msafam \eightmsa
+  \scriptscriptfont\msafam \sixmsa
+          \textfont\msbfam \elevenmsb
+        \scriptfont\msbfam \eightmsb
+  \scriptscriptfont\msbfam \sixmsb
+}%
+%
+\def\stmaryrdtwelvepoint{%
+          \textfont\stmaryrdfam \stmarytwelve
+        \scriptfont\stmaryrdfam \stmaryeight
+  \scriptscriptfont\stmaryrdfam \stmarysix
+  \amstwelvepoint
+}%
+\def\amstwelvepoint{%
+          \textfont\msafam \twelvemsa
+        \scriptfont\msafam \eightmsa
+  \scriptscriptfont\msafam \sixmsa
+          \textfont\msbfam \twelvemsb
+        \scriptfont\msbfam \eightmsb
+  \scriptscriptfont\msbfam \sixmsb
+}%
+\let\amsboxdot\boxdot
+\let\amsbigtriangledown\bigtriangledown
+\let\amsbigtriangleup\bigtriangleup
+%
+\catcode`\@=11
+%
+\catcode`\!\active
+\edef!{\ifcase\stmaryrdfam
+  0\or 1\or 2\or 3\or 4\or 5\or 6\or 7\or
+  8\or 9\or A\or B\or C\or D\or E\or F\fi}%
+%
+\def\stm@op   #1#2{\mathchardef#1"1!#2}%
+\def\stm@bin  #1#2{\mathchardef#1"2!#2}%
+\def\stm@rel  #1#2{\mathchardef#1"3!#2}%
+\def\stm@open #1#2{\mathchardef#1"4!#2}%
+\def\stm@close#1#2{\mathchardef#1"5!#2}%
+\stm@rel  \shortleftarrow{00}%
+\stm@rel  \shortrightarrow{01}%
+\stm@rel  \shortuparrow{02}%
+\stm@rel  \shortdownarrow{03}%
+\stm@bin  \Yup{04}%
+\stm@bin  \Ydown{05}%
+\stm@bin  \Yleft{06}%
+\stm@bin  \Yright{07}%
+\stm@bin  \varcurlyvee{08}%
+\stm@bin  \varcurlywedge{09}%
+\stm@bin  \minuso{0A}%
+\stm@bin  \baro{0B}%
+\stm@bin  \sslash{0C}%
+\stm@bin  \bbslash{0D}%
+\stm@bin  \moo{0E}%
+\stm@bin  \varotimes{0F}%
+\stm@bin  \varoast{10}%
+\stm@bin  \varobar{11}%
+\stm@bin  \varodot{12}%
+\stm@bin  \varoslash{13}%
+\stm@bin  \varobslash{14}%
+\stm@bin  \varocircle{15}%
+\stm@bin  \varoplus{16}%
+\stm@bin  \varominus{17}%
+\stm@bin  \boxast{18}%
+\stm@bin  \boxbar{19}%
+\stm@bin  \boxdot{1A}%
+\stm@bin  \boxslash{1B}%
+\stm@bin  \boxbslash{1C}%
+\stm@bin  \boxcircle{1D}%
+\stm@bin  \boxbox{1E}%
+\stm@bin  \boxempty{1F}%
+\mathchardef\lightning"0!20
+\stm@bin  \merge{21}%
+\stm@bin  \vartimes{22}%
+\stm@bin  \fatsemi{23}%
+\stm@rel  \sswarrow{24}%
+\stm@rel  \ssearrow{25}%
+\stm@rel  \curlywedgeuparrow{26}%
+\stm@rel  \curlywedgedownarrow{27}%
+\stm@bin  \fatslash{28}%
+\stm@bin  \fatbslash{29}%
+\stm@open \lbag{2A}%
+\stm@close\rbag{2B}%
+\stm@bin  \varbigcirc{2C}%
+\stm@rel  \leftrightarroweq{2D}%
+\stm@rel  \curlyveedownarrow{2E}%
+\stm@rel  \curlyveeuparrow{2F}%
+\stm@rel  \nnwarrow{30}%
+\stm@rel  \nnearrow{31}%
+\stm@bin  \leftslice{32}%
+\stm@bin  \rightslice{33}%
+\stm@bin  \varolessthan{34}%
+\stm@bin  \varogreaterthan{35}%
+\stm@bin  \varovee{36}%
+\stm@bin  \varowedge{37}%
+\stm@bin  \talloblong{38}%
+\stm@bin  \interleave{39}%
+\stm@bin  \obar{3A}%
+\stm@bin  \obslash{3B}%
+\stm@bin  \olessthan{3C}%
+\stm@bin  \ogreaterthan{3D}%
+\stm@bin  \ovee{3E}%
+\stm@bin  \owedge{3F}%
+\stm@bin  \oblong{40}%
+\stm@rel  \inplus{41}%
+\stm@rel  \niplus{42}%
+\stm@bin  \nplus{43}%
+\stm@rel  \subsetplus{44}%
+\stm@rel  \supsetplus{45}%
+\stm@rel  \subsetpluseq{46}%
+\stm@rel  \supsetpluseq{47}%
+\stm@open \Lbag{48}%
+\stm@close\Rbag{49}%
+\edef\llbracket{\delimiter"4!4A!71}%
+\edef\rrbracket{\delimiter"5!4B!79}%
+\stm@open \llparenthesis{4C}%
+\stm@close\rrparenthesis{4D}%
+\stm@bin  \binampersand{4E}%
+\stm@bin  \bindnasrepma{4F}%
+\stm@rel  \trianglelefteqslant{50}%
+\stm@rel  \trianglerighteqslant{51}%
+\stm@rel  \ntrianglelefteqslant{52}%
+\stm@rel  \ntrianglerighteqslant{53}%
+\stm@open \llfloor{54}%
+\stm@close\rrfloor{55}%
+\stm@open \llceil{56}%
+\stm@close\rrceil{57}%
+\stm@rel  \arrownot{58}%
+\stm@rel  \Arrownot{59}%
+\stm@rel  \Mapstochar{5A}%
+\stm@rel  \mapsfromchar{5B}%
+\stm@rel  \Mapsfromchar{5C}%
+\stm@rel  \leftrightarrowtriangle{5D}%
+\stm@rel  \leftarrowtriangle{5E}%
+\stm@rel  \rightarrowtriangle{5F}%
+\stm@op   \bigtriangledown{60}%
+\stm@op   \bigtriangleup{61}%
+\stm@op   \bigcurlyvee{62}%
+\stm@op   \bigcurlywedge{63}%
+\stm@op   \bigsqcap{64}%
+\stm@op   \bigbox{65}%
+\stm@op   \bigparallel{66}%
+\stm@op   \biginterleave{67}%
+\stm@op   \bignplus{70}%
+%
+\let\oast\circledast         % msam "7E
+\let\ocircle\circledcirc     % msam "7D
+%
+\def\@tempa#1{%
+  \def\varcopyright{%
+    {\ooalign{\hfil\raise.07ex\hbox{c}\hfil\crcr\mathhexbox#12C}}}}%
+\expandafter\@tempa!%
+%
+% The long arrow negations.
+%
+\def\longarrownot{\mathrel{\mkern5.5mu\arrownot\mkern-5.5mu}}%
+\def\Longarrownot{\mathrel{\mkern5.5mu\Arrownot\mkern-5.5mu}}%
+%
+% The variants on \mapsto:
+%
+\def\Mapsto{\Mapstochar\Rightarrow}%
+\def\mapsfrom{\leftarrow\mapsfromchar}%
+\def\Mapsfrom{\Leftarrow\Mapsfromchar}%
+\def\Longmapsto{\Mapstochar\Longrightarrow}%
+\def\longmapsfrom{\longleftarrow\mapsfromchar}%
+\def\Longmapsfrom{\Longleftarrow\Mapsfromchar}%
+%
+\stmaryrestorecatcodes
+\stmaryrdtenpoint

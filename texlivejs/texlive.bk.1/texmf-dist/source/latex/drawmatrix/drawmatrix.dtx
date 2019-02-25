@@ -1,0 +1,521 @@
+% \iffalse meta-comment
+%
+% Copyright (C) 2017 by Elmar Peise
+% -----------------------------------------
+%
+% This package is distributed under the MIT license.
+%
+% \fi
+%
+% \iffalse
+%<package>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+%<package>\ProvidesPackage{drawmatrix}[2017/06/05 v1.5.0 drawmatrix package]
+%
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage{drawmatrix}
+\usepackage{xspace}
+\usepackage{tcolorbox}
+\usepackage{lstautodedent}
+\usepackage{makeidx}
+\makeindex
+\tcbuselibrary{documentation}
+\lstset{autodedent=true, language=TeX}
+\tcbset{
+    /tcb/docexample/.append style={sidebyside, righthand width=.2\textwidth},
+    docmulti/.style={after={}, height=\baselineskip, after skip=-.75em},
+}
+\tcbmakedocSubKey{docDmKey}{drawmatrix}
+\EnableCrossrefs
+\RecordChanges
+\OnlyDescription
+\begin{document}
+  \DocInput{drawmatrix.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \CheckSum{131}
+%
+% \CharacterTable
+%   {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%    Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%    Digits        \0\1\2\3\4\5\6\7\8\9
+%    Exclamation   \!     Double quote  \"     Hash (number) \#
+%    Dollar        \$     Percent       \%     Ampersand     \&
+%    Acute accent  \'     Left paren    \(     Right paren   \)
+%    Asterisk      \*     Plus          \+     Comma         \,
+%    Minus         \-     Point         \.     Solidus       \/
+%    Colon         \:     Semicolon     \;     Less than     \<
+%    Equals        \=     Greater than  \>     Question mark \?
+%    Commercial at \@     Left bracket  \[     Backslash     \\
+%    Right bracket \]     Circumflex    \^     Underscore    \_
+%    Grave accent  \`     Left brace    \{     Vertical bar  \|
+%    Right brace   \}     Tilde         \~}
+%
+% \changes{v1.0.0}{2014/02/23}{Initial Version}
+% \changes{v1.0.1}{2014/09/08}{Bugfix: Collapsible bbox (label placement for
+% vectors)}
+% \changes{v1.0.2}{2015/03/20}{Bugfix: Bbox had a linewidth/2 offset}
+% \changes{v1.0.3}{2015/11/18}{Introduced |diag| option}
+% \changes{v1.1.0}{2015/11/26}{Separate lower and upper banding, externalization
+% control, fixed matrix style collection, lots of simplifications, moved
+% ``every'' keys to |/drawmatrix| path}
+% \changes{v1.1.1}{2016/01/29}{Bugfix: Remove extra space after vectors}
+% \changes{v1.2.0}{2016/08/25}{Added coordinate transformations}
+% \changes{v1.3.0}{2016/11/12}{Added label base (shifted exponents)}
+% \changes{v1.4.0}{2016/12/20}{Added exponenet shortcut}
+% \changes{v1.5.0}{2017/05/05}{Moved code to keys, added hooks, updated
+% documentation}
+%
+%
+% \GetFileInfo{drawmatrix.sty}
+%
+% \title{The \textsf{drawmatrix} package}
+% \author{Elmar Peise \\ \texttt{peise@aices.rwth-aachen.de}}
+% \date{\filedate \ \fileversion}
+%
+% \newcommand\TikZ{Ti{\it k}Z\xspace}
+%
+% \maketitle
+%
+% \begin{abstract}
+%   \textsf{drawmatrix} provides macros to visually represent matrices.  Various
+%   options allow to change the visualizations, e.g., drawing rectangular,
+%   triangular, or banded matrices.
+% \end{abstract}
+%
+% \tableofcontents
+%
+% \input{userdoc}
+%
+% \section{Implementation}
+%
+% \DoNotIndex{
+%   \dm@bboxheight, \dm@bboxwidth, \dm@currname, \dm@currval, \dm@height,
+%   \dm@labelbase, \dm@labeltextouter, \dm@labeltext, \dm@lowerbandwidth,
+%   \dm@minsize, \dm@offsetheight, \dm@offsetwidth, \dm@upperbandwidth,
+%   \dm@width, \dm@zero, \RequirePackage, \begin, \def, \edef, \else, \end,
+%   \expandafter, \fi, \filldraw, \ifdrawmatrix@externalize, \ifmmode, \ifx,
+%   \let, \newcommand, \newif, \node, \path, \pgfkeys, \pgfkeysalso,
+%   \pgfkeyscurrentname, \pgfkeyscurrentvalue, \pgfkeysnovalue, \pgfkeysvaueof,
+%   \pgflinewidth, \pgfgetlastxy, \pgfmathsetlengthmacro, \pgfresetboundingbox,
+%   \pgfqkeys, \phantom, \tikz@library@external@loaded, \tikzset, \undefined,
+% }
+%
+% This section describes the implementation details of the \textsf{drawmatrix}
+% package.
+%
+% \subsection{Package: \TikZ}
+%
+% The \textsf{tikz} package is used for drawing.
+%    \begin{macrocode}
+\RequirePackage{tikz}
+%    \end{macrocode}
+%
+% \subsection{If for externalization}
+%
+% \TeX{} |if| representing whether to explicitly disable \TikZ externalization.
+%    \begin{macrocode}
+\newif\ifdrawmatrix@externalize
+%    \end{macrocode}
+%
+% \subsection{Key Declarations and Defaults}
+%
+% We rely on PGF keys as much as we can.
+%    \begin{macrocode}
+\pgfkeys{
+%    \end{macrocode}
+%
+% Everything happens in the path |/drawmatrix|.
+%    \begin{macrocode}
+    drawmatrix/.is family,
+    drawmatrix/.cd,
+%    \end{macrocode}
+%
+%   |picture| is the style for the |\tikzpicture| in which the matrix is drawn.
+%   |baseline| sets the baseline of the picture to a named coordinate of the
+%   matrix (default: base of the label).
+%    \begin{macrocode}
+    picture/.style={},
+    path/.style={},
+    baseline/.style={picture/.append style={baseline=(drawmatrix #1)}},
+    scale/.style={path/.append style={scale=#1}},
+    x/.style={path/.append style={x=#1}},
+    y/.style={path/.append style={y=#1}},
+    baseline=label.base,
+%    \end{macrocode}
+%
+%   |bbox| is the style of the bounding box, to which |bbox style| appends keys.
+%    \begin{macrocode}
+    bbox/.style={},
+    bbox style/.style={bbox/.append style={#1}},
+%    \end{macrocode}
+%
+%   |bbox height| and |bbox width| don't have default values.  |bbox size| sets
+%   them both to the same value.
+%    \begin{macrocode}
+    bbox height/.initial,
+    bbox width/.initial,
+    bbox size/.style={bbox height=#1, bbox width=#1},
+%    \end{macrocode}
+%
+%   |offset height| and |offset width| are |0| by default. |offset| sets them
+%   both to the same value.
+%    \begin{macrocode}
+    offset height/.initial=0,
+    offset width/.initial=0,
+    offset/.style={offset height=#1, offset width=#1},
+%    \end{macrocode}
+%
+%   |width| and |height| are |1| (\TikZ unit) by default. |size| sets them both
+%   to the same value.
+%    \begin{macrocode}
+    height/.initial=1,
+    width/.initial=1,
+    size/.style={height=#1, width=#1},
+%    \end{macrocode}
+%
+%   The |lower bandwidth| and |upper bandwidth| don't have default values.
+%   |bandwidth| sets them both to the same value.
+%    \begin{macrocode}
+    lower bandwidth/.initial,
+    upper bandwidth/.initial,
+    bandwidth/.style={lower bandwidth=#1, upper bandwidth=#1},
+%    \end{macrocode}
+%
+%   |lower banded| and |upper banded| are shortcuts to set the corresponding
+%   bandwidths to the default value of |0.3| (\TikZ units). |banded| sets them
+%   both.
+%    \begin{macrocode}
+    lower banded/.style={lower bandwidth=.3},
+    upper banded/.style={upper bandwidth=.3},
+    banded/.style={lower banded, upper banded},
+%    \end{macrocode}
+%
+%   |lower| and |upper| are implemented by setting the opposite bandwidth to
+%   |0|. |diag| sets them both.
+%    \begin{macrocode}
+    lower/.style={upper bandwidth=0},
+    upper/.style={lower bandwidth=0},
+    diag/.style={bandwidth=0},
+%    \end{macrocode}
+%
+%   |label| is the style for the label with the text |label text|. |label pos|
+%   sets the label at a named coordinate of the matrix (default: center of the
+%   bounding box).  |label anchor| sets the label's |anchor| (default: in the
+%   middle).
+%    \begin{macrocode}
+    label text/.initial,
+    label/.style={},
+    label pos/.style={label/.append style={at=(drawmatrix #1)}},
+    label pos=bbox.center,
+    label anchor/.style={label/.append style={anchor=#1}},
+    label anchor=mid,
+%    \end{macrocode}
+%
+%  |label base| and |label base anchor| allow to ofset labels with exponents.
+%    \begin{macrocode}
+    label base/.initial,
+    label outer/.style={},
+    label base anchor/.style={label outer/.append style={
+        anchor=#1, at=(drawmatrix label.#1)
+    }},
+    label base anchor=base west,
+%    \end{macrocode}
+%
+%   |exponent| is a shortcut to add an expontent to the label text without using
+%   the |label base|.
+%    \begin{macrocode}
+    exponent/.style={
+        label base/.expanded=\pgfkeysvalueof{/drawmatrix/label text},
+        label text/.append=^{#1}
+    },
+%    \end{macrocode}
+%
+% Unknown keys are collected in |/drawmatrix/drawmatrix|.
+%    \begin{macrocode}
+    drawmatrix/.style={},
+    .unknown/.code={%
+        \let\dm@currname\pgfkeyscurrentname%
+        \let\dm@currval\pgfkeyscurrentvalue%
+        \ifx#1\pgfkeysnovalue\pgfkeysalso{
+            drawmatrix/.append style/.expand once={\dm@currname}
+        }\else\pgfkeysalso{
+            drawmatrix/.append style/.expand twice={%
+                \expandafter\dm@currname\expandafter=\dm@currval%
+            }
+        }\fi%
+    },
+%    \end{macrocode}
+%
+%   The default style for matrices: |every picture| applies to all
+%   |\tikzpicture|s the matrices are drawn in, |every bbox| applies to all
+%   bounding boxes, |every drawmatrix| applies to the matrices themselves, and
+%   |every label| applies to the labels.
+%    \begin{macrocode}
+    every picture/.style={},
+    every bbox/.style={
+        name=drawmatrix bbox,
+        inner sep=0
+    },
+    every drawmatrix/.style={
+        fill=white,
+        draw=gray
+    },
+    every label/.style={
+        name=drawmatrix label,
+        outer sep=0,
+        inner sep=0
+    },
+    every node/.style={
+        name=drawmatrix matrix,
+        outer sep=0,
+        inner sep=0,
+        anchor=north west,
+        at=(drawmatrix north west)
+    },
+%    \end{macrocode}
+%
+%   |externalize| sets a \TeX{} if (default: |true| = behave as all pictures).
+%    \begin{macrocode}
+    externalize/.is if=drawmatrix@externalize,
+    externalize=true,
+%    \end{macrocode}
+%
+% \subsection{Hooks}
+%   Hooks for inserting code at various points of the render.
+%    \begin{macrocode}
+    pre code/.code={},
+    post setup code/.code={},
+    pre coordinate code/.code={},
+    post coordinate code/.code={},
+    pre draw code/.code={},
+    post draw code/.code={},
+    pre label code/.code={},
+    post label code/.code={},
+    post code/.code={},
+%    \end{macrocode}
+%
+% \subsection{Code Keys}
+% The following keys contain the code that construct the drawmatrix.
+%
+% Prepare the label text and, if needed label outer text (for alignment).  This
+% needs to be outside the tikzpicture to properly detect math mode.
+%    \begin{macrocode}
+    setup label code/.code={
+    \ifmmode\edef\dm@labeltext{$\dm@labeltext$}\fi%
+    \expandafter\ifx\dm@labelbase\pgfkeysnovalue\else%
+        \let\dm@labeltextouter\dm@labeltext%
+        \edef\dm@labelbase{%
+            \ifmmode$\dm@labelbase$\else\dm@labelbase\fi%
+        }%
+        \def\dm@labeltext{\phantom{\dm@labelbase}}%
+    \fi%
+    },
+%    \end{macrocode}
+%
+% Disable externalization if |externalize=false|.
+%    \begin{macrocode}
+    externalization code/.code={
+        \ifdrawmatrix@externalize\else%
+            \ifx\tikz@library@external@loaded\undefined\else%
+                \tikzset{external/export=false}%
+            \fi%
+        \fi%
+    },
+%    \end{macrocode}
+%
+% Parse width, height, the minimum dimension and zero for comparison purposes.
+%    \begin{macrocode}
+    setup sizes code/.code={
+        \path[/drawmatrix/path] (\dm@width, \dm@height);
+        \pgfgetlastxy\dm@width\dm@height
+        \path[/drawmatrix/path] (\dm@offsetwidth, \dm@offsetheight);
+        \pgfgetlastxy\dm@offsetwidth\dm@offsetheight
+        \pgfmathsetlengthmacro\dm@minsize{min(\dm@width, \dm@height)}
+        \pgfmathsetlengthmacro\dm@zero{0.0}
+%    \end{macrocode}
+%
+% Prepare the band widths:  First, if the matrix is not banded, the bandwidth is
+% set to the smaller matrix dimension.  Then, the band width is limited by this
+% smaller dimension.
+%    \begin{macrocode}
+        \expandafter\ifx\dm@lowerbandwidth\pgfkeysnovalue
+            \def\dm@lowerbandwidth{\dm@minsize}
+        \else
+            \path[/drawmatrix/path] (\dm@lowerbandwidth, 0);
+            \pgfgetlastxy\dm@lowerbandwidth\dm@zero
+        \fi
+        \expandafter\ifx\dm@upperbandwidth\pgfkeysnovalue
+            \def\dm@upperbandwidth{\dm@minsize}
+        \else
+            \path[/drawmatrix/path] (0, \dm@upperbandwidth);
+            \pgfgetlastxy\dm@zero\dm@upperbandwidth
+        \fi
+        \pgfmathsetlengthmacro\dm@lowerbandwidth{
+            min(\dm@minsize, \dm@lowerbandwidth)
+        }
+        \pgfmathsetlengthmacro\dm@upperbandwidth{
+            min(\dm@minsize, \dm@upperbandwidth)
+        }
+%    \end{macrocode}
+%
+% Set the default bounding box size.
+%    \begin{macrocode}
+        \expandafter\ifx\dm@bboxheight\pgfkeysnovalue
+            \pgfmathsetlengthmacro\dm@bboxheight{
+                \dm@height + \dm@offsetheight
+            }
+        \else
+            \path[/drawmatrix/path] (0, \dm@bboxheight);
+            \pgfgetlastxy\dm@zero\dm@bboxheight
+        \fi
+        \expandafter\ifx\dm@bboxwidth\pgfkeysnovalue
+            \pgfmathsetlengthmacro\dm@bboxwidth{
+                \dm@width + \dm@offsetwidth
+            }
+        \else
+            \path[/drawmatrix/path] (\dm@bboxwidth, 0);
+            \pgfgetlastxy\dm@bboxwidth\dm@zero
+        \fi
+    },
+%    \end{macrocode}
+%
+% Reset the bounding box and begin with (drawing) the path for the bounding box.
+%    \begin{macrocode}
+    bbox code/.code={
+        \pgfresetboundingbox
+        \node[/drawmatrix/every bbox, /drawmatrix/bbox,
+            minimum height=\dm@bboxheight,
+            minimum width=\dm@bboxwidth] {};
+    },
+%    \end{macrocode}
+%
+% Whether needed or not, declare all matrix corners.
+%    \begin{macrocode}
+    coordinate code/.code={
+        \path (drawmatrix bbox.north west)
+            ++(\dm@offsetwidth, -\dm@offsetheight)
+            ++(.5\pgflinewidth, -.5\pgflinewidth)
+            coordinate (drawmatrix north west)
+            ++(\dm@width, 0)
+            +(-\dm@minsize + \dm@upperbandwidth, 0)
+            coordinate (drawmatrix north)
+            +(0, -\dm@minsize + \dm@upperbandwidth)
+            coordinate (drawmatrix east)
+            ++(0, -\dm@height)
+            coordinate (drawmatrix south east)
+            ++(-\dm@width, 0)
+            +(\dm@minsize - \dm@lowerbandwidth, 0)
+            coordinate (drawmatrix south)
+            +(0, \dm@minsize - \dm@lowerbandwidth)
+            coordinate (drawmatrix west);
+    },
+%    \end{macrocode}
+%
+% Add an invisible node the size of the matrix.
+%    \begin{macrocode}
+    node code/.code={
+        \node[/drawmatrix/every node,
+            minimum height=\dm@height,
+            minimum width=\dm@width] {};
+    },
+%    \end{macrocode}
+%
+% Now, draw only what is needed of the matrix.  Otherwise path modifications
+% (e.g., such as rounded corners) might not work.
+%    \begin{macrocode}
+    draw code/.code={
+        \filldraw[/drawmatrix/every drawmatrix, /drawmatrix/drawmatrix]
+            (drawmatrix north west)
+            \ifx\dm@upperbandwidth\dm@zero
+                \ifx\dm@width\dm@minsize\else -- (drawmatrix north) \fi
+                \ifx\dm@height\dm@minsize\else -- (drawmatrix east) \fi
+            \else
+                -- (drawmatrix north)
+                \ifx\dm@upperbandwidth\dm@minsize\else
+                    -- (drawmatrix east)
+                \fi
+            \fi
+            -- (drawmatrix south east)
+            \ifx\dm@lowerbandwidth\dm@zero
+                \ifx\dm@width\dm@minsize\else -- (drawmatrix south) \fi
+                \ifx\dm@height\dm@minsize\else -- (drawmatrix west) \fi
+            \else
+                -- (drawmatrix south)
+                \ifx\dm@lowerbandwidth\dm@minsize\else
+                    -- (drawmatrix west)
+                \fi
+            \fi
+            -- cycle;
+    },
+%    \end{macrocode}
+%
+% The label.
+%    \begin{macrocode}
+    label code/.code={
+        \node[/drawmatrix/every label, /drawmatrix/label]
+            {\dm@labeltext};
+        \expandafter\ifx\dm@labelbase\pgfkeysnovalue\else
+            \node[/drawmatrix/every label, /drawmatrix/label,
+                  /drawmatrix/label outer] {\dm@labeltextouter};
+        \fi
+    }
+}
+%    \end{macrocode}
+%
+% \subsection{User Macros}
+%
+% \refCom{drawmatrixset} as a simple shortcut like |\tikzset|.
+%    \begin{macrocode}
+\newcommand\drawmatrixset[1]{\pgfqkeys{/drawmatrix}{#1}}
+%    \end{macrocode}
+%
+% Here we go, the main thing: \refCom{drawmatrix}. First, apply the options and
+% extract the sizes from the PGF keys.
+%    \begin{macrocode}
+\newcommand\drawmatrix[2][]{{%
+    \drawmatrixset{
+        label text={#2},
+        #1,
+        label text/.get=\dm@labeltext,
+        height/.get=\dm@height,
+        width/.get=\dm@width,
+        lower bandwidth/.get=\dm@lowerbandwidth,
+        upper bandwidth/.get=\dm@upperbandwidth,
+        offset height/.get=\dm@offsetheight,
+        offset width/.get=\dm@offsetwidth,
+        bbox height/.get=\dm@bboxheight,
+        bbox width/.get=\dm@bboxwidth,
+        label base/.get=\dm@labelbase,
+        pre code,
+        setup label code,
+        externalization code
+    }%
+    \begin{tikzpicture}[/drawmatrix/every picture, /drawmatrix/picture]
+        \drawmatrixset{
+            setup sizes code, 
+            post setup code,
+            bbox code,
+            pre coordinate code, 
+            coordinate code, 
+            post coordinate code,
+            node code,
+            pre draw code, 
+            draw code, 
+            post draw code,
+            pre label code, 
+            label code, 
+            post label code
+        }
+    \end{tikzpicture}%
+    \drawmatrixset{post code}%
+}}
+%    \end{macrocode}
+%
+% \Finale
+% \printindex
+% \PrintChanges
+%
+\endinput

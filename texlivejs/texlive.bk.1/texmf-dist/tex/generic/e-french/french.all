@@ -1,0 +1,39 @@
+% This is the french test to check if all french macros exist and are running.
+% After Bernard Gaulle's decease this work is now maintained as
+% the e-French project by a group of enthusiast users 
+% under LPPL copyright as declared in http://www.efrench.org/
+%
+%                                                               rev. 2002/04/25
+{\catcode`\]=13\def]{}
+                         \message{-43- french.all now LOADED^^J}
+\def\DmyDeF#1{\def\LaMacro{\expandafter\noexpand\csname#1\endcsname}
+              \message{^^J}
+            \expandafter\ifx\csname#1\endcsname\relax
+                         \message{-44- ERRROR command \LaMacro is undefined!}
+                        \else
+                        \message{-45- executing \LaMacro}
+                         \phantom{\expandafter\csname#1\endcsname\relax}
+                        \fi
+             }%
+\def\Dmydef#1,#2]{\DmyDeF{#1}%
+                  \def\temp{#2}\ifx\temp\empty\let\Dmydef\relax\fi%
+                  \Dmydef#2]}%
+\def\dummydef[{\Dmydef}%
+% Here are all the french defs names
+\def\>{>}\def\<{<}\def\!{!}% simulation
+% following code can't be executed asis
+\ifx\frenchtest\undefined\else\let\frenchtest\empty\fi
+\ifx\frenchdoc\undefined\else\let\frenchdoc\empty\fi
+\ifx\figurette\undefined\else\let\figurette\empty\fi
+\ifx\endfigurette\undefined\else\let\endfigurette\empty\fi
+\ifx\GOfrench\undefined\else\let\GOfrench\empty\fi
+\ifx\vert\undefined\else\let\vert\empty\fi
+\ifx\tilde\undefined\else\let\tilde\empty\fi
+\ifx\originaloutput\undefined\else\let\originaloutput\empty\fi
+\ifx\unnumberedcaptions\undefined\else\let\unnumberedcaptions\empty\fi
+\ifx\kbIO\undefined\else\let\kbIO\empty\fi
+\ifx\nombre\undefined\else\let\nombre\empty\fi
+\def\@kbtypeout[#1]#2{}
+\input french.cmd % load all french cmd names
+\endinput
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

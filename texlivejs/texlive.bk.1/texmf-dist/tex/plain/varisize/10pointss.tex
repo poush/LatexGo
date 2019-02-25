@@ -1,0 +1,45 @@
+%%% This file is public domain.
+%%% Originally written 1992, Don Hosek.
+%%% This declaration added by Clea F. Rees 2008/11/16 with the permission of Dan Hosek.
+%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This file sets up an ten point sans-serif environment for TeX. It can be
+% initialized with the '\tenpointss' macro.
+% It also sets up a '\tenpoint' macro in case you want to get serifs back.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\ifx\tenpoint\undefined\let\loadedfrommacro=Y
+	\input 10point
+	\let\loadedfrommacro=N\fi
+
+%%%
+%%% Load in the fonts
+%%%
+\font\tenss=cmss10     \font\eightss=cmss8
+\font\tenssbf=cmssbx10 
+\font\tensssl=cmssi10  \font\eightsl=cmssi8
+
+%%% The following fonts are loaded in to make super- and sub- scripts uniform
+%%% in all fonts.
+\font\eighti=cmti8
+\font\eightsy=cmsy8
+
+%%%
+%%% Set up the tenpointss macros
+%%%
+\ifx\tenpointss\undefined
+   \def\tenpointss{\def\rm{\fam0\tenss}% switch to 10-point ss type
+       \textfont0=\tenss \scriptfont0=\eightss \scriptscriptfont0=\eightss
+       \textfont1=\teni  \scriptfont1=\eighti  \scriptscriptfont1=\eighti
+       \textfont2=\tensy \scriptfont2=\eightsy \scriptscriptfont2=\eightsy
+       \textfont3=\tenex \scriptfont3=\tenex   \scriptscriptfont3=\tenex
+       \textfont\itfam=\tensssl  \def\it{\fam\itfam\tensssl}%
+       \textfont\slfam=\tensssl  \def\sl{\fam\slfam\tensssl}%
+       \textfont\ttfam=\tentt  \def\tt{\fam\ttfam\tentt}%
+       \textfont\bffam=\tenssbf  \scriptfont\bffam=\eightss
+        \scriptscriptfont\bffam=\eightss  \def\bf{\fam\bffam\tenssbf}%
+       \textfont\scfam=\tencsc \def\sc{\fam\scfam\tencsc}%
+       \normalbaselineskip=12pt
+       \setbox\strutbox=\hbox{\vrule height10pt depth2pt width0pt}%
+       \normalbaselines\rm}
+   \fi

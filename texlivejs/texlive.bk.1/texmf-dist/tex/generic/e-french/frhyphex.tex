@@ -1,0 +1,75 @@
+% frhyphex.tex % French hyphenation exceptions provided with accent macros.
+%                                                        last mods: 2005/03/21 
+% After Bernard Gaulle's decease this work is now maintained as
+% the e-French project by a group of enthusiast users 
+% under LPPL copyright as declared in http://www.efrench.org/
+%
+% Usually \hyphenation doesn't allow accent macros in its argument, just
+% only characters, but french.sty and hyconfig.tex allows this. Thus this
+% file can be reloaded each time you change your input encoding. The keyboard
+% package do it via kbconfig.tex (and \kbencoding macro).
+%
+\ifx\undefined\@uclclist% is it initex? yes probably
+\expandafter\message\else\expandafter\wlog\fi{frhyphex.tex french exceptions (%
+% Do NOT make any alterations to this french hyphenation exceptions list! --bg
+% This is my official one.    
+                                         V3.3) %   <========= VERSION
+                                              }%
+% But you can have your private one via language.dat and \frhyphex
+% look at the documentation...
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Comme Babel n'accepte pas les lignes blanches et que Braams n'a pas repondu 
+% a mon message (1999/12) j'elimine le chargement des exceptions si babel
+\ifx\adddialect\undefined% a ete charge dans le format.
+
+\hyphenation{% La liste est volontairement reduite. Les exceptions qui ont
+             % ete reconnues sont mises sous forme de motif dans frhyph.tex
+
+% noms propres de renomee mondiale (!) :
+% ============
+%
+
+GUTenberg % Groupe francophone des Utilisateurs de TeX, association loi 1901.
+
+%
+% noms communs dont la division par TeX est << actuellement >> impropre :
+% ============ (les noms suivants on fait l'objet d'une etude GUTenberg et
+%               n'ont pas ete retenus  dans les fichier des motifs de cesure)
+%
+
+extra-conju-gal % proposition de Etienne  Riga 1999/12/23
+extra-conju-gale extra-conju-gales %      Riga 1999/12/23
+extra-conju-gaux %                        Riga 1999/12/23
+extra-cor-po-rel extra-cor-po-rels %      Riga 1999/12/23
+extra-cor-po-relle extra-cor-po-relles %  Riga 1999/12/23
+fichier fichiers %proposition de Michel Bovani 1999/08/09
+manu-scrit manu-scrits %          Denis Roegel 2002/12/06 
+% Je n'ai pas reussi a ajouter "Grand' " pour Grand'place par exemple,
+% alors que \hyphenation{Grand'} fonctionne bien dans le corps d'un 
+% document avec FrenchPro.                B.G. 2005/03/21
+
+%
+%%%
+% (Les noms suivants feront l'objet - ulterieurement - d'une etude GUTenberg et
+%  - eventuellement - d'une modification du fichier des motifs de cesure)
+%
+% noms techniques d'usage assez courant
+% ===============
+%
+
+            } % end of exceptions
+
+% Second list of exceptions:
+\ifx\undefined\@uclclist\else% The following not used at initex:
+\hyphenation{%
+
+            } % end of exceptions 
+\fi
+
+\else%
+\ifx\undefined\@uclclist% is it initex? yes probably
+\expandafter\message\else\expandafter\wlog\fi%
+{NOT LOADED when BABEL is active.}%
+\fi%
+%\endinput%%%%%%%%%%%%%%%%%%%%%%

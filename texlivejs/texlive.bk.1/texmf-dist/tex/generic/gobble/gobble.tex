@@ -1,0 +1,61 @@
+\expandafter\ifx\csname gobble.tex loaded\endcsname\relax
+    \expandafter\def\csname gobble.tex loaded\endcsname{1}%
+\else
+    \expandafter\endinput
+\fi
+\expandafter\edef\csname gobbletex@catcode\endcsname{%
+    \catcode`\noexpand\@=\the\catcode`\@%
+}%
+\catcode`\@=11
+\long\def\@gobble#1{}%
+\long\def\@gobbletwo#1#2{}%
+\long\def\@gobblethree#1#2#3{}%
+\long\def\@gobblefour#1#2#3#4{}%
+\long\def\@gobbleopt{%
+    \@ifnextchar[%
+        {\@gobbleopt@}%
+        {}%
+}%
+\def\@gobbleopt@[#1]{}%
+\long\def\@gobbletwoopt{%
+    \@ifnextchar[%
+        {\@gobbletwoopt@}%
+        {}%
+}%
+\def\@gobbletwoopt@[#1]{\@gobbleopt}%
+\long\def\@gobbleallopt{%
+    \@ifnextchar[%
+        {\@gobbleallopt@}%
+        {}%
+}%
+\long\def\@gobbleallopt@[#1]{%
+    \@ifnextchar[%
+        {\@gobbleallopt@}%
+        {}%
+}%
+\long\def\@gobbletwoopttwo{%
+    \@ifnextchar[%
+        {\@gobbletwoopttwo@}%
+        {\@gobbletwo}%
+}%
+\long\def\@gobbletwoopttwo@[#1]{%
+    \@ifnextchar[%
+        {\@gobbletwoopttwo@@}%
+        {\@gobbletwo}%
+}%
+\long\def\@gobbletwoopttwo@@[#1]{%
+    \@gobbletwo
+}%
+\long\def\@firstofone#1{#1}%
+\long\def\@firstoftwo#1#2{#1}%
+\long\def\@secondoftwo#1#2{#2}%
+\long\def\@firstofthree#1#2#3{#1}%
+\long\def\@secondofthree#1#2#3{#2}%
+\long\def\@thirdofthree#1#2#3{#3}%
+\long\def\@gobbletofi#1#2\fi{\fi#1}%
+\long\def\@gobbletoelse#1#2\else{\else#1}%
+\long\def\@gobbletoor#1#2\or{\or#1}%
+\gobbletex@catcode
+\endinput
+%%
+%% End of file `gobble.tex'.

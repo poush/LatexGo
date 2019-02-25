@@ -1,0 +1,207 @@
+% \iffalse meta-comment
+%
+% Copyright (C) 2015 David Carlisle and Joseph Wright
+%
+% It may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License (LPPL), either version 1.3c of
+% this license or (at your option) any later version.  The latest
+% version of this license is in the file:
+%
+%   http://www.latex-project.org/lppl.txt
+%
+%<package>\ifx
+%<package>  \ProvidesPackage\undefined\begingroup\def\ProvidesPackage
+%<package>    #1#2[#3]{\endgroup\immediate\write-1{Package: #1 #3}}
+%<package>\fi
+%<package>\ProvidesPackage{ctablestack}
+%<*driver>
+\ProvidesFile{ctablestack.dtx}
+%</driver>
+%<*package>
+  [2015/10/01 v1.0 Catcode table stable support]
+%</package>
+%<*driver>
+\documentclass{ltxdoc}
+\GetFileInfo{ctablestack.dtx}
+\begin{document}
+\title{\filename\\Catcode table stable support}
+\author{David Carlisle and Joseph Wright}
+\date{\filedate}
+\maketitle
+\setcounter{tocdepth}{2}
+\tableofcontents
+\DocInput{\filename}
+\end{document}
+%</driver>
+% \fi
+%
+% \section{Overview}
+%
+% This small package adds support for a stack of category code tables to
+% the core support for Lua\TeX{} provided by the \LaTeX{} kernel and
+% available for plain users as |ltluatex.tex|. As such, the
+% code here may be used with both plain \TeX{} and \LaTeX{}, and requires
+% either an up-to-date \LaTeX{} kernel (2016 onward), use of \textsf{latexrelease}
+% with older kernels or loading |ltluatex.tex| for plain users.
+%
+% The commands here are aimed mainly for use by package authors to develop
+% environments needing specific catcode regimes. As such the package does
+% not define any user level commands.
+%
+% \noindent
+% \DescribeMacro{\@setrangecatcode}
+% |\@setrangecatcode{|\meta{start}|}{|\meta{end}|}{|\meta{catcode}|}|\\
+% Sets all characters in the range \meta{start}--\meta{end} inclusive to
+% have the \meta{catcode} specified.
+%
+% \noindent
+% \DescribeMacro{\@pushcatcodetable}
+% \DescribeMacro{\@popcatcodetable}
+% |\@pushcatcodetable|\\
+% |\@popcatcodetable|\\
+% This pair of commands enable the current category code r\'{e}gime to
+% be saved and restored meaning that arbitrary catcode changes can be made.
+% This functionality will normally be used in concert with applying
+% catcode tables. For example
+% \begin{verbatim}
+% \catcode`\Z=4 %
+% \@pushcatcodetable
+% \catcodetable\catcodetable@latex
+% % Code here
+% \@popcatcodetable
+% \showthe\catcode`\Z
+% \end{verbatim}
+% will ensure that the `content' is set with normal category codes but
+% allow restoration of the non-standard codes at the conclusion. Importantly,
+% it does not require that anything is known about the catcode situation in
+% advance (\emph{cf.}~a more traditional approach to saving the state of
+% targeting characters).
+%
+% \StopEventually{}
+%
+% \section{Implementation}
+%
+%    \begin{macrocode}
+%<*package>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\edef\ctstackatcatcode{\the\catcode`\@}
+\catcode`\@=11
+%    \end{macrocode}
+%
+% Check for \textsf{ltluatex} functionality using \cs{newluafunction} as a marker.
+%    \begin{macrocode}
+\ifx\newluafunction\@undefined
+  \input{ltluatex}%
+\fi
+%    \end{macrocode}
+%
+% \begin{macro}{\@setcatcodetable}
+% Save a catcode table specified in |#1| using the catcode settings specified in |#2|.
+% These settings are executed in a local group to avoid affecting surrounding code.
+% (Saving a catcode table is always a global operation.)
+%    \begin{macrocode}1
+\def\@setcatcodetable#1#2{%
+  \begingroup
+    #2%
+    \savecatcodetable#1%
+  \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@setrangecatcode}
+%  Set a range of characters from |#1| to |#2| inclusive to the catcode specified in |#3|.
+%    \begin{macrocode}
+\def\@setrangecatcode#1#2#3{%
+  \ifnum#1>#2 %
+    \expandafter\@gobble
+  \else
+    \expandafter\@firstofone
+  \fi
+    {%
+      \catcode#1=#3 %
+      \expandafter\@setrangecatcode\expandafter
+        {\number\numexpr#1+1\relax}{#2}{#3}%
+    }%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@catcodetablelist}
+% \begin{macro}{\@catcodetablestack}
+%   Data structures for a stack: a list of free tables in the stack and
+%   the stack record itself.
+%    \begin{macrocode}
+\def\@catcodetablelist{}
+\def\@catcodetablestack{}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\@catcodetablestackcnt}
+%   A count for adding to the list of scratch tables.
+%    \begin{macrocode}
+\newcount\@catcodetablestackcnt
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@pushcatcodetable}
+% \begin{macro}{\@pushctbl}
+%   To push a table, first check there is a free one in the pool and if
+%   not create one. Then take the top table in the pool and use it to save
+%   the current table.
+%    \begin{macrocode}
+\def\@pushcatcodetable{%
+  \ifx\@catcodetablelist\empty
+    \global\advance\@catcodetablestackcnt by\@ne
+    \edef\@tempa{\csname ct@\the\@catcodetablestackcnt\endcsname}%
+    \expandafter\newcatcodetable\@tempa
+    \xdef\@catcodetablelist{\@tempa}%
+  \fi
+  \expandafter\@pushctbl\@catcodetablelist\@nil
+}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\def\@pushctbl#1#2\@nil{%
+  \gdef\@catcodetablelist{#2}%
+  \xdef\@catcodetablestack{#1\@catcodetablestack}%
+  \savecatcodetable#1%
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\@popcatcodetable}
+% \begin{macro}{\@popctbl}
+%   Much the same in reverse.
+%    \begin{macrocode}
+\def\@popcatcodetable{%
+  \if!\@catcodetablestack!%
+    \errmessage{Attempt to pop empty catcodetable stack}%
+  \else
+    \expandafter\@popctbl\@catcodetablestack\@nil
+  \fi
+}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\def\@popctbl#1#2\@nil{%
+  \gdef\@catcodetablestack{#2}%
+  \xdef\@catcodetablelist{\@catcodetablelist#1}%
+  \catcodetable#1%
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+%    \begin{macrocode}
+\catcode`\@\ctstackatcatcode\relax
+%    \end{macrocode}
+%    \begin{macrocode}
+%</package>
+%    \end{macrocode}
+%
+% \Finale

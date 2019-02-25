@@ -1,0 +1,1607 @@
+% \CheckSum{916}
+% \iffalse meta-comment
+%
+% Copyright 1999 the fontinst maintenance team and any individual 
+% authors listed elsewhere in this file.  All rights reserved.
+% 
+% This file is part of the fontinst system version 1.9.
+% -----------------------------------------------------
+% 
+% It may be distributed under the terms of the LaTeX Project Public
+% License, as described in lppl.txt in the base LaTeX distribution.
+% Either version 1.0 or, at your option, any later version.
+% 
+%%% From file: fimapgen.dtx
+%
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage{fisource}
+
+\title{\texttt{fimapgen.dtx}}
+\author{Lars Hellstr\"om}
+\begin{document}
+\maketitle
+
+\DocInput{fimapgen.dtx}
+
+\end{document}
+%</driver>
+% \fi
+% 
+% 
+% \section{Generating map file fragments}
+% \label{Sec:Mapfiles}
+% \changes{1.904}{1999/06/15}{Completed rudimentary map file fragment 
+%    generator, made it part of \texttt{finstmsc.sty}. (LH)}
+% \newcommand\OzTeX{O\kern-.03em z\kern-.15em\TeX}
+% 
+% A \emph{map file} is a file which is used by some DVI driver to link 
+% various kinds of font information to each other, as is needed for the 
+% driver's operation. Examples of such files are the file 
+% \texttt{psfonts.map} used by \texttt{dvips} and the config files of 
+% \OzTeX. There are however many other such files around in the \TeX\ 
+% world.
+% 
+% Not all of a map file need to be related to linking specific kinds of 
+% font information to each other. \OzTeX\ config files can for example 
+% be used to set the values of \TeX\ implementation parameters\footnote
+% {The kind of things that were Pascal constants in the original \Web\ 
+% sources for \TeX.} and there need not be any font-related information 
+% at all in them. The important thing is however that there can be map 
+% information in them---that information could be automatically written 
+% by the routines described here. 
+% 
+% Since there may be other kinds of information in these files (and often 
+% enough need to be for everthing to work right), the routines described 
+% here will only generate map file \emph{fragments}. These fragments 
+% will then have to be inserted in the final map files somehow, usually 
+% through manual editing. The purpose of the routines described here is 
+% only to save the user a good deal of (often quite boring) typing, not 
+% to actually install everything where it needs to be.
+% 
+% \StopEventually{}
+% 
+% \begin{macro}{\mapfrags_subsystem}
+%   This macro holds the name of the automatic map file fragments 
+%   writer subsystem of \package{fontinst}, as it appears in error 
+%   messages.
+%    \begin{macrocode}
+\def\mapfrags_subsystem{Map~fragments~writer}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \subsection{Interface to main \package{fontinst}}
+% \label{Ssec:interface}
+% 
+% The automatic generation of map file fragments is based on the two 
+% commands |\storemapdata| and |\makemapentry|. Their respective 
+% syntaxes are
+% \begin{quote}
+%   |\storemapdata|\marg{\TeX\ font name}\marg{source}^^A
+%     \marg{transforms}\\
+%   |\makemapentry|\marg{\TeX\ font name}
+% \end{quote}
+% 
+% \DescribeMacro{\storemapdata}|\storemapdata| commands are written when 
+% a metric file \meta{\TeX\ font name}|.mtx| is generated. The purpose 
+% of these commands is to record where the data for that file came from, 
+% and what was done to these data. The source of the data is specified 
+% in the \meta{source} argument, which can contain one of
+% \begin{quote}
+%   |\fromafm|\marg{AFM name}\marg{PS name}\\
+%   |\frompl|\marg{PL name}\\
+%   |\frommtx|\marg{MTX name}\\
+%   |\fromvpl|
+% \end{quote}
+% The only real difference between |\fromafm| and |\frompl| at this 
+% stage is that the former specifies the PS name of the font, but the 
+% latter does not. If you write a |\store|\-|map|\-|data| command yourself 
+% and want to supply the PS name then you should use |\fromafm| even if 
+% you took the font metrics from a PL.
+% There is an important difference between |\fromvpl| and the first three 
+% in that virtual fonts need no map file entry (and hence there should 
+% not be any either). Besides some error checking, |\fromvpl| causes a 
+% |\makemapentry| to do essentially nothing.
+% 
+% What was done to the data is specified by the \meta{transforms} 
+% argument, which is a possibly empty sequence of commands, in which 
+% each item is one of
+% \begin{isyntax}
+%   |\transformfont|\marg{x-scale}\marg{slant-scale}\\
+%   |\reencodefont|\marg{etx}\\
+%   |\reglyphfont|
+% \end{isyntax}
+% The order is interpreted so that the thing done first appear first in 
+% the sequence. In normal cases there is at most one of each, and then 
+% the order is not important. \meta{x-scale}, \meta{slant-scale}, and 
+% \meta{y-scale} are the values of these variables used for the 
+% transformation, as \TeX\ numbers. \meta{etx} is the name of the ETX 
+% file used for the font reencoding.
+% |\reglyphfont| is an error marker. It will not be encountered (but 
+% it may well get stored in some table) unless a metric font transform 
+% is applied to a font that has been reglyphed, which is illegal.
+% 
+% \changes{1.911}{1999/11/17}{\cs{storemapdata} commands are also 
+%    written to metric files when they are generated. (LH)}
+% In addition to being written to a transforms record file (if one is 
+% open), |\storemapdata| commands are also written to the actual metric 
+% file. This makes it possible to find out where the data for a file 
+% comes from even if the file was made on a previous \package{fontinst} 
+% run, but since it requires reading an additional file just to find one 
+% command, it will be slower than if the |\storemapdata| appeared in a 
+% transforms records file.
+% 
+% \DescribeMacro{\makemapentry}|\makemapentry| commands are written when 
+% a VPL that uses or a ligfull PL for a font is generated. These 
+% commands are the ones which actually cause the map file fragment 
+% generator to write an entry, but entries are only written if they 
+% haven't been written before. |\makemapentry| uses information that 
+% was stored by a previous call to |\storemapdata|.
+% 
+% |\storemapdata| stores its arguments in one of the control sequences 
+% \describecsfamily{Tf-\meta{font}}|\Tf-|\meta{font}, where \meta{font} 
+% is the same thing as \meta{\TeX\ font name} above. |Tf| stands for 
+% ``\TeX\ font''. The control sequences in this family are paramterless 
+% macros whose replacement texts have the following form:
+% \changes{1.914}{2000/05/30}{Contents of \cs{Tf-\meta{font}} control 
+%    sequences changed to allow processing the same file of recorded 
+%    transformations several times on the same run. (LH)}
+% \begin{quote}
+%   \marg{made}\marg{source}\marg{transforms}
+% \end{quote}
+% Here \meta{source} and \meta{transforms} are exactly as above. 
+% \meta{made} is a number which describes the current status of this font. 
+% If \meta{made} is even then the font has been defined but no entry for 
+% it has subsequently been written to the map file, whereas if it is odd 
+% then an entry for it has been written to the map file. If the value of 
+% \meta{made} is less than |\process_generation| then the data in the 
+% other two arguments is from a previous run and should be ignored.
+% The |\Tf-|\meta{font} control sequences should always be set globally.
+% 
+% \begin{macro}{\process_generation}
+% \begin{macro}{\process_generation_succ}
+%   |\process_generation| is a counter which stores the number of the 
+%   current ``entry generation''. It starts at 0 and is increased by 
+%   two at each |\donedrivers|. |\process_generation_succ| is a macro 
+%   which expands to a number one larger than that in |\process_generation|.
+%   \multchanges{\cs{process_generation}\cs{process_generation_succ}}
+%      {1.914}{2000/05/30}{Control sequences added. (LH)}
+%    \begin{macrocode}
+%<*map>
+\newcount\process_generation
+\process_generation=0
+\def\process_generation_succ{1}
+%</map>
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% \begin{macro}{\recordtransforms}
+% \begin{macro}{\endrecordtransforms}
+% \begin{macro}{\transform_record_file}
+%   In main \package{fontinst}, the command
+%   \begin{quote}
+%     |\recordtransforms|\marg{filename}
+%   \end{quote}
+%   starts a block of code within which font transforms will be recorded 
+%   in the file \meta{filename}. |\endrecordtransforms| ends such a block.
+%    \begin{macrocode}
+%<*pkg>
+\def\recordtransforms#1{\open_pout\transform_record_file{#1}}
+\def\endrecordtransforms{
+   \close_pout\transform_record_file{Font~transformation~records}
+}
+\chardef\transform_record_file=\closed_stream
+%</pkg>
+%    \end{macrocode}
+% \end{macro} \end{macro} \end{macro}
+% 
+% 
+% \begin{macro}{\extract_font_generation}
+%   The |\extract_font_generation| macro takes the name of a font and 
+%   returns the \meta{made} component from the |\Tf-|\meta{font} macro 
+%   for that font, or minus one if that macro hasn't been defined.
+%   \changes{1.914}{2000/05/30}{Macro added. (LH)}
+%    \begin{macrocode}
+%<*map>
+\def\extract_font_generation#1{
+   \if_defined{Tf-#1}\then
+      \expandafter\expandafter \expandafter\first_of_three
+         \csname Tf-#1\endcsname
+   \else
+      \m@ne
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\storemapdata}
+%   There should not be two |\storemapdata| for the same font, hence 
+%   the check below. (Note that a `font' in this case is an MTX file. 
+%   It is quite possible (and legal) to generate the PL file for that 
+%   MTX file more than once.)
+%   \changes{1.927}{2004/07/12}{Improved wording of warning message 
+%      and downgraded it to an info in the case when the two 
+%      definitions are the same. (LH)}
+%    \begin{macrocode}
+\def\storemapdata#1#2#3{
+   \expandafter\def \expandafter\a_macro
+      \expandafter{ \expandafter{ \the\process_generation}{#2}{#3}}
+   \ifnum \extract_font_generation{#1}<\process_generation \else
+      \x_cs\ifx{Tf-#1}\a_macro 
+         \fontinstinfo\mapfrags_subsystem
+            {Repeated~definition~of~font~#1}
+      \else
+         \fontinstwarning\mapfrags_subsystem
+            {Inconsistent~redefinition~of~font~#1}
+      \fi
+   \fi
+   \x_cs\let{Tf-#1}=\a_macro
+}
+%</map>
+%    \end{macrocode}
+%   In main \package{fontinst}, |\storemapdata| should be a noop so 
+%   that it can appear in metric files.
+%    \begin{macrocode}
+%<pkg>\let\storemapdata=\gobble_three
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\record_transform}
+%   \changes{1.911}{1999/11/18}{\cs{storemapdata} lines are optionally 
+%      written to the main output file as well. (LH)}
+%   In main \package{fontinst}, the call
+%   \begin{quote}
+%     |\record_transform|\marg{TFM name}\marg{source}^^A
+%        \marg{transforms}\marg{if}
+%   \end{quote}
+%   writes
+%   \begin{quote}
+%     |\storemapdata|\marg{TFM name}\marg{source}\marg{transforms}
+%   \end{quote}
+%   to the transformation recordings file (if font transforms are being 
+%   recorded) and to the main output file (if the \meta{if} evaluates 
+%   to true). Note that the caller of |\record_transform| must see to 
+%   that macros in \meta{source} and \meta{transforms} are written 
+%   correctly to the file (this is usually accomplished by adding 
+%   |\string| in suitable places of these arguments during their 
+%   construction).
+%   
+%    \begin{macrocode}
+%<*pkg>
+\def\record_transform#1#2#3#4{
+   \ifnum \transform_record_file=\closed_stream \else
+      \pout_line\transform_record_file{\string\storemapdata{#1}{#2}{#3}}
+   \fi
+   #4 \out_line{\string\storemapdata{#1}{#2}{#3}} \fi
+}
+%</pkg>
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \begin{macro}{\transformfont}
+%   \changes{1.913}{2000/03/11}{Third argument removed, since it isn't 
+%      used anymore. This change is harmless, since the worst thing 
+%      that can happen to this argument is that it is typeset. (LH)}
+% \begin{macro}{\reencodefont}
+% \begin{macro}{\reglyphfont}
+%   These are initially |\relax|, so they can be |\edef|ed with safely.
+%    \begin{macrocode}
+%<*map>
+\let\transformfont\x_relax
+\let\reencodefont\x_relax
+\let\reglyphfont\x_relax
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+% 
+% 
+% \changes{1.914}{2000/05/30}{The total transform applied for a font is 
+%    determined before the entry makers are called. (LH)}
+% \begin{macro}{\makemapentry}
+%   |\makemapentry| sets |\TeX_font_name|, checks if any map data have 
+%   been stored for the font in question, and passes them on to 
+%   |\make_map_entry| if they have; otherwise it raises an error. There 
+%   is also a group which is begun and ended by |\makemapentry|, to stop 
+%   values deduced for one entry to interfere with the deduction of values 
+%   in the following.
+%   \changes{1.911}{1999/11/20}{When map data are not known, try to 
+%      get them from the MTX file before declaring the source unknown. 
+%      (LH)}
+%    \begin{macrocode}
+\def\makemapentry#1{\begingroup
+   \def\TeX_font_name{#1}
+   \ifnum \extract_font_generation{#1}<\process_generation
+      \if_file_exists{#1.mtx}\then
+         \inputmtx{#1}
+   \fi\fi
+   \ifnum \extract_font_generation{#1}<\process_generation
+      \from_unknown{#1}
+      \x_cs\xdef{Tf-#1}{
+         {\process_generation_succ}{\noexpand\from_unknown{#1}}{}
+      }
+   \else
+      \expandafter\expandafter \expandafter\make_map_entry 
+         \csname Tf-#1\endcsname
+   \fi
+   \endgroup
+}
+%    \end{macrocode}
+%   
+%   \begin{macro}{\make_map_entry}
+%     |\make_map_entry| oversees the interpretation of the 
+%     \meta{source} part of the map data, something which sets 
+%     |\source_font_TeX_name| and possibly |\PS_font_name|. It also 
+%     collects the transforms applied in |\font_transforms|, 
+%     concatenates them, and calls a list macro |\entry_makers_list| which 
+%     causes the actual entries to be written, and records in 
+%     |\Tf-|\meta{\TeX\ font name} that the entries have been written.
+%    \begin{macrocode}
+\def\make_map_entry#1#2#3{
+   \ifnum #1=\process_generation
+      \def\font_transforms{#3}
+      #2
+      \_a_false
+      \let\transformfont\concat_transformfont
+      \let\reencodefont\concat_reencodefont
+      \let\reglyphfont\_a_true
+      \font_transforms
+      \if_a_
+         \fontinsterror\mapfrags_subsystem{
+            \string\makemapentry\space for~reglyphed~font
+         }{ No~entry~for~font~\TeX_font_name\space 
+            can~be~written,\messagebreak
+            since~it~had~been~reglyphed!~\error_help_a
+         }
+      \else
+         \entry_makers_list
+      \fi
+      \expandafter\gdef \csname Tf-\TeX_font_name \expandafter\endcsname
+         \expandafter{\expandafter{\process_generation_succ}{#2}{#3}}
+   \fi
+}
+%</map>
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% 
+% \begin{macro}{\record_usage}
+%   In main \package{fontinst}, the call
+%   \begin{quote}
+%     |\record_usage|\marg{TFM name}
+%   \end{quote}
+%   writes
+%   \begin{quote}
+%     |\makemapentry|\marg{TFM name}
+%   \end{quote}
+%   to the transformation recordings file, if font transforms are being 
+%   recorded. The |\record_usage| command is, roughly speaking, only used 
+%   by |\installfont| and |\installrawfont|.
+%    \begin{macrocode}
+%<*pkg>
+\def\record_usage#1{
+   \ifnum \transform_record_file=\closed_stream \else
+      \pout_line\transform_record_file{\string\makemapentry{#1}}
+   \fi
+}
+%</pkg>
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \begin{macro}{\fromafm}
+%   |\fromafm| saves its two arguments in the suitable string macros.
+%    \begin{macrocode}
+%<*map>
+\def\fromafm#1#2{
+   \def\source_font_TeX_name{#1}
+   \def\PS_font_name{#2}
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\frompl}
+%   |\frompl| saves its argument in the suitable string macro.
+%    \begin{macrocode}
+\def\frompl#1{
+   \def\source_font_TeX_name{#1}
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\frommtx}
+%   This one is tricky, since it will have to work recursively, 
+%   fetching data that were stored for some other font. If it cannot 
+%   find those data in memory, then it tries to get them from the 
+%   metric file itself.
+%   \changes{1.911}{1999/11/17}{When map data are not known, try to 
+%      get them from the MTX file before declaring the source unknown. 
+%      (LH)}
+%    \begin{macrocode}
+\def\frommtx#1{%
+   \ifnum \extract_font_generation{#1}<\process_generation
+      \if_file_exists{#1.mtx}\then
+         \inputmtx{#1}
+   \fi\fi
+   \ifnum \extract_font_generation{#1}<\process_generation
+      \from_unknown{#1}
+      \x_cs\xdef{Tf-#1}{
+         {\the\process_generation}{\noexpand\from_unknown{#1}}{}
+      }
+   \else
+      \expandafter\expandafter \expandafter\from_mtx
+         \csname Tf-#1\endcsname
+   \fi
+}
+%    \end{macrocode}
+% \begin{macro}{\from_mtx}
+%    \begin{macrocode}
+\def\from_mtx#1#2#3{
+   \edef\font_transforms{#3\font_transforms}
+   #2
+}
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% \begin{macro}{\fromvpl}
+%   The |\fromvpl| command checks if |\font_transforms| is empty. If it 
+%   is then everything is fine, but no entry should be written for this 
+%   font. If it isn't then someone has tried to make a transformation of 
+%   a virtual font, which doesn't work.
+%    \begin{macrocode}
+\def\fromvpl{
+   \ifx \empty_command\font_transforms \else
+      \fontinsterror\mapfrags_subsystem{
+         Font~is~virtual,~it~cannot~be~transformed}{
+         No~entry~for~font~\TeX_font_name\space can~be~written.
+         \messagebreak\error_help_a
+      }
+   \fi
+   \let\maker_do\gobble_one
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\AssumeMetafont}
+%   The |\AssumeMetafont| general settings command makes |\frompl| 
+%   behave like |\fromvpl|.
+%    \begin{macrocode}
+\def\AssumeMetafont{
+   \def\frompl{
+      \ifx \empty_command\font_transforms \else
+         \fontinsterror\mapfrags_subsystem{
+            A~Metafont~cannot~be~transformed}{
+            No~entry~for~font~\TeX_font_name\space can~be~written.
+            \messagebreak\error_help_a
+         }
+      \fi
+      \let\maker_do\gobble_one
+   }
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\from_unknown}
+%   This special value for \meta{source} is used for fonts that are 
+%   referenced by some |\frommtx| but which have no |\storemapdata| 
+%   themselves.
+%    \begin{macrocode}
+\def\from_unknown#1{
+   \fontinstwarningnoline\mapfrags_subsystem{
+      No~map~data~stored~for~font~#1.\messagebreak
+      No~entry~for~\TeX_font_name\space will~be~written,\messagebreak
+      due~to~insufficient~information}
+   \includewarning\warn_unknown_source
+   \let\maker_do\gobble_one
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \begin{macro}{\font_transforms}
+%   This macro is used to collect all transformations that have been 
+%   applied to a font in, before they are concatenated.
+%    \begin{macrocode}
+\let\font_transforms\empty_command
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\xscale_factor}
+% \begin{macro}{\slant_factor}
+% \begin{macro}{\reencode_etx}
+%   |\xscale_factor| and |\slant_factor| are dimens which the entry 
+%   makers can inspect to check the amount of horizontal scaling and 
+%   slanting should be applied to the current font. 1\,pt equals the 
+%   factor~1. 
+%   \begin{quote}
+%     |\expandafter\lose_measure\the\xscale_factor|
+%   \end{quote}
+%   will produce the corresponding factor.
+%   
+%   |\reencode_etx| is a macro which contains the name of the (last) 
+%   ETX file used to reencode the font; it is empty if the font hasn't 
+%   been reencoded.
+%   \multchanges{\cs{xscale_factor}\cs{slant_factor}\cs{reencode_etx}}
+%      {1.914}{2000/05/30}{Control sequences added. (LH)}
+%    \begin{macrocode}
+\newdimen\xscale_factor  \newdimen\slant_factor
+\xscale_factor=\p@       \slant_factor=\z@
+\let\reencode_etx\empty_command
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+% 
+% \multchanges{\cs{concat_transformfont}\cs{concat_reencodefont}}
+%    {1.914}{2000/05/30}{Macros added. (LH)}
+% \begin{macro}{\concat_transformfont}
+%   The |\concat_transformfont| macro is a definition of |\transformfont| 
+%   which concatenates the transformation expressed by the arguments 
+%   with the one in |\xscale_factor| and |\slant_factor|. 
+%   Mathematically, it performs the multiplication
+%   $$
+%     \left( \begin{array}{cc} f(\#1)& f(\#2)\\ 0& 1 \end{array} \right)
+%     \left( \begin{array}{cc} 
+%        \mbox{\cs{xscale_factor}}& \mbox{\cs{slant_factor}} \\ 
+%        0& 1 
+%     \end{array} \right)
+%   $$
+%   where $f$ stands for |\make_factor|.
+%    \begin{macrocode}
+\def\concat_transformfont#1#2{
+   \edef\a_macro{\make_factor{#1}}
+   \xscale_factor=\a_macro\xscale_factor
+   \slant_factor=\a_macro\slant_factor
+   \advance \slant_factor \make_factor{#2}\p@
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \begin{macro}{\concat_reencodefont}
+%   The |\concat_reencodefont| macro is a definition of |\reencodefont| 
+%   which concatenates the reencoding expressed by the argument with 
+%   the one in |\reencode_etx|. Since reencoding ignores the previous 
+%   encoding, concatenating is the same thing as remembering the last 
+%   reencoding.
+%    \begin{macrocode}
+\def\concat_reencodefont#1{\def\reencode_etx{#1}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \subsection{User interface}
+% 
+% The basic usage of the automatic map file fragment generator consists 
+% of specifying for which driver(s) entries should be generated, 
+% |\input|ing a file of recorded transformations generated by main 
+% \package{fontinst}, and signaling that there isn't anything more to 
+% write. This can be done with the commands
+% \begin{quote}
+%   |\adddriver|\marg{driver name}\marg{fragment file name}\\
+%   \meta{possible additional \cs{adddriver} commands}\\
+%   |\input |\meta{recorded transforms file}\\
+%   |\donedrivers|\\
+%   |\bye|
+% \end{quote}
+% It should however be noted that this is the \emph{basic} usage. The 
+% map fragments that work for one \TeX\ system need not work for 
+% another (even if the driver is the same), and therefore it is 
+% necessary to make the whole process of writing map file fragments 
+% configurable. A few examples of things you may have to inform the map 
+% fragment writer about are (and these are for \package{dvips} alone; 
+% that's the driver I know best):
+% \begin{itemize}
+%   \item
+%     Is the font resident on the printer or must it be downloaded?
+%   \item
+%     If the font must be downloaded, what is the name of the file it 
+%     is in? Here one must take into account not only the possibility 
+%     that the font file might have to be shared with some other 
+%     software (such as a GUI) and thus cannot be named according to 
+%     the Berry scheme---even if it is named according to the Berry 
+%     scheme one still has the question of its extension: \texttt{.pfa}, 
+%     \texttt{.pfb}, or something else? For instances of Multiple Master 
+%     fonts, you (at least sometimes) have to download more than one file.
+%   \item
+%     Again if the font must be downloaded, can/should it be partially 
+%     downloaded?
+%   \item
+%     In case the font has been reencoded, what is the name of the file 
+%     which defines this encoding, and by what name does that file make 
+%     the encoding known to the postscript interpreter?
+% \end{itemize}
+% The mechanisms available for such configuration are described in 
+% Subsection~\ref{Sssec:Config-interface}. 
+% Note that map files for DVI viewers are on average more likely to need 
+% various platform-specific information about the fonts than map files 
+% for DVI printer drivers are, and hence once can expect that 
+% generation of these will need more extensive configuration than that 
+% for the printer drivers.
+% 
+% 
+% \subsubsection{Interface for basic usage}
+% 
+% An \emph{entry maker} is a group of macros which write the entry for 
+% the font currently under consideration to a map fragments file each 
+% time they are called. The macro to call must have a name of the form 
+% \describecsfamily{make_\meta{driver}}|\make_|\meta{driver} for 
+% |\adddriver| to recognise it. Each entry maker has a separate output 
+% file (opened using |\open_pout|) and the identifier connected to that 
+% file is called \describecsfamily{output_\meta{driver}}\relax
+% |\output_|\meta{driver}.
+% 
+% A list of all entry makers currently active is maintined in the macro 
+% |\entry_makers_list|. Each item in this list has the form
+% \begin{quote}
+%   |\maker_do|\,|\make_|\meta{driver}
+% \end{quote}
+% |\maker_do| is usually |\relax|, but it does occationally get set to 
+% other values.
+% \par\bigskip
+% 
+% 
+% \begin{macro}{\adddriver}
+%   The |\adddriver| command adds the named driver to the list of 
+%   drivers to write entries for and opens an output file where the 
+%   entries for that particular driver will go. Repeated calls to 
+%   |\adddriver| for the same driver have no effect.
+%    \begin{macrocode}
+\def\adddriver#1#2{
+   \x_cs\ifx{make_#1}\x_relax
+      \fontinsterror\mapfrags_subsystem
+         {There~is~no~entry~maker~for~#1}\error_help_a
+   \else
+      \x_cs\ifx{output_#1}\x_relax \_a_true \else
+         \x_cs\ifx{output_#1}\closed_stream \_a_true \else
+            \_a_false
+      \fi\fi
+      \if_a_
+         \x_cs\open_pout{output_#1}{#2}
+         \expandafter\add_to \expandafter\entry_makers_list 
+            \expandafter{ \expandafter\maker_do 
+            \csname make_#1\endcsname}
+      \fi
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\entry_makers_list}
+% \begin{macro}{\maker_do}
+%    \begin{macrocode}
+\let\entry_makers_list\empty_command
+\let\maker_do\x_relax
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% \begin{macro}{\donedrivers}
+%   The main function performed by the |\donedrivers| command is to 
+%   close all the open output files. It might also print some warning 
+%   messages.
+%    \begin{macrocode}
+\def\donedrivers{
+   \def\maker_do##1{
+      \x_cs\close_pout{output\expandafter\gobble_five\string##1}
+         {Map~file~fragments}
+   }
+   \entry_makers_list
+   \let\maker_do\x_relax
+   \let\entry_makers_list\empty_command
+   \errorstopmode
+   \reportwarnings
+   \advance \process_generation \thr@@
+   \edef\process_generation_succ{\the\process_generation}
+   \advance \process_generation \m@ne
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\gobble_five}
+%    \begin{macrocode}
+\def\gobble_five#1#2#3#4#5{}
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% It is appropriate that the map file writer writes a summary of the 
+% kinds of risky things which happened when it is done writing data to 
+% files. To simplify implementing such things, there is a command 
+% \DescribeMacro{\includewarning}|\includewarning| that takes care of 
+% the bookkeeping involved. After the call
+% \begin{quote}
+%   |\includewarning|\meta{command}
+% \end{quote}
+% the \meta{command} will be executed exactly once the next time 
+% |\reportwarnings| is executed. The \meta{command} usually expands to 
+% something like
+% \begin{quote}
+%   \small|\fontinstwarningnoline\mapfrags_subsystem{|\\
+%   |   Check~the~output~file(s)--some~data~was~considered~uncertain}|
+% \end{quote}
+% 
+% \begin{macro}{\warnings_list}
+%   The |\warnings_list| macro contains a list of all warnings that 
+%   should be made. It expands to a sequence of
+%   \begin{quote}
+%     |\warning_do|\meta{command}
+%   \end{quote}
+%   |\warnings_list| is always assigned globally.
+%    \begin{macrocode}
+\g_let\warnings_list=\empty_command
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\includewarning}
+% \begin{macro}{\warning_do}
+%   The |\includewarning| command adds an entry for its argument to the 
+%   |\warnings_list| list, provided there wasn't already such an entry. 
+%   |\includewarning| is based on the macro |\warning_do|, which does 
+%   most of the bookkeeping for making sure the list contains at most 
+%   one entry of each kind. |\warning_do| normally expects to be 
+%   expanded in the context
+%   \begin{quote}
+%     |\warning_do|\meta{new command}\meta{old command}\meta{next}
+%   \end{quote}
+%   The \meta{new command} is the command that is being added to the 
+%   list, and the \meta{old command} is a command that is already in the 
+%   list. \meta{next} is the first token in the next item in the 
+%   list---in most cases another |\warning_do|. If \meta{new command} 
+%   and \meta{old command} are not equal, this should expand to
+%   \begin{quote}
+%     |\noexpand\warning_do|\,|\noexpand|\meta{old command}\,^^A
+%     \meta{next}\,\meta{new command}
+%   \end{quote}
+%   If on the other hand they are equal, this should expand to
+%   \begin{quote}
+%     |\noexpand\warning_do|\,|\noexpand|\meta{old command}\,^^A
+%     \meta{next}\,|\x_relax|
+%   \end{quote}
+%   The reason for this is that the last \meta{next} will not be a 
+%   |\warning_do|, but an |\ifx| which tests whether a new item should 
+%   be added to the list.
+%    \begin{macrocode}
+\def\warning_do#1#2#3{
+   \noexpand\warning_do \noexpand#2
+   \ifx #1#2
+      \expandafter#3 \expandafter\x_relax
+   \else
+      \expandafter#3 \expandafter#1
+   \fi
+}
+\def\includewarning#1{
+   \xdef\warnings_list{
+      \expandafter\swap_two \expandafter#1 \warnings_list
+      \if_equal\x_relax\then \else
+         \noexpand\warning_do \noexpand#1
+      \fi
+   }
+}
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% \begin{macro}{\reportwarnings}
+%   The |\reportwarnings| command reports all the warnings and empties 
+%   the |\warnings_list|.
+%    \begin{macrocode}
+\def\reportwarnings{
+   \begingroup
+      \let\warning_do=\x_relax
+      \warnings_list
+   \endgroup
+   \g_let\warnings_list=\empty_command
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\warn_unknown_source}
+% \begin{macro}{\warn_undecided_data}
+% \begin{macro}{\warn_uncertain_data}
+%   These macros are used to output warnings at the |\reportwarnings| at 
+%   the end of |\donedrivers|.
+%    \begin{macrocode}
+\def\warn_unknown_source{
+   \fontinstwarningnoline\mapfrags_subsystem{
+      Some~font~is~missing~from~the~output~file(s),\messagebreak
+      since~its~source~is~unknown}
+}
+\def\warn_undecided_data{
+   \fontinstwarningnoline\mapfrags_subsystem{
+      Check~the~output~file(s)--some~data~could~not~be~determined}
+}
+\def\warn_uncertain_data{
+   \fontinstwarningnoline\mapfrags_subsystem{
+      Check~the~output~file(s)--some~data~was~considered~uncertain}
+}
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+% 
+% 
+% 
+% \subsubsection{Configuration interface}
+% \label{Sssec:Config-interface}
+% 
+% To correctly format reencodings, the map file writer must know what 
+% the ETX encodings correspond to. In the case of drivers which 
+% generate postscript output, this information is stored in the 
+% \describecsfamily{pse-\meta{etx}}|\pse-|\meta{etx} family of macros. 
+% \meta{etx} is the name (suffix excluded) of the ETX file that the 
+% information pertains to. The expansion of these macros are of the form
+% \begin{quote}
+%   \marg{postscript name}\marg{action}
+% \end{quote}
+% \meta{postscript name} is the name by which the encoding is known to 
+% the postscript interpreter, and \meta{action} lists any additional 
+% action that must be taken before the encoding can be used. 
+% ^^A So far the only actions known is 
+% ^^A \DescribeMacro{\download}|\download|\marg{file}, 
+% ^^A which will cause code for downloading the file by the name 
+% ^^A \meta{file} (suffix included) to be inserted in the output.
+% 
+% \begin{macro}{\declarepsencoding}
+%   Data is entered in a |\pse-|\meta{etx} macro using the 
+%   |\declare|\-|ps|\-|encoding| command. Its syntax is
+%   \begin{quote}
+%     |\declarepsencoding|\marg{etx}\marg{postscript name}\marg{action}
+%   \end{quote}
+%    \begin{macrocode}
+\def\declarepsencoding#1#2#3{\x_cs\gdef{pse-#1}{{#2}{#3}}}
+%</map>
+%    \end{macrocode}
+%   In main \package{fontinst}, |\declarepsencoding| should be a noop so 
+%   that it can appear in encoding files. It's probably a good idea to 
+%   show it when typesetting as well.
+%   \changes{1.931}{2005/05/13}{Added main \package{fontinst} and 
+%      \package{fontdoc} definitions. (LH)}
+%    \begin{macrocode}
+%<pkg>\let\declarepsencoding=\gobble_three
+%<*doc>
+\def\declarepsencoding#1#2#3{\comment{%
+   This file corresponds to the \FD@typeset@string{#2} encoding vector.}}
+%</doc>
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\providepsencoding}
+%   This command is basically the same as |\declarepsencoding|, but it 
+%   checks whether the encoding has already been set and does nothing 
+%   if that is the case. It is used for autogenerated declarations, to 
+%   allow the user to override the setting.
+%   \changes{1.931}{2005/05/13}{Command added. (LH)}
+%    \begin{macrocode}
+%<*map>
+\def\providepsencoding#1#2#3{
+   \if_undefined{pse-#1}\then
+      \declarepsencoding{#1}{#2}{#3}
+   \fi
+}
+%</map>
+%<pkg>\let\providepsencoding=\gobble_three
+%<doc>\newcommand\providepsencoding[3]{}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\download}
+%   By default |\download| gobbles its argument. It should be redefined 
+%   when that is not the desired effect.
+%    \begin{macrocode}
+%<*map>
+\let\download=\gobble_one
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\fulldownload}
+%   By default this defaults to being a synonym of |\download|, to 
+%   simplify matters for drivers where the distinction is not relevant. 
+%   They should be redefined when that is not the desired effect.
+%   \changes{1.928}{2004/12/13}{Command added. (LH)}
+%    \begin{macrocode}
+\def\fulldownload#1{\download{#1}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\encodingdownload}
+%   By default this defaults to being a synonym of |\download|, to 
+%   simplify matters for drivers where the distinction is not relevant. 
+%   They should be redefined when that is not the desired effect.
+%   \changes{1.931}{2005/05/04}{Command added. (LH)}
+%    \begin{macrocode}
+\def\encodingdownload#1{\download{#1}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% Some encodings seem to always be present, so they can be declared here.
+%    \begin{macrocode}
+\declarepsencoding{8r}{TeXBase1Encoding}{\encodingdownload{8r.enc}}
+\declarepsencoding{8a}{StandardEncoding}{}
+%    \end{macrocode}
+% \package{fontinst} must be told about other postscript encodings (if you 
+% have them installed). The \texttt{finstmsc.rc} file is the right place 
+% for these declarations.\relax
+% \SortIndex{finstmsc.rc file}{\texttt{finstmsc.rc} file}
+% 
+% Next we have the cofiguration for fonts, which works in a similar 
+% fashion. The main problem here seems to be to determine which files (if 
+% any) should be downloaded to the printer, and this can be specified 
+% using |\download| commands as for the encodings. The family 
+% \describecsfamily{psf-\meta{PS font name}}|\psf-|\meta{PS font name} 
+% of macros expand to a sequence of \meta{actions} as for the encodings. 
+% If there is such a macro for a font then the instructions found there 
+% should be followed.
+% 
+% It is recommended that the contents of a |\psf-|\meta{PS font name} 
+% macro is executed before the map file entry is written, and that 
+% commands like |\download| are temporarily redefined to build the text 
+% for the entry, rather than having the |\write| in |\pout_line| expand 
+% the contents of |\psf-|\meta{PS font name}.
+% 
+% \begin{macro}{\specifypsfont}
+%   The |\specifypsfont| command is used as
+%   \begin{quote}
+%     |\specifypsfont|\marg{PS font name}\marg{actions}
+%   \end{quote}
+%   It can be used to specify the actions that should be done to make a 
+%   Postscript font known to the printer, when the automatic guessing 
+%   would not be right.
+%    \begin{macrocode}
+\def\specifypsfont#1#2{\x_cs\def{psf-#1}{#2}}
+%    \end{macrocode}
+% \end{macro}
+% 
+% Examples of cases where |\specifypsfont| would be needed are:
+% \begin{itemize}
+%   \item Fonts which are resident on the printer. In this case the 
+%     \meta{actions} argument should be empty, e.g.
+%     \begin{quote}
+%       |\specifypsfont{Times-Roman}{}|
+%     \end{quote}
+%   \item Instances of multiple master fonts. In this case one must 
+%     download both the multiple master font and the stub file that 
+%     defines the instance.
+%     
+%     Subsection~10.6.1 in The \LaTeX\ graphics companion~\cite
+%     {LaTeX-graph-comp} contains an example with an instance of the 
+%     \texttt{MinionMM} multiple master font. Both the \TeX\ and 
+%     (what is of interest here) the PS name for this instance is 
+%     \texttt{zmnl8ac6}, the base multiple master font is stored in the 
+%     file \texttt{MinionMM.pfb}, and the stub file is called 
+%     \texttt{zmnl8ac6.pro}. The |\specifypsfont| command for this is
+%     \begin{quote}
+%       |\specifypsfont{zmnl8ac6}{%|\\
+%       |   \download{MinionMM.pfb}\download{zmnl8ac6.pro}%|\\
+%       |}|
+%     \end{quote}
+%     (It should probably be remarked that the most common method of 
+%     defining a multiple master font instance is not to explicitly 
+%     create it as in this example, but to simply use it as any ordinary 
+%     PS font and then rely on the PS \textsf{findfont} operator to 
+%     automagically create it for you. This requires using a special 
+%     naming scheme for instances of multiple master fonts.)
+%   \item Fonts which do not fit any of the general naming schemes.
+% \end{itemize}
+% 
+% 
+% \begin{macro}{\AssumeLWFN}
+%   This command makes \mbox{MacOS} \texttt{LWFN} style abbreviated 
+%   Postscript font names the default for fonts that have no 
+%   |\psf-| entry.
+%    \begin{macrocode}
+\def\AssumeLWFN{\let\get_PS_font_file\LWFN_get_PS_font_file}
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% 
+% \subsection{Deducing values for the map file entries}
+% 
+% 
+% \subsubsection{Basic principles}
+% 
+% The automatic generation of map file fragments mainly consists of 
+% determining various text strings and writing these to a file as the 
+% format of the map file being written requires. The complicated part is 
+% usually to determine what these text strings should be, since the only 
+% restriction imposed by the output format often is that the strings 
+% should be written in the right order and with separating whitespace.
+% 
+% It is furthermore the case that some of these text strings seem to be 
+% hard to deduce from the information primarily given in the command to 
+% write the entry, but somewhat easier to deduce from some other deduced 
+% text string. 
+% 
+% Therefore the following model seems appropriate. For each text string 
+% that may need to be deduced, there is one macro which is used to store 
+% the string (if it has been deduced) and one macro which can be called 
+% to set the former macro to an appropriate value. Thus there is one 
+% macro |\PS_font_name| which stores the postscript name for the font 
+% currently in question and one macro 
+% \describecsfamily{get_\meta{string name}}|\get_PS_font_name| which 
+% determines the proper value for |\PS_font_name|. There is also a macro 
+% \DescribeMacro{\unknown_str}|\unknown_str| to which all the 
+% string storing macros should initially be |\let|, so that it can be 
+% easily tested whether a string storing macro has been given its proper 
+% value or not.
+% 
+% Typically, if |\PS_font_name| is used somewhere, one would first have 
+% a piece of code that says
+% \begin{quote}
+%   \small
+%   |\ifx\PS_font_name\unknown_str|\\
+%   |   \get_PS_font_name|\\
+%   |\fi|
+% \end{quote}
+% to ensure that it is known when it is used.
+% 
+% \begin{macro}{\unknown_str}
+%   A suitable value for this macro seems to be |?????|.
+%    \begin{macrocode}
+\def\unknown_str{?????}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\clueless_str}
+%   To further support this model, there is also a macro |\clueless_str| 
+%   which a string storing macro should be |\let| equal to if its proper 
+%   value could not be determined. This distinction is useful for the 
+%   |\get_|\textellipsis\ macros, since if |\get_|$A$ can determine the 
+%   correct value of $A$ from $B$, but also from $C$, then it helps if 
+%   |\get_|$A$ can easily check whether it has previously turned out to 
+%   be impossible to determine the value of $B$, because then it can 
+%   simply deduce $A$ from $C$ instead.
+%   
+%    \begin{macrocode}
+\edef\clueless_str{\unknown_str ?}
+%    \end{macrocode}
+% \end{macro}
+% 
+% An example of how |\clueless_str| should be used is the following 
+% skeleton of a |\get_|$A$ macro:
+% \begin{quote}\small
+%   |\def\get_|$A$|{|\\
+%   |   \ifx\unknown_str\|$B$| \get_|$B$| \fi|\\
+%   |   \ifx\clueless_str\|$B$\\
+%   |      \ifx\unknown_str\|$C$| \get_|$C$| \fi|\\
+%   |      \ifx\clueless_str\|$C$\\
+%   |         \let\|$A$|\clueless_str|\\
+%   |      \else|\\
+%   |         |\meta{Deduce $A$ from $C$}\\
+%   |      \fi|\\
+%   |   \else|\\
+%   |      |\meta{Deduce $A$ from $B$}\\
+%   |   \fi|\\
+%   |}|
+% \end{quote}
+% 
+% 
+% \subsubsection{Implementation}
+% 
+% \begin{macro}{\TeX_font_name}
+%   This is the name (as appearing in a DVI or VF file) of the font for 
+%   which an entry should be made. It is set by |\makemapentry|, so no 
+%   |\get_|\textellipsis\ macro is needed.
+%    \begin{macrocode}
+\let\TeX_font_name\unknown_str
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\source_font_TeX_name}
+%   This is the name (as AFM or PL) of the font whose metrics were 
+%   used by \package{fontinst}. It is set by |\fromafm| or |\frompl|, 
+%   so no |\get_|\textellipsis\ macro is needed.
+%    \begin{macrocode}
+\let\source_font_TeX_name\unknown_str
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\PS_font_name}
+%   This is the name (as FontName entry in an AFM or correspondingly) of 
+%   the font in question.
+%    \begin{macrocode}
+\let\PS_font_name\unknown_str
+%    \end{macrocode}
+%   \begin{macro}{\get_PS_font_name}
+%     I expect this to become one of the central macros in the map file 
+%     generation (at least when entries are generated for postscript 
+%     fonts), but for the moment it does the closest thing to nothing a 
+%     |\get_|\textellipsis\ macro is allowed to do; it admits it hasn't 
+%     got a clue about what the proper value is. 
+%    \begin{macrocode}
+\def\get_PS_font_name{\let\PS_font_name\clueless_str}
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% \begin{macro}{\AssumeAMSBSYY}
+% \begin{macro}{\AssumeBaKoMa}
+%   These commands redefine |\get_PS_font_name| so that it returns the 
+%   PS name this font would have if it was part of the AMS\slash 
+%   Blue~Sky\slash Y\&Y and BaKoMa respectively distribution of the 
+%   Computer Modern fonts---the \TeX\ font name in all upper case and 
+%   all lower case respectively.
+%    \begin{macrocode}
+\def\AssumeAMSBSYY{\def\get_PS_font_name{
+   \uppercase \expandafter{ \expandafter\def 
+      \expandafter\PS_font_name \expandafter{ \source_font_TeX_name}
+   }
+}}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\AssumeBaKoMa{\def\get_PS_font_name{
+   \lowercase \expandafter{ \expandafter\def 
+      \expandafter\PS_font_name \expandafter{ \source_font_TeX_name}
+   }
+}}
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% 
+% \begin{macro}{\PS_font_file}
+%   This is the name of the file (suffix included) in which the PS font 
+%   is expected to be found.
+%    \begin{macrocode}
+\let\PS_font_file\unknown_str
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\get_PS_font_file}
+% \begin{macro}{\normal_get_PS_font_file}
+% \begin{fistring}{PSfontsuffix}
+%   The macro |\normal_get_PS_font_file| is (hardly surprisingly) the 
+%   normal |\get_PS_font_file|. It simply uses |\source_font_TeX_name| 
+%   plus the suffix specified by the |PSfontsuffix| string.
+%    \begin{macrocode}
+\resetstr{PSfontsuffix}{.pfa}
+\def\normal_get_PS_font_file{
+   \edef\PS_font_file{\source_font_TeX_name\str{PSfontsuffix}}
+}
+\let\get_PS_font_file=\normal_get_PS_font_file
+%    \end{macrocode}
+% \end{fistring}\end{macro}\end{macro}
+% 
+% \begin{macro}{\LWFN_get_PS_font_file}
+% \begin{macro}{\abbreviate_PS_font_name}
+%   In MacOS, Postscript fonts file names are usually abbreviated forms of 
+%   the Postscript font names, formed using the so called 
+%   \(5+3+3+\cdots\) rule---keep the first five letters of the first 
+%   subword, keep the first three letters of all following subwords. The 
+%   |\LWFN_get_PS_font_file| macro uses this scheme if the Postscript 
+%   name for the font is known, otherwise it calls the 
+%   |\normal_get_PS_font_file|. The LWFN in the macro name is the type 
+%   code for such files.
+%   
+%   The algorithm is based on using |\aftergroup| to construct the 
+%   wanted |\def| statement, only |\aftergroup|ing the letters that are 
+%   not to be removed in the abbreviation. |\a_count| is used as a 
+%   counter of how many more letters in the current subword should be 
+%   kept.
+%    \begin{macrocode}
+\def\LWFN_get_PS_font_file{
+   \ifx \PS_font_name\unknown_str \get_PS_font_name \fi
+   \ifx \PS_font_name\clueless_str
+      \normal_get_PS_font_file
+      \includewarning\warn_uncertain_data
+   \else
+      \begingroup
+         \aftergroup\def \aftergroup\PS_font_file
+         \aftergroup{
+         \a_count=4~
+         \expandafter\expandafter \expandafter\aftergroup
+            \expandafter\swap_two \expandafter\abbreviate_PS_font_name 
+            \PS_font_name \x_relax
+         \aftergroup}
+      \endgroup
+   \fi
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\abbreviate_PS_font_name#1{
+   \ifx \x_relax#1 \else
+      \ifnum \uccode`#1=`#1
+         \a_count=2
+         \aftergroup#1
+      \else\ifx -#1
+         \a_count=\z@
+      \else\ifnum \a_count>\z@
+         \advance \a_count \m@ne
+         \aftergroup#1
+      \fi\fi\fi
+      \expandafter\abbreviate_PS_font_name
+   \fi
+}
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% 
+% 
+% \subsection{Driver makers}
+% 
+% This subsection contains the definitions of macros that makes up the 
+% driver makers.
+% 
+% 
+% \subsubsection{The \texttt{debug} driver}
+% 
+% The \texttt{debug} driver maker doesn't really generate entries for 
+% any DVI driver map file, it just prints the data that was available. 
+% It is mainly intended for debugging purposes, but it might also serve 
+% as a basic model for other driver makers.
+% 
+% \begin{macro}{\make_debug}
+%    \begin{macrocode}
+\def\make_debug{
+   \pout_line\output_debug{Driver~data~for~font~\TeX_font_name:}
+   \pout_lline\output_debug{Source~font~TeX~name:~\source_font_TeX_name}
+   \ifx \reencode_etx\empty_command \else
+      \pout_lline\output_debug{Font~reencoded~using~\reencode_etx.etx.}
+   \fi
+   \ifdim \xscale_factor=\p@ \else
+      \pout_lline\output_debug{Font~x-scaled~by~
+         \expandafter\lose_measure\the\xscale_factor.
+      }
+   \fi
+   \ifdim \slant_factor=\z@ \else
+      \pout_lline\output_debug{Font~slanted~by~
+         \expandafter\lose_measure\the\slant_factor.
+      }
+   \fi
+   \debug_values_hook
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \begin{macro}{\debug_value}
+%   The |\debug_value| macro can be used to print the name and contents 
+%   of an arbitrary value macro in the |debug| driver. It is called with 
+%   the value macro as argument, e.g.
+%   \begin{quote}
+%      |\debug_value\PS_font_name|
+%   \end{quote}
+%   
+%    \begin{macrocode}
+\def\debug_value#1{
+   \ifx #1\unknown_str
+      \csname get_ \expandafter\gobble_one \string#1 \endcsname
+   \fi
+   \pout_lline\output_debug{\string#1:~#1}
+   \ifx #1\clueless_str \includewarning\warn_undecided_data \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\debugvalue}
+% \begin{macro}{\debug_values_hook}
+%   The |\debugvalue| command is a user level interface for adding 
+%   value macros to the list of those that are displayed by the 
+%   \texttt{debug} driver. The argument is the name of the value in 
+%   question, e.g.
+%   \begin{quote}
+%      |\debugvalue{PS_font_name}|
+%   \end{quote}
+%   Note that the name given to |\debugvalue| is not the control 
+%   sequence in which the name is stored.
+%    \begin{macrocode}
+\def\debugvalue#1{
+   \expandafter\add_to \expandafter\debug_values_hook
+   \expandafter{ \expandafter\debug_value \csname#1\endcsname}
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\let\debug_values_hook\empty_command
+\debugvalue{PS_font_name}
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% 
+% \subsubsection{The \texttt{dvips} driver}
+% 
+% \changes{1.912}{2000/02/19}{\texttt{dvips} mapfile fragments writer 
+%    added. (LH)}
+% Before constructing an entry for a \package{dvips} mapfile, it should 
+% be sorted out how such an entry should look. The \package{dvips} 
+% manual says
+% \begin{quotation}
+%   The parsing of the \texttt{psfonts.map} file should be explained to 
+%   eliminate all confusion.  If a line is empty or begins with a space, 
+%   asterisk, semicolon, or hash mark, it is ignored.  Each remaining 
+%   line is separated into words, where words are separated by spaces or 
+%   tabs.  If a word begins with a double quote, it extends until the 
+%   next double quote or the end of the line.  If a word starts with a 
+%   less than character, it is treated as a font header file (or a 
+%   downloaded PostScript font).  There can be more than one such header 
+%   for a given font.  If a word starts with a double quote, it is a 
+%   special instruction for generating that font.  Otherwise it is a 
+%   name.  The first such name is always the name \TeX\ uses for the 
+%   font and is also the name of the raw \texttt{tfm} file.  If there is 
+%   another name word, that name is used as the PostScript name; if 
+%   there is only one name word, it is used for both the \TeX\ name and 
+%   the PostScript name.
+% \end{quotation}
+% 
+% A \package{fontinst}-generated map file entry for the \texttt{dvips} 
+% driver has the following structure:
+% \begin{isyntax}
+%   \meta{\TeX{} font name} \meta{PS font name} \meta{downloads}
+%     \meta{font transformations}
+% \end{isyntax}
+% \meta{\TeX{} font name} is simply the value of |\TeX_font_name| and 
+% \meta{PS font name} is simply the value of |\PS_font_name|. 
+% \meta{downloads} is a possibly empty sequence in which each item 
+% has the form
+% \begin{quote}
+%   \meta{prefix}\meta{filename}
+% \end{quote}
+% The \meta{prefix} values I've came across are empty,\footnote{I think 
+% this is only used for files that \package{dvips} should ignore, but 
+% which certain other programs that read the same \texttt{psfonts.map} 
+% need.} |<|, |<<|, and |<[|. Currently |<| is always used. 
+% \meta{filename} is a filename with suffix. \meta{font transformations} 
+% is either empty or has the form
+% \begin{quote}
+%   |"| \meta{Postscript code} |"|
+% \end{quote}
+% 
+% Should support for the |<<| or |<[| prefixes be needed, then this 
+% should be done by adding some new variant of the |\download| 
+% command---|\fullldownload|, maybe---rather than adding the extra 
+% character to the \meta{filename}. To simplify matters for other drivers, 
+% such new variants should by default expand to |\download|, rather than 
+% |\gobble_one|.
+% 
+% 
+% \begin{macro}{\downloads_list}
+% \begin{macro}{\append_download}
+%   The |\downloads_list| is a token list register which is especially 
+%   used for accumulating |\download| commands. Each driver maker which 
+%   uses it should begin by emptying it. The command
+%   \begin{quote}
+%     |\append_download|\marg{cseq}\marg{string expression}
+%   \end{quote}
+%   \changes{1.931}{2005/05/10}{New syntax (two arguments)! The second 
+%      is expanded, whereas the first is protected by a \cs{noexpand}. 
+%      (LH)}
+%   appends
+%   \begin{quote}
+%     \meta{cseq}\marg{expanded string expression}
+%   \end{quote}
+%   to |\downloads_list|. It overwrites |\a_macro|.
+%    \begin{macrocode}
+\newtoks\downloads_list
+\def\append_download#1#2{
+   \edef\a_macro{
+      \downloads_list =
+      \noexpand\expandafter{ \noexpand\the \downloads_list 
+         \noexpand#1 {#2} }
+   }
+   \a_macro
+}
+%    \end{macrocode}
+% \end{macro}\end{macro}
+% 
+% 
+% \begin{macro}{\make_dvips}
+%   This macro gathers the information for a \texttt{dvips} driver entry 
+%   and writes it to the corresponding output file. As a \texttt{dvips} 
+%   mapfile entry is on one line, the entire entry is written at once. 
+%   The \meta{font transformations} is collected as explicit text in the 
+%   macro |\postscript_code|. The \meta{downloads} is collected as a 
+%   sequence of |\|\dots|download| commands in the |\downloads_list| 
+%   token register.
+%   \changes{1.931}{2005/05/10}{Supporting \cs{fulldownload} and 
+%     \cs{encodingdownload}. (LH)}
+%    \begin{macrocode}
+\def\make_dvips{
+   \downloads_list={}
+   \let\postscript_code\empty_command
+   \def\download{\append_download\download}
+   \def\fulldownload{\append_download\fulldownload}
+   \def\encodingdownload{\append_download\encodingdownload}
+   \ifx \reencode_etx\empty_command \else
+      \if_undefined{pse-\reencode_etx}\then
+         \etxtoenc{\reencode_etx}{\reencode_etx}
+      \fi
+      \expandafter\expandafter \expandafter\second_of_two
+         \csname pse-\reencode_etx\endcsname
+      \edef\postscript_code{\postscript_code\space
+         \expandafter\expandafter \expandafter\first_of_two
+            \csname pse-\reencode_etx\endcsname
+         \space ReEncodeFont
+      }
+   \fi
+   \ifdim \xscale_factor=\p@ \else
+      \edef\postscript_code{\postscript_code
+         \space\expandafter\lose_measure\the\xscale_factor
+         \space ExtendFont
+      }
+   \fi
+   \ifdim \slant_factor=\z@ \else
+      \edef\postscript_code{\postscript_code
+         \space\expandafter\lose_measure\the\slant_factor
+         \space SlantFont
+      }
+   \fi
+%    \end{macrocode}
+%   After constructing the \meta{Postscript code} and having appended 
+%   the necessary download (if any) for that code, the next problem is 
+%   to determine the actual \meta{PS font name} and append the downloads 
+%   needed to actually define the font to the Postscript interpreter. If 
+%   there is no special entry for this font in the |\psf-|\meta{PS font 
+%   name} table, or if its \meta{PS font name} is unknown, then it is 
+%   assumed that exactly one file should be downloaded. As the name of 
+%   that file is taken the value of |\PS_font_file|.
+%    \begin{macrocode}
+   \ifx \PS_font_name\unknown_str \get_PS_font_name \fi
+   \ifx \PS_font_name\clueless_str
+      \includewarning\warn_undecided_data
+      \_a_true
+   \else
+      \if_undefined{psf-\PS_font_name}\then
+         \_a_true
+      \else
+         \csname psf-\PS_font_name \endcsname
+         \_a_false
+   \fi\fi
+   \if_a_
+      \ifx \PS_font_file\unknown_str \get_PS_font_file \fi
+      \append_download\download{\PS_font_file}
+      \ifx \PS_font_file\clueless_str
+         \includewarning\warn_undecided_data
+      \fi
+   \fi
+%    \end{macrocode}
+%   Finally, the entire entry is written to the file. The point with 
+%   expanding past an empty command is that \TeX\ in a |\write| normally 
+%   jumps past the expansion of a |\the|\meta{token list register} 
+%   without expanding it further, but this effect can be prevented by 
+%   expanding the |\the| with an |\expandafter|.
+%    \begin{macrocode}
+   \def\download##1{~<##1}
+   \def\fulldownload##1{~<<##1}
+   \def\encodingdownload##1{~<[##1}
+   \pout_line\output_dvips{
+      \TeX_font_name\space\PS_font_name
+      \expandafter\empty_command \the\downloads_list
+      \ifx \postscript_code\empty_command \else
+         \space"\postscript_code\space"
+      \fi
+   }
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% 
+% \subsubsection{The \texttt{dvipdfm} driver}
+% 
+% \changes{1.912}{2000/02/22}{\texttt{dvipdfm} mapfile fragments writer 
+%    added. (LH)}
+% 
+% A mapfile entry for the \texttt{dvipdfm} driver has the following 
+% structure:
+% \begin{isyntax}
+%   \meta{\TeX{} font name} \meta{encoding} \meta{PS font}
+%     \meta{options}
+% \end{isyntax}
+% \meta{\TeX{} font name} is simply the value of |\TeX_font_name|. 
+% \meta{encoding} is the name of the encoding file which should be used 
+% to reencode the font, or \texttt{default} if there is none. \meta{PS 
+% font} is the value of |\PS_font_name| for the standard 35 fonts 
+% (i.e., fonts which will not be included in the PDF generated), but for 
+% other fonts it is the name of the file which contains the 
+% font.\footnote{The documentation seems to say that \texttt{dvipdfm} 
+% can only understand fonts in PFB format; I have chosen to ignore this 
+% potential problem.} \meta{options}, finally, is a possibly empty 
+% sequence of space-separated options. Each option is one of the 
+% following
+% \begin{quote}
+%   |-e |\meta{number}\\
+%   |-s |\meta{number}\\
+%   |-r|
+% \end{quote}
+% The |-e| and |-s| options extend and slant by the given amounts. The 
+% |-r| option is a workaround for some Acrobat bugs; it is currently not 
+% generated by \package{fontinst}.
+% 
+% \begin{macro}{\make_dvipdfm}
+%   This macro gathers the information for a \texttt{dvipdfm} driver entry 
+%   and writes it to the corresponding output file. As a \texttt{dvipdfm} 
+%   mapfile entry is on one line, the entire entry is written at once. 
+%   The \meta{options} text is collected as explicit text in the 
+%   macro |\options_text|. The \meta{downloads} is collected as a 
+%   sequence of |\download| commands in the |\downloads_list| token 
+%   register.
+%    \begin{macrocode}
+\def\make_dvipdfm{
+   \def\font_encoding{default}
+   \ifx \reencode_etx\empty_command \else
+      \if_undefined{pse-\reencode_etx}\then
+         \etxtoenc{\reencode_etx}{\reencode_etx}
+      \fi
+      \def\download##1{\def\font_encoding{##1}}
+      \expandafter\expandafter \expandafter\second_of_two
+         \csname pse-\reencode_etx\endcsname
+   \fi
+   \let\options_text\empty_command
+   \ifdim \xscale_factor=\p@ \else
+      \edef\options_text{\options_text\space 
+         -e~\expandafter\lose_measure\the\xscale_factor
+      }
+   \fi
+   \ifdim \slant_factor=\z@ \else
+      \edef\options_text{\options_text\space 
+         -s~\expandafter\lose_measure\the\slant_factor
+      }
+   \fi
+%    \end{macrocode}
+%   After constructing the \meta{options} and having determined 
+%   \meta{encoding}, the next problem is to determine the actual 
+%   \meta{PS font}, which will be put in |\a_macro|. If there is no 
+%   special entry for this font in the |\psf-|\meta{PS font name} table, 
+%   or if its \meta{PS font name} is unknown, then it is assumed that 
+%   exactly one file should be downloaded. As the name of that file is 
+%   taken the value of |\PS_font_file|.
+%    \begin{macrocode}
+   \ifx \PS_font_name\unknown_str \get_PS_font_name \fi
+   \if_or \if_equal\PS_font_name\clueless_str \or_else
+      \if_undefined{psf-\PS_font_name}
+   \then
+      \ifx \PS_font_file\unknown_str \get_PS_font_file \fi
+      \ifx \PS_font_file\clueless_str
+         \includewarning\warn_undecided_data
+      \fi
+      \let\a_macro=\PS_font_file
+   \else
+      \let\a_macro=\PS_font_name
+      \def\download##1{\def\a_macro{##1}}
+      \csname psf-\PS_font_name \endcsname
+   \fi
+%    \end{macrocode}
+%   Finally, the entire entry is written to the file.
+%    \begin{macrocode}
+   \pout_line\output_dvipdfm{
+      \TeX_font_name\space\font_encoding\space\a_macro
+      \options_text
+   }
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \subsubsection{The \texttt{pltotf} ``driver''}
+% \changes{1.915}{2000/06/27}{\texttt{pltotf} ``driver'' support 
+%    added. (LH)}
+% 
+% It can sometimes be hard to determine which of all the PL files that 
+% \package{fontinst} creates need to be converted to TFM files. In most 
+% cases no \texttt{8a}-encoded PLs need to be converted as they aren't 
+% used as base fonts or installed in an FD file, but to automatically 
+% exclude them isn't a trivial task (even though it probably could be 
+% done by a regular expression filter for fonts named according to the 
+% \texttt{fontname} scheme). There furthermore seems to be some systems 
+% on which it for various reasons isn't easy to convert all PLs in a 
+% directory. The \texttt{pltotf} ``driver'' support is meant to help with 
+% both these problems, as the ``map file'' it creates really is a shell 
+% script (batch file) for converting precisely those PL files that need 
+% a map file entry to TFM format. I believe the shell script will work 
+% both for UNIX and DOS systems.
+% 
+% \begin{macro}{\make_pltotf}
+% \begin{fistring}{TFMfileprefix}
+%   |\make_pltotf| writes a \package{PLtoTF} command for converting the 
+%   current font's PL file to a TFM file. If set, the string 
+%   \texttt{TFMfileprefix} will be prepended to the TFM file name---this 
+%   could be used for putting the TFMs in some directory other than the 
+%   current.
+%    \begin{macrocode}
+\def\make_pltotf{
+   \pout_line\output_pltotf{pltotf~\TeX_font_name.pl~
+      \ifisstr{TFMfileprefix}\then \str{TFMfileprefix}\fi
+      \TeX_font_name.tfm
+   }
+}
+%    \end{macrocode}
+% \end{fistring}\end{macro}
+% 
+% 
+%    \begin{macrocode}
+%</map>
+%    \end{macrocode}
+% \Finale
+\endinput
+

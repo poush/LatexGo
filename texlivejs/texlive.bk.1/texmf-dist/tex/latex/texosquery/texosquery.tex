@@ -1,0 +1,2052 @@
+%%
+%% This is file `texosquery.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% texosquery.dtx  (with options: `texosquery.tex,package')
+%%  texosquery
+%%  Copyright 2017 Nicola Talbot
+%% 
+%%  This work may be distributed and/or modified under the
+%%  conditions of the LaTeX Project Public License, either version 1.3
+%%  of this license of (at your option) any later version.
+%%  The latest version of this license is in
+%%    http://www.latex-project.org/lppl.txt
+%%  and version 1.3 or later is part of all distributions of LaTeX
+%%  version 2005/12/01 or later.
+%% 
+%%  This work has the LPPL maintenance status `maintained'.
+%% 
+%%  The Current Maintainer of this work is Nicola Talbot.
+%% 
+%%  This work consists of the files texosquery.dtx and texosquery.ins
+%%  and the derived files texosquery.sty, texosquery.tex and
+%%  texosquery.cfg. Additionally, the Java applications texosquery.jar,
+%%  texosquery-jre5.jar, texosquery-jre8.jar, the bash scripts
+%%  texosquery.sh, texosquery-jre5.sh, texosquery-jre8.sh, and
+%%  the corresponding batch files.
+%% \CharacterTable
+%%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%%   Digits        \0\1\2\3\4\5\6\7\8\9
+%%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%%   Dollar        \$     Percent       \%     Ampersand     \&
+%%   Acute accent  \'     Left paren    \(     Right paren   \)
+%%   Asterisk      \*     Plus          \+     Comma         \,
+%%   Minus         \-     Point         \.     Solidus       \/
+%%   Colon         \:     Semicolon     \;     Less than     \<
+%%   Equals        \=     Greater than  \>     Question mark \?
+%%   Commercial at \@     Left bracket  \[     Backslash     \\
+%%   Right bracket \]     Circumflex    \^     Underscore    \_
+%%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%%   Right brace   \}     Tilde         \~}
+
+
+\ifnum\catcode`\@=11\relax
+  \def\@texosquery@restore@at{}%
+\else
+  \expandafter\edef\csname @texosquery@restore@at\endcsname{%
+    \noexpand\catcode`\noexpand\@=\number\catcode`\@\relax
+  }%
+ \catcode`\@=11\relax
+\fi
+\ifx\TeXOSQuery\undefined \else
+  \@texosquery@restore@at
+  \expandafter\endinput
+\fi
+\expandafter\def\csname ver@texosquery.tex\endcsname{2017/06/20 v1.6 (NLCT)}
+\ifx\@tracklang@pkgwarn\undefined
+  \ifx\PackageWarning\undefined
+    \def\@texosquery@warn#1{%
+      {%
+        \newlinechar=`\^^J
+        \def\MessageBreak{^^J}%
+        \message{^^Jtexosquery Warning: #1 on line \the\inputlineno.^^J}%
+      }%
+    }
+  \else
+    \def\@texosquery@warn#1{%
+      \PackageWarning{texosquery}{#1}%
+    }
+  \fi
+\else
+  \def\@texosquery@warn#1{%
+    \@tracklang@pkgwarn{texosquery}{#1}%
+  }
+\fi
+\ifx\PackageInfo\undefined
+  \def\@texosquery@info#1{%
+    {%
+      \newlinechar=`\^^J
+      \def\MessageBreak{^^J}%
+      \message{^^Jtexosquery Info: #1^^J}%
+    }%
+  }
+\else
+  \def\@texosquery@info#1{%
+    \PackageInfo{texosquery}{#1}%
+  }
+\fi
+\ifx\PackageError\undefined
+  \def\@texosquery@err#1#2{%
+    \errhelp{#2}%
+    \errmessage{texosquery: #1}}
+\else
+  \def\@texosquery@err#1#2{\PackageError{texosquery}{#1}{#2}}
+\fi
+\long\def\@texosquery@ifundef#1#2#3{%
+  \ifcsname#1\endcsname
+    \expandafter\ifx\csname #1\endcsname\relax
+      #2%
+    \else
+      #3%
+    \fi
+  \else
+    \expandafter\ifx\csname #1\endcsname\relax
+      #2%
+    \else
+      #3%
+    \fi
+  \fi
+}
+\ifx\ifcsname\undefined
+  \long\def\@texosquery@ifundef#1#2#3{%
+    \expandafter\ifx\csname #1\endcsname\relax
+      #2%
+    \else
+      #3%
+    \fi
+  }
+\fi
+\def\TeXOSInvokerName{texosquery}
+\ifx\@@input\undefined
+  \let\texosquery@input\input
+\else
+  \let\texosquery@input\@@input
+\fi
+\def\TeXOSQueryInvoker#1{\texosquery@input|"\TeXOSInvokerName\space#1" }
+\newif\ifTeXOSQueryDryRun \TeXOSQueryDryRuntrue
+\def\TeXOSQueryAllowRestricted{%
+ \def\@texosquery@allowrestricted##1##2{##1}%
+}
+\def\TeXOSQueryDenyRestricted{%
+ \def\@texosquery@allowrestricted##1##2{##2}%
+}
+\def\@texosquery@allowrestricted#1#2{#2}%
+\def\TeXOSInvokerRestrictedMessage{%
+ \string\TeXOSQuery\space doesn't work in dry run mode.
+ \MessageBreak
+ If `\TeXOSInvokerName' has been added to the \MessageBreak
+ restricted list, make sure that
+ \MessageBreak \string\TeXOSQueryAllowRestricted\space
+ \MessageBreak has been uncommented in the configuration file
+ \MessageBreak (texosquery.cfg) otherwise you need to use the
+ \MessageBreak unrestricted shell escape}
+\let\@texosquery@dorestrictedmessage\relax
+\openin0=texosquery.cfg \ifeof0\relax \else
+  \closein0\relax
+  \begingroup
+    \@texosquery@info{reading configuration file}%
+  \endgroup
+  \input texosquery.cfg
+\fi
+\def\TeXOSQueryAllowRestricted{%
+  \@texosquery@warn{\string\TeXOSQueryAllowRestricted\space
+   ignored (only allowed in texosquery.cfg)}%
+}
+\def\TeXOSQueryDenyRestricted{%
+  \@texosquery@warn{\string\TeXOSQueryDenyRestricted\space
+   ignored (only allowed in texosquery.cfg)}%
+}
+\chardef\texosquery@shellescape=0
+\ifx\shellescape\undefined
+  \ifx\pdfshellescape\undefined
+    \ifx\pdf@shellescape\undefined
+      \ifx\directlua\undefined
+      \else
+       \edef\texosquery@shellescape{\directlua0{
+         if os.execute then
+           if status
+               and status.luatex_version
+               and status.luatex_version >= 68 then
+             tex.write(os.execute())
+           else
+             local result = os.execute()
+             if result == 0 then
+               tex.write("0")
+             else
+               if result == nil then
+                 tex.write("0")
+               else
+                 tex.write("1")
+               end
+             end
+           end
+         else
+           tex.write("0")
+         end
+        }}
+      \fi
+    \else
+      \let\texosquery@shellescape\pdf@shellescape
+    \fi
+  \else
+    \ifx\pdfshellescape\relax
+      \ifx\pdf@shellescape\undefined
+        \ifx\directlua\undefined
+        \else
+         \edef\texosquery@shellescape{\directlua0{
+           if os.execute then
+             if status
+                 and status.luatex_version
+                 and status.luatex_version >= 68 then
+               tex.write(os.execute())
+             else
+               local result = os.execute()
+               if result == 0 then
+                 tex.write("0")
+               else
+                 if result == nil then
+                   tex.write("0")
+                 else
+                   tex.write("1")
+                 end
+               end
+             end
+           else
+             tex.write("0")
+           end
+          }}
+        \fi
+      \else
+        \let\texosquery@shellescape\pdf@shellescape
+      \fi
+    \else
+      \let\texosquery@shellescape\pdfshellescape
+    \fi
+  \fi
+\else
+  \ifx\shellescape\relax
+    \ifx\pdfshellescape\undefined
+    \else
+      \ifx\pdfshellescape\relax
+        \ifx\pdf@shellescape\undefined
+          \ifx\directlua\undefined
+          \else
+             \edef\texosquery@shellescape{\directlua0{
+               if os.execute then
+                 if status
+                     and status.luatex_version
+                     and status.luatex_version >= 68 then
+                   tex.write(os.execute())
+                 else
+                   local result = os.execute()
+                   if result == 0 then
+                     tex.write("0")
+                   else
+                     if result == nil then
+                       tex.write("0")
+                     else
+                       tex.write("1")
+                     end
+                   end
+                 end
+               else
+                 tex.write("0")
+               end
+              }}
+          \fi
+        \else
+          \let\texosquery@shellescape\pdf@shellescape
+        \fi
+      \else
+        \let\texosquery@shellescape\pdfshellescape
+      \fi
+    \fi
+  \else
+    \let\texosquery@shellescape\shellescape
+  \fi
+\fi
+\ifcase\texosquery@shellescape
+  \@texosquery@info{shell escape disabled, dry-run mode on}
+\or
+  \TeXOSQueryDryRunfalse
+\or
+  \@texosquery@allowrestricted
+  {%
+    \TeXOSQueryDryRunfalse
+  }
+  {%
+    \@texosquery@info{shell escape restricted, dry-run mode on.}
+    \def\@texosquery@dorestrictedmessage{%
+      \ifx\TeXOSInvokerRestrictedMessage\empty
+      \else
+        \ifx\TeXOSInvokerRestrictedMessage\relax
+        \else
+          \@texosquery@warn{\TeXOSInvokerRestrictedMessage}%
+        \fi
+      \fi
+      \let\@texosquery@dorestrictedmessage\relax
+    }
+  }
+\fi
+\ifx\@texosquery@edef\undefined
+  \ifx\protected@edef\undefined
+    \let\@texosquery@edef\edef
+  \else
+    \let\@texosquery@edef\protected@edef
+  \fi
+\fi
+\def\@texosquery@gobble#1{}
+\def\@texosquery@firstofone#1{#1}
+\def\texosquerynonasciiwrap#1{#1}
+\ifx\detokenize\undefined
+  \def\texosquerynonasciidetokwrap#1{\string#1}
+\else
+  \def\texosquerynonasciidetokwrap#1{\detokenize{#1}}
+\fi
+\edef\texosquerybackslash{\expandafter\@texosquery@gobble\string\\}
+\ifx\textbackslash\undefined
+  \def\texosquerytextbackslash{\texosquerybackslash}
+\else
+  \def\texosquerytextbackslash{\noexpand\textbackslash}
+\fi
+\edef\texosqueryleftbrace{\expandafter\@texosquery@gobble\string\{}
+\def\texosquerytextleftbrace{\{}
+\edef\texosqueryrightbrace{\expandafter\@texosquery@gobble\string\}}
+\def\texosquerytextrightbrace{\}}
+\edef\texosqueryhash{\expandafter\@texosquery@gobble\string\#}
+\def\texosquerytexthash{\#}
+\edef\texosqueryunderscore{\expandafter\@texosquery@gobble\string\_}
+\def\texosquerytextunderscore{\_}
+\edef\texosquerybacktick{\string`}
+\def\texosquerytextbacktick{`}
+\edef\texosqueryclosequote{\string'}
+\def\texosquerytextclosequote{'}
+\edef\texosquerydoublequote{\string"}
+\def\texosquerytextdoublequote{"}
+\edef\texosquerycolon{\string:}
+\def\texosquerytextcolon{:}
+\edef\texosquerysemicolon{\string;}
+\def\texosquerytextsemicolon{;}
+\edef\texosqueryequals{\string=}
+\def\texosquerytextequals{=}
+\edef\texosqueryslash{\string/}
+\def\texosquerytextslash{/}
+\edef\texosqueryhyphen{\string-}
+\def\texosquerytexthyphen{-}
+\edef\texosqueryplus{\string+}
+\def\texosquerytextplus{+}
+\edef\texosqueryperiod{\string.}
+\def\texosquerytextperiod{.}
+\edef\texosquerycomma{\string,}
+\def\texosquerytextcomma{,}
+\edef\texosqueryopenparen{\string(}
+\def\texosquerytextopenparen{(}
+\edef\texosquerycloseparen{\string)}
+\def\texosquerytextcloseparen{)}
+\edef\texosqueryopensq{\string[}
+\def\texosquerytextopensq{[}
+\edef\texosqueryclosesq{\string]}
+\def\texosquerytextclosesq{]}
+\edef\texosqueryasterisk{\string*}
+\def\texosquerytextasterisk{*}
+\edef\texosqueryatchar{\string @}
+\def\texosquerytextatchar{@}
+\edef\texosquerybar{\string|}
+\ifx\undefined\textbar
+  \def\texosquerytextbar{|}
+\else
+  \def\texosquerytextbar{\ifmmode|\else\textbar\fi}
+\fi
+\edef\texosquerylessthan{\string<}
+\ifx\undefined\textless
+  \def\texosquerytextlessthan{<}
+\else
+  \def\texosquerytextlessthan{\ifmmode<\else\textless\fi}
+\fi
+\edef\texosquerygreaterthan{\string>}
+\ifx\undefined\textgreater
+  \def\texosquerytextgreaterthan{>}
+\else
+  \def\texosquerytextgreaterthan{\ifmmode<\else\textgreater\fi}
+\fi
+\edef\texosquerytilde{\string~}
+\ifx\textasciitilde\undefined
+  \def\texosquerytexttilde{\string~}
+\else
+  \def\texosquerytexttilde{\textasciitilde}
+\fi
+\edef\texosquerycircum{\string^}
+\ifx\textasciicircum\undefined
+  \def\texosquerytextcircum{\string^}
+\else
+  \def\texosquerytextcircum{\textasciicircum}
+\fi
+\edef\texosqueryampersand{\string&}
+\def\texosquerytextampersand{\&}
+\edef\texosquerydollar{\expandafter\@texosquery@gobble\string\$}
+\def\texosquerytextdollar{\$}
+\edef\texosquerypercent{\expandafter\@texosquery@gobble\string\%}
+\def\texosquerytextpercent{\%}
+\edef\texosqueryexclam{\string!}
+\def\texosquerytextexclam{!}
+\edef\texosqueryquestion{\string?}
+\def\texosquerytextquestion{?}
+\edef\texosqueryliteralspace{\expandafter\string\space}
+\def\texosquerytextspace{\noexpand\space}
+\edef\@texosquery@D{\string D}
+\def\@texosquery@enableshortcs{%
+     \def\patdtf{\noexpand\texosquerydtf}%
+     \def\patpmnumfmt{\noexpand\texosquerypatplusminus}%
+     \def\patnumfmt{\noexpand\texosquerypatnum}%
+     \def\patsinumfmt{\noexpand\texosquerypatsinum}%
+     \def\patdecfmt{\noexpand\texosquerypatdec}%
+     \def\patpcur{\noexpand\texosquerypatprefixcurrency}%
+     \def\patpicur{\noexpand\texosquerypatprefixicurrency}%
+     \def\patscur{\noexpand\texosquerypatsuffixcurrency}%
+     \def\patsicur{\noexpand\texosquerypatsuffixicurrency}%
+     \def\patstr{\noexpand\texosquerypatstr}%
+     \def\patapo{\noexpand\texosquerypatquote}%
+     \def\patdgt{\noexpand\texosquerypatdigit}%
+     \def\patdgtnz{\noexpand\texosquerypatdigitnozero}%
+     \def\patmsg{\noexpand\texosquerypatminus}%
+     \def\patngp{\noexpand\texosquerypatgroupsep}%
+     \def\patppct{\noexpand\texosquerypatprefixpercent}%
+     \def\patspct{\noexpand\texosquerypatsuffixpercent}%
+     \def\patppml{\noexpand\texosquerypatprefixpermill}%
+     \def\patspml{\noexpand\texosquerypatsuffixpermill}%
+     \def\twrp{\texosquerynonasciiwrap}%
+     \def\fwrp{\texosquerynonasciidetokwrap}%
+     \let\fbks\texosquerybackslash
+     \let\tbks\texosquerytextbackslash
+     \let\flbr\texosqueryleftbrace
+     \let\tlbr\texosquerytextleftbrace
+     \let\frbr\texosqueryrightbrace
+     \let\trbr\texosquerytextrightbrace
+     \let\fhsh\texosqueryhash
+     \let\thsh\texosquerytexthash
+     \let\fusc\texosqueryunderscore
+     \let\tusc\texosquerytextunderscore
+     \let\fgrv\texosquerybacktick
+     \let\tgrv\texosquerytextbacktick
+     \let\fapo\texosqueryclosequote
+     \let\tapo\texosquerytextclosequote
+     \let\fdqt\texosquerydoublequote
+     \let\tdqt\texosquerytextdoublequote
+     \let\fspc\texosqueryliteralspace
+     \let\tspc\texosquerytextspace
+     \let\fcln\texosquerycolon
+     \let\tcln\texosquerytextcolon
+     \let\fscl\texosquerysemicolon
+     \let\tscl\texosquerytextsemicolon
+     \let\feql\texosqueryequals
+     \let\teql\texosquerytextequals
+     \let\fhyn\texosqueryhyphen
+     \let\thyn\texosquerytexthyphen
+     \let\fpls\texosqueryplus
+     \let\tpls\texosquerytextplus
+     \let\ftld\texosquerytilde
+     \let\ttld\texosquerytexttilde
+     \let\fcir\texosquerycircum
+     \let\tcir\texosquerytextcircum
+     \let\famp\texosqueryampersand
+     \let\tamp\texosquerytextampersand
+     \let\fslh\texosqueryslash
+     \let\tslh\texosquerytextslash
+     \let\fpct\texosquerypercent
+     \let\tpct\texosquerytextpercent
+     \let\fexc\texosqueryexclam
+     \let\texc\texosquerytextexclam
+     \let\fque\texosqueryquestion
+     \let\tque\texosquerytextquestion
+     \let\fles\texosquerylessthan
+     \let\tles\texosquerytextlessthan
+     \let\fgre\texosquerygreaterthan
+     \let\tgre\texosquerytextgreaterthan
+     \let\fdol\texosquerydollar
+     \let\tdol\texosquerytextdollar
+     \let\fdot\texosqueryperiod
+     \let\tdot\texosquerytextperiod
+     \let\fcom\texosquerycomma
+     \let\tcom\texosquerytextcomma
+     \let\fopb\texosqueryopenparen
+     \let\topb\texosquerytextopenparen
+     \let\fclb\texosquerycloseparen
+     \let\tclb\texosquerytextcloseparen
+     \let\fosb\texosqueryopensq
+     \let\tosb\texosquerytextopensq
+     \let\fcsb\texosqueryclosesq
+     \let\tcsb\texosquerytextclosesq
+     \let\fast\texosqueryasterisk
+     \let\tast\texosquerytextasterisk
+     \let\fatc\texosqueryatchar
+     \let\tatc\texosquerytextatchar
+     \let\pdfd\@texosquery@D
+}
+\def\TeXOSQuery#1#2{%
+  \ifTeXOSQueryDryRun
+    \@texosquery@dorestrictedmessage
+    \begingroup
+      \newlinechar=`\^^J
+      \message{^^JTeXOSQuery: \TeXOSInvokerName\space#2^^J}%
+    \endgroup
+    \def#1{}%
+  \else
+    \begingroup
+    \endlinechar=-1\relax
+    \@texosquery@enableshortcs
+    \catcode`\-=12\relax
+    \catcode`\_=12\relax
+    \catcode`\^=12\relax
+    \catcode`\~=12\relax
+    \catcode`\$=12\relax
+    \catcode`\&=12\relax
+    \catcode`\.=12\relax
+    \catcode`\/=12\relax
+    \catcode`\:=12\relax
+    \catcode`\"=12\relax
+    \catcode`\'=12\relax
+    \catcode`\;=12\relax
+    \catcode`\%=12\relax
+    \everyeof{\noexpand}\relax
+    \@texosquery@edef\x{\endgroup\def\noexpand#1{\TeXOSQueryInvoker{#2}}}\x
+  \fi
+}
+\def\TeXOSQueryFromFile#1#2{%
+  \openin0=#2
+    \ifeof0\relax
+      \def#1{}%
+    \else
+      \closein0\relax
+      \begingroup
+      \endlinechar=-1\relax
+      \@texosquery@enableshortcs
+      \catcode`\-=12\relax
+      \catcode`\_=12\relax
+      \catcode`\^=12\relax
+      \catcode`\~=12\relax
+      \catcode`\$=12\relax
+      \catcode`\&=12\relax
+      \catcode`\.=12\relax
+      \catcode`\/=12\relax
+      \catcode`\:=12\relax
+      \catcode`\"=12\relax
+      \catcode`\'=12\relax
+      \catcode`\;=12\relax
+      \catcode`\%=12\relax
+      \everyeof{\noexpand}\relax
+      \@texosquery@edef\x{\endgroup\def\noexpand#1{\texosquery@input #2 }}\x
+   \fi
+}
+\def\texosquerycurrency#1{%
+ \expandafter\noexpand\csname texosquerycurrency#1\endcsname
+}
+\ifx\faDollar\undefined
+  \def\texosquerycurrencydollar{\$}
+\else
+  \def\texosquerycurrencydollar{\faDollar}
+\fi
+\ifx\textcent\undefined
+  \def\texosquerycurrencycent{cent}
+\else
+  \def\texosquerycurrencycent{\textcent}
+\fi
+\ifx\faGbp\undefined
+  \ifx\pounds\undefined
+    \def\texosquerycurrencypound{pound}
+  \else
+    \def\texosquerycurrencypound{\pounds}
+  \fi
+\else
+  \def\texosquerycurrencypound{\faGbp}
+\fi
+\ifx\textcurrency\undefined
+  \def\texosquerycurrencysign{currency-sign}
+\else
+  \def\texosquerycurrencysign{\textcurrency}
+\fi
+\ifx\faYen\undefined
+  \ifx\textyen\undefined
+    \def\texosquerycurrencyyen{yen}
+  \else
+    \def\texosquerycurrencyyen{\textyen}
+  \fi
+\else
+  \def\texosquerycurrencyyen{\faYen}
+\fi
+\def\texosquerycurrencyecu{ecu}
+\def\texosquerycurrencycolon{colon}
+\def\texosquerycurrencycruzeiro{cruzeiro}
+\def\texosquerycurrencyfranc{franc}
+\ifx\textlira\undefined
+  \def\texosquerycurrencylira{lira}
+\else
+  \def\texosquerycurrencylira{\textlira}
+\fi
+\def\texosquerycurrencymill{mill}
+\ifx\textnaira\undefined
+  \def\texosquerycurrencynaira{naira}
+\else
+  \def\texosquerycurrencynaira{\textnaira}
+\fi
+\def\texosquerycurrencypeseta{peseta}
+\ifx\faRupee\undefined
+  \def\texosquerycurrencyrupee{rupee}
+\else
+  \def\texosquerycurrencyrupee{\faRupee}
+\fi
+\ifx\faWon\undefined
+  \ifx\textwon\undefined
+    \def\texosquerycurrencywon{won}
+  \else
+    \def\texosquerycurrencywon{\textwon}
+  \fi
+\else
+  \def\texosquerycurrencywon{\faWon}
+\fi
+\ifx\faSheqel\undefined
+  \def\texosquerycurrencynewsheqel{newsheqel}
+\else
+  \def\texosquerycurrencynewsheqel{\faSheqel}
+\fi
+\ifx\textdong\undefined
+  \def\texosquerycurrencydong{dong}
+\else
+  \def\texosquerycurrencydong{\textdong}
+\fi
+\ifx\faEuro\undefined
+  \ifx\texteuro\undefined
+    \ifx\euro\undefined
+      \def\texosquerycurrencyeuro{euro}
+    \else
+      \def\texosquerycurrencyeuro{\euro}
+    \fi
+  \else
+    \def\texosquerycurrencyeuro{\texteuro}
+  \fi
+\else
+  \def\texosquerycurrencyeuro{\faEuro}
+\fi
+\def\texosquerycurrencykip{kip}
+\def\texosquerycurrencytugrik{tugrik}
+\def\texosquerycurrencydrachma{drachma}
+\def\texosquerycurrencygermanpenny{german-penny}
+\ifx\textpeso\undefined
+  \def\texosquerycurrencypeso{peso}
+\else
+  \def\texosquerycurrencypeso{\textpeso}
+\fi
+\ifx\textguarani\undefined
+  \def\texosquerycurrencyguarani{guarani}
+\else
+  \def\texosquerycurrencyguarani{\textguarani}
+\fi
+\def\texosquerycurrencyaustral{austral}
+\def\texosquerycurrencyhryvnia{hryvnia}
+\ifx\textcolonmonetary\undefined
+  \def\texosquerycurrencycedi{cedi}
+\else
+  \def\texosquerycurrencycedi{\textcolonmonetary}
+\fi
+\def\texosquerycurrencylivretournois{livre-tournois}
+\def\texosquerycurrencyspesmilo{spesmilo}
+\def\texosquerycurrencytenge{tenge}
+\def\texosquerycurrencyrupee{rupee}
+\ifx\faTurkishLira\undefined
+  \def\texosquerycurrencyturkishlira{turkish-lira}
+\else
+  \def\texosquerycurrencyturkishlira{\faTurkishLira}
+\fi
+\def\texosquerycurrencynordicmark{nordic-mark}
+\def\texosquerycurrencymanat{manat}
+\ifx\faRuble\undefined
+  \def\texosquerycurrencyruble{ruble}
+\else
+  \def\texosquerycurrencyruble{\faRuble}
+\fi
+\def\TeXOSQueryLocale#1{\TeXOSQuery{#1}{\string-l}}
+\def\TeXOSQueryLangTag#1{\TeXOSQuery{#1}{\string-b}}
+\def\TeXOSQueryNumeric#1#2{\TeXOSQuery{#1}{\string-N #2}}
+\def\TeXOSQueryLocaleData#1#2{\TeXOSQuery{#1}{\string-D #2}}
+\def\TeXOSQueryCwd#1{\TeXOSQuery{#1}{\string-c}}
+\def\TeXOSQueryHome#1{\TeXOSQuery{#1}{\string-m}}
+\def\TeXOSQueryTmpDir#1{\TeXOSQuery{#1}{\string-t}}
+\def\TeXOSQueryVersion#1{\TeXOSQuery{#1}{\string-r}}
+\def\TeXOSQueryArch#1{\TeXOSQuery{#1}{\string-a}}
+\def\TeXOSQueryName#1{\TeXOSQuery{#1}{\string-o}}
+\def\TeXOSQueryDateTime#1{%
+  \TeXOSQuery{#1}{\string-M}%
+}
+\def\TeXOSQueryTimeZones#1#2{%
+  \TeXOSQuery{#1}{\string-Z #2}%
+}
+\def\TeXOSQueryNow#1{%
+  \edef\@texosquery@restore@D{%
+    \noexpand\catcode`\noexpand\D=\the\catcode`\D\relax}%
+  \catcode`\D=12\relax
+  \TeXOSQuery{#1}{\string-n}%
+  \@texosquery@restore@D
+}
+\def\texosquerystripquotes#1{%
+  \@texosquery@stripquotes#1\@mid@texosquery@stripquotes
+    "\relax"\relax\@end@texosquery@stripquotes
+}
+\def\@texosquery@stripquotes#1"#2"{%
+  \@@texosquery@stripquotes#1#2%
+}
+\def\@@texosquery@stripquotes#1\@mid@texosquery@stripquotes#2\@end@texosquery@stripquotes{%
+  #1%
+}
+\ifnum\texosquery@shellescape=2\relax
+  \def\@texosquery@argquote#1{#1}
+\else
+  \def\@texosquery@argquote#1{\string'#1\string'}
+\fi
+\def\TeXOSQueryFileDate#1#2{%
+  \edef\@texosquery@restore@D{%
+    \noexpand\catcode`\noexpand\D=\the\catcode`\D\relax}%
+  \catcode`\D=12\relax
+  \TeXOSQuery{#1}{\string-d
+    \@texosquery@argquote{\texosquerystripquotes{#2}}}%
+  \@texosquery@restore@D
+}
+\def\TeXOSQueryFileSize#1#2{\TeXOSQuery{#1}{\string-s
+ \@texosquery@argquote{\texosquerystripquotes{#2}}}}
+\def\@texosquery@filelist#1#2#3#4#5{\TeXOSQuery{#1}{%
+ \string#2 \@texosquery@argquote{#3}
+ \@texosquery@argquote{\texosquerystripquotes{#4}} #5}}
+\def\TeXOSQueryFileList#1#2#3{%
+ \@texosquery@filelist{#1}{-i}{#2}{#3}{}%
+}
+\def\TeXOSQueryFileListDateAsc#1#2#3{%
+ \@texosquery@filelist{#1}{-i}{#2}{#3}{date}%
+}
+\def\TeXOSQueryFileListDateDes#1#2#3{%
+ \@texosquery@filelist{#1}{-i}{#2}{#3}{date\string-des}%
+}
+\def\TeXOSQueryFileListSizeAsc#1#2#3{%
+ \@texosquery@filelist{#1}{-i}{#2}{#3}{size}%
+}
+\def\TeXOSQueryFileListSizeDes#1#2#3{%
+ \@texosquery@filelist{#1}{-i}{#2}{#3}{size\string-des}%
+}
+\def\TeXOSQueryFileListNameAsc#1#2#3{%
+ \@texosquery@filelist{#1}{-i}{#2}{#3}{name}%
+}
+\def\TeXOSQueryFileListNameDes#1#2#3{%
+ \@texosquery@filelist{#1}{-i}{#2}{#3}{name\string-des}%
+}
+\def\TeXOSQueryFileListNameIgnoreCaseAsc#1#2#3{%
+ \@texosquery@filelist{#1}{-i}{#2}{#3}{iname}%
+}
+\def\TeXOSQueryFileListNameIgnoreCaseDes#1#2#3{%
+ \@texosquery@filelist{#1}{-i}{#2}{#3}{iname\string-des}%
+}
+\def\TeXOSQueryFileListExtAsc#1#2#3{%
+ \@texosquery@filelist{#1}{-i}{#2}{#3}{ext}%
+}
+\def\TeXOSQueryFileListExtDes#1#2#3{%
+ \@texosquery@filelist{#1}{-i}{#2}{#3}{ext\string-des}%
+}
+\def\TeXOSQueryRegularFileList#1#2#3{%
+ \@texosquery@filelist{#1}{-ir}{#2}{#3}{}%
+}
+\def\TeXOSQuerySubDirList#1#2#3{%
+ \@texosquery@filelist{#1}{-id}{#2}{#3}{}%
+}
+\def\TeXOSQueryRegularFileListDateAsc#1#2#3{%
+ \@texosquery@filelist{#1}{-ir}{#2}{#3}{date}%
+}
+\def\TeXOSQuerySubDirListDateAsc#1#2#3{%
+ \@texosquery@filelist{#1}{-id}{#2}{#3}{date}%
+}
+\def\TeXOSQueryRegularFileListDateDes#1#2#3{%
+ \@texosquery@filelist{#1}{-ir}{#2}{#3}{date\string-des}%
+}
+\def\TeXOSQuerySubDirListDateDes#1#2#3{%
+ \@texosquery@filelist{#1}{-id}{#2}{#3}{date\string-des}%
+}
+\def\TeXOSQueryRegularFileListSizeAsc#1#2#3{%
+ \@texosquery@filelist{#1}{-ir}{#2}{#3}{size}%
+}
+\def\TeXOSQuerySubDirListSizeAsc#1#2#3{%
+ \@texosquery@filelist{#1}{-id}{#2}{#3}{size}%
+}
+\def\TeXOSQueryRegularFileListSizeDes#1#2#3{%
+ \@texosquery@filelist{#1}{-ir}{#2}{#3}{size\string-des}%
+}
+\def\TeXOSQuerySubDirListSizeDes#1#2#3{%
+ \@texosquery@filelist{#1}{-id}{#2}{#3}{size\string-des}%
+}
+\def\TeXOSQueryRegularFileListNameAsc#1#2#3{%
+ \@texosquery@filelist{#1}{-ir}{#2}{#3}{name}%
+}
+\def\TeXOSQuerySubDirListNameAsc#1#2#3{%
+ \@texosquery@filelist{#1}{-id}{#2}{#3}{name}%
+}
+\def\TeXOSQueryRegularFileListNameDes#1#2#3{%
+ \@texosquery@filelist{#1}{-ir}{#2}{#3}{name\string-des}%
+}
+\def\TeXOSQuerySubDirListNameDes#1#2#3{%
+ \@texosquery@filelist{#1}{-id}{#2}{#3}{name\string-des}%
+}
+\def\TeXOSQueryRegularFileListNameIgnoreCaseAsc#1#2#3{%
+ \@texosquery@filelist{#1}{-ir}{#2}{#3}{iname}%
+}
+\def\TeXOSQuerySubDirListNameIgnoreCaseAsc#1#2#3{%
+ \@texosquery@filelist{#1}{-id}{#2}{#3}{iname}%
+}
+\def\TeXOSQueryRegularFileListNameIgnoreCaseDes#1#2#3{%
+ \@texosquery@filelist{#1}{-ir}{#2}{#3}{iname\string-des}%
+}
+\def\TeXOSQuerySubDirListNameIgnoreCaseDes#1#2#3{%
+ \@texosquery@filelist{#1}{-id}{#2}{#3}{iname\string-des}%
+}
+\def\TeXOSQueryRegularFileListExtAsc#1#2#3{%
+ \@texosquery@filelist{#1}{-ir}{#2}{#3}{ext}%
+}
+\def\TeXOSQuerySubDirListExtAsc#1#2#3{%
+ \@texosquery@filelist{#1}{-id}{#2}{#3}{ext}%
+}
+\def\TeXOSQueryRegularFileListExtDes#1#2#3{%
+ \@texosquery@filelist{#1}{-ir}{#2}{#3}{ext\string-des}%
+}
+\def\TeXOSQuerySubDirListExtDes#1#2#3{%
+ \@texosquery@filelist{#1}{-id}{#2}{#3}{ext\string-des}%
+}
+\def\@texosquery@filterfilelist#1#2#3#4#5#6{%
+ \TeXOSQuery{#1}%
+ {%
+   \string#2
+   \@texosquery@argquote{#3}
+   \@texosquery@argquote{#4}
+   \@texosquery@argquote{\texosquerystripquotes{#5}} #6%
+ }%
+}
+\def\TeXOSQueryFilterFileList#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-f}{#2}{#3}{#4}{}%
+}
+\def\TeXOSQueryFilterFileListDateAsc#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-f}{#2}{#3}{#4}{date}%
+}
+\def\TeXOSQueryFilterFileListDateDes#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-f}{#2}{#3}{#4}{date\string-des}%
+}
+\def\TeXOSQueryFilterFileListSizeAsc#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-f}{#2}{#3}{#4}{size}%
+}
+\def\TeXOSQueryFilterFileListSizeDes#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-f}{#2}{#3}{#4}{size\string-des}%
+}
+\def\TeXOSQueryFilterFileListNameAsc#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-f}{#2}{#3}{#4}{name}%
+}
+\def\TeXOSQueryFilterFileListNameDes#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-f}{#2}{#3}{#4}{name\string-des}%
+}
+\def\TeXOSQueryFilterFileListNameIgnoreCaseAsc#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-f}{#2}{#3}{#4}{iname}%
+}
+\def\TeXOSQueryFilterFileListNameIgnoreCaseDes#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-f}{#2}{#3}{#4}{iname\string-des}%
+}
+\def\TeXOSQueryFilterFileListExtAsc#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-f}{#2}{#3}{#4}{ext}%
+}
+\def\TeXOSQueryFilterFileListExtDes#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-f}{#2}{#3}{#4}{ext\string-des}%
+}
+\def\TeXOSQueryFilterRegularFileList#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fr}{#2}{#3}{#4}{}%
+}
+\def\TeXOSQueryFilterSubDirList#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fd}{#2}{#3}{#4}{}%
+}
+\def\TeXOSQueryFilterSubDirListDateAsc#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fd}{#2}{#3}{#4}{date}%
+}
+\def\TeXOSQueryFilterRegularFileListDateAsc#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fr}{#2}{#3}{#4}{date}%
+}
+\def\TeXOSQueryFilterSubDirListDateDes#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fd}{#2}{#3}{#4}{date\string-des}%
+}
+\def\TeXOSQueryFilterRegularFileListDateDes#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fr}{#2}{#3}{#4}{date\string-des}%
+}
+\def\TeXOSQueryFilterSubDirListSizeAsc#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fd}{#2}{#3}{#4}{size}%
+}
+\def\TeXOSQueryFilterRegularFileListSizeAsc#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fr}{#2}{#3}{#4}{size}%
+}
+\def\TeXOSQueryFilterSubDirListSizeDes#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fd}{#2}{#3}{#4}{size\string-des}%
+}
+\def\TeXOSQueryFilterRegularFileListSizeDes#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fr}{#2}{#3}{#4}{size\string-des}%
+}
+\def\TeXOSQueryFilterSubDirListNameAsc#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fd}{#2}{#3}{#4}{name}%
+}
+\def\TeXOSQueryFilterRegularFileListNameAsc#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fr}{#2}{#3}{#4}{name}%
+}
+\def\TeXOSQueryFilterSubDirListNameDes#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fd}{#2}{#3}{#4}{name\string-des}%
+}
+\def\TeXOSQueryFilterRegularFileListNameDes#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fr}{#2}{#3}{#4}{name\string-des}%
+}
+\def\TeXOSQueryFilterSubDirListNameIgnoreCaseAsc#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fd}{#2}{#3}{#4}{iname}%
+}
+\def\TeXOSQueryFilterRegularFileListNameIgnoreCaseAsc#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fr}{#2}{#3}{#4}{iname}%
+}
+\def\TeXOSQueryFilterSubDirListNameIgnoreCaseDes#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fd}{#2}{#3}{#4}{iname\string-des}%
+}
+\def\TeXOSQueryFilterRegularFileListNameIgnoreCaseDes#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fr}{#2}{#3}{#4}{iname\string-des}%
+}
+\def\TeXOSQueryFilterSubDirListExtAsc#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fd}{#2}{#3}{#4}{ext}%
+}
+\def\TeXOSQueryFilterRegularFileListExtAsc#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fd}{#2}{#3}{#4}{ext}%
+}
+\def\TeXOSQueryFilterSubDirListExtDes#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fd}{#2}{#3}{#4}{ext\string-des}%
+}
+\def\TeXOSQueryFilterRegularFileListExtDes#1#2#3#4{%
+ \@texosquery@filterfilelist{#1}{-fr}{#2}{#3}{#4}{ext\string-des}%
+}
+\def\@texosquery@walk#1#2#3#4#5{%
+ \TeXOSQuery{#1}%
+ {%
+   \string-w
+   \@texosquery@argquote{#2}
+   \@texosquery@argquote{#3}
+   \@texosquery@argquote{\texosquerystripquotes{#4}} #5%
+ }%
+}
+\def\TeXOSQueryWalk#1#2#3#4{%
+ \@texosquery@walk{#1}{#2}{#3}{#4}{}%
+}
+\def\TeXOSQueryWalkDateAsc#1#2#3#4{%
+ \@texosquery@walk{#1}{#2}{#3}{#4}{date}%
+}
+\def\TeXOSQueryWalkDateDes#1#2#3#4{%
+ \@texosquery@walk{#1}{#2}{#3}{#4}{date\string-des}%
+}
+\def\TeXOSQueryWalkSizeAsc#1#2#3#4{%
+ \@texosquery@walk{#1}{#2}{#3}{#4}{size}%
+}
+\def\TeXOSQueryWalkSizeDes#1#2#3#4{%
+ \@texosquery@walk{#1}{#2}{#3}{#4}{size\string-des}%
+}
+\def\TeXOSQueryWalkNameAsc#1#2#3#4{%
+ \@texosquery@walk{#1}{#2}{#3}{#4}{name}%
+}
+\def\TeXOSQueryWalkNameDes#1#2#3#4{%
+ \@texosquery@walk{#1}{#2}{#3}{#4}{name\string-des}%
+}
+\def\TeXOSQueryWalkNameIgnoreCaseAsc#1#2#3#4{%
+ \@texosquery@walk{#1}{#2}{#3}{#4}{iname}%
+}
+\def\TeXOSQueryWalkNameIgnoreCaseDes#1#2#3#4{%
+ \@texosquery@walk{#1}{#2}{#3}{#4}{iname\string-des}%
+}
+\def\TeXOSQueryWalkExtAsc#1#2#3#4{%
+ \@texosquery@walk{#1}{#2}{#3}{#4}{ext}%
+}
+\def\TeXOSQueryWalkExtDes#1#2#3#4{%
+ \@texosquery@walk{#1}{#2}{#3}{#4}{ext\string-des}%
+}
+\def\TeXOSQueryFileURI#1#2{\TeXOSQuery{#1}{\string-u
+ \@texosquery@argquote{\texosquerystripquotes{#2}}}}
+\def\TeXOSQueryFilePath#1#2{\TeXOSQuery{#1}{\string-p
+ \@texosquery@argquote{\texosquerystripquotes{#2}}}}
+\def\TeXOSQueryDirName#1#2{\TeXOSQuery{#1}{\string-e
+ \@texosquery@argquote{\texosquerystripquotes{#2}}}}
+\def\texosquerydtf#1#2{%
+  \ifcase#1
+  \or
+   #2%
+  \or
+   #2#2%
+  \or
+   #2#2#2%
+  \else
+   #2#2#2#2%
+  \fi
+}
+\def\texosquerypatstr#1{'#1'}
+\def\texosquerypatquote{''}
+\def\texosquerypatplusminus#1#2{#1;#2}
+\def\texosquerypatnum#1{#1}
+\def\texosquerypatsinum#1#2{#1E#2}
+\def\texosquerypatdec#1#2{#1.#2}
+\def\texosquerypatprefixcurrency#1#2{#2¤#1}
+\def\texosquerypatprefixicurrency#1#2{#2¤¤#1}
+\def\texosquerypatsuffixcurrency#1#2{#1¤#2}
+\def\texosquerypatsuffixicurrency#1#2{#1¤¤#2}
+\def\texosquerypatdigit{0}
+\def\texosquerypatdigitnozero{\#}
+\def\texosquerypatminus{-}
+\def\texosquerypatgroupsep{,}
+\def\texosquerypatprefixpercent#1#2{#2\%#1}
+\def\texosquerypatsuffixpercent#1#2{#1\%#2}
+\def\texosquerypatprefixpermill#1#2{#2‰#1}
+\def\texosquerypatsuffixpermill#1#2{#1‰#2}
+\def\@texosquery@pattern@shortcuts{%
+   \def\%{\noexpand\texosquerydtf}%
+   \def\0{\noexpand\texosquerypatdigit}%
+   \def\#{\noexpand\texosquerypatdigitnozero}%
+   \def\-{\noexpand\texosquerypatminus}%
+   \def\,{\noexpand\texosquerypatgroupsep}%
+   \def\numfmt{\noexpand\texosquerypatnum}%
+   \def\pmnumfmt{\noexpand\texosquerypatplusminus}%
+   \def\sinumfmt{\noexpand\texosquerypatsinum}%
+   \def\decfmt{\noexpand\texosquerypatdec}%
+   \def\pcur{\noexpand\texosquerypatprefixcurrency}%
+   \def\picur{\noexpand\texosquerypatprefixicurrency}%
+   \def\scur{\noexpand\texosquerypatsuffixcurrency}%
+   \def\sicur{\noexpand\texosquerypatsuffixicurrency}%
+   \def\ppct{\noexpand\texosquerypatprefixpercent}%
+   \def\spct{\noexpand\texosquerypatsuffixpercent}%
+   \def\ppml{\noexpand\texosquerypatprefixpermill}%
+   \def\spml{\noexpand\texosquerypatsuffixpermill}%
+}
+\def\texosquerydefpattern#1#2{%
+ \begingroup
+  \@texosquery@pattern@shortcuts
+  \@texosquery@edef\x{\endgroup\def\noexpand#1{#2}}\x
+}
+\def\texosqueryfmtdatetime#1{%
+  \def\@texosquery@fmt@dt@pattern{#1}%
+  \@texosquery@fmt@getera
+}
+\def\@texosquery@fmt@getera#1{%
+  \edef\@texosquery@fmt@G{\@texosquery@paddigits{#1}}%
+  \@texosquery@fmt@getyear
+}
+\def\@texosquery@fmt@getyear#1{%
+  \edef\@texosquery@fmt@y{\@texosquery@paddigits{#1}}%
+  \@texosquery@fmt@getweekyear
+}
+\def\@texosquery@fmt@getweekyear#1{%
+  \edef\@texosquery@fmt@Y{\@texosquery@paddigits{#1}}%
+  \@texosquery@fmt@getmonth
+}
+\def\@texosquery@fmt@getmonth#1{%
+  \edef\@texosquery@fmt@M{\@texosquery@paddigits{#1}}%
+  \let\@texosquery@fmt@L\@texosquery@fmt@M
+  \@texosquery@fmt@getweekinyear
+}
+\def\@texosquery@fmt@getweekinyear#1{%
+  \edef\@texosquery@fmt@w{\@texosquery@paddigits{#1}}%
+  \@texosquery@fmt@getweekinmonth
+}
+\def\@texosquery@fmt@getweekinmonth#1{%
+  \edef\@texosquery@fmt@W{\@texosquery@paddigits{#1}}%
+  \@texosquery@fmt@getdayinyear
+}
+\def\@texosquery@fmt@getdayinyear#1{%
+  \edef\@texosquery@fmt@D{\@texosquery@paddigits{#1}}%
+  \@texosquery@fmt@getdayinmonth
+}
+\def\@texosquery@fmt@getdayinmonth#1{%
+  \edef\@texosquery@fmt@d{\@texosquery@paddigits{#1}}%
+  \@texosquery@fmt@getdayofweekinmonth
+}
+\def\@texosquery@fmt@getdayofweekinmonth#1{%
+  \edef\@texosquery@fmt@F{\@texosquery@paddigits{#1}}%
+  \@texosquery@fmt@getdaynumberofweek
+}
+\def\@texosquery@fmt@getdaynumberofweek#1{%
+  \edef\@texosquery@fmt@u{\@texosquery@paddigits{#1}}%
+  \let\@texosquery@fmt@E\@texosquery@fmt@u
+  \@texosquery@fmt@getampm
+}
+\def\@texosquery@fmt@getampm#1{%
+  \edef\@texosquery@fmt@a{\@texosquery@paddigits{#1}}%
+  \@texosquery@fmt@gethourindayH
+}
+\def\@texosquery@fmt@gethourindayH#1{%
+  \edef\@texosquery@fmt@H{\@texosquery@paddigits{#1}}%
+  \@texosquery@fmt@gethourindayk
+}
+\def\@texosquery@fmt@gethourindayk#1{%
+  \edef\@texosquery@fmt@k{\@texosquery@paddigits{#1}}%
+  \@texosquery@fmt@gethourinampmK
+}
+\def\@texosquery@fmt@gethourinampmK#1{%
+  \edef\@texosquery@fmt@K{\@texosquery@paddigits{#1}}%
+  \@texosquery@fmt@gethourinampmh
+}
+\def\@texosquery@fmt@gethourinampmh#1{%
+  \edef\@texosquery@fmt@h{\@texosquery@paddigits{#1}}%
+  \@texosquery@fmt@getminute
+}
+\def\@texosquery@fmt@getminute#1{%
+  \edef\@texosquery@fmt@m{\@texosquery@paddigits{#1}}%
+  \@texosquery@fmt@getsecond
+}
+\def\@texosquery@fmt@getsecond#1{%
+  \edef\@texosquery@fmt@s{\@texosquery@paddigits{#1}}%
+  \@texosquery@fmt@getmillisecond
+}
+\def\@texosquery@fmt@getmillisecond#1{%
+  \edef\@texosquery@fmt@S{\@texosquery@paddigits{#1}}%
+  \@texosquery@fmt@gettimezone
+}
+\def\@texosquery@fmt@gettimezone#1{%
+  \def\@texosquery@fmt@Z{#1}%
+  \def\@texosquery@fmt@z{#1}%
+  \def\@texosquery@fmt@X{#1}%
+  \begingroup
+    \@texosquery@setup@dtpattern
+    \@texosquery@fmt@dt@pattern
+  \endgroup
+}
+\def\@texosquery@setup@dtpattern{%
+  \let\texosquerydtf\@texosquery@fmt@dtf
+  \let\texosquerypatstr\texosquerypatfmtstr
+  \let\texosquerypatquote\texosquerypatfmtquote
+}
+\def\@texosquery@paddigits@pos#1{%
+  \ifnum#1<10
+   000000000\number#1
+  \else
+   \ifnum#1<100
+    00000000\number#1
+   \else
+     \ifnum#1<1000
+      0000000\number#1
+     \else
+       \ifnum#1<10000
+        000000\number#1
+       \else
+         \ifnum#1<100000
+          00000\number#1
+         \else
+           \ifnum#1<1000000
+            0000\number#1
+           \else
+             \ifnum#1<10000000
+              000\number#1
+             \else
+               \ifnum#1<100000000
+                00\number#1
+               \else
+                 \ifnum#1<1000000000
+                  0\number#1
+                 \else
+                   \number#1
+                 \fi
+               \fi
+             \fi
+           \fi
+         \fi
+       \fi
+     \fi
+   \fi
+  \fi
+}
+\def\@texosquery@paddigits#1{%
+ \ifnum#1<0
+   -\expandafter\@texosquery@paddigits@pos\expandafter
+     {\@texosquery@gobble#1}%
+ \else
+   +\@texosquery@paddigits@pos{#1}%
+ \fi
+}
+\def\@texosquery@paddigits@trailing#1{%
+  \expandafter\@texosquery@tenoften@then@gobble
+    #10000000000\@texosquery@end@tenoften
+}
+\def\@texosquery@tenoften@then@gobble#1#2#3#4#5#6#7#8#9{%
+  #1#2#3#4#5#6#7#8#9%
+  \@texosquery@lastoften@gobble
+}
+\def\@texosquery@lastoften@gobble#1#2\@texosquery@end@tenoften{#1}
+\def\@texosquery@firstoften#1#2#3#4#5#6#7#8#9{%
+ #1%
+ \@texosquery@gobble
+}
+\def\@texosquery@secondoften#1#2#3#4#5#6#7#8#9{%
+ #2%
+ \@texosquery@gobble
+}
+\def\@texosquery@thirdoften#1#2#3#4#5#6#7#8#9{%
+ #3%
+ \@texosquery@gobble
+}
+\def\@texosquery@fourthoften#1#2#3#4#5#6#7#8#9{%
+ #4%
+ \@texosquery@gobble
+}
+\def\@texosquery@fifthoften#1#2#3#4#5#6#7#8#9{%
+ #5%
+ \@texosquery@gobble
+}
+\def\@texosquery@sixthoften#1#2#3#4#5#6#7#8#9{%
+ #6%
+ \@texosquery@gobble
+}
+\def\@texosquery@seventhoften#1#2#3#4#5#6#7#8#9{%
+ #7%
+ \@texosquery@gobble
+}
+\def\@texosquery@eighthoften#1#2#3#4#5#6#7#8#9{%
+ #8%
+ \@texosquery@gobble
+}
+\def\@texosquery@ninthoften#1#2#3#4#5#6#7#8#9{%
+ #9%
+ \@texosquery@gobble
+}
+\def\@texosquery@tenthoften#1#2#3#4#5#6#7#8#9{%
+ \@texosquery@firstofone
+}
+\def\@texosquery@firsttwooften#1#2#3#4#5#6#7#8#9{%
+ #1#2%
+ \@texosquery@gobble
+}
+\def\@texosquery@firstthreeoften#1#2#3#4#5#6#7#8#9{%
+ #1#2#3%
+ \@texosquery@gobble
+}
+\def\@texosquery@firstfouroften#1#2#3#4#5#6#7#8#9{%
+ #1#2#3#4%
+ \@texosquery@gobble
+}
+\def\@texosquery@firstfiveoften#1#2#3#4#5#6#7#8#9{%
+ #1#2#3#4#5%
+ \@texosquery@gobble
+}
+\def\@texosquery@firstsixoften#1#2#3#4#5#6#7#8#9{%
+ #1#2#3#4#5#6%
+ \@texosquery@gobble
+}
+\def\@texosquery@firstsevenoften#1#2#3#4#5#6#7#8#9{%
+ #1#2#3#4#5#6#7%
+ \@texosquery@gobble
+}
+\def\@texosquery@firsteightoften#1#2#3#4#5#6#7#8#9{%
+ #1#2#3#4#5#6#7#8%
+ \@texosquery@gobble
+}
+\def\@texosquery@firstnineoften#1#2#3#4#5#6#7#8#9{%
+ #1#2#3#4#5#6#7#8#9%
+ \@texosquery@gobble
+}
+\def\@texosquery@alltenoften#1#2#3#4#5#6#7#8#9{%
+ #1#2#3#4#5#6#7#8#9%
+ \@texosquery@firstofone
+}
+\def\@texosquery@lasttwooften#1#2#3#4#5#6#7#8#9{%
+ #9%
+ \@texosquery@firstofone
+}
+\def\@texosquery@lastthreeoften#1#2#3#4#5#6#7#8#9{%
+ #8#9%
+ \@texosquery@firstofone
+}
+\def\@texosquery@lastfouroften#1#2#3#4#5#6#7#8#9{%
+ #7#8#9%
+ \@texosquery@firstofone
+}
+\def\@texosquery@lastfiveoften#1#2#3#4#5#6#7#8#9{%
+ #6#7#8#9%
+ \@texosquery@firstofone
+}
+\def\@texosquery@lastsixoften#1#2#3#4#5#6#7#8#9{%
+ #5#6#7#8#9%
+ \@texosquery@firstofone
+}
+\def\@texosquery@lastsevenoften#1#2#3#4#5#6#7#8#9{%
+ #4#5#6#7#8#9%
+ \@texosquery@firstofone
+}
+\def\@texosquery@lasteightoften#1#2#3#4#5#6#7#8#9{%
+ #3#4#5#6#7#8#9%
+ \@texosquery@firstofone
+}
+\def\@texosquery@lastnineoften#1#2#3#4#5#6#7#8#9{%
+ #2#3#4#5#6#7#8#9%
+ \@texosquery@firstofone
+}
+\def\@texosquery@fmtminus{\texosquerypatfmtminus}
+\def\@texosquery@fmtplus{}
+\def\@texosquery@fmtsign#1{%
+ \ifx#1+\@texosquery@fmtplus\else\@texosquery@fmtminus\fi
+}
+\def\@texosquery@atleastonedigit#1{%
+  \ifnum#1<0
+   \@texosquery@fmtminus\number-#1
+  \else
+   \number#1
+  \fi
+}
+\def\@texosquery@atleastfourdigits#1{%
+  \@texosquery@at@leastfourdigits#1\@texosquery@end@atleastfourdigits
+}
+\def\@texosquery@at@leastfourdigits#1#2\@texosquery@end@atleastfourdigits{%
+  \@texosquery@fmtsign{#1}%
+  \ifnum#2<1000
+    \@texosquery@lastfouroften#2%
+  \else
+    \number#2
+  \fi
+}
+\def\@texosquery@threedigitsexactly#1{%
+  \@texosquery@threedigits@exactly#1\@texosquery@threedigits@exactly
+}%
+\def\@texosquery@threedigits@exactly#1#2\@texosquery@threedigits@exactly{%
+  \@texosquery@fmtsign{#1}%
+  \@texosquery@lastthreeoften#2%
+}%
+\def\@texosquery@twodigitsexactly#1{%
+  \@texosquery@twodigits@exactly#1\@texosquery@twodigits@exactly
+}%
+\def\@texosquery@twodigits@exactly#1#2\@texosquery@twodigits@exactly{%
+  \@texosquery@fmtsign{#1}%
+  \@texosquery@lasttwooften#2%
+}%
+\def\@texosquery@fmt@dtf#1#2{%
+  \@texosquery@ifundef{@texosquery@fmt@#2}%
+  {\@texosquery@warn{Unknown date-time pattern designator `#2'}}%
+  {%
+    \ifcase#1
+    \or
+      \@texosquery@ifundef{texosqueryfmtpat#2}%
+      {%
+        \expandafter\expandafter\expandafter
+          \@texosquery@atleastonedigit
+          \expandafter\expandafter\expandafter
+         {\csname @texosquery@fmt@#2\endcsname}%
+      }%
+      {%
+        \csname texosqueryfmtpat#2\expandafter\expandafter\expandafter\endcsname
+         \expandafter\expandafter\expandafter
+         {\csname @texosquery@fmt@#2\endcsname}%
+      }%
+    \or
+      \@texosquery@ifundef{texosqueryfmtpat#2#2}%
+      {%
+        \expandafter\expandafter\expandafter
+          \@texosquery@twodigitsexactly
+          \expandafter\expandafter\expandafter
+          {\csname @texosquery@fmt@#2\endcsname}%
+      }%
+      {%
+        \csname texosqueryfmtpat#2#2\expandafter\expandafter\expandafter
+        \endcsname \expandafter\expandafter\expandafter
+         {\csname @texosquery@fmt@#2\endcsname}%
+      }%
+    \or
+      \@texosquery@ifundef{texosqueryfmtpat#2#2#2}%
+      {%
+        \expandafter\expandafter\expandafter
+          \@texosquery@threedigitsexactly
+          \expandafter\expandafter\expandafter
+        {\csname @texosquery@fmt@#2\endcsname}%
+      }%
+      {%
+        \csname texosqueryfmtpat#2#2#2\expandafter\expandafter\expandafter
+        \endcsname \expandafter\expandafter\expandafter
+         {\csname @texosquery@fmt@#2\endcsname}%
+      }%
+    \else
+      \@texosquery@ifundef{texosqueryfmtpat#2#2#2#2}%
+      {%
+        \expandafter\expandafter\expandafter
+          \@texosquery@atleastfourdigits
+          \expandafter\expandafter\expandafter
+          {\csname @texosquery@fmt@#2\endcsname}%
+      }%
+      {%
+        \csname texosqueryfmtpat#2#2#2#2\expandafter\expandafter\expandafter
+        \endcsname \expandafter\expandafter\expandafter
+         {\csname @texosquery@fmt@#2\endcsname}%
+      }%
+    \fi
+  }%
+}
+\def\texosqueryfmttimezonehr#1{%
+  \ifnum#11<0\@texosquery@fmtminus
+    \ifnum#1>-10 0\fi\number-#1
+  \else
+   +\ifnum#1<10 0\fi\number#1
+  \fi
+}
+\def\texosqueryfmttimezonenumhr#1{%
+  \ifnum#11<0\@texosquery@fmtminus
+    \number-#1
+  \else
+    \number#1
+  \fi
+}
+\def\texosqueryfmttimezonemin#1{%
+  \ifnum#1<10 0\fi\number#1
+}
+\def\@texosquery@firstoffour#1#2#3#4{#1}
+\def\@texosquery@secondoffour#1#2#3#4{#2}
+\def\@texosquery@thirdoffour#1#2#3#4{#3}
+\def\@texosquery@fourthoffour#1#2#3#4{#4}
+\def\texosqueryshorttimezone#1{#1}
+\def\texosqueryshortdstzone#1{#1 (DST)}
+\def\texosquerylongtimezone#1{#1}
+\def\texosquerylongdstzone#1{#1 (DST)}
+\def\texosquerytimesep{:}
+\def\texosqueryfmtpatz#1{%
+ \expandafter\ifnum\@texosquery@fourthoffour#1=0
+  \expandafter\texosqueryshorttimezone\expandafter{\@texosquery@thirdoffour#1}%
+ \else
+  \expandafter\texosqueryshortdstzone\expandafter{\@texosquery@thirdoffour#1}%
+ \fi
+}
+\def\texosqueryfmtpatzz#1{%
+ \expandafter\ifnum\@texosquery@fourthoffour#1=0
+   \expandafter\texosqueryshorttimezone\expandafter{\@texosquery@thirdoffour#1}%
+ \else
+   \expandafter\texosqueryshortdstzone\expandafter{\@texosquery@thirdoffour#1}%
+ \fi
+}
+\def\texosqueryfmtpatzzz#1{%
+ \expandafter\ifnum\@texosquery@fourthoffour#1=0
+   \expandafter\texosquerylongtimezone\expandafter{\@texosquery@thirdoffour#1}%
+ \else
+   \expandafter\texosquerylongdstzone\expandafter{\@texosquery@thirdoffour#1}%
+ \fi
+}
+\def\texosqueryfmtpatzzzz#1{%
+ \expandafter\ifnum\@texosquery@fourthoffour#1=0
+   \expandafter\texosquerylongtimezone\expandafter{\@texosquery@thirdoffour#1}%
+ \else
+   \expandafter\texosquerylongdstzone\expandafter{\@texosquery@thirdoffour#1}%
+ \fi
+}
+\def\texosqueryfmtpatZ#1{%
+  \expandafter\texosqueryfmttimezonehr\expandafter
+   {\@texosquery@firstoffour#1}%
+  \expandafter\texosqueryfmttimezonemin\expandafter
+   {\@texosquery@secondoffour#1}%
+}
+\def\texosqueryfmtpatZZ#1{%
+  \expandafter\texosqueryfmttimezonehr\expandafter
+    {\@texosquery@firstoffour#1}%
+  \expandafter\texosqueryfmttimezonemin\expandafter
+    {\@texosquery@secondoffour#1}%
+}
+\def\texosqueryfmtpatZZZ#1{%
+  \expandafter\texosqueryfmttimezonehr\expandafter
+    {\@texosquery@firstoffour#1}%
+  \expandafter\texosqueryfmttimezonemin\expandafter
+    {\@texosquery@secondoffour#1}%
+}
+\def\texosqueryfmtpatZZZZ#1{%
+  \expandafter\texosqueryfmttimezonehr\expandafter
+    {\@texosquery@firstoffour#1}%
+  \expandafter\texosqueryfmttimezonemin\expandafter
+    {\@texosquery@secondoffour#1}%
+}
+\def\texosqueryfmtpatX#1{%
+  \expandafter\texosqueryfmttimezonehr\expandafter
+    {\@texosquery@firstoffour#1}%
+  \texosquerytimesep
+  \expandafter\texosqueryfmttimezonemin\expandafter
+    {\@texosquery@secondoffour#1}%
+}
+\def\texosqueryfmtpatXX#1{%
+  \expandafter\texosqueryfmttimezonehr\expandafter
+    {\@texosquery@firstoffour#1}%
+  \texosquerytimesep
+  \expandafter\texosqueryfmttimezonemin\expandafter
+    {\@texosquery@secondoffour#1}%
+}
+\def\texosqueryfmtpatXXX#1{%
+  \expandafter\texosqueryfmttimezonehr\expandafter
+    {\@texosquery@firstoffour#1}%
+  \texosquerytimesep
+  \expandafter\texosqueryfmttimezonemin\expandafter
+    {\@texosquery@secondoffour#1}%
+}
+\def\texosqueryfmtpatXXXX#1{%
+  \expandafter\texosqueryfmttimezonehr\expandafter
+    {\@texosquery@firstoffour#1}%
+  \texosquerytimesep
+  \expandafter\texosqueryfmttimezonemin\expandafter
+    {\@texosquery@secondoffour#1}%
+}
+\def\texosqueryfmtpata#1{%
+ \ifnum#1=0 AM\else PM\fi
+}
+\def\texosqueryfmtpataa{\texosqueryfmtpata}
+\def\texosqueryfmtpataaa{\texosqueryfmtpata}
+\def\texosqueryfmtpataaaa{\texosqueryfmtpata}
+\def\texosqueryfmtpatG#1{%
+ \ifnum#1=1 AD\else BC\fi
+}
+\def\texosqueryfmtpatGG{\texosqueryfmtpatG}
+\def\texosqueryfmtpatGGG{\texosqueryfmtpatG}
+\def\texosqueryfmtpatGGGG{\texosqueryfmtpatG}
+\def\texosqueryfmtnumber#1#2#3#4{%
+  \begingroup
+   \let\texosquerypatstr\texosquerypatfmtstr
+   \let\texosquerypatquote\texosquerypatfmtquote
+   \let\texosquerypatplusminus\texosquerypatfmt@plusminus
+   \let\texosquerypatnum\texosquerypatfmt@num
+   \let\texosquerypatsinum\texosquerypatfmt@sinum
+   \let\texosquerypatdec\texosquerypatfmt@dec
+   \let\texosquerypatprefixcurrency\texosquery@patfmt@prefixcurrency
+   \let\texosquerypatprefixicurrency\texosquery@patfmt@prefixicurrency
+   \let\texosquerypatsuffixcurrency\texosquery@patfmt@suffixcurrency
+   \let\texosquerypatsuffixicurrency\texosquery@patfmt@suffixicurrency
+   \let\texosquerypatdigit\texosquerypatfmt@digit
+   \let\texosquerypatdigitnozero\texosquerypatfmt@digitnozero
+   \let\texosquerypatgroupsep\texosquerypatfmt@groupsep
+   \let\texosquerypatprefixpercent\texosquery@patfmt@prefixpercent
+   \let\texosquerypatsuffixpercent\texosquery@patfmt@suffixpercent
+   \let\texosquerypatprefixpermill\texosquery@patfmt@prefixpermill
+   \let\texosquerypatsuffixpermill\texosquery@patfmt@suffixpermill
+   \let\texosquerypatminus\@texosquerypat@numfmt@sign
+   \let\texosquerypatfmt@decsep\texosquerypatfmtdecsep
+   \edef\@texosquery@sgn{%
+     \ifnum#2=0
+        \expandafter\ifnum#21<0 -\else+\fi
+     \else
+        \ifnum#2<0 -\else+\fi
+     \fi
+    }%
+   \edef\@texosquery@int{\expandafter\@texosquery@paddigits
+      \expandafter{\number#2}}%
+   \let\@texosquery@si@int\@texosquery@int
+   \edef\@texosquery@frac{\expandafter\@texosquery@paddigits@trailing
+     \expandafter{#3}}%
+   \let\@texosquery@si@frac\@texosquery@frac
+   \edef\@texosquery@mantissa{\expandafter\@texosquery@paddigits
+     \expandafter{\number#4}}%
+   \ifnum#4=0\relax
+   \else
+     \expandafter\ifx\@texosquery@sgn-%
+       \edef\@texosquery@int{\expandafter
+          \@texosquery@paddigits@pos\expandafter{\number-#2}}%
+     \else
+       \edef\@texosquery@int{\@texosquery@paddigits@pos{#2}}%
+     \fi
+     \ifnum#4<0
+       \expandafter\@texosquery@neg@shift\expandafter{\number-#4}%
+     \else
+       \@texosquery@pos@shift{#4}%
+     \fi
+     \expandafter\ifx\@texosquery@sgn-%
+       \edef\@texosquery@int{\expandafter\@texosquery@paddigits
+         \expandafter{\number-\@texosquery@int}}%
+     \else
+       \edef\@texosquery@int{\expandafter\@texosquery@paddigits
+         \expandafter{\number\@texosquery@int}}%
+     \fi
+     \edef\@texosquery@frac{\@texosquery@paddigits@trailing{\@texosquery@frac}}%
+   \fi
+   \edef\@texosquery@current{\expandafter\@texosquery@gobble\@texosquery@int}%
+   \let\@texosquery@zerodigit\@texosquery@zerodigit@leading
+   \expandafter\ifx\@texosquery@sgn-%
+     \let\@texosquery@currentsign\texosquerypatfmtminus
+   \else
+     \let\@texosquery@currentsign\texosquerypatfmtplus
+   \fi
+   \@texosquery@digitindex=0\relax
+   \let\@texosquery@patfmt@dosep\empty
+   \@texosquery@digitfoundfalse
+   #1%
+  \endgroup
+}
+\newcount\@texosquery@digitindex
+\newif\if@texosquery@digitfound
+\def\@texosquery@pos@shift#1{%
+  \ifcase#1
+  \or
+    \edef\@texosquery@int{%
+      \expandafter\@texosquery@lastnineoften\@texosquery@int
+      \expandafter\@texosquery@firstoften\@texosquery@frac}%
+    \edef\@texosquery@frac{%
+       \expandafter\@texosquery@lastnineoften\@texosquery@frac
+    }%
+  \or
+    \edef\@texosquery@int{%
+      \expandafter\@texosquery@lasteightoften\@texosquery@int
+      \expandafter\@texosquery@firsttwooften\@texosquery@frac}%
+    \edef\@texosquery@frac{%
+       \expandafter\@texosquery@lasteightoften\@texosquery@frac
+    }%
+  \or
+    \edef\@texosquery@int{%
+      \expandafter\@texosquery@lastsevenoften\@texosquery@int
+      \expandafter\@texosquery@firstthreeoften\@texosquery@frac}%
+    \edef\@texosquery@frac{%
+       \expandafter\@texosquery@lastsevenoften\@texosquery@frac
+    }%
+  \or
+    \edef\@texosquery@int{%
+      \expandafter\@texosquery@lastsixoften\@texosquery@int
+      \expandafter\@texosquery@firstfouroften\@texosquery@frac}%
+    \edef\@texosquery@frac{%
+       \expandafter\@texosquery@lastsixoften\@texosquery@frac
+    }%
+  \or
+    \edef\@texosquery@int{%
+      \expandafter\@texosquery@lastfiveoften\@texosquery@int
+      \expandafter\@texosquery@firstfiveoften\@texosquery@frac}%
+    \edef\@texosquery@frac{%
+       \expandafter\@texosquery@lastfiveoften\@texosquery@frac
+    }%
+  \or
+    \edef\@texosquery@int{%
+      \expandafter\@texosquery@lastfouroften\@texosquery@int
+      \expandafter\@texosquery@firstsixoften\@texosquery@frac}%
+    \edef\@texosquery@frac{%
+       \expandafter\@texosquery@lastfouroften\@texosquery@frac
+    }%
+  \or
+    \edef\@texosquery@int{%
+      \expandafter\@texosquery@lastthreeoften\@texosquery@int
+      \expandafter\@texosquery@firstsevenoften\@texosquery@frac}%
+    \edef\@texosquery@frac{%
+       \expandafter\@texosquery@lastthreeoften\@texosquery@frac
+    }%
+  \or
+    \edef\@texosquery@int{%
+      \expandafter\@texosquery@lasttwooften\@texosquery@int
+      \expandafter\@texosquery@firsteightoften\@texosquery@frac}%
+    \edef\@texosquery@frac{%
+       \expandafter\@texosquery@lasttwooften\@texosquery@frac
+    }%
+  \or
+    \edef\@texosquery@int{%
+      \expandafter\@texosquery@tenthoften\@texosquery@int
+      \expandafter\@texosquery@firstnineoften\@texosquery@frac}%
+    \edef\@texosquery@frac{%
+       \expandafter\@texosquery@tenthoften\@texosquery@frac
+    }%
+  \or
+    \let\@texosquery@int\@texosquery@frac
+    \edef\@texosquery@frac{0}%
+  \fi
+}
+\def\@texosquery@neg@shift#1{%
+  \ifcase#1
+  \or
+    \edef\@texosquery@frac{%
+      \expandafter\@texosquery@lastoneoften\@texosquery@int
+      \expandafter\@texosquery@firstnineoften\@texosquery@frac
+    }%
+    \edef\@texosquery@int{%
+      \expandafter\@texosquery@firstnineoften\@texosquery@int
+    }%
+  \or
+    \edef\@texosquery@frac{%
+      \expandafter\@texosquery@lasttwooften\@texosquery@int
+      \expandafter\@texosquery@firsteightoften\@texosquery@frac
+    }%
+    \edef\@texosquery@int{%
+      \expandafter\@texosquery@firsteightoften\@texosquery@int
+    }%
+  \or
+    \edef\@texosquery@frac{%
+      \expandafter\@texosquery@lastthreeoften\@texosquery@int
+      \expandafter\@texosquery@firstsevenoften\@texosquery@frac
+    }%
+    \edef\@texosquery@int{%
+      \expandafter\@texosquery@firstsevenoften\@texosquery@int
+    }%
+  \or
+    \edef\@texosquery@frac{%
+      \expandafter\@texosquery@lastfouroften\@texosquery@int
+      \expandafter\@texosquery@firstsixoften\@texosquery@frac
+    }%
+    \edef\@texosquery@int{%
+      \expandafter\@texosquery@firstsixoften\@texosquery@int
+    }%
+  \or
+    \edef\@texosquery@frac{%
+      \expandafter\@texosquery@lastfiveoften\@texosquery@int
+      \expandafter\@texosquery@firstfiveoften\@texosquery@frac
+    }%
+    \edef\@texosquery@int{%
+      \expandafter\@texosquery@firstfiveoften\@texosquery@int
+    }%
+  \or
+    \edef\@texosquery@frac{%
+      \expandafter\@texosquery@lastsixoften\@texosquery@int
+      \expandafter\@texosquery@firstfouroften\@texosquery@frac
+    }%
+    \edef\@texosquery@int{%
+      \expandafter\@texosquery@firstfouroften\@texosquery@int
+    }%
+  \or
+    \edef\@texosquery@frac{%
+      \expandafter\@texosquery@lastsevenoften\@texosquery@int
+      \expandafter\@texosquery@firstthreeoften\@texosquery@frac
+    }%
+    \edef\@texosquery@int{%
+      \expandafter\@texosquery@firstthreeoften\@texosquery@int
+    }%
+  \or
+    \edef\@texosquery@frac{%
+      \expandafter\@texosquery@lasteightoften\@texosquery@int
+      \expandafter\@texosquery@firsttwooften\@texosquery@frac
+    }%
+    \edef\@texosquery@int{%
+      \expandafter\@texosquery@firsttwooften\@texosquery@int
+    }%
+  \or
+    \edef\@texosquery@frac{%
+      \expandafter\@texosquery@lastnineoften\@texosquery@int
+      \expandafter\@texosquery@firstoften\@texosquery@frac
+    }%
+    \edef\@texosquery@int{%
+      \expandafter\@texosquery@firstoften\@texosquery@int
+    }%
+  \or
+    \edef\@texosquery@frac{\@texosquery@int\@texosquery@frac}%
+    \edef\@texosquery@int{0}%
+  \fi
+}
+\def\@texosquerypat@numfmt@sign{%
+  \@texosquery@currentsign
+  \let\@texosquery@currentsign\empty
+}
+\def\texosquerypatfmtstr#1{#1}
+\def\texosquerypatfmtquote{'}
+\def\texosquerypatfmt@plusminus#1#2{%
+ \edef\@texosquery@current{\expandafter\@texosquery@gobble\@texosquery@int}%
+ \@texosquery@digitindex=0\relax
+ \let\@texosquery@patfmt@dosep\empty
+ \@texosquery@digitfoundfalse
+ \expandafter\ifx\@texosquery@sgn-%
+  #2%
+  \ifnum\@texosquery@digitindex=10
+  \else
+   \@texosquery@invalidpattern{#2}%
+  \fi
+ \else
+  #1%
+  \ifnum\@texosquery@digitindex=10
+  \else
+   \@texosquery@invalidpattern{#1}%
+  \fi
+ \fi
+}
+\def\texosquerypatfmt@num#1{#1}
+\def\texosquerypatfmtexp{E}
+\def\texosquerypatfmt@sinum#1#2{%
+ \let\@texosquery@int\@texosquery@si@int
+ \let\@texosquery@frac\@texosquery@si@frac
+ \let\@texosquery@current\@texosquery@int
+ #1%
+ \texosquerypatfmtexp
+ {\let\@texosquery@zerodigit\@texosquery@zerodigit@leading
+ \ifnum\@texosquery@mantissa<0\relax
+   \let\@texosquery@currentsign\texosquerypatfmtminus
+ \else
+   \let\@texosquery@currentsign\texosquerypatfmtplus
+ \fi
+ \edef\@texosquery@current{\expandafter\@texosquery@gobble\@texosquery@mantissa}%
+ \@texosquery@digitindex=0\relax
+ \let\@texosquery@patfmt@dosep\empty
+ \@texosquery@digitfoundfalse
+ #2}}
+\def\texosquerypatfmtdecsep{.}
+\def\texosquerypatfmtcurdecsep{.}
+\def\texosquerypatfmt@dec#1#2{%
+ \edef\@texosquery@current{\expandafter\@texosquery@gobble\@texosquery@int}%
+ \@texosquery@digitindex=0\relax
+ \let\@texosquery@patfmt@dosep\empty
+ \@texosquery@digitfoundfalse
+ \let\@texosquery@zerodigit\@texosquery@zerodigit@leading
+ #1%
+ \ifnum\@texosquery@digitindex=10
+ \else
+  \@texosquery@invalidpattern{#1}%
+ \fi
+ \let\@texosquery@patfmt@dosep\texosquerypatfmt@decsep
+ \let\@texosquery@current\@texosquery@frac
+ \@texosquery@digitindex=0\relax
+ \@texosquery@digitfoundfalse
+ \let\@texosquery@zerodigit\@texosquery@zerodigit@trailing
+ \let\@texosquery@currentsign\empty
+ #2%
+ \ifnum\@texosquery@digitindex=10
+ \else
+  \@texosquery@invalidpattern{#2}%
+ \fi
+}
+\def\texosquerypatfmtint#1{%
+ \edef\@texosquery@current{\expandafter\@texosquery@gobble\@texosquery@int}%
+ \@texosquery@digitindex=0\relax
+ \@texosquery@digitfoundfalse
+ \let\@texosquery@zerodigit\@texosquery@zerodigit@leading
+ #1%
+ \ifnum\@texosquery@digitindex=10
+ \else
+  \@texosquery@invalidpattern{#1}%
+ \fi
+}
+\def\@texosquery@setpatdisplay{%
+   \def\texosquerypatstr##1{'##1'}%
+   \def\texosquerypatquote{''}%
+   \def\texosquerypatplusminus##1##2{##1;##2}%
+   \def\texosquerypatnum##1{##1}%
+   \def\texosquerypatsinum##1##2{##1E##2}%
+   \def\texosquerypatdec##1##2{##1.##2}%
+   \def\texosquerypatprefixcurrency##1##2{##2¤##1}%
+   \def\texosquerypatprefixicurrency##1##2{##2¤¤##1}%
+   \def\texosquerypatsuffixcurrency##1##2{##1¤##2}%
+   \def\texosquerypatsuffixicurrency##1##2{##1¤¤##2}%
+   \def\texosquerypatdigit{0}%
+   \def\texosquerypatdigitnozero{\#}%
+   \def\texosquerypatminus{-}%
+   \def\texosquerypatgroupsep{,}%
+   \def\texosquerypatprefixpercent##1##2{##2\%##1}%
+   \def\texosquerypatsuffixpercent##1##2{##1\%##2}%
+   \def\texosquerypatprefixpermill##1##2{##2‰##1}%
+   \def\texosquerypatsuffixpermill##1##2{##1‰##2}%
+   \def\texosquerypatfmt@decsep{.}%
+}
+\def\@texosquery@invalidpattern#1{%
+  \begingroup
+   \@texosquery@setpatdisplay
+   \@texosquery@err{10 digit specifiers expected in
+    numeric pattern #1. Found \number\@texosquery@digitindex}%
+    {Each integer element of a numeric pattern must have exactly
+     10 digit specifiers (0 or \#)}%
+  \endgroup
+}
+\def\texosquerypatfmtcurrencysign{\$}
+\ifx\textcurrency\undefined
+  \def\texosquerypatfmticurrencysign{¤}
+\else
+  \def\texosquerypatfmticurrencysign{\textcurrency}
+\fi
+\def\texosquery@patfmt@prefixcurrency#1#2{%
+ \let\texosquerypatfmt@decsep\texosquerypatfmtcurdecsep
+ #2\texosquerypatfmtcurrencysign#1%
+}
+\def\texosquery@patfmt@prefixicurrency#1#2{%
+ \let\texosquerypatfmt@decsep\texosquerypatfmtcurdecsep
+ #2\texosquerypatfmticurrencysign#1%
+}
+\def\texosquery@patfmt@suffixcurrency#1#2{%
+ \let\texosquerypatfmt@decsep\texosquerypatfmtcurdecsep
+ #1\texosquerypatfmtcurrencysign#2%
+}
+\def\texosquery@patfmt@suffixicurrency#1#2{%
+ \let\texosquerypatfmt@decsep\texosquerypatfmtcurdecsep
+ #1\texosquerypatfmticurrencysign#2%
+}
+\def\texosquerypatfmt@digit{%
+ \advance\@texosquery@digitindex by 1\relax
+ \if@texosquery@digitfound
+ \else
+   \ifx\@texosquery@currentsign\texosquerypatfmtminus
+    \texosquerypatfmtminus
+    \let\@texosquery@currentsign\empty
+   \else
+    \@texosquery@patfmt@dosep
+    \let\@texosquery@patfmt@dosep\empty
+   \fi
+ \fi
+ \@texosquery@digitfoundtrue
+ \ifcase\@texosquery@digitindex
+ \or
+   \expandafter\@texosquery@firstoften\@texosquery@current
+ \or
+   \expandafter\@texosquery@secondoften\@texosquery@current
+ \or
+   \expandafter\@texosquery@thirdoften\@texosquery@current
+ \or
+   \expandafter\@texosquery@fourthoften\@texosquery@current
+ \or
+   \expandafter\@texosquery@fifthoften\@texosquery@current
+ \or
+   \expandafter\@texosquery@sixthoften\@texosquery@current
+ \or
+   \expandafter\@texosquery@seventhoften\@texosquery@current
+ \or
+   \expandafter\@texosquery@eighthoften\@texosquery@current
+ \or
+   \expandafter\@texosquery@ninthoften\@texosquery@current
+ \or
+   \expandafter\@texosquery@tenthoften\@texosquery@current
+ \fi
+}
+\def\texosquerypatfmt@digitnozero{%
+ \advance\@texosquery@digitindex by 1\relax
+ \edef\@texosquery@digit{%
+   \ifcase\@texosquery@digitindex
+    0%
+   \or
+     \expandafter\@texosquery@firstoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@secondoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@thirdoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@fourthoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@fifthoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@sixthoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@seventhoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@eighthoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@ninthoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@tenthoften\@texosquery@current
+   \else
+   0%
+ \fi
+ }%
+ \ifnum\@texosquery@digit=0\relax
+   \@texosquery@zerodigit
+ \else
+   \if@texosquery@digitfound
+   \else
+     \ifx\@texosquery@currentsign\texosquerypatfmtminus
+      \texosquerypatfmtminus
+      \let\@texosquery@currentsign\empty
+     \else
+       \@texosquery@patfmt@dosep
+       \let\@texosquery@patfmt@dosep\empty
+     \fi
+   \fi
+   \@texosquery@digitfoundtrue
+   \@texosquery@digit
+ \fi
+}
+\def\@texosquery@zerodigit@leading{%
+ \edef\@texosquery@digit{%
+   \ifcase\@texosquery@digitindex
+    0%
+   \or
+     \expandafter\@texosquery@firstoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@firsttwooften\@texosquery@current
+   \or
+     \expandafter\@texosquery@firstthreeoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@firstfouroften\@texosquery@current
+   \or
+     \expandafter\@texosquery@firstfiveoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@firstsixoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@firstsevenoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@firsteightoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@firstnineoften\@texosquery@current
+   \or
+     \@texosquery@current
+   \else
+    0%
+   \fi
+  }%
+  \ifnum\@texosquery@digit>0\relax
+   \if@texosquery@digitfound
+   \else
+     \ifx\texosquerypatminus\texosquerypatfmtminus
+      \texosquerypatfmtminus
+     \else
+       \@texosquery@patfmt@dosep
+       \let\@texosquery@patfmt@dosep\empty
+     \fi
+   \fi
+   \@texosquery@digitfoundtrue
+   0%
+  \fi
+}
+\def\@texosquery@zerodigit@trailing{%
+ \edef\@texosquery@digit{%
+   \ifcase\@texosquery@digitindex
+    0%
+   \or
+     \@texosquery@current
+   \or
+     \expandafter\@texosquery@lastnineoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@lasteightoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@lastsevenoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@lastsixoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@lastfiveoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@lastfouroften\@texosquery@current
+   \or
+     \expandafter\@texosquery@lastthreeoften\@texosquery@current
+   \or
+     \expandafter\@texosquery@lasttwooften\@texosquery@current
+   \or
+     \expandafter\@texosquery@tenthoften\@texosquery@current
+   \else
+    0%
+   \fi
+  }%
+  \ifnum\@texosquery@digit>0\relax
+   \if@texosquery@digitfound
+   \else
+     \ifx\texosquerypatminus\texosquerypatfmtminus
+      \texosquerypatfmtminus
+     \else
+       \@texosquery@patfmt@dosep
+       \let\@texosquery@patfmt@dosep\empty
+     \fi
+   \fi
+   \@texosquery@digitfoundtrue
+   0%
+  \fi
+}
+\def\texosquerypatfmtminus{\ifmmode-\else$-$\fi}
+\def\texosquerypatfmtplus{\ifmmode+\else$+$\fi}
+\def\texosquerypatfmtgroupsep{,}
+\def\texosquerypatfmt@groupsep{%
+  \if@texosquery@digitfound\texosquerypatfmtgroupsep\fi}
+\def\texosquerypatfmtpercentsign{\%}
+\def\texosquerypatfmtpermillsign{‰}
+\def\@texosquery@adjust@per#1{%
+ \@texosquery@pos@shift{#1}%
+ \edef\@texosquery@int{\expandafter\@texosquery@paddigits
+     \expandafter{\number\@texosquery@int}}%
+ \edef\@texosquery@frac{\@texosquery@paddigits@trailing{\@texosquery@frac}}%
+ \edef\@texosquery@current{\expandafter\@texosquery@gobble\@texosquery@int}%
+}
+\def\texosquery@patfmt@prefixpercent#1#2{%
+ \@texosquery@adjust@per{2}%
+  #2\texosquerypatfmtpercentsign#1%
+}
+\def\texosquery@patfmt@suffixpercent#1#2{%
+ \@texosquery@adjust@per{2}%
+ #1\texosquerypatfmtpercentsign#2%
+}
+\def\texosquery@patfmt@prefixpermill#1#2{%
+ \@texosquery@adjust@per{3}%
+ #2\texosquerypatfmtpermillsign#1%
+}
+\def\texosquery@patfmt@suffixpermill#1#2{%
+ \@texosquery@adjust@per{3}%
+ #1\texosquerypatfmtpermillsign#2%
+}
+\@texosquery@restore@at
+\endinput
+%%
+%% End of file `texosquery.tex'.

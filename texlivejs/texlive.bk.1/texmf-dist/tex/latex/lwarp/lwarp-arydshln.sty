@@ -1,0 +1,72 @@
+%%
+%% This is file `lwarp-arydshln.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lwarp.dtx  (with options: `arydshln')
+%% This is a generated file.
+%% Copyright 2016-2018 Brian Dunn
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+
+\RequirePackage{array}
+\LWR@ProvidesPackageDrop{arydshln}[2018/09/26]
+\newdimen\dashlinedash \dashlinedash4pt %
+\newdimen\dashlinegap \dashlinegap4pt %
+\let\hdashlinewidth\dashlinedash
+\let\hdashlinegap\dashlinegap
+
+\def\ADLnullwide{}
+\def\ADLsomewide{}
+\def\ADLnullwidehline{}
+\def\ADLsomewidehline{}
+
+\def\ADLactivate{}
+\def\ADLinactivate{}
+\newcommand*{\ADLdrawingmode}[1]{}
+\newcommand*{\ADLnoshorthanded}{}
+\newcommand*{\dashgapcolor}[2][]{}
+\newcommand*{\nodashgapcolor}{}
+\appto\LWR@restoreorigformatting{%
+\newcolumntype{:}{|}%
+\newcolumntype{;}[1]{|}%
+\LetLtxMacro\hdashline\hline%
+}
+\def\hdashline{
+    \adl@hdashline\adl@inactivehdl
+}
+\def\adl@hdashline#1{\noalign{\ifnum0=`}\fi
+                \hrule \@height \arrayrulewidth% lwarp
+        \@ifnextchar[%]
+                     {#1}%
+                     {#1[%
+                        1pt/1pt
+                     ]}}
+\def\adl@inactivehdl[#1/#2]{
+        \hrule\@height\arrayrulewidth
+        \futurelet\@tempa\adl@xhline}
+\def\adl@xhline{\ifx\@tempa\hline \adl@ixhline\fi
+        \ifx\@tempa\hdashline \adl@ixhline\fi
+        \ifnum0=`{\fi}}
+\def\adl@ixhline{\vskip\doublerulesep \adl@hline\relax\doublerulesep}
+\def\adl@hline#1#2{%
+}
+
+\def\cdashline#1{\noalign{\ifnum0=`}\fi
+        \@ifnextchar[%]
+                     {\adl@inactivecdl[#1]}%
+                     {\adl@inactivecdl[#1][\dashlinedash/\dashlinegap]}
+}
+
+\def\adl@inactivecdl[#1-#2][#3]{\ifnum0=`{\fi}\cline{#1-#2}}
+
+\endinput
+%%
+%% End of file `lwarp-arydshln.sty'.

@@ -1,0 +1,1156 @@
+%% timetable.tex - TeX macro for generating timetables.        version 1.0
+%% Jiri VERUNEK                                                4. 11. 2001
+%% http://verunek.oceany.cz
+%% verunek@vol.cz, jiri.verunek@seznam.cz
+%%
+%%
+%% DESCRIPTION
+%%   timetable.tex is a TeX macro for generating timetables. It uses
+%%   plain format commands. It excels in extremelely high configurability,
+%%   nice appearance and simple input. It supports alternating subjects
+%%   in dependence on odd and even week. Macro has radix sort mechanism
+%%   so the order of subjects in input is irrelevant.
+%%   Note that this macro is distributed under the GNU General Public Licence.
+%%
+%% SYNOPSIS
+%%   \timetable[OPTIONS]{SUBJECTS}
+%%
+%% SUBJECTS
+%%   Each subject has following structure
+%%     <day>:<subject type>:<beginning>-<duration>=<subjectname>-<location>
+%%
+%%   <day>
+%%     consist of the first two chars of the day (MO,TU,WE,TH,FR)
+%%
+%%   <subject type>
+%%     is one of these OL, L, EL, OP, P, EP.
+%%     L means lecture, P - practice, O - odd week and E - even week.
+%%
+%%   <beginning>
+%%     is a number of the teaching hour in which the subject begins.
+%%
+%%   <duration>
+%%     is a number representing the subject duration in the teaching hours
+%%
+%%   Subjects are separated by commas without spaces. Note the next paragraph.
+%%
+%% OPTIONS
+%%   Options are separated by commas without spaces. The whole block
+%%   of options must be enclosed by brackets. All must be placed on
+%%   the one line. If you wish to place it on a several lines you will
+%%   had to use per cent char `%' on the end of each line!
+%%
+%%   tablewidth=<DIMENSION>
+%%     Table will be stretched into this dimension. It will only enlarge
+%%     the distance between vertical lines. No font transformation
+%%     will be done.
+%%
+%%   heading=<text>
+%%     This text will be typed in the left upper edge of the table.
+%%
+%%   strut=height<DIMENSION> depth<DIMENSION>
+%%     This invisible prop is inserted into each subject row to enlarge
+%%     the height of that row.
+%%     Default value is `height1em depth.35em'.
+%%
+%%   forcehrules
+%%     Normally each subject is rounded by lines and no other lines are
+%%     drown between the subjects. Using of this option will force
+%%     drawing horizontal lines between the days.
+%%
+%%   forcevrules
+%%     Normally each subject is rounded by lines and no other lines are
+%%     drown between the subjects. Using of this option will force
+%%     drawing verical lines between the teaching hours. No subject will be
+%%     naturally crossed out.
+%%
+%%   environment=<environment>
+%%     This does a lot of work. It changes the fonts, names of the day, etc.
+%%     So you needn't use some other options to adjust texts to your language.
+%%     Send me e-mail if you wish to add your environment.
+%%     Supported environment:
+%%       czech
+%%       slovak
+%%
+%%   headingfont=<fontname>
+%%     This option sets a font in which will be typed the heading text.
+%%     Default value for absent environment option is `cmb10'.
+%%
+%%   columnheadingfont=<fontname>
+%%     This option sets a font in which are typed the numbers
+%%     of the teaching hours.
+%%     Default value for absent environment option is `cmb10'.
+%%
+%%   rowheadingfont=<fontname>
+%%     This option sets a font in which are typed the names of the days
+%%     and the `from' and the `to' text.
+%%     Default value for absent environment option is `cmb10'.
+%%
+%%   Lsubjectnamefont=<fontname>
+%%     This option sets a font in which is typed the name of the lecture.
+%%     Default value for absent environment option is `cmss10'.
+%%
+%%   Llocationfont=<fontname>
+%%     This option sets a font in which are typed the names of the rooms
+%%     in which is that lecture taught.
+%%     Default value for absent environment option is `cmssi10'.
+%%
+%%   Psubjectnamefont=<fontname>
+%%     This option sets a font in which is typed the name of the practice.
+%%     Default value for absent environment option is `cmr10'.
+%%
+%%   Plocationfont=<fontname>
+%%     This option sets a font in which are typed the names of the rooms
+%%     in which is that practice taught.
+%%     Default value for absent environment option is `cmti10'.
+%%
+%%   linewidth=<DIMENSION>
+%%     This influences width of all lines in the table.
+%%     Default value is `0.4pt'.
+%%
+%%   linespacewidth=<DIMENSION>
+%%     You can change the width of the space between the vertical lines
+%%     on the left and on the right of the table by this option.
+%%     Default value is `1.3pt'.
+%%
+%%   linespaceheight=<DIMENSION>
+%%     You can change the height of the space between the vertical lines
+%%     on the top and at the bottom of the table by this option.
+%%     Default value is `1.2pt'.
+%%
+%%   MO=<text>
+%%   TU=<text>
+%%   WE=<text>
+%%   TH=<text>
+%%   FR=<text>
+%%     This texts are typed in the first column of the table.
+%%     Default values for absent environment option are `Monday', etc.
+%%
+%%   from=<text>
+%%   to=<text>
+%%     This texts are typed in the first column of the table. The beginning
+%%     time and the end time of the each teaching hour are typed in the
+%%     next columns.
+%%     Default values for absent environment option are `from', `to'.
+%%
+%%   subjectsfrom=<timelist>
+%%   subjectsto=<timelist>
+%%     Timelist is a list of the beginning/end time of each teaching hour.
+%%     The times are separated by pipes `|' and are in h:mm format.
+%%
+%% <DIMENSION>
+%%   This are the standard TeX dimension types which consists from a number
+%%   and from an unit like em, en, pt, dd, in, cm, sp, etc.
+%%   It is good to use first two units which rely on the font size.
+%%
+%% BUGS
+%%   It seem that there is a bug in dvips. If you would like create
+%%   PostScript output, you can use pdfTeX and the print function of Xpdf.
+%%
+%%   If you find some bug in this TeX macro send me a report with your input
+%%   please. However be sure of having the right input before sending a report.
+%%   Criticism and admiration are welcome.
+%%
+%% EXAMPLE
+%%   \timetable[tablewidth=15cm,heading=ZS 2001/2002,environment=czech,%
+%%   subjectsfrom=7:30|8:15|9:15|10:00|11:00|11:45|||14:30||16:15,%
+%%   subjectsto=|9:00|9:45|10:45|11:30|12:30||14:15||16:00|16:55|17:45|19:25]%
+%%   {TU:P:11-2=TI-K3,TH:L:1-2=EL-209,MO:L:5-2=M5D-K1,FR:P:3-2=LS-K307,%
+%%   TU:L:1-3=TI-K1,MO:OP:8-2=DBS-K5,TU:L:6-2=\TeX-340,TH:OP:5-2=SOJ-K310,%
+%%   TH:L:9-3=LS-337,MO:L:2-3=DBS-K1,FR:P:1-2=NLP-T204,MO:EP:9-2=DBS-K311,%
+%%   WE:EP:4-2=EL-041/9}
+%%
+%%
+\edef\oldcountten{\the\count10\relax} % \count register
+\edef\oldcounteleven{\the\count11\relax} % \dimen register
+\edef\oldcountfourteen{\the\count14\relax} % \box register
+\edef\oldcountfiveteen{\the\count15\relax} % \toks register
+\newtoks\halignbody
+\newcount\nrofdeclared
+\newcount\nrofcolumns
+\newcount\tempnum
+\newcount\nextsubjectbeg
+\newcount\restcolumns
+\newcount\currentcolumn
+\newcount\hruleoldbelowbeg
+\newcount\hruleoldbelowdur
+\newcount\hruleabovebeg
+\newcount\hruleabovedur
+\newcount\hrulemiddlebeg
+\newcount\hrulemiddledur
+\newcount\hrulebelowbeg
+\newcount\hrulebelowdur
+\newdimen\tempdimen
+\newdimen\columnwidth
+\newbox\tempbox
+\def\timetable{\bgroup
+ \def\myrelaxtocolon##1:{\relax}
+ \def\declareto##1:{\let\next=\declareloop \next##1:}
+ \def\declareloop##1:{
+  \ifnum \nrofdeclared=##1 \let\next=\myrelaxtocolon
+  \else \advance\nrofdeclared by 1
+   \expandafter\def\csname col\the\nrofdeclared\endcsname{}
+  \fi \next##1:}
+ \def\analysethebeginning##1:##2:##3-##4=##5,{
+  \ifnum##3>\nrofdeclared \declareto ##3: \fi
+  \tempnum=##3
+  \advance\tempnum by ##4
+  \advance\tempnum by -1
+  \ifnum \tempnum>\nrofcolumns \nrofcolumns=\tempnum \fi
+  \ex\ex\ex\ex\ex\ex\ex\def\ex\ex\ex\ex\ex\ex\csname col##3\endcsname
+   \ex\ex\ex{\csname col##3\endcsname ##1:##2:##3-##4=##5,}}
+ \def\myrelaxtwo##1##2{\relax}
+ \def\myrelaxone##1{\relax}
+ \def\browse##1,{\browseaction##1,
+  \futurelet \nextchar\testnextchar}
+ \def\testnextchar{
+  \ifx ,\nextchar \let\browsenext=\myrelaxtwo
+  \else
+   \ifx *\nextchar \let\browsenext=\myrelaxone \fi
+  \fi
+  \browsenext}
+ \def\browsetimes##1|{\browseaction##1|
+  \futurelet \nextchar\testnexttimeschar}
+ \def\testnexttimeschar{
+  \ifx *\nextchar \let\browsenext=\myrelaxone \fi
+  \browsenext}
+ \def\mergethebeginning{
+  \def\subjects{}
+  \def\add####1:{\ex\ex\ex\ex\ex\ex\ex \def \ex\ex\ex\ex\ex\ex\ex \subjects
+   \ex\ex\ex\ex\ex\ex\ex{\ex\ex\ex \subjects \csname col####1\endcsname}}
+  \tempnum=0 \let\next=\mergethenextbeginning \next}
+ \def\mergethenextbeginning{
+  \ifnum\tempnum=\nrofdeclared \let\next=\relax
+  \else \advance\tempnum by 1 \expandafter\add\the\tempnum:
+  \fi \next}
+ \def\getfromhruleoldbelow##1-##2,##3*{
+   \def\hruleoldbelow{##3}
+   \hruleoldbelowbeg=##1
+   \hruleoldbelowdur=##2\relax}
+ \def\analyseOE##1:##2##3:##4-##5=##6,{
+  \def\addoldbelowtohruleabove{
+   \edef\hruleabove{\hruleabove \the\hruleoldbelowbeg-\the\hruleoldbelowdur,}}
+  \def\addtohruleabove{
+   \edef\hruleabove{\hruleabove \the\hruleabovebeg-\the\hruleabovedur,}
+   \hruleabovebeg=##4
+   \hruleabovedur=##5}
+  \def\addtohrulemiddle{
+   \edef\hrulemiddle{\hrulemiddle \the\hrulemiddlebeg-\the\hrulemiddledur,}
+   \hrulemiddlebeg=##4
+   \hrulemiddledur=##5}
+  \def\addtohrulebelow{
+   \edef\hrulebelow{\hrulebelow \the\hrulebelowbeg-\the\hrulebelowdur,}
+   \hrulebelowbeg=##4
+   \hrulebelowdur=##5}
+  \def\hruleabovetest{
+   \ifnum\hruleoldbelowbeg=0
+    \ifx \empty\hruleoldbelow \let\next=\hruleabovetestwithoutoldbelow
+    \else
+     \let\next=\hruleaboveloop
+     \let\getnextoldbelow=\getfromhruleoldbelowexp
+    \fi
+   \else
+    \let\next=\hruleaboveloop
+    \let\getnextoldbelow=\relax
+   \fi \next}
+  \def\getfromhruleoldbelowexp{
+   \expandafter\getfromhruleoldbelow\hruleoldbelow *}
+  \def\hruleabovetestwithoutoldbelow{
+   \ifnum\hruleabovebeg>0
+    \tempnum=\hruleabovebeg
+    \advance\tempnum by \hruleabovedur
+    \ifnum \tempnum<##4 % space
+     \addtohruleabove
+    \else 
+     \tempnum=##4
+     \advance\tempnum by ##5
+     \advance\tempnum by -\hruleabovebeg
+     \advance\tempnum by -\hruleabovedur
+     \ifnum \tempnum>0
+      \advance\hruleabovedur by \tempnum
+     \fi
+    \fi
+   \else
+    \hruleabovebeg=##4
+    \hruleabovedur=##5
+   \fi}
+  \def\hruleaboveloop{
+   \ifnum\hruleabovebeg>0 % not first pass?
+    \ifnum\hruleoldbelowbeg=0
+     \ifx \empty\hruleoldbelow \let\next=\relax
+     \fi
+    \fi
+    \ifx \next\relax
+    \else
+     \getnextoldbelow
+     \tempnum=##4
+     \advance\tempnum by ##5
+     \advance\tempnum by 1
+     \ifnum \hruleoldbelowbeg<\tempnum 
+      \ifnum \hruleoldbelowbeg<\hruleabovebeg
+       \tempnum=\hruleoldbelowbeg
+       \advance\tempnum by \hruleoldbelowdur
+       \advance\tempnum by 1
+       \ifnum \hruleabovebeg<\tempnum % 1
+        \advance\hruleabovedur by \hruleabovebeg
+        \advance\hruleabovedur by -\hruleoldbelowbeg
+        \hruleabovebeg=\hruleoldbelowbeg
+        \ifnum \hruleoldbelowdur>\hruleabovedur
+         \hruleabovedur=\hruleoldbelowdur
+        \fi
+        \let\getnextoldbelow=\getfromhruleoldbelowexp
+        \hruleoldbelowbeg=0
+        \hruleoldbelowdur=0
+       \else % 3
+        \addoldbelowtohruleabove
+        \let\getnextoldbelow=\getfromhruleoldbelowexp
+        \hruleoldbelowbeg=0
+        \hruleoldbelowdur=0
+       \fi
+      \else
+       \tempnum=\hruleabovebeg
+       \advance\tempnum by \hruleabovedur
+       \advance\tempnum by 1
+       \ifnum \hruleoldbelowbeg<\tempnum % 2
+         \tempnum=\hruleoldbelowbeg
+         \advance\tempnum by \hruleoldbelowdur
+         \advance\tempnum by -\hruleabovebeg
+         \advance\tempnum by -\hruleabovedur
+         \ifnum \tempnum>0
+          \advance\hruleabovedur by \tempnum
+         \fi
+        \let\getnextoldbelow=\getfromhruleoldbelowexp
+        \hruleoldbelowbeg=0
+        \hruleoldbelowdur=0
+       \else % 4
+        \tempnum=##4
+        \advance\tempnum by ##5
+        \advance\tempnum by -\hruleabovebeg
+        \advance\tempnum by -\hruleabovedur
+        \ifnum \tempnum>0 % Can the actual subject extend the hruleabove?
+         \ifnum \tempnum>##5 % If the extension is longer than duration
+          \addtohruleabove   % of the actual subject there must be a space.
+         \else
+          \advance\hruleabovedur by \tempnum
+         \fi
+        \fi
+       \fi
+      \fi
+     \else % the next comparisons are in the authority of the next subject
+      \tempnum=\hruleabovebeg
+      \advance\tempnum by \hruleabovedur
+      \advance\tempnum by 1
+      \ifnum \tempnum>##4 %nospace
+       \tempnum=##4
+       \advance\tempnum by ##5
+       \advance\tempnum by -\hruleabovebeg
+       \advance\tempnum by -\hruleabovedur
+       \ifnum \tempnum>0
+        \advance\hruleabovedur by \tempnum
+       \fi
+      \else
+       \addtohruleabove
+      \fi
+      \let\getnextoldbelow=\relax
+      \let\next=\relax
+     \fi
+    \fi
+   \else
+    \hruleabovebeg=##4
+    \hruleabovedur=##5
+   \fi \next}
+  \def\hrulemiddletest{
+   \ifnum\hrulemiddlebeg>0
+    \tempnum=\hrulemiddlebeg
+    \advance\tempnum by \hrulemiddledur
+    \ifnum ##4>\tempnum % space
+     \addtohrulemiddle
+    \else
+     \advance\tempnum by -##4
+     \multiply\tempnum by -1
+     \advance\tempnum by ##5
+     \ifnum\tempnum>0
+      \advance\hrulemiddledur by \tempnum
+     \fi
+    \fi
+   \else
+    \hrulemiddlebeg=##4
+    \hrulemiddledur=##5
+   \fi}
+  \def\hrulebelowtest{
+   \ifnum\hrulebelowbeg>0
+    \tempnum=\hrulebelowbeg
+    \advance\tempnum by \hrulebelowdur
+    \ifnum \tempnum=##4 % no space
+     \advance\hrulebelowdur by ##5
+    \else \addtohrulebelow
+    \fi
+   \else
+    \hrulebelowbeg=##4
+    \hrulebelowdur=##5
+   \fi}
+  \ifx :##3: % Is that non-alternating subject?
+   \ex\def\ex\mylineO\ex{\mylineO ##1:O##2:##4-##5=-,}
+   \ex\def\ex\mylineE\ex{\mylineE ##1:E##2:##4-##5=-,}
+   \ifnum \hrulemiddledur>0
+    \addtohrulemiddle
+    \hrulemiddlebeg=0
+    \hrulemiddledur=0
+   \fi
+   \let\testthehruleabove=\hruleabovetest
+   \let\testthehrulemiddle=\relax
+   \let\testthehrulebelow=\hrulebelowtest
+   \ex\def\ex\myline\ex{\myline ##1:##2##3:##4-##5=##6,}
+  \else
+   \ifx O##2
+    \let\testthehruleabove=\hruleabovetest
+    \let\testthehrulemiddle=\hrulemiddletest
+    \let\testthehrulebelow=\relax
+    \ex\def\ex\mylineO\ex{\mylineO ##1:##2##3:##4-##5=##6,}
+   \else
+    \ifx E##2
+     \let\testthehruleabove=\relax
+     \let\testthehrulemiddle=\hrulemiddletest
+     \let\testthehrulebelow=\hrulebelowtest
+     \ex\def\ex\mylineE\ex{\mylineE ##1:##2##3:##4-##5=##6,}
+    \else \errmessage{Bad input: ##1:##2##3:##4-##5=##6}
+    \fi
+   \fi
+  \fi
+  \testthehruleabove
+  \testthehrulemiddle
+  \testthehrulebelow}
+ \def\analysetheday##1:##2,{
+  \def\myday{##1}
+  \ifx \dayMO\myday \ex\def\ex\mylineMO\ex{\mylineMO ##1:##2,}
+  \else
+   \ifx \dayTU\myday \ex\def\ex\mylineTU\ex{\mylineTU ##1:##2,}
+   \else
+    \ifx \dayWE\myday \ex\def\ex\mylineWE\ex{\mylineWE ##1:##2,}
+    \else
+     \ifx \dayTH\myday \ex\def\ex\mylineTH\ex{\mylineTH ##1:##2,}
+     \else
+      \ifx \dayFR\myday \ex\def\ex\mylineFR\ex{\mylineFR ##1:##2,}
+      \else \errmessage{##1 is not valid format of the day of week.
+       Use one of these - MO,TU,WE,TH,FR}
+      \fi
+     \fi
+    \fi
+   \fi
+  \fi}
+ \def\radixsort{
+  \let\browseaction=\analysethebeginning
+  \nrofdeclared=0
+  \let\browsenext=\browse
+  \expandafter\browse\subjects,*
+  \mergethebeginning
+  \tempnum=\nrofdeclared
+  \nrofdeclared=0
+  \expandafter\declareto\the\tempnum:
+  \def\mylineMO{}
+  \def\mylineTU{}
+  \def\mylineWE{}
+  \def\mylineTH{}
+  \def\mylineFR{}
+  \let\browseaction=\analysetheday
+  \let\browsenext=\browse
+  \expandafter\browse\subjects *
+  \def\subjects{}}
+ \def\testthetimetable{
+  \ifx [\nextchar \let\next=\timetablewhopt
+  \else \let\next=\timetablewhoutopt
+  \fi \next}
+ \def\timetablewhoutopt##1{\def\subjects{##1}
+  \drawthetimetable}
+ \def\timetablewhopt[##1]##2{\def\subjects{##2}
+  \def\tablewidthopt{tablewidth}
+  \def\headingopt{heading}
+  \def\strutopt{strut}
+  \def\forcehrulesopt{forcehrules}
+  \def\forcevrulesopt{forcevrules}
+  \def\environmentopt{environment}
+  \def\headingfontopt{headingfont}
+  \def\columnheadingfontopt{columnheadingfont}
+  \def\rowheadingfontopt{rowheadingfont}
+  \def\Lsubjectnamefontopt{Lsubjectnamefont}
+  \def\Llocationfontopt{Llocationfont}
+  \def\Psubjectnamefontopt{Psubjectnamefont}
+  \def\Plocationfontopt{Plocationfont}
+  \def\linewidthopt{linewidth}
+  \def\linespacewidthopt{linespacewidth}
+  \def\linespaceheightopt{linespaceheight}
+  \def\fromopt{from}
+  \def\toopt{to}
+  \def\subjectsfromopt{subjectsfrom}
+  \def\subjectstoopt{subjectsto}
+  \let\browseaction=\analyseoptions
+  \let\browsenext=\browse
+  \browse##1,*
+  \drawthetimetable}
+ \def\analyseoptions##1,{
+  \def\myoption{##1}
+  \ifx \myoption\forcehrulesopt \let\drawthehrulesabove=\drawthelonghrule
+  \else
+   \ifx \myoption\forcevrulesopt \let\sepvrule=\relax
+   \else \analyseequals##1,
+   \fi
+  \fi}
+ \def\analyseequals##1=##2,{
+  \def\myoption{##1}
+  \ifx \myoption\tablewidthopt \def\tablewidth{to ##2}
+  \else
+   \ifx \myoption\headingopt \def\heading{##2}
+   \else
+    \ifx \myoption\environmentopt \def\environment{##2}
+    \else
+     \ifx \myoption\headingfontopt \font\headingfont=##2
+     \else
+      \ifx \myoption\columnheadingfontopt \font\columnheadingfont=##2
+      \else
+       \ifx \myoption\rowheadingfontopt \font\rowheadingfont=##2
+       \else
+        \ifx \myoption\Lsubjectnamefontopt \font\Lsubjectnamefont=##2
+        \else
+         \ifx \myoption\Llocationfontopt \font\Llocationfont=##2
+         \else
+          \ifx \myoption\Psubjectnamefontopt \font\Psubjectnamefont=##2
+          \else
+           \ifx \myoption\Plocationfontopt \font\Plocationfont=##2
+           \else
+            \ifx \myoption\linewidthopt
+             \def\myhrule{\hrule height##2}
+             \def\myvrule{\vrule width##2}
+             \def\hrulefill{\leaders\myhrule\hfill}
+            \else
+             \ifx \myoption\linespacewidthopt
+              \def\linespacewidth{\kern ##2}
+             \else
+              \ifx \myoption\linespaceheightopt
+               \def\linespaceheight{\myvrule height##2}
+              \else
+               \ifx \myoption\dayMO \def\MO{##2}
+               \else
+                \ifx \myoption\dayTU \def\TU{##2}
+                \else
+                 \ifx \myoption\dayWE \def\WE{##2}
+                 \else
+                  \ifx \myoption\dayTH \def\TH{##2}
+                  \else
+                   \ifx \myoption\dayFR \def\FR{##2}
+                   \else
+                    \ifx \myoption\fromopt \def\from{##2}
+                    \else
+                     \ifx \myoption\toopt \def\to{##2}
+                     \else
+                      \ifx \myoption\subjectsfromopt
+                       \def\subjectsfrom{##2}
+                       \let\testthefromrow=\addthefromrow
+                      \else
+                       \ifx \myoption\subjectstoopt
+                        \def\subjectsto{##2}
+                        \let\testthetorow=\addthetorow
+                       \else
+                        \ifx \myoption\strutopt
+                         \def\mystrut{\vrule width0pt ##2}
+                        \else
+                         \ifx \myoption\headingopt \def\heading{##2}
+                         \else \errmessage{Bad option: ##1} 
+                         \fi
+                        \fi
+                       \fi
+                      \fi
+                     \fi
+                    \fi
+                   \fi
+                  \fi
+                 \fi
+                \fi
+               \fi
+              \fi
+             \fi
+            \fi
+           \fi
+          \fi
+         \fi
+        \fi
+       \fi
+      \fi
+     \fi
+    \fi
+   \fi
+  \fi}
+ \def\emptythehrules{
+  \def\myline{}
+  \def\mylineO{}
+  \def\mylineE{}
+  \hruleoldbelowbeg=0
+  \hruleoldbelowdur=0
+  \hruleabovebeg=0
+  \hruleabovedur=0
+  \hrulemiddlebeg=0
+  \hrulemiddledur=0
+  \hrulebelowbeg=0
+  \hrulebelowdur=0
+  \def\hruleabove{}
+  \def\hrulemiddle{}
+  \def\hrulebelow{}}
+ \def\testtherests{
+  \ifnum\hruleabovebeg>0
+   \addtohruleabove
+  \else
+   \ifx \empty\hruleabove
+    \edef\hruleabove{\hruleoldbelow}
+   \fi
+  \fi
+  \ifnum\hrulemiddlebeg>0 \addtohrulemiddle \fi
+  \ifnum\hrulebelowbeg>0 \addtohrulebelow \fi
+  \ifnum\hruleoldbelowbeg>0 \addoldbelowtohruleabove \fi}
+ \def\divideintorows{
+  \def\hruleoldbelow{}
+  \emptythehrules
+  \ifx \empty\mylineMO
+  \else
+   \let\browseaction=\analyseOE
+   \let\browsenext=\browse
+   \expandafter\browse\mylineMO *
+   \testtherests
+  \fi
+  \ex\def\ex\mylineMOO\ex{\mylineO}
+  \ex\def\ex\mylineMO\ex{\myline}
+  \ex\def\ex\mylineMOE\ex{\mylineE}
+  \edef\hrulemiddleMO{\hrulemiddle}
+% TUESDAY
+  \edef\hruleoldbelow{\hrulebelow}
+  \emptythehrules
+  \ifx \empty\mylineTU
+   \edef\hruleaboveTU{\hruleoldbelow}
+  \else
+   \let\browseaction=\analyseOE
+   \let\browsenext=\browse
+   \expandafter\browse\mylineTU *
+   \testtherests
+   \edef\hruleaboveTU{\hruleabove}
+  \fi
+  \ex\def\ex\mylineTUO\ex{\mylineO}
+  \ex\def\ex\mylineTU\ex{\myline}
+  \ex\def\ex\mylineTUE\ex{\mylineE}
+  \edef\hrulemiddleTU{\hrulemiddle}
+% WEDNESDAY
+  \edef\hruleoldbelow{\hrulebelow}
+  \emptythehrules
+  \ifx \empty\mylineWE
+   \edef\hruleaboveWE{\hruleoldbelow}
+  \else
+   \let\browseaction=\analyseOE
+   \let\browsenext=\browse
+   \expandafter\browse\mylineWE *
+   \testtherests
+   \edef\hruleaboveWE{\hruleabove}
+  \fi
+  \ex\def\ex\mylineWEO\ex{\mylineO}
+  \ex\def\ex\mylineWE\ex{\myline}
+  \ex\def\ex\mylineWEE\ex{\mylineE}
+  \edef\hrulemiddleWE{\hrulemiddle}
+% THURSDAY
+  \edef\hruleoldbelow{\hrulebelow}
+  \emptythehrules
+  \ifx \empty\mylineTH
+   \edef\hruleaboveTH{\hruleoldbelow}
+  \else
+   \let\browseaction=\analyseOE
+   \let\browsenext=\browse
+   \expandafter\browse\mylineTH *
+   \testtherests
+   \edef\hruleaboveTH{\hruleabove}
+  \fi
+  \ex\def\ex\mylineTHO\ex{\mylineO}
+  \ex\def\ex\mylineTH\ex{\myline}
+  \ex\def\ex\mylineTHE\ex{\mylineE}
+  \edef\hrulemiddleTH{\hrulemiddle}
+% FRIDAY
+  \edef\hruleoldbelow{\hrulebelow}
+  \emptythehrules
+  \ifx \empty\mylineFR
+   \edef\hruleaboveFR{\hruleoldbelow}
+  \else
+   \let\browseaction=\analyseOE
+   \let\browsenext=\browse
+   \expandafter\browse\mylineFR *
+   \testtherests
+   \edef\hruleaboveFR{\hruleabove}
+  \fi
+  \ex\def\ex\mylineFRO\ex{\mylineO}
+  \ex\def\ex\mylineFR\ex{\myline}
+  \ex\def\ex\mylineFRE\ex{\mylineE}
+  \edef\hrulemiddleFR{\hrulemiddle}
+  \emptythehrules}
+ \def\emptysubjectloop{
+  \ifnum \tempnum>0
+   \ifnum \tempnum>1
+    \halignbody=\expandafter{\the\halignbody &&\sepvrule}
+   \else
+    \halignbody=\expandafter{\the\halignbody &&}
+    \ifnum\currentcolumn>\nrofcolumns
+     \halignbody=\ex\ex\ex{\ex\the\ex\halignbody\addstrut\cr}
+    \fi
+   \fi
+   \advance\tempnum by -1
+  \else
+   \let\next=\relax
+  \fi \next}
+ \def\getnexthrulemiddle##1-##2,##3*{
+  \hrulemiddlebeg=##1
+  \hrulemiddledur=##2
+  \def\hrulemiddle{##3}}
+ \def\hrulesubjectsloop{
+  \ifnum \hrulemiddlebeg=0
+   \ifx \empty\hrulemiddle
+    \tempnum=\nextsubjectbeg
+    \advance\tempnum by -\currentcolumn
+    \advance\currentcolumn by \tempnum
+    \let\addstrut=\space
+    \let\next=\emptysubjectloop
+    \let\nexthruleloop=\next
+   \else
+    \expandafter\getnexthrulemiddle\hrulemiddle *
+   \fi
+  \fi
+  \ifnum \hrulemiddlebeg>0
+   \ifnum \nextsubjectbeg<\hrulemiddlebeg % add spaces to next subject
+    \tempnum=\nextsubjectbeg
+    \advance\tempnum by -\currentcolumn
+    \advance\currentcolumn by \tempnum
+    \let\next=\emptysubjectloop
+    \next
+   \else % add spaces to middlehrulebeg
+    \tempnum=\hrulemiddlebeg
+    \advance \tempnum by -\currentcolumn
+    \ifnum \tempnum>0
+     \advance\currentcolumn by \tempnum
+     \let\next=\emptysubjectloop
+     \next
+    \fi
+    \ifnum \hrulemiddlebeg=1
+     \def\begvvrulecorrection{\vvrule}
+    \else
+     \def\begvvrulecorrection{\relax}
+    \fi
+    \tempnum=\hrulemiddlebeg
+    \advance\tempnum by \hrulemiddledur
+    \advance\tempnum by -1
+    \ifnum \tempnum=\nrofcolumns
+     \def\endvvrulecorrection{\vvrule}
+    \else
+     \def\endvvrulecorrection{\relax} 
+    \fi
+    \edef\correctedline{\begvvrulecorrection\hrulefill\endvvrulecorrection}
+    \tempnum=\hrulemiddledur
+    \multiply\tempnum by 2
+    \advance\tempnum by 1
+    \advance\currentcolumn by \hrulemiddledur
+    \halignbody=\ex\ex\ex\ex\ex\ex\ex{\ex\ex\ex\the\ex\ex\ex\halignbody
+     \ex\ex\ex\multispan\ex\ex\ex{\ex\the\ex\tempnum\ex}\correctedline}
+    \ifnum \currentcolumn>\nrofcolumns
+     \halignbody=\expandafter{\the\halignbody \cr}
+    \fi
+   \fi
+   \ifnum\currentcolumn<\nextsubjectbeg
+    \tempnum=\hrulemiddlebeg
+    \advance\tempnum by \hrulemiddledur
+    \advance\tempnum by -1
+    \ifnum \currentcolumn>\tempnum
+     \hrulemiddlebeg=0
+    \fi
+   \else
+    \let\nexthruleloop=\relax
+   \fi
+  \fi
+  \nexthruleloop}
+ \def\testthecolumnwidth ##1##2=##3-##4,{
+  \ifx L##1
+   \setbox\tempbox=\hbox{\Lsubjectnamefont\ ##3\Llocationfont ##4\ }
+  \else
+   \setbox\tempbox=\hbox{\Psubjectnamefont\ ##3\Plocationfont ##4\ }
+  \fi
+  \tempdimen=\wd\tempbox
+  \divide \tempdimen by ##2
+  \ifnum \tempdimen>\columnwidth
+   \columnwidth=\tempdimen
+  \fi}
+ \def\drawthesubject##1:##2##3:##4-##5=##6-##7,{
+  \ifnum \currentcolumn<##4 % Is it necessary to add spaces?
+   \if :##3: % add spaces with middlehrules
+    \nextsubjectbeg=##4
+    \hrulemiddlebeg=0
+    \let\nexthruleloop=\hrulesubjectsloop
+     \nexthruleloop
+   \else % add spaces without hrules
+    \edef\addstrut{\higheststrutfont\mystrut}
+    \tempnum=##4
+    \advance\tempnum by -\currentcolumn
+    \advance\currentcolumn by \tempnum
+    \let\next=\emptysubjectloop
+    \next
+   \fi
+  \fi
+  \tempnum=##5
+  \multiply\tempnum by 2
+  \advance\tempnum by -1
+  \advance\currentcolumn by ##5
+  \ifx :##3:
+   \ifx L##2
+    \halignbody=\ex\ex\ex{\ex\the\ex\halignbody \ex &\ex\multispan
+     \ex{\the\tempnum}\hfil\hidewidth \vbox to0pt{\vss\hbox{\Lsubjectnamefont
+      ##6 \mystrut\Llocationfont ##7\mystrut}\vss}\hidewidth\hfil &}
+    \testthecolumnwidth L##5=##6-##7,
+   \else
+    \halignbody=\ex\ex\ex{\ex\the\ex\halignbody \ex &\ex\multispan
+     \ex{\the\tempnum}\hfil\hidewidth \vbox to0pt{\vss\hbox{\Psubjectnamefont
+      ##6 \mystrut\Plocationfont ##7\mystrut}\vss}\hidewidth\hfil &}
+    \testthecolumnwidth P##5=##6-##7,
+   \fi
+   \ifnum\currentcolumn>\nrofcolumns
+    \halignbody=\ex\ex\ex{\ex\the\ex\halignbody \cr}
+   \fi
+  \else
+   \ifx L##3
+    \halignbody=\ex\ex\ex{\ex\the\ex\halignbody \ex &\ex\multispan
+     \ex{\the\tempnum}\hfil\hidewidth\Lsubjectnamefont ##6
+      \Llocationfont ##7\hidewidth\hfil &}
+    \testthecolumnwidth L##5=##6-##7,
+   \else
+    \halignbody=\ex\ex\ex{\ex\the\ex\halignbody \ex &\ex\multispan
+     \ex{\the\tempnum}\hfil\hidewidth\Psubjectnamefont ##6
+      \Plocationfont ##7\hidewidth\hfil &}
+    \testthecolumnwidth P##5=##6-##7,
+   \fi
+   \ifnum\currentcolumn>\nrofcolumns
+    \halignbody=\ex\ex\ex{\ex\the\ex\halignbody\addstrut \cr}
+   \fi
+  \fi}
+ \def\hrulesaboveinit{
+  \halignbody=\expandafter{\the\halignbody \multispan3\vvrule\hrulefill &}
+  \currentcolumn=1
+  \nextsubjectbeg=\nrofcolumns
+  \advance\nextsubjectbeg by 1
+  \let\nexthruleloop=\hrulesubjectsloop
+  \nexthruleloop}
+ \def\longhrule{\multispan3\vvrule\hrulefill&\multispan\restcolumns
+  \span\omit\vvrule\hrulefill\vvrule\cr}
+ \def\drawthelonghrule{\halignbody=\ex{\the\halignbody \longhrule}}
+ \def\testonetime##1|{
+  \ifnum \tempnum<\nrofcolumns
+   \ifx |##1|
+    \halignbody=\ex{\the\halignbody &&}
+    \advance\tempnum by 1
+   \else \typeonetime##1|
+   \fi
+  \fi}
+ \def\typeonetime##1:##2|{
+  \ifnum \tempnum<\nrofcolumns
+   \halignbody=\ex{\the\halignbody &$##1^{##2\mathstrut}\mathstrut$&}
+   \advance\tempnum by 1
+   \setbox\tempbox=\hbox{\ $##1^{##2}$\ }
+   \tempdimen=\wd\tempbox
+   \ifnum \tempdimen>\columnwidth
+    \columnwidth=\tempdimen
+   \fi
+  \fi}
+ \def\addthefromrow{
+  \def\lastvkern{\longhrule\vkern}
+  \halignbody=\ex{\the\halignbody \longhrule &\rowheadingfont\from\mystrut &&}
+  \let\browsenext=\browsetimes
+  \let\browseaction=\testonetime
+  \tempnum=0
+  \expandafter\browsetimes\subjectsfrom |*
+  \ifnum \tempnum<\nrofcolumns
+   \nextsubjectbeg=\tempnum % nextsubjectbeg has the temporary value here
+   \tempnum=\nrofcolumns
+   \advance\tempnum by -\nextsubjectbeg
+   \let\next=\emptytimesloop
+   \next
+  \fi
+  \halignbody=\ex{\the\halignbody \mystrut\cr}}
+ \def\addthetorow{
+  \def\lastvkern{\longhrule\vkern}
+  \halignbody=\ex{\the\halignbody \longhrule &\rowheadingfont\to\mystrut &&}
+  \let\browsenext=\browsetimes
+  \let\browseaction=\testonetime
+  \tempnum=0
+  \expandafter\browsetimes\subjectsto |*
+  \ifnum \tempnum<\nrofcolumns
+   \nextsubjectbeg=\tempnum % nextsubjectbeg has the temporary value here
+   \tempnum=\nrofcolumns
+   \advance\tempnum by -\nextsubjectbeg
+   \let\next=\emptytimesloop
+   \next
+  \fi
+  \halignbody=\ex{\the\halignbody \mystrut\cr}}
+ \def\emptytimesloop{
+  \ifnum \tempnum>0
+   \halignbody=\expandafter{\the\halignbody &&}
+   \advance\tempnum by -1
+  \else
+   \let\next=\relax
+  \fi \next}
+ \def\drawthetimetable{
+  \ifx \empty\environment
+   \ifx \empty\headingfont \font\headingfont=cmb10 \fi
+   \ifx \empty\columnheadingfont \font\columnheadingfont=cmb10 \fi
+   \ifx \empty\rowheadingfont \font\rowheadingfont=cmb10 \fi
+   \ifx \empty\Lsubjectnamefont \font\Lsubjectnamefont=cmss10 \fi
+   \ifx \empty\Llocationfont \font\Llocationfont=cmssi10 \fi
+   \ifx \empty\Psubjectnamefont \font\Psubjectnamefont=cmr10 \fi
+   \ifx \empty\Plocationfont \font\Plocationfont=cmti10 \fi
+   \ifx \empty\MO \def\MO{Monday} \fi
+   \ifx \empty\TU \def\TU{Tuesday} \fi
+   \ifx \empty\WE \def\WE{Wednesday} \fi
+   \ifx \empty\TH \def\TH{Thursday} \fi
+   \ifx \empty\FR \def\FR{Friday} \fi
+   \ifx \empty\from \def\from{from} \fi
+   \ifx \empty\to \def\to{to} \fi
+  \else
+   \def\environmentopt{czech}
+   \ifx \environment\environmentopt
+    \ifx \empty\headingfont \font\headingfont=csb10 \fi
+    \ifx \empty\columnheadingfont \font\columnheadingfont=csb10 \fi
+    \ifx \empty\rowheadingfont \font\rowheadingfont=csb10 \fi
+    \ifx \empty\Lsubjectnamefont \font\Lsubjectnamefont=csss10 \fi
+    \ifx \empty\Llocationfont \font\Llocationfont=csssi10 \fi
+    \ifx \empty\Psubjectnamefont \font\Psubjectnamefont=csr10 \fi
+    \ifx \empty\Plocationfont \font\Plocationfont=csti10 \fi
+    \ifx \empty\MO \def\MO{Pondìlí} \fi
+    \ifx \empty\TU \def\TU{Úterý} \fi
+    \ifx \empty\WE \def\WE{Støeda} \fi
+    \ifx \empty\TH \def\TH{Ètvrtek} \fi
+    \ifx \empty\FR \def\FR{Pátek} \fi
+    \ifx \empty\from \def\from{od} \fi
+    \ifx \empty\to \def\to{do} \fi
+   \else 
+    \def\environmentopt{slovak}
+    \ifx \environment\environmentopt
+     \ifx \empty\headingfont \font\headingfont=csb10 \fi
+     \ifx \empty\columnheadingfont \font\columnheadingfont=csb10 \fi
+     \ifx \empty\rowheadingfont \font\rowheadingfont=csb10 \fi
+     \ifx \empty\Lsubjectnamefont \font\Lsubjectnamefont=csss10 \fi
+     \ifx \empty\Llocationfont \font\Llocationfont=csssi10 \fi
+     \ifx \empty\Psubjectnamefont \font\Psubjectnamefont=csr10 \fi
+     \ifx \empty\Plocationfont \font\Plocationfont=csti10 \fi
+     \ifx \empty\MO \def\MO{Pondelok} \fi
+     \ifx \empty\TU \def\TU{Utorok} \fi
+     \ifx \empty\WE \def\WE{Streda} \fi
+     \ifx \empty\TH \def\TH{©tvrtok} \fi
+     \ifx \empty\FR \def\FR{Piatok} \fi
+     \ifx \empty\from \def\from{od} \fi
+     \ifx \empty\to \def\to{do} \fi
+    \else \errmessage{Unknown environment parameter: \environment}
+    \fi
+   \fi
+  \fi
+  \radixsort
+  \divideintorows
+  \def\vvrule{\myvrule\linespacewidth \myvrule}
+  \def\vkern{\multispan\restcolumns
+   \span\omit\span\omit\span\omit\span\omit
+   \linespaceheight \hfil \linespaceheight \cr}
+  \def\addtohalignmask{
+   \ifnum \tempnum=\nrofcolumns
+    \halignbody=\expandafter{\the\halignbody
+     \hbox to\columnwidth{\hfil########\hfil}&########\vvrule\tabskip=0pt}
+    \let\next=\relax
+   \else
+    \halignbody=\expandafter{\the\halignbody
+     \hbox to\columnwidth{\hfil########\hfil}&########\myvrule&}
+    \advance\tempnum by 1
+   \fi \next}
+  \restcolumns=\nrofcolumns
+  \multiply\restcolumns by 2
+  \halignbody={\tabskip=0pt plus 1fil\vvrule ####&
+   \hfil\ ####\ \hfil & ####\tabskip=0pt &
+   \tabskip=0pt plus 1fil\vvrule ####&}
+  \tempnum=1
+  \let\next=\addtohalignmask
+  \next
+  \halignbody=\expandafter{\the\halignbody \cr \noalign{\myhrule} \vkern \cr
+   \longhrule &\headingfont\heading\mystrut&}
+  \def\typetheheading{
+   \ifnum \tempnum=\nrofcolumns
+    \halignbody=\expandafter{\the\halignbody &\columnheadingfont\mystrut
+     \cr \longhrule\vkern \cr \longhrule}
+    \let\next=\relax
+   \else
+    \advance\tempnum by 1
+    \ex\setbox\ex\tempbox\ex\hbox\ex{\ex\columnheadingfont\ex\ \the\tempnum\ }
+    \tempdimen=\wd\tempbox
+    \ifnum \tempdimen>\columnwidth
+     \columnwidth=\tempdimen
+    \fi
+    \halignbody=\ex\ex\ex{\ex\the\ex\halignbody\ex&\ex&\ex\columnheadingfont
+     \the\tempnum}
+   \fi \next}
+  \tempnum=0
+  \let\next=\typetheheading
+  \next
+  \def\initOE{% alternating subjects
+   \hrulemiddlebeg=0
+   \halignbody=\expandafter{\the\halignbody &\omit &&}
+   \currentcolumn=1
+   \let\browsenext=\browse
+   \let\browseaction=\drawthesubject
+   \if \empty\subjects
+   \else
+    \expandafter\browse\subjects *
+   \fi
+   \ifnum \currentcolumn>\nrofcolumns
+    \let\next=\relax
+   \else
+    \tempnum=\nrofcolumns
+    \advance\tempnum by -\currentcolumn
+    \advance\tempnum by 1
+    \advance\currentcolumn by \tempnum
+    \edef\addstrut{\higheststrutfont\mystrut}
+    \let\next=\emptysubjectloop
+   \fi \next}
+  \def\init{% non alternating subjects
+   \hrulemiddlebeg=0
+   \currentcolumn=1
+   \let\browsenext=\browse
+   \let\browseaction=\drawthesubject
+   \ifx \empty\subjects
+   \else
+    \expandafter\browse\subjects *
+   \fi
+   \nextsubjectbeg=\nrofcolumns
+   \advance\nextsubjectbeg by 1
+   \let\addstrut=\space
+   \let\nexthruleloop=\hrulesubjectsloop
+   \nexthruleloop}
+% compute highest strut in subjects
+  \setbox\tempbox=\hbox{\Lsubjectnamefont\mystrut}
+  \tempdimen=\ht\tempbox % \tempdimen = the highest strut
+  \let\higheststrutfont=\Lsubjectnamefont
+  \setbox\tempbox=\hbox{\Psubjectnamefont\mystrut}
+  \ifnum \tempdimen<\ht\tempbox
+   \tempdimen=\ht\tempbox
+   \let\higheststrutfont=\Psubjectnamefont
+  \fi
+  \setbox\tempbox=\hbox{\Llocationfont\mystrut}
+  \ifnum \tempdimen<\ht\tempbox
+   \tempdimen=\ht\tempbox
+   \let\higheststrutfont=\Llocationfont
+  \fi
+  \setbox\tempbox=\hbox{\Plocationfont\mystrut}
+  \ifnum \tempdimen<\ht\tempbox
+   \tempdimen=\ht\tempbox
+   \let\higheststrutfont=\Plocationfont
+  \fi
+% Monday
+  \let\subjects=\mylineMOO
+  \initOE
+  \let\subjects=\mylineMO
+  \let\hrulemiddle=\hrulemiddleMO
+  \halignbody=\expandafter{\the\halignbody &\vbox to0pt{\vss
+   \hbox{\rowheadingfont \MO\mystrut}\vss}&&}
+  \init
+  \let\subjects=\mylineMOE
+  \initOE
+% Tuesday
+  \let\hrulemiddle=\hruleaboveTU
+  \drawthehrulesabove
+  \let\subjects=\mylineTUO
+  \initOE
+  \let\subjects=\mylineTU
+  \let\hrulemiddle=\hrulemiddleTU
+  \halignbody=\expandafter{\the\halignbody &\vbox to0pt{\vss
+   \hbox{\rowheadingfont \TU\mystrut}\vss}&&}
+  \init
+  \let\subjects=\mylineTUE
+  \initOE
+% Wednesday
+  \let\hrulemiddle=\hruleaboveWE
+  \drawthehrulesabove
+  \let\subjects=\mylineWEO
+  \initOE
+  \let\subjects=\mylineWE
+  \let\hrulemiddle=\hrulemiddleWE
+  \halignbody=\expandafter{\the\halignbody &\vbox to0pt{\vss
+   \hbox{\rowheadingfont \WE\mystrut}\vss}&&}
+  \init
+  \let\subjects=\mylineWEE
+  \initOE
+% Thursday
+  \let\hrulemiddle=\hruleaboveTH
+  \drawthehrulesabove
+  \let\subjects=\mylineTHO
+  \initOE
+  \let\subjects=\mylineTH
+  \let\hrulemiddle=\hrulemiddleTH
+  \halignbody=\expandafter{\the\halignbody &\vbox to0pt{\vss
+   \hbox{\rowheadingfont \TH\mystrut}\vss}&&}
+  \init
+  \let\subjects=\mylineTHE
+  \initOE
+% Friday
+  \let\hrulemiddle=\hruleaboveFR
+  \drawthehrulesabove
+  \let\subjects=\mylineFRO
+  \initOE
+  \let\subjects=\mylineFR
+  \let\hrulemiddle=\hrulemiddleFR
+  \halignbody=\expandafter{\the\halignbody &\vbox to0pt{\vss
+   \hbox{\rowheadingfont \FR\mystrut}\vss}&&}
+  \init
+  \let\subjects=\mylineFRE
+  \initOE
+  \halignbody=\ex{\the\halignbody \longhrule \vkern}
+  \testthefromrow
+  \testthetorow
+  \halignbody=\ex{\the\halignbody \lastvkern \noalign{\myhrule}}
+  \expandafter\ialign\tablewidth{\span\the\halignbody}
+  \egroup
+% cancel the changes made by the \newcount commands etc.
+  \count10=\oldcountten
+  \count11=\oldcounteleven
+  \count14=\oldcountfourteen
+  \count15=\oldcountfiveteen}
+% the beginning
+ \offinterlineskip
+ \nrofcolumns=0
+ \def\tablewidth{}
+ \def\heading{}
+ \def\mystrut{\myvrule width0pt height1em depth.35em}
+ \let\sepvrule=\omit
+ \let\drawthehrulesabove=\hrulesaboveinit
+ \let\testthefromrow=\relax
+ \let\testthetorow=\relax
+ \let\lastvkern=\space
+ \def\environment{}
+ \def\headingfont{}
+ \def\columnheadingfont{}
+ \def\rowheadingfont{}
+ \def\Lsubjectnamefont{}
+ \def\Llocationfont{}
+ \def\Psubjectnamefont{}
+ \def\Plocationfont{}
+ \let\myhrule=\hrule
+ \let\myvrule=\vrule
+ \def\linespacewidth{\kern 1.3pt}
+ \def\linespaceheight{\myvrule height1.2pt}
+ \def\dayMO{MO}
+ \def\dayTU{TU}
+ \def\dayWE{WE}
+ \def\dayTH{TH}
+ \def\dayFR{FR}
+ \def\MO{}
+ \def\TU{}
+ \def\WE{}
+ \def\TH{}
+ \def\FR{}
+ \def\from{}
+ \def\to{}
+ \def\subjectsfrom{}
+ \def\subjectsto{}
+ \columnwidth=0pt
+ \let\ex=\expandafter
+ \futurelet\nextchar \testthetimetable}
+\end

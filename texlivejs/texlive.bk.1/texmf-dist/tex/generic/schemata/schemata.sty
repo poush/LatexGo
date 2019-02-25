@@ -1,0 +1,327 @@
+%%
+%% This is file `schemata.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% schemata.dtx  (with options: `package')
+%% --------:| ----------------------------------------------------------------
+%% schemata:| Generic package to aid construction of topical categories
+%%   Author:| Charles P. Schaum
+%%   E-mail:| charles dot schaum at comcast dot net
+%%  License:| Released under the LaTeX Project Public License v1.3c or later
+%%      See:| http://www.latex-project.org/lppl.txt
+%% 
+\expandafter\ifx\csname newenvironment\endcsname\relax\else
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesPackage{schemata}
+    [2016/01/25 v0.8 generic package to aid construction of topical categories]
+\fi
+\expandafter\ifx\csname newenvironment\endcsname\relax
+  \catcode`@=11%
+  \def\DoBraces{\let\@schemata@LD\lbrace \let\@schemata@RD\rbrace}%
+  \DoBraces%
+\else
+  \DeclareOption{braces}{\let\@schemata@LD\lbrace \let\@schemata@RD\rbrace}
+  \DeclareOption{brackets}{\let\@schemata@LD\lbrack \let\@schemata@RD\rbrack}
+  \DeclareOption{parens}{\let\@schemata@LD( \let\@schemata@RD)}
+  \ExecuteOptions{braces}
+  \ProcessOptions\relax
+\fi
+\newbox\@rhs%
+\newbox\@lhs%
+\newdimen\@rheight%
+\newdimen\@lheight%
+\newif\if@schemata@LCBox%
+\newif\if@schemata@SWBox%
+\newif\if@schemata@NudgeBox%
+\expandafter\ifx\csname newenvironment\endcsname\relax
+\else
+  \newcommand{\DoBraces}{\let\@schemata@LD\lbrace \let\@schemata@RD\rbrace}%
+\fi
+\expandafter\ifx\csname newenvironment\endcsname\relax
+  \def\DoBrackets{\let\@schemata@LD\lbrack \let\@schemata@RD\rbrack}%
+\else
+  \newcommand{\DoBrackets}{\let\@schemata@LD\lbrack \let\@schemata@RD\rbrack}%
+\fi
+\expandafter\ifx\csname newenvironment\endcsname\relax
+  \def\DoParens{\let\@schemata@LD( \let\@schemata@RD)}%
+\else
+  \newcommand{\DoParens}{\let\@schemata@LD( \let\@schemata@RD)}%
+\fi
+\expandafter\ifx\csname newenvironment\endcsname\relax
+  \def\LCschema{\@schemata@LCBoxtrue}%
+\else
+  \newcommand{\LCschema}{\@schemata@LCBoxtrue}%
+\fi
+\expandafter\ifx\csname newenvironment\endcsname\relax
+  \def\UCschema{\@schemata@LCBoxfalse}%
+\else
+  \newcommand{\UCschema}{\@schemata@LCBoxfalse}%
+\fi
+\expandafter\ifx\csname newenvironment\endcsname\relax
+  \def\SwitchSB{\@schemata@SWBoxtrue}%
+\else
+  \newcommand{\SwitchSB}{\@schemata@SWBoxtrue}%
+\fi
+\expandafter\ifx\csname newenvironment\endcsname\relax
+  \def\NudgeSB{\@schemata@NudgeBoxtrue}%
+\else
+  \newcommand{\NudgeSB}{\@schemata@NudgeBoxtrue}%
+\fi
+\expandafter\ifx\csname newenvironment\endcsname\relax
+  \gdef\schemabox{\futurelet\testchar\@schemabox}
+  \gdef\@schemabox{%
+    \ifx[\testchar
+      \let\next\@@schemabox%
+    \else
+      \let\next\@@schemab@x%
+    \fi
+    \next%
+  }%
+  \gdef\@@schemab@x#1{\@@schemabox[0pt]{#1}}
+  \gdef\@@schemabox[#1]#2{%
+    \ifinner
+      \if@schemata@LCBox
+        \def\@Adj{}%
+        \if@schemata@SWBox\def\@Adj{\strut}\fi
+      \else
+        \def\@Adj{\strut}%
+        \if@schemata@SWBox\def\@Adj{}\fi
+      \fi
+      \if@schemata@NudgeBox
+        \def\@Nudge{\kern0.2em}%
+      \else
+        \def\@Nudge{}%
+      \fi
+      \ifdim#1<1pt
+        \def\\{\@Nudge\egroup\hbox\bgroup\ignorespaces }%
+        \vbox{\hbox\bgroup\@Adj\ignorespaces #2\@Nudge\egroup}%
+      \else
+        \def\\{\hfil\egroup\hbox to #1\bgroup\ignorespaces }%
+        \vbox{\hbox to #1\bgroup\@Adj\ignorespaces #2\hfil\egroup}%
+      \fi
+    \else
+      #2%
+    \fi
+    \@schemata@SWBoxfalse%
+    \@schemata@NudgeBoxfalse%
+  }%
+\else
+  \newcommand{\schemabox}[2][0pt]{%
+    \ifinner
+      \if@schemata@LCBox
+        \def\@Adj{}%
+        \if@schemata@SWBox\def\@Adj{\strut}\fi
+      \else
+        \def\@Adj{\strut}%
+        \if@schemata@SWBox\def\@Adj{}\fi
+      \fi
+      \if@schemata@NudgeBox
+        \def\@Nudge{\kern0.2em}%
+      \else
+        \def\@Nudge{}%
+      \fi
+      \ifdim#1<1pt
+        \def\\{\@Nudge\egroup\hbox\bgroup\ignorespaces }%
+        \vbox{\hbox\bgroup\@Adj\ignorespaces #2\@Nudge\egroup}%
+      \else
+        \def\\{\hfil\egroup\hbox to #1\bgroup\ignorespaces }%
+        \vbox{\hbox to #1\bgroup\@Adj\ignorespaces #2\hfil\egroup}%
+      \fi
+    \else
+      #2%
+    \fi
+    \@schemata@SWBoxfalse%
+    \@schemata@NudgeBoxfalse%
+  }%
+\fi
+\expandafter\ifx\csname newenvironment\endcsname\relax
+  \gdef\schema{\futurelet\testchar\@schema}
+  \gdef\@schema{\ifx[\testchar \let\next\@@schema%
+               \else \let\next\@@schem@ \fi \next}
+  \gdef\@@schem@#1#2{\@@schema[open]{#1}{#2}}
+  \gdef\@@schema[#1]#2#3{%
+    \def\@ption{#1}\def\@pen{open}%
+    \ifx\@ption\@pen
+      \setbox\@rhs=\vbox{#3}%
+      \@rheight=\ht\@rhs%
+      \advance\@rheight\dp\@rhs%
+      \advance\@rheight by 1.44265ex%
+      \hbox{$\vcenter{#2}%
+            \@schemata@lbrace{\@rheight}%
+            \vcenter{#3}$}%
+    \else
+      \setbox\@lhs=\vbox{#2}%
+      \@lheight=\ht\@lhs%
+      \advance\@lheight\dp\@lhs%
+      \advance\@lheight by 1.44265ex%
+      \hbox{$\vcenter{#2}%
+            \kern-0.2em\@schemata@rbrace{\@lheight}%
+            \vcenter{#3}$}%
+    \fi
+  }%
+\else
+  \newcommand{\schema}[3][open]{%
+    \def\@ption{#1}\def\@pen{open}%
+    \ifx\@ption\@pen
+      \setbox\@rhs=\vbox{#3}%
+      \@rheight=\ht\@rhs%
+      \advance\@rheight\dp\@rhs%
+      \advance\@rheight by 1.44265ex%
+      \hbox{$\vcenter{#2}%
+            \@schemata@lbrace{\@rheight}%
+            \vcenter{#3}$}%
+    \else
+      \setbox\@lhs=\vbox{#2}%
+      \@lheight=\ht\@lhs%
+      \advance\@lheight\dp\@lhs%
+      \advance\@lheight by 1.44265ex%
+      \hbox{$\vcenter{#2}%
+            \kern-0.2em\@schemata@rbrace{\@lheight}%
+            \vcenter{#3}$}%
+    \fi
+  }%
+\fi
+\expandafter\ifx\csname newenvironment\endcsname\relax
+  \gdef\Schema{\futurelet\testchar\@Schema}
+  \gdef\@Schema{\ifx[\testchar \let\next\@@Schema%
+               \else \let\next\@@Schem@ \fi \next}
+  \gdef\@@Schem@#1#2#3#4{\@@Schema[open]{#1}{#2}{#3}{#4}}
+  \gdef\@@Schema[#1]#2#3#4#5{%
+    \def\@ption{#1}%
+    \def\@pen{open}%
+    \dimen0=#2%
+    \ifx\@ption\@pen
+      \hbox{$\vcenter{\vskip1.44265\dimen0#4}%
+        \@schemata@biglbrace{#2}{#3}\vcenter{#5}$}%
+    \else
+      \hbox{$\vcenter{\vskip1.44265\dimen0#4}\kern-0.2em%
+        \@schemata@bigrbrace{#2}{#3}\vcenter{#5}$}%
+    \fi
+  }%
+\else
+  \newcommand{\Schema}[5][open]{%
+    \def\@ption{#1}%
+    \def\@pen{open}%
+    \dimen0=#2%
+    \ifx\@ption\@pen
+      \hbox{$\vcenter{\vskip1.44265\dimen0#4}%
+        \@schemata@biglbrace{#2}{#3}\vcenter{#5}$}%
+    \else
+      \hbox{$\vcenter{\vskip1.44265\dimen0#4}\kern-0.2em%
+        \@schemata@bigrbrace{#2}{#3}\vcenter{#5}$}%
+    \fi
+  }%
+\fi
+\expandafter\ifx\csname newenvironment\endcsname\relax
+  \def\@schemata@lbrace#1{%
+    \ifmmode\left.\vcenter{\vbox to #1{\vfil}}\right\@schemata@LD\fi}
+\else
+  \newcommand{\@schemata@lbrace}[1]{%
+    \ifmmode\left.\vcenter{\vbox to #1{\vfil}}\right\@schemata@LD\fi}
+\fi
+\expandafter\ifx\csname newenvironment\endcsname\relax
+  \def\@schemata@rbrace#1{%
+    \ifmmode\left\@schemata@RD\vcenter{\vbox to #1{\vfil}}\right.\fi}
+\else
+  \newcommand{\@schemata@rbrace}[1]{%
+    \ifmmode\left\@schemata@RD\vcenter{\vbox to #1{\vfil}}\right.\fi}
+\fi
+\expandafter\ifx\csname newenvironment\endcsname\relax
+  \def\@schemata@biglbrace#1#2{%
+    \dimen0=#1%
+    \dimen2=#2%
+    \dimen4=-\dimen2%
+    \ifdim\dimen4>\dimen2\dimen2=\dimen4\fi
+    \ifdim\dimen0<0pt
+      \ifmmode\vcenter{\hbox{$\left.%
+                       \vbox to 1.44265\dimen2{\vfil}%
+                       \right\@schemata@LD%
+                       \atop\vbox to -1.44265\dimen0{\vfil}$}}\fi
+    \else
+      \ifmmode\vcenter{\hbox{$\vbox to 1.44265\dimen0{\vfil}%
+                       \atop\left.%
+                       \vbox to 1.44265\dimen2{\vfil}%
+                       \right\@schemata@LD$}}\fi
+    \fi
+  }%
+\else
+  \newcommand{\@schemata@biglbrace}[2]{%
+    \dimen0=#1%
+    \dimen2=#2%
+    \dimen4=-\dimen2%
+    \ifdim\dimen4>\dimen2\dimen2=\dimen4\fi
+    \ifdim\dimen0<0pt
+      \ifmmode\vcenter{\hbox{$\left.%
+                       \vbox to 1.44265\dimen2{\vfil}%
+                       \right\@schemata@LD%
+                       \atop\vbox to -1.44265\dimen0{\vfil}$}}\fi
+    \else
+      \ifmmode\vcenter{\hbox{$\vbox to 1.44265\dimen0{\vfil}%
+                       \atop\left.%
+                       \vbox to 1.44265\dimen2{\vfil}%
+                       \right\@schemata@LD$}}\fi
+    \fi
+  }%
+\fi
+\expandafter\ifx\csname newenvironment\endcsname\relax
+  \def\@schemata@bigrbrace#1#2{%
+    \dimen0=#1%
+    \dimen2=#2%
+    \dimen4=-\dimen2%
+    \ifdim\dimen4>\dimen2\dimen2=\dimen4\fi
+    \ifdim\dimen0<0pt
+      \ifmmode\vcenter{\hbox{$\left.%
+                       \vbox to 1.44265\dimen2{\vfil}%
+                       \right\@schemata@RD%
+                       \atop\vbox to -1.44265\dimen0{\vfil}$}}\fi
+    \else
+      \ifmmode\vcenter{\hbox{$\vbox to 1.44265\dimen0{\vfil}%
+                       \atop\left.%
+                       \vbox to 1.44265\dimen2{\vfil}%
+                       \right\@schemata@RD$}}\fi
+    \fi
+  }%
+\else
+  \newcommand{\@schemata@bigrbrace}[2]{%
+    \dimen0=#1%
+    \dimen2=#2%
+    \dimen4=-\dimen2%
+    \ifdim\dimen4>\dimen2\dimen2=\dimen4\fi
+    \ifdim\dimen0<0pt
+      \ifmmode\vcenter{\hbox{$\left.%
+                       \vbox to 1.44265\dimen2{\vfil}%
+                       \right\@schemata@RD%
+                       \atop\vbox to -1.44265\dimen0{\vfil}$}}\fi
+    \else
+      \ifmmode\vcenter{\hbox{$\vbox to 1.44265\dimen0{\vfil}%
+                       \atop\left.%
+                       \vbox to 1.44265\dimen2{\vfil}%
+                       \right\@schemata@RD$}}\fi
+    \fi
+  }%
+\fi
+\expandafter\ifx\csname newenvironment\endcsname\relax
+  \catcode`@=12
+\fi
+%% 
+%% Copyright (C) 2016 by Charles P. Schaum <charles dot schaum at comcast dot net>
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License (LPPL), either
+%% version 1.3c of this license or (at your option) any later
+%% version.  The latest version of this license is in the file:
+%% 
+%% http://www.latex-project.org/lppl.txt
+%% 
+%% This work is "maintained" (as per LPPL maintenance status) by
+%% Charles P. Schaum.
+%% 
+%% This work consists of the file schemata.dtx and a Makefile.
+%% Running "make" generates the derived files README, schemata.pdf and schemata.sty.
+%% Running "make inst" installs the files in the user's TeX tree.
+%% Running "make install" installs the files in the local TeX tree.
+%% 
+%%
+%% End of file `schemata.sty'.

@@ -1,0 +1,150 @@
+%%%%
+%%%% This file belongs to the ROEX package.
+%%%%
+%%% draw write_preamble write_postamble find_BB set_BB fill_C draw_C
+%%% draw fix_fill_cmyk fix_draw_cmyk
+%%% draw fix_line_join fix_line_cap fix_line_width
+% RO-06.MF, ``EL PALO ALTO TREE'':
+%  A tough example (see remarks below) excerpted from The \MF{}book, pages
+%  124 thru 126.
+%% % an innocent formatting trick: the underscore character ending a name
+%% % will be typeset as an superscript asterisk
+%% \let\oriunderscore\_
+%% \newif\ifbgroupopen \bgroupopenfalse
+%% \def\altdblbackslash#1{\bgroup\bgroupopentrue\it#1}
+%% \def\optegroup{\ifbgroupopen\egroup\fi}
+%% \def\underscoreasasterisk#1{%
+%%   \ifx#1\relax\optegroup^*\else\oriunderscore#1\fi}
+%% \def\\#1{%
+%%   \let\_\underscoreasasterisk
+%%   \altdblbackslash{#1\relax}\optegroup
+%%   \let\_\oriunderscore}
+% ---
+input mftoeps; eps_mode_setup; input roex; tracingremoving:=1;
+% ---
+% REMARKS:
+% 1. There arise very close points during the intersecting process,
+%    hence |epsil.dist| is adjusted (see also point 2).
+% 2. Note that:
+%    a) |turningnumber(branch1)=1| but |turningnumber(reverse branch1)=0|
+%       (sic!);
+%    b) for the second resulting path, |R2| (the tree), |turningnumber(R2)=1|
+%       while |check_turn(R2)=-1|, which is the desired value as the tree
+%       is unfilled (oh, these tiny loops!);
+%    c) the minimal resulting interval, i.e., the time distance
+%       between two neighbouring points of intersection is dangerously
+%       small, namely, |0.00032|; usually the value smaller than the bound,
+%       by default equal to |0.01|, portends a collaps of the algorithm,
+%       fortunately not in this case (set |tracingremoving:=2| for more
+%       information on intervals and secants).
+epsil.dist:=1/50pt;
+% show_turningnumbers_and_turn_checks:=1;
+% mark_trunk_close_points:=1;
+% ---
+beginchar ("0",1/2in#,5/4in#,0);
+ path branch[\\], oval;
+%
+% prepare data:
+ branch0 = % i.e., trunk
+  (0,660)---(-12,70)..{curl 5}(-28,-8)
+  & flex((-28,-8),(-16,-4),(-10,-11))
+  & flex((-10,-11),(0,-5),(14,-10))
+  & flex((14,-10),(20,-6),(29,-11))
+  & (29,-11){curl 4}..(10,100)---cycle;
+ branch1= flex((0,660),(-9,633),(-22,610))
+  & flex((-22,610),(-3,622),(17,617))
+  & flex((17,617),(7,637),(0,660)) & cycle;
+ branch2=flex((30,570),(10,590),(-1,616))
+  & flex((-1,616),(-11,592),(-29,576),(-32,562))
+  & flex((-32,562),(-10,577),(30,570)) & cycle;
+ branch3=flex((-1,570),(-17,550),(-40,535))
+  & flex((-40,535),(-45,510),(-60,477))
+  & flex((-60,477),(-20,510),(40,512))
+  & flex((40,512),(31,532),(8,550),(-1,570)) & cycle;
+ branch4=flex((0,509),(-14,492),(-32,481))
+  & flex((-32,481),(-42,455),(-62,430))
+  & flex((-62,430),(-20,450),(42,448))
+  & flex((42,448),(38,465),(4,493),(0,509)) & cycle;
+ branch5=flex((-22,470),(-23,435),(-44,410))
+  & flex((-44,410),(-10,421),(35,420))
+  & flex((35,420),(15,455),(-22,470)) & cycle;
+ branch6=flex((18,375),(9,396),(5,420))
+  & flex((5,420),(-5,410),(-50,375),(-50,350))
+  & flex((-50,350),(-25,375),(18,375)) & cycle;
+ branch7=flex((0,400),(-13,373),(-30,350))
+  & flex((-30,350),(0,358),(30,350))
+  & flex((30,350),(13,373),(0,400)) & cycle;
+ branch8=flex((50,275),(45,310),(3,360))
+  & flex((3,360),(-20,330),(-70,300),(-100,266))
+  & flex((-100,266),(-75,278),(-60,266))
+  & flex((-60,266),(0,310),(50,275)) & cycle;
+ branch9=flex((10,333),(-15,290),(-43,256))
+  & flex((-43,256),(8,262),(58,245))
+  & flex((58,245),(34,275),(10,333)) & cycle;
+ branch10=flex((8,262),(-21,249),(-55,240))
+  & flex((-55,240),(-51,232),(-53,220))
+  & flex((-53,220),(-28,229),(27,235))
+  & flex((27,235),(16,246),(8,262)) & cycle;
+ branch11=flex((0,250),(-25,220),(-70,195))
+  & flex((-70,195),(-78,180),(-90,170))
+  & flex((-90,170),(-5,188),(74,183))
+  & flex((74,183),(34,214),(0,250)) & cycle;
+ branch12=flex((8,215),(-35,175),(-72,155))
+  & flex((-72,155),(-75,130),(-92,110),(-95,88))
+  & flex((-95,88),(-65,117),(-54,104))
+  & flex((-54,104),(10,151),(35,142))
+  ..flex((42,130),(60,123),(76,124))
+  & flex((76,124),(62,146),(26,180),(8,215)) & cycle;
+%
+ for i:=0 upto 12:
+  branch[i]:=neg_turn branch[i] shifted (150,50) scaled (w/300);
+ endfor
+ oval=superellipse((w,1/2h),(1/2w,h),(0,1/2h),(1/2w,0),4/5);
+%
+% remove overlaps and (optionally) show |turningnumber|s and |turn_check|s:
+ remove_overlap (make_list(0,12)branch,oval)() R;
+ if known show_turningnumbers_and_turn_checks:
+  begingroup
+   interim autorounding:=0;
+   show (turningnumber(branch1), turningnumber(reverse branch1));
+   for i:=1 upto R.num: show i,(turningnumber R[i],check_turn R[i]); endfor;
+  endgroup;
+ fi
+%
+% begin export to EPS:
+ find_BB oval;
+ write_preamble jobname;
+ fix_line_join 1; fix_line_cap 1;
+ fix_line_width 1/50pt;
+% paint the picture:
+ fix_fill_cmyk 0,0,0,1/6;
+ fill_C make_list(1,R.num)R;
+ for i:=1 upto R.num:
+  if proofing=0:
+   fix_draw_cmyk if check_turn(R[i])>0: 0,1,1,0 else: 1,1,0,0 fi; 
+   draw_C R[i];
+  else:
+   for j:=0 upto length(R[i])-1:
+    makelabel(decimal(j) & "/" & decimal(i),point j of R[i]);
+   endfor
+  fi
+ endfor
+%
+% mark (optionally) dangerously close points:
+ if known mark_trunk_close_points:
+  fix_fill_cmyk 0,0,0,1; fix_draw_cmyk 0,0,0,1;
+  for j:=13,14,17,18:
+   z[j]=point TIME_1tim[j] of PATH_1;
+   fill_C fullcircle scaled 1/50pt shifted z[j];
+  endfor
+  z.a=(1pt,0); z.b=(1/20pt,0); z.c=(1/5pt,1/10pt); z.d=(1/5pt,-1/10pt);
+  for zz:=1/2[z13,z14],1/2[z17,z18]:
+   draw_C (zz-z.a)--(zz-z.b), (zz-z.c)--(zz-z.b)--(zz-z.d);
+  endfor
+ fi
+% end export to EPS:
+ write_postamble;
+endchar;
+end.
+%%\end
+

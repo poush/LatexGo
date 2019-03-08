@@ -83,6 +83,9 @@ function initAuth(){
       $("#login").animate({top: "100vh"}, 450, function(){
         $('.pyaaz').removeClass("blur")
       })
+      user.getIdToken().then(function(token) {
+        postAuth(token)
+      })
 
     } else {
       // User is signed out.

@@ -152,3 +152,9 @@ var defaultLatex = `\\documentclass[12pt]{article}
   \\includegraphics[height=5cm, keepaspectratio]{snowden}
 \\end{document}
         `
+
+
+function postAuth(token) {
+  var d = drive.getInstance(token);
+  d.show();
+}

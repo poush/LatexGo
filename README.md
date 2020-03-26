@@ -2,9 +2,10 @@
 When Latex meets JS = SuperFast builds
 
 
-*To use:*
-
-1. directly open "index.html"
+## Development
+1. Clone the repository.
+2. Start a server inside the root directory (Look at [this](https://gist.github.com/jgravois/5e73b56fa7756fd00b89) if you need help with starting a server).
+3. Open the browser and go to `http://localhost:{PORT}`.
 
 
 ### Ideas to work on

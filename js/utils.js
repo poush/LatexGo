@@ -78,7 +78,6 @@ function preview(datauri){
 
 
 function stdout(message) {
-    // console.log(message)
     message = "<p class='logline'>" + message + "</p>"
     var pdf = $("#pdf")
     pdf.find('iframe').remove()
@@ -98,7 +97,7 @@ function compile(source_code) {
     if(!window.enable)
        return
 
-    var texlive = new TeXLive('texlivejs/');
+    var texlive = new TeXLive();
     var pdftex = texlive.pdftex;
     pdftex.on_stdout = stdout;
     pdftex.on_stderr = function(m){console.log(m)};
@@ -152,9 +151,3 @@ var defaultLatex = `\\documentclass[12pt]{article}
   \\includegraphics[height=5cm, keepaspectratio]{snowden}
 \\end{document}
         `
-
-
-function postAuth(token) {
-  var d = drive.getInstance(token);
-  d.show();
-}

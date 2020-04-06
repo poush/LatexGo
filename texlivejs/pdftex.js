@@ -2,7 +2,7 @@ var TeXLive = function(opt_workerPath) {
   //var self=this;
   var chunksize= determineChunkSize();
   if (!opt_workerPath) {
-    opt_workerPath = '';
+    opt_workerPath = 'texlivejs/';
   }
 
 
@@ -29,7 +29,6 @@ var TeXLive = function(opt_workerPath) {
           break;
         case 'stdout':
         case 'stderr':
-          console.log(self['on_'+data['command']])
           self['on_'+data['command']](data['contents']);
           break;
         default:
@@ -74,9 +73,7 @@ var TeXLive = function(opt_workerPath) {
     self.createCommand('set_TOTAL_MEMORY'); // size
   };
 
-
   var pdftex=new component(opt_workerPath+'pdftex-worker.js');
-
   pdftex.compile = function(source_code) {
     var self=this;
     var p = new promise.Promise();
@@ -100,7 +97,6 @@ var TeXLive = function(opt_workerPath) {
   pdftex.run = function(source_code) {
     var self=this;
     var commands;
-    console.log("here")
     if(self.initialized)
       commands = [
         curry(self, 'FS_unlink', ['/input.tex']),
@@ -109,7 +105,7 @@ var TeXLive = function(opt_workerPath) {
     else
       commands = [
         curry(self, 'FS_createDataFile', ['/', 'input.tex', source_code, true, true]),
-        curry(self, 'FS_createLazyFilesFromList', ['/', 'texlive.lst', './texlive', true, true]),
+        curry(self, 'FS_createLazyFilesFromList', ['/', 'https://latexgo.s3.amazonaws.com/texlivejs/texlive.lst', 'https://latexgo.s3.amazonaws.com/texlivejs/texlive', true, true]),
       ];
 
     var sendCompile = function() {

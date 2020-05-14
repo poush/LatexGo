@@ -6,7 +6,7 @@ A project inspired by the aim of improving the writing experience and make it ea
 
 ## Development 🏗️
 1. Clone the repository.
-2. Start a server inside the root directory (Look at [this](https://gist.github.com/jgravois/5e73b56fa7756fd00b89) if you need help with starting a server).
+2. Start a server inside the root directory .Look at [Guide.md](Guide.md) if you need help with starting a server).
 3. Open the browser and go to `http://localhost:{PORT}`.
 
 
@@ -45,14 +45,7 @@ Through this project you will learn:
 We have made everything easy for you! 👐
 Checkout [Contribute.md](contribute.md) to know how to contribute.
  
-## Project Admin 👨
 
-- [Piyush Agrawal](https://github.com/poush)
-
-
-## Mentor 👬 
-
-- [Aman Jain](https://github.com/jainaman224)
 
 Have any query? Feel free to ask! 🙂
 
@@ -65,5 +58,6 @@ Refer to [CODE_OF_CONDUCT](https://github.com/poush/LatexGo/blob/add/activeUsers
 We are open to suggestions.If you've found a bug or want to suggest new features, you can create a [Github issue](https://github.com/poush/LatexGo/issues).
 
 Let’s grow together!! 💛💙💛💙
+
 
 
